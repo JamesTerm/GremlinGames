@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageMagick width="720" height="486" def_color=".7,0,0">
+  <CompositeLayers
+    red="red.jpg" green="green.jpg" blue="blue.jpg" black="black.jpg"
+    white="white.jpg" yellow="yellow.jpg" magenta="magenta.jpg" cyan="cyan.jpg" key="key.jpg" >
+  </CompositeLayers>
+</ImageMagick>
