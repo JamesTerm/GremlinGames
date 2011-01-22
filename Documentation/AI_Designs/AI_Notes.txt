@@ -1,0 +1,21 @@
+see case 257:
+
+Current State:    Condition	State Transition
+
+Pilot attributes
+Fatigue/Focus
+Spirit/Morale (buddy blows up) (hate list)
+
+
+Scout-  Find enemy
+Paintball Spawner or Capitol  (list of targets medium)
+Defensive measure
+
+Snipers- keep ships in parameter
+back edge of the conflict bubble stay in back of the pack
+
+Capitol Ship-  Can move if scout paints in hopes to dodge big hits from other capitol ship.  Can also manually take out scout
+
+Flak could absorb hits to capitol ship, by intercepting missles.  Effective against any ship... its a rook
+
+Space Station- interactive garnish... could refuel there too.
