@@ -12,7 +12,7 @@ void IEffect::EventCallbackPtDnUp(const osg::Vec3d& pt, bool pressed)
 
 	// Get the time the event was fired.  This might be an alternate event time
 	double effectLaunchTime = m_subscribedEventMap->AlternateEventTime ? 
-		*(m_subscribedEventMap->AlternateEventTime) : m_actorScene->GetOsgTimer()->GetCurrTime_s();
+		*(m_subscribedEventMap->AlternateEventTime) : m_actorScene->GetTimer()->GetCurrTime_s();
 		
 	LaunchEffect(effectLaunchTime, start, GetDefaultIntensity(), pt);
 }
@@ -25,7 +25,7 @@ void IEffect::EventCallbackPtIntensity(const osg::Vec3d& pt, double intensity)
 
 	// Get the time the event was fired.  This might be an alternate event time
 	double effectLaunchTime = m_subscribedEventMap->AlternateEventTime ? 
-		*(m_subscribedEventMap->AlternateEventTime) : m_actorScene->GetOsgTimer()->GetCurrTime_s();
+		*(m_subscribedEventMap->AlternateEventTime) : m_actorScene->GetTimer()->GetCurrTime_s();
 
 	LaunchEffect(effectLaunchTime, start, intensity, pt);
 }

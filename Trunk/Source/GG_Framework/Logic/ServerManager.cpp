@@ -518,10 +518,6 @@ void ServerManager::tryRun()
 	// Also loads the AI Scene Data and places the Single Player Data on the Server
 	Initialize();
 
-	// We throttle pretty low unless we are running a single-threaded loop with SinglePlayer
-	m_ThrottleFrames.SetThrottleFPS(40); //(GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW ? 60.0 : 10.0);
-	m_ThrottleFrames.SetMinSleep(1);
-
 	// This will loop until the last player exits
 	while(!m_gameStarted || 
 		(GetServer1()->IsActive() && GetServer1()->GetNumConnections()))
@@ -532,10 +528,9 @@ void ServerManager::tryRun()
 		// The Timer firing is what keeps the AI game moving
 		if (m_gameStarted)
 		{
-			// Fire the Timer to keep the AI Game Running.  This does most of the work
+			// Fire the Timer to keep the AI Game Running
 			AI_Timer.FireTimer();
-			double actFrameTime = m_ThrottleFrames();  // Wait a bit if we need to
-			GG_Framework::UI::MainWindow::AI_THREAD_FRAME_MS = (int)(actFrameTime * 1000.0);
+			ThreadSleep(20);	// sleep for a bit to throttle the Server and AI
 		}
 		else
 		{// Epoch has not happened yet, but the AI_GameClient may be connecting to Players

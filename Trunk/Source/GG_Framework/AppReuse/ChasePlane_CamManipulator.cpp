@@ -51,7 +51,7 @@ void ChasePlane_CamManipulator::Reset_PosAtt(GG_Framework::UI::OSG::ICamera* act
 	camMat.makeLookAt(eye, look, up);
 
 	// Set the matrix a
-	activeCamera->SetMatrix(camMat);
+	activeCamera->SetMatrix(camMat, FindCameraDistortion());
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -301,9 +301,55 @@ void ChasePlane_CamManipulator::UpdateCamera(GG_Framework::UI::OSG::ICamera* act
 		camMat.makeLookAt(eye, look, up);
 
 		// Set the matrix and distortion
-		activeCamera->SetMatrix(camMat);
+		activeCamera->SetMatrix(camMat, FindCameraDistortion());
 	}
 #endif
+}
+//////////////////////////////////////////////////////////////////////////
+
+float ChasePlane_CamManipulator::FindCameraDistortion()
+{
+	// Base distortion on the size of the vehicle and the velocity, in a pretty abrupt curve
+	float sizeFactor = 0.3;
+	float speedFactor = 1.0 - 0.3;
+
+	// Scale the size high for a fighter, nothing for a larger vehicle
+	float sizeEffect = sizeFactor * sqrt(10.0f / m_vehicle.GetBoundRadius());
+
+	// Find the amount of distortion (for now based on velocity)
+	float speed = m_vehicle.GetLinearVelocity().length();
+	float min = 500.0f;
+	float band = 400.0f;
+	float speedEffect(0.0);
+	
+	if (speed > (min+band))
+		speedEffect = 1.0;
+	else if (speed > min)
+	{
+		speedEffect = (speed - min)  / band;
+		
+		// Make a nicer ease in and ease out
+		if (speedEffect < 0.5f)
+		{
+			speedEffect *= 2.0f;
+			speedEffect *= speedEffect;
+			speedEffect *= 0.5f;
+		}
+		else
+		{
+			speedEffect = 1.0f - speedEffect;
+			speedEffect *= 2.0f;
+			speedEffect *= speedEffect;
+			speedEffect *= 0.5f;
+			speedEffect = 1.0f - speedEffect;
+		}
+	}
+
+	// Apply the speed factor
+	speedEffect *= speedFactor;
+	
+	// We want the sum of the two
+	return sizeEffect + speedEffect;
 }
 //////////////////////////////////////////////////////////////////////////
 

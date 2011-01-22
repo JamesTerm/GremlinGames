@@ -15,8 +15,6 @@ namespace GG_Framework
 			bool IsLoadComplete();
 			std::string GetStatusUpdate();
 
-			void NotifyServerReady(){m_gameClient.NotifyServerReady();}
-
 		protected:
 			// This is the part that is really run, surrounded by try/catch blocks
 			void tryRun();

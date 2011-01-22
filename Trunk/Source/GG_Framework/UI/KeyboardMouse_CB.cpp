@@ -26,15 +26,14 @@ KeyboardMouse_CB::KeyboardMouse_CB( ConfigurationManager *config) :
 KeyboardMouse_CB::~KeyboardMouse_CB()
 {
 	delete m_dblPress;
-	if (!MainWindow::SINGLE_THREADED_MAIN_WINDOW)
+#ifndef __UseSingleThreadMainLoop__
+	GG_Framework::Base::RefMutexWrapper rmw(m_queueMutex);
+	while (!m_msgQueue.empty())
 	{
-		GG_Framework::Base::RefMutexWrapper rmw(m_queueMutex);
-		while (!m_msgQueue.empty())
-		{
-			delete (m_msgQueue.front());
-			m_msgQueue.pop();
-		}
+		delete (m_msgQueue.front());
+		m_msgQueue.pop();
 	}
+#endif
 }
 
 void KeyboardMouse_CB::WriteSettings(XMLNode &node,std::vector<XMLNode> &vectorXMLNodes)
@@ -177,18 +176,36 @@ void KeyboardMouse_CB::mouseMotion( float mx, float my )
 	if (IgnoreMouseMotion)
 		return;
 
+	DEBUG_MOUSE_MOTION("KeyboardMouse_CB::mouseMotion( %f, %f )\n", mx, my);
 	GlobalEventMap.KBM_Events.MouseMove.Fire(mx, my);
 	if (m_controlledEventMap)
 		m_controlledEventMap->KBM_Events.MouseMove.Fire(mx, my);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-int KeyboardMouse_CB::TranslateMouseButton(int mb)
+void KeyboardMouse_CB::buttonPress( float mx, float my, unsigned int button )
 {
-	// For the time being, the mouse buttons seem to work directly
-	return mb;
-}
+	if (IgnoreMouseMotion)
+		mx=my=0.0f;
 
+	GlobalEventMap.KBM_Events.MouseBtnPress.Fire(mx, my, button);
+	if (m_controlledEventMap)
+		m_controlledEventMap->KBM_Events.MouseBtnPress.Fire(mx, my, button);
+	KeyPressRelease(button, true);
+}
+////////////////////////////////////////////////////////////////////////////////////////////
+
+void KeyboardMouse_CB::buttonRelease( float mx, float my, unsigned int button )
+{
+	if (IgnoreMouseMotion)
+		mx=my=0.0f;
+
+	GlobalEventMap.KBM_Events.MouseBtnRelease.Fire(mx, my, button);
+	if (m_controlledEventMap)
+		m_controlledEventMap->KBM_Events.MouseBtnRelease.Fire(mx, my, button);
+	KeyPressRelease(button, false);
+}
+////////////////////////////////////////////////////////////////////////////////////////////
 void KeyboardMouse_CB::mouseScroll (int sm)
 {
 	GlobalEventMap.KBM_Events.MouseScroll.Fire((int)sm);
@@ -203,6 +220,7 @@ bool KeyboardMouse_CB::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
 }
 //////////////////////////////////////////////////////////////////////////
 
+#ifndef __UseSingleThreadMainLoop__
 // When using multi-threading, keep the messages in a queue
 void KeyboardMouse_CB::AddToQueue(const osgGA::GUIEventAdapter& ea)
 {
@@ -210,8 +228,6 @@ void KeyboardMouse_CB::AddToQueue(const osgGA::GUIEventAdapter& ea)
 	GG_Framework::Base::RefMutexWrapper rmw(m_queueMutex);
 	m_msgQueue.push(new osg::ref_ptr<osgGA::GUIEventAdapter>(newEA));
 }
-//////////////////////////////////////////////////////////////////////////
-
 void KeyboardMouse_CB::ProcessThreadedEvents()
 {
 	while (true)
@@ -234,18 +250,18 @@ void KeyboardMouse_CB::ProcessThreadedEvents()
 			return;	// All done with the queue
 	}
 }
-//////////////////////////////////////////////////////////////////////////
+#endif
 
 bool KeyboardMouse_CB::innerHandle(const osgGA::GUIEventAdapter& ea, bool fromEA)
 {
-	if (!GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW && fromEA)
-	{
-		AddToQueue(ea);
-		return true;
-	}
-
 	switch(ea.getEventType())
 	{
+#ifndef __UseSingleThreadMainLoop__
+	  	if (fromEA)
+			AddToQueue(ea);
+		else
+#endif
+
    // Keys
 	case(osgGA::GUIEventAdapter::KEYUP):
 		KeyPressRelease(ea.getKey(), false);
@@ -256,19 +272,16 @@ bool KeyboardMouse_CB::innerHandle(const osgGA::GUIEventAdapter& ea, bool fromEA
 
    // Mouse
 	case(osgGA::GUIEventAdapter::PUSH):
-		KeyPressRelease(TranslateMouseButton(ea.getButton()), true);
-		mouseMotion(ea.getXnormalized(), ea.getYnormalized());
+		buttonPress(ea.getXnormalized(), ea.getYnormalized(), ea.getButton());
 		return true;
 	case(osgGA::GUIEventAdapter::MOVE):
 	case(osgGA::GUIEventAdapter::DRAG):
 		mouseMotion(ea.getXnormalized(), ea.getYnormalized());
 		return false; // Keep this on the windows QUEUE so it can be passed along
 	case(osgGA::GUIEventAdapter::RELEASE):
-		KeyPressRelease(TranslateMouseButton(ea.getButton()), false);
-		mouseMotion(ea.getXnormalized(), ea.getYnormalized());
+		buttonRelease(ea.getXnormalized(), ea.getYnormalized(), ea.getButton());
 		return true; 
 	case(osgGA::GUIEventAdapter::SCROLL):
-		mouseMotion(ea.getXnormalized(), ea.getYnormalized());
 		mouseScroll((int)ea.getScrollingMotion());
 		return true;
 

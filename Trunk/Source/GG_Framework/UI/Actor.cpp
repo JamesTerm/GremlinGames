@@ -6,11 +6,6 @@
 using namespace GG_Framework::UI;
 using namespace GG_Framework::Base;
 
-ActorTransform::ActorTransform()
-{
-	m_addRemCallback = new OSG::AddRemoveChildCallback(this);
-}
-
 Actor::Actor(ActorScene* actorScene, const char* lineFromFile) : IScriptOptionsLineAcceptor(actorScene),
 	m_firstAction(NULL), m_currAction(NULL), m_lastAction(NULL), m_debugFile(NULL), m_lastDebugFrameNum(-1)
 {
@@ -27,9 +22,6 @@ Actor::Actor(ActorScene* actorScene, const char* lineFromFile) : IScriptOptionsL
 	this->setScale(osg::Vec3d(Sx, Sy, Sz));
 	this->setName(actorName);
 
-	// USe the callback when adding children so it is thread safe
-	m_addRemCallback = new OSG::AddRemoveChildCallback(this);
-
 	// Hold on to an update and a framestamp to pass along
 	m_frameStamp = new osg::FrameStamp;
 	m_update.setFrameStamp( m_frameStamp.get() );
@@ -41,7 +33,7 @@ Actor::Actor(ActorScene* actorScene, const char* lineFromFile) : IScriptOptionsL
 	accept(m_update);
 
 	// Listen for changes to the time
-	GetActorScene()->GetOsgTimer()->CurrTimeChanged.Subscribe(ehl, *this, &Actor::GlobalTimeChangedCallback);
+	GetActorScene()->GetTimer()->CurrTimeChanged.Subscribe(ehl, *this, &Actor::GlobalTimeChangedCallback);
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -173,7 +165,7 @@ void Actor::ClearActionQue()
 {
 	if (m_currAction)
 	{
-		if (GetActorScene()->GetOsgTimer()->GetCurrTime_s() < m_firstAction->GetGlobalStartTime_s())
+		if (GetActorScene()->GetTimer()->GetCurrTime_s() < m_firstAction->GetGlobalStartTime_s())
 		{
 			m_firstAction->ClearFollowing();
 			delete m_firstAction;
@@ -193,7 +185,7 @@ void Actor::ClearActionQue()
 void Actor::DebugOutputActionQue()
 {
 #ifdef DEBUG_ACTOR_ACTIONS
-	DEBUG_ACTOR_ACTIONS("Start Actor::DebugOutputActionQue(%i)\n", TIME_2_FRAME(GetActorScene()->GetOsgTimer()->GetCurrTime_s()));
+	DEBUG_ACTOR_ACTIONS("Start Actor::DebugOutputActionQue(%i)\n", TIME_2_FRAME(GetActorScene()->GetTimer()->GetCurrTime_s()));
 	ActionQueNode* node = m_firstAction;
 	while (node)
 	{

@@ -276,7 +276,7 @@ Cannon::Cannon(unsigned cannonIndex, ICannonOwner& cannonOwner, CannonDesc& desc
 	}
 
 	// Listen for time changes so we can fire the rounds on time
-	m_cannonOwner.ICO_GetSelfEntity3D().GetGameClient()->GetLogicTimer().CurrTimeChanged.Subscribe(ehl, *this, &Cannon::TimeChanged);
+	m_cannonOwner.ICO_GetSelfEntity3D().GetGameClient()->GetTimer().CurrTimeChanged.Subscribe(ehl, *this, &Cannon::TimeChanged);
 }
 //////////////////////////////////////////////////////////////////////////
 

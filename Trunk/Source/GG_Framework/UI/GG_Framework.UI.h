@@ -1,6 +1,8 @@
 // GG_Framework.UI.h
 #pragma once
 
+#define __UseSingleThreadMainLoop__
+
 #ifdef FRAMEWORK_UI_EXPORTS
 #define FRAMEWORK_UI_API __declspec(dllexport)
 #else

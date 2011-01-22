@@ -29,6 +29,7 @@ namespace GG_Framework
 			bool UseAntiAliasing;
 			bool MockAudio;
 			std::string SoundTrack;
+			float MAX_DISTORTION;
 			unsigned RES_WIDTH, RES_HEIGHT;
 			double MAX_FPS;
 

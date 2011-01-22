@@ -5,12 +5,11 @@
 using namespace GG_Framework::Base;
 using namespace GG_Framework::UI;
 
-ActorScene::ActorScene(GG_Framework::Base::Timer& osg_timer, const char* contentDirLW, bool ignoreKeybindings) :
-	m_osg_timer(&osg_timer), m_fileReader(NULL), m_contentDirLW(contentDirLW), m_ignoreKeybindings(ignoreKeybindings)
+ActorScene::ActorScene(GG_Framework::Base::Timer& timer, const char* contentDirLW, bool ignoreKeybindings) :
+	m_timer(&timer), m_fileReader(NULL), m_contentDirLW(contentDirLW), m_ignoreKeybindings(ignoreKeybindings)
 {
 	_scene = new osg::Group();
 	_scene->setName("root");
-	m_addRemCallback = new OSG::AddRemoveChildCallback(_scene.get());
 
 	if (MainWindow::GetMainWindow())
 		CreateReverseCameraAngleNode(MainWindow::GetMainWindow()->GetMainCamera());
@@ -34,7 +33,11 @@ ActorTransform* ActorScene::ReadActorFile(GG_Framework::UI::EventMap& localEvent
 	osgUtil::UpdateVisitor update;
 	osg::ref_ptr<osg::FrameStamp> frameStamp = new osg::FrameStamp();
 	update.setFrameStamp(frameStamp.get());
+#ifndef __Use_OSG_Svn__
+	frameStamp->setReferenceTime(0.0);
+#else
 	frameStamp->setSimulationTime(0.0);
+#endif
 	frameStamp->setFrameNumber(0);
 	ret->accept(update);
 
@@ -47,14 +50,16 @@ ActorTransform* ActorScene::ReadActorFile(GG_Framework::UI::EventMap& localEvent
 void ActorScene::AddActor(ActorTransform* newActor)
 {
 	ASSERT(_scene.valid());
-	AddChildNextUpdate(newActor);
+	_scene->addChild(newActor);
+	_scene->dirtyBound();
 }
 //////////////////////////////////////////////////////////////////////////
 
 void ActorScene::RemoveActor(ActorTransform* newActor)
 {
 	ASSERT(_scene.valid());
-	RemoveChildNextUpdate(newActor);
+	_scene->removeChild(newActor);
+	_scene->dirtyBound();
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -319,11 +324,11 @@ FILE* inFile, osg::Group* parent, unsigned parentTabs, int fileV)
 						throw std::exception("Error in Key Binding");
 					}
 
-					// Watch for Range kinds of events that fire off secondary events on a osg_timer
+					// Watch for Range kinds of events that fire off secondary events on a timer
 					if (maxRange > minRange)
 					{
 						// We are working with testing Mapped events.  See MapFramesEffect.txt
-						MapFramesEffect::TestKeyBinding::Add(key, localEventMap, GetOsgTimer(), eventName, minRange, maxRange);
+						MapFramesEffect::TestKeyBinding::Add(key, localEventMap, GetTimer(), eventName, minRange, maxRange);
 					}
 					else
 					{
@@ -504,6 +509,15 @@ ActorTransform* ActorScene::ReadFromSceneFile(GG_Framework::UI::EventMap& localE
 		osg::Node* nodeFromFile = GG_Framework::UI::OSG::readNodeFile(fullPath);
 		if (nodeFromFile)
 		{
+			// Fire a 0 time change to pass along a 0 time, to keep the AnimationPath callbacks from
+			// Having the silly offset value
+			osg::ref_ptr<osg::FrameStamp> frameStamp = new osg::FrameStamp;
+			osgUtil::UpdateVisitor update;
+			update.setFrameStamp( frameStamp.get() );
+			frameStamp->setSimulationTime(0.0);
+			frameStamp->setFrameNumber(0);
+			nodeFromFile->accept(update);
+
 			ActorTransform* actorParent = new ActorTransform;
 			actorParent->addChild(nodeFromFile);
 			actorParent->setName(fn);

@@ -110,9 +110,6 @@ namespace GG_Framework
 			std::vector<TransmittedEntity*> m_entities;
 			void ReadInitialEntities();
 			OpenThreads::Mutex m_entitiesV_mutex;
-
-			// Be able to throttle the AI
-			GG_Framework::Base::ThrottleFrame m_ThrottleFrames;
 		};
 
 	}

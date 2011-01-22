@@ -8,14 +8,10 @@ namespace GG_Framework
 class FRAMEWORK_UI_API ActorScene
 {
 public:
-	ActorScene(GG_Framework::Base::Timer& osg_timer, const char* contentDirLW, bool ignoreKeyBindings);
+	ActorScene(GG_Framework::Base::Timer& timer, const char* contentDirLW, bool ignoreKeyBindings);
 	~ActorScene();
 	osg::Group* GetScene(){return _scene.get();}
-	GG_Framework::Base::Timer* GetOsgTimer(){return m_osg_timer;}
-
-	// Call these to add and remove children on the next update so it is thread safe
-	void AddChildNextUpdate(osg::Node* child, osg::Group* parent=NULL){m_addRemCallback->AddChild(child,parent);}
-	void RemoveChildNextUpdate(osg::Node* child, osg::Group* parent=NULL){m_addRemCallback->RemoveChild(child,parent);}
+	GG_Framework::Base::Timer* GetTimer(){return m_timer;}
 
 	//! ALWAYS returns at least an empty Group with warning, fn must not be NULL
 	ActorTransform* AddActorFile(GG_Framework::UI::EventMap& localEventMap, const char* fn)
@@ -39,7 +35,6 @@ public:
 protected:
 	//! ALWAYS returns at least an empty Group with warning, fn must not be NULL
 	virtual ActorTransform* ReadFromSceneFile(GG_Framework::UI::EventMap& localEventMap, const char* fn);
-	osg::ref_ptr<OSG::AddRemoveChildCallback> m_addRemCallback;
 
 private:
 	const char* m_contentDirLW;
@@ -75,7 +70,7 @@ private:
 	FileLineReader* m_fileReader;
 
 	std::list<INamedEffect*> m_effectList;
-	GG_Framework::Base::Timer* const m_osg_timer;
+	GG_Framework::Base::Timer* const m_timer;
 	bool m_ignoreKeybindings;
 
 };	// class ActorScene

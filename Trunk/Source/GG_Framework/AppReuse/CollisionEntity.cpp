@@ -33,7 +33,7 @@ void CollisionEntity::TryDisplayCannonHit(osg::Vec3d hitPt)
 
 	double minTime = 1.0;	// TODO: Get this from a user preference
 	double minDistSqr = 16.0;  // TODO: Get this from a user preference.  This is squared
-	double oldTime = GetGameClient()->GetLogicTimer().GetCurrTime_s() - minTime;
+	double oldTime = GetGameClient()->GetTimer().GetCurrTime_s() - minTime;
 
 	// Pop off any old items in the list
 	while (!m_cannonHits.empty())

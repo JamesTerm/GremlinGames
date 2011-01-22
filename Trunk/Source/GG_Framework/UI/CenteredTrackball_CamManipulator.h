@@ -13,7 +13,8 @@ namespace GG_Framework
 			CenteredTrackball_CamManipulator();
 
 			void OnMouseMove(float mx, float my);
-			void KeyPress(GG_Framework::Base::Key key, bool onoff);
+			void OnMouseBtnPress(float mx, float my, unsigned int button );
+			void OnMouseBtnRelease(float mx, float my, unsigned int button );
 
 			virtual void UpdateCamera(GG_Framework::UI::OSG::ICamera* activeCamera, double dTime_s);
 			void SetCenteredNode(osg::Node* node);

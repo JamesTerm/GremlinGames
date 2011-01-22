@@ -10,7 +10,7 @@ using namespace osgParticle;
 IParticleEffect::IParticleEffect(ActorScene* actorScene, osg::Node& parent) : INamedEffect(actorScene, parent), 
 	m_position(osg::Vec3(0.0f,0.0f,0.0f)), m_scale(1.0f), m_intensity(1.0f)
 {
-	actorScene->GetOsgTimer()->CurrTimeChanged.Subscribe(ehl, *this, &IParticleEffect::OnTimer);
+	actorScene->GetTimer()->CurrTimeChanged.Subscribe(ehl, *this, &IParticleEffect::OnTimer);
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -85,16 +85,17 @@ void IParticleEffect::FireParticleEffect(ParticleStruct& pg, double intensity, c
 {
 	ASSERT(!pg.OnEffect.valid());
 	pg.OnEffect = CreateParticleEffectOSG(pt, m_scale, intensity);
-	if (!pg.OnEffect.valid()) return;
 	pg.OnEffect->setUseLocalParticleSystem(UseLocalParticleSystem());
-	m_actorScene->AddChildNextUpdate(pg.OnEffect.get(), GetParentNode()->asGroup());
+	this->GetParentNode()->asGroup()->addChild(pg.OnEffect.get());
 
+	// This part does not seem to be working anymore.  We need to check to see how OSG has changed things
+	// Set Bug 248
 	if (!UseLocalParticleSystem())
 	{
 		ASSERT(!pg.OnGeode);
 		pg.OnGeode = new osg::Geode;
 		pg.OnGeode->addDrawable(pg.OnEffect->getParticleSystem());
-		m_actorScene->AddChildNextUpdate(pg.OnGeode.get());
+		m_actorScene->GetScene()->addChild(pg.OnGeode.get());
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -103,13 +104,12 @@ void IParticleEffect::RemoveParticleEffect(ParticleStruct& pg)
 {
 	DEBUG_SMOKETRAILS("IParticleEffect::RemoveParticleEffect()\n");
 	if (pg.OnGeode.valid())
-		m_actorScene->RemoveChildNextUpdate(pg.OnGeode.get());
-	m_actorScene->RemoveChildNextUpdate(pg.OnEffect.get(), GetParentNode()->asGroup());
-
+		m_actorScene->GetScene()->removeChild(pg.OnGeode.get());
+	this->GetParentNode()->asGroup()->removeChild(pg.OnEffect.get());
 	if (!UseLocalParticleSystem())
 	{
 		// Remove the child from the global scene
-		m_actorScene->RemoveChildNextUpdate(pg.OnGeode.get());
+		m_actorScene->GetScene()->removeChild(pg.OnGeode.get());
 	}
 	pg.OnEffect = NULL;
 	pg.OnGeode = NULL;
@@ -133,7 +133,7 @@ osgParticle::ParticleEffect* GG_Framework::UI::SmokeEffect::CreateParticleEffect
 	return new osgParticle::SmokeEffect(pos, scale, intensity);
 }
 osgParticle::ParticleEffect* GG_Framework::UI::SmokeTrailEffect::CreateParticleEffectOSG(const osg::Vec3d& pos, double scale, double intensity)
-{return NULL;
+{
 	osgParticle::SmokeTrailEffect* smokeTrailEffect = new osgParticle::SmokeTrailEffect(pos, scale, intensity);
 
 	// Make the duration very long so that the trails do not go away

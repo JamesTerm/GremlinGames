@@ -57,13 +57,6 @@ bool ConsoleApp_ArgumentParser::ProcessFlag(unsigned& index, unsigned argc, cons
 		++index;
 		return true;
 	}
-	else if (stricmp(argv[index], "-simple_models") == 0)
-	{
-		// Simplify models while we are playing with framerate
-		GG_Framework::Base::TEST_USE_SIMPLE_MODELS = true;
-		++index;
-		return true;
-	}
 	else if (stricmp(argv[index], "-log_timer") == 0)
 	{
 		// Used to start logging the AI timer
@@ -79,7 +72,7 @@ bool ConsoleApp_ArgumentParser::ProcessFlag(unsigned& index, unsigned argc, cons
 
 ViewerApp_ArgumentParser::ViewerApp_ArgumentParser() 
 	: ConsoleApp_ArgumentParser(), 
-	UseAntiAliasing(false), RES_WIDTH(0), RES_HEIGHT(0), MAX_FPS(0), MockAudio(false),
+	UseAntiAliasing(false), MAX_DISTORTION(0.0f), RES_WIDTH(0), RES_HEIGHT(0), MAX_FPS(0), MockAudio(false),
 	m_startStats(-1.0), m_endStats(-1.0), m_actualStart(-1.0), m_minFrameRate(1e6), m_maxFrameRate(-1e6), m_avgFrameRate(0.0), m_numFrames(0), 
 	m_mainWindow(NULL), m_lastTime(0.0)
 {
@@ -213,9 +206,23 @@ bool ViewerApp_ArgumentParser::ProcessFlag(unsigned& index, unsigned argc, const
 		}
 		return true;
 	}
+	else if (stricmp(argv[index], "-distort") == 0)
+	{
+		// The amount of distortion in the camera
+		++index;
+		if (index >= argc)
+			printf("ERROR: Missing Parameter for Flag '-distort'\n");
+		else
+		{
+			DEBUG_ARGS("ViewerApp_ArgumentParser::ProcessFlag - distort = %s\n", argv[index]);
+			MAX_DISTORTION = atof(argv[index]);
+			++index;
+		}
+		return true;
+	}
 	else if (stricmp(argv[index], "-maxfps") == 0)
 	{
-		// The maximum frames per second used.  This will cause an extra sleep in the OSG thread
+		// The amount of distortion in the camera
 		++index;
 		if (index >= argc)
 			printf("ERROR: Missing Parameter for Flag '-maxfps'\n");
@@ -229,7 +236,7 @@ bool ViewerApp_ArgumentParser::ProcessFlag(unsigned& index, unsigned argc, const
 	}
 	else if (stricmp(argv[index], "-res") == 0)
 	{
-		// The resolution of the final OSG window
+		// The amount of distortion in the camera
 		if (argc <= (index+2))
 		{
 			printf("ERROR: Missing Parameter(s) for Flag '-res'\n");
@@ -275,7 +282,7 @@ bool ViewerApp_ArgumentParser::ProcessFlag(unsigned& index, unsigned argc, const
 	}
 	else if (stricmp(argv[index], "-perf") == 0)
 	{
-		// The minimum and maximum framerates that will cause a performance index change.
+		// The minimum and maximum time the stats will run, and optionally the filename to write to
 		if (argc <= (index+3))
 		{
 			printf("ERROR: Missing Parameter(s) for Flag '-perf'\n");

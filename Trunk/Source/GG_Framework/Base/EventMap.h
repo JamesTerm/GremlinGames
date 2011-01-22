@@ -98,10 +98,6 @@ namespace GG_Framework
 			// FOr debugging only, Sync TImer may be smoothed
 			virtual double GetSynchronizedActualTime() {return GetCurrTime_s();}
 
-			// Does not fire the timer event on the change.  Expects the next update to handle it
-			// This should be atomic across threads if needed
-			void SetCurrTime_NoEvent(double currTime_s){_currentTime_s = currTime_s;}
-
 			FrameLogger Logger;
 
 		protected:
@@ -158,6 +154,8 @@ namespace GG_Framework
 			Event1<Key> KBCB_KeyDn;
 			
 			Event2<float, float> MouseMove;
+			Event3<float, float, unsigned> MouseBtnPress;
+			Event3<float, float, unsigned> MouseBtnRelease;
 			Event1<int> MouseScroll;
 		};
 		//////////////////////////////////////////////////////////////////////////
