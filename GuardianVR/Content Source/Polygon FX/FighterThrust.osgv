@@ -1,0 +1,35 @@
+~osgv version 1
+#authored by justin 2/21/08
+###########################
+#RICK- this files does not seem to play the proper key frames
+#Hopefully this file will annoy you enough that you will take a look at it lol
+#Maybe due to scale issue in rickcode
+#############################################################
+	
+O F CAM_POINTER
+	^ engineflair
+		# D DebugThrust.txt
+		engine_flair.lws
+		
+		@ Run runa 60 runb 63	
+		~ LOOP START Run
+		~ LOOP Thrust_01.RunAgain Run
+
+		@ Thrust accelA 90 accelB 120	
+		@ HThrust accelB 120 accelC 123
+		@ RThrust accelC 150 accelD 180 [On 31 Thrust_01.RunAgain]
+		~ While Thrust_01.Accel Thrust HThrust RThrust
+		#~ While Thrust_01.Accel HThrust Run
+
+		@ Brake brakeA 180 brakeB 210
+		@ HBrake brakeB 0 brakeC 03	
+		@ RBrake brakeC 30 brakeD 60 [On 31 Thrust_01.RunAgain]
+		~ While Thrust_01.Deccel Brake HBrake RBrake
+		#~ While Thrust_01.Deccel HBrake Run
+
+##### Test Only! comment key bindings out for final##########
+#############################################################
+
+% While w Thrust_01.Accel
+% While s Thrust_01.Deccel
+

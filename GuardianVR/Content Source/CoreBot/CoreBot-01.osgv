@@ -1,0 +1,38 @@
+~osgv version 1
+######################################################
+#Authored by justin 8/25/08
+######################################################
+
+^ CoreBot-01
+	CoreBot-01-Setup.lws
+
+#### Parent/Stucture ####
+	$ Helmet
+
+	$ WeaponL
+	$ WeaponR
+
+	$ TorsoArmor
+	$ BoosterPack
+	$ Hip-Belt-Armor
+	$ SholderArmorL
+	$ SholderArmorR
+	
+	$ ArmL
+	$ ArmR
+	$ ForeArmL
+	$ ForeArmR
+
+	$ HipL
+	$ HipR
+	$ KneeL
+	$ KneeR
+	$ ShinL
+	$ ShinR
+	$ FootL
+	$ FootR
+
+#### Actions/Key Bindings ####
+	
+	@ Stance stance 0 stance 130
+	~ While SPAWN Stance
