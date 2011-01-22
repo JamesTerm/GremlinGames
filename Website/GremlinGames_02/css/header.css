@@ -1,0 +1,22 @@
+#header{
+	margin-top:0;
+	font-size: 10pt;
+	padding-bottom: 25px;
+}
+
+#headerImage{
+  margin-top: 30px;
+	width: 100%;
+	min-width: 800px;
+	max-width: 996px;
+	border: 0;
+}
+
+#header input{
+	width: 75px;
+	margin-right: 10px;
+}
+
+#header form{
+	float: right;
+}

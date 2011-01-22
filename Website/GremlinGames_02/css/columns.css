@@ -1,0 +1,25 @@
+
+.column{
+  width: 20%;
+	height: 300px;
+	float: left;
+	border: solid white 1pt;
+	background: url("/images/elements/blackTransBack50.png") top left repeat;
+	overflow: auto;
+	color: white;
+}
+
+.column p{
+	padding: .5em;
+}
+
+.topBorder{
+	height: 20px;
+	width: 100%;
+}
+
+#centerColumn{
+  width: 57%;
+	margin-left: 1%;
+	margin-right: 1%;
+}

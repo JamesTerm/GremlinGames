@@ -1,0 +1,6 @@
+#heading{
+	text-align: center;
+	background: black url('/aerobunny/images/header.jpg') no-repeat;
+	height: 250px;
+	border-bottom: solid white 1pt;
+}
