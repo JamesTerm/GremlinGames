@@ -1,0 +1,24 @@
+#rightPane{
+	float: left;
+	width: 200px;
+	font-size: 10pt;
+	background: black url('/aerobunny/images/right.jpg') no-repeat top left;
+}
+.news{
+	margin-left: .25in;
+	margin-right: .25in;
+	text-align: justify;
+}
+.subtitle{
+	color: #A85;
+}
+.sig{
+	margin-left: .25in;
+	font-weight: bold;
+	font-size: 14pt;
+	color: #A85;
+}
+.rightData{
+	margin-left: .25in;
+	font-family: Calibri;
+}

@@ -1,0 +1,14 @@
+/***********************
+Color Scheme:
+	White: #FFF
+	Gray:	#777
+	Black: #000
+	BROWN: #A85
+***********************/
+#footer{
+	border-top: solid white 1pt;
+	text-align: center;
+	clear: both;
+	margin: 0;
+	padding: 0;
+}

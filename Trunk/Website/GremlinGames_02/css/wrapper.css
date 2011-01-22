@@ -1,0 +1,9 @@
+
+#wrapper{
+  min-width: 800px;
+	max-width: 996px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 0;
+	height: 100%;
+}

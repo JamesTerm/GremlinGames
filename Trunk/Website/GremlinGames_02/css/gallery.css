@@ -1,0 +1,9 @@
+#currentImage{
+	text-align: center;
+}
+
+#currentImage img{
+	display: inline;
+	width: 800px;
+	height: 500px;
+}
