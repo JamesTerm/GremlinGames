@@ -1,0 +1,17 @@
+~osgv version 1
+	
+^ Q-33-50mm
+	50mm.lws
+	$ Fire
+		../../../Polygon FX/MGun-01.osgv
+
+	@ Run Stop 0 Stop 0	
+	@ Fire fireA 11 fireB 19 [On 0 MGun_01.FireSound][On 3 MGun_01.FireSound][On 6 MGun_01.FireSound]
+	
+	~ While START Run
+	~ While MGun_01.Fire Fire Run
+	! On MGun_01.FireSound SoundEffect ..\..\..\Audio\SoundFX\SmallArm-SingleFire.WAV 500.0
+		
+
+% While x MGun_01.Fire
+#% On z MGun_01.FireSound

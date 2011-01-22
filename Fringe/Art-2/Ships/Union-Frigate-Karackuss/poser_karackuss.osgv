@@ -1,0 +1,31 @@
+~osgv version 1
+######################################################
+#Authored by justin 2/26/08
+######################################################
+
+^ Poser_karackuss
+	karackuss_setup.lws
+
+#### Parent/Stucture ####
+
+	$ engine_01
+		..\..\Polygon FX\30m-ThrustGlow.osgv
+	$ engine_02
+		..\..\Polygon FX\30m-ThrustGlow.osgv
+	#$ engine_03
+		FighterThrust.osgv
+	#$ engine_03
+		FighterThrust.osgv
+	$ landinglight_01
+		..\..\Polygon FX\LadingLight-01.osgv
+	$ landinglight_02
+		..\..\Polygon FX\LadingLight-01.osgv
+	$ landinglight_03
+		..\..\Polygon FX\LadingLight-01.osgv
+	$ blinker_red_01
+		..\..\Polygon FX\10m-RedBlinker.osgv
+	$ blinker_red_02
+		..\..\Polygon FX\10m-GreenBlinker.osgv
+	$ blinker_red_03
+		..\..\Polygon FX\10m-RedBlinker.osgv
+

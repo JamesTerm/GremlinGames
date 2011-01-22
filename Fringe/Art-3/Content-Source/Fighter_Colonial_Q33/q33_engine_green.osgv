@@ -1,0 +1,22 @@
+~osgv version 1
+#authored by justin 2/21/08
+###########################
+
+^ q33-engine-green
+	engine.lws
+	
+		$ engine_flair_01
+			FighterThrust.osgv
+
+
+
+
+
+		$ engine_flair_02
+#			P T RefractionNull
+#				^ refraction1 0 0 -5
+#					P T CAMERA
+#						..\Polygon FX\refraction1.lwo
+#				^ refraction2 0 0 -20
+#					P T CAMERA
+#						..\Polygon FX\refraction1.lwo

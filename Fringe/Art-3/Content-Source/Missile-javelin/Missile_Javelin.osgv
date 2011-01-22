@@ -1,0 +1,27 @@
+~osgv version 1
+######################################################
+#Authored by justin 4/9/08
+#Missile plus audio effect
+######################################################
+
+^ Missile
+	setup.lws
+
+	#~ On Fire Launch Run Run
+	! On Fire SoundEffect Audio\missile.wav 4.0 0 224641
+
+	! On Impact SoundEffect Audio\explosion.wav 9.0 0 98944
+
+
+################# For Testing ONLY ###########
+
+	@ Hold holdA 10 launchA 10
+	~ On START Hold
+
+	@ Launch launchA 10 launchB 40 [On 0 Missile.launchFX]
+	@ Run launchB 40 runA 50
+	~ While Missile.Launch Launch Run Run
+	! On Missile.launchFX SoundEffect Audio\missile.wav 4.0 0 224641
+	% While a Missile.Launch
+
+############## disable for final ############

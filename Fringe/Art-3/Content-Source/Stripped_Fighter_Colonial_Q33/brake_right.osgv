@@ -1,0 +1,18 @@
+~osgv version 1
+######################################################
+#Authored by justin 2/25/08
+######################################################
+
+^ Q33_A3_BrakesRight
+	brake_l.lws
+
+#### Actions/Key Bindings ####
+	
+	@ Stance stance 10 stance 10
+	~ On START Stance
+	
+	@ Brake stance 45 brake 50
+	@ Hbrake brake 50 brakeb 55
+	@ Rbrake brakeb 55 stance 60
+	~ While Q33_A3.Brake Brake Hbrake Hbrake Rbrake
+

@@ -1,0 +1,20 @@
+~osgv version 1
+
+# We should eventually make a fancier course
+^ Jack0 -85.3 69.7 -228.3 180 0 0
+	Space\ManMade\ring.osgv
+
+^ Jack1 -85.3 69.7 271.7 180 0 0
+	Space\ManMade\ring.osgv
+
+^ Jack2 -85.3 69.7 771.7 180 0 0
+	Space\ManMade\ring.osgv
+
+^ Jack3 -85.3 69.7 1771.7 180 0 0
+	Space\ManMade\ring.osgv
+
+^ Jack4 -85.3 69.7 3771.7 180 0 0
+	Space\ManMade\ring.osgv
+
+^ Jack5 -85.3 69.7 6771.7 180 0 0
+	Space\ManMade\ring.osgv

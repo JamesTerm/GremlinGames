@@ -1,0 +1,5 @@
+~osgv version 1
+
+# This file is used for the retical that leads the target
+^ LeadRetical 0 0 1		# 100 meters in front of the camera
+	B .035 .035 t [Targeting Crosshairs/Leading-01-OutofRange.tga]

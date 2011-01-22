@@ -1,0 +1,53 @@
+~osgv version 1
+######################################################
+#Authored by justin 2/26/08
+######################################################
+
+^ Poser_karackuss
+	karackuss_setup.lws
+
+#### Parent/Stucture ####
+
+	$ engine_01
+		..\Polygon FX\30m-ThrustGlow-Bloomed.osgv
+		! While SPAWN SoundEffect C_class_engine.wav 60.0 0 48000
+
+	$ engine_02
+		..\Polygon FX\30m-ThrustGlow.osgv
+			P T RefractionNull
+				^ refraction1 0 0 -15 0 0 0 3 3 3
+					P T CAMERA
+						..\Polygon FX\refraction1.lwo
+				^ refraction1 0 0 -30 0 0 0 5 5 5
+					P T CAMERA
+						..\Polygon FX\refraction1.lwo
+				^ refraction2 0 0 -150 0 0 0 5 5 5
+					P T CAMERA
+						..\Polygon FX\refraction1.lwo
+	$ landinglight_01
+		..\Polygon FX\LadingLight-01.osgv
+	$ landinglight_02
+		..\Polygon FX\LadingLight-01.osgv
+	$ landinglight_03
+		..\Polygon FX\LadingLight-01.osgv
+	$ blinker_red_01
+		..\Polygon FX\10m-RedBlinker.osgv
+	$ blinker_red_02
+		..\Polygon FX\10m-GreenBlinker.osgv
+	$ blinker_red_03
+		..\Polygon FX\10m-RedBlinker.osgv
+
+	
+
+	! On CANNON_HIT SoundEffect ..\Common_Audio\bang_2.wav 27.0 0 9376
+	#! On CANNON_HIT SmokeTrailEffect (0,0,0) 2 1
+	! On CANNON_HIT ExplosionEffect (0,0,0) 5 5
+	! On CANNON_HIT FireEffect (0,0,0) 5 5
+	! On COLLIDE SoundEffect ..\Common_Audio\metal_crashB.wav 35.0 0 103680
+	
+	# You want to provide a few frames before dying to show the last of the particle explosions
+	@ Die_Seq die1 0 die2 30 [On 30 HIDE]
+	
+	# For now, they both do the same thing.  The bulk of the effect needs to be in the DestructionProxy
+	~ On DESTROY Die_Seq
+	~ On SHOT_DOWN Die_Seq

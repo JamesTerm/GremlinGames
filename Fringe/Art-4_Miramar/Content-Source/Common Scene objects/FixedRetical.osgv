@@ -1,0 +1,7 @@
+~osgv version 1
+
+# This file is used for the retical that is fixed in the center of the screen
+# The Controller builds this and maintains it, making it show up on top of everything
+^ PrimaryRetical 0 0 1000		# 100 meters in front of the camera
+	P T CAMERA
+		#I 20 20 t [Targeting Crosshairs/BoxRet01.tga]

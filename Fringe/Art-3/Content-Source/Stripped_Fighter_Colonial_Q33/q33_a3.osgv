@@ -1,0 +1,86 @@
+~osgv version 1
+######################################################
+#Authored by justin 2/25/08
+######################################################
+
+^ Q33_A3
+	q33_a3_setup.lws
+
+#### Parent/Stucture ####
+
+	$ brakes_left
+		brake_left.osgv
+	$ brakes_right
+		brake_right.osgv
+	$ gun_01
+		Q-33-Gun-02.osgv
+	$ gun_02
+		Q-33-Gun-03.osgv
+	$ gun_03
+		Q-33-Gun-02.osgv
+	$ gun_04
+		Q-33-Gun-03.osgv
+	$ bombbay
+		Colonial-Fighter-Q33-BombBay.lwo
+	$ landinglight
+		..\Polygon FX\LadingLight-01.osgv
+			P T RefractionNull
+				^ refraction1 0 0 -4 0 0 0 1.5 1.5 1.5
+					P T CAMERA
+						..\Polygon FX\refraction1.lwo
+				^ refraction1 0 0 -15 0 0 0 1 1 1
+					P T CAMERA
+						..\Polygon FX\refraction1.lwo
+	$ blinker_red_01
+		..\Polygon FX\10m-RedBlinker.osgv
+		! While VAPOR_TRAIL SmokeTrailEffect (0,0,0) 0.2 7 #### = (X,Y,Z) size duration	
+	$ blinker_green_01
+		..\Polygon FX\10m-GreenBlinker.osgv
+		! While VAPOR_TRAIL SmokeTrailEffect (0,0,0) 0.2 7 #### = (X,Y,Z) size duration
+
+
+#### Actions/Key Bindings ####
+	
+	@ Stance stance 10 stance 10 [On 20 Q33_A3.Stance1] [On 10 Q33_A3.Stance2] 
+	~ On SPAWN Stance
+	! On Q33_A3.Stance1 SoundEffect Q_33Audio\TGT-02.WAV 35.0
+	! On Q33_A3.Stance2 SoundEffect Q_33Audio\static_1.wav 15.0
+
+	! While SPAWN SoundEffect Q_33Audio\g-33engines-02.wav 20.0 0 27328
+	
+	@ Accel stance 10 accelb 25 [On 0 Q33_A3.Accel1] [On 10 Q33_A3.Accel2]
+	@ Haccel accelb 30 accelc 30
+	@ Raccel accelc 30 stance 45 [On 0 Q33_A3.Accel1]
+	~ While Q33_A3.Accel Accel Haccel Haccel Raccel
+	! On Q33_A3.Accel1 SoundEffect Q_33Audio\motor_servo_lift.mp3 30.0
+	! On Q33_A3.Accel2 SoundEffect Q_33Audio\g-33engines-02.wav 20.0 0 52973
+	% While w Q33_A3.Accel
+	
+	@ Brake stance 45 brake 50 [On 0 Q33_A3.Brake1] [On 15 Q33_A3.Brake2]
+	@ Hbrake brake 50 brakeb 55
+	@ Rbrake brakeb 55 stance 60 [On 0 Q33_A3.Brake1]
+	~ While Q33_A3.Brake Brake Hbrake Hbrake Rbrake
+	! On Q33_A3.Brake1 SoundEffect Q_33Audio\motor_servo_lift.mp3 30.0
+	! On Q33_A3.Brake2 SoundEffect Q_33Audio\SHAWEE.wav 45.0
+	% While s Q33_A3.Brake
+
+	! while Ship.FireWeapon SoundEffect Q_33Audio\Vucan02.wav 50 3072 5888
+	
+	# You want to provide a few frames before dying to show the last of the particle explosions
+	@ Die_Seq die1 0 die2 30 [On 30 HIDE]
+	
+	# For now, they both do the same thing.  The bulk of the effect needs to be in the DestructionProxy
+	~ On DESTROY Die_Seq
+	~ On SHOT_DOWN Die_Seq
+
+
+### SoundFX, new gun and engine FX added 4/2/08 ###
+
+### Rick Added Cannon Hits
+	! On CANNON_HIT SoundEffect ..\Common_Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	#! On COLLIDE SoundEffect ..\Common_Audio\metal_crashA.wav 35.0 0 84096
+	! On COLLIDE SoundEffect ..\Common_Audio\metal_crashB.wav 35.0 0 103680
+
+### Justin edited original smoke trails 4/14/08 ###

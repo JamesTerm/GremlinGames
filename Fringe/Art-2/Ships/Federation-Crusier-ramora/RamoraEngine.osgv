@@ -1,0 +1,25 @@
+~osgv version 1
+######################################################
+#####################################################
+^ Ramora-Engine
+	Engine Setup -Single.lws
+	@ Stop stop 0 stop 0
+	@ StartUp stop 0 run 40
+	@ Run run 40 run 60
+	@ Accel run 60 FullBurn 120
+	@ Deccel FullBurn 120 run 60
+	@ Slow deccel 10 enddeccel 12
+	@ FDeccel FullBurn 120 run 60	
+	@ FullBurn FullBurn 120 endAccel 122
+	
+	~ While START StartUp Run Run
+	~ While Ramora-Engine.Deccel Slow Slow StartUp
+	~ While Ramora-Engine.Accel Accel FullBurn FullBurn FDeccel
+	~ Toggle Ramora-Engine.
+	~ Toggle Ramora-Engine.
+
+% While w Ramora-Engine.Accel
+% While s Ramora-Engine.Decel 
+#% Toggle v Ramora-Engine.Bomb
+#% Toggle c Ramora-Engine.Land
+

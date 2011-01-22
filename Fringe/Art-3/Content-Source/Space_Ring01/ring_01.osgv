@@ -1,0 +1,68 @@
+~osgv version 1
+######################################################
+# Ring Training obsticle
+#####################################################
+
+^ ring
+	ring_01.lws
+		$ blinker_1
+			..\Polygon FX\10m-GreenBlinker.osgv
+		$ blinker_2
+			..\Polygon FX\10m-GreenBlinker.osgv
+		$ blinker_3
+			..\Polygon FX\10m-GreenBlinker.osgv
+
+		$ green_light_01
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_02
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_03
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_04
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_05
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_06
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_07
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_08
+			..\Polygon FX\10m_4side_green_light.osgv
+		$ green_light_09
+			..\Polygon FX\10m_4side_green_light.osgv
+
+		$ red_light_01
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_02
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_03
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_04
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_05
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_06
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_07
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_08
+			..\Polygon FX\10m_4side_red_light.osgv
+		$ red_light_09
+			..\Polygon FX\10m_4side_red_light.osgv
+	
+	! While SPAWN SoundEffect space_ring02.wav 30.0 0 9600
+	
+### Rick Added Cannon Hits
+	! On CANNON_HIT SoundEffect ..\Common_Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	#! On CANNON_HIT ExplosionDebrisEffect (0,0,0) 1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	! On COLLIDE SoundEffect ..\Common_Audio\metal_crashA.wav 35.0 0 84096
+	
+	# You want to provide a few frames before dying to show the last of the particle explosions
+	@ Die_Seq die1 0 die2 30 [On 30 HIDE]
+	
+	# For now, they both do the same thing.  The bulk of the effect needs to be in the DestructionProxy
+	~ On DESTROY Die_Seq
+	~ On SHOT_DOWN Die_Seq
+	

@@ -1,0 +1,111 @@
+~osgv version 1
+######################################################
+# This file should apply to all variations of the COLONIAL Q33
+#####################################################
+^ Q33-A2
+	Colonial-Fighter-Q33-A2.lws
+
+	$ Engine-01
+		..\..\Polygon FX\FighterEngineBLUE.osgv
+	$ Engine-02
+		..\..\Polygon FX\FighterEngineBLUE.osgv
+
+	$ LandingLight
+		..\..\Polygon FX\LadingLight-01.osgv
+	$ L-Blinker
+		..\..\Polygon FX\10m-GreenBlinker.osgv
+	$ R-Blinker
+		..\..\Polygon FX\10m-RedBlinker.osgv
+
+	$ GunMount-01
+		..\..\Weapons\Fighter\Q-33 Gun\Q-33-Gun-01.osgv
+	$ GunMount-02
+		..\..\Weapons\Fighter\Q-33 Gun\Q-33-Gun-01.osgv
+	$ GunMount-03
+		..\..\Weapons\Fighter\Q-33 Gun\Q-33-Gun-01.osgv
+	$ GunMount-04
+		..\..\Weapons\Fighter\Q-33 Gun\Q-33-Gun-01.osgv
+	$ ^^BombBay L
+		@ OpenBomb bombClosed 50 bombOpen 70
+		@ Holdbomb bombOpen 70 bombOpen 70
+		@ Closebomb bombOpen 80 bombClosed 100
+		~ Toggle Q33-A2.Bomb OpenBomb Holdbomb Closebomb
+	$ ^^BombBay R
+		@ OpenBomb bombClosed 50 bombOpen 70
+		@ Holdbomb bombOpen 70 bombOpen 70
+		@ Closebomb bombOpen 80 bombClosed 100
+		~ Toggle Q33-A2.Bomb OpenBomb Holdbomb Closebomb
+	
+	$ ^Brake A L
+		@ Brake stop 100 brake 120
+		@ Holdbrake brake 122 brake 124
+		@ Postbrake brake 125 stop 145
+		~ While Q33-A2.Brake Brake Holdbrake Holdbrake Postbrake
+	$ ^Brake B L
+		@ Brake stop 100 brake 120
+		@ Holdbrake brake 122 brake 124
+		@ Postbrake brake 125 stop 145
+		~ While Q33-A2.Brake Brake Holdbrake Holdbrake Postbrake
+	$ ^Brake A R
+		@ Brake stop 100 brake 120
+		@ Holdbrake brake 122 brake 124
+		@ Postbrake brake 125 stop 145
+		~ While Q33-A2.Brake Brake Holdbrake Holdbrake Postbrake
+	$ ^Brake B R
+		@ Brake stop 100 brake 120
+		@ Holdbrake brake 122 brake 124
+		@ Postbrake brake 125 stop 145
+		~ While Q33-A2.Brake Brake Holdbrake Holdbrake Postbrake
+
+
+	@ Stop stop 0 stop 0
+	@ Afterburn stop 200 afterburn 230 [On 0 Q33_A2.WingShift]
+	@ Holdburn afterburn 230 afterburn 230 
+	@ Postburn afterburn 230 stop 260
+	@ Launch launch-a 10 launch 40
+	@ Land stop 270 land 300
+	@ Lhold land 10 land 10
+	# @ Armed (some fighters have an armed position) (mostly Federation)
+	# @ Flatten (offers more lateral braking surface to reduce forward momentum when pulling up or down)
+	# @ Sweep (Wings sweep back to increase acceleration)
+	# @ Rake (wings rake forward to increase manuverability)(speed reduction)
+	~ On START Stop
+
+	~ While Q33-A2.Afterburn Afterburn Holdburn Holdburn Postburn
+	~ Toggle Q33-A2.Land Land Lhold Lhold Launch
+
+	! On Q33_A2.WingShift SoundEffect ..\..\Audio\SoundFX\FighterDoors.WAV 500.0
+
+
+% While s Q33-A2.Brake 
+% While w Q33-A2.Afterburn
+% While z Ship.FireWeapon	
+% Toggle x Q33-A2.Land
+
+
+#######################################################################
+
+#######################################################################
+#  Q33-A  LANCE-EAGLE
+#
+# The Q33-A LanceEagle is a high velocity variable wing space superiority fighter.
+# It is the 3rd generation fighter in the high performance Q seris engineered by the Colonial Malicia.
+# The Q33 follows the proud tradition of the QX19 Hunter and the Q22 Lightening in building superior 
+# performance low cost fighters. Like all other fighters in the seris it uses variable wings to adjust 
+#the center of gravity and adjust control planes to maximize flight control.
+#
+# The Q33-A marks a huge leap in Colonial engineering. The Q33 is the first Colonial fighter to be 
+# servicable in both space and atmosheric flight. The hull is smoother and the frame is much lighter 
+# than previouse designs allowing for incredible acceleration. The frame is also more rigid and durable 
+# thanks to it's multi point cellular design. More weight is reduced by doing away with the gyroscopic 
+# cockpit module and as in the last "Q" fighter, there is no room in the Q33 for the added weight of landing gear.
+# The HUD, onboard computer and, Gravity dampening systems are all greatly enhanced and this is the first Colonial fighter to allow for the assistance of a COG to 
+# do on the fly repairs and handel minor ship functions. The Q33 also houses the new line of high thrust engines developed by the Colonials. These engines offer 
+# different levels of thrust to improve perfomance and efficency. Magnetic thrust vectoring shoots out a wide burst of particles at low speeds to allow for a 
+# greater "grip" for quicker acceleration, and at high speed a narrow thrust band of super high speed particles to allow for a much higher top end velocity.
+#
+# All these improvements aside the Q33 is still a very short range fighter. It has a small fuel capacity compared with fighters built by the Union and the Federation. 
+# Wile the engines are more effecient than previouse Colonial engines, no fuel saving sacrifices were made that would reduce engine performance.
+# While the Q33 is surprisingly rugged it still does not offer ray sheilds and has only limited armor plating. Communications systems are fragile and there are 
+# no auxilary systems to backup primary ship systems.
+#######################################################################

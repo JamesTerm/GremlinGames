@@ -1,0 +1,13 @@
+~osgv version 1
+	
+^ Haze
+	P T CAMERA
+		^ ThrustOffset 0 0 0
+			Explosion_Redhaze.lws
+
+			#@ Run start 20 stop 29
+			@ Splode booma 30 boomb 90
+			~ on DESTROY Splode
+			#~ On Haze.Splode Splode
+
+
