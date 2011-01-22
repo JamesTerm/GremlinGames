@@ -1,2 +1,0 @@
-cd C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\bin\Release\LocBaml.exe /generate Localization_Test2.resources.dll /trans:InLocBaml.csv /out:C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\bin\Release\ /cul:fr-CA
-pause
