@@ -1,4 +1,0 @@
-﻿LocTest3.g.en-US.resources:window1.baml,Window_1:LocTest3.Window1.$Content,None,True,True,,#Grid_1;
-LocTest3.g.en-US.resources:window1.baml,Window_1:System.Windows.Window.Title,Title,True,True,,Window1
-LocTest3.g.en-US.resources:window1.baml,Window_1:System.Windows.FrameworkElement.Height,None,False,True,,300
-LocTest3.g.en-US.resources:window1.baml,Window_1:System.Windows.FrameworkElement.Width,None,False,True,,300
