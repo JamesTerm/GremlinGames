@@ -1,0 +1,11 @@
+<sql_databases>
+  <database connection_string = "DRIVER={MySQL ODBC 5.1 Driver}; SERVER=localhost; DATABASE=test; Uid=root; Pwd=password; OPTION=3">
+     <query command = "SELECT band FROM songs;" key = "DB_Band" timeout = "500" multiple_keys = "true"/>
+     <query command = "SELECT albumn FROM songs;" key = "DB_Albumn" timeout = "500" multiple_keys = "true"/>
+     <query command = "SELECT CONCAT(band,', ',albumn) FROM songs;" key = "DB_BandAlbumn" timeout = "1000" multiple_keys = "true"/>
+  </database>
+</sql_databases>
+
+<!-- This example will produce 3 separate keys in LiveText - DB_Band, DB_Albumn, and DB_BandAlbumn. -->
+<!-- If there are multiple database entries for a key, the key names will be incremented as such:   -->
+<!--  DB_Band.1, DB_Band.2 ...                                                                      -->

@@ -1,0 +1,146 @@
+#!/bin/sh
+
+die()
+{
+    echo >& $1
+    exit 1
+}
+
+x() 
+{ 
+    echo $*
+    $* 
+}
+
+#
+# print_pkginfo()
+#
+# usage:
+#
+#      print_pkginfo  PACKAGE_NAME PACKAGE_INFO PACKAGE_DESCRIPTION
+#
+
+print_pkginfo()
+{
+    __pstamp=`fgrep $LOGNAME /etc/passwd | cut -f5 -d":"`
+    cat <<- EOF
+PKG="$1"
+NAME="$2"
+`[ "$OS" = "SunOS" ] && echo ARCH=sparc`
+VERSION=`cd $TOPDIR;gmake -s version;cd $THISDIR`
+CATEGORY="application,graphics,opengl"
+DESC="$3"
+BASEDIR="/opt/"
+VENDOR="Producer"
+EMAIL="info@andesengineering.com"
+PSTAMP=$__pstamp
+URL="http://www.andesengineering.com/Producer"
+MAXINST="1"
+EOF
+
+}
+
+print_prototype()
+{
+    echo "i pkginfo"
+    [ -f depend ] && echo "i depend"
+
+    for d in $*
+    do
+	d=`echo $d | sed 's/\/opt\///` 
+        echo "d none $d ? root sys"
+    done
+
+    for d in $*
+    do
+	for f in `ls -1 $d`
+	do 
+	     f=$d/$f
+	     if [ -f $f ] 
+	     then
+ 		[ -x $f ] && MODE=0555 || MODE=0444
+		dest=`echo $f | sed 's/\/opt\///'`
+	        echo "f none $dest=$f $MODE root sys"
+	     fi
+	done
+    done
+
+}
+
+make_installable()
+{
+    PKGNAME=$1
+    PKGDIR=$PKGNAME.pkg
+    VERSION=`gmake -s version`
+    DISTNAME="$PKGNAME"-"$VERSION"-"$OS".shar
+
+    THISDIR=`pwd`
+    cd $PKGSUBDIR
+
+    cat << INSTALL_EOF > $DISTNAME
+
+#!/bin/sh
+cat <<-	 'LEOF' | uudecode -p | gzip -d -c | tar xvf -
+`tar cvf - $PKGDIR | gzip | uuencode .tmpuu`
+LEOF
+
+/bin/sh << EOF
+echo =========== INSTALLING  $DISTNAME =================
+pkgadd -d $PKGNAME.pkg $PKGNAME
+rm -rf $PKGDIR
+EOF
+
+INSTALL_EOF
+
+    chmod +x $DISTNAME
+    cd $THISDIR
+}
+
+
+make_package()
+{
+    PKGNAME=$1
+    PKGDIR=$PKGSUBDIR/$PKGNAME.pkg
+    x rm -rf $PKGDIR
+    x mkdir  $PKGDIR
+
+    echo Making pkginfo ...
+    print_pkginfo "$1" "$2" "$3"  > $PKGDIR/pkginfo
+
+    shift; shift; shift
+
+    echo Making prototype ...
+
+    print_prototype  $*  > $PKGDIR/prototype
+
+#    DISTNAME="$PKGNAME"-"`$TOPDIR/bin/osgversion`"-"$OS"-"local"
+
+    THISDIR=`pwd`
+    x cd $PKGDIR
+    x pkgmk -d .
+    x cd $THISDIR
+#    make_installable $PKGNAME $PKGDIR $DISTNAME 
+#    x pkgtrans -s $PKGDIR $DISTNAME $PKGNAME
+#    x mv "$PKGDIR"/"$DISTNAME" "$PKGDIR"/..
+}
+
+
+OS=$1
+TOPDIR=$2
+INST_LIBS=$3
+INST_INCLUDE=$4
+
+echo INST_LIBS is $INST_LIBS
+
+PKGSUBDIR=dist/PKG
+
+make_package\
+	"Producer"\
+	"Producer - Run time and development environment"\
+	"An OpenGL based library for viewpoint management and parallel rendering"\
+	$INST_LIBS $INST_INCLUDE"/Producer"
+
+make_installable "Producer"
+
+
+exit 0

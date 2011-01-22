@@ -1,0 +1,44 @@
+/*!	\page  Thruster_Events_txt	Thruster Events
+
+\section sec_Motivation		Motivation
+This section works along with \ref MapFramesEffect_txt.  In the Fringe::Base::ThrustShip2, we are tracking the various
+thrusters.  We want to provide the OSGV files with events so that they can use control surface (thrusters & brakes)
+to appear to cause the effect.  We need to also make sure these events happen on the receiving end for RC ships.
+
+
+
+\section sec_AccTest		Acceptance Test
+I placed a few output statements to make sure we were using the right values and limits.  
+Justin is providing MapFramesEffect handlers in his various ship OSGV files which should visually show us how we are doing.
+No obvious test strategy for RC entities, lets just keep an eye out for how it works.
+
+
+
+\section sec_DesignNotes	Design Notes
+First we needed to track the amount of thrust (and torque) and make sure the amounts are passed over the network.  Rather than
+firing a multitude of network events every frame, ThrustShip2 just includes the current amount of thrust and torque (averaged a bit
+to smooth any unwanted jitteryness).  The ThrustShip2_RC_Controller holds the member variable for the current amount
+of thrust and attaches it to the packets.  ThrustShip2 owns a single member that is created lazily the first time it is needed.
+Whenever ThrustShip2 requests thrusters and torque, it calls ApplyThrusters and ApplyTorqueThrusters, which set the member variables
+after averaging them a bit.
+
+The function that handles firing all of the events and updating the thrust state is ThrustShip2::UpdateThrustState, which is 
+called from the ship's UpdateTimer if locally controlled and from the ThrustShip2_RC_Controller::ReadStandardEntityUpdate when
+remotely controlled.
+
+We wanted a couple of different kinds of events, some that were either on or off for the various primary forward and reverse
+thrust states, which include Thrust, Afterburner, Afterburner Brake, Brake, and Coasting.  These happen based on the current
+thrust amounts in the Y axis.  Only one of these states can be active at a time.
+
+We had considered breaking off the rest of the events into a sub-class, because we were not sure which events would be needed by 
+specific thrusters in an OSGV file and were concerned that every thruster would need a specialized event.  We realized, however,
+that there were a set number of useful events, and we used a naming convention to describe them.  See the notes on the available
+event names in "GremlinGames\Fringe Events.txt" for these names.  
+
+There are quite a few events to be sure, and we knew they would be called about every frame for every entity, so we did not want 
+to hit the event map with a string every time, so the inner class ThrustShip2::ThrustEventHandler caches the events one time
+and then fires them each frame.
+
+We also needed to have some limits, so we could pass normalized values to the OSGV handlers (0-1) rather than raw Forces and Torques.
+ThrustShip2::ThrustEventHandler grabs the maximum values from the various flight configurations from ThrustShip2.
+

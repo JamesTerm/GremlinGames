@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" >
+  <channel>
+
+    <title>mySA.com Express-News</title>
+    <link xmlns="http://www.w3.org/2005/Atom" rel="display:module" type="text/xsl" href="http://cm.my.yahoo.com/us/feedtemplates/npc/firstItemBrief.xsl"/>
+    <link>http://www.mysanantonio.com/about_us/express-news</link>
+
+    <description><![CDATA[About Us: San Antonio, Express-News, Contact Us]]></description>
+    <language>en-us</language>
+
+
+    <image>
+      <url>http://www2.mysanantonio.com/xml/logo-mysa-sm.gif</url>
+      <title>mySA.com Express-News</title>
+      <link>http://www.mysa.com/</link>
+      <width>110</width>
+      <height>56</height>
+    </image>
+
+    <item>
+      <title><![CDATA[Express-News Ethics Policy]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/Express-News_Ethics_Policy.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/Express-News_Ethics_Policy.html</guid>
+      <pubDate>Thu, 11 Jun 2009 15:18:14 PDT</pubDate>
+      <lastBuildDate>Wed, 07 Jul 2010 12:12:23 PDT</lastBuildDate>
+      <description><![CDATA[]]></description>
+      <image></image>
+    </item>
+    <item>
+      <title><![CDATA[Reprint Permission Guidelines]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/Reprint_Permission_Guidelines.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/Reprint_Permission_Guidelines.html</guid>
+      <pubDate>Mon, 18 Aug 2008 11:12:39 PDT</pubDate>
+      <lastBuildDate>Mon, 23 Nov 2009 15:32:23 PST</lastBuildDate>
+      <description><![CDATA[]]></description>
+      <image></image>
+    </item>
+    <item>
+      <title><![CDATA[TXCO Resources' net income jumps in 2Q]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/TXCO_Resources_net_income_jumps_in_2Q.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/TXCO_Resources_net_income_jumps_in_2Q.html</guid>
+      <pubDate>Wed, 06 Aug 2008 13:47:42 PDT</pubDate>
+      <lastBuildDate>Wed, 06 Aug 2008 14:10:37 PDT</lastBuildDate>
+      <description><![CDATA[Higher oil and gas sales and higher margins led San Antonio-based TXCO Resources Inc. to second quarter net income of $8.7 million, or 24 cents a share, compared with a $1.3 million loss, or 4 cents a share, for the year-earlier period. ]]></description>
+      <image></image>
+    </item>
+    <item>
+      <title><![CDATA[Pioneer Drilling's 1Q net income dips 31%]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/Pioneer_Drillings_1Q_net_income_drops_31.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/Pioneer_Drillings_1Q_net_income_drops_31.html</guid>
+      <pubDate>Tue, 05 Aug 2008 09:52:50 PDT</pubDate>
+      <lastBuildDate>Tue, 05 Aug 2008 10:06:50 PDT</lastBuildDate>
+      <description>
+        <![CDATA[Pioneer Drilling Co. Inc. said Tuesday that lower drilling margins and falling use of its rigs prompted a 31 percent decline in net income for the first quarter of 2008.
+]]>
+      </description>
+      <image></image>
+    </item>
+    <item>
+      <title><![CDATA[Welcome to the redesigned mySA]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/Welcome_to_the_redesigned_mySA.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/Welcome_to_the_redesigned_mySA.html</guid>
+      <pubDate>Thu, 17 Jul 2008 04:04:28 PDT</pubDate>
+      <lastBuildDate>Wed, 29 Apr 2009 16:00:23 PDT</lastBuildDate>
+      <description><![CDATA[]]></description>
+      <image></image>
+    </item>
+    <item>
+      <title><![CDATA[San Antonio Express-News History, Part 4: Just yesterday, today and tomorrow ]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_4_Just_yesterday_today_and_tomorrow_.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_4_Just_yesterday_today_and_tomorrow_.html</guid>
+      <pubDate>Thu, 10 Jul 2008 17:25:08 PDT</pubDate>
+      <lastBuildDate>Wed, 10 Mar 2010 12:09:47 PST</lastBuildDate>
+      <description>
+        <![CDATA[With the San Antonio Light gone, Jan. 28, 1993, was the first day since its founding in 1865 that the San Antonio Express-News didn't have to at least look over its shoulder to see what another newspaper was doing in the Alamo City. 
+
+]]>
+      </description>
+      <image>[images]</image>
+    </item>
+    <item>
+      <title><![CDATA[San Antonio Express-News History, Part 3: Wild in the streets ]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_3_Wild_in_the_streets_.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_3_Wild_in_the_streets_.html</guid>
+      <pubDate>Thu, 10 Jul 2008 17:21:07 PDT</pubDate>
+      <lastBuildDate>Thu, 01 Jan 2009 12:56:52 PST</lastBuildDate>
+      <description><![CDATA[Rupert Murdoch reportedly has described himself as colorless and boring. But considering his impact on the media, that would be something like Bill Clinton describing himself as shy and retiring in the world of politics or Hugh Hefner insisting he's chaste and possesses a low libido when it comes to the sexual revolution.]]></description>
+      <image>[images]</image>
+    </item>
+    <item>
+      <title><![CDATA[San Antonio Express-News History, Part 2: A new century ]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_2_A_new_century_.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_2_A_new_century_.html</guid>
+      <pubDate>Thu, 10 Jul 2008 17:17:56 PDT</pubDate>
+      <lastBuildDate>Tue, 09 Mar 2010 14:50:52 PST</lastBuildDate>
+      <description><![CDATA[It would become known as the American century, and in its early days at least, individual initiative probably was a young man's most prized possession. Hence, it's logical that the dawn of the 20th century saw a young man named Frank Huntress climbing the career ladder at the San Antonio Express. ]]></description>
+      <image>[images]</image>
+    </item>
+    <item>
+      <title><![CDATA[San Antonio Express-News History, Part 1: In the beginning ]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_1_In_the_beginning_.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/San_Antonio_Express-News_History_Part_1_In_the_beginning_.html</guid>
+      <pubDate>Thu, 10 Jul 2008 17:14:33 PDT</pubDate>
+      <lastBuildDate>Thu, 01 Jan 2009 12:46:27 PST</lastBuildDate>
+      <description>
+        <![CDATA[It was a time legends were being written, and the newspaper that became the San Antonio Express-News was there to get them down in black and white. 
+
+]]>
+      </description>
+      <image>[images]</image>
+    </item>
+    <item>
+      <title><![CDATA[A history of the San Antonio Express-News]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/A_history_of_the_San_Antonio_Express-News.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/A_history_of_the_San_Antonio_Express-News.html</guid>
+      <pubDate>Thu, 10 Jul 2008 17:07:24 PDT</pubDate>
+      <lastBuildDate>Thu, 01 Jan 2009 12:42:51 PST</lastBuildDate>
+      <description><![CDATA[Born 29 years after the fall of the Alamo and just five months after Robert E. Lee's surrender to Ulysses S. Grant, the San Antonio Express-News has done much more than record day-to-day history of the world for nearly a century and a half. It's made a history of its own. ]]></description>
+      <image>[images]</image>
+    </item>
+    <item>
+      <title><![CDATA[SAN ANTONIO EXPRESS-NEWS  ETHICS AND PRACTICES POLICY]]></title>
+      <link>http://www.mysanantonio.com/about_us/express-news/SAN_ANTONIO_EXPRESS-NEWS__ETHICS_AND_PRACTICES_POLICY.html</link>
+      <guid>http://www.mysanantonio.com/about_us/express-news/SAN_ANTONIO_EXPRESS-NEWS__ETHICS_AND_PRACTICES_POLICY.html</guid>
+      <pubDate>Thu, 10 Jul 2008 08:22:22 PDT</pubDate>
+      <lastBuildDate>Thu, 10 Jul 2008 08:22:22 PDT</lastBuildDate>
+      <description><![CDATA[It is our mission to be the most trusted, respected and accurate source of news and information in the community that we serve. As employees, our fundamental principle is to maintain the integrity of our product.    ]]></description>
+      <image></image>
+    </item>
+  </channel>
+</rss>
+
+

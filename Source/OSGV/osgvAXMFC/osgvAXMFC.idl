@@ -1,0 +1,54 @@
+// osgvAXMFC.idl : type library source for ActiveX Control project.
+
+// This file will be processed by the MIDL compiler tool to
+// produce the type library (osgvAXMFC.tlb) that will become a resource in
+// osgvAXMFC.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(6DF742EE-F06E-4292-BF28-ADF292A7B8F9), version(1.0),
+  helpfile("osgvAXMFC.hlp"),
+  helpstring("osgvAXMFC ActiveX Control module"),
+  control ]
+library osgvAXMFCLib
+{
+	importlib(STDOLE_TLB);
+
+	//  Primary dispatch interface for CosgvAXMFCCtrl
+
+	[ uuid(75C2661F-87DB-47D6-96B4-E293F8C439AD),
+	  helpstring("Dispatch interface for osgvAXMFC Control")]
+	dispinterface _DosgvAXMFC
+	{
+		properties:
+			[id(2) , helpstring("property SceneName")] BSTR SceneName;
+			[id(3) , helpstring("property BackgroundColor")] OLE_COLOR BackgroundColor;
+	methods:
+			[id(1), helpstring("method InitOSG")] void InitOSG(BSTR contentRegKey);
+	};
+
+	//  Event dispatch interface for CosgvAXMFCCtrl
+
+	[ uuid(A09B39CD-C74A-433C-88BC-7DDFDA2EED51),
+	  helpstring("Event interface for osgvAXMFC Control") ]
+	dispinterface _DosgvAXMFCEvents
+	{
+		properties:
+			//  Event interface has no properties
+
+		methods:
+			[id(1)] void Frame1000(LONG frameNum);
+	};
+
+	//  Class information for CosgvAXMFCCtrl
+
+	[ uuid(59451646-ABD9-4DE4-88A9-655524828BB5), licensed,
+	  helpstring("osgvAXMFC Control"), control ]
+	coclass osgvAXMFC
+	{
+		[default] dispinterface _DosgvAXMFC;
+		[default, source] dispinterface _DosgvAXMFCEvents;
+	};
+
+};

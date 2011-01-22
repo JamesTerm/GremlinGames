@@ -1,0 +1,83 @@
+// The following is the Bakaus Naur Form of the OsgMP Camera Configuration file
+
+<Configuration>            ::= <CameraGroup> | <RenderSurface> | <Camera>
+<CameraGroup>              ::= CameraGroup '{' {<SharedCameraAttribute>} {<Camera>} '}'
+<Camera>                   ::= Camera [<name>] '{' {<camera_attribute> ';'} '}'
+<CameraAttribute>          ::= RenderSurface <name>  ';' |
+                               <RenderSurface>     |
+                               ProjectionRect <real> <real> <real> <real> ';' |
+                               ShareLens <bool>  ';'|
+                               ShareView <bool> ';' |
+                               ClearColor <real> <real> <real> <real> ';' |
+                               <Lens> |
+                               <CameraOffset> 
+
+<ShareCameraAttribute>     ::= <RenderSurface> | RenderSurface <name> | <Lens>
+
+<RenderSurface>            ::=  RenderSurface ["<name>"] '{' {<RenderSurfaceAttribute> ';'} '}'
+
+<RenderSurfaceAttribute>   ::=  VisualQuality |  
+                                WindowRectangle <integer> <integer> <integer> <integer>   |
+                                InputRecangle <real> <real> <real> <real>   |
+                                Hostname <name>   |
+                                Display <integer>   |
+                                Screen  <integer> |
+                                Border  <boolean> |
+                                CustomFullScreenRectangle <integer> <integer> <integer> <integer> |
+                                OverrideRedirect <boolean> |
+                                DrawableType <DrawableType> |
+                                ReadDrawable "<name>" |
+                                RenderToTextureMode <RenderToTextureMode> |
+
+<VisualQuality>            ::=  VisualQuality '{' {<VisualQualityAttribute>} '}'
+
+<VisualQualityAttribute>   ::=  Default | VisualID <hex_integer> | 
+                                BUFFER_SIZE      <integer> |
+                                LEVEL            <integer> |
+                                RGBA                       |
+                                DOUBLEBUFFER               |
+                                STEREO                     |
+                                AUX_BUFFERS      <integer> |
+                                RED_SIZE         <integer> |
+                                GREEN_SIZE       <integer> |
+                                BLUE_SIZE        <integer> |
+                                ALPHA_SIZE       <integer> |
+                                DEPTH_SIZE       <integer> |
+                                STENCIL_SIZE     <integer> |
+                                ACCUM_RED_SIZE   <integer> |
+                                ACCUM_GREEN_SIZE <integer> |
+                                ACCUM_BLUE_SIZE  <integer> |
+                                ACCUM_ALPHA_SIZE <integer> 
+
+<DrawableType>             ::= PBUFFER_TYPE | WINDOW_TYPE 
+
+<RenderToTextureMode>      ::= RTT_NONE | RTT_RGB | RTT_RGBA
+
+<Lens>                     ::= Lens '{' {<lens_attribute> ';'} '}'
+
+<LensAttribute>            ::= Ortho <real> <real> <real> <real> <real> <real> [<real> <real>] |
+                               Perspective <real> <real> <real> <real> [<real> <real>]         |
+                               Frustum <real> <real> <real> <real> <real> <real> [<real> <real>] 
+<CameraOffset>                   ::= Offset '{' {<CameraOffsetAttribute>} '}'
+
+<CameraOffsetAttribute>    ::= Shear <real> <real> ';'  |
+                               Rotate <real> <real> <real> <real> ';'
+                               Translate <real> <real> <real> ';'
+                               Scale <real> <real> <real> ';'
+                               Method PreMultiply | PostMultiply
+
+<name>                     ::= '"' <identifier> '"' 
+
+<identifier>               ::= {A-Za-z}+{A-Za-z0-9_ \t}*
+
+<real>                     ::= {-}?{0-9}+.{0-9}*{f|F}? | {-}?{0-9}*.{0-9}+{f|F}? | <integer>{F|f}?
+
+<hex_integer>              ::= {-}?0x{0-9}+
+
+<integer>                  ::= {-}?{0-9}+
+
+<bool>                     ::= on | ON | true | yes | off | OFF | false | no
+
+
+                                
+                               

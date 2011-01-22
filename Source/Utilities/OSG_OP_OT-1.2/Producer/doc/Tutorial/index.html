@@ -1,0 +1,567 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Open Producer</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+
+
+<body text="#000000" bgcolor="#ffffff" link="#0000ff" alink="#000088" vlink="#ff0000">
+<font face="Helvetica, Arial, sans-serif">
+
+<div align="center">
+  <img src="producers_chair.jpg" alt="Chair" width="149" height="220" align="middle"> 
+  <font size="+3">Open Producer - Tutorial </font>
+</div>
+
+<hr width="100%" size="2">
+
+<h2> Contents </h2>
+
+<blockquote>
+  <a href="#What_is_Open_Producer">What is Open Producer?</a><br>
+  <a href="#Sorting_Out_the_Terminology">Sorting Out the Terminology</a><br>
+  <blockquote>
+    <a href="#Camera">Camera</a><br>
+    <a href="#Lens">Lens</a><br>
+    <a href="#RenderSurface"><font face="Helvetica, Arial, sans-serif">RenderSurface</a><br>
+    <a href="#CameraGroup">CameraGroup</a><br>
+    <a href="#CameraConfig">CameraConfig</a><br>
+    <a href="#KeyboardMouse">KeyboardMouse</a><br>
+    <a href="#InputArea">InputArea</a><br>
+  </blockquote>
+  <a href="#Learning_by_Example">Learning By Example</a><br>
+  <blockquote>
+    <a href="#Camera_example">Camera</a><br>
+    <a href="#Render_Surface_example">RenderSurface</a><br>
+  </blockquote>
+</blockquote>
+
+<hr width="100%" size="2">
+
+<p>
+  This section will introduce the concepts and motivations behind Open
+  Producer and introduce the components at a high level. &nbsp;It explains
+  how to use  Open Producer in your 3D Graphics, OpenGL applications.
+  &nbsp;Open Producer  is built on OpenGL and depends upon it. &nbsp;If
+  you are familiar with OpenGL,  many of the concepts will be familiar.
+
+<h2><a name="What_is_Open_Producer"> </a>What is Open Producer?</h2>
+
+  When OpenGL was first designed, a decision was made to keep the focus of  the
+  library on&nbsp; 3D rendering. &nbsp;To support this decision, the Application
+  Programming Interface (API) was kept windowing system neutral.  &nbsp;That is 
+  to say, that no interface was designed within OpenGL for the creation and 
+  management of windowing system components such as windows, "widgets", or input 
+  events. &nbsp;The positive aspect of this decision was that the library focused 
+  on 3D rendering. &nbsp;The negative aspect was that the programmer was left to 
+  come up with his own set of programming libraries or routines  to create a 
+  window, a graphics context for OpenGL and manage windowing and user input 
+  events.  &nbsp;Consequently, many auxiliary libraries were written to facilitate
+  this task for the programmer. &nbsp;Probably the most popular for its 
+  portability and simplicity is GLUT, written by Mark Kilgard.<br>
+
+<p>
+  Windowing systems, by design, are user interfaces. &nbsp;The whole concept of a 
+  window, a cursor, user generated events by keyboard and mouse, and graphical  
+  representations of buttons and sliders, and various other types of "widgets",  
+  supports the notion that action begins upon user input. &nbsp;The application  
+  waits until the user has indicated some desired action, at which point it 
+  reacts and computes, but always returns to a resting state, once again waiting
+  for user input. 
+  
+<p>
+  Most toolkits provided to 3D graphics programmers are based upon the 
+  windowing system paradigm. &nbsp;The common structure is to create a window, 
+  a graphics  context, callbacks to handle user input and window configuration 
+  events, and, then, at some point, the programmer relinquishes control of the 
+  main loop to the toolkit. &nbsp;Among the callbacks specified is one that can 
+  render the 3D graphics. &nbsp;It may be called after some user input, or 
+  continuously if and when the main loop is idle, or based upon some timing 
+  event.
+
+<p>
+  Applications residing within this context may be referred to as being 
+  <i>interactive</i>.  &nbsp;The user expectation is that the application will 
+  respond in a timely manner to his input requests, and need not be active when
+  the user is not providing input.
+
+<p>
+  However, another classification exists for 3D graphics applications, which 
+  require reliably constant and continuous update rates. &nbsp;These 
+  applications strive to emulate the real visual world and must, therefore, 
+  update at solid  frame rates higher than the human eye can distinguish between 
+  discreet frames  and continuous motion. &nbsp;These applications can be 
+  referred to as <i>real-time</i> graphics applications. &nbsp;Examples of 
+  real-time applications are flight  (or any other motion) simulators, virutual 
+  reality, video games.
+
+<p>
+  The problem that Open Producer attempts to solve then, is the provision of 
+  methods for creating graphics rendering contexts for real-time applications. 
+  &nbsp;Toolkits that are built in the windowing system paradigm fall short of 
+  the needs of real-time graphics programmers, forcing them to write their own 
+  methods or causing them to attempt to live within the constraints of the 
+  graphical user interface paradigm.
+
+<p>
+  Open Producer borrows concepts from the movie industry, because the mechanics 
+  of achieving the goals of a real-time programmer and a movie producer are  
+  quite similar. &nbsp;They differ only in the abstract.  &nbsp;Open Producer  
+  builds upon the analogy of a camera, by providing the components of a camera,  
+  and the methods for manipulating a camera.
+
+<p>
+  A movie camera has a constant, solid frame rate. &nbsp;It has a rendering 
+  surface where the image from the real world, after having passed through the 
+  lens is captured or rendered, one frame at a time.  &nbsp;It provides the 
+  camera man with the ability to change the field of view. &nbsp;It provides  
+  configurability for different qualities of film or rendering surfaces. &nbsp;
+  A movie camera does not have a keyboard or a mouse.
+
+<p>
+   Open Producer takes the concept a bit further in the software abstract than 
+   the real camera can, however, providing methods for building assymetrical 
+   viewing frustums, orthographic projections and rendering to a projection 
+   rectangle within the rendering surface. &nbsp;Further, Open Producer provides 
+   the concept of a Camera Group to facilitate the synchronization of multiple 
+   cameras together. &nbsp;In the world of real-time 3D graphics this is 
+   sometimes referred to as "multi-pipe rendering". 
+
+<p>
+  It is important to note here that Open Producer is not implemented to the 
+  exclusion of interactive programs. &nbsp;On the contrary, it can reside within  
+  the constructs of graphical user interfaces. &nbsp;To this end, Open Producer  
+  has some user interface provisions such as a KeyboardMouse class. &nbsp;One  
+  desirable feature of KeyboardMouse is that it tracks user input seamlessly  
+  across multiple windows, known as an InputArea. &nbsp;It is also important  
+  to note that Open Producer is not designed to be a user interface. &nbsp;How  
+  this is reconciled will be covered in future sections.
+
+<h2><a name="Sorting_Out_the_Terminology"></a>Sorting Out the Terminology</h2>
+<img src="producer_camera.jpg" title="" alt="Producer::Camera diagram" style="width: 696px; height: 507px;">
+
+<div style="text-align: center;"><small style="font-weight: bold;">
+  Figure 1-Open Producer Camera diagram</small><br>
+</div>
+
+<p>
+  Figure 1 shows a diagram of the abstract Open Producer camera. &nbsp;To 
+  explain the components and how they relate to OpenGL, consider the process of 
+  rendering a 3D scene in OpenGL. &nbsp;The world is defined in three-dimensional 
+  cartesian coordinates. &nbsp;Objects are defined in model space and moved into 
+  the scene by transforming them through the modelview matrix. &nbsp;A complete 
+  scene is rendered and multiplied against a Projection Matrix, which projects 
+  the three dimensional world to a 2 dimensional screen. &nbsp;In the process, 
+  it can only render that which resides inside the viewing frustum, which is 
+  defined by the internal values of the Projection Matrix.
+
+<p>
+  The OpenProducer Camera's Lens generates the OpenGL Projection Matrix.  &nbsp;
+  The scene is projected to a projection rectangle on the Open Producer Camera's 
+  RenderSurface. &nbsp;The Camera itself can have the attributes position and  
+  attitude, which place it somewhere in the world. &nbsp;However, the Open 
+  Producer Camera does not have the ability to define the scene. &nbsp;It 
+  provides a Scene Handler, which the programmer can use to define the 3D scene.
+
+<p>
+  Let's review these terms and apply some more formalized definitions of them.
+
+<h3><a name="Camera"></a>Camera</h3>
+  A Camera is the object that captures a scene, one frame at a time at some  
+  fixed frame rate.  &nbsp;The camera has the immediate attributes position 
+  and attitude, which define its position in the 3 dimensional world and the 
+  attitude of the direction it is pointing. &nbsp;A Camera may also have an 
+  offset from its position and attitude, which may include a shear for 
+  assymetrcal viewing frustums. &nbsp;A Camera HAS a Lens, and a RenderSurface.
+
+<p>
+  For a complete description of the Camera interface click 
+  <a href="notyet.html">here</a>.
+
+<h3><a name="Lens"></a>Lens</h3> 
+
+  A Lens is the &nbsp;object that defines the projection parameters for 
+  projecting a 3 dimensional world to a 2 dimensional rectangle.  Internally it 
+  is a projection matrix, which may be set directly, or through some convenience 
+  methods. &nbsp;
+
+<h3><a name="RenderSurface"></a>RenderSurface</h3>
+  A RenderSurface is the object that defines the buffer where the scene will  
+  be rendered. &nbsp;At first glance it might seem appropriate to call a 
+  RenderSurface a synonym to a windowing system <i>Window</i>. &nbsp;However, 
+  a RenderSurface differs from a window by providing components that are of 
+  interest to the 3D graphics programmer, such as quality of pixel formats. 
+  &nbsp;It also handles configuration  events internally such that the 
+  programmer need not track or manage these  events in case the window is 
+  resized, moved, iconified, or changed externally.  &nbsp;The size of the 
+  RenderSurface may be queried at any time.
+
+<p>
+  For a complete description of Producer::RenderSurface interface click 
+  <a href="Doxygen/html/classProducer_1_1RenderSurface.html">here.</a>
+
+<h3><a name="CameraGroup"></a>CameraGroup</h3>
+
+  A Camera Group is, as the name implies, a group of Cameras that are 
+  synchronized  together such that they begin their frames at the same time and 
+  end redering  at the same time. &nbsp;Some of the methods CameraGroup provides 
+  are the same as the methods within Camera, but when called the method is 
+  applied across all Cameras in the Camera Group. &nbsp;Camera Group provides 
+  cohesion to multiple cameras that are intended to be synchronized views into 
+  a 3D world.
+
+<h3><a name="CameraConfig"></a>CameraConfig</h3>
+
+  A CameraConfig is a class describing a configuration for a CameraGroup. 
+  &nbsp;It may be explicitely configured through an API, or configured through 
+  a configuration file. &nbsp;The details of the configuration file are 
+  specified in a the documentation for CameraConfig.
+
+<h3><a name="KeyboardMouse"></a>KeyboardMouse</h3>
+
+  The KeyboardMouse class is an object that provides the programmer with a way 
+  to get Keyboard and Mouse events through a Callback class, rather than a 
+  callback method.  &nbsp;It can take keyboard and mouse events from a single 
+  window, or multiple windows known as an InputArea. &nbsp;<br>
+
+<h3><a name="InputArea"></a>InputArea</h3>
+  An InputArea is a configuration of InputRectangles which, when composited, 
+  describe an area of input for mouse and keyboard events. &nbsp;Key presses and 
+  releases will be delivered in the normal way. &nbsp;Mouse events will describe 
+  the position of the pointer in the coordinate space described in each or the 
+  list of InputRectangles&nbsp; of the InputArea.
+
+<h2><a name="Learning_by_Example"></a>Learning by Example</h2>
+
+  What follows is a tutorial, which teaches how to use Open Producer through 
+  source code examples.  &nbsp;It will be assumed that the reader has a good 
+  working knowledge of C++ and standard programming practices. &nbsp;Open 
+  Producer is intended to be easy to use, but can also be quite powerful. 
+  &nbsp;The tutorial will focus on the simple uses, then provide some examples 
+  for advanced use.
+
+<p>
+  The code examples are distributed with the Open Producer source, with 
+  cross-platform build environments. &nbsp;The reader is encouraged to compile, 
+  modify and recompile these examples for a hands-on training experience.
+
+<p>
+  It is best to take the examples in the order that they are given as often 
+  later examples will build upon lessons learned in the earlier examples.
+
+<h3><a name="Camera_example"></a>Camera</h3>
+  The RenderSurface example demonstrated the usage of Producer in its simplest 
+  form, providing the 3D application with a rendering surface. &nbsp;In that 
+  example, the programmer is expected to provide his own methods drawing as well 
+  as initializing and updating the OpenGL Projection Matrix and Modelview Matrix. 
+  &nbsp;In this example, we introduce the Producer Camera class, which is 
+  designed to abstract these matrices into a camera object.  &nbsp;The Producer 
+  Camera class, handles the setting up of the Projection matrix through a Lens 
+  interface, the positioning of the camera in 3D space through its setView() 
+  method, and frame by frame control by the frame() method.
+
+<p>
+  The Camera class' scope of responsibility ends with describing the scene it is 
+  capturing. &nbsp;As our real world model of a camera does not &nbsp;actually 
+  generate the light or the objects the light is illuminating, neither does the 
+  Producer Camera class have methods for drawing a scene. &nbsp;The application 
+  must therefore provide an implementation of a SceneHandler class derived from 
+  the pure virtual class Producer::Camera::SceneHandler. &nbsp;The Scene Handler 
+  is discussed in subsequent paragraphs.
+
+<p>
+  The Camera class has a set of defaults. &nbsp;The first example demonstrates 
+  the use of the Camera in its simplest form, but just using the defaults.
+
+<div style="background:#cccccc">
+<blockquote> 
+<listing>
+<font face="Courier" size="+1"> <b>
+//  C++ source file - Open Producer - Copyright (C) 2002 Don Burns
+//  Distributed under the terms of the GNU LIBRARY GENERAL PUBLIC LICENSE (LGPL)
+//  as published by the Free Software Foundation.
+     
+// Simple example of use of Producer::Camera
+// The MySceneHandler class is a simple sample of a Camera::SceneHandler
+     
+#include &lt;Producer/Camera&gt;
+#include "MySceneHandler"
+ 
+int main(int argc, char **argv)
+{
+    // Declare the camera
+    Producer::ref_ptr&lt;Producer::Camera&gt; camera = new Producer::Camera;
+ 
+    // Optional.  Configure the size of the camera's render
+    // surface.  Without these lines, the RenderSurface would
+    // fill the whole screen and have no border
+    Producer::ref_ptr&lt;Producer::RenderSurface&gt; rs = camera-&gt;getRenderSurface();
+    rs-&gt;setWindowRectangle( 100, 100, 640, 480 );
+    rs-&gt;setWindowName( "Producer Example using Camera" );
+ 
+    // Tell the camera about the Scene Handler.  See notes in MySceneHandler
+    camera-&gt;setSceneHandler( new MySceneHandler );
+ 
+    // Main loop.  Note that the while() statement comes after camera-&gt;frame()
+    // because the RenderSurface is not realized until the first call to camera-&gt;frame().
+    do {
+        camera-&gt;frame();
+    } while( rs-&gt;isRealized() );
+
+    return 0;
+}
+</b></font>
+</listing>
+</blockquote>
+</div>
+
+
+<div align="center">
+    <font face="Helvetica, Arial, sans-serif" size="-1">
+    <b>Code example 1 - Camera</b>
+</font>
+</div>
+
+<p>
+  The first thing to note is that the code snipet is a bit smaller than the 
+  RenderSurface example.  &nbsp;In fact, if the user's goal to use the entire 
+  screen and not set a window rectantle by accessing the Camera's RenderSurface, 
+  then the code in main() would only have four significant lines. &nbsp;The real 
+  item to focus &nbsp;on in this example is something called the SceneHandler. 
+  &nbsp;We'll go into detail as to what this is and how it works in the 
+  succeeding paragraphs, but first lets take a look at the first few lines of 
+  code.
+
+
+<div style="background:#cccccc">
+<blockquote> 
+<listing>
+<font face="Courier" size="+1"> <b>
+int main(int argc, char **argv)
+{
+    // Declare the camera
+    Producer::ref_ptr&lt;Producer::Camera&gt; camera = new Producer::Camera;
+
+</b></font>
+</listing>
+</blockquote>
+</div>
+
+<p>
+  Ok... you must be asking yourself at this moment, <i>"What is a 
+<div style="background:#cccccc">
+<font face="Courier" size="+1"> <b> </i>
+<listing>
+
+Producer::ref_ptr&lt;Producer::Camera&gt; camera 
+
+</listing>
+</b></font>
+</div>
+
+  <i>?!"</i>  &nbsp;Good question.  &nbsp;In a nutshell, Producer uses reference 
+  counted objects.  All classes within Producer derive from a class called 
+  <b>Producer::Referenced</b>.  This class has an internal reference count that
+  keeps track of other objects that may be using it.  The way to manage the 
+  internal reference count is by using the ref_ptr&lt;&gt; template class, which
+  automatically increments and decrements the reference count when it comes and 
+  goes from scope.  This provides a clean way to keep objects from being 
+  deleted that may still be in use, and it also provides a way to automatically 
+  clean up unused objects.  
+  
+  <p>
+  There is a good article that goes in depth on the use of reference pointers 
+  <a href="http://dburns.dhs.org/OSG/Articles/RefPointers/RefPointers.html">here</a>.  For
+  now, and in the interest of readability of the code, simply think of a 
+  ref_ptr&lt;&gt; as a normal pointer like this:
+
+<div style="background:#cccccc">
+<font face="Courier" size="+1"> <b> 
+<listing>
+
+    Producer::Camera *camera 
+
+</listing>
+</b></font>
+</div>
+
+<p>
+  But it is important to invest the time to understand how ref_ptr&lt;&gt;'s 
+  work.  All the examples in this tutorial will use ref_ptr&lt;&gt;s.
+
+<p>
+  When a Camera is declared, it already contains its default components and one 
+  of them is a RenderSurface. &nbsp;You may assign a RenderSurface to the camera 
+  (with <i>setRenderSurface()</i>) if &nbsp;you wish, but <i>getRenderSurface()</i> 
+  will return a pointer to the default RenderSurface. &nbsp;In the code here, 
+  the RenderSurface is not yet realized so all configuration methods may be 
+  called.  &nbsp;The RenderSurface gets automatically realized on the first call 
+  to <i>Camera::frame()</i>.  &nbsp;
+
+<p>
+  Note that Cameras may only have one RenderSurface. &nbsp;However, and contrary 
+  to our analogy, multiple Cameras may use one RenderSurface.  &nbsp;Each camera 
+  must define its ProjectionRectangle within the RenderSurface. &nbsp;For OpenGL 
+  programmers, this is similar to using multiple <i>glViewport</i>
+  <a href="OpenProducer_footnotes.html#glViewport"><sup><font size="-2">1</font></sup></a>()'s
+  in one Window.
+
+<p>
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote><font size="+1"><tt><br>
+        </tt><tt>camera.setSceneHandler( new MySceneHandler
+);&nbsp;&nbsp;&nbsp; <br>
+while( true )<br>
+        </tt>
+        <blockquote><font size="+1"><tt>camera.frame();</tt><br>
+        </blockquote>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The distribution has an
+implementation of a Camera::SceneHandler and is useful for a simple
+example. &nbsp;But lets look at what a SceneHandler is and how it
+functions. &nbsp;From the class definition file for Camera, Scene
+Handler is described as follows.<br>
+<br>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote><font size="+1"><tt><br>
+class SceneHandler {<br>
+        </tt>
+        <blockquote><font size="+1"><tt>public :</tt><br>
+        </blockquote>
+        <blockquote>
+          <blockquote><font size="+1"><tt>SceneHandler() {}</tt><br>
+            <font size="+1"><tt>virtual ~SceneHandler() {}</tt><br>
+            <font size="+1"><tt>virtual void frame( Camera &amp;) {}</tt><br>
+            <font size="+1"><tt>virtual void cull( Camera &amp;) {}</tt><br>
+            <font size="+1"><tt>virtual void draw( Camera &amp;) = 0;</tt><br>
+            <font size="+1"><tt>virtual bool useAutoView() { return
+true; }</tt><br>
+          </blockquote>
+        </blockquote>
+        <font size="+1"><tt>};</tt><br>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+It should first be noted that
+a Camera requires a SceneHandler to function properly. &nbsp;A
+SceneHandler is to a Producer::Camera as light is to a physical movie
+camera. &nbsp;In other words, the SceneHandler is what describes and
+renders the scene. &nbsp;The Camera is there to simply capture that
+scene. &nbsp;Camera's do not draw scenes, but rely on the programmer to
+provide the method for drawing a scene. &nbsp;This aspect makes Open
+Producer flexible to be used in many different rendering environments.
+&nbsp;The programmer may choose to simply write straight OpenGL code,
+use a game engine or use a Scene Graph such as Open Scene Graph to get
+the job done. &nbsp;If you call Camera::frame() and no SceneHandler has
+been specified, it will result in an error message.<br>
+<br>
+With this design in mind, you can see that the SceneHandler class is
+defined as a pure vitual class and the implementation of the draw()
+method is left to the user. &nbsp;In fact, the example program only
+defines the draw() method, and all other methods are left to the default
+methods. &nbsp;So, you must derive your own SceneHandler class and at
+least provide a draw() method.<br>
+<br>
+For the explanation of the SceneHandler methods it helps to understand
+what Camera::frame() does. &nbsp;The following roughly describes these
+steps in pseudo code.<br>
+<br>
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote><font size="+1"><tt><br>
+        </tt></blockquote>
+      <ul>
+        <li><font size="+1"><tt>if scenehandler-&gt;frame() returns
+true, return;</tt></li>
+        <li><font size="+1"><tt> call scenehandler-&gt;cull();</tt></li>
+        <li><font size="+1"><tt>make the RenderSurface's graphics
+context current</tt><br>
+        </li>
+        <li><font size="+1"><tt> If scenehandler-&gt;useAutoView()
+returns true, apply the lens, and apply the position and attitude matrix.</tt></li>
+        <li><font size="+1"><tt> call scenehandler-&gt;draw();</tt></li>
+        <li><font size="+1"><tt> swap the RenderSurface buffers unless
+it was specifically requested not to.</tt></li>
+      </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  If your defined SceneHandler chooses to override everything the Camera does 
+  in Camera::frame(), you may define frame() in your derived SceneHandler, 
+  returning true.  &nbsp;In your frame() method, you must clear the screen, 
+  set up the OpenGL PROJECTION matrix, the OpenGL MODELVIEW matrix, draw your 
+  scene and swap buffers. &nbsp;Note that a reference to Camera is passed to 
+  frame(), giving you access to its components, including the RenderSurface.
+
+<p>
+  But, it makes better sense to allow Camera to do its job in Camera::frame() 
+  and the SceneHandler to do its job in cull() and draw().  &nbsp;The cull() 
+  method provides the SceneHandler the opportunity to do rendering optimizations 
+  such as sorting by visibility, transparency and optimized rendering order. 
+  &nbsp;For large scenes, this step is important, but not trivial to implement. 
+  The use of a scene graph will greatly simplify this step. &nbsp;Typical scene 
+  graphs will have a cull stage, and use only the PROJECTION matrix as input. 
+  &nbsp;The PROJECTION matrix is available from the Camera::Lens reference 
+  passed to cull().
+
+<p>
+  If you implement the useAutoView() method in your derived SceneHandler and 
+  return false, then the setting up of the PROJECTION and initial MODELVIEW 
+  matricies will be left to the SceneHandler. &nbsp;If you simply use the 
+  default method, however, the Camera will do this for you by either default 
+  values, or values you have previously passed to the Camera class to set this 
+  up. See the next example for a more throrough handling of Camera values.
+
+<p>
+  In your derived SceneHandler draw() method, draw your scene. &nbsp;You may 
+  want to use draw lists created in your cull() method or some other method of 
+  handling the scene optimally. &nbsp;If your scene handler defined 
+  useAutoView() and returned false, then you must set up your PROJECTION and 
+  MODELVIEW matricies before rendering the scene, but if not, simply use draw() 
+  to focus on drawing the scene.
+
+<p>
+  By default, the Camera::frame() method will swap the RenderSurface buffers at 
+  the end of the frame. &nbsp;This may not be desirable if, for example, you 
+  have multiple cameras rendering to the same RenderSurface.  &nbsp;In this 
+  case you can override the default boolean value passed in Camera::frame() to 
+  false and buffers will not be swapped until you call Camera::advance(). &nbsp;
+  However, in this case it is probably better to use the CameraGroup() class, 
+  discussed in the next section.<br>
+
+<h3> CameraGroup</h3>
+
+  The Camera Group class is where the Producer takes a turn from being a simple 
+  package for providing 3D applications with a rendering surface, to providing a 
+  powerfull capability for managing multiple windows, displays, and clustered 
+  systems. &nbsp;A CameraGroup is, as the name implies, a group of Cameras that 
+  can be configured and controlled through a single interface. &nbsp;Cameras 
+  have components that can be shared.
+</body>
+</html>

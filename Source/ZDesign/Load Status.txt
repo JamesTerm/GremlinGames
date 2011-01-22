@@ -1,0 +1,27 @@
+/*!	\page  Load_Status_txt	Load Status
+
+We need a way to have the game provide some meaningful feedback to the user as the game is loading.  To start with,
+for the VIP Demo, this feedback will be displayed on the console, but we can eventually have a bar display on
+some kind of loading screen.
+
+We want to have an idea of the amount of time a particular LUA script takes to load.  The script can provide a
+sequence of predicted times for the various stages of loading (perhaps after each model or file is loaded).
+
+We should write out the times in a way that is easy to copy and paste back into the LUA scripts.
+
+- Create a static GG_Framework::UI::LoadStatus class with thread safe operations for a tick() that gets called from everywhere
+	
+- To start with, this interface JUST writes the times to a file that can easily be copy/pasted in place in a LUA script
+
+- Paste the times in a LUA Script
+
+- Be able to read the times from a LUA script (may not be there)
+
+- Transfer the times through the network (or some default saying they were not there)
+
+- The Load Status indicator uses this information to compare times and fire and event that has remaining time, etc.
+
+- The console windows listen to the event and printf a string to tthe console
+	
+
+*/

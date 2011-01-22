@@ -1,0 +1,53 @@
+/*!	\page  MapFramesEffect_txt	Map Frames Effect
+
+\section sec_Motivation		Motivation
+There are some events that have values tied to them, for instance a certain amount of thrust or braking. We want to allow the 
+designer to map a certain value range in an event to a specific range of frames in a LWS.  This type of effect will be valuable for 
+seeing thrusters and brakes fire in proportion to the amount of thrust or brake applied.  They would also be very valuable
+in generating the gauges for an attractive HUD.
+
+We will also need to allow the designer test this effect by having a keyboard binding that will fire off an event as long 
+as it is held down, and loop through some value range.
+
+
+
+\section sec_AccTest		Acceptance Test
+I used the "D:\GremlinGames\RimSpace\Art-001\Content-Source\Ships\Engines\Engine0001.osgv" file to test the effect:
+	# 2 Exclamation marks means this effect happens even in the Bounding Box Scene, Important for MapFramesEffect
+	# Use Loop For a MapFramesEffect.  The effect frame ALWAYS gets set when the value of the event changes.
+	# The parameters for MapFramesEffect are: minEventVal, maxEventVal, minFrame, maxFrame
+	# The linear interpolation is clamped at the ends of the ranges
+	! !Loop Test.Brake MapFramesEffect (0,100,20,28)
+	
+I also needed to allow the designer to apply a key to test the functionality:
+	# Here is a test keybinding that runs through event values in a loop as long as the key is held.
+	# It goes from min to max, holds the max a few seconds, then returns from max to min, holding min a few seconds
+	# If you let go of the key, the value will remain at its current time.
+	% Range q Test.Brake 0 100
+
+
+
+\section sec_DesignNotes	Design Notes
+When dealing with Actors, Actions, and Impulses, an Impulse represents an event that gets fired either in a moment or in a loop.
+Various Actions may be tied to that Impulse and fired in sequence.  These Actions represent frames in a LWS.  There is also a good
+bit of logic that allows us to transition smoothly between actions.
+
+My first inclination was to enhance the capabilities of the Actor, Impulse, Action paradigm.  Unfortunately, while this code has 
+been there a long time and has functioned well for us with very little modification, I found this kind of change hard to make
+because of all of the existing logic dealing with multiple Actions, Transitions, Looping, etc.
+
+Rather than try to shoe-horn this functionality there, I found another mechanism that will serve well, namely the Effect maechanism.
+Effects were written to be purely visual elements that do not effect the frame of a LWS.  They are far more simple 
+in how they handle events.
+
+I created the GG_Framework::UI::MapFramesEffect class that is an effect and performs this operation.  It listens for a specific value
+event and sets the current frame for an Actor.  For that to work, I had to add:
+Event1<double&>	Actor::DefaultTime;
+which gets fired whenever there is not another Action for the Actor in place.  That default value remains 0 if there is not a
+MapFramesEffect, but this event mechanism makes the Acot not know anything about MapFramesEffect.
+
+To make the test functionality the designer can use from OSGV, I added the inner class MapFramesEffect::TestKeyBinding.
+This class is responsible for listening to a keyboard event and firing the appropriate value event.
+A static instance of MapFramesEffect::TestKeyBinding::Container exists just to clean up all of the TestKeyBinding elements.
+
+*/

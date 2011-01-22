@@ -1,0 +1,30 @@
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\bin\Release\ClickOnce.exe.manifest
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\bin\Release\ClickOnce.application
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\bin\Release\ClickOnce.exe
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\bin\Release\ClickOnce.pdb
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\ResolveAssemblyReference.cache
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\MainWindow.baml
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\MainWindow.g.cs
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\App.g.cs
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\ClickOnce_MarkupCompile.cache
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\ClickOnce.g.resources
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\ClickOnce.exe.manifest
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\ClickOnce.application
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\ClickOnce.exe
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Release\ClickOnce.pdb
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\ClickOnce.exe
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\ClickOnce.pdb
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\bin\Release\ClickOnce.exe.manifest
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\bin\Release\ClickOnce.application
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\bin\Release\ClickOnce.exe
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\bin\Release\ClickOnce.pdb
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\ResolveAssemblyReference.cache
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\MainWindow.baml
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\MainWindow.g.cs
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\App.g.cs
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\ClickOnce_MarkupCompile.cache
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\ClickOnce.g.resources
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\ClickOnce.exe.manifest
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\obj\Release\ClickOnce.application
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\bin\Release\AxInterop.RimSpaceSingleAxLib.dll
+D:\GremlinGames\Source\JutinzSillyTests\ClickOnce\ClickOnce\ClickOnce\bin\Release\Interop.RimSpaceSingleAxLib.dll

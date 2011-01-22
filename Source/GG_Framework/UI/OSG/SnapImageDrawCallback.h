@@ -1,0 +1,2 @@
+// SnapImageDrawCallback.h
+#pragma once

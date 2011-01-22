@@ -1,0 +1,84 @@
+/*!	\page  Reading_LUA_Script_txt	Reading LUA Script
+The LUA Script will be describing some aspects of the game.  We need to be able to understand 
+how to do certain things from the LUA script, these things include:
+-	Starting the script and making sure it is valid
+-	Getting a Global Value by Name
+-	Calling a Script Function from C++ with parameters and getting a return value
+-	Calling a C++ Function from a LUA script with parameters and getting a return value
+-	Can I use a LUA Script on the Server to try to call a function on a specific Client?
+		- This might also involve using a RakNet RPC (Remote Procudure Call).
+-	Is it hard to pass an entire LUA Script as a string to a Client?
+
+This iteration might not add much actual new functionality, but is rather an explorative 
+iteration to allow us to understand how the LUA scripting works.  It probably will start 
+the actual reading of the provided LUA script and will have some examples to do the stuff 
+shown above.
+
+We can also make an example LUA Script, found in PrimaryUseCase.lua.
+
+Having a better idea about how some of the tools will help to work on a design that allows
+us to use a LUA Script to define a scene, which is the true end result of this iteration.
+
+It is easy to get carried away in making a fancy solution to trying to use the LUA script, 
+including fancy templates and what-not, or worrying about object-oriented-ness.  This LUA
+script will probably be a singleton that represents the Game Description, and we probably
+will not need anything too fancy.  We can get an understanding of LUA through these tasks 
+and then do the easiest thing that could possibly work.  We may need to refactor later, but
+lets see what we can get away with.
+
+\section sec_StartingScript Starting the script and making sure it is valid
+We already worked on some of this in the GG_Framework::Logic::Scripting::Script class.
+It has functions for reading the LUA script file and making sure it is valid.  Fringe.Server 
+main() and Fringe.Single main() try to read the LUA Script and exit main if it does not work.
+
+\section sec_Globals	Getting a Global Value by Name
+Added a Script function that allows you to get a global variable of any of the main LUA types,
+string, boolean, and number(double).  See GG_Framework::Logic::Scripting::Script::GetGlobal().
+We were able to put this into use by getting the maximum number of players in Fringe.Server 
+main().
+
+LUA also has the concept of Tables, which represent data types with more than one kind of 
+basic value and allow us to get a field by name in the value.  I implemented this with
+GG_Framework::Logic::Scripting::Script::GetGlobalTable(), which returns a helper class that allows you to
+access fields and field tables.
+
+\section sec_CallingLUA	Calling LUA Global Functions
+I copied a function from the user's guide that uses a pretty nice varg interface with '...'.
+It allows you to have multiple incoming parameters and results.  This is found in 
+GG_Framework::Logic::Scripting::Script::CallFunction().
+
+\section sec_CallingC	Calling C functions from LUA
+The only functions you can call back from LUA are global functions.  The class GG_Framework::Logic::Scripting::Register_C_Function
+can be used to set up a pointer to one of these functions and a name.  The macro REGISTER_C_SCRIPT_FUNC
+makes this easy.  They are kept in a vector until the script is loaded, then they are provided.
+
+As for calling specific functions across a network, we do not have object oriented code, per se,
+but when calling a C function, we can keep track of some other static variables or maps
+or whatever for calling functions across a network.  We will look into RakNet RPC when we get there.
+
+\section sec_PassingScripts	Passing a Script to a Client
+It should be pretty easy to pass a string through to a client, and open that buffer as a script.
+Right now, all of the Scripting functionality is part of the GG_Framework::Logic::Scripting
+namespace, so I would not really want it a part of OSGV.  I might be slightly concerned about
+security, on the other hand, there are some nice things we can do without needing to make
+round-trips to the server if we let the client work with a full script file.
+I made it so the Script class can take a filename or a buffer.
+
+\section sec_OtherLUA_Help Other LUA Help
+The LUA manual is included as an additional Solution item in the GG_Main.sln file.
+There is also a FANTASTIC document online called 
+<A HREF="http://www.lua.org/pil/">Programming in LUA</A> that includes fantastic references
+on how to work with LUA and work with LUA from within our C++ code.  All of the examples
+I used to write the existing Script and Register_C_Function classes came from there.
+It is slightly outdated, and we might buy the newer version.  The section on the C API includes some
+other things that might prove useful:
+- Array Manipulation
+- String (and large buffer) Manipulation
+- Storing LUA State in C Functions
+	- Registry
+	- References
+	- Upvalues (Closures)
+- UserDatum, full and light (pointers)
+- Object Oriented Programming
+- destructors
+*/

@@ -1,0 +1,18 @@
+/*!	\page ContentDirectory_txt ActorActions: Fixed Content Directory - Bug
+
+When working with LWO & LWS files, all external references are relative to the
+Content Directory.  In revs 37&38 (4/16), Rick made the LWO amd LWS readers look up the directory 
+chain in order to find the ContentDirectory.  He also changed the way the parent directory
+was found when setting the CWD.  This seemed to cause a crash when reading TestShot.osgv.
+
+James had provided somewhat of a band-aid patch in rev. 48 that essentially skipped this code,
+but this fix handles it at a lower level. 
+
+@section Test Regression Test
+HighLevelRegression_Tester.LoadTestShot1 just loads the testShot.osgv file and crashes.
+
+@section Analysis
+The CWD_Wrapper c'tor sets the CWD with osgDB::getFilePath().c_str(), but that yields a garbage
+value.  Storing the std::string in a local variable fixes it.
+
+*/

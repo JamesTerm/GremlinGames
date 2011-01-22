@@ -1,0 +1,69 @@
+/* -*-c++-*- Producer - Copyright (C) 2001-2004  Don Burns
+ *
+ * This library is open source and may be redistributed and/or modified under
+ * the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or
+ * (at your option) any later version.  The full license is in LICENSE file
+ * included with this distribution, and on the openscenegraph.org website.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * OpenSceneGraph Public License for more details.
+ */
+
+#ifndef PRODUCER_BLOCK
+#define PRODUCER_BLOCK
+
+#include <Producer/Export>
+#include <Producer/Referenced>
+
+#include <OpenThreads/Mutex>
+#include <OpenThreads/Condition>
+#include <OpenThreads/ScopedLock>
+
+namespace Producer {
+
+class PR_EXPORT Block: public Referenced {
+    public:
+        Block():_released(false) {}
+
+        void block()
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> mutlock(_mut);
+            if( !_released )
+                _cond.wait(&_mut);
+        }
+
+        void release()
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> mutlock(_mut);
+            if (!_released)
+            {
+                _released = true;
+                _cond.broadcast();
+            }
+        }
+
+        void reset()
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> mutlock(_mut);
+            _released = false;
+        }
+
+
+    protected:
+
+        ~Block()
+        {
+            release();
+        }
+
+    private:
+        OpenThreads::Mutex _mut;
+        OpenThreads::Condition _cond;
+        bool _released;
+};
+
+}
+
+#endif

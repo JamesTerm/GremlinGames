@@ -1,0 +1,18 @@
+Bathroom Light Fixture   by: Russ Painter  1996
+
+This is a model that I created in Lightwave 4.0 of the light fixture in
+my bathroom.
+
+It is in 2 parts so that the bulbs can have different shadow attributes
+than the chrome base.
+
+In a detailed scene I would eliminate the CHROME.IFF relection map.
+I think that point lights can be placed inside the bulbs and they will
+shine through, this would only be necessary for accurate shadows in a 
+detailed scene.
+
+
+Statistics:
+points		720
+polygons	1414
+materials	2

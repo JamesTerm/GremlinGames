@@ -1,0 +1,31 @@
+/*!	\page  Threaded_Game_Content_Loading_txt	Threaded Game Content Loading
+
+Fringe.Single and Fringe.Client will run a logo scene in a separate thread while the game 
+content is loading.  This iteration just makes sure that we can load all of the content on 
+a separate thread and then switch scenes in the Viewer after it is all done.
+
+-	Have the Server (OnConnection) send a couple of strings to load and then the client 
+	passes a message saying that it is completed, The client accepts the strings and loads 
+	them OSGV style. Switch the viewer scene and make it full scene after the thread is complete.
+- Be able to connect a couple of different Clients to the same server
+- Make this also work in Single
+- Read the Ornamental Items from the LUA Script 
+
+I added the class GG_Framework::Logic::ThreadedClientGameLoader which runs on a seperate
+thread and loads all of the files.  
+
+I added some classes that encapsulate all of the stuff needed to run a scene effectively.
+They are a little rough, and I think they will eveolve to be more Fringe specific so I put them
+in Fringe::Base as the class ISceneRunner and its super-classes, SceneRunner and LogoSceneRunner.
+As we get more detail in and find it is pretty generic, we might might move it down to 
+GG_Framework::Logic.
+
+I had to make a GG_Framework::UI::OSG::ICameraMatrixUpdater that has the Events and ability to grab
+the matrix from the Camera.  ICamera now inherits from it, and this is what is passed through
+the ActorScene to all of the nodes that are interested in the camera position, as well as the 
+AudioCamera binder.  I made another class, GG_Framework::UI::OSG::CameraProxy that also inherits
+from this class and forwards the event from another ICameraMatrixUpdater.  That way we can have
+one of these connected everywhere, not yet connected to the actual Camera while the Camera is 
+looking at another ActorScene.  
+
+*/

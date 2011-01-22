@@ -1,0 +1,989 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" media="screen" href="/~d/styles/rss2full.xsl"?><?xml-stylesheet type="text/css" media="screen" href="http://feeds.arstechnica.com/~d/styles/itemcontent.css"?><rss xmlns:media="http://search.yahoo.com/mrss/" xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0" version="2.0">
+    <channel>
+        <title>Ars Technica</title>
+        <link>http://arstechnica.com/index.php</link>
+        <description>The Art of Technology</description>
+        <language>en</language>
+        <lastBuildDate>Mon, 27 Sep 2010 21:16:05 +0000</lastBuildDate>
+        <generator>http://www.sixapart.com/movabletype/</generator>
+        <docs>http://www.rssboard.org/rss-specification</docs>
+        <copyright>Copyright 2010 Conde Nast Digital. The contents of this feed are available for non-commercial use only.</copyright>
+        <atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="http://feeds.arstechnica.com/arstechnica/everything" /><feedburner:info uri="arstechnica/everything" /><atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="hub" href="http://pubsubhubbub.appspot.com/" /><item>
+      <title>The Internet knows what movie you want to see</title>
+   
+   <author>casey.johnston@arstechnica.com (Casey Johnston)</author>
+  
+    <description>&lt;a href="http://arstechnica.com/science/news/2010/09/internet-search-numbers-fair-predictors-of-consumer-behavior.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/brief_icons/science-brief.png" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Internet search queries can be decent predictors of consumer behavior, according to a study published in &lt;em&gt;PNAS&lt;/em&gt; this week. A group of researchers at Yahoo collected data on Web searches and contrasted them with other similar predictors, like reviews and production budgets, as predictors of trends. They found that, while Web searches were usually not as accurate as more traditional data, incorporating them into measures that used traditional data helped predictions be more successful overall.&lt;/p&gt;
+&lt;p&gt;
+Past studies have shown that the number of Internet searches on things like unemployment and &lt;a href="http://arstechnica.com/old/content/2008/11/google-meets-the-cdc-flu-tracking-by-search-trends.ars"&gt;flu symptoms&lt;/a&gt; often turn out to reflect statistics in real time. To take this a step further, Yahoo researchers tried to see if searches could also be used to peer into the future of certain kinds of media, like video games and movies to see what will be popular.
+&lt;/p&gt;
+&lt;p&gt;
+They collected data on dozens of games, movies, and songs, and obtained the number of Web searches of each item. They compared how well this did as a predictor for success to other, more staid predictors, like high review ratings or large production budgets. They also compared the number of search queries for colds and flu as real-time indicators of infection, and compared those to predictions of the spread of flu based on one- and two-week old data from the Center for Disease Control and Prevention.
+&lt;/p&gt;
+&lt;p&gt;
+In many cases, the number of searches for an item were a decent predictor of success. The search data was occasionally even better than other typical indicators at guessing how well something would perform, including non-sequel video games. Still, searches were regularly outperformed by more traditional formulas.
+&lt;/p&gt;
+&lt;p&gt;
+While the Web search data rarely stood alone as a superior measure of success, the authors found it worked best in tandem with other typical measures&amp;#8212;using the two together gave the most accurate predictions. Search data is also more accessible than some other options&amp;#8212;video game production budgets, for example. While it can be hit-or-miss for some applications, it can still be better than nothing at all.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;em&gt;PNAS&lt;/em&gt;, 2010.  DOI: &lt;a href="http://dx.doi.org/10.1073/pnas.1005962107"&gt;10.1073/pnas.1005962107&lt;/a&gt; &amp;nbsp;(&lt;a href="http://arstechnica.com/science/news/2010/03/dois-and-their-discontents-1.ars"&gt;About DOIs&lt;/a&gt;).
+&lt;/p&gt;    
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/internet-search-numbers-fair-predictors-of-consumer-behavior.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/HtwjrIgu313F0A2KknetKIRGBBM/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/HtwjrIgu313F0A2KknetKIRGBBM/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/HtwjrIgu313F0A2KknetKIRGBBM/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/HtwjrIgu313F0A2KknetKIRGBBM/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/og_qNEdMpwg" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/og_qNEdMpwg/internet-search-numbers-fair-predictors-of-consumer-behavior.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/science/news/2010/09/internet-search-numbers-fair-predictors-of-consumer-behavior.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Science</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Web</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">cdc</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">flu</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">internet</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">query</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">realtime</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">search</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">searchengine</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">success</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">yahoo</category>
+    <pubDate>Mon, 27 Sep 2010 15:55:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/science/news/2010/09/internet-search-numbers-fair-predictors-of-consumer-behavior.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Windows Phone 7 draws ever closer with ads, launch dates</title>
+   
+   <author>peter.bright@arstechnica.com (Peter Bright)</author>
+  
+    <description>&lt;a href="http://arstechnica.com/microsoft/news/2010/09/windows-phone-7-draws-ever-closer-with-ads-launch-dates.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/brief_icons/microsoft-brief.png" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;We already know that Windows Phone 7 would be launched in &lt;a href="http://arstechnica.com/microsoft/news/2010/08/it-has-been-noticed-that.ars"&gt;October in the EU, November in the US&lt;/a&gt;, but even as September draws to a close, we still don't know exactly when the new smartphone platform is launching.&lt;/p&gt;
+
+&lt;p&gt;We still don't know for sure, but there are now a few candidates. Paul Thurrott is reporting that the US launch will be &lt;a href="http://windowsphonesecrets.com/2010/09/26/windows-phone-us-launch-is-november-8/"&gt;November 8&lt;/a&gt;. More difficult to place is the EU launch. Microsoft is having simultaneous press events in New York City and London on October 11. &lt;a href="http://www.neowin.net/news/microsoft-announces-a-press-conference-for-october-11"&gt;Some&lt;/a&gt; &lt;a href="http://www.engadget.com/2010/09/27/microsoft-hosting-press-conference-on-october-11-well-be-there/"&gt;think&lt;/a&gt; that this will be a Windows Phone 7 event; Paul Thurrott, however, is insistent that it isn't.&lt;/p&gt;
+
+&lt;p&gt;Regardless of the nature of the October 11 event, retail availability within the EU is believed to be coming on &lt;a href="http://www.neowin.net/news/exclusive-microsoft-set-to-launch-windows-phone-7-devices-on-october-21"&gt;October 21&lt;/a&gt;. One likely possibility is that the earlier event will be when the marketing campaign is kicked off, with devices available for purchase ten days later.&lt;/p&gt;
+
+&lt;p&gt;Speaking of marketing, a couple of Windows Phone 7 ads have &lt;a href="http://wmpoweruser.com/new-windows-phone-ads-released-featuring-htc-mondrian/"&gt;appeared&lt;/a&gt;. The ads are both AT&amp;amp;T branded (which isn't surprising, as the platform &lt;a href="http://arstechnica.com/microsoft/news/2010/09/windows-phone-7-sdk-here-youtube-netflix-demoed-no-cdma-yet.ars"&gt;won't support CDMA&lt;/a&gt; until next year), and both mention the (as-yet unannounced, but long-rumored) HTC Mondrian.&lt;/p&gt;
+
+&lt;div style="width: 640px; margin: 0 auto;"&gt;&lt;div class="news-item-figure-image"&gt;&lt;a href="http://www.youtube.com/watch?v=dFAUTy4wizU" video-href="http://www.youtube.com/v/dFAUTy4wizU&amp;amp;hl=en_US&amp;amp;fs=1?rel=0&amp;amp;color1=0x5d1719&amp;amp;color2=0xcd311b" class="youtube"&gt;&lt;img src="http://static.arstechnica.com/public/shared/images/ars-video-placeholder.jpg" alt="A video!" /&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;However, the focus isn't the phone, or even the operating system as such. Rather, the ads draw attention to the relationship people have with their phones: it pokes fun at the people who are always fixated on their phones, tap-tap-tapping away, doing something or other while standing in line, eating their lunch, and so on. According to the ads, Windows Phone 7, with its more glance-friendly interface, shows you what you need to know right away, so that you can get on with living your life: a "phone to save you from your phone."&lt;/p&gt;
+
+&lt;div style="width: 480px; margin: 0 auto;"&gt;&lt;div class="news-item-figure-image"&gt;&lt;a href="http://www.youtube.com/watch?v=HvV6_t3crlk" video-href="http://www.youtube.com/v/HvV6_t3crlk&amp;amp;hl=en_US&amp;amp;fs=1?rel=0&amp;amp;color1=0x5d1719&amp;amp;color2=0xcd311b" class="youtube"&gt;&lt;img src="http://static.arstechnica.com/public/shared/images/ars-video-placeholder.jpg" alt="A video!" /&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;There's certainly an element of truth to the ads, though whether Microsoft-powered phones will truly provide a solution is not obvious&amp;#8212;if there are good applications for the platform, which the company is certainly &lt;a href="http://arstechnica.com/microsoft/news/2010/08/microsofts-windows-phone-7-gamble-developers-developers-developers-developers.ars"&gt;counting on&lt;/a&gt;, then people are surely going to be just as glued to their Windows Phone 7 handsets as they will their iPhones or Androids.&lt;/p&gt;    
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/microsoft/news/2010/09/windows-phone-7-draws-ever-closer-with-ads-launch-dates.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/yqTqEInJGIPFuMUT_679gAAR8V8/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/yqTqEInJGIPFuMUT_679gAAR8V8/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/yqTqEInJGIPFuMUT_679gAAR8V8/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/yqTqEInJGIPFuMUT_679gAAR8V8/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/yPIRBvKXBXE" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/yPIRBvKXBXE/windows-phone-7-draws-ever-closer-with-ads-launch-dates.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/microsoft/news/2010/09/windows-phone-7-draws-ever-closer-with-ads-launch-dates.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Gadgets</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Microsoft</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">windowsphone7</category>
+    <pubDate>Mon, 27 Sep 2010 15:27:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/microsoft/news/2010/09/windows-phone-7-draws-ever-closer-with-ads-launch-dates.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Does the DMCA require Internet disconnections?</title>
+   
+   <author>nate@arstechnica.com (Nate Anderson)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2009/09/ethernet_scissors_ars-thumb-300x169-8838-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/does-the-dmca-require-internet-disconnections.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2009/09/ethernet_scissors_ars-thumb-230x130-8838-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Torrentfreak &lt;a href="http://torrentfreak.com/us-isp-disconnects-alleged-pirates-for-6-months-100924/"&gt;ran an article last week&lt;/a&gt; about a small US Internet provider called Suddenlink, which apparently disconnects its users for six months after receiving three copyright infringement allegations. When a customer was disconnected and asked the reason, he was told that the Digital Millennium Copyright Act (DMCA) requires it. But does it?&lt;/p&gt;
+
+&lt;p&gt;"The explanation given above is pure nonsense of course," said Torrentfreak. "The DMCA does not and never has required ISPs to disconnect users. For some reason Suddenlink customer support was told to communicate this lie to its users."&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/does-the-dmca-require-internet-disconnections.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/does-the-dmca-require-internet-disconnections.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/_tG27izn73U9OfN2tT4dcU1G47I/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/_tG27izn73U9OfN2tT4dcU1G47I/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/_tG27izn73U9OfN2tT4dcU1G47I/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/_tG27izn73U9OfN2tT4dcU1G47I/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/bzxXGfRnJv8" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/bzxXGfRnJv8/does-the-dmca-require-internet-disconnections.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/tech-policy/news/2010/09/does-the-dmca-require-internet-disconnections.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">dmca</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">suddenlink</category>
+    <pubDate>Mon, 27 Sep 2010 15:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/tech-policy/news/2010/09/does-the-dmca-require-internet-disconnections.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Lost in Shadow on the Wii looks like Ico, plays like Echochrome II</title>
+   
+   <author>bkuchera@arstechnica.com (Ben Kuchera)</author>
+  
+    <description>&lt;a href="http://arstechnica.com/gaming/news/2010/09/lost-in-shadow-on-the-wii-looks-like-ico-plays-like-echochrome-ii.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/brief_icons/gaming-brief.png" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;It becomes clear just how anachronistic the Wii's online service remains when you're sent a game's demo... in the mail. On a disc. Apparently that still happens. I was pleasantly surprised to find a demo for Hudson's &lt;em&gt;Lost in Shadow&lt;/em&gt; on my doorstep a few days ago&amp;#8212;codes and digital downloads are more common&amp;#8212;and dug right in.&lt;/p&gt;
+
+&lt;p&gt;In the game you are a shadow, split from your physical body, and you must adventure up the many levels of a grand tower in order to reunite with your corporeal form. This is a platformer with some elements of a puzzler; you interact with the "real" objects' shadows in order to find a number of items in each level, unlocking the shadowy barrier that keeps you from moving forward.&lt;/p&gt;
+
+    &lt;div style="width: 640px;"&gt;&lt;div class="news-item-figure-image"&gt;&lt;a href="http://www.youtube.com/watch?v=GCXGnFdG5xY&amp;feature=related" video-href="http://www.youtube.com/v/GCXGnFdG5xY&amp;amp;hl=en_US&amp;amp;fs=1?rel=0&amp;amp;color1=0x5d1719&amp;amp;color2=0xcd311b" class="youtube"&gt;&lt;img src="http://static.arstechnica.com/public/shared/images/ars-video-placeholder.jpg" alt="A video!" /&gt;&lt;/a&gt;&lt;/div&gt;&lt;div class="news-item-figure-caption"&gt;&lt;div class="news-item-figure-caption-text"&gt;&lt;em&gt;
+      Lost in Shadow
+    &lt;/em&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It's tricky to get used to looking &lt;em&gt;past&lt;/em&gt; the objects in the foreground to the shadows behind them, but this leads to some interesting mechanics.&amp;nbsp;Using the remote as a pointer, you can grab certain parts of the architecture, moving it this way and that to clear the way forward, and you'll be able to adjust the placement of certain light sources to change the shape of the shadows. You gain "weight" by reading hints in the levels, and this acts as your health, although there is no real penalty for dying. The challenge comes from maneuvering your way through the environment, not from the threat of enemies or death.&lt;/p&gt;
+
+&lt;p&gt;The problem is that even in the demo I felt like there were only a few ways to solve each puzzle. Move the cursor around the screen to see if there is anything you can move? Adjust a light source to change the shape of the shadows? Find the mechanism that allows you to spin the entire level? It began to feel rather procedural, and after playing &lt;em&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/07/echochrome-2-uses-playstation-move-to-play-with-shadows.ars"&gt;Echochrome II&lt;/a&gt;&lt;/em&gt;&amp;nbsp;with the PlayStation Move I feel like that game nailed the shadow mechanic much better.&lt;/p&gt;
+
+&lt;p&gt;The game's aesthetics seem inspired by &lt;em&gt;Ico&lt;/em&gt;, and that's a good thing. After playing the demo, I'm left with mixed feelings, but the full game may improve as the puzzles progress. &lt;em&gt;Lost in Shadow&lt;/em&gt; is coming to the Nintendo Wii on January 4, 2011.&lt;/p&gt;    
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/lost-in-shadow-on-the-wii-looks-like-ico-plays-like-echochrome-ii.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/zogCf6sOb2gZxsM4oHAAcBnXo80/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/zogCf6sOb2gZxsM4oHAAcBnXo80/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/zogCf6sOb2gZxsM4oHAAcBnXo80/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/zogCf6sOb2gZxsM4oHAAcBnXo80/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/KpctMgHzKfo" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/KpctMgHzKfo/lost-in-shadow-on-the-wii-looks-like-ico-plays-like-echochrome-ii.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/gaming/news/2010/09/lost-in-shadow-on-the-wii-looks-like-ico-plays-like-echochrome-ii.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Gaming</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">hudson</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">lostinshadow</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">nintendowii</category>
+    <pubDate>Mon, 27 Sep 2010 14:20:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/gaming/news/2010/09/lost-in-shadow-on-the-wii-looks-like-ico-plays-like-echochrome-ii.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Iranian power plant infected by Stuxnet, allegedly undamaged</title>
+   
+   <author>segphault@arstechnica.com (Ryan Paul)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/control_panel_ars-thumb-300x169-16780-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/security/news/2010/09/iranian-power-plant-infected-by-stuxnet-allegedly-undamaged.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/control_panel_ars-thumb-230x130-16780-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;We &lt;a href="http://arstechnica.com/security/news/2010/09/stuxnet-worm-attacks-industrial-targets-could-be-aimed-at-iran.ars"&gt;reported&lt;/a&gt; last week about a malware threat known as Stuxnet that is designed to compromise industrial equipment. Due to the highly targeted nature of the Stuxnet worm and a large concentration of infections in Iran, analysts speculated that it may have been launched by a major government in an effort to sabotage Iran's controversial Bushehr power plant.&lt;/p&gt;
+
+&lt;p&gt;The Iranian government confirmed this week that computers at Bushehr were infected by the worm, but representatives claim that the infection was isolated to a handful of noncritical systems and hasn't disrupted the plant, which is in the final stages of construction and is expected to become operational in October.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/security/news/2010/09/iranian-power-plant-infected-by-stuxnet-allegedly-undamaged.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/security/news/2010/09/iranian-power-plant-infected-by-stuxnet-allegedly-undamaged.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/XL1dAeE9UN7R30uxVRWFOi_WQQM/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/XL1dAeE9UN7R30uxVRWFOi_WQQM/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/XL1dAeE9UN7R30uxVRWFOi_WQQM/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/XL1dAeE9UN7R30uxVRWFOi_WQQM/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/Yf2oSco8Gjc" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/Yf2oSco8Gjc/iranian-power-plant-infected-by-stuxnet-allegedly-undamaged.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/security/news/2010/09/iranian-power-plant-infected-by-stuxnet-allegedly-undamaged.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Security</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">iran</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">malware</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">stuxnet</category>
+    <pubDate>Mon, 27 Sep 2010 13:52:42 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/security/news/2010/09/iranian-power-plant-infected-by-stuxnet-allegedly-undamaged.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Peer-to-peer tech now powers Wikipedia's videos</title>
+   
+   <author>nate@arstechnica.com (Nate Anderson)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2009/09/wikipedia_globe_logo_ars-thumb-300x169-8131-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/wikipedia-now-distributes-its-videos-using-p2p.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2009/09/wikipedia_globe_logo_ars-thumb-230x130-8131-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Wikipedia today officially adopted peer-to-peer networking to help power the video displayed on its site. Why? Cost.&lt;/p&gt;
+
+&lt;p&gt;"One potential problem with increased video usage on the Wikimedia sites is that video is many times more costly to distribute than text and images that make up Wikipedia articles today," said today's &lt;a href="http://techblog.wikimedia.org/2010/09/video-labs-p2p-next-community-cdn-for-video-distribution/"&gt;announcement&lt;/a&gt;. "Eventually bandwidth costs could saturate the foundation budget or leave less resources for other projects and programs."&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/wikipedia-now-distributes-its-videos-using-p2p.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/wikipedia-now-distributes-its-videos-using-p2p.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/1RLHsFk9VtessRcJrJ-a8hRsFXI/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/1RLHsFk9VtessRcJrJ-a8hRsFXI/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/1RLHsFk9VtessRcJrJ-a8hRsFXI/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/1RLHsFk9VtessRcJrJ-a8hRsFXI/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/o9VBflmNPTw" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/o9VBflmNPTw/wikipedia-now-distributes-its-videos-using-p2p.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/tech-policy/news/2010/09/wikipedia-now-distributes-its-videos-using-p2p.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">p2p</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">p2pnext</category>
+    <pubDate>Mon, 27 Sep 2010 13:45:04 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/tech-policy/news/2010/09/wikipedia-now-distributes-its-videos-using-p2p.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Porn studios borrowing from RIAA playbook with P2P lawsuits</title>
+   
+   <author>jacqui@arstechnica.com (Jacqui Cheng)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/pr0n-attack-dog-ss-thumb-300x169-16769-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/porn-studios-borrowing-from-riaa-playbook-with-p2p-lawsuits.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/pr0n-attack-dog-ss-thumb-230x130-16769-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;The porn industry, &lt;a href="http://arstechnica.com/old/content/2007/06/porn-2-0-is-stiff-competition-for-pro-pronographers.ars"&gt;long plagued by piracy&lt;/a&gt;, has apparently had enough and is beginning to band together to target infringers. Like a move straight out of the RIAA playbook, some companies are beginning to file lawsuits &lt;em&gt;en masse&lt;/em&gt; against anonymous P2P users, and have also begun to formulate ways to target sites like YouPorn and PornTube, where users often upload copyrighted clips of their favorite porn movies.&lt;/p&gt;
+
+&lt;p&gt;The industry has known for years that studios are on what appears to be the losing side of a fight against pirates. Historically, though, &lt;a href="http://arstechnica.com/tech-policy/news/2007/09/porn-industry-hard-up-for-solutions-to-piracy-problem.ars"&gt;they have been split&lt;/a&gt; on whether to put their efforts towards stronger DRM or offering content at such an attractive price (and format) that users won't be tempted to pirate. Now, it looks like they're beginning to involve the legal system, though such a strategy won't do much to help attract customers and motivate fans to pay up. &lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/porn-studios-borrowing-from-riaa-playbook-with-p2p-lawsuits.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/porn-studios-borrowing-from-riaa-playbook-with-p2p-lawsuits.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/jGxnBDxXxVfyhHh32LcHVLS6Cl4/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/jGxnBDxXxVfyhHh32LcHVLS6Cl4/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/jGxnBDxXxVfyhHh32LcHVLS6Cl4/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/jGxnBDxXxVfyhHh32LcHVLS6Cl4/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/pg9wLDVB6dw" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/pg9wLDVB6dw/porn-studios-borrowing-from-riaa-playbook-with-p2p-lawsuits.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/tech-policy/news/2010/09/porn-studios-borrowing-from-riaa-playbook-with-p2p-lawsuits.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Web</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">copyright</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">internet</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">lawsuit</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">piracy</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">porn</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">pornography</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">porntube</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">youporn</category>
+    <pubDate>Mon, 27 Sep 2010 12:35:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/tech-policy/news/2010/09/porn-studios-borrowing-from-riaa-playbook-with-p2p-lawsuits.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Electronics zap DNA into pores to read its sequence</title>
+   
+   <author>jtimmer@arstechnica.com (John Timmer)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2009/05/ArtificialDNA-thumb-300x169-5646-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/science/news/2010/09/merging-biology-and-electronics-to-read-dna-with-volts.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2009/05/ArtificialDNA-thumb-230x130-5646-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;The second generation of DNA sequencing machines have now taken over the market, and their high throughput is producing new genomes at a staggering clip.  But the third generation of machines are already in the development pipeline, with features like longer DNA reads, faster speeds, and single-molecule precision.  Over the weekend, &lt;em&gt;Nature Nanotechnology&lt;/em&gt; published a paper on one of the promising technologies that's currently in the works:  nanopore sequencing.  It reports some preliminary success in developing a computerized nanopore system that controls when DNA bases are added, and reads them one-by-one in the process.&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;
+The term "nanopore" would seem to imply a bit of carefully structured metal; it's anything but. The pore in question is simply a protein that embeds in a membrane and creates a tiny passage through it, just big enough to fit a single strand of DNA.  Since DNA carries a negative charge, applying a voltage across the membrane can drive a single strand of DNA through the pore (the double helix won't fit); as it travels through, small voltage changes result that can be used to "read" the sequence.  The problem is that the molecules tend to fly through too fast for a clear signal to be picked up, so various tricks are being considered in order to slow things down, like chewing up a DNA molecule one base at a time.  
+&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/merging-biology-and-electronics-to-read-dna-with-volts.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/merging-biology-and-electronics-to-read-dna-with-volts.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/cg7U-BZQvbpjIgwQAEJpWBuH6Ic/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/cg7U-BZQvbpjIgwQAEJpWBuH6Ic/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/cg7U-BZQvbpjIgwQAEJpWBuH6Ic/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/cg7U-BZQvbpjIgwQAEJpWBuH6Ic/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/pjPG1JNiUXg" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/pjPG1JNiUXg/merging-biology-and-electronics-to-read-dna-with-volts.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/science/news/2010/09/merging-biology-and-electronics-to-read-dna-with-volts.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Science</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">biochemistry</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">biology</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">dna</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">dnasequencing</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">genomics</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">nanopore</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">nanotechnology</category>
+    <pubDate>Mon, 27 Sep 2010 10:53:14 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/science/news/2010/09/merging-biology-and-electronics-to-read-dna-with-volts.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Bobby Kotick, a tool? Activision CEO answers criticism</title>
+   
+   <author>bkuchera@arstechnica.com (Ben Kuchera)</author>
+  
+    <description>&lt;a href="http://arstechnica.com/gaming/news/2010/09/kotick-a-tool-activision-bobby-kotick-a-tool-activision-ceo-answers-criticismceo-answers-criticism.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/brief_icons/gaming-brief.png" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Tim Schafer, the legendary designer of &lt;em&gt;Monkey Island &lt;/em&gt;and &lt;em&gt;Brütal Legend&lt;/em&gt;, does not seem to be a fan of Bobby Kotick's management style, and he let the world know during a July interview. "His obligation is to his shareholders," &lt;a href="http://www.eurogamer.net/articles/double-fines-tim-schafer-develop-interview"&gt;Schafer told Eurogamer&lt;/a&gt;. "Well, he doesn't have to be as much of a dick about it, does he?" Now, Activision CEO Bobby Kotick answers that insult with... logic?&lt;/p&gt;
+
+&lt;p&gt;"Tim Schafer. The guy comes out and says I'm a prick. I've never met him in my life&amp;#8212;I've never had anything to do with him," &lt;a href="http://www.computerandvideogames.com/article.php?id=266761"&gt;Kotick told Edge Magazine&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;From his point of view, &lt;em&gt;Brütal Legend&lt;/em&gt; never looked like a good bet during the Activision-Vivendi merger. "I never had any involvement in the Vivendi project that they were doing, &lt;em&gt;Brütal Legend&lt;/em&gt;, other than I was in one meeting where the guys looked at it and said, 'He's late, he's missed every milestone, he's overspent the budget and it doesn't seem like a good game. We're going to cancel it."&lt;/p&gt;
+
+&lt;p&gt;That argument makes perfect sense, but then why did Activision sue EA over the game's release? That lawsuit was finally settled, although the terms remain confidential. If Kotick thought the game was such a nonstarter, why the litigation?&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2009/09/actiblizzard-ceo-kotick-policy-rewards-profits-removes-fun.ars"&gt;Kotick speaks bluntly&lt;/a&gt; to investors and business people, and it's true he could benefit from better word choices in his speeches. His business practices have not always been the best for games, either. The shareholders though? They're taken care of. Both men have a point: Kotick had good reasons to dump Schafer's game, but he also doesn't need to be such a dick about everything.&lt;/p&gt;    
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/kotick-a-tool-activision-bobby-kotick-a-tool-activision-ceo-answers-criticismceo-answers-criticism.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/NATFwF86_Va6Qc5PDIhEaTPphC0/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/NATFwF86_Va6Qc5PDIhEaTPphC0/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/NATFwF86_Va6Qc5PDIhEaTPphC0/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/NATFwF86_Va6Qc5PDIhEaTPphC0/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/1OOAl2JDaEA" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/1OOAl2JDaEA/kotick-a-tool-activision-bobby-kotick-a-tool-activision-ceo-answers-criticismceo-answers-criticism.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/gaming/news/2010/09/kotick-a-tool-activision-bobby-kotick-a-tool-activision-ceo-answers-criticismceo-answers-criticism.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Gaming</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">activision</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">bobbykotick</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">timschafer</category>
+    <pubDate>Mon, 27 Sep 2010 10:19:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/gaming/news/2010/09/kotick-a-tool-activision-bobby-kotick-a-tool-activision-ceo-answers-criticismceo-answers-criticism.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Change in iPhone policies prompts EU to drop investigations</title>
+   
+   <author>jacqui@arstechnica.com (Jacqui Cheng)</author>
+  
+    <description>&lt;a href="http://arstechnica.com/apple/news/2010/09/change-in-iphone-policies-prompts-eu-to-drop-investigations.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/brief_icons/apple-brief.png" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;The European Commission has dropped not one, but two antitrust investigations into Apple&amp;#8212;one for the company's decision to restrict tools used in iOS development, and the other for forcing iPhone users in Europe to return to the country of purchase in order to get warranty repairs. Both of these policies have since been updated since the EU first opened its investigations, and the Commission appears to be pleased with the changes.&lt;/p&gt;
+
+&lt;p&gt;The lesser known of the two issues&amp;#8212;at least to those outside the EU&amp;#8212;concerned iPhone repairs and where, exactly, users could go to get them. Apple said that users who bought iPhones could only get them fixed in the country of purchase, which proved to be a frustrating rule for Europeans on-the-go. (The US equivalent would be if you were restricted to the same state as where you originally bought your iPhone.) &lt;/p&gt;
+
+&lt;p&gt;At the time, the European Commission said it was concerned that the rule would lead to a "partitioning of the market." &lt;/p&gt;
+
+&lt;p&gt;The other issue is, of course, &lt;a href="http://arstechnica.com/apple/news/2010/04/apple-takes-aim-at-adobe-or-android.ars"&gt;Apple's infamous decision in April&lt;/a&gt; to strictly limit iOS development tools, with the threat of rejecting an app if it was authored in an unapproved language. The rule sent ripples through the development community, with some notable iPhone developers &lt;a href="http://arstechnica.com/apple/news/2010/05/c4-indie-dev-conference-a-casualty-of-app-store-policies.ars"&gt;calling it quits on principle&lt;/a&gt; while others supported the decision. &lt;/p&gt;
+
+&lt;p&gt;The EC opened both of its investigations together soon after Apple barred cross-platform development tools. However, Apple &lt;a href="http://arstechnica.com/apple/news/2010/06/devs-cautiously-optimistic-about-ios-4-nonnative-code-change.ars"&gt;loosened the rule in June&lt;/a&gt; of this year and &lt;a href="http://arstechnica.com/apple/news/2010/09/apple-relaxes-restrictions-on-ios-app-code-iad-analytics.ars"&gt;lifted it altogether this month&lt;/a&gt;. The company also agreed to stop enforcing its "country of purchase" rule, and is now allowing authorized service providers to perform cross-border warranty services for European iPhone buyers.&lt;/p&gt;
+
+&lt;p&gt;As a result, the Commission announced that it is closing both of the investigations into Apple's iPhone-related policies. The &lt;a href="http://arstechnica.com/apple/news/2010/06/reports-ftc-to-investigate-apple-for-mobile-policies.ars"&gt;FTC was also rumored&lt;/a&gt; to be investigating Apple for its restriction on developer tools here in the US, but the investigation was never fully confirmed, and will likely be dropped as well. &lt;/p&gt;
+
+&lt;p&gt;The EC seems to be taking credit for Apple's change of heart. "Apple's response to our preliminary investigations shows that the Commission can use the competition rules to achieve swift results on the market with clear benefits for consumers, without the need to open formal proceedings," Commission Vice President in charge of Competition Policy Joaquín Almunia said in a statement. &lt;/p&gt;    
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/apple/news/2010/09/change-in-iphone-policies-prompts-eu-to-drop-investigations.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/tVJX4SYhTrUcCUaDgQRBegCmrNw/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/tVJX4SYhTrUcCUaDgQRBegCmrNw/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/tVJX4SYhTrUcCUaDgQRBegCmrNw/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/tVJX4SYhTrUcCUaDgQRBegCmrNw/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/iBOrXSIT6ts" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/iBOrXSIT6ts/change-in-iphone-policies-prompts-eu-to-drop-investigations.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/apple/news/2010/09/change-in-iphone-policies-prompts-eu-to-drop-investigations.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Apple</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">antitrust</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">developer</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">europeancommission</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">iphone</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">repair</category>
+    <pubDate>Mon, 27 Sep 2010 09:59:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/apple/news/2010/09/change-in-iphone-policies-prompts-eu-to-drop-investigations.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>GPUs in strange places: cloud rendering, armored tanks</title>
+   
+   <author>hannibal@arstechnica.com (Jon Stokes)</author>
+  
+     <media:content url="http://static.arstechnica.net/2010/09/26/magic1-booth.jpg" type="image/jpeg" width="300" height="449" />
+
+
+             
+    <description>&lt;a href="http://arstechnica.com/business/news/2010/09/gpus-in-strange-places-cloud-rendering-armored-tanks.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+	  &lt;img vspace="4" hspace="4" border="0" width="300" height="449" align="right" src="http://static.arstechnica.net/2010/09/26/magic1-booth.jpg" /&gt;
+	  &lt;/a&gt;
+  
+		        &lt;!--body--&gt;
+    &lt;p&gt;
+The theme of NVIDIA's recent GPU Technology Conference could probably be summed up as, "look at all the non-gaming places where GPUs are now being used." And, truth be told, the show floor boasted a fairly impressive array of non-gaming GPU options. There were supercomputing-oriented demos aplenty, but even outside of high-performance computing, the GPU is finding its way into some interesting niches.
+&lt;/p&gt;
+
+&lt;p&gt;
+One of the first demos that we saw on entering the show floor was the MAGIC1 by GE's Intelligent Platforms division. Shown in the picture below, the unit is essentially a small form factor PC wrapped in a giant heatsink and rated to operate in temperatures from -40C to 55C. 
+&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/business/news/2010/09/gpus-in-strange-places-cloud-rendering-armored-tanks.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/business/news/2010/09/gpus-in-strange-places-cloud-rendering-armored-tanks.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/2cxtIX9ByWlEaQ3gy3OXltRJpb4/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/2cxtIX9ByWlEaQ3gy3OXltRJpb4/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/2cxtIX9ByWlEaQ3gy3OXltRJpb4/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/2cxtIX9ByWlEaQ3gy3OXltRJpb4/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/ZFfJ-1F19nU" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/ZFfJ-1F19nU/gpus-in-strange-places-cloud-rendering-armored-tanks.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/business/news/2010/09/gpus-in-strange-places-cloud-rendering-armored-tanks.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Business</category>
+      <pubDate>Mon, 27 Sep 2010 09:22:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/business/news/2010/09/gpus-in-strange-places-cloud-rendering-armored-tanks.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Mobile users: can 911 emergency locate you after you call?</title>
+   
+   <author>matthew.lasar@arstechnica.com (Matthew Lasar)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/Broken_iPhone-scaled-thumb-300x169-16758-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/mobile-users-can-911-emergency-locate-you-after-you-call.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/Broken_iPhone-scaled-thumb-230x130-16758-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Nine years ago &lt;a href="http://www.usatoday.com/news/health/2001-03-06-smart-cars.htm"&gt;Karla Gutierrez&lt;/a&gt; lost control of her BMW and it careened into a canal. As the vehicle slipped into the water, Gutierrez called Miami, Florida 911 on her mobile phone.&lt;/p&gt;
+&lt;p&gt;"My car is sinking!" she cried to the operator. &lt;/p&gt;
+&lt;p&gt;"Ma'am, I know," the dispatch respondent replied. "You need to calm down, OK? I know you are in the water, and you are sinking, but if I don't know where you are at, we can't help you."&lt;/p&gt;
+&lt;p&gt;"My car is sinking!" Gutierrez screamed again. "Oh, my God! Oh, my God!" For three minutes, the operator tried to coax her to approximate her location, then the phone went dead. Eventually first responders found her in her car, drowned. &lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/mobile-users-can-911-emergency-locate-you-after-you-call.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/mobile-users-can-911-emergency-locate-you-after-you-call.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/1UHBvBTr2akcKXIW5BZwUybAUo4/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/1UHBvBTr2akcKXIW5BZwUybAUo4/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/1UHBvBTr2akcKXIW5BZwUybAUo4/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/1UHBvBTr2akcKXIW5BZwUybAUo4/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/A31sKSRK8B8" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/A31sKSRK8B8/mobile-users-can-911-emergency-locate-you-after-you-call.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/tech-policy/news/2010/09/mobile-users-can-911-emergency-locate-you-after-you-call.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Telecom</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">e911</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">fcc</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">ipmobile</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">publicsafetyansweringpoints</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">voip</category>
+    <pubDate>Mon, 27 Sep 2010 08:22:15 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/tech-policy/news/2010/09/mobile-users-can-911-emergency-locate-you-after-you-call.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Oracle aims to boost client-side Java with JavaFX improvements</title>
+   
+   <author>segphault@arstechnica.com (Ryan Paul)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2009/02/mobile-coffee-thumb-300x169-1876-f.jpg" type="image/jpeg" height="169" width="300" />
+
+                <media:credit>http://flickr.com/photos/irisheyes/1069373718/</media:credit>
+                <media:credit>Bernie%20Goldbach</media:credit>
+      
+    <description>&lt;a href="http://arstechnica.com/open-source/news/2010/09/oracle-aims-to-boost-client-side-java-with-javafx-improvements.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2009/02/mobile-coffee-thumb-230x130-1876-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;At the Oracle OpenWorld event, the database giant revealed some details about its Java roadmap. Oracle unsurprisingly wants to continue improving Java Enterprise Edition, but the company also highlighted its commitment to improving client-side Web support and mobile application development with JavaFX.&lt;/p&gt;
+
+&lt;p&gt;The Java programming language plays an important role in facilitating third-party mobile application development, but the standard J2ME stack is increasingly being displaced on smartphones by custom frameworks or native toolkits because it doesn't enable developers to create competitive user experiences. Java has long since lost to Flash for client-side Web development for similar reasons.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/open-source/news/2010/09/oracle-aims-to-boost-client-side-java-with-javafx-improvements.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/open-source/news/2010/09/oracle-aims-to-boost-client-side-java-with-javafx-improvements.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/qC4DZiv4zQR1kNeFd3eTityGm5U/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/qC4DZiv4zQR1kNeFd3eTityGm5U/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/qC4DZiv4zQR1kNeFd3eTityGm5U/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/qC4DZiv4zQR1kNeFd3eTityGm5U/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/FmnlP5V8i-0" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/FmnlP5V8i-0/oracle-aims-to-boost-client-side-java-with-javafx-improvements.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/open-source/news/2010/09/oracle-aims-to-boost-client-side-java-with-javafx-improvements.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Open-source</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">java</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">javafx</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">oracle</category>
+    <pubDate>Mon, 27 Sep 2010 07:15:16 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/open-source/news/2010/09/oracle-aims-to-boost-client-side-java-with-javafx-improvements.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>How to keep junk mail from arriving in your (snail) mailbox</title>
+   
+   <author>jacqui@arstechnica.com (Jacqui Cheng)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/junk-mail-burn-ars-thumb-300x169-16726-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/web/news/2010/09/how-to-opt-out-of-unwanted-junk-in-the-snail-mail.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/junk-mail-burn-ars-thumb-230x130-16726-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    
+&lt;p&gt;As a serious environmentalist, the mere existence of junkmail&amp;#8212;the non-electric kind&amp;#8212;hurts me. It causes a knot in my stomach when I open my mailbox, only to take 90 percent of the contents and dump them straight into the recycling. &lt;/p&gt;
+
+&lt;p&gt;Luckily, a number of services have popped up in recent years to help people like me cut down on the amount of junkmail that gets tossed in the can. And, contrary to popular belief, you don't have to call up every single catalog distributor or bank to tell them to buzz off. We put together a guide to help you opt out of &lt;em&gt;most&lt;/em&gt; kinds of junkmail so that you, your recycling bin, and your postman can get a much-needed break. &lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/web/news/2010/09/how-to-opt-out-of-unwanted-junk-in-the-snail-mail.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/web/news/2010/09/how-to-opt-out-of-unwanted-junk-in-the-snail-mail.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/uJCD2uOhlSgHz_wXG6Wk_yeS0kY/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/uJCD2uOhlSgHz_wXG6Wk_yeS0kY/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/uJCD2uOhlSgHz_wXG6Wk_yeS0kY/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/uJCD2uOhlSgHz_wXG6Wk_yeS0kY/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/4RuHRcsURO8" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/4RuHRcsURO8/how-to-opt-out-of-unwanted-junk-in-the-snail-mail.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/web/news/2010/09/how-to-opt-out-of-unwanted-junk-in-the-snail-mail.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Web</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">internet</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">junk</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">mail</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">snailmail</category>
+    <pubDate>Mon, 27 Sep 2010 06:40:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/web/news/2010/09/how-to-opt-out-of-unwanted-junk-in-the-snail-mail.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Feature: Parallels Desktop 6: The Ars Review</title>
+   
+   <author>daveg@arstechnica.com (Dave Girard)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/feat-parallels6-list-thumb-300x169-16691-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/apple/reviews/2010/09/parallels-desktop-6-the-ars-review.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/feat-parallels6-list-thumb-230x130-16691-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;It has been less than ten months since we &lt;a href="http://arstechnica.com/apple/news/2009/11/parallels-desktop-5-review.ars"&gt;reviewed Parallels Desktop 5&lt;/a&gt;, a competent but buggy release from Parallels. Shipping paid updates with stability issues seems to be the company's&amp;nbsp;&lt;em&gt;modus operandi&lt;/em&gt;, so I was a little skeptical when I saw that a new version was already being released, since the last one had so many issues that needed ironing out. The feature list of Parallels Desktop 6 isn't what I'd call ambitious&amp;#8212;the main focus of version 6 has been on the 64-bit host and increased speed, mostly for 3D and gaming. Gaming was already Parallels' forte, but I was curious to see if the new version would finally make playing modern games with complex shaders, high resolutions, and high-quality audio a reality. If it doesn't come through, and suffers from stability issues, this could be a disastrous release for Parallels. Read on for the verdict. 
+&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/apple/reviews/2010/09/parallels-desktop-6-the-ars-review.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/apple/reviews/2010/09/parallels-desktop-6-the-ars-review.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/gwWno_ecQLYVfcS5K6db6SkScv4/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/gwWno_ecQLYVfcS5K6db6SkScv4/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/gwWno_ecQLYVfcS5K6db6SkScv4/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/gwWno_ecQLYVfcS5K6db6SkScv4/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/xf191QWmF_8" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/xf191QWmF_8/parallels-desktop-6-the-ars-review.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/apple/reviews/2010/09/parallels-desktop-6-the-ars-review.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">Reviews</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Features</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Reviews</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Reviews</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Apple</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Software</category>
+      <pubDate>Sun, 26 Sep 2010 23:30:21 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/apple/reviews/2010/09/parallels-desktop-6-the-ars-review.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Accepting the consequences of a life without quick-saves</title>
+   
+   <author>bkuchera@arstechnica.com (Ben Kuchera)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/gaming-paths-ars-thumb-300x169-16660-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/gaming/news/2010/09/accepting-the-consequences-of-a-life-without-quick-saves.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/gaming-paths-ars-thumb-230x130-16660-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;We've become used to the idea of the quick-save, the frequent save point, the idea that we can do everything perfectly, eventually. There is a good outcome, an expected way to win, things we can practice and refine to make sure we get every experience point and leave no man behind. If we don't do something perfectly, we reload, practice, and continue to try until we get what we want.&lt;/p&gt;
+
+&lt;p&gt;For the past few weeks I've been saying no to the quick-save, and I've never been happier with my gaming. Finally, decisions mean something and my actions have weight. They say life doesn't have a reset button, but the truth is gaming doesn't always have to have one either.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/accepting-the-consequences-of-a-life-without-quick-saves.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/accepting-the-consequences-of-a-life-without-quick-saves.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/lgXsq_6Sy640-SLJqGYKaVuSC0w/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/lgXsq_6Sy640-SLJqGYKaVuSC0w/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/lgXsq_6Sy640-SLJqGYKaVuSC0w/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/lgXsq_6Sy640-SLJqGYKaVuSC0w/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/3Dj6-37XWQI" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/3Dj6-37XWQI/accepting-the-consequences-of-a-life-without-quick-saves.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/gaming/news/2010/09/accepting-the-consequences-of-a-life-without-quick-saves.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Gaming</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">quicksaves</category>
+    <pubDate>Sun, 26 Sep 2010 20:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/gaming/news/2010/09/accepting-the-consequences-of-a-life-without-quick-saves.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Feature: The eternal antitrust case: Microsoft versus the world</title>
+   
+   <author>matthew.lasar@arstechnica.com (Matthew Lasar)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/feat-ballmer-shark-list-thumb-300x169-16752-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/the-eternal-antitrust-case-microsoft-versus-the-world.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/feat-ballmer-shark-list-thumb-230x130-16752-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+     &lt;p&gt;"The worst thing that could come of this is I could fall down the steps of the FTC building, hit my head and kill myself,"  quipped Microsoft Chairman William H. Gates in 1992, as the Federal Trade Commission launched an investigation of his company. But nobody joked on the third day of April, 2000, as Judge Thomas Penfield Jackson &lt;a href="http://www.justice.gov/atr/cases/f218600/218633.htm"&gt;delivered his decision&lt;/a&gt; on what had morphed into the biggest software antitrust case in history: &lt;em&gt;The United States of America vs. Microsoft&lt;/em&gt;.&lt;/p&gt;&lt;p&gt;"The court concludes that Microsoft maintained its monopoly power by anticompetitive means and attempted to monopolize the Web browser market," Jackson declared. 
+&lt;/p&gt;&lt;p&gt;Ten years ago, on September 26, 2000, that trial took a crucial turn towards the settlement that would allow Microsoft to retain its vast control over the personal computer operating system market. Let's revisit the essentials of that case, and follow the aftermath&amp;#8212;a legacy of endless negotiation and struggle with the entity that, to this day, is the OS on&amp;nbsp;&lt;a href="http://arstechnica.com/microsoft/news/2010/08/windows-7-overtakes-windows-vista.ars"&gt;91.32 percent&lt;/a&gt; of the world's PCs.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/the-eternal-antitrust-case-microsoft-versus-the-world.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/the-eternal-antitrust-case-microsoft-versus-the-world.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/kMYR9vVrRbC6XW8ZDvziBWlOetw/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/kMYR9vVrRbC6XW8ZDvziBWlOetw/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/kMYR9vVrRbC6XW8ZDvziBWlOetw/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/kMYR9vVrRbC6XW8ZDvziBWlOetw/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/Bhf5CtMwBqs" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/Bhf5CtMwBqs/the-eternal-antitrust-case-microsoft-versus-the-world.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/tech-policy/news/2010/09/the-eternal-antitrust-case-microsoft-versus-the-world.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Microsoft</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Telecom</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">antitrust</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">departmentofjustice</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">europeanunion</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">google</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">microsoft</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">netscape</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">sun</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">usavmicrosoft</category>
+    <pubDate>Sun, 26 Sep 2010 18:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/tech-policy/news/2010/09/the-eternal-antitrust-case-microsoft-versus-the-world.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>The best offerings from the Frankenstein of gaming hardware</title>
+   
+   <author>andrew.webster@arstechnica.com (Andrew Webster)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/ben-heck-duct-tape-thumb-300x169-16687-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/gaming/news/2010/09/the-best-offerings-from-the-frankenstein-of-gaming-hardware.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/ben-heck-duct-tape-thumb-230x130-16687-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;With the launch of game console modder &lt;a href="http://arstechnica.com/gaming/news/2010/09/the-ben-heck-show-turns-game-console-modding-into-entertainment.ars"&gt;Ben Heck's new show&lt;/a&gt;, we thought now would be a good time to look back at some of his best creations. Whether it's turning a game console into a laptop or a portable device, or even building an arcade machine from scratch, Heck has a knack for taking technology that's already pretty great, and making it even better. Here are some of his coolest projects to date.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/the-best-offerings-from-the-frankenstein-of-gaming-hardware.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/the-best-offerings-from-the-frankenstein-of-gaming-hardware.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/lJXgmpoXnhWxpCu1MpW2Q2MnUNc/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/lJXgmpoXnhWxpCu1MpW2Q2MnUNc/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/lJXgmpoXnhWxpCu1MpW2Q2MnUNc/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/lJXgmpoXnhWxpCu1MpW2Q2MnUNc/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/q6Re8hnhOiI" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/q6Re8hnhOiI/the-best-offerings-from-the-frankenstein-of-gaming-hardware.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/gaming/news/2010/09/the-best-offerings-from-the-frankenstein-of-gaming-hardware.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Gaming</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">benheck</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">consolemodding</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">modding</category>
+    <pubDate>Sun, 26 Sep 2010 16:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/gaming/news/2010/09/the-best-offerings-from-the-frankenstein-of-gaming-hardware.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Weird Science waves its phantom limb in the air like it doesn't care</title>
+   
+   <author>jtimmer@arstechnica.com (John Timmer)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/pahntom-limb-venture-bros-thumb-300x169-16757-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/science/news/2010/09/weird-science-always-knew-people-on-cell-phones-were-annoying.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/pahntom-limb-venture-bros-thumb-230x130-16757-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;&lt;strong&gt;You don't need to lose a limb to get a phantom one:&lt;/strong&gt;  Phantom limbs are a pretty well-known after-effect of the loss of a real limb.  Individuals unfortunate enough to lose the real thing often experience the sensations associated with an actual limb, including movements and pain.  But it turns out &lt;a href="http://www.cortexjournal.net/article/S0010-9452(09)00278-0/abstract"&gt;you've got another option if you want to experience a phantom limb&lt;/a&gt;:  have a stroke, instead.  Individuals with strokes experienced everything from simply losing track of their actual limb to experiencing the sensation that one of their limbs was performing voluntary movements directed towards a specific goal.  Overall, a stroke may be the better option, given that the only person to experience phantom limb pain in the study group was someone who actually did have a limb amputated prior to having a stroke.
+&lt;/p&gt;
+&lt;p&gt;
+&lt;strong&gt;Yes, we're looking at you:&lt;/strong&gt;  &lt;a href="http://www.ncbi.nlm.nih.gov/pubmed/20817912"&gt;Here's a paper&lt;/a&gt; that attempts to answer a very serious question, laid out in the first sentence:  "Why are people more irritated by nearby cell-phone conversations than by conversations between two people who are physically present?"  The authors define the portion of a cell phone call that many of us suffer through as a "halfalogue," and then demonstrate that, in contrast to a normal dialogue, people find the unpredictable nature of a one-sided conversation really distracting&amp;#8212;so distracting, in fact, that it lowers their performance on cognitive tests.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/weird-science-always-knew-people-on-cell-phones-were-annoying.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/weird-science-always-knew-people-on-cell-phones-were-annoying.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/osPqOMx_cjye10OvEUsZ0Gvc218/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/osPqOMx_cjye10OvEUsZ0Gvc218/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/osPqOMx_cjye10OvEUsZ0Gvc218/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/osPqOMx_cjye10OvEUsZ0Gvc218/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/aHKYK8eb4oY" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/aHKYK8eb4oY/weird-science-always-knew-people-on-cell-phones-were-annoying.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/science/news/2010/09/weird-science-always-knew-people-on-cell-phones-were-annoying.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Science</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">weekinreview</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">weirdscience</category>
+    <pubDate>Sun, 26 Sep 2010 14:00:29 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/science/news/2010/09/weird-science-always-knew-people-on-cell-phones-were-annoying.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>US busts Google, Apple, Intel over secret employee poaching pact</title>
+   
+   <author>nate@arstechnica.com (Nate Anderson)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/help_wanted_ars-thumb-300x169-16750-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/us-busts-google-apple-intel-over-secret-employee-poaching-pact.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/help_wanted_ars-thumb-230x130-16750-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    
+&lt;p&gt;You've heard of the government's "Do Not Call" list aimed at shutting down unwanted telemarketers&amp;#8212;but did you know that many tech companies have a "Do Not Cold Call" list aimed at shutting down competition? The US Department of Justice today announced a lawsuit&amp;#8212;and a proposed settlement&amp;#8212;over just such behavior at Google, Adobe, Apple, Intel, Intuit, and Pixar.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/us-busts-google-apple-intel-over-secret-employee-poaching-pact.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/us-busts-google-apple-intel-over-secret-employee-poaching-pact.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/ZWcPipb-V2RpDMv-mObnofJxbPA/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/ZWcPipb-V2RpDMv-mObnofJxbPA/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/ZWcPipb-V2RpDMv-mObnofJxbPA/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/ZWcPipb-V2RpDMv-mObnofJxbPA/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/ALN17McPh_w" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/ALN17McPh_w/us-busts-google-apple-intel-over-secret-employee-poaching-pact.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/tech-policy/news/2010/09/us-busts-google-apple-intel-over-secret-employee-poaching-pact.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Apple</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">apple</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">doj</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">googleintel</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">hiring</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">law</category>
+    <pubDate>Sat, 25 Sep 2010 16:49:11 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/tech-policy/news/2010/09/us-busts-google-apple-intel-over-secret-employee-poaching-pact.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Marvell's tri-core ARM chip has near-PS3-level graphics</title>
+   
+   <author>hannibal@arstechnica.com (Jon Stokes)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2009/10/cpu_side_circuit_ars-thumb-300x169-8982-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/gadgets/news/2010/09/marvells-tri-core-chip-has-near-ps3-level-graphics.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2009/10/cpu_side_circuit_ars-thumb-230x130-8982-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;
+Yesterday, Marvell announced a whopper of a processor&amp;#8212;the ARMADA 628. While most of the coverage so far has focused on the three A9-class processor cores, the craziest feature of this chip is its on-die GPU. The 628's GPU can push 200 million triangles per second (MT/s); for some perspective, compare the Playstation 3's GPU at 250MT/s This GPU, plus the three Sheeva PJ4 cores, means that you can put console-caliber gaming performance&amp;#8212;1080p graphics and all&amp;#8212;in a handheld.
+&lt;/p&gt;
+
+&lt;p&gt;
+Given the amount of hardware on this new chip, it's complete overkill for a smartphone. But as a tablet or handheld gaming part, you could do some really fantastic things with this. Let's take a look under the hood.
+&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/gadgets/news/2010/09/marvells-tri-core-chip-has-near-ps3-level-graphics.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/gadgets/news/2010/09/marvells-tri-core-chip-has-near-ps3-level-graphics.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/AWejelMKUkDn0Lt3AcaXhbg2OKk/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/AWejelMKUkDn0Lt3AcaXhbg2OKk/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/AWejelMKUkDn0Lt3AcaXhbg2OKk/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/AWejelMKUkDn0Lt3AcaXhbg2OKk/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/-FiNa2Ox1Sk" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/-FiNa2Ox1Sk/marvells-tri-core-chip-has-near-ps3-level-graphics.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/gadgets/news/2010/09/marvells-tri-core-chip-has-near-ps3-level-graphics.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Gadgets</category>
+      <pubDate>Sat, 25 Sep 2010 15:34:12 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/gadgets/news/2010/09/marvells-tri-core-chip-has-near-ps3-level-graphics.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Week in Apple: 3D animation, netbook cannibalization, FaceTime iPad</title>
+   
+   <author>jacqui@arstechnica.com (Jacqui Cheng)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/thumb_apple_bite_ars-thumb-300x169-16739-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/apple/news/2010/09/week-in-apple-3d-animation-netbook-cannibalization-facetime-ipad.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/thumb_apple_bite_ars-thumb-230x130-16739-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;This week we discussed the implications of Apple's lawsuit over MagSafe connectors, what happened between Ping and Facebook, the malware risks for iOS jailbreakers, 3D animation on the Mac, and much, much more. In case you missed it, here's the roundup:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="http://arstechnica.com/apple/guides/2010/09/an-intro-to-3d-on-the-mac-part-ii-animation-and-rendering.ars"&gt;&lt;strong&gt;An intro to 3D on the Mac, Part II: Animation and Rendering&lt;/strong&gt;&lt;/a&gt;: In Part II of our epic introduction to 3D on the Mac, you'll learn the basics of character animation and rendering, and you'll get an overview of the major 3D software packages on the platform.&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://arstechnica.com/apple/news/2010/09/verizon-ceo-throws-wet-blanket-on-iphone-rumors.ars"&gt;&lt;strong&gt;Verizon CEO throws wet blanket on iPhone rumors&lt;/strong&gt;&lt;/a&gt;: Verizon's CEO made cryptic comments Thursday morning at an investor conference, suggesting that the expected January launch of a CDMA-compatible iPhone on Verizon's network is not in the works. &lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/apple/news/2010/09/week-in-apple-3d-animation-netbook-cannibalization-facetime-ipad.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/apple/news/2010/09/week-in-apple-3d-animation-netbook-cannibalization-facetime-ipad.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/yKr5d_ifg9CogPO_m1ZBO8R5tWM/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/yKr5d_ifg9CogPO_m1ZBO8R5tWM/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/yKr5d_ifg9CogPO_m1ZBO8R5tWM/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/yKr5d_ifg9CogPO_m1ZBO8R5tWM/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/hF-EIQ2Nojc" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/hF-EIQ2Nojc/week-in-apple-3d-animation-netbook-cannibalization-facetime-ipad.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/apple/news/2010/09/week-in-apple-3d-animation-netbook-cannibalization-facetime-ipad.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Apple</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">3d</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">animation</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">facetime</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">ipad</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">iphone</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">magazines</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">magsafe</category>
+    <category domain="http://www.sixapart.com/ns/types#tag">verizon</category>
+    <pubDate>Sat, 25 Sep 2010 15:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/apple/news/2010/09/week-in-apple-3d-animation-netbook-cannibalization-facetime-ipad.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Week in gaming: Civ V review, Bungie as top indie dev</title>
+   
+   <author>bkuchera@arstechnica.com (Ben Kuchera)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/conan-terminator-ars-thumb-300x169-16638-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/gaming/news/2010/09/week-in-gaming-civ-v-review-bungie-as-top-indie-dev.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/conan-terminator-ars-thumb-230x130-16638-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Another week has come and gone, with &lt;em&gt;Civilization V &lt;/em&gt;taking up the majority of our time. If you haven't read the review... you're in the minority, according to our numbers. Bobby Kotick claimed Bungie is the only high-quality indie developer working today, and we took a look at the upcoming Supreme Court case that will finally determine whether the government needs oversight in the sales of video games.&lt;/p&gt;
+
+&lt;p&gt;Oh, and we played the new &lt;em&gt;Castle Ravenloft&lt;/em&gt; board game based on 4th Edition &lt;em&gt;Dungeons and Dragons&lt;/em&gt; rules. Needs a little work, but an adventure under an hour, with 40 miniatures? Well worth the price.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/week-in-gaming-civ-v-review-bungie-as-top-indie-dev.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/gaming/news/2010/09/week-in-gaming-civ-v-review-bungie-as-top-indie-dev.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/l_H5BApvSuyzXQv5aV375TgXOyQ/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/l_H5BApvSuyzXQv5aV375TgXOyQ/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/l_H5BApvSuyzXQv5aV375TgXOyQ/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/l_H5BApvSuyzXQv5aV375TgXOyQ/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/OqR-ubpTViE" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/OqR-ubpTViE/week-in-gaming-civ-v-review-bungie-as-top-indie-dev.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/gaming/news/2010/09/week-in-gaming-civ-v-review-bungie-as-top-indie-dev.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Gaming</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">weekingaming</category>
+    <pubDate>Sat, 25 Sep 2010 13:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/gaming/news/2010/09/week-in-gaming-civ-v-review-bungie-as-top-indie-dev.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Week in tech: supercolliders and life outside the basement</title>
+   
+   <author>eric@arstechnica.com (Eric Bangeman)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/08/LHC_spare_parts-thumb-300x169-15770-f.jpg" type="image/jpeg" height="169" width="300" />
+
+        <media:title>Backup magnets are ready should the LHC require them.</media:title>
+              
+    <description>&lt;a href="http://arstechnica.com/science/news/2010/09/week-in-tech-supercolliders-and-life-outside-the-basement.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/08/LHC_spare_parts-thumb-230x130-15770-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Wondering what was hot in the world of science and tech this past week? Wonder no more.&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/a-photo-tour-of-the-large-hadron-collider.ars"&gt;&lt;strong&gt;A photo tour of the Large Hadron Collider&lt;/strong&gt;&lt;/a&gt;: Ars takes a trip to the Large Hadron Collider, and invites you along to check out the hardware and control rooms that help run the largest physics experiment that humanity has ever attempted.&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://arstechnica.com/tech-policy/news/2010/09/4chan-tries-to-change-life-outside-the-basement-via-ddos-attacks.ars"&gt;&lt;strong&gt;4chan tries to change life "OUTSIDE the basement" via DDoS attacks&lt;/strong&gt;&lt;/a&gt;: 4chan members organized a major distributed denial of service attack this weekend against the MPAA, RIAA, and others. Is this the future of cyber-protest?&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/week-in-tech-supercolliders-and-life-outside-the-basement.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/science/news/2010/09/week-in-tech-supercolliders-and-life-outside-the-basement.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/q98jFagHUwtllSpHYlIMrn4StYI/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/q98jFagHUwtllSpHYlIMrn4StYI/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/q98jFagHUwtllSpHYlIMrn4StYI/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/q98jFagHUwtllSpHYlIMrn4StYI/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/Kpz2CM9-ay8" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/Kpz2CM9-ay8/week-in-tech-supercolliders-and-life-outside-the-basement.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/science/news/2010/09/week-in-tech-supercolliders-and-life-outside-the-basement.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Science</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Tech-policy</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">weekintech</category>
+    <pubDate>Sat, 25 Sep 2010 11:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/science/news/2010/09/week-in-tech-supercolliders-and-life-outside-the-basement.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+<item>
+      <title>Week in Microsoft: HomeGroup's domestic bliss, no free ride on Android</title>
+   
+   <author>eric@arstechnica.com (Eric Bangeman)</author>
+  
+    <media:content url="http://static.arstechnica.net/assets/2010/09/feat-homegroup-list-thumb-300x169-16557-f.jpg" type="image/jpeg" height="169" width="300" />
+
+              
+    <description>&lt;a href="http://arstechnica.com/microsoft/news/2010/09/week-in-microsoft-homegroups-domestic-bliss-no-free-ride-on-android.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss"&gt;
+  &lt;img vspace="4" hspace="4" border="0" align="right" width="230" height="129" src="http://static.arstechnica.net/assets/2010/09/feat-homegroup-list-thumb-230x130-16557-f.jpg" /&gt;
+  &lt;/a&gt;
+
+		        &lt;!--body--&gt;
+    &lt;p&gt;Here's the week that was in the world of Microsoft.&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://arstechnica.com/microsoft/guides/2010/09/homegroup-a-practical-guide-to-domestic-bliss-with-windows-7.ars"&gt;&lt;strong&gt;HomeGroup: A practical guide to domestic bliss with Windows 7&lt;/strong&gt;&lt;/a&gt;: Microsoft has been trying to give Windows home users a convenient, peer-to-peer networking solution since at least 2002. With Windows 7 HomeGroup, they finally got it right. Ars walks you through HomeGroup's functionality, architecture, and history.&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://arstechnica.com/microsoft/news/2010/09/microsoft-patent-infringing-android-isnt-really-free.ars"&gt;&lt;strong&gt;Microsoft says patent-infringing Android isn't really free &lt;/strong&gt;&lt;/a&gt;: Microsoft has verbally attacked Google again, this time saying that Android should not be called free given all the legal issues it is attracting.&lt;/p&gt;    
+          &lt;p&gt;&lt;a href="http://arstechnica.com/microsoft/news/2010/09/week-in-microsoft-homegroups-domestic-bliss-no-free-ride-on-android.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss" title="Click here to continue reading this article"&gt;&lt;img src="http://static.arstechnica.com/mt-static/plugins/ArsTheme/images/read-more.jpg" alt="Read the rest of this article..."&gt;&lt;/a&gt;&lt;/p&gt;      
+        
+    
+
+
+      &lt;p&gt;&lt;a href="http://arstechnica.com/microsoft/news/2010/09/week-in-microsoft-homegroups-domestic-bliss-no-free-ride-on-android.ars?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss&amp;comments=1#comments-bar"&gt;Read the comments on this post&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://feedads.g.doubleclick.net/~at/WcB9AtvShhxtheQSfT_hRFWaXYU/0/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/WcB9AtvShhxtheQSfT_hRFWaXYU/0/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;br/&gt;
+&lt;a href="http://feedads.g.doubleclick.net/~at/WcB9AtvShhxtheQSfT_hRFWaXYU/1/da"&gt;&lt;img src="http://feedads.g.doubleclick.net/~at/WcB9AtvShhxtheQSfT_hRFWaXYU/1/di" border="0" ismap="true"&gt;&lt;/img&gt;&lt;/a&gt;&lt;/p&gt;&lt;img src="http://feeds.feedburner.com/~r/arstechnica/everything/~4/kc2HO8e97Xs" height="1" width="1"/&gt;</description>
+  
+  <link>http://feeds.arstechnica.com/~r/arstechnica/everything/~3/kc2HO8e97Xs/week-in-microsoft-homegroups-domestic-bliss-no-free-ride-on-android.ars</link>
+  <guid isPermaLink="false">http://arstechnica.com/microsoft/news/2010/09/week-in-microsoft-homegroups-domestic-bliss-no-free-ride-on-android.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</guid>
+  
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">News</category>
+    <category domain="http://www.sixapart.com/ns/types#category">Microsoft</category>
+      <category domain="http://www.sixapart.com/ns/types#tag">weekinmicrosoft</category>
+    <pubDate>Sat, 25 Sep 2010 09:00:00 -0500</pubDate>
+<feedburner:origLink>http://arstechnica.com/microsoft/news/2010/09/week-in-microsoft-homegroups-domestic-bliss-no-free-ride-on-android.ars?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</feedburner:origLink></item>
+  
+    </channel>
+</rss>

@@ -1,0 +1,128 @@
+/*! \page Mech_Motion	Mech Motion
+
+Mech Motion deals with the physics and interractions as we walk Mechs around in GuardianVR.  
+
+\section sec_MechMotion_FunctionalSpec Functional Specification
+
+We want to let the user do these things:
+1.  Turn to look with the mouse
+2.  'wasd' Walk forward, Backward, Left, and Right
+3.  Double tap 'wasd' to fire thrusters like in Exteel.
+4.  'SPACE' to jump tap 'SPACE' again while jumping to fire thrusters
+5.  Turn on and off rollers, so they can roller blade like Mech Warrior
+	EXTRA: be able to do a quick spin around on blades, like when rolling backwards you can spin around forwards
+	EXTRA: be able to crouch or squat, lowering center of gravity and making sliding less likely
+
+The Mechs will need to interract with their environment:
+1.  Perform all walk operations on level ground 
+2.  Slide down slopes that are too steep and roll down slopes when on blades
+3.  Be blocked by walls and steps that are not short enough while walking
+4.  Be blocked by high walls and obstacles when jumping or thrusting
+5.  Be able to land on objects and be parented to them (stick to the ground using static or sliding friction coefficients)
+	This means that they can land and be standing ON any surface including:
+	A.	A static ground plane (flat or sloped, see #2)
+	B.	A ground plane that is animated in an LWS (not an entity?)
+	C.  Any other object in the scene, including other MECHS
+6.	Be affected by external forces, like explosions and collisions
+
+
+Essentially, we are wanting the simple physics common to first person shooters, with a few of our own special controls.
+It is important that we not cheat physics for a quick turn around (within reason of course).  Lets use the physics we 
+have already implemented for the Fringe, and add to it where needed.  Basically, we are using the physics from the Fringe, 
+with these modifications:
+1.	A constant Gravity.  I think there is already some functionality built for that, but it will be easy to impose the 9.8 m/s^2.
+2.  Ground interraction.  At this time, collision detection is based on motion, so if an object were standing still, it would
+	not notice any collision detection.  The object would need to fall through the ground and then be replaced each frame.
+	I think this might cause a problem and unwanted calculations.  We also need to know whether the object is using sliding
+	or static friction coefficients.
+3.  No Torque.  We do not want MECHs at this time to tumble when they fall.  The best way to handle this is to ignore all torque
+	calculations and just treat all forces as linear.  This means also that we do not need to apply torque when the player is looking
+	around.  We will just apply a heading rotation velocity.  Torque is not as important here as it is in the Fringe.
+4.	Rigid Bodies.  We will keep everything as a Rigid Body for now.
+
+There are a few future features that would be very cool (perhaps James would like to go here):
+
+1.  Make the hinges on all mechs like springs so that they can react
+to external forces (imaging the MECH reeling from a hit in the shoulder).  This could be done by applying springs whose rest position
+is in the position that is specified by the OSGV file and LWS articulation animation.
+
+2.  Add torque back into the equation and allow mechs (and other objects) to fall over, topple, etc.
+It might be best to start with Non-mech objects (that do not have to get up and do not crumple at all).  This might be easy 
+enough to do from the start.  The problem with doing it with mechs is that a rigid body mech flopping around does not look 
+realistic.  He would need to try to catch himself in the fall (perhaps by placing his hands out or rolling into the fall), and then
+he would need to be able to get up again.  I do not know of any games that do this.
+
+3.  React dynamically to environments by shifting position for balance (placing center of mass over the base and keeping it low to 
+avoid toppling.  Also cartwheeling arms in the air to land properly).  This sort of relates to the actions in #2.  The problem with
+these kinds of actions is that they are so dynamic that the artist would not be able to model the action generically.
+
+\section sec_MechMotion_DevPhases	Development Phases
+
+\subsection subsec_MechMotion_Turning	Turning
+The first phase allows the user to turn with the mouse to face a direction.  We are not dealing with targeting reticals yet.
+As mentionted earlier, we will not need to deal with torque, merely applying a maximum turning (heading change) rate in the script.
+
+GuardianVR::Base::Mech
+GuardianVR::Base::Mech_Controller
+GuardianVR::Base::Mech_ControllerBase
+GuardianVR::Base::Mouse_MechDriver
+GuardianVR::Base::Mech_TransmittedEntity
+
+\subsection subsec_MechMotion_ChasePlanePosition Chase Plane Position
+Justin will need much more control over where the chase plane is positioned.  He will want to place that with a NULL in the LWS.
+We do need to concern ourselves with programmatic zooming in and out of the "cockpit", which means we need a cockpit head position
+as well as a nominal offset position.  There also be some offset in the look angle from the intended direction.  We will not need 
+to zoom in and out in GuardianVR, but we will in the Fringe.  The most robust way to handle this is to have NULL positions at the
+cockpit head and at some nominal first and second position, and then be able to interpolate or extrapotale from there OR have them
+keyframed and fire an event that will move the NULL which will move the camera.  One way or the other, we need to make sure we have
+an interface for getting the chase plane PosAtt relative to the ship or mech given a distance modifier (1.0, but when we do zoom
+in, we can just tweak with that,)
+
+\subsection subsec_MechMotion_ActionEvents	Action Events
+
+
+\subsection sec_MechMotion_GroundLanding	Ground and Landing
+We can spawn with the mech in the air and have him land on different surfaces in an arena, including surfaces that are moving.
+I am going to try just doing collision detection the way we have it.  It may be that the compensations to the forces happen all in
+a frame anyway, and that the frame offest happens all at once to keep it from looking like it is jittering up and down.  Can I do
+this or will I need to do something special, determining the ground under the feet and working with that?
+
+The most important thing here is that we get the impression of being on a ground plane and being parented to that.  The ground will
+provide the opposing force to keep the MECH from falling through, which means that without friction, he will slide down any slope.
+We will treat the contact point for all MECHs as the origin of their model, which means we are not worried about feet hanging off.
+
+The MECH would land, providing an event back to OSGV based on how much impact.  Perhaps three or four ways of landing, depending on impact
+like Small (going off a small ledge or landing from a jump), Medium (going off a bigger jump or landing after thrusting), Damaging 
+(Far enough to where it hurts the MECH), and FATAL.  These imapct forces should all be scripted, and adding mass later will therefore 
+have an adjustment on the damage when we calculate that.
+
+\subsection sechMechMotion_Sliding	Sliding
+If a mech is on the ground, we will need to keep track of the friction coefficients between the MECHs and the ground.  We will need to
+allow the MECH to have a coefficient of friction that is directional (e.g. sliding forward rather than sideways, defined in the script)
+and then have some friction coefficients defined by the the surface.  I am thinking the surface names will come through in the collision
+detection by grabbing the node names somehow.  With a surface name, we can look up static and sliding friction coefficients.
+
+We will need to be able to determine whether or not we are static or sliding on a surface.
+
+\subsection sec_MechMotion_Walking		Walking
+Provide walking in all four directions.  We will be in contact with a surface, so we will need to use the appropriate friction
+and then apply forces in the right directions.
+
+\subsection sec_MechMotion_LateralCollisions	Lateral Collisions
+As we are walking along, we may run into walls or other obstacles.  We should be able to just use standard collision detection
+for this, but we need to determine how many collision points there are.  We need to watch for items that hit low on the feet,
+hight on the head, and somewhre in the middle (think of a beam hitting in the chest).  This really should all be a matter of
+content creation.  We can also have collisions where entities are running into the MECHS.  We will need to play around with the
+external forces caused by collisions, because not all collisions should be purely elastic, as they are now with The Fringe.
+
+\subsection sec_MechMotion_Flying	Flying (Jumping & Thrusting)
+Once we have all of this foundation, all of the Jumping and Thrusting action should be pretty easy, a matter of applying forces.
+There is no ground contact, so we do not deal with friction.  We should make it so the amount of downward thrust applied is 
+inversely related to the (square?) of the height above the ground, which would make it so the MECHS could not fly up as high 
+as they want, but also make it so the thrusters could be used to arrest a fall.  We will worry about fuel consumption and
+overheating later.
+
+
+
+
+*/

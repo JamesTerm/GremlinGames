@@ -1,0 +1,11 @@
+untab:
+	@fh() { for f in `find include/Producer -type f -print` ; do \
+    [ "`head -c 21 $$f`" = "/* -*-c++-*- header -"  ] && echo $$f; done }; \
+	fs() { for f in `find src -type f -print` ; do \
+    [ "`head -c 21 $$f`" = "/* -*-c++-*- source -"  ] && echo $$f; done }; \
+    for ff in `fh` `fs`; do \
+		sed  's/	/    /g' $$ff > $$ff.temp; \
+		mv $$ff.temp $$ff; \
+    done
+
+   

@@ -1,0 +1,63 @@
+/* -*-c++-*- OpenSceneGraph - Copyright (C) 1998-2006 Robert Osfield 
+ *
+ * This library is open source and may be redistributed and/or modified under  
+ * the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or 
+ * (at your option) any later version.  The full license is in LICENSE file
+ * included with this distribution, and on the openscenegraph.org website.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ * OpenSceneGraph Public License for more details.
+*/
+//osgIntrospection - Copyright (C) 2005 Marco Jez
+
+#ifndef OSGINTROSPECTION_CONSTRUCTORINFO_
+#define OSGINTROSPECTION_CONSTRUCTORINFO_
+
+#include <osgIntrospection/Export>
+#include <osgIntrospection/Type>
+#include <osgIntrospection/ParameterInfo>
+#include <osgIntrospection/CustomAttributeProvider>
+
+namespace osgIntrospection
+{
+
+    class OSGINTROSPECTION_EXPORT ConstructorInfo: public CustomAttributeProvider
+    {
+    public:
+        ConstructorInfo(const Type& decltype, const ParameterInfoList& params)
+        :    _decltype(decltype),
+            _params(params)
+        {
+        }
+
+        virtual ~ConstructorInfo()
+        {
+            for (ParameterInfoList::iterator i=_params.begin(); i!=_params.end(); ++i)
+                delete *i;
+        }
+        
+        inline const Type& getDeclaringType() const
+        {
+            return _decltype;
+        }
+        
+        inline const ParameterInfoList& getParameters() const
+        {
+            return _params;
+        }
+                
+        virtual Value createInstance(ValueList& args) const = 0;
+        
+    protected:
+        virtual void getInheritedProviders(CustomAttributeProviderList& providers) const;
+        
+    private:
+        const Type& _decltype;
+        ParameterInfoList _params;
+    };
+
+}
+
+#endif

@@ -1,0 +1,135 @@
+/*!	\page  MultiPlayer_txt	Multi-Player
+All of the the Client/Server interactions are all pretty well mapped out in \ref Client_Server_Connections_txt.
+This document talks about how individual entities (Entity3D, like Ships, Mechs, Missiles, Bullets, etc.) are coordinated
+between clients.  
+
+There are 2 clients: 
+- UI_GameClient, which is focussed on allowing the player a UI to control their own Entity (e.g. Ship), and perhaps related entities
+	(e.g. Bullets and Missiles fired from the ship).
+- AI_GameClient, which exists on the server and controls all of the entities not controlled by any player
+
+Here are the Major Sections to Consider:
+# Exactly one GameClient controls any entity at any given time.
+# The controlling GameClient is sending primary position and attitude messages and that the Receiving Remote Controlled Entities
+	are receiving the position and attitude messages and are processing them with extrapolation.
+# Other messages are handled properly, including those needed by Actors and those sent from other Controllers.
+
+\section sec_ClientEntityControl Which Game Client Controls an Entity?
+Only one GameClient should have control over an entity.  At first, ALL entities are controlled by the AI_GameClient, because that 
+is the only one that is active.  UI_GameClients need to request control and then be given it by the AI_GameClient.  The UI_GameClient
+also need to release control BACK to the AI_GameClient when it gets control of a new Entity or when it loses ots connection for any reason.
+We also need to handle control of related child entities.  
+
+\subsection sec_ClientPlayerID	GameClient knows its PlayerID
+- IClient now has a virtual function virtual PlayerID GetMyPlayerID() const = 0;
+- Client implements it by using its RakClientInterface member
+- MockClient already does stuff like that
+- GameClient can now return that PlayerID
+
+\subsection sec_EntityPlayerID	Each Entity3D knows about the PlayerID of its controller
+- PlayerID Entity3D::m_controllingPlayerID;
+- PlayerID Entity3D::GetControlllingPlayerID() const {return m_controllingPlayerID;}
+- bool Entity3D::IsLocallyControlled() const {return m_controllingPlayerID==m_gameClient->GetMyPlayerID();}
+- PlayerID TransmittedEntity::CONTROLLING_PLAYER_ID;
+- Entity3D::Initialize(.) grabs the CONTROLLING_PLAYER_ID from the TransmittedEntity
+- TransmittedEntity::LoadFromBitStream(.) and TransmittedEntity::WriteToBitStream(.) handle CONTROLLING_PLAYER_ID
+
+\subsection sec_ServerEntityPlayerID	The ServerManager knows about the PlayerID controlling each new and existing entity
+The ServerManager is what creates the TransmittedEntity that is sent to each Client.  It needs to know all the time which
+Client is controlling each entity.  This includes newly created entities sent to players as well as the original AI ones.
+- Entity3D and TransmittedEntity ID renamed to Name (A string value rather than a unique index)
+- Entity3D and TransmittedEntity now have a NETWORK_ID
+- SeverManager keeps a vector m_entities of all entitities (position in the vector is the network ID)
+- ~SeverManager cleans them up
+- SeverManager reads Initial Entities out of LUA ONE time and places them in the Vector, assignining the index and Controller to AI
+- ServerManager::SendExistingEntities now just sends the items in m_entities
+- ServerManager::PeerConnected creates the new entity for the new player, 
+	- assigning its NETWORK_ID and CONTROLLING_PLAYER_ID
+	- Placing it in m_entities
+	
+\subsection sec_SubItems	Sub-Items like DestroyableEntity, Bullets, Missiles, etc. need to be properly Tracked with all other Entities
+Right now these are created dynamically client side, as a part of the Entity Intitialization, but they need to be created
+in the ServerManager, or at least all of the TransmittedEntities do, then the entity is created and needs to be associated as they are
+now.  Perhaps the sub-items need to be sent first?  We need to make it so the sub-items are also created in the same manner as the 
+other entities, rather than them being loaded as a part of the parent entity.  The Parent entity would need to know how to connect
+to the sub-entities after it is created.
+- ITransmittedEntityOwner is an interface that allows for adding a TransmittedEntity and returns an index
+- ServerManager implements ITransmittedEntityOwner in a thread safe way with a mutex around the push_back of m_entities
+- TransmittedEntity::CreateFromServerScript(.) takes one as a parameter, along with the controlling playerID and calls ...
+- TransmittedEntity::LoadFromScript which is supposed to create all of its children before ...
+- Adding itself to the list of entities
+- ServerManager::CreatePlayersEntities(.) now can create a list of entities and provide it to ...
+- ServerManager::PeerConnected(.), which sends the list of entities (rather than a single one) to all the connected clients
+- UI_GameClient::LoadOwnEntity() reads in and created the list of entities rather than a single one, loading their OSGV synchronously
+	and assigning its controller to the last entity (Its own ship)
+- GameClient::NewPlayersEntity(.) also reads in a list rather than a single one and creates the OSGV asynchronously
+- GameClient now needs to check if ALL entities tied to a player ID are done loading before sending the message it is done AND
+	- Maintians the list of those that still need to be checked: m_asyncLoadersToCheck
+	- Maintains a list of those that need to be attached to the scene still: m_asyncLoadersToAttach
+	- CheckOnAsyncLoaders(PlayerID playerID, unsigned startIndex) and CleanAsyncLoaders(PlayerID playerID) help CheckOnAsyncLoaders()
+- AttachNewPlayersEntity(Packet& packet) loops through all in m_asyncLoadersToAttach and attaches them
+- GameClient now has another map for easy access to the enitities by network ID m_entityMap_NetID, with FindEntity(unsigned networkID)
+- CannonRounds and DestructibleEntity handle this correctly and can be used as a model
+
+\subsection sec_RequestControl	Players need to be able to request and receive Control
+- Fringe::Base::UI_GameClient::FlyNextShip() loops through the available ships, 
+	finding one they might use (that is AI controlled) and calling ...
+- GG_Framework::Logic::UI_GameClient::RequestControlEntity(Entity3D* tryEntity) which sends a (ID_RequestControlEntity) message requesting control
+- GG_Framework::Logic::AI_GameClient::ReceiveRequestControlEntity(Packet& packet) is the only one that receives, parses the packet, and calls ...
+- GG_Framework::Logic::GameClient::SendChangeEntityController 
+	packages the message ID_ChangeEntityController for ALL related entities
+	Also makes sure the Entity3D::SendFinalUpdate is called, which locally calls SetControllingPlayerID
+- GG_Framework::Logic::GameClient::ChangeEntityController receives the message and updates
+- Entity3D::RecvFinalUpdate gets the final updates and calls SetControllingPlayerID
+- Ship::SetControllingPlayerID (the ship actually being controlled, not a sub-entity) calls
+- Fringe::Base::UI_GameClient::ShipChangedControl, which handles setting the controllers for the primary ship
+	and calls SendChangeEntityController on its old ship to give it back to the AI
+
+\subsection sec_PlayerLeaving	Watch for player leaving, Sends control back to AI
+We need to handle both the player leaving normally and through a bad disconnect.
+I added a Multi-Player scene "GremlinGames\RimSpace\Art-001\Game Scripts\Maps\Dual Trio_Q34.lua" to test
+	Just open up 2 windows then close one and make sure you can switch into the ship from the old window.
+
+In a Normal Situation, Fringe::Base::UI_GameClient::~UI_GameClient passes its own ship back
+	to the AI, just as it would if switching ships.
+	
+In a disconnect situation, the ServerManager knows about the bad disconnect.  It tells the AI_GameClient
+which finds all of the entities owned by the old client.  It had to look up the parent chain to find the
+top level parent, which then in turn looks through all the children.  We are not able to send a final update
+in this situation, but we can make sure everyone knows about the new parent.
+
+
+\section sec_PosAttMessages Position and Attitude Messages
+Only the controller (AI or UI) should be generating PosAtt messages, and all of the other entities need to get the messages and use them.
+We may need to change how often the messages are sent (maybe based on a certain amount of change in linear or rotational velocity since 
+the last post).  On the Receiving end, we need to extrapolate the values in between times we get the messages.
+
+
+
+\section sec_OtherMessages Other Messages
+This is a pretty detailed part as well.  We need to make sure bullets are being fired off properly and that external force messages are sent.
+Overall, besides the control and Pos/Att messages, there are these kinds of messages we need to deal with:
+
+# Messages sent by a controller to all remotes.  These should not be duplicated by remote clients.  Actors may listen to these.
+# Messages used internally.  Each client (local and remote) generates these at the right time in repsonse to one
+	of the first kinds of messages.  These are NOT transmitted.
+# Messages sent by some other controller.  These are limited to some external cause, like a collision or nearby explosion.
+	The external force can either be generated where the collision happens, or by the controller of the Entity.  I am leaning towards
+	the latter.
+	
+I think the best way to handle this is to provide methods to RC_Controller that allow firing network messages.  This way we can keep the
+same Event Maps that we already have, but just send a message along to the server when they are called.  The RC_Controller also receives
+the messages off the server and fires the appropriate events.  Doing this will also make it so some events might be fired form 
+a non-locally controlled entity, for example the external forces and collisions.
+
+We need a way of consistently converting enumerated messages to strings and back.  This needs to have exactly the same value for
+all strings.  One way is to have a hash table, another is to have a look-up table, and yet another is to use the indexing
+in the string itself, OR we could have the index embedded in the string we pass it.
+
+
+
+\section sec_Development	Development Commits
+
+
+
+*/

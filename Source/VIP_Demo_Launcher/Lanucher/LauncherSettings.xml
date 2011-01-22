@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Paths should be relative to the stable_bin_VS9 directory -->
+<Launcher>
+  <Game path="..\RimSpace\Art-001\Game Scripts\Maps\" 
+        contentPath="..\RimSpace\Art-001\Content-Source\">RimSpace Art-001</Game>
+   <Game path="..\Fringe\Art-3\Game Scripts" 
+      contentPath="..\Fringe\Art-3\Content-Source">Fringe Art-3</Game>
+</Launcher>

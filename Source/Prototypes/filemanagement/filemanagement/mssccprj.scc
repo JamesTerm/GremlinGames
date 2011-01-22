@@ -1,0 +1,9 @@
+SCC = This is a Source Code Control file
+
+[FileManagement.dsp]
+SCC_Aux_Path = "\\Titanic\Area51\Toaster2\SDK SourceSafe DB"
+SCC_Project_Name = "$/T[2] Source Code/Controls/FileManagement", VTPAAAAA
+
+[FileManagement.vcproj]
+SCC_Aux_Path = "\\Titanic\Area51\Toaster2\SDK SourceSafe DB"
+SCC_Project_Name = "$/T2 Source Code/Controls/FileManagement", VTPAAAAA

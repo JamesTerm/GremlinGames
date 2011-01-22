@@ -1,0 +1,39 @@
+The following is a summary of the Foxbox output on Com Port 2 of the
+Whiteway 3000:
+
+Data Format: 9600 baud, 8 bit, no parity, 1 stop bit
+
+The foxbox NBA data protocol is given  below. Each byte is rotated
+left 3 bits and sent out. So if you send out 0xaa from WS3000 then it
+comes out as 0x85. At the receiving end the data needs to be rotated
+again to get the original result. The Fox box protocol is standard
+across all stadiums.
+
+Out of the WS3000, COM Port 1 is different for each and every
+stadium. Please do not tap off of COM1.  There is a potential for
+adversely affecting the game clock and other vital information used
+in the system.
+
+Fox Box NBA Protocol.
+/* basketball xmit structure */
+BEGIN
+	  bsync;	/* beginning sync char, 0xaa */
+	  ncount;	/* count of data bytes up to checksum */
+
+	  nsport;	/* sport type, basketball is type 1 */
+
+	  nhs;		/* home score */
+	  nvs;		/* visitor score */
+
+	  nmin;		/* game clock minutes */
+	  nsec;		/* game clock seconds */
+	  nten;		/* game clock tenths of second */
+	
+	  nper;		/* period, in ot if > 3 */
+	
+	  shotclk;	/* 24 second shot clock */
+
+	  cslow;	/* checksum low byte */
+	  cshigh;	/* checksum high byte */
+END
+

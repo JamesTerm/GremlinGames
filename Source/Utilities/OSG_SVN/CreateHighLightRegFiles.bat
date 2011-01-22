@@ -1,0 +1,1 @@
+perl createHighlightRegFiles.pl ./OpenSceneGraph/include/

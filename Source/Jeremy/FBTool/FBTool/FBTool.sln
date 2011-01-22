@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBTool", "FBTool.vcxproj", "{0C51B0C0-6818-474F-A2BC-0537999BD8C8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrameWork.XML", "..\FrameWork\XML\FrameWork.XML.vcxproj", "{3B8172AB-F640-494C-B220-FC61C35C74F5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C51B0C0-6818-474F-A2BC-0537999BD8C8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0C51B0C0-6818-474F-A2BC-0537999BD8C8}.Debug|Win32.Build.0 = Debug|Win32
+		{0C51B0C0-6818-474F-A2BC-0537999BD8C8}.Release|Win32.ActiveCfg = Release|Win32
+		{0C51B0C0-6818-474F-A2BC-0537999BD8C8}.Release|Win32.Build.0 = Release|Win32
+		{3B8172AB-F640-494C-B220-FC61C35C74F5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3B8172AB-F640-494C-B220-FC61C35C74F5}.Debug|Win32.Build.0 = Debug|Win32
+		{3B8172AB-F640-494C-B220-FC61C35C74F5}.Release|Win32.ActiveCfg = Release|Win32
+		{3B8172AB-F640-494C-B220-FC61C35C74F5}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

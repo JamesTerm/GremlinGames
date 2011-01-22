@@ -1,0 +1,20 @@
+/** \page RakNet_ProjectSetup_txt FrameWork.RakNet Project Setup Code Tour
+
+FrameWork::Logic::Network is built as a pretty minimal wrapper on the RakNet library.
+We are basically just providing somne simple wrapper interfaces and implementations 
+based RakNet.  We want to create a simple reusable Client and Server interface
+that focusses on the interface we are interested in.  We also want to create a
+mock version of these interfaces for use in a single player game or automated test.  I 
+decided that it was useful to do this for a single player game so that the code base
+for a single-player demo would be exactly the same as that for a multi-player
+game.  
+
+The mock interface just would cause the packets to not actually be sent, so that someone 
+playing the single-player demo (or us running automated tests) would not be bothered by 
+the firewall.
+
+Another thing this library has is the FrameWork.RakNet.PacketEnumerations.h file that 
+has packet enumerations specific to our needs.  Specific games may have their own packet
+enumerations on top of these.
+
+*/

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="ZDesign"
+	ProjectGUID="{38B45EBC-2EF5-4E56-874E-DDDEA28EEFF9}"
+	RootNamespace="ZDesign"
+	Keyword="MakeFileProj"
+	TargetFrameworkVersion="131072"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
+			ConfigurationType="0"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine=""
+				ReBuildCommandLine=""
+				CleanCommandLine=""
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
+			ConfigurationType="0"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine=""
+				ReBuildCommandLine=""
+				CleanCommandLine=""
+				Output=""
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Overviews"
+			>
+			<File
+				RelativePath=".\RakNet_ProjectSetup.txt"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Notes &amp; Bug Fixes"
+			>
+			<File
+				RelativePath=".\ContentDirectory.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\ScaledTransform_ViewportReference_notes.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\SunPosition_ScaledTransform_note.txt"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Dev Units"
+			>
+			<File
+				RelativePath=".\AVI Capture.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Client Server Conections.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Destruction.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Light Blooming.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Load Status.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Logo Scene.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\MapFramesEffect.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Mech Motion.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\MultiPlayer.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\OSGV Update.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Particle Smoke Trails.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Reading LUA Script.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Ship Parenting Docking Launching.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Threaded Game Content Loading.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Thruster Events.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Viewer Refactoring.txt"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Phases and Iterations"
+			>
+			<File
+				RelativePath=".\Phase 1A - b.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Phase 1A.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Phase 1B.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\Phase 1C.txt"
+				>
+			</File>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

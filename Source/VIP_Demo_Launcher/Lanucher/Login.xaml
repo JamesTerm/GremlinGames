@@ -1,0 +1,12 @@
+﻿<Window x:Class="Launcher.Login"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Login" Height="300" Width="300">
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Label>Username</Label>
+        <TextBox Name="Username" Width="200"/>
+        <Label  Margin="0,20,0,0">Password</Label>
+        <PasswordBox Width="200" Name="PasswordBox"></PasswordBox>
+        <Button Margin="0,50,0,0" Width="50" Click="Login_Click">Login</Button>
+    </StackPanel>
+</Window>

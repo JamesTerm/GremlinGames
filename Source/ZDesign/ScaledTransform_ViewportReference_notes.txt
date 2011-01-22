@@ -1,0 +1,21 @@
+/*! \page ScaledTransform_ViewportReference_notes_txt ActorActions: Using ViewportReference with a Scaled Transform - Notes
+
+I can see how setting the ViewportReference of the Camera to an actor that is inside a 
+ScaledTransform would screw things up.  I am cheating the size of things in ScaledTransforms, 
+making things seem much larger than they really are, by bringing the object closer to the 
+camera, and making sure it draws behind other objects in the scene.  In order to make sure 
+the camera does not fly THROUGH the planet that is (REALLY only 2 km in diameter and 100 m 
+away for example), I have to move that object along with the camera.  In a sense, the object 
+is sort of parented (to the position only, not the rotation) of the camera. 
+ 
+So you can see the problem.  When you set the ViewportReference of the camera to an object 
+in a ScaledTransform, the camera is parented to the object which is parented to the camera.  
+WHEE!  Nodes that are in a ScaledTransform are meant to be window dressing in the 
+scene.  They are only there to look good.  When I actually do work with planets (gravity, 
+collisions, etc) I will need to maintain their ACTUAL position and size in double precision 
+without relying on the perceived position in the visual scene graph.  It is working correctly, 
+and it is working the only way it could work (that I can think of) to maintain the feature 
+of having planet sized objects in the scene.  Most space games do not do this at all.  The 
+planet is a part of the background image.  I think it is cool that we have it. :) 
+
+*/

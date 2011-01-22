@@ -1,0 +1,7 @@
+C:\GG\Source\Jeremy\i18n\LocBaml\CSharp\bin\Debug\LocBaml.exe
+C:\GG\Source\Jeremy\i18n\LocBaml\CSharp\bin\Debug\LocBaml.pdb
+C:\GG\Source\Jeremy\i18n\LocBaml\CSharp\obj\Debug\ResolveAssemblyReference.cache
+C:\GG\Source\Jeremy\i18n\LocBaml\CSharp\obj\Debug\StringTable.resources
+C:\GG\Source\Jeremy\i18n\LocBaml\CSharp\obj\Debug\LocBaml_SDK.csproj.GenerateResource.Cache
+C:\GG\Source\Jeremy\i18n\LocBaml\CSharp\obj\Debug\LocBaml.exe
+C:\GG\Source\Jeremy\i18n\LocBaml\CSharp\obj\Debug\LocBaml.pdb

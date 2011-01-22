@@ -1,0 +1,17 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClickOnce", "ClickOnce\ClickOnce.csproj", "{FAD7C03D-6AED-4C79-9F57-E6A08C0D0873}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FAD7C03D-6AED-4C79-9F57-E6A08C0D0873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAD7C03D-6AED-4C79-9F57-E6A08C0D0873}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAD7C03D-6AED-4C79-9F57-E6A08C0D0873}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAD7C03D-6AED-4C79-9F57-E6A08C0D0873}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

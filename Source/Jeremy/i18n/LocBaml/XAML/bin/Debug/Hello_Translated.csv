@@ -1,0 +1,7 @@
+HelloApp.g.en-US.resources:window1.baml,Window_1:HelloApp.Window1.$Content,None,TRUE,TRUE,,#StackPanel_1;
+HelloApp.g.en-US.resources:window1.baml,Window_1:System.Windows.Window.Title,Title,TRUE,TRUE,,HelloApp
+HelloApp.g.en-US.resources:window1.baml,Window_1:System.Windows.Controls.Control.Background,None,FALSE,TRUE,,\#FFFFFFFF
+HelloApp.g.en-US.resources:window1.baml,Window_1:System.Windows.FrameworkElement.MaxWidth,None,FALSE,TRUE,,300
+HelloApp.g.en-US.resources:window1.baml,Window_1:System.Windows.FrameworkElement.MaxHeight,None,FALSE,TRUE,,300
+HelloApp.g.en-US.resources:window1.baml,loc1:System.Windows.Controls.TextBlock.$Content,Text,TRUE,TRUE,,HelloT
+HelloApp.g.en-US.resources:window1.baml,loc2:System.Windows.Controls.TextBlock.$Content,Text,TRUE,TRUE,,GoodbyeT

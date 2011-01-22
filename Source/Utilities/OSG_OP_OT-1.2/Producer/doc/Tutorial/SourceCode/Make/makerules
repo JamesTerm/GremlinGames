@@ -1,0 +1,22 @@
+clean:
+	rm -f $(ALLOBJS) 
+	rm -f $(ALL)
+	rm -rf .depend Makedepend
+	rm -rf ii_files
+	rm -rf SunWS_cache
+
+clobber : clean 
+
+Makedepend : $(ALLSRC)
+	@ [ -d .depend ] || (mkdir .depend;touch Makedepend)
+	@ if [ -z "$(ALLSRC)" ]; then echo Please define ALLSRC; exit 1; fi
+	@ for f in $? ; \
+	do \
+		echo $(CXX) -M $(CXXFLAGS) $$f ;\
+		$(CXX) -M $(CXXFLAGS) $$f > .depend/$$f; \
+	grep $$f $@ || echo include .depend/$$f >> Makedepend ;\
+	done
+
+sinclude Makedepend
+
+

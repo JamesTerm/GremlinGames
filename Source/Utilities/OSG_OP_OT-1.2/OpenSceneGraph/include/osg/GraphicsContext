@@ -1,0 +1,235 @@
+/* -*-c++-*- OpenSceneGraph - Copyright (C) 1998-2006 Robert Osfield
+ *
+ * This library is open source and may be redistributed and/or modified under
+ * the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or
+ * (at your option) any later version.  The full license is in LICENSE file
+ * included with this distribution, and on the openscenegraph.org website.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * OpenSceneGraph Public License for more details.
+*/
+
+#ifndef OSG_GRAPHICSCONTEXT
+#define OSG_GRAPHICSCONTEXT 1
+
+#include <osg/State>
+#include <osg/GraphicsThread>
+
+namespace osg {
+
+/** Base class for providing Windowing API agnostic access to creating and managing graphics context.*/
+class OSG_EXPORT GraphicsContext : public Referenced
+{
+    public:
+    
+        /** GraphicsContext Traits object provides the specification of what type of graphics context is required.*/
+        struct Traits : public osg::Referenced
+        {
+            Traits():
+                _displayNum(0),
+                _screenNum(0),
+                _x(0),
+                _y(0),
+                _width(0),
+                _height(0),
+                _windowDecoration(false),
+                _supportsResize(false),
+                _red(8),
+                _blue(8),
+                _green(8),
+                _alpha(0),
+                _depth(24),
+                _stencil(0),
+                _pbuffer(false),
+                _quadBufferStereo(false),
+                _doubleBuffer(false),
+                _target(0),
+                _level(0),
+                _face(0),
+                _mipMapGeneration(false),
+                _sharedContext() {}
+                
+            // where graphic context is be hosted.                
+            std::string  _hostName;
+            unsigned int _displayNum;
+            unsigned int _screenNum;
+            
+            // graphics context orginal and size
+            unsigned int _x;
+            unsigned int _y;
+            unsigned int _width;
+            unsigned int _height;
+            
+            // window decoration and baviour
+            std::string _windowName;
+            bool        _windowDecoration;
+            bool        _supportsResize;
+            
+            // buffer depths, 0 equals off.
+            unsigned int _red;
+            unsigned int _blue;
+            unsigned int _green;
+            unsigned int _alpha;
+            unsigned int _depth;
+            unsigned int _stencil;
+            
+            // buffer configuration
+            bool _pbuffer;
+            bool _quadBufferStereo;
+            bool _doubleBuffer;
+
+            // render to texture
+            GLenum          _target;
+            unsigned int    _level;
+            unsigned int    _face;
+            unsigned int    _mipMapGeneration;
+            
+            // shared context
+            GraphicsContext* _sharedContext;
+        };
+    
+    
+        /** Callback to be implemented to provide access to Windowing API's ability to create Windows/pbuffers.*/
+        struct CreateGraphicContextCallback : public osg::Referenced
+        {
+            virtual GraphicsContext* createGraphicsContext(Traits* traits) = 0;
+            
+            virtual ~CreateGraphicContextCallback() {};
+        };
+    
+    
+        /** Set the create graphics context callback - this callback should be supplied by the windows toolkit. */
+        static void setCreateGraphicsContextCallback(CreateGraphicContextCallback* callback);
+        
+        /** Get the create graphics context callback*/
+        static CreateGraphicContextCallback* getCreateGraphicsContextCallback();
+    
+        /** Create a graphics context for a specified set of traits.*/
+        static GraphicsContext* createGraphicsContext(Traits* traits);
+        
+        /** Create a contextID for a new graphics context, this contextID is used to set up the osg::State associate with context.
+          * Automatically increments the usage count of the contextID to 1.*/
+        static unsigned int createNewContextID();
+
+        /** Increment the usage count associate with a contextID. The usage count speficies how many graphics contexts a specific contextID is shared between.*/
+        static void incrementContextIDUsageCount(unsigned int contextID);
+
+        /** Decrement the usage count associate with a contextID. Once the contextID goes to 0 the contextID is then free to be reused.*/
+        static void decrementContextIDUsageCount(unsigned int contextID);
+    
+    public:
+    
+        /** Get the traits of the GraphicsContext.*/
+        inline const Traits* getTraits() const { return _traits.get(); }
+
+
+        /** Set the State object which tracks the current OpenGL state for this graphics context.*/
+        inline void setState(State* state) { _state = state; }
+        
+        /** Get the State object which tracks the current OpenGL state for this graphics context.*/
+        inline State* getState() { return _state.get(); }
+        
+        /** Get the const State object which tracks the current OpenGL state for this graphics context.*/
+        inline const State* getState() const { return _state.get(); }
+        
+
+        /** Realise the GraphicsContext.*/
+        bool realize();
+
+        /** close the graphics context.
+          * close(bool) stops any associated graphics threads, releases the contextID for the GraphicsContext then
+          * optional calls closeImplementation() to do the actual deletion of the graphics.  This call is made optional
+          * as there are times when the graphics context has already been deleted externally and only the OSG side
+          * of the its data need to be closed down. */
+        void close(bool callCloseImplementation=true);
+
+        /** swap the front and back buffers.*/
+        void swapBuffers();
+
+        /** Return true if the graphics context has been realised and is ready to use.*/
+        inline bool isRealized() const { return isRealizedImplementation(); }
+
+
+        /** Make this graphics context current.
+          * Implementated by first aquiring a lock of the GraphicsContext mutex, and then doing a call to makeCurrentImplementation(). */
+        void makeCurrent();
+        
+        /** Make this graphics context current with specified read context.
+          * Implementated by first aquiring a lock of the GraphicsContext mutex, and then doing a call to makeContextCurrentImplementation(). */
+        void makeContextCurrent(GraphicsContext* readContext);
+        
+        /** Release the graphics context by unlocking the GraphicsContext mutex.*/
+        void releaseContext();
+        
+        /** Return true if the current thread has this OpenGL graphics context.*/
+        inline bool isCurrent() const { return _threadOfLastMakeCurrent == OpenThreads::Thread::CurrentThread(); }
+
+        /** Bind the graphics context to associated texture.*/
+        inline void bindPBufferToTexture(GLenum buffer) { bindPBufferToTextureImplementation(buffer); }
+
+
+
+        /** Create a graphics thread to the graphics context, so that the thread handles all OpenGL operations.*/
+        void createGraphicsThread();
+
+        /** Assign a graphics thread to the graphics context, so that the thread handles all OpenGL operations.*/
+        void setGraphicsThread(GraphicsThread* gt);
+
+        /** Get the graphics thread assigned the graphics context.*/
+        GraphicsThread* getGraphicsThread() { return _graphicsThread.get(); }
+
+        /** Get the const graphics thread assigned the graphics context.*/
+        const GraphicsThread* getGraphicsThread() const { return _graphicsThread.get(); }
+
+
+        /** Realise the GraphicsContext implementation, 
+          * Pure virtual - must be implemented by concrate implementations of GraphicsContext. */
+        virtual bool realizeImplementation() = 0;
+
+        /** Return true if the graphics context has been realised, and is ready to use, implementation.
+          * Pure virtual - must be implemented by concrate implementations of GraphicsContext. */
+        virtual bool isRealizedImplementation() const = 0;
+
+        /** Close the graphics context implementation.
+          * Pure virtual - must be implemented by concrate implementations of GraphicsContext. */
+        virtual void closeImplementation() = 0;
+
+        /** Make this graphics context current implementation.
+          * Pure virtual - must be implemented by concrate implementations of GraphicsContext. */
+        virtual void makeCurrentImplementation() = 0;
+        
+        /** Make this graphics context current with specified read context implementation.
+          * Pure virtual - must be implemented by concrate implementations of GraphicsContext. */
+        virtual void makeContextCurrentImplementation(GraphicsContext* readContext) = 0;
+
+        /** Pure virtual, Bind the graphics context to associated texture implementation.
+          * Pure virtual - must be implemented by concrate implementations of GraphicsContext. */
+        virtual void bindPBufferToTextureImplementation(GLenum buffer) = 0;
+
+        /** Swap the front and back buffers implementation.
+          * Pure virtual - must be implemented by Concrate implementations of GraphicsContext. */
+        virtual void swapBuffersImplementation() = 0;
+
+
+    protected:
+        
+        GraphicsContext();
+
+        virtual ~GraphicsContext();
+
+
+        ref_ptr<Traits>         _traits;        
+        ref_ptr<State>          _state;
+        OpenThreads::Mutex      _mutex;
+        OpenThreads::Thread*    _threadOfLastMakeCurrent;
+        
+        ref_ptr<GraphicsThread> _graphicsThread;
+        
+};
+
+
+}
+
+#endif

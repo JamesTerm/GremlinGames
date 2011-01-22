@@ -1,0 +1,157 @@
+/*!	\page  Viewer_Refactoring_txt	Viewer Refactoring
+
+We really need to break out lots of the current OSGV style functionality to play better
+with the full game.  
+
+- Breaking up the Viewer, What it does now:
++ Viewer
+	+ Handles ESC Key to turn off help or set a kill me flag  [How to handle exit, plus knowing about other things?]
+		[Perhaps an event that asks permission for exit?, has a ref parameter?]
+	+ Owns the Trackball
+	+ Owns the PDCB
+	+ Owns the KBMCB
+	+ Manipulates the Camera
+		+ Sets initial Size/Fullscreen, Uses VPR and Trackball to set position
+	+ Owns the SnapImageCallback (Provides to Camera)
+	+ Tracks FrameRate
+	+ Works with VPREF
+		+ Uses it to find the Actor Title based on lighting and WF modes (Runner assigns to the WindowTitle)
+		+ Tracks when it changes, provides to Trackball, Stores old VPREF trackball positions
+		+ Uses the VPREF to find the Camera Center
++ KeyboardMouseCallback
+	+ Fires events and tracks ALT & Other Buttons
+	+ Knows intimate things about the Viewer and PDCB (BAD!)
+	+ Handles the mouse motion, has to transfer it to a trackball somehow
+	+ Is the thing that keeps the ViewPort Reference (ugh!)
++ PostDrawCallback
+	+ Draws 5 different chunks on the screen, using the TEXT mode
+	+ Needs to know about the trackball and the VPR (OSGV only)
+		+ Actor local time
+		+ Title used from Viewer
+		+ Viewer Frame Rate
+		+ Trackball mode and distance
+	+ Help Screen
+	
+- What we want it to do:
+	+ ICamera takes care of the KBM AND the KBMCB (remove IKBM)
+	+ EventMap connects to the ICamera and works with all of its events
+		(it seems we can remove the proxy thing)
+	+ ICamera tracks its own Framerate based on the updates
+	+ Trackball is simply something that listens for the Mouse Events and sets the ICamera
+	+ Viewport References are really only about OSGV, perhaps we can use simply the Node otherwise?
+	+ Have individual PDCB's that also handle their own viewing
+	+ Have an 'escape' event that other things can override for quitting?
+		(actually an escape one AND then a Quit one that gets fired if no one wants the escape one).
+	+ So many of the PDCB's are OSGV specific.  Also, Make sure we can set their positions dynamically
+	
+	
+- How in the HECK am I going to do it - if I were to re-write?
+	* Write all of the new code in UI and get it to compile, basic only, regular event map
+	* Get it to compile and work in OSGV, starting top down
+		* Get it to compile and run, removing scene runners
+		* Get the Quit callback working
+		* Add a simple trackball manipulator
+			* Why is my trackball lock not working?
+			* Get the trackball input working so as to use the dTime
+			* Get the initial and maximum distances working, reset when providing a new center
+			* Get space to reset the trackball
+		* Provide a framerate PDCB & Fullscreen modifier as an example
+	- Get it to work from Logic up to Fringe Clients, Make sure the Logo scene spins on sep thread
+		- We might need to get the Scene Runners going again, but try to avoid it
+		- Build the first draft chase plane manipulator as a simple trackball
+	- Clean up old code
+		- Move or remove OSGV ViewportReference
+		- Do I need to keep the EventMaps in that strange list?
+		- Can I get rid of the ICamera, ICameraMatrixUpdater, CameraProxy?
+		- Check it all in
+	- Build a better chase plane manipulator
+		- Remove the arrow
+		- Make a simple follow chase camera, no buttons needed (watch for rollover)
+		- Make the mouse button fire the cannons
+		- Work in using the artificial horizon, angles are relative
+		- Be able to switch horizons for ship and camera with a key, quick switch
+		- Be able to roll the camera in time when there is a change (roll-over, change in horizon)
+	- Keyboard bindings and events with timers
+	
+		
+\section sec_StaticDesign
+
+- UI::MainWindow (owns the camera group, connects to a single scene at a time), NOT used for the logo runner
+	- Singleton
+	- resolution & anti-aliasing settings
+	- Must have a list of the cameras, plus one for the main camera
+	- Has a single KBM/KBMCB that passes on the event messages to a map (do not worry about testing)
+	- Connect a callback event map that also works with the mouse and fires events, Calls Connect and Disconnect virt funcs
+	- Quit event with a reference
+	- Framerate Calculations
+	
+- Camera (might be the primary one or an inset displayed on an rtt)
+	- The scene being viewed
+	- Have a single CameraController that gets a callback per frame, be able to switch that controller
+	
+	- Have a global map that stays active all the time?
+	
+- Event Map
+	- Make sure we can fire events from all the different types of Alt-Crtl combinations
+	
+- Post-Draw Callbacks
+	- Use the existing osg::PDCB.  Attach and remove them as a part of the attach and remove of the EventMap event handler
+	
+- CameraController
+	- Gets a callback per frame for camera asking for the current matrix
+	
+- A full user interface may be connected to the its own EventMap, collection of PDCB, and CameraController
+	These will be a part of the Controller class for the entity being controlled.
+	
+	
+
+\section sec_Keybindings Keybindings
+We want to allow for ALL of the Keys to be configurable from an OSGV file and show all of the 
+Keys in the Help Screen (Perhaps Key Groups)?  We also have to make sure that when we are not
+loading the primary object, we ignore the keybindings.
+
+-	Be able to kill anti-aliasing, set resolution for full frame
+-	Make the Event that works with Keybindings be able to associate Ctrl and other Keys being down
+	-	Rather than storing an INT, make something (a struct)? that has flags for other 
+		keys being down as well.  Fire that in the events.  Also watch for Ctrl, Alt, DblClick
+	-	Make sure we can read in the other keys from OSGV, including escape etc.
+-  Be able to enable and disable groups of keybindings based on the active ship
+-	Make the Help screen use existing keybindings (OSGV defined ones)
+	-	Make a class that holds the existing keys and descriptions.  Groups of Keys will
+		be added and removed dynamically, so we need to watch for them. Keep a registered set.
+		We will need to be able to dynamically add and remove groups when we swith to different
+		vessels, (perhaps we should test this with the ViewSetCenter).  What is going to happen
+		then is that we will be disabling/enabling the Keybindings on the EventMap and The
+		Group of Events.  Perhaps the EventMap itself will be the class we can disable. ...
+-  Read in a default osgv file for Global Keybindings.  This one will always be on.
+-  Pull out QUIT with its own binding
+-  Pull out the SnapImageCallback into its own class, with its own keybinding set working with the Global set
+-  Pull out the HelpFile into a seperate class, with its own keybinding
+-  Pull out all of the remaining postdraw callbacks and actions from KeyboardMouseCallback, one at a time,
+	removing any of the other dependency issues.
+	
+	
+	
+	> Make it work with OSGV
+		* Make OSGV very simple and ONLY work with the ICamera as is
+			* Figure out a fixed camera position to start with
+		> Merge the KBM stuff with the callback and have its own events
+		> Have the KBM talk to the EventMap
+			? We might be able to remove the extra camera proxy and move it to the EventMap
+		> Make a Trackball that listens for Mouse events and sets the camera matrix
+		> Add the VPR to the Trackball, how much is OSGV specific?  Do I care?
+		> Have the ICamera work with framerate
+		> Provide the ESCAPE and the QUIT events that can be overridden (Not help yet?)
+		> Make the PDCB's in turn, listening to their own KBM and interracting (Not help yet?)
+	> Make it work with the other Runners
+	> Make the Help Screen Work again
+		> EventMap holds a list of items that can be used for Help, Use an interface for Key,Desc,State strings
+		> Help Screen works through list to build the buffer shown on the screen
+		> Help screen dismisses the ESCAPE if it is on
+	> Remove the old Viewer/KBMCB/PDCB classes completely
+
+
+\section sec_ViewerDeps	Break the Viewer/OSGV Dependancy  - Deferred
+The Viewer is very tightly integrated into OSGV.  There are lots of things we want to break out.
+
+*/

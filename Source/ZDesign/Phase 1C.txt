@@ -1,0 +1,51 @@
+/*!	\page  Phase_1C_page	Phase 1C
+
+Provide the real Flight Control and Camera Motion View Manipulators.
+<Too many notes to write here> 
+
+
+
+\section sec_Iter1C-a	Iteration 1C - a - Chase Camera
+Chase Plane Viewer that can trackball when released.  Have a slush in the camera so it
+can slowly move around to where it needs to be.
+
+- Controller handles the trackball and view manipulation
+- Use a VPR based on the intended position of the ship
+- Find the proper place for the Chase Plane View
+- Use a key to release into trackball view, slide the VPR back to ship center
+- When in chase plane (even returning from trackball) have a maximum rate at which it
+	can compensate for change (true for returning from trackball)
+
+
+
+\section sec_Iter1C-b	Iteration 1C - b
+Break out the existing global Postdraw callbacks (including Help) from 
+the viewer.  Have them read as a part of the GlobalEventMap on initialize of UI
+as a kind of Effect?
+
+- Provide an event for On/While double click and work out how to get it
+- See how KBMCB defines the extra keys, be able to pass that to the EventMaps
+- Reading Keybinding has key, name, and state, and maybe multiple groups
+- Controller has a list of the active keybindings (or event map does?)
+- Help screen asks the local controller for its set of active keybindings
+- Help screen dynamically builds the help screen based on those keybindings
+- Use a new system for the PostDrawCallbacks (breaking it out of the Viewer)
+- Make all of the existing post draw callbacks use the new system
+
+
+
+\section sec_Iter1C-c	Iteration 1C - c - Flight Model
+All of the velocity and breaking stuff.  Allow Justin to adjust parameters (C++?).
+(Think ahead for Physics, asking for acceleration in one place).  Allow for "slide" based
+turning and thrusting.  Place the velocity information in a PDCB
+
+- Create a fighter controller that has the new controls and bindings, forward only.
+- Mouse drives intended orientation, (VPR represents intended orientation?)
+- Have a rate of acheiving that orientation, and a function.
+- Add a PDCB to display velocity information somewhere.
+- When trying to achieve orientation, have fancier (push into seat)
+- Be able to track the G intensity and direction
+- G Meter on the Screen.
+- Teach Justin about the tweaks he has, including the PDCB controls of text display
+
+*/

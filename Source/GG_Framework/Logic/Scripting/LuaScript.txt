@@ -1,0 +1,8 @@
+/*! \page LUA_Script_Tour	LUA: Lua Script Tour
+
+The FrameWrok.LUA project was added to encapsulate the common scripting functionality that 
+LUA scripting provides.  
+
+This first UNIT provides for the FrameWork::LUA::Script class.
+
+*/

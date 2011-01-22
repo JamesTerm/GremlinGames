@@ -1,0 +1,163 @@
+/*!	\page  Client_Server_Connections_txt	Client/Server Connections
+
+This unit sets up all of the initial connections between the client and the server.  
+We will build each of the client and server applications, including the single player one.  
+We will also make sure there is an AI client provided by a mock client and server interface.  
+A ServerManager class is responsible for passing appropriate packets between the clients 
+(including the AI client), without broadcasting back to the original sender (except perhaps 
+in the case of the AI Client).  We will also make sure that all of the IP addresses and such 
+are passed properly, along with getting the name of the LUA Script we are going to be 
+reading from.
+
+We will need to make sure we can send these kinds of messages:
+•	Client Connects (Including AI Client)  We need to have some kind of identifier for the Client
+•	Server send a Packet directly to the newly connected client  But not to the other Clients
+•	Client can send a message broadcasted to other clients, but not to itself
+•	Server watches for Clients disconnecting when player exits or when app terminates abnormally
+•	Client watches for Server terminating abnormally
+
+For this version, we will just use print statements when messages are sent and received and pass dummy messages.
+
+\section sec_GameScript Advanced User provides EXE with a Game Script
+The can be provided via command line parameter, file open dialog, or from the configuration 
+file’s record of the last session.  This will work just like OSG does now; we can steal 
+the code for doing that from OSGV.  We will also need to keep track of the Content 
+Directory, probably by just looking at the CWD.
+
+- Factored GG_Framework::Base::IConfigFileIO & GG_Framework::Base::IConfigFile from OSGV
+- Fringe.Server main snags the script file and writes it out for the user and stores the 
+	Content Directory as the CWD.
+- Fringe.Single main snags the script file and writes it out for the user and stores the 
+	Content Directory as the CWD.
+
+
+\section sec_ServerPort Advanced User provides (Server) EXE a port #
+This can happen from either from command line parameter or from console input.  
+This can happen in main().  Watch for invalid input from the user.
+
+- Fringe.Server main() gets the port# for the console, using the default port ID for 
+	anything less than 0.
+
+
+\section sec_ClientServerPort Advanced User provides (Client) EXE with Server IP Address and Port #
+This can happen from either from command line parameter or from console input 
+(allow for easy loopback IP of “127.0.0.1” by using “0”).  This can happen in main().  
+Watch for invalid input from the user.  He will need to provide the Server Port and the 
+Client Port numbers.  We will also need to keep track of the Content Directory, probably 
+by just looking at the CWD.
+
+- Fringe.Client main() uses the CWD for the Content Directory and prompts the user with
+	the command line for the Server IP address ("0" does the loopback), Client Port (<0 uses
+	the default client port) and the server port (<0 uses the default server port). It also
+	prints out all of the info for the user for feedback.
+
+
+\section sec_ServerNetworkLayer	(Server) EXE creates Server Network Layer with the port # 
+We just need to make the RakNet Server with the proper port number and then work out what 
+the IP address is for the machine, so we can print it out to the console for ease of use.  
+Display any errors to the console and Abort.
+
+- Fringe.Server main() takes are of this. There are some RakNet functions for displayng the
+	IP address and port number for the actual rak server created.
+
+
+\section sec_ClientNetworkLayer (Client) EXE creates Player Network Layer with IP address and port #
+Make the RakNet Client to connect with the proper port number IP address.  If there is a 
+problem making the connection, print out the error and abort.
+
+- Fringe.Client main() takes care of this.
+
+\section sec_SingleNetworkLayer	(Single) EXE creates Dummy Player Network Layer & Dummy Server Network Layer
+Make a simple Mock Client and Mock Server implementation, and both are managed by the main loop.
+
+- Finge.Single main() takes care of this.
+
+
+\section sec_AI_NetworkLayer	(Server) EXE Creates the AI Network Layer
+The AI Network layer is a dummy connection that resides on the Server machine.  We should 
+create a new Mock Server that can combine (aggregate) two of the existing servers we 
+already have (mock and real).  That way the AI Network Layer can be a mock client, 
+connected to the server with potentially other real clients.
+
+- GG_Framework::Logic::Network::ServerManager is responsible for connecting two servers
+	and passing their messages back and forth.
+- Fringe.Server main() Creates both sets of servers and connects them with a ServerManager.
+	One is a network Server that can connect to multiple network clients and the other is the mock AI server
+	It also creates the Mock AI Client to connect to the AI Server.
+- Fringe.Single main() Creates both sets of servers and connects them with a ServerManager.
+	One is a mock player Server that connects to a mock player client and the other is the mock AI server
+	It also creates the Mock AI Client to connect to the AI Server.
+	
+\section sec_ServerWait Server waits for first Client connection
+Stay in a loop until we get the first connection.  We should tell the user at the beginning 
+that they can quit the app by closing the window or using Ctrl-C at any time and print out 
+that the Server is waiting for client connections and also print out when the connections 
+happen.  If the user quits the app at all, there really should not be a problem at this point, 
+because it will just close the server connection.
+
+- Fringe.Server main() takes are of this.
+
+\section sec_ServerLoop	(Server) EXE loops for the game and exits when last Client disconnects
+For this investor’s demo, when the last client disconnects, the Server can stop looping 
+the game.  It just exits out of its own main loop.  The advanced player could also abort 
+the Server program (quitting the app with Ctrl-C or closing the window, or the Server 
+crashing).  RakNet should be able to handle this in the Client by letting all of the 
+Clients know that the Server has disconnected.
+
+- Fringe.Server main() loops until there is an initial connection, and then after that until
+	there are no more connections.
+- Fringe.Single main() WILL loop until the OSG window is closed, but for now it will loop
+	until the user aborts the program (ctrl-c).
+
+\section sec_ClientLoop	(Client) listens to Server disconnect and Notifies Player with a message and abort
+If the Server aborts, the game is over, but we have to let the player know that.  We have 
+to display an information screen that the Player can dismiss with the esc key.  This esc 
+key should also abort the entire program.
+
+- Fringe.Client main() loops until the Server notifies of a bad connection, and for now 
+	just prints out the statement, but it will eventually provide the OSG window with a note
+	and then allow the user to exit the OSG window.
+	
+\section sec_Messages	Testing to make sure we get the messages right
+We need to make sure the Server knows when a new client connection is built and we need to
+know when the Client disconnects from the Server (either normally or abnormally), and if 
+the Server abnormally drop all of its clients.  We also need to make sure
+that messages coming from one of the clients are appropriately re-broadcast to the the other 
+clients and the AI.  We have to hook up an AI client on the SERVER side.
+
+In the Fringe.Server and the Fringe.Single, there are 2 servers.  
+One Server is connected to the players, and it 
+can be a multi-player capable server using RakNet (GG_Framework::Logic::Network::Server) which
+is what happens in Fringe.Server -OR- it can be a GG_Framework::Logic::Network::MockServer which
+is connected to a single GG_Framework::Logic::Network::MockClient as in Fringe.Single.
+
+The second server is always a GG_Framework::Logic::Network::Server connected to a single 
+GG_Framework::Logic::Network::MockClient.  This Server/Client arrangement represents scene on
+the SERVER for all AI driven entities.
+
+The class GG_Framework::Logic::Network::ServerManager takes both of these Servers and hooks
+them together.  When a message is received from one, a virtual function, ShouldRebroadcastMessage()
+is called to determine if the message should be rebroadcast to all of the other clients (player and AI).
+by default (in the base classs implementation), the standard set of messages passed from RakNet are NOT re-broadcast.
+This function also assigns packet priority, reliability, and ordering channel.
+
+RakNet sends a message to its Server when a Client connects, when a Client dis-connects, and if
+connection seems to be lost (this takes some time, the Server just gives up on the Client).  
+GG_Framework::Logic::Network::Server has events for connection and disconnection (normally and abnormally) 
+with the client's PlayerID.  These events gets fired from the Server class' Receive() function.  
+
+The class GG_Framework::Logic::ServerManager inherits from GG_Framework::Logic::Network::ServerManager and
+has virtual functions for a Peer connecting and disconnecting.  In its Initialize() function,
+the class either sets up the callbacks if the player server is a real Server, or just calls
+the Peer connecting function directly for a single player MockServer.  It also calls the Peer Connected
+function for the AI Client.
+
+The Server Manager performs a re-broadcast by broadcasting to both of its servers, ommitting the
+PlayerID that originated the message.  We had to make a PlayerID for the Mock AI Client,
+GG_Framework::Logic::Network::MOCK_AI_PLAYER_ID, and one for the potentialmock player
+GG_Framework::Logic::Network::MOCK_SINGLE_PLAYER_ID.  MockServer is thencareful to not
+send messages back to its client if being rebroadcast (see MockServer::ShouldSendToClient()).
+
+The Fringe.Client program catches messages from the Server.  If it receives the message
+ID_CONNECTION_LOST, meaning that it is no longer connected to the Server, it breaks out of its main loop.
+*/

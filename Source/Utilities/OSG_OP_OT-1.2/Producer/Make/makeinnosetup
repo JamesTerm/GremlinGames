@@ -1,0 +1,47 @@
+#!/bin/sh
+
+VERSION=`make -s version`
+
+
+
+print_script()
+{
+    cat <<-EOF
+
+
+[Setup]
+AppName=Producer
+AppVerName=Producer $VERSION
+AppPublisher=Andes Computer Engineering
+AppPublisherURL=http://www.andesengineering.com
+AppSupportURL=http://www.andesengineering.com
+AppUpdatesURL=http://www.andesengineering.com
+DefaultDirName={pf}\Producer
+DefaultGroupName=Producer
+LicenseFile=COPYING.txt
+
+[Files]
+Source: "bin\Producer.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "bin\Producerd.dll"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "lib\Producer.lib"; DestDir: "{app}\lib"; Flags: ignoreversion
+Source: "lib\Producerd.lib"; DestDir: "{app}\lib"; Flags: ignoreversion
+Source: "include\Producer\*.*"; DestDir: "{app}\include\Producer"; Flags: ignoreversion
+EOF
+}
+
+
+print_script | awk '{ printf "%s\r\n", $0 }' > producer.iss
+
+C:/Program\ Files/Inno\ Setup\ 3/ISCC.exe producer.iss
+
+
+[ -d dist/win32 ] || mkdir -p dist/win32
+
+mv Output/setup.exe dist/win32/Producer_"$VERSION"-setup.exe
+
+rm -rf Output producer.iss
+
+exit 0
+
+
+

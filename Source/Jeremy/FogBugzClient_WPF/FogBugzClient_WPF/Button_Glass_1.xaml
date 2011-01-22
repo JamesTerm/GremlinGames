@@ -1,0 +1,85 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="FogBugzClient_WPF.Button_Glass_1"
+	x:Name="UserControl"
+	d:DesignWidth="480" d:DesignHeight="160">
+	<UserControl.Resources>
+		<Storyboard x:Key="OnMouseLeftButtonDown1">
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)" Storyboard.TargetName="border">
+				<EasingDoubleKeyFrame KeyTime="0" Value="5"/>
+				<EasingDoubleKeyFrame KeyTime="0:0:1" Value="0"/>
+				<EasingDoubleKeyFrame KeyTime="0:0:2" Value="5"/>
+			</DoubleAnimationUsingKeyFrames>
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)" Storyboard.TargetName="border1">
+				<EasingDoubleKeyFrame KeyTime="0" Value="5"/>
+				<EasingDoubleKeyFrame KeyTime="0:0:1" Value="0"/>
+				<EasingDoubleKeyFrame KeyTime="0:0:2" Value="5"/>
+			</DoubleAnimationUsingKeyFrames>
+			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)" Storyboard.TargetName="border2">
+				<EasingDoubleKeyFrame KeyTime="0" Value="5"/>
+				<EasingDoubleKeyFrame KeyTime="0:0:1" Value="0"/>
+				<EasingDoubleKeyFrame KeyTime="0:0:2" Value="5"/>
+			</DoubleAnimationUsingKeyFrames>
+		</Storyboard>
+	</UserControl.Resources>
+
+	<Grid x:Name="LayoutRoot">
+		<Border x:Name="border" BorderThickness="4" CornerRadius="80">
+			<Border.BorderBrush>
+				<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+					<GradientStop Color="White" Offset="0"/>
+					<GradientStop Color="Black" Offset="1"/>
+				</LinearGradientBrush>
+			</Border.BorderBrush>
+			<Border.Background>
+				<LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+					<GradientStop Color="#FF2957E7"/>
+					<GradientStop Color="Black" Offset="1"/>
+				</LinearGradientBrush>
+			</Border.Background>
+			<Border.Effect>
+				<DropShadowEffect/>
+			</Border.Effect>
+		</Border>
+		<Border x:Name="border1" BorderThickness="0" Margin="16,8,16,40" CornerRadius="80">
+			<Border.Background>
+				<LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+					<GradientStop Color="White"/>
+					<GradientStop Offset="1"/>
+					<GradientStop Offset="0.444"/>
+				</LinearGradientBrush>
+			</Border.Background>
+			<Border.BorderBrush>
+				<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+					<GradientStop Color="White" Offset="0"/>
+					<GradientStop Color="Black" Offset="1"/>
+				</LinearGradientBrush>
+			</Border.BorderBrush>
+			<Border.Effect>
+				<DropShadowEffect/>
+			</Border.Effect>
+		</Border>
+		<Border x:Name="border2" BorderThickness="0" Margin="16,40,16,8" CornerRadius="80">
+			<Border.Background>
+				<LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+					<GradientStop/>
+					<GradientStop Offset="1" Color="#46FFFFFF"/>
+					<GradientStop Offset="0.862"/>
+				</LinearGradientBrush>
+			</Border.Background>
+			<Border.BorderBrush>
+				<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+					<GradientStop Color="White" Offset="0"/>
+					<GradientStop Color="Black" Offset="1"/>
+				</LinearGradientBrush>
+			</Border.BorderBrush>
+			<Border.Effect>
+				<DropShadowEffect/>
+			</Border.Effect>
+		</Border>
+	</Grid>
+</UserControl>

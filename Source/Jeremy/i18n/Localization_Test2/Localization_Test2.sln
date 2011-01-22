@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Localization_Test2", "Localization_Test2\Localization_Test2.csproj", "{ACC8607F-19B4-4AAE-9BF3-53DF6C5115FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ACC8607F-19B4-4AAE-9BF3-53DF6C5115FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACC8607F-19B4-4AAE-9BF3-53DF6C5115FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACC8607F-19B4-4AAE-9BF3-53DF6C5115FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACC8607F-19B4-4AAE-9BF3-53DF6C5115FE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

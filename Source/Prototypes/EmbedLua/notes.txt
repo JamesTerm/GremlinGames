@@ -1,0 +1,11 @@
+A comment starts anywhere with a double hyphen (--) and runs until the end of the line. Lua also offers block comments, which start with --[[ and run until the corresponding ]]. A common trick, when we want to comment out a piece of code, is to write the following: 
+
+    --[[
+    print(10)         -- no action (comment)
+    --]]
+
+Now, if we add a single hyphen to the first line, the code is in again: 
+    ---[[
+    print(10)         --> 10
+    --]]
+

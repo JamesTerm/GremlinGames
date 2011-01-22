@@ -1,0 +1,24 @@
+<ElectroMech sport="Basketball">              # Wrapped by a fixed company name and optional sport type.
+  <Time>                                      # Time values - these are the most time-critical updates.
+    <ClockGame>01:23:4</ClockGame>            # Game clock - most sports have this one.
+    <ClockShot>24.0</ClockShot>               # Shot clock for basketball - play clock for Footbal, etc.
+    <ClockPenalty>02:00</ClockPenalty>        # Hockey
+  </Time>
+  <Data>                                      # Generic data such as scores and fouls which update less often.
+    <ScoreH>105</ScoreH>                      # Score for (H)ome or (A)way teams.
+    <ScoreA>98</ScoreA>
+    <TOFullH>2</TOFullH>
+    <TOPartA>0</TOPartA>
+    <Period>4</Period>
+    <FoulsTeamH>4</FoulsTeamH>
+    <FoulsTeamA>5</FoulsTeamA>
+    <Bonus>Home</Bonus>
+    <BallOn>24</BallOn>
+    <Down>2</Down>
+    <ToGo>10</ToGo>
+  </Data>
+  <Other>                                     # Other data that could be supported, such as player and team names.
+    <NameTeam>Mighty Ants</NameTeam>
+    <NamePlayer1H>Joe Smith</NamePlayer1H>
+  </Other>                                    # End of XML message. Each msg would only contain data that changed that cycle.
+</ElectroMech>

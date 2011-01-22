@@ -1,0 +1,17 @@
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\ResolveAssemblyReference.cache
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\Window1.g.cs
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\App.g.cs
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app_MarkupCompile.cache
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app_MarkupCompile.lref
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\Window1.baml
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app.g.resources
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app.Properties.Resources.resources
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app.Window1Resource.resources
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app.csproj.GenerateResource.Cache
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app.exe
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app.pdb
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\bin\Debug\i18n_app.exe
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\bin\Debug\i18n_app.pdb
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\i18n_app.Window1Resource.fr-FR.resources
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\obj\Debug\fr-FR\i18n_app.resources.dll
+C:\GG\Source\Jeremy\i18n\i18n_app\i18n_app\bin\Debug\fr-FR\i18n_app.resources.dll

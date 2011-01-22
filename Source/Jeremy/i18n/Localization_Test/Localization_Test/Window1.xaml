@@ -1,0 +1,24 @@
+﻿<Window x:Uid="Window_1" x:Class="Localization_Test.Window1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Window1" Height="300" Width="300" MinWidth="300" MinHeight="300">
+    <Grid x:Uid="Grid_1" Background="CadetBlue">
+        <ComboBox x:Uid="comboBox1" Height="23" Margin="0,56,12,0" Name="comboBox1" VerticalAlignment="Top" HorizontalAlignment="Right" Width="120" SelectedIndex="0">
+            <ComboBoxItem x:Uid="ComboBoxItem_1">Red</ComboBoxItem>
+            <ComboBoxItem x:Uid="ComboBoxItem_2">Blue</ComboBoxItem>
+            <ComboBoxItem x:Uid="ComboBoxItem_3">Green</ComboBoxItem>
+        </ComboBox>
+        <Button x:Uid="button1" Height="23" Margin="0,0,174,12" Name="button1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75">Yes</Button>
+        <Button x:Uid="button2" Height="23" Margin="0,0,93,12" Name="button2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75">No</Button>
+        <Button x:Uid="button3" Height="23" HorizontalAlignment="Right" Margin="0,0,12,12" Name="button3" VerticalAlignment="Bottom" Width="75" IsCancel="True" Click="button3_Click">Cancel</Button>
+        <Label x:Uid="label1" Height="28" Margin="0,54,146,0" Name="label1" VerticalAlignment="Top" HorizontalAlignment="Right" Width="120">This is a good label.</Label>
+        <Menu x:Uid="menu1" Height="22" Name="menu1" VerticalAlignment="Top">
+            <MenuItem x:Uid="MenuItem_1" Header="Help">
+                <MenuItem x:Uid="MenuItem_2" Header="Topic" />
+            </MenuItem>
+            <MenuItem x:Uid="MenuItem_3" Header="About">
+                <MenuItem x:Uid="MenuItem_4" Header="Information" />
+            </MenuItem>
+        </Menu>
+    </Grid>
+</Window>

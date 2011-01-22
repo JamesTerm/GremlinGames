@@ -1,0 +1,19 @@
+/*!	\page  Particle_Smoke_Trails_txt Particle Smoke Trails
+
+For now we are using particle effects for smoke trails and such.  There are two problems we are seeing:
+one is that when the trail runs out of time, it all dissapears rather than fading away.  When the trail
+is supposed to stop, the trail that is already there should not just go away, it should just stop creating particles.
+
+I was able to get this working by not killing the effect right away, but rather setting the start time to some time in the future.
+
+The second problem is that eventually all of the particles go away.  There seems to be a maximum particle limit, then
+they are all gone.  This happens when we have the emmitter that just continues.  Its like all of the emmiters are turned
+off at once, then they do not get turned back on because we are using a WHILE effect.
+
+I found out how to set the emmitter duration.
+
+Finally Justin wanted to be able to set the length of particle trails. I did this by setting the particle duration.
+
+
+*/
+

@@ -1,0 +1,24 @@
+/*!	\page  Light_Blooming_txt	Light Blooming
+We want to make it so we can see light flares from engines and explosions farther in the distance.  We can use a scaling factor like
+we do for planet scaling so we scale the objects in the distance.
+
+\section Light_Blooming_FuncSpec Specification
+'U' lines are for light blooms.  You specify a nominal distance and a far distance.  When the camera is closer
+to the object than the nominal distance, no scaling is performed.  When the camera is between the nominal
+distance and the far distance, the object is scaled so that its apparent size on the screen is the same as at the
+nominal distance.  Beyond the far distance, the object will scale down as normal.  For instance, if the nominal distance
+is 10 meters and the far distance is 1,000 meters, and the camera is 300 meters away, the object will be scaled to 
+30x its original size.
+
+U nomDist farDist
+U 10 1000
+
+\section Light_Blooming_Design Design
+- I added the LightBloomTransform class along with similar related classes in CameraParentedTransforms.h.
+- ActorScene::ReadSceneGroup reads in the 'U' from the file and parses the nomDist and farDist and creates the node
+
+I am applying a test change in:
+Art-3\Content-Source\Polygon FX\30m-ThrustGlow.osgv
+
+
+*/

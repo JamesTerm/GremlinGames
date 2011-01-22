@@ -1,0 +1,30 @@
+/*!	\page  Task01_OrnamentalScene_Page	The Ornamental Scene
+
+Set up a basic scene, full of all Ornamental Items (no need for Entity3D).  This will 
+essentially be like OSGV, except that the scene is going to be defined in a GameScript 
+(just passing in OSGV files).  Start with the initial spinning logo scene and make the 
+switch.  We need to make sure we get all of the networking connected and passing the 
+information.  There will not be any more messages passed after the scene is created and 
+showing.  The CameraManipulator should be a simple Trackball Manipulator around one of the 
+objects.  We should be able to log in as multiple clients, over a network, and all see the 
+same scene.
+
+@section Task01_DesignNotes	Design Notes
+- Stub out the Server all the way through, but skip the creating the AI part
+	- Do not create an AI item, make sure the AI does not have a Server/Client pair and 
+		that the ServerManager can handle it for now.
+	- Place Comments for where the AI should be read
+	- Make sure the Server is waiting for Client connections, then reading the LUA script 
+		for ornamentals (perhaps 2) and passing them to the connected client first
+- Stub out the Player reading through everything
+
+@section Task01_Tasks Tasks
+* Make sure ServerMaster can handle not having 2 Servers
+- Work through the Server to wait for clients to connect
+- Create the Client all the way through connection
+- Make sure we are getting messages passed across and printing out the correct message
+- Make the Client have the temporary scene, small window until game launches
+
+- Look at LUA examples again, Build the LUA 
+
+*/

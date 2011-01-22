@@ -1,0 +1,25 @@
+/*!	\page  OSGV_Update_txt	OSGV Update
+
+There are some things we need to do with OSGV to make it play better with what
+we are going to be doing with the Fringe clients.  
+
+\section sec_ClearOutSingletons	Clear Out Singletons
+There are quite a few Singleton patterns used in OSGV.  Some of them might be valid, but 
+we know that some of them, like the EventMap, are not.  We have to have seperate EventMaps
+for each ship.  I removed the Singletons and renamed GG_Framework::UI::SceneManager to
+GG_Framework::UI::ActorScene and made sure there was not a global one of those (we will
+eventually have the BoundingBox one as well).
+
+\section sec_RemoveScrubbing	Remove Scrubbing
+Scrubbing was a feature in OSGV from the beginning, but no one ever used it, and it does some
+things with time and makes some couplings that we do not want.  That has been removed.
+
+\section sec_Timer	Timer
+The global EventMap used to have the timer, but we broke that out into the Timer class
+and made it handle its own ticks.  I have considered making it do the framerate as well.
+
+\section sec_NoAA	Turning off Anti-Aliasing
+I added GG_Framework::Base::IArgumentParser an had an argument -na that turns off anti-aliasing.
+
+
+*/

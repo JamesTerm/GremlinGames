@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserPrefs>
+	<UserInput>
+		<Analog_Pitch type="joystick_analog" product="any" key="1" isFlipped="1" Multiplier="1.000000" FilterRange="0.010000" isSquared="1"/>
+		<Analog_Slider_StrafeDown type="joystick_analog" product="any" key="6" isFlipped="1" Multiplier="1.000000" FilterRange="0.000000" isSquared="0"/>
+		<Analog_StrafeDown type="joystick_analog" product="any" key="2" isFlipped="0" Multiplier="1.000000" FilterRange="0.000000" isSquared="0"/>
+		<Analog_StrafeRight type="joystick_analog" product="any" key="5" isFlipped="0" Multiplier="1.000000" FilterRange="0.000000" isSquared="0"/>
+		<Analog_Turn type="joystick_analog" product="any" key="0" isFlipped="1" Multiplier="1.000000" FilterRange="0.010000" isSquared="1"/>
+		<Brake type="joystick_button" product="any" key="3" dbl="0" onOff="1"/>
+		<Joystick_SetCurrentSpeed type="joystick_analog" product="any" key="7" isFlipped="0" Multiplier="1.000000" FilterRange="0.000000" isSquared="0"/>
+		<Missile.Launch type="joystick_button" product="any" key="1" dbl="0" onOff="1"/>
+		<POV_Joystick type="joystick_analog" product="any" key="8" isFlipped="0" Multiplier="1.000000" FilterRange="0.000000" isSquared="0"/>
+		<Roll_CCW type="joystick_button" product="any" key="8" dbl="0" onOff="1"/>
+		<Roll_CW type="joystick_button" product="any" key="7" dbl="0" onOff="1"/>
+		<Ship.TryFireMainWeapon type="joystick_button" product="any" key="0" dbl="0" onOff="1"/>
+		<Slide type="joystick_button" product="any" key="6" dbl="0" onOff="0"/>
+		<Thrust type="joystick_button" product="any" key="2" dbl="0" onOff="1"/>
+		<AutoLevel type="keyboard" key="t" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Brake type="keyboard" key="s" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<ESC type="keyboard" key="ESCAPE" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<FlyNextShip type="keyboard" key="]" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<HELP type="keyboard" key="F1" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<MATCH_TARGET_SPEED type="keyboard" key="q" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<POVMouse type="keyboard" key="p" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_DL type="keyboard" key="1" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_DR type="keyboard" key="3" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_Down type="keyboard" key="2" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_Left type="keyboard" key="4" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_Right type="keyboard" key="6" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_UL type="keyboard" key="7" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_UR type="keyboard" key="9" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<POV_Up type="keyboard" key="8" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<RecordFrames type="keyboard" key="m" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<RequestAfterburner type="keyboard" key="w" alt="0" ctrl="0" shift="0" dbl="1" onOff="1"/>
+		<SET_TARGET_1 type="keyboard" key="1" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_2 type="keyboard" key="2" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_3 type="keyboard" key="3" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_4 type="keyboard" key="4" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_5 type="keyboard" key="5" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_6 type="keyboard" key="6" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_7 type="keyboard" key="7" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_8 type="keyboard" key="8" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<SET_TARGET_9 type="keyboard" key="9" alt="1" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ShowDebug type="keyboard" key="F9" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ShowFR type="keyboard" key="F2" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ShowHUD type="keyboard" key="F4" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Slide type="keyboard" key="g" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Stop type="keyboard" key="x" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<StrafeDown type="keyboard" key="t" alt="0" ctrl="0" shift="1" dbl="0" onOff="1"/>
+		<StrafeLeft type="keyboard" key="q" alt="0" ctrl="0" shift="1" dbl="0" onOff="1"/>
+		<StrafeLeft type="keyboard" key="a" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<StrafeRight type="keyboard" key="s" alt="0" ctrl="0" shift="1" dbl="0" onOff="1"/>
+		<StrafeRight type="keyboard" key="d" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<StrafeUp type="keyboard" key="r" alt="0" ctrl="0" shift="1" dbl="0" onOff="1"/>
+		<TARGET_1 type="keyboard" key="1" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_2 type="keyboard" key="2" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_3 type="keyboard" key="3" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_4 type="keyboard" key="4" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_5 type="keyboard" key="5" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_6 type="keyboard" key="6" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_7 type="keyboard" key="7" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_8 type="keyboard" key="8" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_9 type="keyboard" key="9" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_INSIGHT type="keyboard" key="0" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_NEXT type="keyboard" key="=" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_PREV type="keyboard" key="-" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<TARGET_TGT_YOU type="keyboard" key="BACKSPACE" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Thrust type="keyboard" key="w" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<ToggleAutoPilot type="keyboard" key="z" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ToggleFrameLog type="keyboard" key="F7" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ToggleFullScreen type="keyboard" key="F3" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<UserResetPos type="keyboard" key=" " alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<VolumeDown type="keyboard" key="v" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<VolumeSelect type="keyboard" key="n" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<VolumeUp type="keyboard" key="b" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+	</UserInput>
+	<AudioSettings>
+		<Volume_Master type="audio_volume" Ratio="0.700000"/>
+		<Volume_Music type="audio_volume" Ratio="0.500000"/>
+		<Volume_SoundEffects type="audio_volume" Ratio="0.800000"/>
+	</AudioSettings>
+</UserPrefs>
