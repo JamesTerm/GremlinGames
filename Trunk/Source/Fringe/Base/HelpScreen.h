@@ -1,7 +1,7 @@
 // Fringe.Base HelpScreen.h
 #pragma once
-#include <osg\Camera>
 
+#include <osg\Camera>
 
 namespace Fringe
 {
@@ -21,9 +21,7 @@ namespace Fringe
 			bool IsEnabled() const {return m_enabled;}
 			void Enable(bool enable){m_enabled = enable;}
 
-
 			virtual void operator () (const osg::Camera &cam ) const;
-
 			// Use this handler to tie events to this callback to toggle
 			IEvent::HandlerList ehl;
 

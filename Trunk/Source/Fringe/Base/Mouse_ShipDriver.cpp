@@ -5,15 +5,13 @@
 using namespace Fringe::Base;
 
 Mouse_ShipDriver::Mouse_ShipDriver(ThrustShip2& ship,UI_Controller *parent, unsigned avgFrames) : 
-	m_ship(ship),m_ParentUI_Controller(parent), m_mousePosHist(NULL), m_avgFrames(avgFrames), m_currFrame(0), m_mouseRoll(false)
+	m_ship(ship),m_ParentUI_Controller(parent), m_mousePosHist(NULL), m_avgFrames(avgFrames), m_currFrame(0), m_buttonState(0)
 {
-	GG_Framework::UI::KeyboardMouse_CB &kbm = GG_Framework::UI::MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
-	kbm.AddKeyBindingR(true, "Ship.MouseRoll", osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON);
-
 	// Set up the Mouse Control to drive
 	GG_Framework::Logic::Entity3D::EventMap* em = m_ship.GetEventMap();
 	em->KBM_Events.MouseMove.Subscribe(ehl, *this, &Mouse_ShipDriver::OnMouseMove);
-	em->EventOnOff_Map["Ship.MouseRoll"].Subscribe(ehl, *this, &Mouse_ShipDriver::OnMouseRoll);
+	em->KBM_Events.MouseBtnPress.Subscribe(ehl, *this, &Mouse_ShipDriver::OnMouseBtnPress);
+	em->KBM_Events.MouseBtnRelease.Subscribe(ehl, *this, &Mouse_ShipDriver::OnMouseBtnRelease);
 
 	if (m_avgFrames)
 	{
@@ -21,6 +19,26 @@ Mouse_ShipDriver::Mouse_ShipDriver(ThrustShip2& ship,UI_Controller *parent, unsi
 	}
 }
 //////////////////////////////////////////////////////////////////////////
+
+void Mouse_ShipDriver::OnMouseBtnPress(float mx, float my, unsigned int button)
+{
+	// Start the gun firing, this will eventually be mapped in a users pref, but it is ok for now 
+	if (button == 1)
+		m_ParentUI_Controller->TryFireMainWeapon(true);
+	m_buttonState |= button;
+	OnMouseMove(mx, my);
+}
+////////////////////////////////////////////////////////////////////////////////////////////
+
+void Mouse_ShipDriver::OnMouseBtnRelease(float mx, float my, unsigned int button )
+{
+	// Stop the gun firing on the left MMB, this will eventually be mapped in a users pref, but it is ok for now
+	if (button == 1)
+		m_ParentUI_Controller->TryFireMainWeapon(false);
+	m_buttonState &= ~button;
+	OnMouseMove(mx, my);
+}
+////////////////////////////////////////////////////////////////////////////////////////////
 
 void Mouse_ShipDriver::OnMouseMove(float mx, float my)
 {
@@ -62,6 +80,13 @@ void Mouse_ShipDriver::OnMouseMove(float mx, float my)
 }
 //////////////////////////////////////////////////////////////////////////
 
+//! \todo  Perhaps this should be a utility function somewhere?  Along with the stuff that keeps the flags
+bool IsButtonOn(unsigned btnFlags, unsigned btn)
+{
+	return ((btnFlags & (1<<(btn-1))) != 0);
+}
+//////////////////////////////////////////////////////////////////////////
+
 void Mouse_ShipDriver::DriveShip()
 {
 	float dX = 0.0f;
@@ -98,7 +123,7 @@ void Mouse_ShipDriver::DriveShip()
 	static const float roll_coeff = 0.01f;
 
 	// Finally Turn the Heading or Pitch (or roll if using the rt mouse button
-	if (m_mouseRoll)
+	if (IsButtonOn(m_buttonState, 3))
 	{
 		// Use this roll versus the scroll wheel
 		float dR = dY - dX;

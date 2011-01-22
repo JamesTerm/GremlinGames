@@ -171,13 +171,11 @@ class FRINGE_BASE_API UI_Controller
 		void BuildHUD();
 		bool m_targetLeadRetShowing;
 		bool m_targetInRangeLeadRetShowing;
-
+		osg::ref_ptr<osg::PositionAttitudeTransform> m_targetLeadRetical;
+		osg::ref_ptr<osg::PositionAttitudeTransform> m_targetInRangeLeadRetical;
 		osg::ref_ptr<GG_Framework::UI::ActorTransform> m_shipSiteRetical;
 		osg::ref_ptr<osg::Geode> m_tgtDirLineGeode;
-
-		osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_targetOutRangeLeadRetical;
-		osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_targetInRangeLeadRetical;
-		osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_tgtDirLineTransform;
+		osg::ref_ptr<osg::PositionAttitudeTransform> m_tgtDirLineTransform;
 
 		//This allow Joystick Mouse and Keyboard integration
 		bool m_UseMousePOV;

@@ -7,40 +7,34 @@
 const int STARDUST_NUMSTARS = 600;	//!< How many stars there are in a "block"
 const double STARDUST_RANGE = 3000.0; //!< The width of a block of stars
 const double STARDUST_MAXDISSOLVE = 0.3; //!< The most opaque they can be (0 is not visible, 1 is fully opaque)
-const double STARDUST_SPEED_STREAKSIZE_SCALE = 0.15/250.0; //! The streak length is based on the m_vel squared times this
+const double STARDUST_SPEED_STREAKSIZE_SCALE = 0.15/250.0; //! The streak length is based on the vel squared times this
 
-// #define IGNORE_SPACEWARP
-class StartdustUpdateCallback : public osg::NodeCallback
+
+/* -*-c++-*- OpenSceneGraph - Copyright (C) 1998-2006 Robert Osfield 
+ *
+ * This application is open source and may be redistributed and/or modified   
+ * freely and without restriction, both in commericial and non commericial applications,
+ * as long as this copyright notice is maintained.
+ * 
+ * This application is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*/
+
+
+float random(float min,float max) { return min + (max-min)*(float)rand()/(float)RAND_MAX; }
+
+
+struct StardustDrawCallback : public osg::Drawable::DrawCallback
 {
-private:
-	osg::Vec3d m_pos;
-	osg::PositionAttitudeTransform& m_stardustBlock;
-
-public:
-	StartdustUpdateCallback(osg::PositionAttitudeTransform& stardustBlock) :
-	  m_stardustBlock(stardustBlock) {}
-
-	  virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
-	{
-		m_stardustBlock.setPosition(m_pos);
-	}
-
-	void SetPosition(osg::Vec3d pos) {m_pos = pos;}
-};
-
-class StardustDrawCallback : public osg::Drawable::DrawCallback
-{
-public:
 	mutable bool _firstTime;
 	mutable osg::Vec3d _camPos;
 	mutable osg::Vec3d _myPos;
 	double m_maxDist2;
-	mutable osg::Vec3d m_vel;
 
 	GG_Framework::Logic::Entity3D* FollowingObject;
 
     StardustDrawCallback(double maxDist) : m_maxDist2(maxDist*maxDist), _firstTime(true), FollowingObject(NULL) {}
-
 
 	virtual void drawImplementation(osg::RenderInfo& renderInfo,const osg::Drawable* drawable) const 
     {
@@ -52,8 +46,9 @@ public:
 
 			osg::Vec3d camDistOffset = _myPos-_camPos;
 			osg::Vec3d offset(0.0,0.0,0.01);
+			osg::Vec3d vel(m_offsetAverager.GetAverage(FollowingObject->GetLinearVelocity()));
 			if (FollowingObject)
-				offset = m_vel * (STARDUST_SPEED_STREAKSIZE_SCALE * m_vel.length());
+				offset = vel * (STARDUST_SPEED_STREAKSIZE_SCALE * vel.length());
 
 			// Work through each set, setting the trail and the offset
 			for(unsigned int i=0;i+1<vertices->size();i+=2)
@@ -72,20 +67,17 @@ public:
 				}
 			}
 		}
-
 		drawable->drawImplementation(renderInfo);
     }
 
 	// Use an averager to limit crazy camera offsets
 	mutable Averager<osg::Vec3d, 10> m_offsetAverager;
 
-	// Happens in the Logic Thread
 	void SetCameraPos(osg::Vec3d camPos, osg::Vec3d myPos)
 	{
 		_firstTime = false;
 		_camPos = camPos;
 		_myPos = myPos;
-		m_vel = m_offsetAverager.GetAverage(FollowingObject->GetLinearVelocity());
 	}
 };
 
@@ -111,8 +103,8 @@ osg::Geode* CreateStardust(int numStars, float cubeWidth, StardustDrawCallback* 
     int i = 0;
     for(i=0;i<numStars;++i)
     {
-        origVerts[i].set(RAND_GEN(min,max),RAND_GEN(min,max),RAND_GEN(min,max));
-		origColors[i].set(RAND_GEN(0.6f,0.9f),RAND_GEN(0.6f,0.9f),RAND_GEN(0.6f,0.9f), STARDUST_MAXDISSOLVE);
+        origVerts[i].set(random(min,max),random(min,max),random(min,max));
+		origColors[i].set(random(0.6f,0.9f),random(0.6f,0.9f),random(0.6f,0.9f), STARDUST_MAXDISSOLVE);
     } 
 
 	// Multiply the original set 27 times about the center
@@ -173,26 +165,21 @@ public:
 	StardustBlock(unsigned int noStarsPerBlock, float cubeWidthPerBlock) : m_cubeWidthPerBlock(cubeWidthPerBlock)
 	{
 		// Make a callback that the stardust will use
-		DrawCallback = new StardustDrawCallback(cubeWidthPerBlock);
-		UpdateCallback = new StartdustUpdateCallback(*this);
-		setUpdateCallback(UpdateCallback);
+		Callback = new StardustDrawCallback(cubeWidthPerBlock);
 
 		// Make a single block, used each time
-		addChild(CreateStardust(noStarsPerBlock, cubeWidthPerBlock, DrawCallback));
+		addChild(CreateStardust(noStarsPerBlock, cubeWidthPerBlock, Callback));
 
 		// Listen for when the main camera changes its position so we can set ourselves
 		GG_Framework::UI::MainWindow::GetMainWindow()->GetMainCamera()->MatrixUpdate.Subscribe(ehl, *this, &StardustBlock::CameraUpdateCallback);
 	}
 
-	StardustDrawCallback* DrawCallback;
-	StartdustUpdateCallback* UpdateCallback;
+	StardustDrawCallback* Callback;
 
 private:
 	IEvent::HandlerList ehl;
 	float m_cubeWidthPerBlock;
 
-	// Called from the camera being updated every frame from the Logic Thread
-	// Updates all the members we need for the OSG thread
 	void CameraUpdateCallback(const osg::Matrix& camMatrix)
 	{
 		// Find the out where the camera is
@@ -207,10 +194,11 @@ private:
 		osg::Vec3d newPos(x,y,z);
 
 		// This is where we want to be, no reason to set if already there
-		UpdateCallback->SetPosition(newPos);
+		if (getPosition() != newPos)
+			setPosition(newPos);
 
 		// Tell the callback where the camera is now
-		DrawCallback->SetCameraPos(eye, newPos);
+		Callback->SetCameraPos(eye, newPos);
 	}
 };
 //////////////////////////////////////////////////////////////////////////
@@ -219,22 +207,21 @@ bool Fringe::Base::UI_GameClient::LoadOrnamentalOSGV()
 {
 	bool ret = __super::LoadOrnamentalOSGV();
 #ifndef IGNORE_SPACEWARP
-	if (ret && !GG_Framework::Base::TEST_USE_SIMPLE_MODELS)
+	if (ret)
 	{
 		m_stardust = new StardustBlock(STARDUST_NUMSTARS, STARDUST_RANGE);
-		UI_ActorScene->GetScene()->addChild(m_stardust);
-		m_stardust->DrawCallback->FollowingObject = GetControlledEntity();
+		UI_ActorScene.GetScene()->addChild(m_stardust);
+		m_stardust->Callback->FollowingObject = GetControlledEntity();
 	}
 #endif
 	return ret;
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Called from Logic thread, but should be OK with atomic operation
 void Fringe::Base::UI_GameClient::ControlledEntityChangedCallback(GG_Framework::Logic::Entity3D* oldEntity, GG_Framework::Logic::Entity3D* newEntity)
 {
 	if (m_stardust)
-		m_stardust->DrawCallback->FollowingObject = newEntity;
+		m_stardust->Callback->FollowingObject = newEntity;
 }
 //////////////////////////////////////////////////////////////////////////
 

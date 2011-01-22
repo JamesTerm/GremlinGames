@@ -6,27 +6,10 @@
 // Do we want a threaded logo?
 // #define THREADED_LOGO
 
-class FringeSingleMainWindow : public GG_Framework::UI::MainWindow
-{
-public:
-	FringeSingleMainWindow(bool useAntiAlias, double throttle_fps, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs, GG_Framework::Base::Timer& osg_timer) :
-	  GG_Framework::UI::MainWindow(useUserPrefs, throttle_fps, screenWidth, screenHeight, useUserPrefs, osg_timer) {}
-
-	virtual void PostRealize()
-	{
-		SetFullScreen(true);
-		SetWindowText("Rim-Space Proto");
-		__super::PostRealize();
-	}
-};
-
 int Fringe::Single::EXE::Main(unsigned argc, const char* argv[])
 {
 	// We will be using Threads
 	OpenThreads::Thread::Init();
-
-	// Make the MainWindow multi-threaded or not here:
-	GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW = true;
 
 	// Strip out the flagged and non-flagged options
 	Demo_ArgumentParser argParser;
@@ -69,9 +52,6 @@ int Fringe::Single::EXE::Main(unsigned argc, const char* argv[])
 	osg::notify(osg::NOTICE) << GG_Framework::Base::BuildString(
 		"_chdir: \"%s\"\n", contentDIR);
 
-	// Reset the loading logic_timer
-	GG_Framework::UI::OSG::LoadStatus::Instance.StartLoadingTimer();
-
 	// Create the single sound system
 	GG_Framework::UI::Audio::ISoundSystem* sound;
 	if (argParser.MockAudio)
@@ -92,18 +72,8 @@ int Fringe::Single::EXE::Main(unsigned argc, const char* argv[])
 		if (argParser.LogTimer)
 			serverManager.AI_Timer.Logger.ToggleActive();
 
-		// The is the logic_timer that will be fired, AND the OSG Timer
-		GG_Framework::Logic::Network::SynchronizedTimer logic_timer("Fringe.Single Logic Timer Log.csv");
-		GG_Framework::UI::OSG::OSG_Timer osg_timer("Fringe.Single OSG Timer Log.csv");
-		GG_Framework::Base::Timer* osg_timer_ref = NULL;
-		if (GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW)
-			osg_timer_ref = &logic_timer;
-		else
-			osg_timer_ref = &osg_timer;
-
-		// Our single window
-		FringeSingleMainWindow mainWin(argParser.UseAntiAliasing, argParser.MAX_FPS, argParser.RES_WIDTH, argParser.RES_HEIGHT, true, *osg_timer_ref);
-
+		GG_Framework::UI::MainWindow mainWin(argParser.UseAntiAliasing, argParser.MAX_FPS, argParser.RES_WIDTH, argParser.RES_HEIGHT, true);
+		PostCreateCamera(mainWin);
 
 		// Here is a good example of setting up an easy text PDCB
 		GG_Framework::UI::Framerate_PDCB* fpdcb = new GG_Framework::UI::Framerate_PDCB(mainWin);
@@ -125,15 +95,16 @@ int Fringe::Single::EXE::Main(unsigned argc, const char* argv[])
 
 		// We can tie the events to Toggle fullscreen  to F3
 		mainWin.GetKeyboard_Mouse().AddKeyBindingR(false, "ToggleFullScreen", osgGA::GUIEventAdapter::KEY_F3);
+		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFullScreen"].Subscribe(
+			mainWin.ehl, mainWin, &MainWindow::ToggleFullScreen);
 
-		// Watch for logging the timer
+		// The is the timer that will be fired
+		GG_Framework::Logic::Network::SynchronizedTimer timer("Fringe.Single Timer Log.csv");
 		mainWin.GetKeyboard_Mouse().AddKeyBindingR(false, "ToggleFrameLog", osgGA::GUIEventAdapter::KEY_F7);
-		logic_timer.Logger.ListenForToggleEvent(mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFrameLog"]);
-		if (!GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW)
-			osg_timer.Logger.ListenForToggleEvent(mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFrameLog"]);
+		timer.Logger.ListenForToggleEvent(mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFrameLog"]);
 
 		// This Game Client is what is connecting to the Client
-		SinglePlayer_GameClient mainGameClient(player_client, logic_timer, *osg_timer_ref, contentDIR);
+		SinglePlayer_GameClient mainGameClient(player_client, timer, contentDIR);
 
 		// We are going to spawn a thread to read the initial game data
 		GG_Framework::Logic::ThreadedClientGameLoader threadGameLoader(mainGameClient);
@@ -166,13 +137,22 @@ int Fringe::Single::EXE::Main(unsigned argc, const char* argv[])
 
 		// Set the scene and realize the camera at full size
 		osg::Node* mainScene = mainGameClient.Get_UI_ActorScene()->GetScene();
-		mainWin.GetMainCamera()->SetSceneNode(mainScene);
+		mainWin.GetMainCamera()->SetSceneNode(mainScene, argParser.MAX_DISTORTION);
 		mainWin.Realize();
+		PostRealizeCamera(mainWin);
 
-		// Let the server know we are really ready
-		threadGameLoader.NotifyServerReady();
+		// The updater is complete, it can write out its times
+		GG_Framework::UI::OSG::LoadStatus::Instance.LoadComplete();
 
 		// Let all of the scene know we are starting
+		osg::ref_ptr<osg::FrameStamp> frameStamp = new osg::FrameStamp;
+		osgUtil::UpdateVisitor update;
+		update.setFrameStamp(frameStamp.get());
+
+		frameStamp->setSimulationTime(0.0);
+
+		frameStamp->setFrameNumber(0);
+		mainScene->accept(update);
 		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["START"].Fire();
 		for (unsigned i = 0; i < (unsigned)mainGameClient.MapList.size(); ++i)
 			mainGameClient.MapList[i]->Event_Map["START"].Fire();
@@ -190,35 +170,25 @@ int Fringe::Single::EXE::Main(unsigned argc, const char* argv[])
 		}
 
 		// Connect the argParser to the camera, in case it wants to handle stats (I do not know that I like this here)
-		argParser.AttatchCamera(&mainWin, osg_timer_ref);
+		argParser.AttatchCamera(&mainWin, &timer);
 
-		// The updater is complete, it can write out its times
-		GG_Framework::UI::OSG::LoadStatus::Instance.LoadComplete();
-
-		// Here is the primary game loop
+		// Loop while we are waiting for the Connection to be made and all of the scenes
 		double dTime_s = 0.0;
-		double currTime_s = 0.0;
-		double syncTimer_s = 0.0;
+		double currTime = 0.0;
 		do
 		{
-			dTime_s = logic_timer.FireTimer();
-			currTime_s = logic_timer.GetCurrTime_s();
-
-			// Every 5 seconds or so, make sure my OSG thread has the same time
-			if (syncTimer_s > 5.0)
-			{
-				syncTimer_s += dTime_s;
-				osg_timer_ref->SetCurrTime_NoEvent(currTime_s);
-				syncTimer_s = 0.0;
-			}
+			dTime_s = timer.FireTimer();
+			currTime = timer.GetCurrTime_s();
+			Audio::ISoundSystem::Instance().SystemFrameUpdate();
+			// GG_Framework::Base::ThreadSleep(1);
 		}
-		while(mainWin.Update(currTime_s, dTime_s));
+		while(mainWin.Update(currTime, dTime_s));
 
 		// Now that the user has exited, we can cancel the serverManager thread as well
 		serverManager.cancel();
 
 		// Write the log file
-		logic_timer.Logger.WriteLog();
+		timer.Logger.WriteLog();
 
 		// Sleep to make sure everything completes
 		GG_Framework::Base::ThreadSleep(500);

@@ -62,7 +62,6 @@ m_targetLeadRetShowing(false), m_targetInRangeLeadRetShowing(false), m_Ship_UseH
 	// Hard code these key bindings at first
 	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
 	JoyStick_Binder &joy = MainWindow::GetMainWindow()->GetJoystick();
-	kbm.AddKeyBindingR(true, "Ship.TryFireMainWeapon", osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON);
 	joy.AddJoy_Button_Default(0,"Ship.TryFireMainWeapon");
 	joy.AddJoy_Button_Default(1,"Missile.Launch");
 	// We can now use double-tap to fire the afterburners (for when we have them)
@@ -274,7 +273,6 @@ void UI_Controller::Test2(bool on)
 	m_Test2=on;
 }
 
-#ifndef __DisableSpeedControl__
 void UI_Controller::Ship_AfterBurner_Thrust(bool on)	
 {		
 	// Touching the Afterburner always places us back in SImFLight mode
@@ -291,15 +289,6 @@ void UI_Controller::Ship_AfterBurner_Thrust(bool on)
 		m_ship->SetRequestedSpeed(MIN(currSpeed, m_ship->GetEngaged_Max_Speed()));
 	}
 }
-#else
-void UI_Controller::Ship_AfterBurner_Thrust(bool on)	
-{		
-	if (on)
-		m_Ship_Keyboard_currAccel[1] = m_ship->AFTERBURNER_ACCEL;
-	else
-		m_Ship_Keyboard_currAccel[1] = 0.0;
-}
-#endif
 
 void UI_Controller::Ship_Thrust(bool on)
 {	
@@ -811,7 +800,7 @@ void UI_Controller::UpdateUI(double dTime_s)
 			double dist = targetDir.normalize();
 			targetDir *= MIN(dist, 0.5*dist);
 			m_tgtDirLineGeode->addDrawable(MakeVelLine(targetDir));
-			m_tgtDirLineTransform->SetPositionNextUpdate(cntrArrowPos);
+			m_tgtDirLineTransform->setPosition(cntrArrowPos);
 
 			// Adjust how far away our center reticle is away based on our lead position,
 			// Adjusted for the cannon position on the ship
@@ -819,24 +808,24 @@ void UI_Controller::UpdateUI(double dTime_s)
 			{				
 				// We want to show the proper retical (in range or not
 				bool inRange = (tgtLeadDist < m_ship->GetWeaponsRange());
-				GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform* goodRet = inRange ? m_targetInRangeLeadRetical.get() : m_targetOutRangeLeadRetical.get();
-				GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform* badRet = !inRange ? m_targetInRangeLeadRetical.get() : m_targetOutRangeLeadRetical.get();
+				osg::PositionAttitudeTransform* goodRet = inRange ? m_targetInRangeLeadRetical.get() : m_targetLeadRetical.get();
+				osg::PositionAttitudeTransform* badRet = !inRange ? m_targetInRangeLeadRetical.get() : m_targetLeadRetical.get();
 				bool* goodRetShow = inRange ? &m_targetInRangeLeadRetShowing : &m_targetLeadRetShowing;
 				bool* badRetShow = !inRange ? &m_targetInRangeLeadRetShowing : &m_targetLeadRetShowing;
 
-				goodRet->SetScaleNextUpdate(osg::Vec3d(tgtLeadDist,tgtLeadDist,tgtLeadDist));
-				goodRet->SetPositionNextUpdate(m_ship->GetPos_m());
-				goodRet->SetAttitudeNextUpdate(tgtLeadAtt);
+				goodRet->setScale(osg::Vec3d(tgtLeadDist,tgtLeadDist,tgtLeadDist));
+				goodRet->setPosition(m_ship->GetPos_m());
+				goodRet->setAttitude(tgtLeadAtt);
 
 				// Show and hide the proper ones
 				if (!*goodRetShow)
 				{
-					m_ship->GetGameClient()->Get_UI_ActorScene()->AddChildNextUpdate(goodRet);
+					m_ship->Get_UI_Actor()->getParent(0)->addChild(goodRet);
 					*goodRetShow = true;
 				}
 				if (*badRetShow)
 				{
-					m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(badRet);
+					m_ship->Get_UI_Actor()->getParent(0)->removeChild(badRet);
 					*badRetShow = false;
 				}
 			}
@@ -844,12 +833,12 @@ void UI_Controller::UpdateUI(double dTime_s)
 			{
 				if (m_targetLeadRetShowing)
 				{
-					m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(m_targetOutRangeLeadRetical.get());
+					m_ship->Get_UI_Actor()->getParent(0)->removeChild(m_targetLeadRetical.get());
 					m_targetLeadRetShowing = false;
 				}
 				if (m_targetInRangeLeadRetShowing)
 				{
-					m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(m_targetInRangeLeadRetical.get());
+					m_ship->Get_UI_Actor()->getParent(0)->removeChild(m_targetInRangeLeadRetical.get());
 					m_targetInRangeLeadRetShowing = false;
 				}
 			}
@@ -859,19 +848,19 @@ void UI_Controller::UpdateUI(double dTime_s)
 			// No targets, do not show either retical
 			if (m_targetLeadRetShowing)
 			{
-				m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(m_targetOutRangeLeadRetical.get());
+				m_ship->Get_UI_Actor()->getParent(0)->removeChild(m_targetLeadRetical.get());
 				m_targetLeadRetShowing = false;
 			}
 
 			if (m_targetInRangeLeadRetShowing)
 			{
-				m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(m_targetInRangeLeadRetical.get());
+				m_ship->Get_UI_Actor()->getParent(0)->removeChild(m_targetInRangeLeadRetical.get());
 				m_targetInRangeLeadRetShowing = false;
 			}
 		}
-		m_shipSiteRetical->SetPositionNextUpdate(gunPos);
-		m_shipSiteRetical->SetAttitudeNextUpdate(gunAtt);
-		m_shipSiteRetical->SetScaleNextUpdate(osg::Vec3d(reticalDistance,reticalDistance,reticalDistance));
+		m_shipSiteRetical->setPosition(gunPos);
+		m_shipSiteRetical->setAttitude(gunAtt);
+		m_shipSiteRetical->setScale(osg::Vec3d(reticalDistance,reticalDistance,reticalDistance));
 	}
 }
 
@@ -928,8 +917,8 @@ void UI_Controller::ConnectHUD_Elements(bool connect)
 		mainWin.GetMainCamera()->addPostDrawCallback(*m_HUD_UI.get());
 
 		// Connect UI elements to the scene graph
-		m_ship->GetGameClient()->Get_UI_ActorScene()->AddChildNextUpdate(m_tgtDirLineTransform.get());
-		m_ship->Get_UI_Actor()->AddChildNextUpdate(m_shipSiteRetical.get());
+		m_ship->Get_UI_Actor()->getParent(0)->addChild(m_tgtDirLineTransform.get());
+		m_ship->Get_UI_Actor()->addChild(m_shipSiteRetical.get());
 	}
 	else
 	{
@@ -939,19 +928,19 @@ void UI_Controller::ConnectHUD_Elements(bool connect)
 		mainWin.GetMainCamera()->removePostDrawCallback(*m_HUD_UI.get());
 
 		// Remove the other HUD items from the scene graph
-		m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(m_tgtDirLineTransform.get());
+		m_ship->Get_UI_Actor()->getParent(0)->removeChild(m_tgtDirLineTransform.get());
 
 		if (m_targetLeadRetShowing)
 		{
-			m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(m_targetOutRangeLeadRetical.get());
+			m_ship->Get_UI_Actor()->getParent(0)->removeChild(m_targetLeadRetical.get());
 			m_targetLeadRetShowing = false;
 		}
 		if (m_targetInRangeLeadRetShowing)
 		{
-			m_ship->GetGameClient()->Get_UI_ActorScene()->RemoveChildNextUpdate(m_targetInRangeLeadRetical.get());
+			m_ship->Get_UI_Actor()->getParent(0)->removeChild(m_targetInRangeLeadRetical.get());
 			m_targetInRangeLeadRetShowing = false;
 		}
-		m_ship->Get_UI_Actor()->RemoveChildNextUpdate(m_shipSiteRetical.get());
+		m_ship->Get_UI_Actor()->removeChild(m_shipSiteRetical.get());
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -960,17 +949,17 @@ void UI_Controller::BuildHUD()
 {
 	// The geode is actually the Node that holds the drawable
 	m_tgtDirLineGeode = new osg::Geode;
-	m_tgtDirLineTransform = new GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform;
+	m_tgtDirLineTransform = new osg::PositionAttitudeTransform;
 	m_tgtDirLineTransform->addChild(m_tgtDirLineGeode.get());
 
 	// The lead retical for the target
-	m_targetOutRangeLeadRetical = new GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform;
-	m_targetOutRangeLeadRetical->addChild(m_ship->GetGameClient()->Get_UI_ActorScene()->ReadActorFile(*m_ship->GetEventMap(), 
+	m_targetLeadRetical = new osg::PositionAttitudeTransform;
+	m_targetLeadRetical->addChild(m_ship->GetGameClient()->Get_UI_ActorScene()->ReadActorFile(*m_ship->GetEventMap(), 
 		m_Base->LEAD_RET_OSGV.c_str()));
-	GG_Framework::UI::OSG::SetNodeToDrawOnTop(m_targetOutRangeLeadRetical.get());
+	GG_Framework::UI::OSG::SetNodeToDrawOnTop(m_targetLeadRetical.get());
 
 	// The in range lead retical for the target
-	m_targetInRangeLeadRetical = new GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform;
+	m_targetInRangeLeadRetical = new osg::PositionAttitudeTransform;
 	m_targetInRangeLeadRetical->addChild(m_ship->GetGameClient()->Get_UI_ActorScene()->ReadActorFile(*m_ship->GetEventMap(), 
 		m_Base->INRANGE_LEAD_RET_OSGV.c_str()));
 	GG_Framework::UI::OSG::SetNodeToDrawOnTop(m_targetInRangeLeadRetical.get());
