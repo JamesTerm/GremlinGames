@@ -4,7 +4,6 @@
 	Version="9.00"
 	Name="GG_Framework.UI.OSG"
 	ProjectGUID="{3FA55F58-2528-463F-BB30-F905A10FC310}"
-	RootNamespace="GG_Framework.UI.OSG"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -196,10 +195,6 @@
 			UniqueIdentifier="{3FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\AddRemoveChildCallback.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\ICamera.cpp"
 				>
 			</File>
@@ -213,10 +208,6 @@
 			</File>
 			<File
 				RelativePath=".\PickVisitor.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\PosAttTransCallback.cpp"
 				>
 			</File>
 			<File
@@ -270,10 +261,6 @@
 			UniqueIdentifier="{33995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\AddRemoveChildCallback.h"
-				>
-			</File>
-			<File
 				RelativePath=".\GG_Framework.UI.OSG.h"
 				>
 			</File>
@@ -291,10 +278,6 @@
 			</File>
 			<File
 				RelativePath=".\PickVisitor.h"
-				>
-			</File>
-			<File
-				RelativePath=".\PosAttTransCallback.h"
 				>
 			</File>
 			<File

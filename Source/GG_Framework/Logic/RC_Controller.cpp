@@ -117,7 +117,7 @@ void RC_Controller::TimeChange_pre(double dTime_s)
 	// Are we receiving?
 	if (!RC_Controller_GetIsSending() && (m_lastTransmittedUpdateTime_s>-1.0))
 	{
-		double currTime_s = m_pParent->GetGameClient()->GetLogicTimer().GetCurrTime_s();
+		double currTime_s = m_pParent->GetGameClient()->GetTimer().GetCurrTime_s();
 		double timeSinceUpdate_s = currTime_s - m_lastTransmittedUpdateTime_s;
 
 		// Watch for no updates being sent yet
@@ -194,7 +194,7 @@ void RC_Controller::TimeChange_pre(double dTime_s)
 
 void RC_Controller::TimeChange_post(double dTime_s)
 {
-	const double currTime_s = m_pParent->GetGameClient()->GetLogicTimer().GetCurrTime_s();
+	const double currTime_s = m_pParent->GetGameClient()->GetTimer().GetCurrTime_s();
 	double timeSinceUpdate_s = currTime_s - m_lastTransmittedUpdateTime_s;
 
 	// This block sets the position directly, circumventing all physics.  Normally, the message is acted on

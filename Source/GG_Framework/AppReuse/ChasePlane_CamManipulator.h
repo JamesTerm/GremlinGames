@@ -50,6 +50,8 @@ namespace GG_Framework
 
 			void UpdateCameraOffset();
 
+			float FindCameraDistortion();
+
 			///Here we have the offset to be applied
 			osg::Vec3d m_POV_rotVel_rad_s;
 			GG_Framework::Logic::Physics::FlightDynamics m_POV_Physics;

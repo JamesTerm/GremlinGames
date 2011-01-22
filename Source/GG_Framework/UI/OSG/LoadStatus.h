@@ -37,10 +37,6 @@ namespace GG_Framework
 				/// Also resets the timer
 				void SetPredictedLoadTimes(std::vector<float>& predLoad);
 
-
-				/// Call one time at the beginning when the loading actually starts
-				void StartLoadingTimer(){m_OSG_timer.setStartTick();}
-
 				/// This event is called with elapsed time and remaining time.  Remaining time is -1 if no predicted
 				/// times are available.  It is provided with 0.0 when the LoadComplete happens.
 				/// It will NOT be fired after that last time when LoadComplete is called.

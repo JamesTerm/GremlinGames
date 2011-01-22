@@ -3,26 +3,20 @@
 #include "GG_Framework.UI.h"
 
 #define DEBUG_SCREEN_RESIZE // printf
-#define THREADING_MODEL osgViewer::ViewerBase::ThreadPerCamera
-#define OSG_RefreshFPS 30.0
+#define THREADING_MODEL osgViewer::ViewerBase::AutomaticSelection
 
 using namespace GG_Framework::UI;
-using namespace GG_Framework::Base;
-using namespace std;
 
-double Window::PERFORMANCE_MIN = 0.0; // All performance is ignored for now because it is not on the OSG thread anyway
-double Window::PERFORMANCE_MAX = 60.0;
+double Window::PERFORMANCE_MIN = 25.0;
+double Window::PERFORMANCE_MAX = 45.0;
 int Window::PERFORMANCE_INIT_INDEX = 0;
 
-bool MainWindow::SINGLE_THREADED_MAIN_WINDOW = false;
-int MainWindow::LOGIC_THREAD_FRAME_MS=0;
-int MainWindow::AI_THREAD_FRAME_MS=0;
-int MainWindow::OSG_THREAD_FRAME_MS=0;
+OpenThreads::Mutex Window::UpdateMutex;
 
 Window::Window(bool useAntiAlias, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs) : 
 	m_useAntiAlias(useAntiAlias), 
-	m_viewer(new osgViewer::Viewer),
-	m_mainCam(m_viewer.get()),
+	m_camGroup(new ThreadSafeViewer),
+	m_mainCam(m_camGroup.get()),
 	m_ConfigurationManager(useUserPrefs),
 	m_lastWidth(640), m_lastHeight(480), m_lastX(100), m_lastY(100),
 	m_isFullScreen(false),
@@ -33,8 +27,7 @@ Window::Window(bool useAntiAlias, unsigned screenWidth, unsigned screenHeight, b
 	m_velocityAvg(15),
 	m_waitForPerformanceIndex_s(6.0), // Wait a few seconds before making performance updates
 	m_performanceStrikes(0), // We need to have a few seconds on a row of performance changes before we switch
-	m_performanceIndex(PERFORMANCE_INIT_INDEX),
-	m_realizeComplete(false)
+	m_performanceIndex(PERFORMANCE_INIT_INDEX)
 {
 	// Get the display settings for some special effects	
 	osg::DisplaySettings* ds = new osg::DisplaySettings();
@@ -46,21 +39,21 @@ Window::Window(bool useAntiAlias, unsigned screenWidth, unsigned screenHeight, b
 	if (m_useAntiAlias)
 		ds->setNumMultiSamples(4);
 
-	m_viewer->setDisplaySettings(ds);
+	m_camGroup->setDisplaySettings(ds);
 
 	// We do NOT want the escape key to dismiss this window
-	m_viewer->setKeyEventSetsDone(0);
+	m_camGroup->setKeyEventSetsDone(0);
 
 	// Play with different threading models
 #ifdef THREADING_MODEL
-	m_viewer->setThreadingModel(THREADING_MODEL);
+	m_camGroup->setThreadingModel(THREADING_MODEL);
 #endif
 
 	// We want a stats handler, but bound to the F5 key
 	osg::ref_ptr<osgViewer::StatsHandler> statsHandler = new osgViewer::StatsHandler;
 	statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F5);
 	statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F5);
-	m_viewer->addEventHandler(statsHandler.get());
+	m_camGroup->addEventHandler(statsHandler.get());
 
 	// Init variables for finding frame-rate
 	m_frameRate = 0.0;
@@ -95,15 +88,17 @@ Window::Window(bool useAntiAlias, unsigned screenWidth, unsigned screenHeight, b
 Window::~Window()
 {
 	m_ConfigurationManager.UpdateSettings_Save();
+	// Revert the window to no longer be full screen, which will also set the window back to the proper size
+	SetFullScreen(false);
 	delete m_Joystick;
 	m_Joystick = NULL;
 	delete m_VolumeControls;
 	m_VolumeControls=NULL;
 	//Note refKBM is a osg ref pointer and does not require a delete call it will unreference itself automatically
+
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Called from our own thread, internally only
 void Window::EnableMouse()
 {
 	PositionPointer(0.0f, 0.0f);
@@ -111,13 +106,18 @@ void Window::EnableMouse()
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Needs to be called from Logic Thread, Should be OK
+void Window::SetWindowRectangle(int x, int y, int w, int h, bool resize)
+{
+	m_camGroup->getCamera()->getViewport()->setViewport(x,y,w,h);
+}
+//////////////////////////////////////////////////////////////////////////
+
 void Window::GetWindowRectangle(int& x, int& y, unsigned& w, unsigned& h)
 {
-	const osg::Viewport* vp = m_viewer->getCamera()->getViewport();
+	osg::Viewport* vp = m_camGroup->getCamera()->getViewport();
 	//For dual setup we'll just get the first monitor (we may want to provide a sum area)
 	if (!vp)
-		vp=m_viewer->getSlave(0)._camera->getViewport();
+		vp=m_camGroup->getSlave(0)._camera->getViewport();
 	x = vp->x();
 	y = vp->y();
 	w = vp->width();
@@ -131,7 +131,6 @@ GG_Framework::UI::OSG::ICamera* Window::GetMainCamera()
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Must run on the OSG Thread
 void Window::SetFullScreen(bool fs)
 {
 	DEBUG_SCREEN_RESIZE("Window::SetFullScreen(%s) - was %s\n", fs ? "true" : "false", m_isFullScreen ? "true" : "false");
@@ -200,8 +199,12 @@ void Window::SetFullScreen(bool fs)
 	// Place the mouse back at 0,0
 	PositionPointer(0.0f, 0.0f);
 
+	// Draw a frame
+	m_camGroup->frame(0.0);
+
 	// Start listening to the mouse gain if we were before
 	m_Keyboard_Mouse->IgnoreMouseMotion = ignoringMouse;
+
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -211,11 +214,10 @@ bool Window::IsFullScreen()
 }
 //////////////////////////////////////////////////////////////////////////
 
-// 
 osgViewer::GraphicsWindow* Window::GetGraphicsWindow()
 {
 	osgViewer::ViewerBase::Windows windows;
-	m_viewer->getWindows(windows);
+	m_camGroup->getWindows(windows);
 	if (windows.size() > 0)
 		return (windows[0]);
 	else
@@ -245,15 +247,14 @@ void Window::PositionPointer( float x, float y )
 	float pixel_x, pixel_y;
 	if (!ComputePixelCoords(x,y,pixel_x,pixel_y))
 		return;
-	m_viewer->requestWarpPointer(pixel_x,pixel_y);
+	m_camGroup->requestWarpPointer(pixel_x,pixel_y);
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Needs to be called from the Logic Thread or the OSG Thread
 bool Window::ComputePixelCoords(float x, float y, float& pixel_x, float& pixel_y)
 {
 	// Copied from KeyboardMouse::computePixelCoords() when there is not input area
-	if (!m_viewer->isRealized())
+	if (!m_camGroup->isRealized())
 		return false;
 	if (x<-1.0f) return false;
 	if (x>1.0f) return false;
@@ -275,7 +276,6 @@ bool Window::ComputePixelCoords(float x, float y, float& pixel_x, float& pixel_y
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Only called from the OSG thread
 void Window::Realize()
 {
 	//If the user has not explicitly set the OSG_SCREEN environment variable then
@@ -283,16 +283,16 @@ void Window::Realize()
 	if (getenv("OSG_SCREEN") == 0)
 		putenv("OSG_SCREEN=0");
 	// Make sure this only happens once
-	if (!m_viewer->isRealized())
+	if (!m_camGroup->isRealized())
 	{
-		m_viewer->addEventHandler(m_Keyboard_Mouse);
-		m_viewer->realize();
+		m_camGroup->addEventHandler(m_Keyboard_Mouse);
+		m_camGroup->realize();
 
 		// See if we can get a better FOV
 		double hfov, aspect, nearClip, farClip;
-		m_viewer->getCamera()->getProjectionMatrixAsPerspective(hfov, aspect, nearClip, farClip);
+		m_camGroup->getCamera()->getProjectionMatrixAsPerspective(hfov, aspect, nearClip, farClip);
 		double adjust = 1.5;
-		m_viewer->getCamera()->setProjectionMatrixAsPerspective(hfov*adjust, aspect, nearClip, farClip);
+		m_camGroup->getCamera()->setProjectionMatrixAsPerspective(hfov*adjust, aspect, nearClip, farClip);
 
 		// Set as Windowed mode, with the default size
 		osgViewer::GraphicsWindow *window = GetGraphicsWindow();
@@ -303,9 +303,9 @@ void Window::Realize()
 		// Adjust the LOD scale based on the initial values
 		int i = 0;
 		for (i = 0; i < m_performanceIndex; ++i)
-			m_viewer->getCamera()->setLODScale(m_viewer->getCamera()->getLODScale()/1.25f);
+			m_camGroup->getCamera()->setLODScale(m_camGroup->getCamera()->getLODScale()/1.25f);
 		for (i = 0; i > m_performanceIndex; --i)
-			m_viewer->getCamera()->setLODScale(m_viewer->getCamera()->getLODScale()*1.25f);
+			m_camGroup->getCamera()->setLODScale(m_camGroup->getCamera()->getLODScale()*1.25f);
 
 		//Make the sound listener start WAY far away, rather than the middle of the scene
 		AudioVector3f Position(1e6, 1e6, 1e6);
@@ -315,59 +315,47 @@ void Window::Realize()
 		SOUNDSYSTEM.Set3DListenerAttributes(0,&Position,&Velocity,&Forward,&Up);
 
 		// Call frame at time 0 to get it all initialized
-		m_viewer->frame(0.0);
+		m_camGroup->frame(0.0);
 
 		// Position the pointer at 0 to get started
 		PositionPointer(0.0f, 0.0f);
-
-		PostRealize();
 	}
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Called from the logic thread only
 bool Window::Update(double currTime_s, double dTick_s)
-{	
-	// Handle input from the user
+{		
 	m_Keyboard_Mouse->IncrementTime(dTick_s);
 	m_Joystick->UpdateJoyStick(dTick_s);	//! < Update the Joystick too
 
-	// Move the camera
 	m_mainCam.Update(dTick_s);			//! < Then the Camera Matrix
+	UpdateSound(dTick_s);				//! < Then the sound that uses the camera matrix
 
 	// Turn the mouse back on with the first pass through
 	if (m_Keyboard_Mouse->IgnoreMouseMotion)
 		EnableMouse();	// Enable the mouse the first time, do not mess with framerate
 
-	if (!MainWindow::SINGLE_THREADED_MAIN_WINDOW)
-	{
-		// The keyboard is now updated in the frame() call, but if running multi-threaded, we need to process all the
-		// events we already got from the OSG thread.
-		m_Keyboard_Mouse->ProcessThreadedEvents();
-		return true;
-	}
-	else
-		return UpdateCamera(currTime_s, dTick_s);
+#ifndef __UseSingleThreadMainLoop__
+	// The keyboard is now updated in the frame() call, but if running multi-threaded, we need to process all the
+	// events we already got from the OSG thread.
+	m_Keyboard_Mouse->ProcessThreadedEvents();
+	return true;
+#else
+	return UpdateCameraGroup(currTime_s);
+#endif
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Only from the OSG Thread, either from Window::Update or from MainWindow::OsgThread::tryRun()
-bool Window::UpdateCamera(double currTime_s, double dTick_s)
+bool Window::UpdateCameraGroup(double currTime_s)
 {
-	if (m_viewer->done())
+	if (m_camGroup->done())
 		return false;
-
-	// Update the sound
-	Audio::ISoundSystem::Instance().SystemFrameUpdate();
-	UpdateSound(dTick_s);				//! < Then the sound that uses the camera matrix
-	
-	m_viewer->frame(currTime_s);
+	m_camGroup->frame(currTime_s);
 	return true;
 }
 //////////////////////////////////////////////////////////////////////////
 
 // We may eventually replace all of this with the Viewer status indicator
-// Only called from OSG Thread
 void Window::UpdateFrameRate(double currTime_s, double lastDrawnFrameDur)
 {
 	// Set the first time
@@ -409,7 +397,7 @@ void Window::UpdateFrameRate(double currTime_s, double lastDrawnFrameDur)
 
 						// Set the LOD scale a little lower
 						if (m_performanceIndex < 1)
-							m_viewer->getCamera()->setLODScale(m_viewer->getCamera()->getLODScale()*1.25f);
+							m_camGroup->getCamera()->setLODScale(m_camGroup->getCamera()->getLODScale()*1.25f);
 					}
 					else if (m_performanceStrikes <= 0)
 						--m_performanceStrikes;
@@ -428,7 +416,7 @@ void Window::UpdateFrameRate(double currTime_s, double lastDrawnFrameDur)
 
 					// We can set the LOD scale to make things a little closer as well (only one time)
 					if (m_performanceIndex < 2)
-						m_viewer->getCamera()->setLODScale(m_viewer->getCamera()->getLODScale()/1.25f);
+						m_camGroup->getCamera()->setLODScale(m_camGroup->getCamera()->getLODScale()/1.25f);
 				}
 				else if (m_performanceStrikes >= 0)
 					++m_performanceStrikes;
@@ -444,7 +432,6 @@ void Window::UpdateFrameRate(double currTime_s, double lastDrawnFrameDur)
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Called from the Logic Thread
 void Window::UpdateSound(double dTick_s)
 {
 	//update the vectors
@@ -475,20 +462,18 @@ void Window::UpdateSound(double dTick_s)
 
 MainWindow* MainWindow::s_mainWindow = NULL;
 
-MainWindow::MainWindow(bool useAntiAlias, double throttle_fps, unsigned screenWidth, 
-					   unsigned screenHeight, bool useUserPrefs, GG_Framework::Base::Timer& timer) : 
+MainWindow::MainWindow(bool useAntiAlias, double throttle_fps, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs) : 
 	Window(useAntiAlias, screenWidth, screenHeight, useUserPrefs), m_quitting(false), UpdateTimerLogger("OSG"),
-	m_ThrottleFrames(throttle_fps) // Do we have a user defined throttle?
-	,m_OsgThread(this, timer)
+	m_throttleFPS(throttle_fps) // Do we have a user defined throttle?
+#ifndef __UseSingleThreadMainLoop__
+	,m_GUIThread(this)
+#endif
 {
 	ASSERT(!s_mainWindow);
 	s_mainWindow = this;
 
 	GetKeyboard_Mouse().AddKeyBinding(osgGA::GUIEventAdapter::KEY_Escape, "ESC", false);
 	GetKeyboard_Mouse().GlobalEventMap.Event_Map["ESC"].Subscribe(ehl, *this, &MainWindow::OnEscape);
-
-	GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFullScreen"].Subscribe(
-		ehl, *this, &MainWindow::ToggleFullScreen);
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -499,37 +484,57 @@ MainWindow::~MainWindow()
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Called from the Logic Thread
+void MainWindow::ThrottleFrame()
+{
+	// Nothing to do if there is no throttle anyway
+	if (m_throttleFPS == 0.0)
+		return;
+			
+	// How much time in total do we need to wait?
+	double waitTime_s= ( (1.0/m_throttleFPS) - m_throttleTimer.time_s());
+
+	// We loop here because Sleep has a small resolution, calling it on too small of a wait is just like calling sleep(0)
+	while (waitTime_s > 0.0)
+	{
+		// Do the sleep
+		GG_Framework::Base::ThreadSleep((unsigned)(waitTime_s*1000.0)); 
+
+		// Did we sleep long enough?
+		waitTime_s= ( (1.0/m_throttleFPS) - m_throttleTimer.time_s());
+	}
+
+	// All done, reset the timer for next time
+	m_throttleTimer.setStartTick();
+}
+//////////////////////////////////////////////////////////////////////////
+
 bool MainWindow::Update(double currTime_s, double dTick_s)
 {
 	if (!m_quitting)
 	{
-		bool ret = Window::Update(currTime_s, dTick_s);
+		bool ret = false;
+		UpdateTimerLogger.Start();
+#ifdef __UseSingleThreadMainLoop__
+		ThrottleFrame();  // Wait a bit if we need to
+		ret = Window::Update(currTime_s, dTick_s);
+#else	
+		m_GUIThread.currTime_s()=currTime_s; //TODO this should be atomic but may need a critical section
+		m_GUIThread.SignalEvent().signal();  //set the event to wake up the GUI thread
 
-		// The throttle should be the LAST thing that happens, at the end of each frame
-		double actFrameTime = m_ThrottleFrames();  // Wait a bit if we need to
-		GG_Framework::UI::MainWindow::LOGIC_THREAD_FRAME_MS = (int)(actFrameTime * 1000.0);
-		DOUT2("Logic: %i, AI: %i, OSG: %i", LOGIC_THREAD_FRAME_MS, AI_THREAD_FRAME_MS, OSG_THREAD_FRAME_MS);
+		ThrottleFrame();  // Wait a bit if we need to
+		Window::Update(currTime_s, dTick_s);
 
-		// TODO: Some aspects of this will need to move to the OSG Thread
-		// For now, it will merely display the throttled framerate
+		//This should be a safe atomic operation
+		ret = (!m_camGroup->done());
+#endif __UseSingleThreadMainLoop__
 		UpdateTimerLogger.End();
 		UpdateFrameRate(currTime_s, UpdateTimerLogger.V);
-		UpdateTimerLogger.Start();
-
-		if (!SINGLE_THREADED_MAIN_WINDOW)
-		{
-			// These operations should be thread safe
-			m_OsgThread.ReadyForUpdates();
-			ret = (!m_viewer->done());
-		}
 		return ret;
 	}
 	else return false;
 }
 //////////////////////////////////////////////////////////////////////////
 
-// Called from the logic thread
 void MainWindow::TryClose()
 {
 	if (!m_quitting)
@@ -539,14 +544,7 @@ void MainWindow::TryClose()
 		if (m_quitting)
 		{
 			// Fire the close message to let everything know
-			if (SINGLE_THREADED_MAIN_WINDOW)
-				m_viewer->setDone(true);
-			else
-			{
-				m_OsgThread.Quit();
-				//m_OsgThread.SignalEvent().signal();  //set the event to wake up the GUI thread
-				ThreadSleep(1000);  //give it some time to close
-			}
+			m_camGroup->setDone(true);
 			Close.Fire(this);
 		}
 	}
@@ -564,124 +562,22 @@ void MainWindow::OnEscape()
 
 void MainWindow::Realize()
 {
-	if (SINGLE_THREADED_MAIN_WINDOW)
-	{
-		__super::Realize();
-		UpdateTimerLogger.Start();
-	}
-	else
-	{
-		m_OsgThread.start();
+	__super::Realize();
 
-		// Wait till the realize is done
-		while (!IsRealized())
-			GG_Framework::Base::ThreadSleep(500);
-	}
-	InitializeThrottle();
+	// If there is no user defined throttle, we may want to throttle back for multi-threading based on video card refresh rates
+	// TODO: Properly calculate refresh rates
+	if (m_throttleFPS == 0.0)
+		m_throttleFPS = 60.0;
+
+	// When working with the throttle, reset the timer
+	m_throttleTimer.setStartTick();
 }
 //////////////////////////////////////////////////////////////////////////
 
-double MainWindow::GetThrottleFPS_OSG()
+void MainWindow::SetThrottleFPS(double throttleFPS)
 {
-	if (SINGLE_THREADED_MAIN_WINDOW)
-		return GetThrottleFPS();
-	else
-		return m_OsgThread.GetThrottleFPS();
-}
-void MainWindow::SetThrottleFPS_OSG(double throttleFPS)
-{
-	if (SINGLE_THREADED_MAIN_WINDOW)
-		return SetThrottleFPS(throttleFPS);
-	else
-		m_OsgThread.SetThrottleFPS(throttleFPS);
-}
-
-void MainWindow::OsgThread::tryRun()
-{
-	// We handle the realize now in our thread
-	m_pParent->Window::Realize();
-
-	// Make sure we are ready to do all updates
-	while (!m_readyForUpdates)
-		GG_Framework::Base::ThreadSleep(500);
-
-	// James:  I think you might be right,  I set the throttle at 0 and occasionally saw frames less than
-	// 16 ms (though not often). We can place the throttle here.
-	// Also, when I did let it just free-wheel without ANY sleeps, I could see that it was starving out
-	// other threads.
-
-	// TODO: USe the actual refresh rate of the monitor.  Can we get this from OSG?
-	m_ThrottleFrames.SetThrottleFPS(OSG_RefreshFPS);
-	
-	do
-	{
-		double dTime_s = m_timer.FireTimer();
-		double currTime_s = m_timer.GetCurrTime_s();
-
-		m_pParent->Window::SetFullScreen(m_fullScreen);
-		m_pParent->Window::UseCursor(m_useCursor);
-		MousePos mp = mousePos;
-		if (mp.setNextFrame)
-		{
-			m_pParent->Window::PositionPointer(mp.X, mp.Y);
-			mousePos = MainWindow::OsgThread::MousePos(); // Default ctor does not set the mouse
-		}
-		m_pParent->UpdateCamera(currTime_s, dTime_s);
-
-		// The throttle should be the LAST thing that happens, at the end of each frame
-		double actFrameTime = m_ThrottleFrames();  // Wait a bit if we need to
-		GG_Framework::UI::MainWindow::OSG_THREAD_FRAME_MS = (int)(actFrameTime * 1000.0);
-	}
-	while (!m_pParent->m_viewer->done() && !m_quit);
-
-	printf("Exiting OSG Thread\n");
-}
-
-MainWindow::OsgThread::OsgThread(MainWindow *Parent, GG_Framework::Base::Timer& timer) :  
-m_pParent(Parent),m_fullScreen(false),m_useCursor(true),m_quit(false),m_readyForUpdates(false),
-m_timer(timer)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-void MainWindow::InitializeThrottle()
-{
-	// Lets play with a very low throttle when multi-threading
-	m_ThrottleFrames.SetThrottleFPS(SINGLE_THREADED_MAIN_WINDOW ? OSG_RefreshFPS : 100.0);
-	m_ThrottleFrames.SetMinSleep(1);
+	ASSERT(throttleFPS>=0.0);
+	m_throttleFPS = throttleFPS;
 }
 //////////////////////////////////////////////////////////////////////////
 
-void MainWindow::ToggleFullScreen()
-{
-	SetFullScreen(!IsFullScreen());
-}
-//////////////////////////////////////////////////////////////////////////
-
-void MainWindow::SetFullScreen(bool fs)
-{
-	if (SINGLE_THREADED_MAIN_WINDOW)
-		Window::SetFullScreen(fs);
-	else
-		m_OsgThread.SetFullScreen(fs);
-}
-
-// Work with the Cursor, we will eventually be able to manipulate the cursor itself
-void MainWindow::UseCursor( bool flag )
-{
-	if (SINGLE_THREADED_MAIN_WINDOW)
-		Window::UseCursor(flag);
-	else
-		m_OsgThread.UseCursor(flag);
-}
-
-// Position the pointer explicitly
-void MainWindow::PositionPointer( float x, float y )
-{
-	if (SINGLE_THREADED_MAIN_WINDOW)
-		Window::PositionPointer(x,y);
-	else
-		m_OsgThread.mousePos = OsgThread::MousePos(x,y);
-}
-//////////////////////////////////////////////////////////////////////////

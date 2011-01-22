@@ -13,15 +13,9 @@ class ActorScene;
 
 //! This is the node that is returned from ActorScene::AddActorFile.
 //! It can listen for events from GG_FRamework::Logic::Entity3D
-class FRAMEWORK_UI_API ActorTransform : public GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform
+class FRAMEWORK_UI_API ActorTransform : public osg::PositionAttitudeTransform
 {
 public:
-	ActorTransform();
-
-	// Call these to add and remove children on the next update so it is thread safe
-	void AddChildNextUpdate(osg::Node* child, osg::Group* parent = NULL){m_addRemCallback->AddChild(child, parent);}
-	void RemoveChildNextUpdate(osg::Node* child, osg::Group* parent = NULL){m_addRemCallback->RemoveChild(child, parent);}
-
 	void SubscribeToPosAttChange(Event2<const osg::Vec3&, const osg::Quat&>& posAtEvent)
 	{
 		posAtEvent.Subscribe(ehl, *this, &ActorTransform::UpdatePosAtt);
@@ -34,16 +28,12 @@ public:
 
 	void UpdatePosAtt(const osg::Vec3& pos, const osg::Quat& att)
 	{
-		SetPositionNextUpdate(pos);
-		SetAttitudeNextUpdate(att);
+		setPosition(pos);
+		setAttitude(att);
 	}
 
 protected:
 	virtual ~ActorTransform(){}
-
-private:
-	// Deletion handled by ref ptr
-	osg::ref_ptr<OSG::AddRemoveChildCallback> m_addRemCallback;
 	IEvent::HandlerList ehl;
 };
 
@@ -55,10 +45,6 @@ class FRAMEWORK_UI_API Actor :
 public:
 	Actor(ActorScene* actorScene, const char* lineFromFile);
 	~Actor();
-
-	// Call these to add and remove children on the next update so it is thread safe
-	void AddChildNextUpdate(osg::Node* child, osg::Group* parent = NULL){m_addRemCallback->AddChild(child, parent);}
-	void RemoveChildNextUpdate(osg::Node* child, osg::Group* parent = NULL){m_addRemCallback->RemoveChild(child, parent);}
 
 	virtual double GetActorTime(double sceneTime);
 	void GlobalTimeChangedCallback(double newTime_s);
@@ -95,7 +81,6 @@ private:
 	IEvent::HandlerList ehl;
 	osgUtil::UpdateVisitor m_update;
 	osg::ref_ptr<osg::FrameStamp> m_frameStamp;
-	osg::ref_ptr<OSG::AddRemoveChildCallback> m_addRemCallback; // deletion handled by ref ptr?
 
 	class ActionQueNode
 	{

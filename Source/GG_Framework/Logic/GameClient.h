@@ -26,6 +26,8 @@ namespace GG_Framework
 			virtual bool IsVisibleScene(){return false;}
 			virtual GG_Framework::UI::ActorTransform* 
 			  ReadFromSceneFile(GG_Framework::UI::EventMap& localEventMap, const char* fn);
+		
+		private:
 		};
 		//////////////////////////////////////////////////////////////////////////
 		//! For each game client running (one for each player and one for the UI), there is an instance of GameClient.
@@ -44,7 +46,7 @@ namespace GG_Framework
 		public:
 			GameClient(
 				GG_Framework::Logic::Network::IClient& client, 
-				GG_Framework::Base::Timer& logic_timer, const char* contentDirLW);
+				GG_Framework::Base::Timer& timer, const char* contentDirLW);
 			virtual ~GameClient();
 
 			//! This might be called on a separate thread
@@ -55,7 +57,7 @@ namespace GG_Framework
 			//! The START event will be fired by the Runner
 			EventMapList MapList;
 
-			GG_Framework::Base::Timer& GetLogicTimer(){return m_logicTimer;}
+			GG_Framework::Base::Timer& GetTimer(){return m_timer;}
 
 			// Some Event Maps for working with incoming packets
 			Event1<Packet&> IncomingPacketEvent;
@@ -90,9 +92,6 @@ namespace GG_Framework
 
 
 		protected:
-			//! We will reuse an updater that is sent to the BB scene
-			osgUtil::UpdateVisitor m_updateBB;
-			osg::ref_ptr<osg::FrameStamp> m_frameStampBB;
 
 			//! Use this to send messages back along the network
 			GG_Framework::Logic::Network::IClient& m_client;
@@ -128,7 +127,7 @@ namespace GG_Framework
 			GG_Framework::Base::ProfilingLogger RecvNetLogger;
 
 			BB_ActorScene m_actorSceneBB;
-			GG_Framework::Base::Timer& m_logicTimer;
+			GG_Framework::Base::Timer& m_timer;
 
 			// This map of Entities that we maintain
 			EntityMap_Name m_entityMap_Name;
@@ -158,7 +157,7 @@ namespace GG_Framework
 				GG_Framework::Logic::Network::IClient& client, 
 				GG_Framework::Base::Timer& timer, const char* contentDirLW);
 
-			// While waiting for the first player, just keep doing a logic_timer update at 0
+			// While waiting for the first player, just keep doing a timer update at 0
 			void LookForFirstPlayerEntity(){GameTimerUpdate(0.0);}
 
 			// If one client closes un-expectantly, we may need to take over its entities, or destroy them

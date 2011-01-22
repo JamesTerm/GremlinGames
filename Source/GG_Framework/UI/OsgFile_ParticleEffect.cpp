@@ -22,10 +22,10 @@ void OsgFile_ParticleEffect::LaunchEffect(double launchTime_s, bool start, doubl
 		osg::ref_ptr<osg::Node> child1 = topGroup->getChild(1);
 		osg::ref_ptr<osg::Node> child2 = topGroup->getChild(2);
 		topGroup->removeChildren(1,2);
-		m_actorScene->AddChildNextUpdate(topGroup, GetParentNode()->asGroup());
+		this->GetParentNode()->asGroup()->addChild(topGroup);
 
 		// The other 2 go higher up
-		m_actorScene->AddChildNextUpdate(child1.get());
-		m_actorScene->AddChildNextUpdate(child2.get());
+		m_actorScene->GetScene()->addChild(child1.get());
+		m_actorScene->GetScene()->addChild(child2.get());
 	}
 }

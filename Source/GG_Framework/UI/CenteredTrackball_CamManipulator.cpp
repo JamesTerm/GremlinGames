@@ -15,19 +15,25 @@ void CenteredTrackball_CamManipulator::OnMouseMove(float mx, float my)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-void CenteredTrackball_CamManipulator::KeyPress(GG_Framework::Base::Key key, bool onoff)
+void CenteredTrackball_CamManipulator::OnMouseBtnPress(float mx, float my, unsigned int button)
 {
-	if (	(key.key == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) ||
-			(key.key == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) ||
-			(key.key == osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON))
-	{
-		if (onoff)
-			_button_state |= key.key;
-		else
-			_button_state &= ~key.key;
-	}
+	_mx = mx;
+	_my = my;
+#ifndef __Use_OSG_Svn__
+	_button_state |= (1<<(button-1));
+#else
+	_button_state |= button;
+#endif
 }
-//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+
+void CenteredTrackball_CamManipulator::OnMouseBtnRelease(float mx, float my, unsigned int button )
+{
+	_mx = mx;
+	_my = my;
+	_button_state &= ~button;
+}
+////////////////////////////////////////////////////////////////////////////////////////////
 
 void CenteredTrackball_CamManipulator::UpdateCamera(GG_Framework::UI::OSG::ICamera* activeCamera, double dTime_s)
 {
@@ -48,7 +54,7 @@ void CenteredTrackball_CamManipulator::UpdateCamera(GG_Framework::UI::OSG::ICame
 		trackball;
 
 	// Let the real camera finish up
-	activeCamera->SetMatrix(camMatrix);
+	activeCamera->SetMatrix(camMatrix, 0.0f);
 }
 //////////////////////////////////////////////////////////////////////////
 

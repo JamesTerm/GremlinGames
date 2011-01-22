@@ -86,7 +86,7 @@ void Action::DelayedEvent::Launch(int launchFrame)
 {
 	m_started = false;
 	if (m_launchFrame < 0) // Make sure we are only subscribing once
-		m_actorScene->GetOsgTimer()->CurrTimeChanged.Subscribe(ehl, *this, &Action::DelayedEvent::GlobalTimeChangedCallback);
+		m_actorScene->GetTimer()->CurrTimeChanged.Subscribe(ehl, *this, &Action::DelayedEvent::GlobalTimeChangedCallback);
 	m_launchFrame = launchFrame;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ void Action::DelayedEvent::GlobalTimeChangedCallback(double newTime_s)
 				m_eventMap->EventOnOff_Map[m_eventName].Fire(false);
 			}
 			m_started = false;
-			m_actorScene->GetOsgTimer()->CurrTimeChanged.Remove(*this, &Action::DelayedEvent::GlobalTimeChangedCallback);
+			m_actorScene->GetTimer()->CurrTimeChanged.Remove(*this, &Action::DelayedEvent::GlobalTimeChangedCallback);
 			m_launchFrame = -1;
 		}
 		else if (!m_started)
@@ -119,7 +119,7 @@ void Action::DelayedEvent::GlobalTimeChangedCallback(double newTime_s)
 					DEBUG_DESTRUCTION("Action::DelayedEvent::GlobalTimeChangedCallback() Firing HIDE.\n");
 				}
 				m_eventMap->Event_Map[m_eventName].Fire();
-				m_actorScene->GetOsgTimer()->CurrTimeChanged.Remove(*this, &Action::DelayedEvent::GlobalTimeChangedCallback);
+				m_actorScene->GetTimer()->CurrTimeChanged.Remove(*this, &Action::DelayedEvent::GlobalTimeChangedCallback);
 				m_launchFrame = -1;
 			}
 			else if (m_mode == IEffect::TOGGLE)

@@ -21,8 +21,8 @@ namespace GG_Framework
 			// Find the out where the camera is and where it is pointing
 			osg::Vec3d eye, center, up;
 			camMatrix.getLookAt(eye, center, up);
-			SetPositionNextUpdate(eye);
-			SetAttitudeNextUpdate(GG_Framework::UI::OSG::MimicCameraRot(center-eye, up).getRotate());
+			this->setPosition(eye);
+			this->setAttitude(GG_Framework::UI::OSG::MimicCameraRot(center-eye, up).getRotate());
 		}
 		//////////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////////
@@ -32,9 +32,9 @@ namespace GG_Framework
 			osg::Vec3d eye, center, up;
 			camMatrix.getLookAt(eye, center, up);
 			if (m_adjScale > 0.0)
-				SetPositionNextUpdate(eye - (eye*m_adjScale));
+				this->setPosition(eye - (eye*m_adjScale));
 			else
-				SetPositionNextUpdate(eye);
+				this->setPosition(eye);
 		}
 		//////////////////////////////////////////////////////////////////////////
 
@@ -78,7 +78,7 @@ namespace GG_Framework
 			// DebugOut_PDCB::TEXT = GG_Framework::Base::BuildString("nomDist=%f, farDist=%f, dist=%f, scale=%f", m_nomDist, m_farDist, dist, scaleToApply);
 
 			// Apply the scale
-			this->SetScaleNextUpdate(osg::Vec3d(scaleToApply,scaleToApply,scaleToApply));
+			this->setScale(osg::Vec3d(scaleToApply,scaleToApply,scaleToApply));
 		}
 		//////////////////////////////////////////////////////////////////////////
 

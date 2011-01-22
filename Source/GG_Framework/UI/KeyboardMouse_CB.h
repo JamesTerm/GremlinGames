@@ -21,11 +21,15 @@ namespace GG_Framework
 			virtual void mouseMotion( float mx, float my);
 			// For now, any mouse motion will call the same callbacks, up to event map listeners to keep the difference
 			virtual void passiveMouseMotion( float mx, float my){mouseMotion(mx,my);}
-			virtual void mouseScroll( int sm);
+			virtual void buttonPress( float mx, float my, unsigned int button);
+			virtual void buttonRelease( float mx, float my, unsigned int button);
 
+			virtual void mouseScroll( int sm);
 			virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
 
+#ifndef __UseSingleThreadMainLoop__
 			void ProcessThreadedEvents();
+#endif
 
 			// Work with key bindings
 			std::vector<GG_Framework::Base::Key>* GetBindingsForEventName(std::string eventName, bool useOnOff);
@@ -70,17 +74,18 @@ namespace GG_Framework
 
 			ConfigurationManager * const m_Config;
 
+#ifndef __UseSingleThreadMainLoop__
 			// When using multi-threading, keep the messages in a queue
 			void AddToQueue(const osgGA::GUIEventAdapter& ea);
 			std::queue<osg::ref_ptr<osgGA::GUIEventAdapter> *> m_msgQueue;
 			OpenThreads::Mutex m_queueMutex;
+#endif
 
 			// Have an inner handle that does the work based on where the message is coming from
 			bool innerHandle(const osgGA::GUIEventAdapter& ea, bool fromEA);
 
 			void KeyPressRelease(int key, bool press);
 			void KeyPressRelease(GG_Framework::Base::Key key, bool press);
-			static int TranslateMouseButton(int mb);
 
 			std::map<GG_Framework::Base::Key, std::vector<std::string>*, std::greater<GG_Framework::Base::Key> > m_KeyBindings;
 			std::map<std::string, std::vector<GG_Framework::Base::Key>*, std::greater<std::string> > m_AssignedKeys;

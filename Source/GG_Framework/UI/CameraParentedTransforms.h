@@ -6,7 +6,7 @@ namespace GG_Framework
 	namespace UI
 	{
 
-		class FRAMEWORK_UI_API CameraParentedTransform : public GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform
+		class FRAMEWORK_UI_API CameraParentedTransform : public osg::PositionAttitudeTransform
 		{
 		public:
 			CameraParentedTransform(GG_Framework::UI::OSG::ICamera* cam);
@@ -25,7 +25,7 @@ namespace GG_Framework
 		/// The render bin is used to make sure these large objects are rendered before the rest
 		/// of the scene.  ScaledTransform with a scale of 0 are in render bin -2, and the others
 		/// are in render bin -1.
-		class FRAMEWORK_UI_API ScaledTransform : public GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform
+		class FRAMEWORK_UI_API ScaledTransform : public osg::PositionAttitudeTransform
 		{
 		public:
 			ScaledTransform(GG_Framework::UI::OSG::ICamera& cam, double adjScale);
@@ -42,7 +42,7 @@ namespace GG_Framework
 		/// nominal distance.  Beyond the far distance, the object will scale down as normal.  For instance, if the nominal distance
 		/// is 10 meters and the far distance is 1,000 meters, and the camera is 300 meters away, the object will be scaled to 
 		/// 30x its original size.
-		class FRAMEWORK_UI_API LightBloomTransform : public GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform
+		class FRAMEWORK_UI_API LightBloomTransform : public osg::PositionAttitudeTransform
 		{
 		public:
 			LightBloomTransform(GG_Framework::UI::OSG::ICamera& cam, double nomDist, double farDist);

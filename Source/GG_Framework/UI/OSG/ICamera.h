@@ -23,6 +23,8 @@ namespace GG_Framework
 			{
 				public:
 					ICamera() : m_camManip(NULL) {}
+					virtual void setClearColor(const osg::Vec4& c) = 0;
+					virtual void getClearColor(osg::Vec4& c) = 0;
 
 					virtual void addPostDrawCallback(osg::Camera::DrawCallback& cb) = 0;
 					virtual void removePostDrawCallback(osg::Camera::DrawCallback& cb) = 0;
@@ -30,9 +32,9 @@ namespace GG_Framework
 					virtual void setFinalDrawCallback(osg::Camera::DrawCallback* cb) = 0;
 
 					virtual osg::Matrix GetCameraMatrix() const =0;
-					virtual void SetMatrix(const osg::Matrix& camMatrix) = 0;
+					virtual void SetMatrix(const osg::Matrix& camMatrix, float distortionAmt) = 0;
 					virtual osg::Node* GetSceneNode() = 0;
-					virtual void SetSceneNode(osg::Node* node) = 0;
+					virtual void SetSceneNode(osg::Node* node, float distortionPCNT) = 0;
 
 					virtual void SetCameraManipulator(ICameraManipulator* cameraManip);
 					Event3<ICamera*, ICameraManipulator*, ICameraManipulator*> CamManipChanged; // (this, old, new)

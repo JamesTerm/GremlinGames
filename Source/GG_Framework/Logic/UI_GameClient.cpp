@@ -8,22 +8,16 @@ using namespace GG_Framework::UI;
 using namespace GG_Framework::Base;
 
 UI_GameClient::UI_GameClient(GG_Framework::Logic::Network::IClient& client, 
-						   GG_Framework::Logic::Network::SynchronizedTimer& logic_timer, 
-						   GG_Framework::Base::Timer& osg_timer, 
-						   const char* contentDirLW) : 
-m_syncLogicTimer(logic_timer), m_controlledEntity(NULL), GameClient(client, logic_timer, contentDirLW)
+						   GG_Framework::Logic::Network::SynchronizedTimer& timer, const char* contentDirLW) : 
+#ifdef USE_SIMPLE_MODELS
+	UI_ActorScene(timer, contentDirLW), 
+#else
+	UI_ActorScene(timer, contentDirLW, true),
+#endif
+m_syncTimer(timer), m_controlledEntity(NULL), GameClient(client, timer, contentDirLW)
 {
-	if (GG_Framework::Base::TEST_USE_SIMPLE_MODELS)
-		UI_ActorScene = new BB_ActorScene(osg_timer, contentDirLW);
-	else
-		UI_ActorScene = new GG_Framework::UI::ActorScene(osg_timer, contentDirLW, true);
 }
 //////////////////////////////////////////////////////////////////////////
-
-UI_GameClient::~UI_GameClient()
-{
-	delete UI_ActorScene;
-}
 
 bool UI_GameClient::LoadPredictedLoadTimes()
 {
@@ -119,13 +113,6 @@ bool UI_GameClient::LoadInitialGameData()
 	if (!LoadOwnEntity())
 		return false;
 
-	// All is well
-	return true;
-}
-//////////////////////////////////////////////////////////////////////////
-
-void UI_GameClient::NotifyServerReady()
-{
 	// All is loaded ok, let the Server know
 	DEBUG_PLAYER_LOADING("UI_GameClient::LoadInitialGameData() Sending ID_PlayerCompletedLoading\n");
 	RakNet::BitStream lastBS;
@@ -133,7 +120,11 @@ void UI_GameClient::NotifyServerReady()
 	m_client.Send(&lastBS, HIGH_PRIORITY, RELIABLE_ORDERED, OC_GameLoad);
 
 	// Finally wait for the Epoch message
-	GetSyncTimerEpoch();
+	if (!GetSyncTimerEpoch())
+		return false;
+
+	// All is well
+	return true;
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -231,7 +222,7 @@ bool UI_GameClient::GetSyncTimerEpoch()
 				RakNet::BitStream timeBS(packet->data+1, sizeof(RakNetTime)+sizeof(unsigned char), false);
 				RakNetTime epoch;
 				timeBS.Read(epoch);
-				m_syncLogicTimer.SetEpoch(epoch);
+				m_syncTimer.SetEpoch(epoch);
 				stillLoading = false;
 			}
 			else if (packetID == ID_ConnectPermissionDenied)
@@ -287,13 +278,11 @@ bool UI_GameClient::LoadOrnamentalOSGV()
 					stillLoading = false;
 				else
 				{
-					// Do not load the ornamental stuff when not using simple models
-					if (!GG_Framework::Base::TEST_USE_SIMPLE_MODELS)
-					{
-						Entity3D::EventMap* localEventMap = new Entity3D::EventMap(true);
-						MapList.push_back(localEventMap);
-						UI_ActorScene->AddActorFile(*localEventMap, file);
-					}
+#ifndef USE_SIMPLE_MODELS // Ignore ornamental fanciness when using simple models
+					Entity3D::EventMap* localEventMap = new Entity3D::EventMap(true);
+					MapList.push_back(localEventMap);
+					UI_ActorScene.AddActorFile(*localEventMap, file);
+#endif
 				}
 			}
 			else if (packetID == ID_ConnectPermissionDenied)

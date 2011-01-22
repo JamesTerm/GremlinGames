@@ -1,6 +1,5 @@
 // MainWindow.h
 #pragma once
-
 #include <osgViewer/Viewer>
 
 namespace GG_Framework
@@ -10,14 +9,33 @@ namespace GG_Framework
 		class FRAMEWORK_UI_API Window
 		{
 		public:
+			// Use this block for all threading updates
+			static OpenThreads::Mutex UpdateMutex;
+			class FRAMEWORK_UI_API ThreadSafeViewer : public osgViewer::Viewer
+			{
+			public:
+				Event0 PostUpdateEvent;
+				/*
+				virtual void updateTraversal()
+				{
+					// Just wrap the update traversal in a mutex
+					GG_Framework::Base::RefMutexWrapper rmw(Window::UpdateMutex);
+					__super::updateTraversal();
+					PostUpdateEvent.Fire();
+				}
+				*/
+			};
+
 			Window(bool useAntiAlias, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs);
 			virtual ~Window();
 
+			void SetWindowRectangle(int x, int y, int w, int h, bool resize);
+			void GetWindowRectangle(int& x, int& y, unsigned& w, unsigned& h);
+			void SetFullScreen(bool fs);
 			bool IsFullScreen();
+			void SetWindowText(const char* windowTitle);
 			bool IsAntiAliased(){return m_useAntiAlias;}
 			virtual void Realize();
-			virtual void PostRealize(){m_realizeComplete=true;}
-			bool IsRealized(){return m_realizeComplete;}
 			virtual bool Update(double currTime_s, double dTick_s);
 			virtual double GetThrottleFPS(){return 0.0;}
 
@@ -33,10 +51,13 @@ namespace GG_Framework
 			static int PERFORMANCE_INIT_INDEX;
 
 			// Work with the Cursor, we will eventually be able to manipulate the cursor itself
-			virtual void UseCursor( bool flag );
+			void UseCursor( bool flag );
+
+			// Call this just as we are starting the main loop to enable the camera and get one more frame in
+			void EnableMouse();
 
 			// Position the pointer explicitly
-			virtual void PositionPointer( float x, float y );
+			void PositionPointer( float x, float y );
 
 			/** compute, from normalized mouse coords (x,y) the,  for the specified 
 			* RenderSurface, the pixel coordinates (pixel_x,pixel_y). return true 
@@ -44,21 +65,15 @@ namespace GG_Framework
 			* false with pixel_x and pixel_y left unchanged.*/
 			bool ComputePixelCoords(float x, float y, float& pixel_x, float& pixel_y);
 
+			ThreadSafeViewer* GetViewer(){return m_camGroup.get();}
+
 			KeyboardMouse_CB &GetKeyboard_Mouse() const { return *m_Keyboard_Mouse; }
 			JoyStick_Binder &GetJoystick() const { return *m_Joystick; }
 
-
-		// Needs to be called from Logic Thread
-			void GetWindowRectangle(int& x, int& y, unsigned& w, unsigned& h);
-
-		// This version needs the OSG thread, but MainWindow will override it
-			virtual void SetFullScreen(bool fs);
-
 		protected:
 			osgViewer::GraphicsWindow* GetGraphicsWindow();
-			void SetWindowText(const char* windowTitle);
 			bool m_useAntiAlias;
-			osg::ref_ptr<osgViewer::Viewer>	m_viewer;
+			osg::ref_ptr<ThreadSafeViewer>	m_camGroup;
 			bool m_isFullScreen;
 			unsigned m_origScreenWidth, m_origScreenHeight;
 			unsigned m_newScreenWidth, m_newScreenHeight;
@@ -77,16 +92,10 @@ namespace GG_Framework
 			int m_performanceIndex;
 			double m_waitForPerformanceIndex_s;
 			int m_performanceStrikes;
-			bool m_realizeComplete;
 
-			bool UpdateCamera(double currTime_s, double dTick_s);
+			bool UpdateCameraGroup(double currTime_s);
 			void UpdateSound(double dTick_s);
 			GG_Framework::UI::OSG::VectorDerivativeOverTimeAverager m_velocityAvg;
-
-		protected:
-		// Called internally from our thread
-			// Call this just as we are starting the main loop to enable the camera and get one more frame in
-			void EnableMouse();
 
 		private:
 			// Attach to events with this, also change where the callbacks go
@@ -103,18 +112,12 @@ namespace GG_Framework
 		class FRAMEWORK_UI_API MainWindow : public Window
 		{
 		public:
-			static bool SINGLE_THREADED_MAIN_WINDOW;
-			static int LOGIC_THREAD_FRAME_MS;
-			static int AI_THREAD_FRAME_MS;
-			static int OSG_THREAD_FRAME_MS;
-
-		public:
-			MainWindow(bool useAntiAlias, double throttle_fps, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs,
-				GG_Framework::Base::Timer& timer);
+			MainWindow(bool useAntiAlias, double throttle_fps, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs);
 			virtual bool Update(double currTime_s, double dTick_s);
 			virtual ~MainWindow();
 			virtual void Realize();
 			bool IsQuitting(){return m_quitting;}
+			void ToggleFullScreen(){SetFullScreen(!IsFullScreen());}
 			void TryClose();
 
 			Event2<MainWindow*, bool&> Closing;
@@ -127,64 +130,61 @@ namespace GG_Framework
 			// This is public so we can tie events to it
 			IEvent::HandlerList ehl;
 
-			double GetThrottleFPS(){return m_ThrottleFrames.GetThrottleFPS();}
-			void SetThrottleFPS(double throttleFPS){m_ThrottleFrames.SetThrottleFPS(throttleFPS);}
-
-			double GetThrottleFPS_OSG();
-			void SetThrottleFPS_OSG(double throttleFPS);
+			virtual double GetThrottleFPS(){return m_throttleFPS;}
+			void SetThrottleFPS(double throttleFPS);
 
 			GG_Framework::Base::ProfilingLogger UpdateTimerLogger;
 
-			// Must be on the Logic Thread
-			void ToggleFullScreen();
-
-			// Handles the thread safety, if Multi-threaded
-			virtual void SetFullScreen(bool fs);
-
-			// Work with the Cursor, we will eventually be able to manipulate the cursor itself
-			virtual void UseCursor( bool flag );
-
-			// Position the pointer explicitly
-			virtual void PositionPointer( float x, float y );
-
-
 		private:
-			void InitializeThrottle();
 			void OnEscape();
 			static MainWindow* s_mainWindow;
 			bool m_quitting;
-			GG_Framework::Base::ThrottleFrame m_ThrottleFrames;
+			osg::Timer m_throttleTimer;
+			double m_throttleFPS;
 
-			class FRAMEWORK_UI_API OsgThread : public GG_Framework::Base::ThreadedClass
+			void ThrottleFrame();
+
+#ifndef __UseSingleThreadMainLoop__
+			class FRAMEWORK_UI_API GUIThread : public GG_Framework::Base::ThreadedClass
 			{
 				public:
-					OsgThread(MainWindow *Parent, GG_Framework::Base::Timer& timer);
-					void SetFullScreen(bool fullScreen){m_fullScreen=fullScreen;}
-					void UseCursor( bool flag ){m_useCursor = flag;}
-					void Quit(){m_quit = true;}
-					void ReadyForUpdates(){m_readyForUpdates=true;}
-
-					virtual double GetThrottleFPS(){return m_ThrottleFrames.GetThrottleFPS();}
-					void SetThrottleFPS(double throttleFPS){m_ThrottleFrames.SetThrottleFPS(throttleFPS);}
-
-					struct MousePos
-					{
-						float X,Y;
-						bool setNextFrame;
-						MousePos() : setNextFrame(false) {}
-						MousePos(float x, float y) : X(x), Y(y), setNextFrame(true) {}
-					};
-					GG_Framework::Base::AtomicT<MousePos> mousePos;
-
+					GUIThread(MainWindow *Parent) : m_pParent(Parent),m_currTime_s(0.0) {start();}
+					~GUIThread() {cancel();}
+					//Set and Get the Signal Event
+					OpenThreads::Condition &SignalEvent() {return m_SignalEvent;}
+					//Set and Get the current time
+					double &currTime_s() {return m_currTime_s;}
 				protected:
-					void tryRun();
-				
+					void tryRun() 
+					{
+						//Rick, we may want to remove this code and let the scene start immediately and then we can show a progress bar
+						//by using osg itself
+#if 1
+						//wait until we get an initial signal before running the scene
+						m_BlockSignalEvent.lock();
+						//hmmm I usually do not like to wait indefinitely but it seems to be the right thing
+						m_SignalEvent.wait(&m_BlockSignalEvent);
+						m_BlockSignalEvent.unlock();
+#endif
+						//start the initial call to set the done status
+						m_pParent->UpdateCameraGroup(m_currTime_s);
+						while (!m_pParent->m_camGroup->done())
+						{
+							//There is s reversed scope mutex inside the wait... so we have to lock unlock around it
+							m_BlockSignalEvent.lock();
+							m_SignalEvent.wait(&m_BlockSignalEvent,1000);
+							m_BlockSignalEvent.unlock();
+							m_pParent->UpdateCameraGroup(m_currTime_s);
+						}
+						printf("Exiting GUI Thread\n");
+					}
 				private:
 					MainWindow * const m_pParent;
-					GG_Framework::Base::Timer& m_timer;
-					GG_Framework::Base::ThrottleFrame m_ThrottleFrames;
-					bool m_fullScreen, m_useCursor, m_quit, m_readyForUpdates; // These should all be atomic
-			} m_OsgThread;
+					OpenThreads::Condition m_SignalEvent;
+					OpenThreads::Mutex m_BlockSignalEvent; //used internally inside the signal event to wait
+					double m_currTime_s;
+			} m_GUIThread;
+#endif
 		};
 	}
 }

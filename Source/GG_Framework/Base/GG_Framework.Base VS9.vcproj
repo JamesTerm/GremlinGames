@@ -64,7 +64,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OpenThreadsd.lib gdi32.lib vfw32.lib opengl32.lib osgd.lib"
+				AdditionalDependencies="OpenThreadsd.lib gdi32.lib vfw32.lib opengl32.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="$(GG_ADDN_LIBS_DEBUG)"
@@ -148,7 +148,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OpenThreads.lib gdi32.lib vfw32.lib opengl32.lib osg.lib"
+				AdditionalDependencies="OpenThreads.lib gdi32.lib vfw32.lib opengl32.lib"
 				OutputFile="$(OutDir)/$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(GG_ADDN_LIBS_RELEASE)"

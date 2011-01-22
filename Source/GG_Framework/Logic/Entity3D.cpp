@@ -87,7 +87,7 @@ void Entity3D::Initialize(GameClient& gameClient, Entity3D::EventMap& em, Transm
 	m_origAtt = osg::Vec3d(te.Heading, te.Pitch, te.Roll);
 
 	// All of my descendants can see the timer updates
-	m_gameClient->GetLogicTimer().CurrTimeChanged.Subscribe(ehl, *this, &Entity3D::GameTimerUpdate);
+	m_gameClient->GetTimer().CurrTimeChanged.Subscribe(ehl, *this, &Entity3D::GameTimerUpdate);
 
 	// All entities have mass
 	m_Physics.SetMass(te.Mass);

@@ -34,6 +34,5 @@ namespace GG_Framework
 	namespace Base
 	{
 		extern FRAMEWORK_BASE_API bool TEST_IGNORE_COLLISIONS;
-		extern FRAMEWORK_BASE_API bool TEST_USE_SIMPLE_MODELS;
 	}
 }
