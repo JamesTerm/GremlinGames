@@ -1,0 +1,26 @@
+~osgv version 1
+
+#RICK- this files does not seem to play the proper key frames
+	
+^ Thrust-01
+	O F CAM_POINTER
+		^ actor
+			FighterEngine.lws
+
+			@ Run runA 0 runB 15	
+			@ Thrust accelA 15 accelB 45	
+			@ Brake BrakeA 90 BrakeB 120
+
+			@ HThrust accelB 45 accelC 60
+			@ BBrake brakeB 120 brakeC 135
+	
+			@ RThrust accelC 105 accelD 150
+			@ RBrake brakeC 135 brakeD 165
+
+			~ While START Run Run
+			~ While Thrust-01.Thrust Thrust HThrust HThrust RThrust
+			~ While Thrust-01.Brake Brake BBrake BBrake RBrake
+		
+
+% While z Thrust-01.Thrust
+% While c Thrust-01.Brake

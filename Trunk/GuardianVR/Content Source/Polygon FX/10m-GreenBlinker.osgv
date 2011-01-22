@@ -1,0 +1,13 @@
+~osgv version 1
+	
+^ Sun
+	P T CAMERA
+		^ ThrustOffset 0 0 0
+			10m-GreenBlinker.lws
+
+			@ Run start 0 stop 60
+
+			~ While START Run
+		
+
+

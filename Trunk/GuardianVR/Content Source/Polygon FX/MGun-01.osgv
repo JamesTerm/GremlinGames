@@ -1,0 +1,10 @@
+~osgv version 1
+	
+^ MGun-01
+	MGunPloom-01.lws
+
+	@ Pause Stop 0 Stop 0	
+	@ Fire fireA 11 fireB 18
+	
+	~ While START Pause
+	~ While Ship.FireWeapon Fire Pause

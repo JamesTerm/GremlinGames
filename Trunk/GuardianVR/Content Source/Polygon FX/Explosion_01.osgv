@@ -1,0 +1,14 @@
+~osgv version 1
+
+^ Splode_01
+	Explosion-01.lws
+	$ HazeX
+		ExplosionHaze.osgv
+
+	#@ Run start 20 stop 29
+	#@ Splode booma 30 boomb 90 [On 0 Splode_01.boomsound]
+	#~ While SPAWN Run
+	#~ On RedHaze.Splode Splode
+	#! On Splode_01.boomsound SoundEffect Audio\explosion_01.wav 100.0
+	#% On j RedHaze.Splode
+	#~ On DESTROY RedHaze.Splode
