@@ -1,0 +1,28 @@
+  O      Obstacle
+
+|\/\/|   Capital
++----+
+
+  /^\    Bomber
+-||B||-
+
+ |
+/F\   Fighter
+ I
+
+/""\
+0FL0   Flak
+^  ^
+
+ |
+/$\    Scout
+
+ |
+ H
+/^\    Sniper
+
+
+ /^\
+ |:|   Spawn Ship
+C|:|D
+ /*\

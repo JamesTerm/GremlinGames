@@ -1,0 +1,16 @@
+Hey guys... when I updated from 1.4 to 1.6x my icons were gone.  I found these steps in the forums and followed them and it fixed issue.
+If you update your svn and run into the same problem you can do the same.  Note: to uninstall you have to launch the install msi file that you
+originally downloaded (be sure to keep a current copy of these as you update versions).
+
+Note: I could not find the tortoise references in the MUI or internet explorer, so I skipped those.  I am not sure if this step was necessary.
+
+
+Here is the message below: ------------------------------------------------------------------------
+
+I found by myself the solution:
+
+1) uninstall all current versions
+2) clean up the registry: search and remove all references to "tortoise"
+3) install the new 64 bits version, configure tortoise and then install the 32 bits version
+
+All work fine for me now :)
