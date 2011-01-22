@@ -1,0 +1,2 @@
+city = San Antonio
+temperature = 98°

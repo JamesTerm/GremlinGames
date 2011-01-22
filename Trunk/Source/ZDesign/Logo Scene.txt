@@ -1,0 +1,18 @@
+/*!	\page  Logo_Scene_txt	Logo Scene
+
+Fringe.Single and Fringe.Client will run a logo scene in a separate thread while the game 
+is loading.  We will not worry about any kind of status window at this point.  We can just 
+print the status and messages to the console.  We will just have a viewer that looks at an 
+OSGV scene.  We do not even need a trackball around it.  This means that there needs to be 
+a way for the designer to specify the viewer distance and background colors.  
+We will also use OpenThreads so that this scene can play on a different thread.
+
+I have found that you cannot play an OSG window in a thread different from the one that
+created it, which means we will just make all of the OSG windows in the main thread,
+and have everything else be threads.  To make this work, I just made a simple
+OpenThreads::Thread in the main client that determines what should be takes to another thread.
+
+\section sec_ColorsAndViewDist	Colors and Viewing Distance - Deffered
+As for the background colors and the viewer distance, we will wait off until the Designer
+wants to do more with the Logo.
+*/

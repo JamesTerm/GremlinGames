@@ -1,0 +1,24 @@
+First Draft using both codes straight as is
+no sse2
+Avarage time using the D3DXMATRIX class:  350.51
+Avarage time using the SPMatrix class:    283.90
+Avarage time using the Matrixf class:    446.97
+Avarage time using the ScalarDP class:    483.16
+Avarage time using the DPMatrix class:    1432.81
+Avarage time using the Matrixd class:    417.31
+
+sse2
+Avarage time using the D3DXMATRIX class:  728.80
+Avarage time using the SPMatrix class:    267.17
+Avarage time using the Matrixf class:    808.00
+Avarage time using the ScalarDP class:    581.05
+Avarage time using the DPMatrix class:    1681.66
+Avarage time using the Matrixd class:    468.89
+
+sse
+Avarage time using the D3DXMATRIX class:  359.31
+Avarage time using the SPMatrix class:    310.79
+Avarage time using the Matrixf class:    560.15
+Avarage time using the ScalarDP class:    441.17
+Avarage time using the DPMatrix class:    1473.28
+Avarage time using the Matrixd class:    411.79

@@ -1,0 +1,6 @@
+Requires the config file to Run:
+
+  pbufviewer -c camera.cfg cow.osg
+
+
+'pbufviewer' executable may be in ../../bin

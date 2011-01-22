@@ -1,0 +1,71 @@
+/*!	\page  AVI_Capture_txt	AVI Capture
+
+This unit takes care of the capacity of capturing a movie and being able to compile it into an AVI.  Eventually the 
+right thing to do is be able to record a sequence from the game and be able to play back exactly that sequence without
+any frame variations.  Then we can do the screen capture and write to the file in non-real time.  This will also be valuable
+for being able to play back cool scene (like destructions) or pre-made cut-scenes still in the game engine.  We would also
+be able to choose whether or not we wanted to provide camera control.  
+
+I do not have the time to do all of that right now, I just want to capture some game sequence and keep my framerates up as I am capturing.
+As I have read around, I have found I can have a post-draw callback and capture the screen and then write to a file.  The file writing part is
+going to kill my framerate, so I have read the best thing to do is spawn a seperate thread to write out the AVI file on its own.
+
+\section AVI_Capture_FuncSpec AVI Capture Functional Specification
+# User can set the framerate to a maximum so as to make sure the frames capture at 30 fps or later at 15 fps.
+# User can make sure the screen resolution is 640x480
+# User presses a button to start/stop recording
+	- On start, start reading frame by frame into memory (it is a good idea to keep TaskManage open to monitor memory usage)
+	- On Stop, spawn a new thread which
+		- Prompts the user for a filename, clean-up all files on exit
+		- Prompts for the AVI compressor (just use normal windows one)
+		- Writes the files to the AVI
+		- Cleans up all the collected images
+	
+\section AVI_Capture_HLD AVI Capture HLD Notes
+- We can add -maxfps as a command line parameter and then use the throttle James wrote as a part of MainWindow thread stuff
+- Have a class that listens to the kb combo and has only one recorder active to toggle on/off
+	- Client class builds this recorder class and passes in the MainWindow it will be recording
+	- When toggling off, tell the recorder it is done so it stops and deletes itself after processing existing frames
+	- Make sure to toggle off the recorder if closing the window as well (cancel the recording and delete files, just use the destructor?)
+	- Another class is made when we start recording and inherits from Thread and CameraCallback
+	- On construction it 
+		- grabs the current screen size and position.
+		- Adds itself as a final post-draw callback
+		- Makes sure the throttle is set to 30 fps (but remembers the previous throttle)
+		- Writes a note to the console that it is starting
+	- On the main OSG thread the callback will 
+		- Create a new image of the appropriate size (perhaps these can be resued and stored in a mutex'd fifo list
+		- Do the screen capture
+		- place the image the fifo list
+	- On the writing thread
+		- Prompt for a file (end and delete on cancel)
+		- Prompt for the compression (end and delete on cancel)
+		- Create the AVI stream to write to
+		- Loop through the fifo list, 
+			- grabbing the next one and 
+			- writing out the file to the stream, 
+			- delete the image
+		- Release its own reference when the list is all done (does an error, not sure of the best way to do this)
+	- On StopRecord
+		- Maintains a reference to itself so when it is done it can delete itself
+		- Remove self from the main window final callback
+		- Set the throttle speed back on the main camera
+		- Writes a note stating that the capture has stopped
+		- start the thread to write out files
+	- The destructor will need to clean up what is left in the lists (ref_ptr<osg::image>)
+
+For the resolution stuff, edit the class
+GG_Framework::UI::ViewerApp_ArgumentParser to include a -maxfps argument and use the stuff James wrote
+
+We also need to make sure the Windowed option is at the size we want, we will do 640x480 for now.
+	
+For the capture, we will need to make 2 classes:
+- GG_Framework::UI::ScreenCaptureTool
+- GG_Framework::UI::ScreenCaptureTool::Worker
+
+AVI capture is pretty windows proprietary, so we will place it down somewhere where we can keep the windows headers
+
+\section AVI_Capture_KnownIssues AVI Capture Known Issues
+
+It is a good idea to 
+*/

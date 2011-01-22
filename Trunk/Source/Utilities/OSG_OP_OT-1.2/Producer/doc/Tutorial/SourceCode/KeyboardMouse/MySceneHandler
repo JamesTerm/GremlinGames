@@ -1,0 +1,72 @@
+//C++ header file - Open Producer - Copyright (C) 2002 Don Burns
+//Distributed under the terms of the GNU LIBRARY GENERAL PUBLIC LICENSE (LGPL)
+//as published by the Free Software Foundation.
+
+// This is a simple example of a Producer::Camera::SceneHandler
+#ifndef PRODUCER_EXAMPLES_MYSCENEHANDLER
+#define PRODUCER_EXAMPLES_MYSCENEHANDLER
+
+#include <Producer/Camera>
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+// Use the OpenGL teapot as a sample object to draw
+// Borrowed from the glut distribution.
+extern void glutSolidTeapot(GLdouble scale);
+
+class MySceneHandler : public Producer::Camera::SceneHandler
+{
+    public:
+        // Constructor
+        MySceneHandler() : Producer::Camera::SceneHandler(),
+            _angle(0.0f),
+            _initialized(false) 
+        {}
+
+        // Producer::Camera::SceneHandler is pure virtual and
+        // requires that the draw() method be implemented in 
+        // derived classes.
+        virtual void draw( Producer::Camera & camera )
+        {
+            // Use lazy initialization
+            if( !_initialized ) init();
+
+            // Clears the projection rectangle of the 
+            // Camera's Render Surface
+            camera.clear();
+
+            // Apply the Projection parameters
+            camera.applyLens();
+
+            // Place the Camera into the world
+            camera.setViewByLookat( 0.0f, 0.0f, 8.0f,   /// Position of the eye
+                                    0.0f, 0.0f, 0.0f,   /// Point the eye is looking at
+                                    0.0f, 1.0f, 0.0f ); /// Up
+
+            glPushMatrix();
+            glRotatef( _angle, 0.0f, 1.0f, 0.0f );
+
+            // Draw the OpenGL teapot
+            glutSolidTeapot(1.0);
+
+            glPopMatrix();
+
+            _angle++;
+        }
+
+        // Initialize Graphics state
+        void init()
+        {
+            glEnable( GL_DEPTH_TEST );
+            glEnable( GL_LIGHTING );
+            glEnable( GL_LIGHT0 );
+            glClearColor( 0.2f, 0.2f, 0.4f, 1.0f );
+
+            _initialized = true;
+        }
+
+    private:
+        float _angle;
+        bool _initialized;
+};
+#endif

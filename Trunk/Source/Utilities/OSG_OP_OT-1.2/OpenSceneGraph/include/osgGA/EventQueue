@@ -1,0 +1,125 @@
+/* -*-c++-*- OpenSceneGraph - Copyright (C) 1998-2006 Robert Osfield 
+ *
+ * This library is open source and may be redistributed and/or modified under  
+ * the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or 
+ * (at your option) any later version.  The full license is in LICENSE file
+ * included with this distribution, and on the openscenegraph.org website.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ * OpenSceneGraph Public License for more details.
+*/
+
+#ifndef OSGGA_EVENTQUEUE
+#define OSGGA_EVENTQUEUE 1
+
+#include <osgGA/GUIEventAdapter>
+
+#include <osg/ref_ptr>
+#include <osg/Timer>
+
+#include <OpenThreads/Mutex>
+#include <list>
+
+namespace osgGA {
+
+/**
+ * EventQueue implementation for collecting and adapting windowing events 
+ */
+class OSGGA_EXPORT EventQueue : public osg::Referenced
+{
+    public:
+
+        EventQueue(GUIEventAdapter::MouseYOrientation mouseYOrientation=GUIEventAdapter::Y_INCREASING_DOWNWARDS);
+
+        typedef std::list< osg::ref_ptr<GUIEventAdapter> > Events;
+                
+        /** Set events.*/
+        void setEvents(Events& events);
+
+        /** Take the entire event queue leaving the EventQueue' event queue empty.*/
+        bool takeEvents(Events& events);
+
+        /** Take a copy the entire event queue leaving the EventQueue' event queue intact.*/
+        bool copyEvents(Events& events) const;
+
+        /** Add events to end of event queue.*/
+        void appendEvents(Events& events);
+
+        /** Add an event to the end of the event queue.*/
+        void addEvent(GUIEventAdapter* event);
+
+
+        /** Method for adapting window resize event, placing this event on the back of the event queue. */
+        void windowResize(float Xmin, float Ymin, float Xmax, float Ymax);
+
+        /** Method for adapting mouse scroll wheel events, placing this event on the back of the event queue. */
+        void mouseScroll(GUIEventAdapter::ScrollingMotion sm);
+        
+        /** Method for adapting mouse scroll wheel events, placing this event on the back of the event queue. */
+        void mouseScroll2D(float x, float y);
+        
+        /** Method for adapting pen pressure events, placing this event on the back og the event queue.*/
+        void penPressure(float pressure);
+        
+         /** Method for adapting pen proximity events, placing this event on the back og the event queue.*/
+        void penProximity(GUIEventAdapter::TabletPointerType pt, bool isEntering);
+
+        /** Method for updating in response to a mouse warp. Note, just moves the mouse position without creating a new event for it.*/
+        void mouseWarp(float x, float y);
+
+        /** Method for adapting mouse motion events whilst mouse buttons are pressed, placing this event on the back of the event queue.*/
+        void mouseMotion(float x, float y);
+
+        /** Method for adapting mouse button pressed events, placing this event on the back of the event queue.
+          * Button numbering is 1 for left mouse button, 2 for middle, 3 for right. */
+        void mouseButtonPress(float x, float y, unsigned int button);
+
+        /** Method for adapting mouse button pressed events, placing this event on the back of the event queue.
+          * Button numbering is 1 for left mouse button, 2 for middle, 3 for right. */
+        void mouseDoubleButtonPress(float x, float y, unsigned int button);
+        
+        /** Method for adapting mouse button release events, placing this event on the back of the event queue.
+          * Button numbering is 1 for left mouse button, 2 for middle, 3 for right. */
+        void mouseButtonRelease(float x, float y, unsigned int button);
+
+        /** Method for adapting keyboard press events.*/
+        void keyPress(GUIEventAdapter::KeySymbol key);
+
+        /** Method for adapting keyboard press events.*/
+        void keyRelease(GUIEventAdapter::KeySymbol key);
+
+        /** Method for adapting frame events.*/
+        void frame(double t);
+        
+
+        void setStartTick(osg::Timer_t tick) { _startTick = tick; }
+        osg::Timer_t getStartTick() const { return _startTick; }
+
+        double getTime() const { return osg::Timer::instance()->delta_s(_startTick, osg::Timer::instance()->tick()); }
+
+        /** convinience method for create an event ready to fill in.  Clones the getCurrentEventState() to produce a up to date event state. */
+        GUIEventAdapter* createEvent();
+        
+        GUIEventAdapter* getCurrentEventState() { return _accumulateEventState.get(); }
+        const GUIEventAdapter* getCurrentEventState() const { return _accumulateEventState.get(); }
+
+    protected:
+
+        virtual ~EventQueue();
+
+        /** Prevent unwanted copy operator.*/
+        EventQueue& operator = (const EventQueue&) { return *this; }
+        
+        osg::ref_ptr<GUIEventAdapter>   _accumulateEventState;
+
+        osg::Timer_t                _startTick;
+        mutable OpenThreads::Mutex  _eventQueueMutex;
+        Events                      _eventQueue;
+    
+};
+
+}
+
+#endif

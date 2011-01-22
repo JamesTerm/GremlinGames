@@ -1,0 +1,81 @@
+/*! \mainpage
+
+This DOxygen set describes all of the Fringe and GG_Framework projects.  Here are the different
+Phases we are building, with some of their details.
+
+\section sec_Phase1		Phase 1
+Only Player Flying, Multiple Players, No Physics, No Collisions, No Weapons or Explosions,
+LWS driven "AI" (Just ornamental).  No messages passed for Ornamental stuff.
+
+Flow:
+	- Start at position/orientation, Cruising speed.
+	- Animated Camera, No Player Control, Defined by a LWS then control goes to chase plane
+	- Text Display like a HELP screen (C++ Control, Show Justin How)
+	- Mouse Controlled Turning, natural Banking to push pilot into seat at the ships best
+	- Chase Cam, natural range and pitch angle and (LOTS of Notes, not writing yet)
+	- All AI are non-entities!!!  All LWS! 
+	
+Features:
+	- Variable Max Speed (m/s), Cruising Speed (% of Max Speed), Max Acceleration (m/s2)
+		"Natural Brake" (m/s2) to revert to cruising speed, Brake Decceleration (m/s2)
+		Afterburn Max speed (m/s) & Acceleration (m/s2) & Max Burn (s), Slows to cruising speed when off
+		Keybinding control to cruising speed (needs text).
+	- Allow designer to set Camera FOV as a function of ship's controller
+	- Post Draw Callbacks broken away from OSGV standard so Justin can add them
+	- Help Screen with Current Keybindings
+	- Controller objects allow camera to be manipulated with a LWS scene, cut back to control
+	- Controller objects allow for a *slush* meaning a maximum amount of compensatition
+	- More fancy keybindings, Ctr+Alt+ double click, Function Keys, Arrows
+
+
+	\subsecion subsec_Phase1A	\ref Phase_1A_page
+
+	When the player connects, after loading, ask the script file for a ship and initial
+	Position/Attitude.  Pop that in for existing players as well.  Part of connecting
+	is getting the list of the other player ships in the scene.  We also need an epoch
+	time so all of the LWS files are playing at the same point across the clients.
+	Trackball control around YOUR ship.
+	
+	
+	\subsecion subsec_Phase1B	\ref Phase_1B_page
+	
+	Be able to move the ship with some controls (KB/Mouse) and let the other clients
+	see the motion by passing the positions.  Interpolate velocities for frames.
+	Snap adjustments (perhaps half adjustments). Trackball Control around YOUR ship.
+	Provide more complex key bindings.  Use a SIMPLE controller class and Show the 
+	keybindings in the help window.  Still a Trackball around your ship's position (ViewPortReference).
+	Allow for keybindings to fire Events ONLY on your ship, but other clients see it.
+	
+	
+	\subsecion subsec_Phase1C	\ref Phase_1C_page
+	
+	Provide the real Flight Control and Camera Motion View Manipulators. 
+	
+	
+	
+\section sec_Phase2		Phase 2
+Collision Detection and explosions with AI driven by the LWS still.  Actors are in 
+the LWS scene and can interract (explode) and are removed from the scene.
+We should also be able to launch from a specific ship.  No Physics.  We need to pass mesages
+for the LWS (ornamental scenes) so they can fire OSGV actions and explode (ONLY).
+Animated Camera (defined by LWS), then goes to Chase Plane View.  Launch from Ship.
+	
+
+\section RelPgs	Other Related Pages for Overview, Code Tours, Notes, and Bug Fixes
+- \ref OSGV_Overview
+- \ref RakNet_ProjectSetup_txt
+
+- \ref Client_Server_Connections_txt
+- \ref Reading_LUA_Script_txt
+- \ref Logo_Scene_txt
+- \ref OSGV_Update_txt
+- \ref Threaded_Game_Content_Loading_txt
+
+- \ref Fringe_Server_ProjectSetup_Tour
+- \ref GG_Framework_Network_ProjectSetup_Tour
+
+- \ref ScaledTransform_ViewportReference_notes_txt
+- \ref SunPosition_ScaledTransform_note_txt
+- \ref ContentDirectory_txt
+
+ */

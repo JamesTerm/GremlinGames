@@ -1,0 +1,49 @@
+New Project Process.txt
+=======================
+To add a new DLL project to the solution:
+
+1.  Add the new DLL with App Wizard at the proper position as a DLL exporting some symbols
+2.  Rename the project to include namespaces eg. GG_Framework.UI
+	a.	Remove the project from the sln
+	b.	Rename the .vcproj file in Windows Explorer
+	c.	Open the .vcproj file with notepad, replacing the name of the project and the defined export preprocessor macro and default namespace
+	d.  Add the project back into the solution
+3.	Rename the main header file
+	a.	Remove the main header file from the project eg. "LUA.h"
+	b.	Rename it in windows explorer eg. "FrameWork.LUA.h"
+	c.	Add the file back into the project
+	d.	Change the name of the included file in LUA.cpp
+	e.  Change the control macros to have FRAMEWORK_ or whatever
+4.	Clean out code examples
+	a.	MAYBE Remove DllMain
+	b.	MAYBE Remove windows includes from stdafx.h (VS 9 has the version info header, you may not need that if not dealing with windows)
+	c.	Remove or comment out exported symbols, 
+		1.	Remove comments from the main header file to make it look like others
+		2.	Replace LUA_EXPORTS with FRAMEWORK_LUA_EXPORTS
+		3.	Replace LUA_API with FRAMEWORK_LUA_API
+	d.  If making an EXE project, use the program start that other exe's are using that provide version 
+		information (see the examples from existing EXE projects main() )
+5.	Change project settings
+	a.	General Output Directory
+	b.	C/C++ / General / Additional Include Directories: $(GG_ADDN_INCLUDES)
+	c.	Linker / General / Additional Library Directories: $(GG_ADDN_LIBS_RELEASE) | $(GG_ADDN_LIBS_DEBUG)
+6.	Add external dependencies
+	a.  Add any required external deps to the Utilities folder
+	b.	SVN add the deps in the Utilities folder
+	c.	Make sure "debug_bin\_SDKUpdate.bat" and "release_bin\_SDKUpdate.bat" copies binaries
+		in to the debug_bin and release_bin folders.
+	d.	Run "stable_bin\_SDKUpdate.bat" to make sure they are copied to the stable_bin folder
+		from "release_bin".
+	e.  SNV add them in the stable_bin folder
+7.	Add Items to SVN
+	a.	Remove ReadMe.txt
+	b.	Add the remaining items (not Debug or Release folders if compiled)
+	c.  Make a release build to the release bin
+	d.  If an EXE (and not a tester), add it to "stable_bin\_SDKUpdate.bat" to make sure 
+		it copies over the new files to stable_bin.
+	e.  Run "stable_bin\_SDKUpdate.bat" and SNV add the new copied binaries in the stable_bin folder
+
+Whenever you add a new project or add a dependency to a project, update the DoxyMain.txt file
+to include it it the dependency tree.  It is best to use a namespace for your project (even
+if it is a test or exe) so that there can be a nice namespace for DOxygen as well.
+	

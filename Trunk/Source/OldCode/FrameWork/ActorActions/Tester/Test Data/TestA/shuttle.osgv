@@ -1,0 +1,8 @@
+~osgv version 1
+
+^ Shuttle
+	Scenes\Test Shots\ShuttleSpin.lws
+	@ Start start 0 start 0
+	@ Spin start 0 start 180
+	~ On START Start
+	~ On FullScene.Gross Spin Start

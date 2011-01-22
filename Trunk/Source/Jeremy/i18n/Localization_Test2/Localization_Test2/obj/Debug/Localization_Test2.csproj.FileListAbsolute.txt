@@ -1,0 +1,14 @@
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\bin\Debug\Localization_Test2.exe
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\bin\Debug\Localization_Test2.pdb
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\ResolveAssemblyReference.cache
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Window1.baml
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Window1.g.cs
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\App.g.cs
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Localization_Test2_MarkupCompile.cache
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Localization_Test2.Properties.Resources.resources
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Localization_Test2.csproj.GenerateResource.Cache
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Localization_Test2.exe
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Localization_Test2.pdb
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\bin\Debug\en-US\Localization_Test2.resources.dll
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\Localization_Test2.g.en-US.resources
+C:\GG\Source\Jeremy\i18n\Localization_Test2\Localization_Test2\obj\Debug\en-US\Localization_Test2.resources.dll

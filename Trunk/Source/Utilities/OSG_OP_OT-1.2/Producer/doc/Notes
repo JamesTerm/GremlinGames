@@ -1,0 +1,73 @@
+Scratchings from whiteboard:
+
+Main application loop:
+
+  for( ;; )
+  {
+      CameraGroup::sync();
+      preCull Traversal;
+      CameraGroup::frame();
+  }
+
+CameraGroup::frame()
+{
+     Barrier.release();
+}
+
+CameraGroup::sync()
+{
+    Barrier.wait();
+}
+
+
+Two possible Camera implementations:
+
+A) ======
+
+Camera::thread()
+{
+    for( ;; )
+    {
+	Barrier.wait();
+	cull();
+	SVR(); // Sync Vertical Retrace
+	draw();
+	Barrier.release();
+	swapbuffers();
+    }
+}
+
+
+B) ==== Threaded Cull 
+
+Camera::thread()
+{
+    for( ;; )
+    {
+	Barrier.wait();
+	CullDrawBarrier.release();
+	CullDrawBarrier.wait();
+	swap scene view buffers;
+	Barrier.release();
+    }
+}
+
+Cull::thread()
+{
+   for( ;; )
+   {
+       CullDrawBarrier.wait();
+       cull();
+       CullDrawBarrier.release();
+   }
+}
+
+Draw::thread()
+{
+    for( ;; )
+    {
+	CullDrawBarrier.wait();
+	draw();
+	CullDrawBarrier.release();
+    }
+}

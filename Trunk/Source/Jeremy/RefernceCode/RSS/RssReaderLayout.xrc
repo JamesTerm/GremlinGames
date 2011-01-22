@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource version="2.3.0.1" xmlns="http://www.wxwidgets.org/wxxrc">
+    <object class="wxFrame" name="ID_RSSREADER" subclass="RssReader">
+        <style>wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxMINIMIZE_BOX|wxMAXIMIZE_BOX|wxCLOSE_BOX</style>
+        <size>800,600</size>
+        <title>RssReader</title>
+        <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+                <flag>wxALIGN_LEFT|wxALL</flag>
+                <border>5</border>
+                <object class="wxBoxSizer">
+                    <orient>wxHORIZONTAL</orient>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxTextCtrl" name="ID_TEXTCTRL1">
+							<style>wxTE_PROCESS_ENTER</style>
+                            <size>200,-1</size>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="ID_BUTTON1">
+                            <label>Add Feed</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="ID_BUTTON2">
+                            <label>Check Feed</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="ID_BUTTON3">
+                            <label>Add Folder</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="ID_BUTTON4">
+                            <label>Delete Folder</label>
+                        </object>
+                    </object>
+                    <object class="sizeritem">
+                        <flag>wxALIGN_CENTER_VERTICAL|wxALL</flag>
+                        <border>5</border>
+                        <object class="wxButton" name="ID_BUTTON5">
+                            <label>Delete Feed</label>
+                        </object>
+                    </object>
+                </object>
+            </object>
+            <object class="sizeritem">
+                <flag>wxGROW</flag>
+                <border>0</border>
+                <option>1</option>
+                <object class="wxSplitterWindow" name="ID_SPLITTERWINDOW1">
+                    <style>wxSIMPLE_BORDER</style>
+                    <orientation>vertical</orientation>
+                    <sashpos>50</sashpos>
+                    <minsize>200</minsize>
+                    <object class="wxPanel" name="ID_PANEL1">
+                        <style>wxTAB_TRAVERSAL</style>
+                        <object class="wxBoxSizer">
+                            <orient>wxHORIZONTAL</orient>
+                            <object class="sizeritem">
+                                <flag>wxGROW|wxALL</flag>
+                                <border>1</border>
+                                <option>1</option>
+                                <object class="wxTreeCtrl" name="ID_TREECTRL1">
+                                    <size>200,100</size>
+                                    <style>wxTR_EDIT_LABELS|wxTR_LINES_AT_ROOT|wxTR_SINGLE|wxSUNKEN_BORDER|wxTR_HAS_BUTTONS</style>
+                                </object>
+                            </object>
+                        </object>
+                    </object>
+                    <object class="wxPanel" name="ID_PANEL2">
+                        <style>wxTAB_TRAVERSAL</style>
+                        <object class="wxBoxSizer">
+                            <orient>wxVERTICAL</orient>
+                            <object class="sizeritem">
+                                <flag>wxGROW</flag>
+                                <border>0</border>
+                                <option>1</option>
+                                <object class="wxSplitterWindow" name="ID_SPLITTERWINDOW2">
+                                    <style>wxNO_BORDER</style>
+                                    <orientation>horizontal</orientation>
+                                    <sashpos>50</sashpos>
+                                    <minsize>200</minsize>
+                                    <object class="wxPanel" name="ID_PANEL3">
+                                        <style>wxTAB_TRAVERSAL</style>
+                                        <object class="wxBoxSizer">
+                                            <orient>wxVERTICAL</orient>
+                                            <object class="sizeritem">
+                                                <flag>wxGROW</flag>
+                                                <border>0</border>
+                                                <option>1</option>
+                                                <object class="wxListCtrl" name="ID_LISTCTRL1">
+                                                    <size>100,200</size>
+                                                    <style>wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_HRULES</style>
+                                                </object>
+                                            </object>
+                                        </object>
+                                    </object>
+                                    <object class="wxPanel" name="ID_PANEL4">
+                                        <style>wxTAB_TRAVERSAL</style>
+                                        <object class="wxBoxSizer">
+                                            <orient>wxVERTICAL</orient>
+                                            <object class="sizeritem">
+                                                <flag>wxGROW</flag>
+                                                <border>0</border>
+                                                <option>1</option>
+                                                <object class="wxHtmlWindow" name="ID_HTMLWINDOW1">
+                                                    <size>200,150</size>
+                                                    <style>wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER</style>
+                                                </object>
+                                            </object>
+                                        </object>
+                                    </object>
+                                </object>
+                            </object>
+                        </object>
+                    </object>
+                </object>
+            </object>
+        </object>
+        <object class="wxStatusBar" name="ID_STATUSBAR1">
+            <style>wxST_SIZEGRIP|wxNO_BORDER</style>
+            <fields>2</fields>
+            <widths></widths>
+        </object>
+    </object>
+</resource>

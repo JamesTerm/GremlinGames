@@ -1,0 +1,9 @@
+Localization_Test2.g.en-US.resources:window1.baml,button1:System.Windows.Controls.Button.$Content,Button,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,button2:System.Windows.Controls.Button.$Content,Button,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,checkBox1:System.Windows.Controls.CheckBox.$Content,CheckBox,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,ComboBoxItem_1:System.Windows.Controls.ComboBoxItem.$Content,ComboBox,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,ComboBoxItem_2:System.Windows.Controls.ComboBoxItem.$Content,ComboBox,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,ComboBoxItem_3:System.Windows.Controls.ComboBoxItem.$Content,ComboBox,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,ComboBoxItem_4:System.Windows.Controls.ComboBoxItem.$Content,ComboBox,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,label1:System.Windows.Controls.Label.$Content,Label,TRUE,TRUE,,AA
+Localization_Test2.g.en-US.resources:window1.baml,Window_1:System.Windows.Window.Title,Title,TRUE,TRUE,,AA

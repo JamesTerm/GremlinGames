@@ -1,0 +1,749 @@
+Current Tasks
+=============
+* Write Todd
+- Equity
+- Complete Game Task Checklist from Black Book
+- Get Wiki page working
+- Write out phases and goals
+- Write out people and roles
+- Think through the resources we will need
+- Write out timeline and budget with and without TAU support
+- Provide an idea of how we can pay back investors
+
+- Create the Video for Chris
+- Update Business Plan from Paul to include projects and phases
+- Update the PR plan from Todd
+- Print out packages?
+- Start doing my ???????
+
+- Pay for incorporation, bank account, etc (when I get a TAU check)
+- Ask Chris and Paul about the Contract we will need
+
+- Get learning the process myself
+	- Get SVN access and see how it is organized
+	- Work through Troy's Videos
+	- Get an understanding of the pipeline with Troy
+	- Get an understanding of the pipeline with Justin
+	- Get it all documented as we go
+
+Daily Follow Ups
+================
+
+
+
+
+Notes for SVN
+=============
+
+Working through the threading issues
+====================================
+- Get the collision detection working again in single threaded mode
+- Perform a revert to before where we had multiple threads in the game loop
+
+
+
+
+Things to test as we finish
+===========================
+Capturing movies
+Why set the screen manually to not full screen on destructor?
+
+
+EVE Notes
+=========
+Tutorial
+- A "Press Here" kind of button and flashing controls to know what to do next, particularly if user is not doing it but the tutorial is up
+- Direct the user in a way to get back to the proper tutorial state wherever they are
+- Trackball view has a little ease in and ease out with the motion
+- Hide command bar buttons of windows when the window is not active (fade out?)
+
+
+
+Jamming with PHP!!!
+===================
+[forum]
+* Install the PHP IDE
+* Review the PHP code I did before to get an understanding of how it works
+* Review how to separate the code 
+* See how a web page works with the Expression Web for Justin work, (DEVELOPMENT modes with a global?)
+* BROWSE the PHP beginners book to get a feel for it
+* Check out registration for PHPbb and see if it is good enough
+* Download PHPbb and FTP it to GoDaddy
+* Work through installation and tutorials locally
+* Build the DB on GoDaddy ggphpbb3
+* Work through installation and tutorials
+* Can I deal with registration locally even without email support? (no)
+* Where are the administrator settings in the DB?  Adding new admins?
+
+- Work with Justin and learn from available resources to Decide how to embed PHPbb into our website, main page?
+	- Make a sample sub-style to tweak with
+	- Remove its header
+	- Adjust some style, make it black
+	- Build our index frameset? with header image and forum inside
+	
+- Implement the skeletal website
+	- Build the Home page where we put news stuff
+	- Place links in the header for home and forum
+	- Build stubs and links for Gallery, Rick, Justin, Account Management
+
+- Work through the examples for checking for verification, logging in and logging out from my own page 
+- Add the RimSpace sub-domain
+
+[finish]
+- Get Justin Working on it
+	- Move the 03 folder to the repository so we can look at it from there, then add it to the repository so Justin can add it
+		- Move it to the folder
+		- Make XAMPP look at the new location
+		- Add the install directory back
+		- Check it in to SVN
+		- Make sure we are ok, even though the install directory is in there
+	- Teach Justin how to use xampp
+		- Place XAMPP in tools directory
+		- Let Justin download and work through XAMPP install
+		- Let Justin update security
+		- Show Justin how the websites work, where the HTML is
+		- Point Justin's HTDOCS to the GG forum site
+	- Show Justin about creating a DB for the forum
+	- Work Justin through the phpBB install
+	- Show Justin how to tweak with phpBB styles
+	- Show Justin how to tweak with OUR styles
+
+[email]
+- Learn how to deal with email including sending emails to everyone, email verification, lost password, etc.
+
+[gallery]
+- Review Galleries that are out there, see if there is one that works or if I should just make my own in code
+- Create the Gallery for Justin to use and add images to
+
+[pay]
+- Try adding credits to a table (custom profiles?)
+- Build the Credit system so a player can buy credits online without going to PayPal
+	- Build the Order table on the local DB
+	- Just make a page that gets forwarded to where they can choose accept or cancel, which then... 
+	- forwards them back to where the credits are applied or not.  Show the credits applied or canceled or already applied/cancelled
+	- Learn how to get the DB changes up on the website
+- Replace the Accept/Cancel page with a link to PayPal which then forwards back to the page that applies/cancels
+
+[finish]
+- Use SSH to protect the registration and login ~When I have money (what else?)
+- Review what I have with Lynn and see if there is anything I missed
+
+
+Current Tasks
+=============
+- Finish CustomParticleEffect (show it to Justin)
+- Get the TinyUnitTest project working and stubbed out test environment (tests in-file but macro'd?)
+- Get Contract Asserts working, running and showing by being able to macro out.  Use Double_Assert
+
+
+Get Ready for the AI Class
+==========================
+Sensors
+	Sensors should have the notion of "Sensor Contacts"
+	A sensor contact can represent something fuzzier than a single ship (direction, size, position, exact ship)
+		including groups of ships
+	Multiple sensors combine and refine their contacts
+	Multiple sensors may be shared between ships
+	Friendly ships may broadcast their friendly signal (perhaps this is always done in friendly space)
+	Sensors may have all kinds of rules and limits
+	Sensors should also have some randomization "fuzziness" in their abilities, so a signal may be temporaly patchy
+		AI should have the ability to "Investigate" a fuzzy or patchy contact.
+	Some contacts may be "false", perhaps a heavy metal asteroid, random probe, anomoly, etc.
+	
+Actual Entity Positions > Sensor > Sensor Manager > AI / UI Sensor Display for Player
+Some "Entities" are provided in the LUA for the level to be sensor anomolies, asteroids, etc.
+Sensor has initial position, power, direction, and cone angle (
+	like a spot light
+	some sensors will sweep angle over time
+Each frame (or less?), each sensor will poll each entity and decide how much info to provide
+	Point Cloud (very far distance), a list of randomized points
+	Single Point, Known location, no information (perhaps rough size based on what we know)
+	Single Point, ID of type of ship, no details on WHAT ship
+	Single Point, ID+ of ship (everything, including the ability to target specific components, what their target is)
+The level of information provided to the Sensor Manager is based on the STRENGTH of the 
+	"light" shown on the Entity and modified based on all kinds of buffs.
+Any entity may be "masked" by another contact based on their relative sizes and relative velocities
+	as long as the masking ship is not contacted at ID+ (you are too close to it to be fooled).
+	If masked, the entity does not show up as its own contact, but rather is a part of the larger contact
+A fire burning or some kind of hit from a weapon will de-buff the receiver
+There is essentially only one kind of sensor.  Fighters have a tight band sensor pointing forward.
+	We will not worry about Visuals.  Players will always have that advantage over an AI
+Other buffs may include sending a composite signal, pinging, etc.
+Point Cloud Range is HUGE compared to other types
+	
+The sensor manager gets a collection of all contacts from all sensors
+Once the sensor manager has a single point contact, it will label it as a distinct contact 
+	(all of the ships in a fleet will use the same contact label as long as ANY ship in the fleet 
+		maintains a sensor lock on it of Single Point or better.  Once lost from all, the label is removed )
+	and track all of its latest information and current velocity based on last position.
+This means that a Sensor Manager is merely some kind of memory to maintain the contacts between sensor sweeps
+		
+Larger ships will seee a nicer radar display than fighters.  Point clouds will show as a "scintilation"
+	If they see that, they would direct some smaller scout ships to get closer and check it out
+	These smaller ships will ONLY see a Single Point or better contact.  
+	
+Fighters have a sensor that updates every frame, but is pretty weak.  Its weak sensor pattern is roughly
+	spherical (but we can tweak with that per ship).  It also has a very tight band sensor directly
+	in front that will give ID contacts at gun range, and perhaps ID+.
+	
+Fighters will be able to target particular sensor contact labels and get the arrow pointing towards them.
+	
+They will see this contact in their radar as a dot, and also as a labeled cross hair hanging out in space.
+	If they focus their center retical on that object (and perhaps press a button to aquire), they will
+	see all the detailed information provided to them.
+	
+We can also have communications that breaks the sensor contact and command contact between AI
+	
+Team_AI has the responsibility to coordinate the efforts of a variety of ships, perhaps even a WING of fighters.
+	It has goals and strategies.  The strategies end up with goals provided to the ship ai based on conditions.
+	They also assign an Aggressive or Defensive stance to the Ship_AI -OR- Player
+	The Team_AI does not need to react every frame, perhaps only every few seconds to simulate a real player.
+	This is the slower aspect of the game.
+		* Patrol an area (Watch for enemy ships)
+		* Investigate an area (same as patrol?  Send out ships with better scanners?)
+		* Target a Ship or even a component if we have an ID+ contact
+		* "Wing" Defend a ship (fly close and target enemy targeting them and/or attack their target)
+		* Return for refuel, re-arm (or wait as a group) or maybe command to wait
+		* Kamikaze attack
+		
+Ship_AI controls a specific ship and tries to come up with strategies for accomplishing the goals
+	Provided by the Team_AI.  It must place relative weights on goals based on aggressive or defensive stance
+	Some goals it only knows about will probably override the ones provided by the Team_AI
+		* Avoid obstacle/collision
+		* Return for refuel, re-arm
+		* Evasive Maneuvers to avoid being hit
+		* Take target of opportunity
+		* Scan a target of opportunity
+		* Take a bullet for someone you are defending
+		* Kamikaze attack
+		* Run away (back to home?)
+Ship_AI prioritize these goals and then have strategies to accomplish them based on driving the ship.
+The Ship_AI interfaces with only the PILOT.  The PILOT receives input and processes strategies based on
+what the Ship_AI commands.  The Ship_AI does not need to react every frame either, perhaps every second or two.
+Most of the pilot commands will be pretty low level (point at a specific area, speed up/slow down)
+except perhaps to target and shoot a particular target or perhaps use evasive maneuvers or avoid collision.
+Another way to handle this is to allow the Ship_AI to handle these tasks, in its own special way,
+and send simple commands to the Pilot class.  When its under that kind of condition, it may act every
+frame, but its focus will be very small.  not sure who is responsible here.  These actions might be considered
+REFLEX actions.
+
+
+The Pilot represents the physical abilities of the Player.  Its job is to relay the input to the Ship_AI
+	and then do its best to perform the strategies ordered by the Ship_AI.
+	The inputs include:
+		* Current Sensor information, including the ship's current position, attitude, other state
+		* Current commands from the Team_AI
+	The outputs include:
+		* Driving the ship to perform some simple action (point in a direction, speed up, slow down)
+			Including the relative importance (how close
+		* Change weapons
+		* Choose a different target
+		* REFLEX Actions
+			* Target and shoot
+			* Evasive Maneuvers
+			* Avoid Collision
+			* Formation flying
+			* Landing and Launch (when we get there)
+The idea is that we do not want the Pilot class to perform these tasks better than a real player would.
+We can already give a real player an advantage because they have VISUAL, but we also need to massage 
+both the inputs and the outputs so as to be not so perfect.  The Pilot does work every frame, but it may
+not reply to commands from the Ship_AI if under stress from a REFLEX action (perhaps the Ship_AI is notified
+when a reflex action is complete so it knows when to send more commands or perhaps the command simpy returns
+false?).  So a real player would massage the inputs and outputs by:
+	* Only providing ROUGH sensor information to the Ship_AI, perhaps rounded to precision.
+	* Only be able to focus on a certain number of sensor contacts
+	* Have a time delay for "Reaction Time" when reporting sensor contacts or commands from Team_AI
+	* Not do anything else while under a REFLEX action
+	* Only be able to apply turns (no braking or sliding or thrusters) 
+		while Target and Shoot at close range or other reflex actions (overrides can do better)
+	* Not be able to gauge cannons heating up very well, overshoot like we do now
+	* Be weakened by G-Forces and stress?
+	* Make turns smoothly relative to current orientation
+	
+Pilot class that holds parameters relative to AI (e.g. ability to handle G's, reaction time, etc.)
+The Pilot/AI should not have any more accurate interface to the ship than the player USES
+	If we have a hard time making a GOOD ENOUGH AI that way, perhaps we can play it down
+	This means we should not have a "drive to location" that automatically knows the ships 
+	ramp-up and ramp down abilities.  Perhaps a "learning" algorithm could improve?
+Make the ship's piloting smoother
+	Aiming for a target is perhaps less precise.  Is this in the AI or in the Pilot's ability to handle the ship?
+	Allow for turning rate towards a goal direction rather than pointing in a particular direction
+	When flying to a distance (e.g. enemy out of range), The direction can be "close enough"
+		When going beyond a certain delta, the pilot can compensate, slowly if possible.
+	Perhaps the pilot interface can give a direction and either a reason (target, follow ship, avoidance, or whatever)
+		or perhaps just an intensity (WARNING, why would the AI not send full intensity?)
+		Perhaps the "Pilot" can only handle so much "INTENSITY" before he starts to break down,
+		and starts to lower the intensities, perhaps in response to G forces, stress, etc.
+		That said, maybe there is also something given for readiness, ability to stay engaged.
+
+Communications
+	Communications are used from a Ship_AI standpoint to:
+	1.  Send my sensor positions and ship status to the Team_AI
+	2.  Receive sensor position notes from the Team_AI
+	3.  Receive command directions from the Team_AI
+	We can assume at first that communications systems are perfect, and then break communications down
+		in the future by ship's taking damage.
+	
+The Team_AI does not necessarily need to be in a specific ship.  There can be an instance of a Team_AI
+for each block of ships that have 
+
+
+Refactoring what we have
+	Work out all of the relationships and responsibilities for the various classes as they are
+	When the Controller is in "Auto Pilot", just transfer control for now to an appropriate wrapper
+	
+
+Daily Projects
+==============
+- Try to make the OSG firey explosion working, learn about Particle Effects and show Justin
+- AUTO-Tracking cannons
+- Micro-Missiles (like cannons but track)
+
+- Simple Entities(glass blown out), Mounted Entities(Turrets, blow up independent), Parented Entities(Missiles, Landing/Launching) 
+
+	- Parented Turrets always stay on the ship but rotate independently to find their target
+	- Parented Missiles break the parent connection when fired
+	- Launching and Landing dynamically changes parented state, fly into position to set automated "target" and press 'z' key to auto-pilot
+
+- Parented Sub-Items
+	- OSGV Variables for SUB-Nodes (and RANDOMIZATION values)
+	- Ships need their own C++ Class to set the Mount points and other details
+		- Make a Q34 class that has many details now in the ThrustShip2 class
+		- Make separate classes for the different items
+		- Entities responsible for prog setting the parameters before reading in the OSGV file for the ship
+	- Make missiles use this technique rather than automatically attached.  Maybe guns too?
+	- Start looking for parameters in ThrustShip and elsewhere that should be obtained by child items dynamically (like mass)
+
+- Layering the images
+	- Be able to create a composite image to drop in the OSGV map, passing from Justin AND created.
+		(play around with "shortcutting" by looking for points on line and plane)
+	- Build the image dynamically in OSGV by looking for the UV maps and modifying them in place
+		(watch for caching when we do not want it)
+	- Create an image editor that draws on top in real time in WPF (Just a drawing pen for example)
+	- Build the full drawing editor in with shapes, images, persistence, etc.
+
+At Home
+=======
+- Get the multi-player game working on a Network
+	- Get working on own LAN (watch for FRAMEWORK_LOGIC_NETWORK_API Client::GetMyPlayerID returning internal or external ID)
+		! Watch for the crash!!
+	- Get working on external host
+	- Get working WIDE using different IP addresses. 
+- Work out how to host a website to WORLD from home
+- Work out how to host a Game Server to WORLD from home
+
+TOP Down Alpha Launch Projects
+==============================
+- Can I use an ActiveX control in WPF?  How do the controls play together? - Learn about a BASIC ASP.NET C# website with some code behind
+- Get the site posted on the PT server for all (us) to see {Is it just local?}
+- Learn how to make a WPF browser application, how is it different?
+- Post the browser application on the PT server for all (us) to see
+ 
+
+- Get the MS-SQL free database server installed and running
+- Learn how to make a database and get the ASP.NET talk to it (using LINQ)
+- See if there are differences in making WPF talk to it from the website (indirectly?  server side?)
+- Make the WPF Browser Application (Launcher) request with a username/password and get the response with Games/Characters, etc.
+- Make an installer for the Launcher, place it on the website for download
+- Learn how to make a Web Service, talking to the database (earlier if needed for WPF indirectly)
+- Learn how to make a windows service.  Does this behave any differently?  Can I still do the database stuff? Talk to other services, etc? - Launcher communicates to the webservice for downlading files
+- Webservice handles 
+the files and provides them to the launcher
+- Show progress bar in the launcher during update
+- What is the Shard?  Learn to make a Windows Service spawn a new process, Learn how to make a windows service check the current resources and communicate them
+- Game Client (C# or C++/RakNet) talks to WebApp Service for the Universe?  Get and post database information
+
+
+- Decide on all technologies, learn how to use UnitTest frameworks
+- Design the ALPHA requirements and start building!
+
+
+
+
+- Short Term Goals (Mid September, End September)
+- Collate List of tasks (only immediate for now)
+- Billy Tasks for Launcher
+
+
+ 
+
+To DO			To Learn
+-----			--------
+Build RimSpace	Projects (Console Launcher?)
+Universe/Shard	Server	RakNet MasterServer
+Simple Test Launcher 
+Universe Database	RakNet Database 
+Launcher		WPF Book
+			Connecting C# to Universe Database or to Universe DB (or connection) to see list of Melees
+Updater			RakNet File Updater or C# File Check Updater
+Sign On			How to connect to the DotNetNuke member database (or just UserName/Password)
+Installer		Installers
+
+			
+Removing Hard-Wired Events
+interpolated impulse
+HUD elements placed in OSGV (use interpolated impulse for Bars and such)
+Environmental Reflection Effects > OSGV
+
+Crossed Transparency issues, Planet Halo Ring
+
+Auto-Track Cannons
+Missiles
+Complete Multi-Player switching and leaving, Teamplay, FPS style ship switching
+Chat & VOIP
+
+
+
+Notes for SVN
+=============
+- Learn how to make an FTP server and show Justin
+- Learn how to use PUTTY or whatever to connect to a remote machine and show Justin (remote desktop?)
+- Work through the WPF/XAML book and learn about database stuff with XAML
+- Work through databse connection in WPF, C++, and PHP.  Find a single Database to use
+- Map out and build a basic website and database with membership information and pre-populated statistics
+- Find an installer system, work out the available options, and create a basic installer
+- Build a BASIC WPF/XAML Launcher that does a log-in, checks for updates, downloads, and installs them
+- Launcher can see pre-populated statistics
+- Create a Universe C++ server that talks to the Database, Launcher can talk to it to see available melees and fire a new one.
+- ShardServers talk to the UniverseServer and let that server know about their capacity??
+- Launcher requests new Melee from UniverseServer, which chooses a ShardServer to launch a new MeleeServer
+- UniverseServer tracks open MeleeServers in a database, reports them to Launchers
+- Launchers request connects from UniverseServers, UniverseServers track who is connected to which melees
+- MeleeServers report stats to UniverseServers, which populate on database and Launcher and website see them
+
+- Complete Multi-Player switching
+	- Make sure that new players know what the current owner is (are we passing the right transmitted CS)  Can someone else be flying their ship?
+	- Watch for players leaving, should the their current ship go away, or should it stay in the scene?
+
+	
+
+- Stuff that helps Justin in Content Development
+	
+
+
+
+1.  helping people with the high level vision (or at least one step down from the vision doc you sent, perhaps listing the steps we need to accomplish to get there)
+2.  Getting Matt working on the website by laying out a site design and giving him a look at the existing web site
+3.  Finishing the multi-player stuff (making it so we can switch players)
+4.  Working on other random bugs that pop up (like your crash in multi-player)
+5.  Prototyping the database, installer, launcher, master-server system
+6.  Getting Calvin working on the finishing the Art-4 bounding box and completion, or at least get him talking with you.
+7.  Getting you the features you need for better explosions, in-cockpit, HUD
+8.  Working out how to get through the router (I think I know, I have just not tried it)
+
+
+I think what I need to do is work my time consistently in the mornings for 2 hrs on FOCUSING ON 
+implementation details (4,3,5,7 in order), and in the evenings, when I get the opportunity, working 
+on the higher level, planning types of things to help keep everyone moving. (6,8,2,1 in order).  
+I should probably try to get one of those things done per night or so.
+
+
+Get into WPF
+* Do a Simple WPF Application Tutorial (Font Viewer from the book)
+* Do a simple WPF XBAP Tutorial (Convert Font Viewer to an XBAP from the Book)
+- Stub out the Launcher and get Justin to take a look
+
+Installer
+- Do the installers for WPF and XBAP
+
+Get into SQLite 
+- Install SQLite
+- Do the WPF/SQLite Tut
+- Do the PHP/SQLite Tut (Ask James about the Config Line)
+- Do Tutorial on C++/SQLite
+
+*OR*
+Get into MySQL
+- Install MySQL++
+- Do Tutorial on C++/MySQL, connecting to my existing DB
+- Do the tutorial on WPF/MySQL, connecting to my existing DB
+
+- Create the Log-On System Prototype with WPF
+
+- Create the update System Prototype with WPF
+
+- Create a Master Server Prototype with WPF
+
+
+
+	
+Documentation Tasks
+-------------------
+- Create initial Folder (where it is now?  In a new place?)
+- Transfer Document Map 
+	Include Framework Spec. and Fringe Spec.
+	Make Notes for Justin on the Concept Direction for Justin:
+		What does he need to do and where are his legacy docs?
+	
+- Stub Out Documents and Outlines (Leave Biz Plans and Justin Legace Docs Alone)
+- Work through Legacy Documents, Merging and Deleting
+- Update Actor/Component Diagram in Framework Spec or Engineering Spec?
+- Flesh out the Release Objectives (and questions), when will we need Fringe specifics?
+
+- Flesh out Release Plan Features first pass, 
+	Do I know enough to make a quick estimate for prioritizing?
+
+- Make a second Feature Pass, Breaking up into User Stories for the Release and enter into Fogbugz with existing
+	Find an early Multiplication Factor for for Release Planning
+	Is it just as easy to do it that way in a Release Planning Session?
+	Place the Features in an Early Feature Release so they can be lined up
+	Choose a date that is 90% or whatever (do I have enough history?) 
+	Release Session Planning is for early decision making
+	Detailed Estimates are more for progress and prioritizing to hit a date
+
+- Flesh out a User Story into Use Case / Tasks as a part of ENgineering Spec
+
+- Flesh out the website flow? (including the different parts of the web page)
+	Is there anything that needs a Storyboard from Justin?
+
+- Revamp Dox Main page, Stub Static Class Diagram, Organize Folders with existing DOX pages
+	Make a note on the pages that are already there to note they are not there 
+	(Or maybe that there is no static class diagram up top)
+
+- Write Dev feature pipeline for Feature -> Docs -> Dox -> Art Requests
+
+- Start Working through the first User Story / Task
+
+
+Tasks
+-----
+- Review OSG HUD example
+- Replace all HUD and Text elements with OSG_HUD styling
+- Provide A Value based OSGV action
+- Review OSG Widget example
+- Provide OSGV functionality for working with widgets
+
+
+- Lay out the versions, planning, and Schedule, verify priorities with Justin
+
+
+- Protoype OSG Widgets
+
+- Use the new HUD technology, basic drawing
+
+- Provide Actions with set frame percentage based on a range (useful for thrusters)
+
+- Animated texture maps
+
+- Provide Justin with the HUD interface
+
+- Provide Justin with the Widget interface, overlaying existing scene
+
+- Installer
+
+- Log On Screen
+
+- Content Update
+
+- JIT Content Update (dynamically loaded ships in the scene)
+
+- Speed up initial loading by delay loading images on another thread (prioritized, environment, own ship?)
+
+- Multi-Player on a server
+
+
+
+
+
+
+
+- Prototype OSG/ActiveX and WPF			
+	- Make the WPF more full featured, and deal with threading issues
+		- Place our ActiveX in a user control
+		- Make the WPF main window have some layout with our use control
+		- Be able to dynamically set the background and scene (watch for mutex blocks)
+		* Consume the WPF event coming back out and do something with it	
+	
+	- Check in the existing project for Justin to work with
+		* Organize the code base, (place in osgv folder, rename to osgvWPF)
+		* Have the location of the content stored in the registry like the DB path
+		* Make it look more like our code (black background, ship)
+		* Make sure there is a binary version of the ActiveX control
+		- Provide a bat file so Justin can easily register
+		- Provide bat files to update the registry for DLL's and Content
+	
+	- Show Justin
+		- Make sure Justin can run the game with the updated OSG
+		- Registering the ActiveX control
+		- Registering the DLL location and Content Location
+		- Show the OSG Control in the Website, Show Justin the code
+			- The clsid and object construction
+			- Showing the stats and getting a feel for speed
+		- Open up the project in BLEND
+		- Show how we are using the ActiveX control
+			- The clsid and object construction
+			- Showing the stats and getting a feel for speed
+
+
+- Prototype Database Communication in WPF/C# (????)
+
+- Prototype Downloading Files from WPF/C# (content updates)
+
+- Prototype Downloading Files from C++ (JIT content)
+
+
+
+Quick Notes
+-----------
+- What is with the framerate?
+	- Collision Detection is the primary culprit
+	- Remove the existing step downs for the stars and other things.  Does it even help?
+		- Populate a big scene with lots of still things so frame-rate stabilizes, but is relatively low
+		- Try turning off the different features to find out what works and what does not
+	
+	- Get the Multi-Threading working properly (since I know James will blame it on that).
+	- Look around in the forums to find out ways to optimize.  Perhaps that is something that James can work on?
+	- Do I still need VS8 binaries?
+- How can I get my keyboard flying straight and using buttons?
+- Do I still need everything in stable_bin?  CLeaning Up?
+
+
+TODO In Evenings
+----------------
+- Show Justin the web stuff
+- Update Design Document
+	- Make it HTML or something editable
+	- Break it up into parts with Links?
+	- Work through Features in this Release and in The Next Releases
+	- Work through User Stories in this Release and Estimate (Without listing Use Cases?)
+	- Think about an Update System that does not require reviewing the ENTIRE Document
+- Process Notes
+	- Flesh out the idea of Features -> User Stories -> Use Cases.  
+	- Estimate on User Stories.  What are "Features" and "Bugs" in FogBugz?
+	- QA Process Steps for User Stories.
+- Update FogBugz to have new Estimates
+- Concatenate Old Planning Docs, Keep what we can.  (Remember, I was not dumb when I wrote it the firswt time, I have just forgotten what I did)
+- Update the Design Document to Review with Justin & James
+	- Switch from FLASH to WPF if we like it
+	- Describe WPF / ActiveX control responsibilities
+	- Generally Draw out current game structure, dynamic design from the server
+	- Discuss the idea of peer to peer structure and controllers
+	- Discuss 
+- how we might break up the threads
+	- Complete the Prototype list and things to work on
+	- Make sure James is working ok
+- Clean up changes to LWO and LWS scene readers and submit them to OSG community
+
+
+
+	
+
+
+
+
+
+
+Resources to Study
+==================
+- RakarSoft programming tips and tricks
+- OSG reference materials and Examples
+- LightWave book
+- Work through ship lighting tutorial
+- Work through the space tutorials
+- Review James code and BOOST libraries
+- NeHe Tutorials
+- Get far enough in EVE to enjoy it? (start a new free character and work the heck out of it during free-play time).
+- LightWave tutorials
+- Andrew Toy
+- Develop my WoW character
+
+
+Thoughts about Documentation Processes
+======================================
+$ Story and Game Play are very different and Segmented.  Let Storyline all stay outside of FogBugz.
+$ I can keep content out of Fogbugz and direct it myself by delegating it to Justin.  Perhaps I can email him and me?
+$ Justin and I can coordinate often to make sure 
+$ We want to have a tiered system that ensures the updates are all in one direction and each tier is succinct
+$ We should work on features (programming-art) in a tiered method that not only keeps us both working, but keeps us excited (2 hands ladder)
+
+$ Documentation needs to include (and be up to date)
+	1. What we want in each release so we can plan for it
+	2. Functional Specifications for Designs that include Test Cases
+	3. Design, High-Level to Low-Level, Dynamic and Static, Existing and Planned
+
+$ When we finish a code module, we need to make sure we know what we are updating, this should start at:
+	1. The code comments (In code comments are better than seperate files)
+		1a. Graphical Description of the code design (static and dynamic, use of DOT can be in code comment)
+	2. The FogBugz Case
+		2a. We can have "parent" Cases
+		2b. We can have parent Wiki pages, but people do not like those as much
+
+$ We may want to stay VERY agile when it comes to features.  It may be better to estimate outside of FogBugz using XP style
+	Another way to do that is make the Fogbugz "Releases" not full releases.  I still kind of like my own two tiered method,
+	using an interation velocity and a release velocity.  This works well also because people do not like to track time.
+	The downside to this is that it is much harder to make estimates as to very long term Release planning.
+	It also means that we have to track things in two places.
+
+$ For the time being, I will probably have all critical things assigned to me.  Justin and James will follow my lead and do important
+	things, but they will all be based on my own actions.
+
+$ Release planning can include breaking iterations up with their own focus.
+$ Release planning is the only part where estimating is REALLY important and valuable.  Iteration planning is only about making 
+	sure that we are on task with our priorities.
+$ I have to make sure the existing forum members are able to play the game AND that they are getting updates often that are fun
+$ Breaking tasks up is tricky.  Some conceptual break-downs do not flow so well.
+$ It is important to use SOME method of time tracking early and consistently so that we can gauge
+$ I may not need to know right away how much time I am going to be able to commit.  I can adjust my time in FogBugz and 
+	use yesterdays news to gauge the future.
+$ Does it make sense then to have iterations?  Perhaps every commit of a significant feature can be released even iterations are
+	not so meaningful.  The value in the release planning is that we only do it once so that when we do it next time it
+	can be accurate.  Release planning needs to stay very high level, without too much current knowledge of the system because
+	I need to base future estimates on not having too much future knowledge (Do I ever need to be able to predict too far ahead?)
+$ I like to be able to plan for this one, and the next one.  I need to base my histories on "the next one"  Or just make sure the
+	granularity of the plans is about the same.
+
+$ I need to provide myself some time and a process for making these plans and make this a priority or I will never do it.
+$ I need to make sure there is only one place to keep this stuff, at least that I look at.  Perhaps it is not a big deal that other people read it.
+
+
+Thoughts about Competitive Research
+===================================
+- General Feature Driven research with a spreadsheet is ONLY valuable (relative to the time it takes) for business development (looking for investors)
+- Specific competition research can be good, but we need to a way to organize our notes so that the points can be recalled when we are building a particular
+	component, or when we are making strategic planning decisions
+- All of this stuff seems moot when we do not have our first thing out there.  We know enough NOW to make the broad brush decisions, and we can fine tune after 
+	we get stuff out there.
+	
+	
+	
+Business Dev Tasks
+==================
+- Try to find Doug Shannon again
+- Research from http://en.wikipedia.org/wiki/MMORPG 
+	- Non-corporate development, write notes for the meeting
+	- Other space combat sim games listed?
+	- Take a closer look at IGDA and make a plan for how to digest it
+- Prepare for the big question in the meeting, citing references and smaller games
+- Get the contract from NewTek, edit and send to Rob
+- Figure out the big questions, including competitive analysis, and how to answer the questions
+	- Find a mentor/adviser
+	- Using an existing game engine or our own?
+	- Is the Indie plan a viable plan?
+	- How much work will it REALLY take?
+	- What is the smallest game we can get away with?  Use of FLASH/WPF or just use 3D as I have it?
+	- Can I expand on other industries, like game development and sell stuff online?
+- Get Aaron and kids to help with competitive analysis
+	- Find out how to find out about small games
+	- What are we looking for in the game?  Features and Pricing
+	- What are we looking for outside of the game?  Company and Marketing
+	- Do research on a game or two so I can show how to do it
+	- Show Aaron and Calvin how to do it, get them involved?  how can I make it valuable for them?
+	- Have a way to show the competitive analysis work
+	
+	
+Notes about Chase Plane Positions
+=================================
+> In Fringe
+	> We want (and have) acceleration/deceleration
+	> We want to eventually have everything relative to a cockpit center, so we can zoom all the way into it, ignoring accel & decel
+	> We have a POV that ignores accel and decel, but will need to know the center 
+	> We will eventually want to zoom way out from the ship.  Ignores Accel and Decel, cockpit center not important, but does not hurt
+> In GuardianVR
+	> Accel/Decel is not important
+	> We DEFNITELY need to not have the center be defined somewhere, preferrably in the LWO
+	> POV is there and needs the center
+	> We will not be zooming WAY in or WAY out
+	> We MAY need to have better control over the distance vectors (now depends on the BB size)
+	> We MAY need to have better control over the Quats in the look direction, now is just forward
+	> We may very well need more interpolation / extrapolation when dealing with obstructions in the future
+

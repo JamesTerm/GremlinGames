@@ -1,0 +1,10 @@
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\bin\Debug\ClickOnce.exe
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\bin\Debug\ClickOnce.pdb
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\ResolveAssemblyReference.cache
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\MainWindow.baml
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\MainWindow.g.cs
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\App.g.cs
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\ClickOnce_MarkupCompile.cache
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\ClickOnce.g.resources
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\ClickOnce.exe
+D:\My Documents\Expression\Blend 3\Projects\ClickOnce\ClickOnce\obj\Debug\ClickOnce.pdb

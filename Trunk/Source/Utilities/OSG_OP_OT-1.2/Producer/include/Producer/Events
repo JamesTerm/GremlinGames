@@ -1,0 +1,284 @@
+/* -*-c++-*- Producer - Copyright (C) 2001-2004  Don Burns
+ *
+ * This library is open source and may be redistributed and/or modified under
+ * the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or
+ * (at your option) any later version.  The full license is in LICENSE file
+ * included with this distribution, and on the openscenegraph.org website.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * OpenSceneGraph Public License for more details.
+ */
+
+#ifndef _PRODUCER_RENDER_SURFACE_EVENTS_H
+#define _PRODUCER_RENDER_SURFACE_EVENTS_H
+
+#include <Producer/Export>
+#include <Producer/Referenced>
+
+#ifdef  _WIN32_IMPLEMENTATION
+
+#define ROBERTS_EXPERIMENTAL_EVENT_QUEUE
+#ifdef ROBERTS_EXPERIMENTAL_EVENT_QUEUE
+    #include <list>
+#else
+    #include <deque>
+#endif
+
+#include <Producer/RenderSurface>
+#include <Producer/Block>
+#include <Producer/Keyboard>
+#include <Producer/KeyboardMouse>
+#include <Producer/Timer>
+
+#include <OpenThreads/ScopedLock>
+
+namespace Producer {
+
+
+class Event :public Referenced {
+    public:
+        enum Type {
+            KeyPress,
+            KeyRelease,
+            ButtonPress,
+            DoubleButtonPress,
+            ButtonRelease,
+            MouseMotion, 
+            MouseScroll,
+            ButtonMotion,
+            WindowConfig,
+            Timer,
+            Shutdown,
+        };
+
+        enum Mask {
+            KeyPressMask          = 0x001,
+            KeyReleaseMask        = 0x002,
+            ButtonPressMask       = 0x004,
+            DoubleButtonPressMask = 0x008,
+            ButtonReleaseMask     = 0x010,
+            MouseMotionMask       = 0x020,
+            MouseScrollMask       = 0x040,
+            ButtonMotionMask      = 0x080,
+            WindowConfigMask      = 0x100,
+            TimerMask             = 0x200,
+            ShutdownMask          = 0x400
+        };
+
+        Event( Window win, Type type ) : _win(win), _type(type), _time(Timer::instance()->tick()) {}
+        virtual ~Event() {}
+        Type type() const { return _type; }
+        Window window() const { return _win; }
+        Timer_t time() const { return _time; }
+    protected:
+        Window _win;
+        Type _type;
+        Timer_t _time;
+};
+
+#ifdef ROBERTS_EXPERIMENTAL_EVENT_QUEUE
+
+class EventQueue : public Producer::Referenced
+{
+    public:
+    
+        EventQueue()
+        {
+            _signal = CreateEvent(NULL,TRUE,FALSE,NULL);
+        }
+        
+        bool empty() const
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
+            return _events.empty();
+        }
+    
+        void waitWhileEmpty() const
+        {
+            while( empty() )
+                OpenThreads::Thread::YieldCurrentThread();
+        }
+
+        Producer::ref_ptr<Producer::Event>& front()
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
+            return _events.front();
+        }
+        
+        const Producer::ref_ptr<Producer::Event>& front() const
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
+            return _events.front();
+        }
+
+        void pop_front()
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
+            _events.pop_front();
+            if(_events.empty()) ResetEvent(_signal);
+        }
+        
+        void push_back(const Producer::ref_ptr<Producer::Event>& event)
+        {
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
+            _events.push_back(event);
+            SetEvent(_signal);
+        }
+  
+        HANDLE getSignal() { return _signal; }
+        
+  protected:
+  
+        virtual ~EventQueue() { CloseHandle(_signal); }
+    
+        typedef std::list< Producer::ref_ptr<Event> >  Events;
+        
+        Events                      _events;
+        mutable OpenThreads::Mutex  _mutex;
+        HANDLE _signal;
+};
+
+#else // !ROBERTS_EXPERIMENTAL_EVENT_QUEUE
+
+typedef BlockingQueue <Producer::ref_ptr<Event> > EventQueue;
+
+#endif
+
+class KeyPressEvent : public Event
+{
+    public :  
+        KeyPressEvent( Window win, unsigned short key ): Event(win, Event::KeyPress), _key( key ) {}
+        unsigned short key() const { return _key; }
+
+    protected:
+        virtual ~KeyPressEvent() {}
+
+    private:
+        unsigned short _key;
+};
+
+class KeyReleaseEvent : public Event
+{
+    public: 
+        KeyReleaseEvent( Window win, unsigned short key ) : Event(win, Event::KeyRelease), _key(key) {}
+        unsigned short key() const { return _key; }
+    protected:
+        virtual ~KeyReleaseEvent() {}
+    private:
+        unsigned short _key;
+}; 
+
+class ButtonPressEvent : public Event
+{
+    public:
+        ButtonPressEvent(Window win, unsigned int button, int mx, int my) : 
+            Event(win, Event::ButtonPress), _button(button), _mx(mx), _my(my) {}
+        int mx() const { return _mx; }
+        int my() const { return _my; }
+
+        unsigned int button() const { return _button; }
+
+    protected:
+        virtual ~ButtonPressEvent() {}
+
+    private:
+        unsigned int _button;
+        int _mx, _my;
+};
+
+class ButtonReleaseEvent : public Event
+{
+    public:
+        ButtonReleaseEvent(Window win, unsigned int button, int mx, int my) : 
+            Event(win, Event::ButtonRelease), _button(button), _mx(mx), _my(my) {}
+        int mx() const { return _mx; }
+        int my() const { return _my; }
+
+        unsigned int button() const { return _button; }
+    protected:
+        virtual ~ButtonReleaseEvent() {}
+    private:
+        unsigned int _button;
+        int _mx, _my;
+};
+
+class DoubleButtonPressEvent : public Event
+{
+    public:
+    DoubleButtonPressEvent(Window win, unsigned int button, int mx, int my) : 
+        //Event(win, Event::ButtonRelease), _button(button), _mx(mx), _my(my) {}
+        Event(win, Event::DoubleButtonPress), _button(button), _mx(mx), _my(my) {}
+    virtual ~DoubleButtonPressEvent() {}
+    int mx() const { return _mx; }
+    int my() const { return _my; }
+
+    unsigned int button() const { return _button; }
+    private:
+    unsigned int _button;
+    int _mx, _my;
+};
+
+class MouseMotionEvent : public Event
+{
+    public:
+    MouseMotionEvent( Window win, int mx, int my ) : Event(win, Event::MouseMotion), 
+            _mx(mx), _my(my) {}
+    virtual ~MouseMotionEvent() {}
+    int mx() const { return _mx; }
+    int my() const { return _my; }
+    private:
+    int _mx, _my;
+};
+
+class MouseScrollEvent : public Event
+{
+    public:
+        MouseScrollEvent(Window win, KeyboardMouseCallback::ScrollingMotion scroll ) : 
+            Event( win, Event::MouseScroll ), _scroll(scroll) {}
+
+        virtual ~MouseScrollEvent() {}
+
+        KeyboardMouseCallback::ScrollingMotion scrollingMotion() { return _scroll; }
+
+    private:
+        KeyboardMouseCallback::ScrollingMotion _scroll;
+};
+
+class WindowConfigEvent : public Event 
+{
+    public:
+        WindowConfigEvent( Window win, int x, int y, unsigned int width, unsigned int height ):
+            Event(win, Event::WindowConfig),
+            _x(x), _y(y), _width(width), _height(height) {}
+        virtual ~WindowConfigEvent() {}
+        int x() const { return _x; }
+        int y() const { return _y; }
+        unsigned int winWidth() const { return _width; }
+        unsigned int winHeight() const { return _height; }
+    private:
+        int _x, _y;
+        unsigned int _width, _height;
+};
+
+class TimerEvent : public Event 
+{
+    public:
+        TimerEvent(Window win, unsigned int id) : Event(win, Event::Timer), _id(id) {}
+        virtual ~TimerEvent() {}
+        unsigned int id() const { return _id; }
+    private:
+        unsigned int _id;
+};
+
+class ShutdownEvent : public Event
+{
+    public:
+        ShutdownEvent(Window win): Event(win, Event::Shutdown) {}
+};
+
+}
+
+#endif
+#endif

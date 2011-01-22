@@ -1,0 +1,51 @@
+/*!	\page  Phase_1B_page	Phase 1B
+
+Be able to move the ship with some controls (KB/Mouse) and let the other clients
+see the motion by passing the positions.  Extrapolate velocities for frames.
+Snap adjustments (perhaps half adjustments). Trackball Control around YOUR ship.
+Provide more complex key bindings.  Use a SIMPLE controller class and Show the 
+keybindings in the help window.  Still a Trackball around your ship's position (ViewPortReference).
+Allow for keybindings to fire Events ONLY on your ship, but other clients see it.
+
+
+\section sec_Iter1B-c	Iteration 1B - a
+Simple (hard-coded) keybindings that drive the ship, changing PosAtt.
+
+> Controller has keybindings for motion
+> Controller listens for motion change events in EventMap of local ship
+> Controller Changes PosAtt of its own ship
+
+** I added simple controls, James added Physics to the flight model, Checked in 431
+
+	
+	
+	
+
+\section sec_Iter1B-d	Iteration 1B - b
+Broadcast messages to the other Clients and let them extrapolate the positions
+Extrapolate PosAtts for each client when a message is not received
+
+> Controller broadcasts PosAtt
+> RC_Controller hears the PosAtt change (like with the epoch call), sets PosAtt 
+	(which of course sets the ActorParents because of their events)
+> Controller sends velocities along with PosAtt changes in its broadcast
+> Controller extrapolates PosAtt based on last velocity (virtual functions to extrapolate)
+	remembers the last Velocities given, so could extrapolate acceleration as well?
+> Entity3D has a timer update callback, asks Controller to extrapolate
+
+
+
+
+\section sec_Iter1B-a	Iteration 1B - c - See Events fired across Network
+Allow for keybindings to fire Events ONLY on your ship, but other clients see it. use some
+kind of controller class to denote a locally controlled ship.
+
+> EventMap can have KeyBindings turned on or off, default is off, player controlled ship has them on.
+> Locally owned Controller denotes a player controlled ship, listens to EventMap and
+	and broadcasts event messages with its ID.
+> Entity3D hears messages and fires them with the appropriate time offset 
+	(Actor::ActionQueue? need to have a start time, nt just the current time)
+	
+- ID for Entity3D is an in or short, NOT a string (perhaps use a map&vector that increments that,
+	it would be nice for LUA to work with the string
+*/

@@ -1,0 +1,84 @@
+#ifndef PRODUCER_PIPE_TIMER_DEF
+#define PRODUCER_PIPE_TIMER_DEF 1
+
+#include <Producer/Export>
+#include <Producer/Types>
+
+#ifndef APIENTRY
+	#define APIENTRY
+#endif
+
+#ifndef GL_EXT_timer_query
+#ifdef _WIN32
+typedef          __int64 GLint64EXT;
+typedef unsigned __int64 GLuint64EXT;
+#else
+typedef long long int GLint64EXT;
+typedef unsigned long long int GLuint64EXT;
+#endif
+typedef void (APIENTRY *PFNGLGETQUERYOBJECTUI64VEXTPROC) (GLuint id, GLenum pname, GLuint64EXT *params);
+#endif
+
+#if !defined(GL_VERSION_1_5) || defined(__APPLE__)
+typedef void (APIENTRY *PFNGLGENQUERIESPROC) (GLsizei n, GLuint *ids);
+typedef void (APIENTRY *PFNGLDELETEQUERIESPROC) (GLsizei n, const GLuint *ids);
+typedef void (APIENTRY *PFNGLBEGINQUERYPROC) (GLenum target, GLuint id);
+typedef void (APIENTRY *PFNGLENDQUERYPROC) (GLenum target);
+typedef void (APIENTRY *PFNGLGETQUERYOBJECTIVPROC) (GLuint id, GLenum pname, GLint *params);
+#endif
+
+
+namespace Producer {
+
+class  PR_EXPORT PipeTimer {
+    public:
+        enum ReturnType {
+            nanoseconds,
+            microseconds,
+            milliseconds,
+            seconds
+        };
+
+        PipeTimer();
+
+        static PipeTimer *instance() { return _thePipeTimer; }
+
+        void setReturnType( ReturnType r);
+        ReturnType getReturnType();
+
+        GLuint genQuery();
+        void   deleteQuery( GLuint *);
+        void   genQueries(unsigned int n, GLuint *);
+        void   deleteQueries(unsigned int n, GLuint *);
+
+        void begin( GLuint query );
+        void end();
+
+        double getElapsedTime( GLuint query );
+        double getElapsedTime( GLuint query, double &waitTime );
+
+        static PipeTimer *_thePipeTimer;
+
+    protected:
+        virtual ~PipeTimer() {}
+
+    private:
+        bool _valid;
+
+
+        PFNGLGENQUERIESPROC				_glGenQueries;
+        PFNGLDELETEQUERIESPROC			_glDeleteQueries;
+        PFNGLBEGINQUERYPROC				_glBeginQuery;
+        PFNGLENDQUERYPROC				_glEndQuery;
+        PFNGLGETQUERYOBJECTIVPROC		_glGetQueryObjectiv;
+        PFNGLGETQUERYOBJECTUI64VEXTPROC _glGetQueryObjectui64v;
+
+        ReturnType _returnType;
+        double _div;
+
+        bool _init();
+};
+
+}
+
+#endif

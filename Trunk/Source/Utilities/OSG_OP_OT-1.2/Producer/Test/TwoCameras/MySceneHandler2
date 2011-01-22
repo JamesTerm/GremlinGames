@@ -1,0 +1,158 @@
+/* -*-c++-*- Producer - Copyright (C) 2001-2004  Don Burns
+ *
+ * This library is open source and may be redistributed and/or modified under
+ * the terms of the OpenSceneGraph Public License (OSGPL) version 0.0 or
+ * (at your option) any later version.  The full license is in LICENSE file
+ * included with this distribution, and on the openscenegraph.org website.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * OpenSceneGraph Public License for more details.
+ */
+
+// This is a simple example of a Producer::Camera::SceneHandler
+#ifndef PRODUCER_EXAMPLES_MYSCENEHANDLER2
+#define PRODUCER_EXAMPLES_MYSCENEHANDLER2
+
+#include <Producer/Camera>
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+// Use the OpenGL teapot as a sample object to draw
+// Borrowed from the glut distribution.
+extern void glutSolidTeapot(GLdouble scale);
+
+class MySceneHandler2 : public Producer::Camera::SceneHandler
+{
+    public:
+        MySceneHandler2() : Producer::Camera::SceneHandler(),
+            _angle(0.0f),
+			_x(0.0f),
+			_y(1.0f),
+			_z(2.0f),
+			_xi(0.1f),
+			_yi(0.1f),
+			_zi(0.1f),
+            _initialized(false) 
+        {}
+
+	    virtual void clear( Producer::Camera &camera ) {}   //no op
+
+
+        // Producer::Camera::SceneHandler is pure virtual and
+        // requires that the draw() method be implemented in 
+        // derived classes.
+        virtual void draw( Producer::Camera & camera )
+        {
+            // Lazy initialize
+            if( !_initialized ) init();
+
+
+			if( _x < -5.0 || _x > 5.0 ) _xi *= -1;
+			if( _y < -5.0 || _y > 5.0 ) _yi *= -1;
+			if( _z < -5.0 || _z > 5.0 ) _zi *= -1;
+			_x += _xi;
+			_y += _yi;
+			_z += _zi;
+
+            glPushMatrix();
+			glTranslatef( _x, _y, _z );
+            glRotatef( _angle, 1, 0, 0 );
+            glRotatef( _angle, 0, 1, 0 );
+
+            // Draw the OpenGL teapot
+			glCallList( _cube );
+
+            glPopMatrix();
+
+            _angle+=2;
+        }
+
+        // Initialize Graphics state
+        void init()
+        {
+            glEnable( GL_DEPTH_TEST );
+            glEnable( GL_LIGHTING );
+            glEnable( GL_LIGHT0 );
+            glClearColor( 0.2f, 0.2f, 0.4f, 1.0f );
+
+			_cube = makeCube();
+
+            _initialized = true;
+        }
+
+		void drawCube()
+		{
+
+            // 8 Vertecies for each corner of the cube
+            float vertex[][3] = {
+                { -1.,  1.,  1. }, // 0
+                { -1., -1.,  1. }, // 1
+                {  1., -1.,  1. }, // 2
+                {  1.,  1.,  1. }, // 3
+                {  1.,  1., -1. }, // 4
+                {  1., -1., -1. }, // 5
+                { -1., -1., -1. }, // 6
+                { -1.,  1., -1. }, // 7
+            };
+        
+            // A set of indecies representing the six faces of the cube 
+            // as quads
+            int vertex_index[] = {
+                0, 1, 2, 3, // A
+        	    3, 2, 5, 4, // B
+        	    4, 5, 6, 7, // C
+        	    7, 6, 1, 0, // D
+        	    0, 3, 4, 7, // E
+        	    1, 6, 5, 2, // F
+            };
+        
+            // A normal for each face of the cube
+            float normal[][3] = {
+                {  0.0f,  0.0f,  1.0f }, // A
+                {  1.0f,  0.0f,  0.0f }, // B
+                {  0.0f,  0.0f, -1.0f }, // C
+                { -1.0f,  0.0f,  0.0f }, // D
+                {  0.0f,  1.0f,  0.0f }, // E
+                {  0.0f, -1.0f,  0.0f }, // F
+            };
+        
+            // Overal color of white
+            glColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+            glBegin( GL_QUADS );
+        
+            // 6 Faces
+            int index_iterator = 0;
+            for( int i = 0; i < 6; i++ )
+            {
+                // Per primitive normals
+                glNormal3fv( normal[i] );
+                for( int j = 0; j < 4; j++ )
+                {
+        	        // Indexed vertecies
+        	        int index = vertex_index[index_iterator++];
+                        glVertex3fv( vertex[index] );
+                }
+            }
+            glEnd();
+        }
+        
+        GLuint makeCube( void )
+        {
+            GLuint obj = glGenLists( 1 );
+            glNewList( obj, GL_COMPILE );
+            drawCube();
+            glEndList();
+            return obj;
+        }
+		    
+
+    private:
+        float _angle;
+        bool _initialized;
+		GLuint _cube;
+		float _x,_y,_z;
+		float _xi, _yi, _zi;
+};
+#endif

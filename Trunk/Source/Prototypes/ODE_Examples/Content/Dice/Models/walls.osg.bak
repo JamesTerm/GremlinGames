@@ -1,0 +1,126 @@
+Geode {
+  DataVariance DYNAMIC
+  nodeMask 0xffffffff
+  cullingActive TRUE
+  StateSet {
+    DataVariance STATIC
+    rendering_hint DEFAULT_BIN
+    renderBinMode INHERIT
+    GL_CULL_FACE ON
+    textureUnit 0 {
+      GL_TEXTURE_2D ON
+      Texture2D {
+        DataVariance STATIC
+        file "cork.jpg"
+        wrap_s CLAMP
+        wrap_t CLAMP
+        wrap_r CLAMP
+        min_filter LINEAR_MIPMAP_LINEAR
+        mag_filter LINEAR
+        maxAnisotropy 1
+        borderColor 0 0 0 0
+        borderWidth 0
+        useHardwareMipMapGeneration TRUE
+        unRefImageDataAfterApply FALSE
+        internalFormatMode USE_IMAGE_DATA_FORMAT
+      }
+    }
+  }
+  num_drawables 1
+  Geometry {
+    DataVariance DYNAMIC
+    useDisplayList TRUE
+    useVertexBufferObjects FALSE
+    PrimitiveSets 1
+    {
+      DrawArrays QUADS 0 24
+    }
+    VertexArray Vec3Array 24
+    {
+      40 40 40
+      40 -40 40
+      -40 -40 40
+      -40 40 40
+      40 40 -40
+      40 -40 -40
+      40 -40 40
+      40 40 40
+      -40 40 -40
+      -40 -40 -40
+      40 -40 -40
+      40 40 -40
+      -40 40 40
+      -40 -40 40
+      -40 -40 -40
+      -40 40 -40
+      -40 40 -40
+      40 40 -40
+      40 40 40
+      -40 40 40
+      40 -40 40
+      40 -40 -40
+      -40 -40 -40
+      -40 -40 40
+    }
+    NormalBinding PER_VERTEX
+    NormalArray Vec3Array 24
+    {
+      0 0 -1
+      0 0 -1
+      0 0 -1
+      0 0 -1
+      -1 0 0
+      -1 0 0
+      -1 0 0
+      -1 0 0
+      0 0 1
+      0 0 1
+      0 0 1
+      0 0 1
+      1 0 0
+      1 0 0
+      1 0 0
+      1 0 0
+      0 -1 0
+      0 -1 0
+      0 -1 0
+      0 -1 0
+      0 1 0
+      0 1 0
+      0 1 0
+      0 1 0
+    }
+    ColorBinding OVERALL
+    ColorArray Vec4Array 1
+    {
+      1 1 1 1
+    }
+    TexCoordArray 0 Vec2Array 24
+    {
+      1 1
+      1 0
+      0 0
+      0 1
+      1 1
+      1 0
+      0 0
+      0 1
+      1 1
+      1 0
+      0 0
+      0 1
+      1 1
+      1 0
+      0 0
+      0 1
+      1 1
+      1 0
+      0 0
+      0 1
+      1 1
+      1 0
+      0 0
+      0 1
+    }
+  }
+}

@@ -1,0 +1,30 @@
+D:\Gremlin Games\stable_bin_VS9\Lanucher.exe
+D:\Gremlin Games\stable_bin_VS9\Lanucher.pdb
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\ResolveAssemblyReference.cache
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Window1.baml
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Window1.g.cs
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\App.g.cs
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher_MarkupCompile.cache
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.g.resources
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.Properties.Resources.resources
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.csproj.GenerateResource.Cache
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.exe
+D:\Gremlin Games\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.pdb
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.exe
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.pdb
+C:\Users\Troy\Desktop\GremlinGames\stable_bin_VS9\Lanucher.exe
+C:\Users\Troy\Desktop\GremlinGames\stable_bin_VS9\Lanucher.pdb
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Window1.baml
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Window1.g.cs
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\App.g.cs
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher_MarkupCompile.cache
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.g.resources
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Lanucher.csproj.GenerateResource.Cache
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Login.baml
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Login.g.cs
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\Launcher.Properties.Resources.resources
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\UpdateScreen.baml
+C:\Users\Troy\Desktop\GremlinGames\Source\VIP_Demo_Launcher\Lanucher\obj\Release\UpdateScreen.g.cs
+C:\Users\Troy\Desktop\GremlinGames\release_bin\Lanucher.exe
+C:\Users\Troy\Desktop\GremlinGames\release_bin\Lanucher.pdb

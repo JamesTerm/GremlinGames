@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.10"
+	Name="osgSrc_Make"
+	ProjectGUID="{4A0569F8-B4CF-454D-821B-04A93E7C6630}"
+	Keyword="MakeFileProj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
+			ConfigurationType="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake -nologo -e -f osgSrc_Make.mak build-$(ConfigurationName)"
+				ReBuildCommandLine="nmake -nologo -e -f osgSrc_Make.mak rebuild-$(ConfigurationName)"
+				CleanCommandLine="nmake -nologo -e -f osgSrc_Make.mak clean-$(ConfigurationName)"
+				Output="osgSrc"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
+			ConfigurationType="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake -nologo -e -f osgSrc_Make.mak build-$(ConfigurationName)"
+				ReBuildCommandLine="nmake -nologo -e -f osgSrc_Make.mak rebuild-$(ConfigurationName)"
+				CleanCommandLine="nmake -nologo -e -f osgSrc_Make.mak clean-$(ConfigurationName)"
+				Output="osgSrc"/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<File
+			RelativePath=".\osgSrc_Make.mak">
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

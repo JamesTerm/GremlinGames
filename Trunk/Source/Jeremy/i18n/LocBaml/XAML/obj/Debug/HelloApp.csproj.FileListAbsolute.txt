@@ -1,0 +1,12 @@
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\bin\Debug\HelloApp.exe
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\bin\Debug\HelloApp.pdb
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\bin\Debug\en-US\HelloApp.resources.dll
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\ResolveAssemblyReference.cache
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\Window1.baml
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\Window1.g.cs
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\app.g.cs
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\HelloApp_MarkupCompile.cache
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\HelloApp.g.en-US.resources
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\en-US\HelloApp.resources.dll
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\HelloApp.exe
+C:\GG\Source\Jeremy\i18n\LocBaml\XAML\obj\Debug\HelloApp.pdb

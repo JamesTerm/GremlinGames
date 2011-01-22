@@ -1,0 +1,87 @@
+/*!	\page  Phase_1A_page	Phase 1A
+
+When the player connects, after loading, ask the script file for a ship and initial
+Position/Attitude.  Pop that in for existing players as well.  Part of connecting
+is getting the list of the other player ships in the scene.  We also need an epoch
+time so all of the LWS files are playing at the same point across the clients.
+Trackball control around YOUR ship.
+
+
+\section sec_Iter1A-a	Iteration 1A - a
+After loading initial scripts, We get start the timer and send an epoch message.
+Multiple clients should connect and see the same place in the LWS scene.
+
+The key class in this is the SynchronizedTimer class, which has an epoch.
+ServerManager owns it on the Server side (the same timer is shared with the AI_Client), 
+and gameClientRunner owns it in the Client, but UI_GameClient::GetSyncTimerEpoch() gets the
+message and sets the timer's epoch.
+
+** Completed in Build 370.
+
+
+
+\section sec_Iter1A-b	\ref Iteration_1Ab_page
+Before sending the epoch message to the Client, get the Player's Entity (Ship) from LUA
+along with its PosAtt.  Server waits for the Client to send a message saying it is done and ready
+to go, THEN the Server sends the epoch.
+
+** Completed in Build 374.
+
+
+
+\section sec_Iter1A-c	Iteration 1A - c - Lua Defines New Player Ships & PosAtt
+When the first player has asked for his ship, place it in a Table in LUA so that it is
+in the EXISTING list for the next player.  The 2nd Player gets a different ship, the original
+Player's ship, and THEN will get the offset EPOCH.
+
+> Server asks LUA for the ship with an index
+> LUA checks the player table, returns a ship, places it in the existing ships table
+
+** Completed in Build 431.
+
+
+
+\section sec_Iter1A-d	Iteration 1A - d - Existing Players See New Players Come In
+When the 2nd Player pops in, the first player needs to be able to see that ship pop in.
+That means he needs to get a message saying that the ship has loaded.  This should happen 
+on a seperate thread, and the 2nd Player does not get the OK to start (with an initial position/orientation)
+until all of the existing players (the first player) returns that it has loaded ok.
+
+a **WRONG! Deleted**
+b Server Sends Messages to all existing Players about a new Player coming in (when it sends players ship)
+	keep a list of sent messages so we know we are getting a return.
+c Existing Client receives message to create the new ship and spawns a thread to load
+d Existing client keeps spinnging with that thread in background, when done, sends message
+	back to the server saying it has loaded the ship, but does not place it in the scene yet
+e Server waits until all of them are back to send epoch to Player, and message to everyone else to
+	place the new player in their scene
+f All Clients (but the new Client) hear the new ship message place that ship in the real scene(s)
+	** The new client gets the epoch as it does now.
+
+** Completed in Build 379.
+
+
+
+\section sec_Iter1A-e	Iteration 1A - e - Existing Players see leaving players leave
+Watch for a player leaving.  The other player's see his ship dissappear.
+
+> Server sees a disconnect, tells LUA and removes from its own lists
+> Server broadcasts the leave to all remaining clients
+> Remaining Clients remove the Entity3D from their list
+> Entity3D removes the ActorParents from their scenes
+
+
+\section sec_Iter1A-f	Iteration 1A - f - How Server exists after all players leave
+Allow Flags for the Server when last player leaves.  Quit, Reset Timer, Pause Timer, Continual Timer.
+Allow for a nice Quit when the server is running (if needed) to close w/o error.
+
+> Provide a command line option for Fringe.Server
+> ServerManager gets the flag in its constructor, knowing how to handle the last leaving UI Client
+> ServerManager has a function to know what to do with the Timer and epoch, may reset its epoch
+> Server Manager displays what is happening to the console, allows a quit cut-in to exit cleanly at any time.
+> Server BROADCASTS a message saying it is going down (perhaps same message as RakNet?
+> Watch Client to make sure bad disconnects and good disconnects notify user before exiting (on console)
+
+
+
+*/

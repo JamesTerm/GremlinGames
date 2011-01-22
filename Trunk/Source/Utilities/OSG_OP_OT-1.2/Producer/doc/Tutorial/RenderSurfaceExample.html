@@ -1,0 +1,275 @@
+<! Keep this here for posterity, but it will be removed as the first example>
+<! in the tutorial>
+
+<h3><a name="Render_Surface_example"></a>RenderSurface</h3>
+
+  The first example provides the means for creating a surface for 3D rendering. 
+  &nbsp;In this
+example, a small C++ class called MyGraphics will provide a simple
+mechanism for initializing some OpenGL state and using OpenGL to render
+the famous OpenGL teapot.<br>
+<br>
+<blockquote><tt></tt></blockquote>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote><font color="#33ff33"><tt><br>
+        </tt><font color="#33ff33"><tt><font size="+1"
+ color="#000000">//C++ source file - Open Producer - Copyright (C) 2002
+Don Burns<font size="+1" color="#000000"><br>
+//Distributed under the terms of the GNU LIBRARY GENERAL PUBLIC LICENSE
+(LGPL)<br>
+//as published by the Free Software Foundation.<br>
+        <br>
+// Simple example of use of Producer::RenderSurface<br>
+// The MyGraphics class is a simple sample of how one would implement<br>
+// graphics drawing with Producer::RenderSurface<br>
+        <br>
+#include &lt;Producer/RenderSurface&gt;<br>
+#include "MyGraphics"<br>
+        <br>
+int main(int argc, char **argv )<br>
+{<br>
+&nbsp;&nbsp;&nbsp; // Declare a RenderSurface<br>
+&nbsp;&nbsp;&nbsp; Producer::RenderSurface rs;<br>
+        <br>
+&nbsp;&nbsp;&nbsp; // Optional.&nbsp; Set the window size.<br>
+&nbsp;&nbsp;&nbsp; // Arguments are x, y, width, height<br>
+&nbsp;&nbsp;&nbsp; // If this call is not made, the RenderSurface<br>
+&nbsp;&nbsp;&nbsp; // will occupy the entire screen with no border<br>
+&nbsp;&nbsp;&nbsp; rs.setWindowRect( 100, 100, 640, 480 );<br>
+&nbsp;&nbsp;&nbsp; // Give the window a name in the border<br>
+&nbsp;&nbsp;&nbsp; rs.setWindowName( "Producer Example using Render
+Surface" );<br>
+        <br>
+&nbsp;&nbsp;&nbsp; // required.&nbsp; This creates the window and<br>
+&nbsp;&nbsp;&nbsp; // sets up the graphics context.</tt></font><tt><font size="+1" color="#000000"> <font color="#000000" size="+1"><br>
+&nbsp;&nbsp;&nbsp; rs.realize();<br>
+        <br>
+&nbsp;&nbsp;&nbsp; // Add your own rendering code.<br>
+&nbsp;&nbsp;&nbsp; MyGraphics gfx(rs);<br>
+&nbsp;&nbsp;&nbsp; gfx.init();<br>
+        <br>
+&nbsp;&nbsp;&nbsp; while( true )<br>
+&nbsp;&nbsp;&nbsp; {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // If possible,
+RenderSurface will synchronize<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // the application run-time
+to the vertical<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // retrace signal<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rs.sync();<br>
+        <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Call your own draw routine<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gfx.draw(); <br>
+        <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Swap Buffers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rs.swapBuffers();<br>
+&nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; return 0;<br>
+}<font size="+1" color="#000000"> </font></tt> <br>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div align="center"><b><font face="Helvetica, Arial, sans-serif"
+ size="-1">Code example 1 - Simple Render Surface<br>
+</b></div>
+<h4>Explanation of the code</h4>
+<font size="+1"><tt></tt><br>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote><font size="+1"><tt><br>
+#include &lt;Producer/RenderSurface&gt;</tt><br>
+        <tt>#include "MyGraphics"<br>
+        </tt><br>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+</table>
+<blockquote><font size="+1"><br>
+  </blockquote>
+Note that Producer uses the
+convention of standard C++ by omitting the suffix of the header files.
+&nbsp;Producer/RenderSurface is the include file for the RenderSurface
+class. &nbsp;MyGraphics is a local class that is simply used for
+example. &nbsp;It has little bearing on the functionality of
+RenderSurface although it does access the width() and height() methods
+of RenderSurface for determining the width and height of the window.
+&nbsp; Two methods in MyGraphics are called in the example, init() which
+initializes graphics state and draw() which draws the famous OpenGL
+teapot.<br>
+<br>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote>
+        <blockquote><font size="+1"><tt>int main(int argc, char **argv )</tt><br>
+          <font size="+1"><tt>{</tt><br>
+          <font size="+1"><tt>&nbsp;&nbsp;&nbsp; // Declare a
+RenderSurface</tt><br>
+          <font size="+1"><tt>&nbsp;&nbsp;&nbsp;
+Producer::RenderSurface rs;</tt><br>
+        </blockquote>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+RendersSurface, like all Open
+Producer classes is namespace protected by the Producer namespace.
+&nbsp;Classess are allowed to be declared on the stack as demonstrated
+in this example, but the usual care should be taken when doing this.<br>
+<br>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote>
+        <blockquote><font size="+1"><tt>// Optional.&nbsp; Set the
+window size</tt><br>
+          <font size="+1"><tt>// Arguments are x, y, width, height</tt><br>
+          <font size="+1"><tt>// If this call is not made, the
+RenderSurface</tt><br>
+          <font size="+1"><tt>// will occupy the entire screen with no
+border</tt><br>
+          <font size="+1"><tt>rs.setWindowRect( 100, 100, 640, 480 );</tt><br>
+          <br>
+          <font size="+1"><tt>// Give the window a name in the border</tt><font
+ size="+1"><tt><br>
+rs.setWindowName( "Producer Example using Render Surface" );</tt><br>
+        </blockquote>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+Two optional methods of <font
+ size="+1"><tt><b>RenderSurface</b></tt> <font
+ face="Helvetica, Arial, sans-serif">are invoked here. <b><font
+ size="+1"><tt>&nbsp;setWindowRect()</tt></b> <font
+ face="Helvetica, Arial, sans-serif">provides the screen <b>x, y</b> <font
+ face="Helvetica, Arial, sans-serif">coordinates of the lower left
+corner of the window and its <b>width</b> <font
+ face="Helvetica, Arial, sans-serif">and <b>height</b> <font
+ face="Helvetica, Arial, sans-serif">respectively. &nbsp;<b><font
+ size="+1"><tt>setWindowName()</tt></b><font
+ face="Helvetica, Arial, sans-serif"> provides the window with a name
+which will be displayed in the border. &nbsp;As the comments indicate,
+if setWindowRect() is not called, the window will occupy the entire
+screen, as as a borderless window. &nbsp;<br>
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote>
+        <blockquote><tt><font size="+1">// required.&nbsp; This creates
+the window and<br>
+// sets up the graphics context.<br>
+rs.realize();</tt><br>
+        </blockquote>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <b><font size="+1"><tt>realize()</tt></font></b> <font
+ face="Helvetica, Arial, sans-serif">method creates the window and sets
+up the OpenGL graphics rendering context. &nbsp;It is important to make
+this call before any calls are made to OpenGL as there will be no valid
+context before this. &nbsp;However, much of the configuration of the
+RenderSurface is only available before it is realized. &nbsp;Once
+realized certain configuration parameters (such as buffer quality
+attributes) are not configurable. &nbsp;A complete list of which methods
+are meaningful before realization and are ignored after realization is
+given in the reference page. <br>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote>
+        <blockquote><font size="+1"><tt>// Add your own rendering code.</tt><br>
+          <font size="+1"><tt>MyGraphics gfx(rs);</tt><br>
+          <font size="+1"><tt>gfx.init();</tt><br>
+        </blockquote>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+This is code that is added by
+the user for graphics rendering and is here for example.<br>
+<br>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"
+ bgcolor="#cccccc">
+  <tbody>
+    <tr>
+      <td valign="top" bgcolor="#cccccc">
+      <blockquote>
+        <blockquote>
+          <blockquote><font size="+1"><tt>while( true )</tt><br>
+            <font size="+1"><tt>{</tt><br>
+            <blockquote><font size="+1"><tt>// If possible,
+RenderSurface will synchronize</tt><br>
+              <font size="+1"><tt>// the application run-time to the
+vertical</tt><br>
+              <font size="+1"><tt>// retrace signal</tt><br>
+              <font size="+1"><tt>rs.sync();</tt><br>
+              <br>
+              <font size="+1"><tt>// Call your own draw routine</tt><br>
+              <font size="+1"><tt>gfx.draw();</tt><br>
+              <br>
+              <font size="+1"><tt>// Swap Buffers</tt><br>
+              <font size="+1"><tt>rs.swapBuffers();</tt><br>
+            </blockquote>
+            <font size="+1"><tt>}</tt><br>
+          </blockquote>
+        </blockquote>
+      </blockquote>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Note the very important point
+that the control of the main loop is given to the programmer.
+&nbsp;There is no "mainLoop()" method in Producer, where the programmer
+must relinquish control over the run time and wait for the system to
+call his callbacks. &nbsp;It is therefore up to the programmer to
+provide the main loop.<br>
+<br>
+The loop begins with a synchronization (rs.sync()). &nbsp;Some
+implementations will provide a method of synchronizing the application
+with the vertical retrace signal of the graphics subsystem. &nbsp;The
+advantages of doing this in a real-time application are discussed in a
+separate section. &nbsp;This is, however, optional and may be left out.
+&nbsp;Without it, the application will race ahead of the graphics and
+will be throttled only by a very low level FIFO. &nbsp;See
+"Synchronizing your Application to the Graphics Subsystem".<br>
+<br>
+The user's implementation of graphics rendering occurs in gfx.draw().
+&nbsp;<br>
+<br>
+All rendering in Producer will assume double frame buffers. &nbsp;The
+call to swapBuffers will delimit the end of the graphics frame as far as
+the application is concerned.<br>

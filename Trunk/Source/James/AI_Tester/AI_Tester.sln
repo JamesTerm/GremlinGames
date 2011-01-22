@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AI_Tester", "AI_Tester\AI_Tester.vcproj", "{48A6A100-F706-41AB-BD9D-FEF52AF68F92}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1FA55F58-2528-463F-BB30-F905A10FC310} = {1FA55F58-2528-463F-BB30-F905A10FC310}
+		{2FA55F58-2528-463F-BB30-F905A10FC310} = {2FA55F58-2528-463F-BB30-F905A10FC310}
+		{3FA55F58-2528-463F-BB30-F905A10FC310} = {3FA55F58-2528-463F-BB30-F905A10FC310}
+		{CFA55F58-2528-463F-BB30-F905A10FC310} = {CFA55F58-2528-463F-BB30-F905A10FC310}
+		{C9B0FCE3-0621-4851-921F-A69E0A0A84F9} = {C9B0FCE3-0621-4851-921F-A69E0A0A84F9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG_Framework.UI", "..\..\GG_Framework\UI\GG_Framework.UI VS9.vcproj", "{CFA55F58-2528-463F-BB30-F905A10FC310}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1FA55F58-2528-463F-BB30-F905A10FC310} = {1FA55F58-2528-463F-BB30-F905A10FC310}
+		{2FA55F58-2528-463F-BB30-F905A10FC310} = {2FA55F58-2528-463F-BB30-F905A10FC310}
+		{3FA55F58-2528-463F-BB30-F905A10FC310} = {3FA55F58-2528-463F-BB30-F905A10FC310}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG_Framework.Base", "..\..\GG_Framework\Base\GG_Framework.Base VS9.vcproj", "{1FA55F58-2528-463F-BB30-F905A10FC310}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG_Framework.UI.OSG", "..\..\GG_Framework\UI\OSG\GG_Framework.UI.OSG VS9.vcproj", "{3FA55F58-2528-463F-BB30-F905A10FC310}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1FA55F58-2528-463F-BB30-F905A10FC310} = {1FA55F58-2528-463F-BB30-F905A10FC310}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG_Framework.UI.Audio", "..\..\GG_Framework\UI\Audio\GG_Framework.UI.Audio VS9.vcproj", "{2FA55F58-2528-463F-BB30-F905A10FC310}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1FA55F58-2528-463F-BB30-F905A10FC310} = {1FA55F58-2528-463F-BB30-F905A10FC310}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileSelectionLib", "..\Common\FileSelectionLib\FileSelectionLib.vcproj", "{C9B0FCE3-0621-4851-921F-A69E0A0A84F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{48A6A100-F706-41AB-BD9D-FEF52AF68F92}.Debug|Win32.ActiveCfg = Debug|Win32
+		{48A6A100-F706-41AB-BD9D-FEF52AF68F92}.Debug|Win32.Build.0 = Debug|Win32
+		{48A6A100-F706-41AB-BD9D-FEF52AF68F92}.Release|Win32.ActiveCfg = Release|Win32
+		{48A6A100-F706-41AB-BD9D-FEF52AF68F92}.Release|Win32.Build.0 = Release|Win32
+		{CFA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CFA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.Build.0 = Debug|Win32
+		{CFA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.ActiveCfg = Release|Win32
+		{CFA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.Build.0 = Release|Win32
+		{1FA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1FA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.Build.0 = Debug|Win32
+		{1FA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.ActiveCfg = Release|Win32
+		{1FA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.Build.0 = Release|Win32
+		{3FA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3FA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.Build.0 = Debug|Win32
+		{3FA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.ActiveCfg = Release|Win32
+		{3FA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.Build.0 = Release|Win32
+		{2FA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2FA55F58-2528-463F-BB30-F905A10FC310}.Debug|Win32.Build.0 = Debug|Win32
+		{2FA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.ActiveCfg = Release|Win32
+		{2FA55F58-2528-463F-BB30-F905A10FC310}.Release|Win32.Build.0 = Release|Win32
+		{C9B0FCE3-0621-4851-921F-A69E0A0A84F9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C9B0FCE3-0621-4851-921F-A69E0A0A84F9}.Debug|Win32.Build.0 = Debug|Win32
+		{C9B0FCE3-0621-4851-921F-A69E0A0A84F9}.Release|Win32.ActiveCfg = Release|Win32
+		{C9B0FCE3-0621-4851-921F-A69E0A0A84F9}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

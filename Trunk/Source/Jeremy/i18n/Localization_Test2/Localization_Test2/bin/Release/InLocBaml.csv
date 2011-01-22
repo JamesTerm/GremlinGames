@@ -1,0 +1,5 @@
+Localization_Test2.g.resources:window1.baml,Window_1:Localization_Test2.Window1.$Content,None,TRUE,TRUE,,#Grid_1;
+Localization_Test2.g.resources:window1.baml,Window_1:System.Windows.Window.Title,Title,TRUE,TRUE,,Window1TRANSLATED
+Localization_Test2.g.resources:window1.baml,label1:System.Windows.Controls.Label.$Content,Label,TRUE,TRUE,,This is a label.TRANSLATED
+Localization_Test2.g.resources:window1.baml,button1:System.Windows.Controls.Button.$Content,Button,TRUE,TRUE,,HelloTRANSLATED
+Localization_Test2.g.resources:window1.baml,checkBox1:System.Windows.Controls.CheckBox.$Content,CheckBox,TRUE,TRUE,,Check this for fun.TRANSLATED

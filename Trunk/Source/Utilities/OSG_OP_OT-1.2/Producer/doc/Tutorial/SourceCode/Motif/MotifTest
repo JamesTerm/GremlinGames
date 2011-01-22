@@ -1,0 +1,9 @@
+*background:    gray60
+MotifTest*fileCascade.labelString:	File
+MotifTest*editCascade.labelString:	Edit
+MotifTest*utilsCascade.labelString:	Utils
+MotifTest*helpCascade.labelString:	Help
+MotifTest*newButton.labelString:	New
+MotifTest*openButton.labelString:	Open
+MotifTest*closeButton.labelString:	Close
+MotifTest*quitButton.labelString:	Quit

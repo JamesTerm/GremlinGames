@@ -1,0 +1,26 @@
+/** \page BestPractices	Best Practices
+
+This page is dedicated to tracking items that could be considered as best practices by the group.  I am not 
+sure these will be considered as coding standards, or even that perhaps we should have one of these for each person.
+I want to try to avoid just writing things because they sounded like a good idea from someone else, but just include
+things in here that have actually helped us individually.  
+
+For the most part, I want to include items in here that are based on experiences we have had debugging.  After
+working through a sticky problem, ask yourself the question:  "What could I have done to make this a lot easier 
+to debug, and/or make it so I would not have had the problem at all?" 
+
+Hopefuly, just writing it down will keep the rule in our heads, but we may need to review it occasionally.  We might
+also want to eventually have some code review or make it more of a standard for new programmers.
+
+
+\section Rules Rules
+- If you find a bug that was either due to a scripting and content error, OR was due to some issue not directly
+	tied to the code wheree the error was resolved, and there was not indication in the user output of the error,
+	once you find the problem, add an ASSERT_MSG or some other indicator that would show the problem in the output.
+	It would be good to test with the error still in place to make sure the error comes up properly.
+	
+- If you override a virtual function, always call __super:: rather than naming the base class explicitly.  Also,
+	when overriding a virtual function, be sure to always call the __super:: version, or at least provide a note
+	as to why you didn't.
+
+*/

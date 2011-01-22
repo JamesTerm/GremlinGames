@@ -1,0 +1,44 @@
+/*!	\page  Iteration_1Ab_page	Iteration 1A - b
+
+Before sending the epoch message to the Client, get the Player's Entity (Ship) from LUA
+along with its PosAtt.  Server waits for the Client to send a message saying it is done and ready
+to go, THEN the Server sends the epoch.
+
+Remove the existing ships.  After Connecting and getting the ornamentals and existing 
+ships(none), before the epoch message.  Server is the Logic::ServerManager class,
+Client is the Logic::GamerServer class.
+
+> Server asks LUA for a new Ship (with a LUA Function, before the other stuff, might FAIL
+  Like if there were too many players).  Also get the starting position and attitude.
+	[ Logic::ServerManager::PeerConnected() calls GetPlayersEntity() which returns NULL on
+	a failure, and sends the packet ID_ConnectPermissionDenied.  Clients hear it and fail
+	in their load.  ThreadedClientGameLoader::run() posts an error message, and the LogoSceneRunner
+	posts it on the spinning logo.]
+	
+	[ Scripting::Script::CallFunction() needs to be able to accept a LUA Table, and it does so 
+		by taking an Event1<Script*>* as the parameter and fires that event, before popping the 
+		table off the LUA stack., ServerManager::GetPlayersEntity() calls the scripting
+		function with a local class, PlayerEntity_Handler,  that works with the event.]
+		
+	[ Adding PosAtt to TransmittedEntity ]
+
+> Server Sends the Ship Description (TransmittedClient to the Client)
+  :: Server does NOT start the timer yet!, It just continues in its regular loop
+	[ Logic::ServerManager::PeerConnected() sends it ]
+
+> Client Receives ship description and builds it, setting it as the VPR
+	[ UI_GameClient::LoadInitialGameData() calls  UI_GameClient::GetOwnEntity(),
+		Entity3D knows about its Actors (ActorParent) ]
+
+> Client sends message back to the Server saying it loaded OK
+	[ UI_GameClient::LoadInitialGameData() ]
+	
+> Server receives the message saying that the Client is ready to go, 
+  THEN Server sends the Epoch message and starts its timer
+	[ overriden Network::ServerManager::ShouldRebroadcastMessage() catches message and calls
+		Network::ServerManager::PeerFinishedConnect() ]
+		
+> THEN Client waits for the epoch, sets it and is done with loading
+	[ UI_GameClient::GetSyncTimerEpoch() ]
+
+*/

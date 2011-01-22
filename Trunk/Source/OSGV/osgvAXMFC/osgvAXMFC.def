@@ -1,0 +1,9 @@
+; osgvAXMFC.def : Declares the module parameters.
+
+LIBRARY      "osgvAXMFC.OCX"
+
+EXPORTS
+	DllCanUnloadNow     PRIVATE
+	DllGetClassObject   PRIVATE
+	DllRegisterServer   PRIVATE
+	DllUnregisterServer PRIVATE

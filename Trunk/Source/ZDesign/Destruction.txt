@@ -1,0 +1,95 @@
+/*!	\page  Destruction_txt Destruction
+
+There are a couple of parts of Destruction.  First we need to assign hit points, and count damage as a part of advanced collision detection (Case 60).  When the hitpoints reach 0 (we will not worry about damaged areas for now), the ship becomes "Destroyed".
+
+> Code fires a SPAWN(false) (see below)
+> Code fires a "DESTROYED" or "SHOT_DOWN" event based on the size of the last collision
+> Lua provides explosion force to be applied as an external force and duration.  (Case 60 again)
+> LUA needs to provide a Non-pilotable entity that represents the destruction and fire events on that
+	> When the destruction happens, switch to the non-piloted ship and hide the main entity
+> OSGV script can fire the events it needs, work with Justin on that part (Case 30).
+> LUA Defines the time before re-spawn, eventually until the ship has permission to respawn
+> During the destruction, the POV should spin around the ship as it is dying until the happens.
+> The burning ship should keep flying forward and may collide with another ship, attract missiles, etc.
+> We need to leave the burning mass in the scene even after the player respawns if it is still exploding
+	> Perhaps this needs to be a seperate entity that is hidden until destruction, and hide the original ship
+> When is done, we will re-spawn at the original placement (or parented to a ship, which means we have to watch for it being destroyed, what happens when the parent ship is destroyed?  Auto launch?, Blow up with it?)
+> Code fires a SPAWN(true).  OSGV needs to replace While SPAWN with Toggle SPAWN, so these continual motions can turn on and off properly when not spawned.
+
+
+For this first iteration, we will not worry about the associated external forces, just destruction scene and respawn
+
+- LUA defines:
+	- Destruction OSGV file
+	- Time before respawn
+	- Hit points (Mass times velocity? - We will not worry about defining hit points yet)
+	
+- On Creation
+	- Create and hide and the destruction OSGV as an actual entity
+		* A DestructionProxyEntity, Mass is the same as original
+		* Use a negative # for hit points so it never gets destroyed AGAIN
+		* Cannot be piloted (Turn off HUD for non-pilotable ships), but we can "switch to it"
+			* We will eventually make the spin around a space entity thing when you switch to it, like a track ball controller?
+	- Fire SPAWN(true)
+	
+- On destruction
+	- Show the destructed ship
+	- Set the destructed ship's position, linear velocity, rotational velocity
+	- Fire "DESTRUCT" or "SHOT_DOWN" on the ship being destroyed based on what collided
+	- {Fire the external forces from the explosion later)
+	- Hide the original
+	- Fire SPAWN(false)
+	- start a timer until respawn
+	- If controlling the original
+		- switch to the destructed
+		- Get the mouse position working right?
+	- I need to provide a "HIDE" event from the destroyed ship so it can go away when done
+		(What happens if original ship blows up AGAIN bofore original is done?  Careful of second HIDE?)
+	
+- When the original ship's spawn timer is up
+	- Show it
+	- Fire SPAWN(true)
+	- Reset it
+	- If controlled entity is the destroyed hulk entity, switch control back to the respawned ship
+	
+	
+\subsec Iterations_Sec Iterations
+
+- Get the explosion working (For now, keep control of your original ship, place in auto-pilot and hide)
+	* Build an ugly OSGV scene for destruction with one big explosion on DESTROY and SHOT_DOWN and fire delayed HIDE event
+	* ALL of them use the same one, update the LUA scripts for them
+	* Refactor Move stuff into Entity3D (Perhaps make a PhysicsEntity3D) that has the m_physics stuff ?
+	* Build a DestructionProxyEntity class like I did with the CannonRound, does collisions but does not take damage
+	* SpaceEntity builds the Destruction Entity and holds on to a pointer to it like CannonRounds
+	* Make starting Hit points based on the object's Mass
+	* Make a virtual Destroy function?  (bullet rounds handle it properly)
+	* Count the collisions
+	* Build the Destroy function for a basic space entity to do what we just said
+	* Place the DestructionProxy and set its physics to copy the original
+	* Handle hiding and destrution proxy showing
+		* DestructionProxyEntity listens to hide as well, ok to let it hide
+		* OSGV file needs to tell me when to hide (but only when being destroyed)
+		* Provide Hide events for all existing entities
+		* Lock out all of the controls (go ahead and turn controls off for ships not able to be controlled as well)
+			* Look for the non-pilotable stuff and see how we do with it, forcing auto-pilot
+				* Add IsBeingDestroyed()
+			* Turn off the HUD elements when non-piloted or being destroyed
+			* Turn off the reticles and the velocity line when not-pilotable or being destroyed
+		* Override control AND auto-pilot when being destroyed
+	* Get the respawn working
+		* Provide the respawn script parameter
+		* Read the Timer from LUA and hold on to it
+		* Listen for the timer to respawn when destroyed and call respawn
+		* Override SPAWN to turn off auto-pilot if being controlled
+		* Work through existing scripts to use WHILE SPAWN rather than TOGGLE START
+
+
+* Get the view working
+	* Be able to mouse around non-entities (Use the POV chase Cam or simple trackball?)
+	* Make the collision object a SpaceEntity rather than a ThrusterShip
+	* When switching control to the new ship, try to make the camera position the same
+	* Make a little spin around the camera
+	
+* Add the Physics External Forces
+
+*/

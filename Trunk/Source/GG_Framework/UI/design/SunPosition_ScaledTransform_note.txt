@@ -1,0 +1,51 @@
+/*! \page SunPosition_ScaledTransform_note ActorActions: Where to place the Sun? - note
+
+See also \ref ScaledTransform_ViewportReference_note.
+
+Where should be put the light?  There are a couple of potential answers to this, and I am 
+thinking through the pros and cons as I write and come up with a good answer. 
+ 
+1.  Not in a ScaledTransform at all
+If you do this, the light (and the lens flare presumably) has an absolute position in 
+space.  Easy to test.  Lighting on the actual ships in the scene would be "perfect".  
+Unfortunately, the player would be able to zoom right out there and see it, either by 
+flying out there or by zooming away from his ship.  We can only put it so far away without 
+precision errors.  If we did this, and the player zoomed out a bit, the lighting on the 
+planet would seem to shift a bit.  (can you see why?  I will leave that explanation as an 
+excercise for the student ;)  ) 
+ 
+2.  Parented to the ScaledTransform 0  (The starfield, the way it is now)
+Doing this would solve one problem in that the player would never reach it, either by flying 
+to it in his ship or by zooming out.  You still have the problem of the planet not having 
+exactly the right lighting (it may even be worse), and even the lighting on the ships in 
+the scene could be off a bit.  At close ranges it could be ok. 
+ 
+3.  Parented to the Planet's Scaled Transform
+Now the light relative to the planet would always be right.  If the ships were close to the 
+planet, their lighting should be ok too (we might want to play with that and see).   The 
+player could EVENTUALLY fly all the way out there, but it would take a LOOOONG time (and we 
+could perhaps limit it other ways if needed).  We could fix the problem of the player 
+zooming out too far by limiting the amount of zoom and making sure that the light (lens 
+flare) could not be seen from the back (since the camera is always pointing at their ship, 
+if zoomed out to where the camera is past the light, we should always be seeing it from the 
+rear.)  Probably easier just to limit the zoom distance.  The one drawback I can see, is 
+that if you zoomed back far enough to where the sun was just to one edge and the planet was 
+just to the other, the sun may not appear to be as far away as it should be.  Will people 
+notice?  I don't think so, but we should let other people see that don't know better. 
+ 
+So, all in all, when I set you on this task, I was thinking that 2 was the answer, but now 
+I am leaning more towards 3.  Lets go with that and see how she flies.
+
+> After Working on it with James <
+
+We found we are going for two effects, we want the LIGHT to be placed using 3, so the 
+shadowing stays correct relative to the planet, but we want the GLARE effect to 
+follow 2, so that it stays in the same place in the star field.  This solves all of the
+problems!  :)
+
+The GLARE object for the light should never be more than about 70km from the camera 
+position to avoid clipping problems.  It really can be placed close to the camera, because 
+it is parented to the starfield.  
+
+
+*/

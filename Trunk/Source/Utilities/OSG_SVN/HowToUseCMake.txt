@@ -1,0 +1,49 @@
+At this time use Cmake version 2.4.8!
+Install
+gg/Tools/cmake-2.4.8-win32-x86.exe
+
+Run 
+
+1. Drag the Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt onto main window
+2. Change where to build binaries to something like Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32
+3. Hit configure pick your platform compiler (e.g. VS 2008) 
+4  Change some of the settings like so:
+	CMAKE_INSTALL_PREFIX = ....Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/INSTALL
+	EXECUTABLE_OUTPUT_PATH =  ...Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/bin
+5.  Check the Show Advanced Values
+6.  OSG_MSVC_VERSIONED_DLL = off
+7.  OSG_MULTIMONITOR_MULTITHREAD_WIN32_NVIDIA_WORKAROUND = ON  (as some of my machines are crashing)
+-----------Note: turn off all floats as this will enable ships to fly farther away without jitters!--------------------
+8.  OSG_USE_FLOAT_BOUNDINGBOX = off (TODO ensure performance is still good)
+9.  OSG_USE_FLOAT_BOUNDINGSPHERE = off (same here)  The same for the rest of the OSG_USE_FLOAT_*
+10.  Click Configure again
+11.  All the boxes should be grey (you may need to "trick" the mfc one by turning on and off) if not address the red boxes
+    and click configure again
+12.  The Ok button should be enabled... click to generate the project files and solution
+
+
+
+
+In regards to Vs 9.0 I have included highlight90.reg which was found here:
+http://www.mail-archive.com/osg-submissions@lists.openscenegraph.org/msg00683.html
+As well as the other versions of visual studio.  This is a must to read header files!
+
+Highlist90.reg has been included to this folder and can be launched for VS 9.0 to display the header files properly.
+-----------------------------------------------------------------------------------------------
+
+createHighlightRegFiles.pl
+You'll need to install perl
+ActivePerl-5.10.0.1003-MSWin32-x86-285500.msi
+
+
+retrieved from here:
+http://www.mail-archive.com/osg-submissions@lists.openscenegraph.org/msg00683.html
+
+The script should be executed from the VisualStudio directory, as it writes
+output files to the current directory, though that can be changed. It takes the
+base directory of the includes as an argument (../include) and an optional "-p"
+or "--print" argument which will cause it to print the directory and file names
+as it traverses.
+
+I've made a .bat file which will launch it automatically and update the .reg files... it will do it for each platform, so I delete the ones
+we do not use.

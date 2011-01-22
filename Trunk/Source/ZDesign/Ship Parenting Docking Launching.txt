@@ -1,0 +1,152 @@
+/*!	\page  Ship_Parenting_Docking_Launching_txt	Ship Parenting, Docking, Launching
+
+** Note that this dev unit has not yet been implemented **
+
+Ship parenting can be used for several things:
+- Missiles on a ship
+- Ships docked on a parent ship, launch and land
+- SpaceEntities (things that can be hit) like turrets that turn independently
+- Any object that can be jettisoned, like fuel tanks
+
+\section sec_InitNotes Some Initial Design Notes
+- A SpaceEntity can have a parented Entity, offset, and attitude (parent to a NULL in OSGV)
+- If it does, ignore all of the other physics calculations and just use these values directly
+	- We need to listen to positions and set our own positions after the parent sets, do not do anything on our own update
+- We need to have a script parameter for initial position that allows relative parenting
+- Make sure the reset places the ship back with its parent
+- Mass calculations for the parent need to include all of its children
+	- Which means the parent Ship needs a link back to its children and needs to override the mass calculation
+- While parented, the ship should stay in auto-pilot
+- Have an OSGV launch sequence and an OSGV landing sequence, will need it for various NODES
+	and we need to know which of these "Landing/Launch Positions" are already full.
+- We will need to be able to SPAWN ready at the LAUNCH point, or be able to DOCK and move there
+- Some ships spawn at a location as is, some ships spawn docked (particularly fighters)
+
+
+
+\section sec_UseCase Functional Use Cases (and some dynamic design notes)
+- Game Start
+	- LUA Script defines dock nodes for a Ship, and the ship class(es) available [Make ship types flags, make an enum in C++]
+		- Keep a list of them in the Ship, we need to know the ones that are available
+		- Justin says that some bays may be for launching and others for landing
+	- LUA Script contains global start position (as does now), AND Parent
+	- SpaceEntity reads contains parent information
+	- Spawn the ship in that position, locked in "auto-pilot", but auto-pilot is overriden
+		- Request the spawn position from the ship to spawn to
+			- Parent ship fires event DockPointName.SpawnStart
+				- OSGV places the spawn point at the correct position
+				- OSGV can do other stuff too, then fires DockPointName.SpawnComplete
+			- Parent ship marks the point as taken
+			- If rejected by the parent, place at default position in a WAITING for SPAWN mode
+				- While waiting, auto-pilot, not changeable, No HUD?  Shows "WAITING FOR SPAWN"
+		- Have a Dock(bool) function that is called (need to wait to call it?)
+			- When docked, listen to posatt event of parent
+			- When Docked, listen to the parent's DockPointName.LaunchComplete
+				
+- While flying (not docked)
+	- User presses space bar (checks to see if docked, if NOT docked ...)
+		- Determines landing ship (for now just use original ship)
+		- Requests landing position from ship to land on (pass in the ship requesting)
+			- Parent returns false if not visible, or being destroyed, or docked
+			- Parent should keep a queue for spawn/landing permissions over all for each bay?  Of a type?
+				- Rather than returning false all the time, place the ship in the Queue and call back the ship when ready
+				- The ship will return true if wanting to land or spawn and do its thing.
+			- Parent Ship returns the name of a NULL (ships must keep the list and hold on to the request)
+				- OR the parent ship returns NULL, saying there are no available points,
+					- Requesting ship fires event LandRequestDenied
+						- OSGV can play a DENIED sound or other show
+			- Parent Ship fires an event DockPointName.LandRequest
+				- OSGV places the NULL in position and maybe sets up some other flashing lights or whatever
+		- Sets auto-pilot to FOLLOW using the NULL point [Make Follow a NULL and not just an offset]
+		- While flying, can turn auto-pilot OFF [We need to know that auto-pilot is for, if in a LANDING sequence or regular]
+			- Send the parent ship a Cancel Landing Request notification
+				- Parent ship fires own event, DockPointName.CancelLandRequest
+				- Parent Ship opens up the spot
+		- Listen for the parent firing LandRequestCancel (in case it is blown up or bay is damaged)
+		- Stay in auto-pilot until close enough to the collector point (1 m?, based on bound sphere?))
+			- Landing ship needs to track that
+				- set its own Docked to true
+				- Fire LandStart
+				- start listening to Parent's DockingPointName.LandComplete
+				- Fires DockingPointName.LandStart
+					- OSGV can do what it wants
+				- Tell the parent ship to start its landing sequence
+					- Parent ship fires DockingPointName.LandStart
+						- OSGV brings the NULL point to position
+						- OSGV fires DockingPointName.LandComplete when done
+				- On Parent's DockingPointName.LandComplete
+					- Stop listening
+					- Fire own LandComplete
+		- Have a LUA timer that specifies re-ready time for the bay after launch or Parent spawn, Fire a BayReady event
+					
+- On Player ship Destroyed
+	- Request spawn like in the start
+		- Keep looping until accepted, leave the POV HUD where it is
+	- When ships are destroyed, we need to make sure we are not still waiting around for
+		the existing directives to complete.  We cannot change delayed events from OSGV, so 
+		we will need to ignore them, or wait for them all to finish before re-spawning.
+	- If the parent ship is destroyed while at all parented, we will need to destroy the child ship too.
+
+- On AI ship Destroyed
+	- Request spawn like any other ship, will automatically launch on its own LAUNCH_READY event
+
+- Missile Game Start
+	- LUA script for the Ship needs to define each missile and its spawn point
+	- In the game, builds the missiles just like it builds cannon rounds now
+	- Missile starts off docked in its parent position, just like a ship does now
+	
+- Missile Launch
+	- User Presses some button to launch a missile
+		- Cycle through available missiles
+			- If no missile, fire event "MissileEmpty", OSGV can respond
+			- If there is a missile, return it Fire event MissileFire
+				- OSGV can respond
+		- Calls the Launch method on the missile, works just like above
+		- If being destroyed, blow up and eject independently?  (OSGV Parent Destroyed Event?)
+		
+- Re-arm missiles (and other stuff)
+	- When landing or spawn is complete, we can start a RE-ARM phase
+		- Listen for ReArm_Complete
+		- Fire ship's ReArm_Start event
+			- OSGV can respond, Fire ReArm_Complete
+		- Fire parent's DockingPointName.ReArm_Start
+			- OSGV can respond, Fire ReArm_Complete
+		- Deny all requests from destroyed missile to "land" until re-arming
+		- When we do accept, just place missile directly
+			- When MISSILES get an accepted land, they just place themselves at the point, not auto-pilot
+		- Wait there until ALL missiles are back in, and all rearm is complete
+		- Fires a LAUNCH_READY event (and maybe sets a boolean?)
+		
+- While Docked
+	- Force auto-pilot on (perhaps show text "DOCKED")
+	- Override position updates
+	- Listen for parent changes and set own position in the callback using the NULL	
+	- Mass calculations need to list masses of all children	
+	- User presses the SPACE bar to launch (checks to see if docked or not, if docked ...)
+		- Make sure the LAUNCH_READY is true
+		- If not player controlled, just fire launch right away (wait for LAUNCH_READY and launch then)
+		- Fire own event Launch(true)
+			- Show HUD text "LAUNCHING"
+			- OSGV can start whatever special stuff it wants to do while launching your own ship
+		- Fire parent's event, DockPointName.LaunchStart
+			- OSGV hears event and starts a sequence, moving the NULL
+			- When done, OSGV fires event DockPointName.LaunchComplete
+				- That event handler sets the current velocity
+				- Calls DOCK(false)
+				- Turns auto-pilot off? (or uses regular auto-pilot if not being controlled)
+	- Use a different POV center or other camera motion to track the ships in (FUTURE)
+	
+- Mounted hardware (big cannons)
+	- SpaceEntities that can be hit, have their own hitpoints, Docked to a ship at a NULL (have cannons?)
+	- Use RANGE events to move and rotate
+	- Defined in LUA like cannon rounds are now (maybe they work just like missiles, must be re-armed)
+	- Can be ejected (just explode after a time)
+	
+\section sec_Iterations Iterations
+- Spawning on a ship and Launching
+- Landing
+- AI Lands and Launches
+- Destruction and Respawn
+- Missile Launches, Creation, Destruction, and respawn
+- Mounted Hardware (e.g. Ramora Cannons that can turn, pivot, be ejected
+*/

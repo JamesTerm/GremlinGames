@@ -1,0 +1,13 @@
+Workspace Setup
+===============
+The base code for the HELSEEM_Simulator is is used for 2 different applications, the ZEUS_Simulator 
+and the ATL_Simulator.  Bot projects are in the same folder, but are seperate vcproj files.  
+They may share the same resource files, but they will have special implementations of functions
+that are specific to their needs.  I will try to keep the code base as common as possible.
+
+
+Implementation Tasks
+====================
+- (Depends on time) 
+	- Allow driving over the terrain
+	

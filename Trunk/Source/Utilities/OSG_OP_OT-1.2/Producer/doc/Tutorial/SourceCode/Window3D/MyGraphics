@@ -1,0 +1,60 @@
+#ifndef RENDER_SURFACE_EXAMPLE_MYGRAPHICS
+#define RENDER_SURFACE_EXAMPLE_MYGRAPHICS
+
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+#include <Producer/Window3D>
+
+extern void glutSolidTeapot(GLdouble scale);
+
+class MyGraphics {
+    public:
+	    MyGraphics():
+			_initialized(false) 
+		{}
+
+		~MyGraphics() {}
+
+        void init()
+	    {
+			glEnable( GL_DEPTH_TEST );
+			glEnable( GL_LIGHTING );
+			glEnable( GL_LIGHT0 );
+		    glClearColor( 0.2f, 0.2f, 0.4f, 1.0f );
+
+			_initialized = true;
+	    }
+
+		void draw( Producer::Window3D &w3d )
+		{
+		    if( !_initialized ) init();
+
+			// Query the render surface for its width and height
+			glViewport( 0, 0, w3d.width(), w3d.height() );
+			glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+			glMatrixMode( GL_PROJECTION );
+			glLoadIdentity();
+			double aspect_ratio = double(w3d.width())/double(w3d.height());
+			gluPerspective( 45.0, aspect_ratio, 1.0, 100.0 );
+			glMatrixMode( GL_MODELVIEW );
+			glLoadIdentity();
+			glTranslatef( 0, 0, -4.0 );
+
+    	    glPushMatrix();
+    	    glMultMatrixf( w3d.getTrackballMatrix() );
+			// Using the OpenGL teapot
+			glutSolidTeapot(1.0);
+
+			glPopMatrix();
+
+			_angle++;
+		}
+
+    private:
+	    GLUquadricObj *_object;
+		bool _initialized;
+		float _angle;
+
+};
+#endif

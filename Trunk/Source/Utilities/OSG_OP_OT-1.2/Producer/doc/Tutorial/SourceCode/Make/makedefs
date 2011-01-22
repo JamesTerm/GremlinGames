@@ -1,0 +1,65 @@
+SHELL = /bin/sh
+OS := $(shell uname)
+
+## We don't care about architectural distinguishers in the OS
+## such as IRIX64, IRIX32, etc. so we truncate IRIX?? to IRIX
+ifeq ($(findstring IRIX,$(OS)),IRIX)
+OS := IRIX
+endif
+
+## Make CYGWIN_XXXX CYGWIN so it's "Windows cross platform" :)
+ifeq ($(findstring CYGWIN,$(OS)),CYGWIN)
+OS := CYGWIN
+endif
+
+## Make MINGW_XXXX MINGW so it's "Windows cross platform" :)
+ifeq ($(findstring MINGW,$(OS)),MINGW)
+OS := MINGW
+endif
+
+# TOPDIR needs to be redefined for every Makefile
+TOPDIR     ?= ../
+THISDIR    = .
+
+ifeq ($(OS),Linux)
+CXX = g++
+CXXFLAGS = 
+LDFLAGS  = 
+endif
+
+ifeq ($(OS),IRIX)
+CXX = CC
+CXXFLAGS = -n32 -LANG:std 
+LDFLAGS  = -n32 -LANG:std
+endif
+
+ifeq ($(OS),SunOS)
+CXX = CC
+INC = -I/opt/Producer/include
+CXXFLAGS =  
+LDFLAGS  =  -L/opt/Producer/lib
+endif
+
+ifeq ($(OS),Darwin)
+CXX = g++
+CXXFLAGS = -I/usr/X11R6/include
+LDFLAGS  = -L/usr/X11R6/lib
+endif
+
+ifneq ("$(OPENTHREADS_INC_DIR)","")
+CXXFLAGS += -I$(OPENTHREADS_INC_DIR)
+endif
+
+ifneq ("$(OPENTHREADS_LIB_DIR)","")
+LDFLAGS += -L$(OPENTHREADS_LIB_DIR)
+endif
+
+ifneq ("$(PRODUCER_INC_DIR)","")
+CXXFLAGS += -I$(PRODUCER_INC_DIR)
+endif
+
+ifneq ("$(PRODUCER_LIB_DIR)","")
+LDFLAGS += -L$(PRODUCER_LIB_DIR)
+endif
+
+ALLOBJS = $(ALLSRC:.cpp=.o)
