@@ -26,20 +26,6 @@ namespace OSGV
 	};
 }
 
-class OSGV_MainWindow : public GG_Framework::UI::MainWindow
-{
-public:
-	OSGV_MainWindow(bool useAntiAlias, double throttle_fps, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs, GG_Framework::Base::Timer& timer) :
-	  GG_Framework::UI::MainWindow(useUserPrefs, throttle_fps, screenWidth, screenHeight, useUserPrefs, timer) {}
-
-	  virtual void PostRealize()
-	  {
-		  SetFullScreen(true);
-		  SetWindowText("OSGV");
-		  __super::PostRealize();
-	  }
-};
-
 int main(unsigned argc, const char** argv)
 {
 	OSGV::EXE exe;
@@ -52,9 +38,6 @@ int OSGV::EXE::Main(unsigned argc, const char* argv[])
 	char contentDIR[512];
 	_getcwd(contentDIR, 512);
 	printf("Content Directory: %s\n", contentDIR);
-
-	// We always work with OSG single threaded
-	GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW = true;
 
 	// Strip out the flagged and non-flagged options
 	GG_Framework::UI::ViewerApp_ArgumentParser argParser;
@@ -92,13 +75,11 @@ int OSGV::EXE::Main(unsigned argc, const char* argv[])
 
 	// Create a new scope, so all auto-variables will be deleted when they fall out
 	{
+		// Create the singletons, These must be instantiated before the scene manager too - Rick
+		GG_Framework::UI::MainWindow mainWin(argParser.UseAntiAliasing, argParser.MAX_FPS, argParser.RES_WIDTH, argParser.RES_HEIGHT, false);
+
 		// We are going to use this single timer to fire against
 		GG_Framework::UI::OSG::OSG_Timer timer("OSGV Timer Log.csv");
-
-		// Create the singletons, These must be instantiated before the scene manager too - Rick
-		OSGV_MainWindow mainWin(argParser.UseAntiAliasing, argParser.MAX_FPS, argParser.RES_WIDTH, argParser.RES_HEIGHT, false, timer);
-
-		// We can also look for toggling the timer logging
 		mainWin.GetKeyboard_Mouse().AddKeyBindingR(false, "ToggleFrameLog", osgGA::GUIEventAdapter::KEY_F7);
 		timer.Logger.ListenForToggleEvent(mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFrameLog"]);
 
@@ -108,6 +89,22 @@ int OSGV::EXE::Main(unsigned argc, const char* argv[])
 		for (i = 0; i < fileList.size(); ++i)
 		{
 			osg::Group* group = actorScene.AddActorFile(mainWin.GetKeyboard_Mouse().GlobalEventMap, fileList[i].c_str());
+			if (i == 0)
+			{
+				/*
+				// Play with making this node transparent
+				osg::StateSet* state = group->getOrCreateStateSet();
+				state->setMode(GL_BLEND,osg:: StateAttribute::ON| osg::StateAttribute::OVERRIDE); 
+				osg::Material* mat = new osg::Material; 
+				mat->setAlpha(osg::Material::FRONT_AND_BACK, 1.0); 
+				state->setAttributeAndModes(mat,osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE); 
+				osg::BlendFunc* bf = new osg::BlendFunc(osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA ); 
+				state->setAttributeAndModes(bf); state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN); 
+				// state->setMode(GL_LIGHTING, osg::StateAttribute::ON); 
+				*/
+
+				mainGroup = group;
+			}
 		}
 
 		// Create a trackball style manipulator for the main camera
@@ -118,7 +115,8 @@ int OSGV::EXE::Main(unsigned argc, const char* argv[])
 		mainWin.GetMainCamera()->SetCameraManipulator(&trackball);
 		GG_Framework::Base::UserInputEvents& kbm = mainWin.GetKeyboard_Mouse().GlobalEventMap.KBM_Events;
 		kbm.MouseMove.Subscribe(trackball.ehl, trackball, &CenteredTrackball_CamManipulator::OnMouseMove);
-		kbm.KBCB_KeyDnUp.Subscribe(trackball.ehl, trackball, &CenteredTrackball_CamManipulator::KeyPress);
+		kbm.MouseBtnPress.Subscribe(trackball.ehl, trackball, &CenteredTrackball_CamManipulator::OnMouseBtnPress);
+		kbm.MouseBtnRelease.Subscribe(trackball.ehl, trackball, &CenteredTrackball_CamManipulator::OnMouseBtnRelease);
 		mainWin.GetKeyboard_Mouse().AddKeyBindingR(false, "ResetTB", ' ');
 		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ResetTB"].Subscribe(
 			trackball.ehl, trackball, &CenteredTrackball_CamManipulator::ResetTB);
@@ -151,13 +149,25 @@ int OSGV::EXE::Main(unsigned argc, const char* argv[])
 
 		// We can tie the events to Toggle fullscreen
 		mainWin.GetKeyboard_Mouse().AddKeyBindingR(false, "ToggleFullScreen", osgGA::GUIEventAdapter::KEY_F3);
+		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFullScreen"].Subscribe(
+			mainWin.ehl, mainWin, &MainWindow::ToggleFullScreen);
 
 		// Set the scene and realize the camera at full size
-		mainWin.GetMainCamera()->SetSceneNode(actorScene.GetScene());
+		mainWin.GetMainCamera()->SetSceneNode(actorScene.GetScene(), 0.0f);
 		mainWin.Realize();
+		mainWin.SetFullScreen(true);
+		mainWin.SetWindowText("OSGV");
 
 		// Let all of the scene know we are starting
 		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["START"].Fire();
+
+		// Have a frame stamp to run the non-Actor parts
+		osg::ref_ptr<osg::FrameStamp> frameStamp = new osg::FrameStamp;
+		osgUtil::UpdateVisitor update;
+		update.setFrameStamp(frameStamp.get());
+		frameStamp->setSimulationTime(0.0);
+		frameStamp->setFrameNumber(0);
+		actorScene.GetScene()->accept(update);
 
 		// Connect the argParser to the camera, in case it wants to handle stats (I do not know that I like this here)
 		argParser.AttatchCamera(&mainWin, &timer);
@@ -169,6 +179,7 @@ int OSGV::EXE::Main(unsigned argc, const char* argv[])
 		{
 			dTime_s = timer.FireTimer();
 			currTime = timer.GetCurrTime_s();
+			Audio::ISoundSystem::Instance().SystemFrameUpdate();
 		}
 		while(mainWin.Update(currTime, dTime_s));
 
