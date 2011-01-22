@@ -1,0 +1,705 @@
+LWSC
+3
+
+RenderRangeType 0
+FirstFrame 0
+LastFrame 360
+FrameStep 1
+RenderRangeArbitrary 1-60
+PreviewFirstFrame 0
+PreviewLastFrame 360
+PreviewFrameStep 1
+CurrentFrame 86
+FramesPerSecond 30
+
+LoadObjectLayer 1 Objects/TEST BUILD OPBJECTS-NOT FOR FINAL/ENGINE THRUST 001.lwo
+ShowObject 7 3
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+ShadowOptions 7
+
+LoadObjectLayer 2 Objects/TEST BUILD OPBJECTS-NOT FOR FINAL/ENGINE THRUST 001.lwo
+ShowObject 7 3
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  14
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.1 0 0 0 0 0 0 0
+  Key 0 0.30000001 0 0 0 0 0 0 0
+  Key 0 0.5 0 0 0 0 0 0 0
+  Key 0 0.60000002 0 0 0 0 0 0 0
+  Key 0 0.69999999 0 0 0 0 0 0 0
+  Key 0 0.80000001 0 0 0 0 0 0 0
+  Key 0 0.89999998 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Key 0 1.1 0 0 0 0 0 0 0
+  Key 0 1.2 0 0 0 0 0 0 0
+  Key 0 1.3 0 0 0 0 0 0 0
+  Key 0 1.4 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Behaviors 2 2
+}
+Channel 1
+{ Envelope
+  14
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.1 0 0 0 0 0 0 0
+  Key 0 0.30000001 0 0 0 0 0 0 0
+  Key 0 0.5 0 0 0 0 0 0 0
+  Key 0 0.60000002 0 0 0 0 0 0 0
+  Key 0 0.69999999 0 0 0 0 0 0 0
+  Key 0 0.80000001 0 0 0 0 0 0 0
+  Key 0 0.89999998 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Key 0 1.1 0 0 0 0 0 0 0
+  Key 0 1.2 0 0 0 0 0 0 0
+  Key 0 1.3 0 0 0 0 0 0 0
+  Key 0 1.4 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Behaviors 2 2
+}
+Channel 2
+{ Envelope
+  14
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.1 0 0 0 0 0 0 0
+  Key 0 0.30000001 0 0 0 0 0 0 0
+  Key 0 0.5 0 0 0 0 0 0 0
+  Key 0 0.60000002 0 0 0 0 0 0 0
+  Key 0 0.69999999 0 0 0 0 0 0 0
+  Key 0 0.80000001 0 0 0 0 0 0 0
+  Key 0 0.89999998 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Key 0 1.1 0 0 0 0 0 0 0
+  Key 0 1.2 0 0 0 0 0 0 0
+  Key 0 1.3 0 0 0 0 0 0 0
+  Key 0 1.4 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Behaviors 2 2
+}
+Channel 3
+{ Envelope
+  14
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.1 0 0 0 0 0 0 0
+  Key 0 0.30000001 0 0 0 0 0 0 0
+  Key 0 0.5 0 0 0 0 0 0 0
+  Key 0 0.60000002 0 0 0 0 0 0 0
+  Key 0 0.69999999 0 0 0 0 0 0 0
+  Key 0 0.80000001 0 0 0 0 0 0 0
+  Key 0 0.89999998 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Key 0 1.1 0 0 0 0 0 0 0
+  Key 0 1.2 0 0 0 0 0 0 0
+  Key 0 1.3 0 0 0 0 0 0 0
+  Key 0 1.4 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Behaviors 2 2
+}
+Channel 4
+{ Envelope
+  14
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.1 0 0 0 0 0 0 0
+  Key 0 0.30000001 0 0 0 0 0 0 0
+  Key 0 0.5 0 0 0 0 0 0 0
+  Key 0 0.60000002 0 0 0 0 0 0 0
+  Key 0 0.69999999 0 0 0 0 0 0 0
+  Key 0 0.80000001 0 0 0 0 0 0 0
+  Key 0 0.89999998 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Key 0 1.1 0 0 0 0 0 0 0
+  Key 0 1.2 0 0 0 0 0 0 0
+  Key 0 1.3 0 0 0 0 0 0 0
+  Key 0 1.4 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Behaviors 2 2
+}
+Channel 5
+{ Envelope
+  14
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.1 0 0 0 0 0 0 0
+  Key 0 0.30000001 0 0 0 0 0 0 0
+  Key 0 0.5 0 0 0 0 0 0 0
+  Key 0 0.60000002 0 0 0 0 0 0 0
+  Key 0 0.69999999 0 0 0 0 0 0 0
+  Key 0 0.80000001 0 0 0 0 0 0 0
+  Key 0 0.89999998 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Key 0 1.1 0 0 0 0 0 0 0
+  Key 0 1.2 0 0 0 0 0 0 0
+  Key 0 1.3 0 0 0 0 0 0 0
+  Key 0 1.4 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Behaviors 2 2
+}
+Channel 6
+{ Envelope
+  14
+  Key 1 0 0 0 0 0 0 -0.019944461 0
+  Key 0.98000014 0.1 0 0 0 0 0.036666274 0.073332548 0
+  Key 1.1099988 0.30000001 0 0 0 0 0.0099999309 0.0099999309 0
+  Key 1 0.5 0 0 0 0 -0.087999023 -0.043999512 0
+  Key 0.97800028 0.60000002 0 0 0 0 0 0 0
+  Key 1 0.69999999 0 0 0 0 0.010999858 0.010999858 0
+  Key 1 0.80000001 0 0 0 0 0.023999691 0.023999691 0
+  Key 1.0479994 0.89999998 0 0 0 0 -0.005000174 -0.005000174 0
+  Key 0.98999965 1 0 0 0 0 -0.028999865 -0.028999865 0
+  Key 0.98999965 1.1 0 0 0 0 0.039999545 0.039999545 0
+  Key 1.0699987 1.2 0 0 0 0 0.028999686 0.028999686 0
+  Key 1.047999 1.3 0 0 0 0 -0.034999669 -0.034999669 0
+  Key 0.9999994 1.4 0 0 0 0 -0.023999512 -0.023999512 0
+  Key 1 1.5 0 0 0 0 5.9439537e-007 0 0
+  Behaviors 2 2
+}
+Channel 7
+{ Envelope
+  14
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.1 0 0 0 0 0.022666454 0.045332909 0
+  Key 1.0679994 0.30000001 0 0 0 0 0 0 0
+  Key 1 0.5 0 0 0 0 -0.063999534 -0.031999767 0
+  Key 0.97200006 0.60000002 0 0 0 0 0 0 0
+  Key 1 0.69999999 0 0 0 0 0.013999969 0.013999969 0
+  Key 1 0.80000001 0 0 0 0 0.038999557 0.038999557 0
+  Key 1.0779991 0.89999998 0 0 0 0 0.034999609 0.034999609 0
+  Key 1.0699992 1 0 0 0 0 -0.032999575 -0.032999575 0
+  Key 1.012 1.1 0 0 0 0 -0.0089998841 -0.0089998841 0
+  Key 1.0519994 1.2 0 0 0 0 -0.011999935 -0.011999935 0
+  Key 0.98800009 1.3 0 0 0 0 -0.039999664 -0.039999664 0
+  Key 0.97200012 1.4 0 0 0 0 0.0059999526 0.0059999526 0
+  Key 1 1.5 0 0 0 0 0.027922316 0 0
+  Behaviors 2 2
+}
+Channel 8
+{ Envelope
+  14
+  Key 1 0 0 0 0 0 0 -0.0039888681 0
+  Key 0.99600005 0.1 0 0 0 0 0.014666517 0.029333035 0
+  Key 1.0439996 0.30000001 0 0 0 0 0.0019999743 0.0019999743 0
+  Key 1 0.5 0 0 0 0 -0.038666248 -0.019333124 0
+  Key 0.98600018 0.60000002 0 0 0 0 0 0 0
+  Key 1 0.69999999 0 0 0 0 0.0069999099 0.0069999099 0
+  Key 1 0.80000001 0 0 0 0 0.00099998713 0.00099998713 0
+  Key 1.002 0.89999998 0 0 0 0 0.00099998713 0.00099998713 0
+  Key 1.002 1 0 0 0 0 0 0 0
+  Key 1.002 1.1 0 0 0 0 -0.014999837 -0.014999837 0
+  Key 0.9720003 1.2 0 0 0 0 -0.033999711 -0.033999711 0
+  Key 0.93400055 1.3 0 0 0 0 -0.021999836 -0.021999836 0
+  Key 0.92800063 1.4 0 0 0 0 0.032999724 0.032999724 0
+  Key 1 1.5 0 0 0 0 0.071799926 0 0
+  Behaviors 2 2
+}
+
+ParentItem 10000000
+ShadowOptions 7
+
+LoadObjectLayer 3 Objects/TEST BUILD OPBJECTS-NOT FOR FINAL/ENGINE THRUST 001.lwo
+ShowObject 7 3
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 1
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 2
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 3
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 4
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 5
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 -6.2828941 0
+  Key -6.283185 6 0 0 0 0 -6.2828941 0 0
+  Behaviors 5 5
+}
+Channel 6
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 7
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 8
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 6 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+
+LockedChannels 24
+ParentItem 10000000
+ShadowOptions 7
+
+LoadObjectLayer 4 Objects/TEST BUILD OPBJECTS-NOT FOR FINAL/ENGINE THRUST 001.lwo
+ShowObject 7 3
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 1
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 2
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 3
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 4
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 5
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 6.2826033 0
+  Key 6.283185 3 0 0 0 0 6.2826033 0 0
+  Behaviors 5 5
+}
+Channel 6
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 7
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 8
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+
+LockedChannels 31
+ShadowOptions 7
+
+AddNullObject Camera Null
+ShowObject 7 3
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 6.2830396 0
+  Key 6.283185 12 0 0 0 0 6.2830396 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  2
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 12 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+ShadowOptions 7
+
+LoadObjectLayer 1 C:Lightwave Content/The fringe/Objects/Space/Dense Starfield.lwo
+ShowObject 7 3
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+ShadowOptions 7
+
+AmbientColor 1 1 1
+AmbientIntensity 0.05
+
+AddLight
+LightName Light
+ShowLight 1 5
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0.78539813 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0.61086524 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LightColor 1 1 1
+LightIntensity 1
+AffectCaustics 1
+LightType 0
+ShadowType 1
+ShadowColor 0 0 0
+
+AddCamera
+CameraName Camera
+ShowCamera 1 2
+CameraMotion
+NumChannels 6
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -20.899994 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 3
+ParentItem 10000004
+ZoomFactor 3.2
+ResolutionMultiplier 1.0
+FrameSize 640 480
+PixelAspect 1
+MaskPosition 0 0 640 480
+MotionBlur 0
+FieldRendering 0
+
+ApertureHeight 0.015
+Antialiasing 0
+AdaptiveSampling 0
+
+SolidBackdrop 1
+BackdropColor 0 0 0
+ZenithColor 0 0.1569 0.3137
+SkyColor 0.4706 0.7059 0.9412
+GroundColor 0.1961 0.1569 0.1176
+NadirColor 0.3922 0.3137 0.2353
+FogType 0
+DitherIntensity 1
+AnimatedDither 0
+
+RenderMode 2
+RayTraceEffects 0
+RayRecursionLimit 16
+RayTraceOptimization 1
+DataOverlayLabel  
+SaveAnimationName C:\Documents and Settings\Justin\Desktop\engin thrust 02B.avi
+AnimationSaver AVI(.avi)
+1684633187
+10000
+4
+colr
+EndPlugin
+SaveRGB 0
+SaveAlpha 0
+
+ViewConfiguration 0
+DefineView 0
+ViewType 7
+ViewAimpoint 0 0 0
+ViewRotation -17.2 18 0
+ViewZoomFactor 4
+
+GridNumber 80
+GridSize 5
+CameraViewBG 0
+ShowMotionPath 1
+ShowFogRadius 1
+ShowFogEffect 0
+ShowSafeAreas 0
+ShowFieldChart 0
+OverlayColor_fv 0 0 0
+
+CurrentObject 5
+CurrentLight 0
+CurrentCamera 0
+GraphEditorData
+{ GraphEd_Favorites
+}
+{ GE_Expression_Lib
+  1
+}

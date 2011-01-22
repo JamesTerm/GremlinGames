@@ -1,0 +1,13 @@
+~osgv version 1
+	
+^ Q-33-50mm
+	50mm.lws
+	$ Fire
+		../../../Polygon FX/MGun-01.osgv
+
+	@ Pause Stop 0 Stop 0	
+	@ Fire fireA 11 fireB 19
+	
+	~ While START Pause
+	~ While Ship.FireWeapon Fire Pause
+	

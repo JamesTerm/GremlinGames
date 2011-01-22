@@ -1,0 +1,5 @@
+~osgv version 1
+
+# This file is used for the retical that is directly in front of the ship
+^ PrimaryRetical 0 0 1000		# 100 meters in front of the camera
+	B 20 20 t [../Common Images/Trgeting Crosshairs/Cross01.tga]

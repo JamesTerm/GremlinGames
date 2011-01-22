@@ -1,0 +1,33 @@
+~osgv version 1
+
+# This OSGV file is used as an example of how to set up a large scale scene.
+# In OSGV, this file should be loaded as the additional one, since it is large,
+# and not the main target you are wanting to look at.
+
+# Make a scaled set for the star field, at an infinte distance scale
+S 0
+	..\Space Boxes\SpaceBox_A\Space Box-MedRes.lwo
+	# We should not place the SunGlare farther than 70 km away, but along the same vector as the light
+	^ Sun -1000 500 -4500 
+		P T CAMERA
+			^ SunGlare 0 0 -100 
+				I 4200 4200 t [..\Sun Flares\SunFlare_A\SunGlare.tga]	# Image, width height blendAlpha filename
+		B 3200 3200 t [..\Sun Flares\SunFlare_A\SunStreaks.tga]	# Image, width height blendAlpha filename
+	
+# Place the Earth and Moon at a scale of 0.0001
+S 0.0001
+	# We do not want the Earth to be centered, but on the side 1700 m (scaled)
+	^ Earth 0 0 1700 
+		..\Planets\EarthMoon\Earth_Med.lwo
+		# We want to parent the moon to the Earth and offset by its distance
+		^ Moon -1500 0 1500 
+			..\Planets\EarthMoon\Moon.lwo
+
+	^ SunLight -20000 10000 -90000 
+		#If you choose light zero, the camera headlight will no longer work; however, this may be the only way to tell that it does work
+		# Parms:  LightNumber, x, y, z
+		L 0
+			setAmbient(0,0,0,1)
+			setDiffuse(1.9,1.9,1.5,1.0)
+			setSpecular(1.9,1.9,1.5,1.0)
+			

@@ -1,0 +1,6 @@
+~osgv version 1
+
+^ Thrust
+	P T CAMERA
+		^ actor 0,0,0
+		10m_4side_red_glow.lwo

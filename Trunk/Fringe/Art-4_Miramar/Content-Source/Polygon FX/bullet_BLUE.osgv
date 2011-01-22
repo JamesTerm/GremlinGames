@@ -1,0 +1,13 @@
+~osgv version 1
+######################################################
+#Authored by justin 4/8/08
+#Bullet plus audio effect
+######################################################
+
+^ bullet
+	Bullet_BLUE.lws
+
+	@ Shoot shootA 1 shootB 31
+	~ On Fire Shoot
+	
+	#! On Fire SoundEffect \Audio\bulletStreak1-1.wav 0.001 0 35070

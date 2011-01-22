@@ -1,0 +1,34 @@
+~osgv version 1
+
+# This OSGV file is used as an example of how to set up a large scale scene.
+# In OSGV, this file should be loaded as the additional one, since it is large,
+# and not the main target you are wanting to look at.
+
+# Make a scaled set for the star field, at an infinte distance scale
+S 0
+	../Space Boxes/SpaceBox_B_w_Planets/Space Box.lwo
+	^ Sun 22505.8 1138 -5734.8
+		P T CAMERA
+			^ SunGlare 0 0 -100
+				I 18000 22000 t q [..\Sun Flares\SunFlare_A\SunGlare_half.tga]	# Image, width, height, blendAlpha, (q if quad), filename
+		#If you choose light zero, the camera headlight will no longer work; however, this may be the only way to tell that it does work
+		# Parms:  LightNumber, x, y, z
+		L 0
+			setAmbient(0,0,0,1)
+			setDiffuse(0.95,0.95,0.75,1.0)
+			setSpecular(0.95,0.95,0.75,1.0)
+			
+# Test the camera centered node
+C
+	# Create a headlight, a bit more blue and soft
+	L 1
+		setAmbient(0,0,0,1)
+		setDiffuse(0.7,0.7,0.5,1.0)
+		setSpecular(0.7,0.7,0.5,1.0)
+		# setDirection(x,y,z) # not sure how this works, I am guessing a unit vector for which way its pointed.  Defaults to (0,0,1)
+		# Attenuation is based on 1 / (C + L*d + Q*d*d)
+		setConstantAttenuation(1)  
+		setLinearAttenuation(0.001)
+		setQuadraticAttenuation(0) 
+		# setSpotExponent(x) # No idea how this works, look it up
+		# setSpotCutoff(x) # No idea how this works, look it up

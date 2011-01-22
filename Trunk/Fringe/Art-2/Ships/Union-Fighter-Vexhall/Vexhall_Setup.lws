@@ -1,0 +1,3651 @@
+LWSC
+3
+
+RenderRangeType 0
+FirstFrame 1
+LastFrame 300
+FrameStep 1
+RenderRangeArbitrary 1-300
+PreviewFirstFrame 0
+PreviewLastFrame 300
+PreviewFrameStep 1
+CurrentFrame 75
+FramesPerSecond 30
+Plugin MasterHandler 1 .SceneEditorStandardBanks
+EndPlugin
+Plugin MasterHandler 2 SceneEditor
+VERS 2
+{ CurrentWorkspace
+  Name "<default>"
+  WindowDimensions 137 253 2bc 12c
+  Divider1 0.5
+  LayoutItemFilterEnabled 0
+  LayoutItemChannelFilterEnabled 0
+  SurfaceFilterEnabled 0
+  SurfaceChannelFilterEnabled 0
+  ChannelFilterEnabled 0
+  { Bank
+    PresetID 5f425042
+    Column 5f425042 0 74
+    Column 5f425042 1 90
+    Column 5f425042 2 90
+    Column 5f425042 3 90
+    Column 5f425042 4 90
+    Column 5f425042 5 90
+    Column 5f425042 6 90
+    Column 5f425042 7 90
+  }
+  { SurfaceListBank
+    PresetID 5f425042
+    Column 5f425042 0 74
+    Column 5f425042 1 90
+    Column 5f425042 2 90
+    Column 5f425042 3 90
+    Column 5f425042 4 90
+    Column 5f425042 5 90
+    Column 5f425042 6 90
+    Column 5f425042 7 90
+  }
+  { ChannelListBank
+    PresetID 5f425042
+    Column 5f425042 0 74
+    Column 5f425042 1 90
+    Column 5f425042 2 90
+    Column 5f425042 3 90
+    Column 5f425042 4 90
+    Column 5f425042 5 90
+    Column 5f425042 6 90
+    Column 5f425042 7 90
+  }
+  BackgroundColorOdd 78 78 78 ff
+  BackgroundColorEven 6f 6f 6f ff
+  HierarchyIndent c
+  HighlightColor b5 b0 a5 ff
+  DefaultObjectColor 60 e0 f0 ff
+  DefaultBoneColor 60 e0 f0 ff
+  DefaultLightColor f0 60 f0 ff
+  DefaultCameraColor 20 e0 20 ff
+  AutoApplyToViewPorts 1
+  MultiselectSimilarTypes 1
+  LimitColorRange 1
+  ColorsAsHSV 0
+  ShowSelectionOrder 1
+  EnvelopeButtonOpensGraphEditor 1
+  ShowRenderExtents 1
+  BlockPeriod 0.033333335
+  BlockWidthMin 3
+  BlockWidthMax c8
+  ShowKeyTicks 1
+  OverrideBlockColors 0
+  BlockKeyColor 99 ae cf ff
+  BlockGroupColor 64 85 b6 ff
+  DSAllowChannelGroupSelection 1
+}
+EndPlugin
+
+LoadObjectLayer 1 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 6 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 7
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 2 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Key 0 2.3333333333333335 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  4
+  Key 1.5800000429153442 0 0 0 0 0 0 0 0
+  Key 1.5800000429153442 1.6666666666666667 0 0 0 0 0 0 0
+  Key 1.5800000429153442 2.3333333333333335 0 0 0 0 0 0 0
+  Key 1.5800000429153442 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  4
+  Key -4.7399997711181694 0 0 0 0 0 0 1.7760608292620401e-015 0
+  Key -4.7399997711181676 1.6666666666666667 0 0 0 0 1.2688263138573218e-015 5.0753052554292868e-016 0
+  Key -4.7399997711181676 2.3333333333333335 0 0 0 0 0 0 0
+  Key -4.7399997711181676 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Key 0 2.3333333333333335 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  4
+  Key -0.0872664600610734 0 0 0 0 0 0 4.1626425685829065e-017 0
+  Key -0.087266460061073359 1.6666666666666667 0 0 0 0 0.18699955727372863 0.074799822909491442 0
+  Key 0.17453292012214666 2.3333333333333335 0 0 0 0 0 0 0
+  Key -0.087266460061073359 3 0 0 0 0 -0.26169034254049484 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Key 0 2.3333333333333335 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Key 1 2.3333333333333335 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Key 1 2.3333333333333335 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Key 1 2.3333333333333335 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 47
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 0 1.58 -4.74
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 3 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Key 0 2.3333333333333335 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  4
+  Key -1.0700000524520874 0 0 0 0 0 0 0 0
+  Key -1.0700000524520874 1.6666666666666667 0 0 0 0 0 0 0
+  Key -1.0700000524520874 2.3333333333333335 0 0 0 0 0 0 0
+  Key -1.0700000524520874 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  4
+  Key -4.7399997711181694 0 0 0 0 0 0 1.7760608292620401e-015 0
+  Key -4.7399997711181676 1.6666666666666667 0 0 0 0 1.2688263138573218e-015 5.0753052554292868e-016 0
+  Key -4.7399997711181676 2.3333333333333335 0 0 0 0 0 0 0
+  Key -4.7399997711181676 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Key 0 2.3333333333333335 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  4
+  Key 0.0872664600610734 0 0 0 0 0 0 -4.1626425685829065e-017 0
+  Key 0.087266460061073359 1.6666666666666667 0 0 0 0 -0.18699955727372863 -0.074799822909491442 0
+  Key -0.17453292012214666 2.3333333333333335 0 0 0 0 0 0 0
+  Key 0.087266460061073359 3 0 0 0 0 0.26169034254049484 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Key 0 2.3333333333333335 0 0 0 0 0 0 0
+  Key 0 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Key 1 2.3333333333333335 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Key 1 2.3333333333333335 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Key 1 2.3333333333333335 0 0 0 0 0 0 0
+  Key 1 3 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 47
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 0 -1.07 -4.74
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 4 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  4
+  Key 4.28999996185303 0 0 0 0 0 0 0 0
+  Key 4.28999996185303 0.33333333333333331 0 0 0 0 0 0 0
+  Key 4.28999996185303 0.66666666666666663 0 0 0 0 0 0 0
+  Key 4.28999996185303 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  4
+  Key 3.0699999332427979 0 0 0 0 0 0 0 0
+  Key 3.0699999332427979 0.33333333333333331 0 0 0 0 0 0 0
+  Key 3.0699999332427979 0.66666666666666663 0 0 0 0 0 0 0
+  Key 3.0699999332427979 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  5
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0.29088819026947033 0.14544409513473516 0
+  Key 0.43633228540420554 0.5 0 0 0 0 0.21816614270210277 0.21816614270210277 0
+  Key 0.43633228540420554 0.66666666666666663 0 0 0 0 -0.14544409513473516 -0.29088819026947033 0
+  Key 0 1 0 0 0 0 -0.43596897792260336 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 55
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 4.29 0 3.07
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 5 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  4
+  Key 3.6600000858306885 0 0 0 0 0 0 0 0
+  Key 3.6600000858306885 0.33333333333333331 0 0 0 0 0 0 0
+  Key 3.6600000858306885 0.66666666666666663 0 0 0 0 0 0 0
+  Key 3.6600000858306885 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  4
+  Key 5.9699997901916531 0 0 0 0 0 0 0 0
+  Key 5.9699997901916531 0.33333333333333331 0 0 0 0 0 0 0
+  Key 5.9699997901916531 0.66666666666666663 0 0 0 0 0 0 0
+  Key 5.9699997901916531 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  5
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0.29088819026947033 0.14544409513473516 0
+  Key 0.43633228540420554 0.5 0 0 0 0 0.21816614270210277 0.21816614270210277 0
+  Key 0.43633228540420554 0.66666666666666663 0 0 0 0 -0.14544409513473516 -0.29088819026947033 0
+  Key 0 1 0 0 0 0 -0.43596897792260336 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 55
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 3.66 0 5.97
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 6 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  4
+  Key -4.28999996185303 0 0 0 0 0 0 0 0
+  Key -4.28999996185303 0.33333333333333331 0 0 0 0 0 0 0
+  Key -4.28999996185303 0.66666666666666663 0 0 0 0 0 0 0
+  Key -4.28999996185303 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  4
+  Key 3.0699999332427979 0 0 0 0 0 0 0 0
+  Key 3.0699999332427979 0.33333333333333331 0 0 0 0 0 0 0
+  Key 3.0699999332427979 0.66666666666666663 0 0 0 0 0 0 0
+  Key 3.0699999332427979 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  5
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 -0.29088819026947033 -0.14544409513473516 0
+  Key -0.43633228540420554 0.5 0 0 0 0 -0.21816614270210277 -0.21816614270210277 0
+  Key -0.43633228540420554 0.66666666666666663 0 0 0 0 0.14544409513473516 0.29088819026947033 0
+  Key 0 1 0 0 0 0 0.43596897792260336 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 55
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition -4.29 0 3.07
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 7 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  4
+  Key -3.6400001049041748 0 0 0 0 0 0 0 0
+  Key -3.6400001049041748 0.33333333333333331 0 0 0 0 0 0 0
+  Key -3.6400001049041748 0.66666666666666663 0 0 0 0 0 0 0
+  Key -3.6400001049041748 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  4
+  Key 5.9800000190734863 0 0 0 0 0 0 0 0
+  Key 5.9800000190734863 0.33333333333333331 0 0 0 0 0 0 0
+  Key 5.9800000190734863 0.66666666666666663 0 0 0 0 0 0 0
+  Key 5.9800000190734863 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  5
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 -0.29088819026947033 -0.14544409513473516 0
+  Key -0.43633228540420554 0.5 0 0 0 0 -0.21816614270210277 -0.21816614270210277 0
+  Key -0.43633228540420554 0.66666666666666663 0 0 0 0 0.14544409513473516 0.29088819026947033 0
+  Key 0 1 0 0 0 0 0.43596897792260336 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 0.66666666666666663 0 0 0 0 0 0 0
+  Key 0 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 0.33333333333333331 0 0 0 0 0 0 0
+  Key 1 0.66666666666666663 0 0 0 0 0 0 0
+  Key 1 1 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 55
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition -3.64 0 5.98
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 8 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  3
+  Key 3.6500000953674316 0 0 0 0 0 0 0 0
+  Key 3.6500000953674316 3.3333333333333335 0 0 0 0 0 0 0
+  Key 3.6500000953674316 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  3
+  Key -0.46999999880790727 0 0 0 0 0 0 5.5506525687450541e-017 0
+  Key -0.46999999880790722 3.3333333333333335 0 0 0 0 2.7755575615628914e-017 2.7755575615628914e-017 0
+  Key -0.46999999880790722 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key -0.34906584024429332 0 0 0 0 0 0 0 0
+  Key -0.34906584024429332 3.3333333333333335 0 0 0 0 0.40724347035090142 0.20362173517545071 0
+  Key 0.26179936528205883 5 0 0 0 0 0 0 0
+  Key -0.34906584024429332 6.666666666666667 0 0 0 0 -0.61076341162441472 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 31
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 3.65 -0.47 0
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 9 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 5.619999885559082 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.47999998927116411 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.5 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 7
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 5.62 -0.48 -2.5
+ParentItem 10000007
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 10 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  3
+  Key 3.6800000667572035 0 0 0 0 0 0 -4.4405220549960433e-016 0
+  Key 3.680000066757203 3.3333333333333335 0 0 0 0 -2.2204460492503131e-016 -2.2204460492503131e-016 0
+  Key 3.680000066757203 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  3
+  Key 0.0900000035762787 0 0 0 0 0 0 0 0
+  Key 0.0900000035762787 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0.0900000035762787 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0.34906584024429332 0 0 0 0 0 0 0 0
+  Key 0.34906584024429332 3.3333333333333335 0 0 0 0 -1.1635528008143106 -0.58177640040715528 0
+  Key -1.3962633609771729 5 0 0 0 0 0 0 0
+  Key 0.34906584024429332 6.666666666666667 0 0 0 0 1.7450383614945504 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0.0019998076001601106 0
+  Key 1.0019999742507935 3.3333333333333335 0 0 0 0 0.00099998712539672852 0.00099998712539672852 0
+  Key 1.0019999742507935 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0.0019998076001601106 0
+  Key 1.0019999742507935 3.3333333333333335 0 0 0 0 0.00099998712539672852 0.00099998712539672852 0
+  Key 1.0019999742507935 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0.0019998076001601106 0
+  Key 1.0019999742507935 3.3333333333333335 0 0 0 0 0.00099998712539672852 0.00099998712539672852 0
+  Key 1.0019999742507935 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 31
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 3.68 0.09 0
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 11 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 3.6800000667572035 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 2.2300000190734863 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -3.1500000953674316 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 7
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 3.68 2.23 -3.15
+ParentItem 10000009
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 12 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  3
+  Key -3.6500000953674316 0 0 0 0 0 0 0 0
+  Key -3.6500000953674316 3.3333333333333335 0 0 0 0 0 0 0
+  Key -3.6500000953674316 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  3
+  Key -0.47999998927116411 0 0 0 0 0 0 5.5506525687450541e-017 0
+  Key -0.47999998927116405 3.3333333333333335 0 0 0 0 2.7755575615628914e-017 2.7755575615628914e-017 0
+  Key -0.47999998927116405 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key 0.34906584024429332 0 0 0 0 0 0 0 0
+  Key 0.34906584024429332 3.3333333333333335 0 0 0 0 -0.40724347035090142 -0.20362173517545071 0
+  Key -0.26179936528205883 5 0 0 0 0 0 0 0
+  Key 0.34906584024429332 6.666666666666667 0 0 0 0 0.61076341162441472 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 5 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  4
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 5 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 31
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition -3.65 -0.48 0
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 13 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -5.6571874618530265 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.50112229585647561 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.5088603496551514 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition -5.655 -0.49 -2.51
+ParentItem 1000000b
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 14 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  3
+  Key -3.6700000762939453 0 0 0 0 0 0 0 0
+  Key -3.6700000762939453 3.3333333333333335 0 0 0 0 0 0 0
+  Key -3.6700000762939453 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  3
+  Key 0.10999999940395358 0 0 0 0 0 0 0 0
+  Key 0.10999999940395358 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0.10999999940395358 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  3
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 3.3333333333333335 0 0 0 0 0 0 0
+  Key 0 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  4
+  Key -0.34906584024429332 0 0 0 0 0 0 0 0
+  Key -0.34906584024429332 3.3333333333333335 0 0 0 0 1.1635528008143106 0.58177640040715528 0
+  Key 1.3962633609771729 5 0 0 0 0 0 0 0
+  Key -0.34906584024429332 6.666666666666667 0 0 0 0 -1.7450383614945504 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  3
+  Key 1 0 0 0 0 0 0 0 0
+  Key 1 3.3333333333333335 0 0 0 0 0 0 0
+  Key 1 6.666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 31
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition -3.67 0.11 0
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 15 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -3.6805715560913104 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 2.2200000286102295 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -3.1563282012939453 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 53
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition -3.68 2.23 -3.15
+ParentItem 1000000d
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 18 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.0900000035762787 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 7
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition 0 -0.09 0
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 19 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -1.0049999952316278 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0.43000000715255765 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0.079999998211860671 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 7
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+PivotPosition -1.005 0.43 0.08
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 20 Ships/Union-Fighter-Vexhall/Union-Fighter-Vexhall_FA4.lwo
+ShowObject 6 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 7
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Engine_01
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0.90451258420944147 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.7246303558349623 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 56
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Engine_02
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.4291509389877321 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.7246303558349623 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 56
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Sensors_01
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -0.9998672008514401 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0.4221735596656801 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0.05813151597976688 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject SmGunPivot_01
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.077939800918102264 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject MedCannonMount_01
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -1.2517671585083008 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0.10174099355936048 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 5.8909640312194789 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject MedCannonMount_02
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 1.2501442432403558 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0.10174099355936048 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 5.8909640312194789 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Blinker_L
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -7.0811495780944815 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.82718700170516957 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -1.094545125961305 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 1000000b
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Blinker_R
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 7.0644536018371564 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.83251661062240601 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -1.094545125961305 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000007
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject SlMissile_01
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -1.930458307266236 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.085109874606132521 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 11.335176467895508 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject SlMissile_02
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 1.8994948863983154 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.085109874606132521 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 11.335176467895508 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject MedMissileMount_01
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -1.1234483718872077 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.26384067535400429 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.4001207351684584 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject MedMissileMount_02
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 1.1404714584350586 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.26384067535400429 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.4001207351684584 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject MedMissileMount_03
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -1.6341056823730469 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.26384067535400429 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.1022334098815918 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject MedMissileMount_04
+ShowObject 7 3
+Group 0
+SchematicPosition 1.200000 -0.800000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 1.617086529731752 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.26384067535400429 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2.1022334098815918 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AmbientColor 1 1 1
+AmbientIntensity 0.05
+
+AddLight
+LightName Light
+ShowLight 1 5
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0.95818549394607566 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0.94422310590743996 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+LightColor 1 1 1
+LightIntensity 1
+AffectCaustics 1
+LightType 0
+ShadowType 1
+ShadowColor 0 0 0
+
+AddCamera
+CameraName Camera
+ShowCamera 1 2
+CameraMotion
+NumChannels 6
+Channel 0
+{ Envelope
+  1
+  Key 11.197922706604 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 14.003091812133789 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 7.2481689453125018 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key -2.1816623210906978 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0.80634188652038596 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ZoomFactor 3.2
+ResolutionMultiplier 1.0
+FrameSize 640 480
+PixelAspect 1
+MaskPosition 0 0 640 480
+MotionBlur 0
+FieldRendering 0
+ApertureHeight 0.015
+UseGlobalResolution 0
+UseGlobalMask 0
+UseGlobalBlur 0
+Plugin CameraHandler 1 Perspective
+EndPlugin
+
+GlobalFrameSize 640 480
+GlobalMultiplier 1.0
+GlobalFieldRendering 0
+GlobalMotionBlur 0
+GlobalMaskPosition 0 0 640 480
+GlobalFilmHeight 0.015
+GlobalPixelAspect 1
+
+Antialiasing 0
+AntiAliasingLevel -1
+ReconstructionFilter 0
+AdaptiveSampling 0
+
+SolidBackdrop 1
+BackdropColor 0 0 0
+ZenithColor 0 0.1569 0.3137
+SkyColor 0.4706 0.7059 0.9412
+GroundColor 0.1961 0.1569 0.1176
+NadirColor 0.3922 0.3137 0.2353
+FogType 0
+FogMinDistance 0
+FogMaxDistance 1
+FogMinAmount 0
+FogMaxAmount 1
+FogColor 0.5098 0.5098 0.549
+BackdropFog 0
+DitherIntensity 1
+AnimatedDither 0
+
+RenderMode 2
+RayTraceEffects 0
+DepthBufferAA 0
+RayRecursionLimit 16
+DataOverlayLabel  
+SaveRGB 0
+SaveAlpha 0
+
+ViewConfiguration 0
+DefineView 0
+ViewType 7
+ViewLevel 5
+ViewAimpoint -0.7879108 -1.724999 2.185609
+ViewRotation -863.6976 40.79914 0
+ViewZoomFactor 7.889859
+
+GridNumber 80
+GridSize 5
+CameraViewBG 0
+ShowMotionPath 1
+ShowFogRadius 0
+ShowFogEffect 0
+ShowSafeAreas 0
+ShowFieldChart 0
+OverlayColor_fv 0 0 0
+MeshBackgroundGroup 1
+
+CurrentObject 6
+CurrentLight 0
+CurrentCamera 0
+GraphEditorData
+{ GraphEd_Favorites
+}
+{ GE_Expression_Lib
+  1
+}
+ImageEditorData
+NumberOfClips 7
+Clip 0
+{ ClipObject
+  "Vexhall-Surface-Cockpit.jpg"
+  128
+  0
+}
+Clip 1
+{ ClipObject
+  "BAKED_Bottom_512.bmp"
+  128
+  0
+}
+Clip 2
+{ ClipObject
+  "BAKED_top_512.bmp"
+  128
+  0
+}
+Clip 3
+{ ClipObject
+  "BAKE-Q-33-Gun01-512.bmp"
+  128
+  0
+}
+Clip 4
+{ ClipObject
+  "Vexhall-Surface-Cockpit_TRANS.jpg"
+  128
+  0
+}
+Clip 5
+{ ClipObject
+  "BAKED_Details_512.bmp"
+  128
+  0
+}
+Clip 6
+{ ClipObject
+  "roughEngine.bmp"
+  128
+  0
+}

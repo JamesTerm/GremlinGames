@@ -1,0 +1,140 @@
+~osgv version 1
+######################################################
+#Authored by justin 4/16/08
+######################################################
+
+^ vexhall
+	Vexhall_Setup.lws
+
+#### Parent/Stucture ####
+
+	$ Engine_01
+		+ 0 150
+			VexhallEngine01.osgv
+			- 0 10
+				P T RefractionNull
+					^ refraction1 0 0 -4 0 0 0 .5 .5 .5
+						P T CAMERA
+							..\Polygon FX\refraction1.lwo
+					^ refraction1 0 0 -11 0 0 0 .6 .6 .6
+						P T CAMERA
+							..\Polygon FX\refraction1.lwo
+					^ refraction2 0 0 -30 0 0 0 .5 .5 .5
+						P T CAMERA
+							..\Polygon FX\refraction1.lwo
+	$ Engine_02
+		+ 0 150
+			VexhallEngine01.osgv
+	$ landinglight_01
+		+ 0 150
+			..\Polygon FX\LadingLight-01.osgv
+			- 0 10
+				P T RefractionNull
+					^ refraction1 0 0 -4 0 0 0 1.5 1.5 1.5
+						P T CAMERA
+							..\Polygon FX\refraction1.lwo
+					^ refraction1 0 0 -15 0 0 0 1 1 1
+						P T CAMERA
+							..\Polygon FX\refraction1.lwo
+	$ landinglight_02
+		+ 0 150
+			..\Polygon FX\LadingLight-01.osgv
+			- 0 10
+				P T RefractionNull
+					^ refraction1 0 0 -4 0 0 0 1.5 1.5 1.5
+						P T CAMERA
+							..\Polygon FX\refraction1.lwo
+					^ refraction1 0 0 -15 0 0 0 1 1 1
+						P T CAMERA
+							..\Polygon FX\refraction1.lwo
+	$ Blinker_R
+		..\Polygon FX\10m-RedBlinker.osgv
+		! While VAPOR_TRAIL SmokeTrailEffect (0,0,-1) 0.2 4 #### = (X,Y,Z) size duration?
+	$ Blinker_L
+		..\Polygon FX\10m-GreenBlinker.osgv
+		! While VAPOR_TRAIL SmokeTrailEffect (0,0,-1) 0.2 4 #### = (X,Y,Z) size duration?
+
+	$ Brake01
+		VexhalBrake.lwo
+	$ Brake02
+		VexhalBrake.lwo
+	$ Brake03
+		VexhalBrake.lwo
+	$ Brake04
+		VexhalBrake.lwo
+
+	
+
+	$ SmGunPivot_01
+		VexhallGatling.osgv
+	$ MedCannonMount_01
+	$ MedCannonMount_02
+	$ MicroMissile_01
+	$ MicroMissile_02
+
+	#### Additional Araments ####
+	$ MedMissileMount_01
+	$ MedMissileMount_02
+	$ MedMissileMount_03
+	$ MedMissileMount_04
+
+	$ Sensors_01
+
+
+#### Actions/Key Bindings ####
+
+	#! While SPAWN SoundEffect ..\Audio\TheFringeEnginesmp3-1.wav 15.0 0 27328
+	
+	@ Stance stance 9 stance 9 [On 20 vexhall.Stance1] [On 10 vexhall.Stance2] 
+	~ On SPAWN Stance
+	! On vexhall.Stance1 SoundEffect ..\Audio\TGT-02.WAV 35.0
+	! On vexhall.Stance2 SoundEffect ..\Audio\static_1.wav 15.0
+
+	#! While SPAWN SoundEffect ..\Audio\TheFringeEnginesmp3-1.wav 5.0 0 27328
+	
+	@ Accel accela 50 accelb 70 [On 0 vexhall.Accel1] [On 10 vexhall.Accel2]
+	@ Haccel accelb 68 accelc 71
+	@ Raccel accelc 70 acceld 90 [On 0 vexhall.Accel1]
+	~ While vexhall.Accel Accel Haccel Haccel Raccel
+	#! On vexhall.Accel1 SoundEffect ..\Audio\motor_servo_lift.mp3 30.0
+	! On vexhall.Accel2 SoundEffect ..\Audio\g-33engines-02.wav 20.0 0 52973
+	% While w vexhall.Accel
+	
+	@ Brake brakea 10 brake 15 [On 0 vexhall.Brake1] [On 15 vexhall.Brake2]
+	@ Hbrake brake 15 brakeb 20
+	@ Rbrake brakeb 20 brakec 30 [On 0 vexhall.Brake1]
+	~ While vexhall.Brake Brake Hbrake Hbrake Rbrake
+	! On vexhall.Brake1 SoundEffect ..\Audio\motor_servo_lift.mp3 30.0
+	! On vexhall.Brake2 SoundEffect ..\Audio\SHAWEE.wav 45.0
+	% While s vexhall.Brake
+
+	@ Land landa 100 landb 150 [On 0 vexhall.Accel1] #[On 10 vexhall.Accel2]
+	@ Hland landb 150 landc 150
+	@ Rland landc 150 landd 200 [On 0 vexhall.Accel1]
+	~ Toggle vexhall.Land Land Hland Hland Rland
+	! On vexhall.Accel1 SoundEffect ..\Audio\motor_servo_lift.mp3 30.0
+	#! On vexhall.Accel2 SoundEffect ..\Audio\g-33engines-02.wav 20.0 0 52973
+	% Toggle l vexhall.Land
+
+	! while Ship.FireWeapon SoundEffect ..\Audio\Vucan02.wav 50 3072 5888
+	% While x Ship.FireWeapon #### Small Gun Pivot
+	#% While c Ship.FireWeapon2 #### Medium Cannons
+	#% While z Ship.FireWeapon3 #### Micro Missiles
+
+
+
+#### External Interaction Effects ####
+
+	! On CANNON_HIT SoundEffect ..\Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	#! On COLLIDE SoundEffect ..\Audio\metal_crashA.wav 35.0 0 84096
+	! On COLLIDE SoundEffect ..\Audio\metal_crashB.wav 35.0 0 103680
+	
+	# You want to provide a few frames before dying to show the last of the particle explosions
+	@ Die_Seq die1 0 die2 30 [On 30 HIDE]
+	
+	# For now, they both do the same thing.  The bulk of the effect needs to be in the DestructionProxy
+	~ On DESTROY Die_Seq
+	~ On SHOT_DOWN Die_Seq
+

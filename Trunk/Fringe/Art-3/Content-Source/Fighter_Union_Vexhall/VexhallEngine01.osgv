@@ -1,0 +1,9 @@
+~osgv version 1
+#authored by justin 4/16/08
+###########################
+
+^ VexhallEngine01
+	VexhallEngine01.lws
+	
+		$ Thrust
+			..\Polygon FX\FighterThrust.osgv

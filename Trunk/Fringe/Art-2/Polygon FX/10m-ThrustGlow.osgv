@@ -1,0 +1,16 @@
+~osgv version 1
+	
+^ Thrust
+	P T CAMERA
+		^ actor 0,0,0
+			10m-ThrustGlow.lws
+			@ Run start 30 stop 45
+			@ Thrust Accel-A 45 Accel-B 90
+			@ Brake Brake-A 150 Brake-B 190
+
+			~ While START Run
+			~ While Thrust.Thrust
+			~ While Thrust.Brake
+		
+
+

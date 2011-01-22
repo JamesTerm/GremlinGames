@@ -1,0 +1,53 @@
+~osgv version 1
+
+# This OSGV file is used as an example of how to set up a large scale scene.
+# In OSGV, this file should be loaded as the additional one, since it is large,
+# and not the main target you are wanting to look at.
+
+# Make a scaled set for the star field, at an infinte distance scale
+S 0
+	Objects\Space Box.lwo
+	# We should not place the SunGlare farther than 70 km away, but along the same vector as the light
+	^ Sun -1000 -4500 500
+		P T CAMERA
+			^ SunGlare 0 100 0
+				I 3200 3200 t [Images\Space Box\SunGlare.tga]	# Image, width height blendAlpha filename
+		B 4200 4200 a [Images\Space Box\SunStreaks.tga]	# Image, width height blendAlpha filename
+	
+# Place the Earth and Moon at a scale of 0.0001
+S 0.0001
+	# We do not want the Earth to be centered, but on the side 1300 m (scaled)
+	^ Earth 1300 0 0
+		Objects\Space\Earth.lwo
+		# We want to parent the moon to the Earth and offset by its distance
+		^ Moon 0 3631 0
+			Objects\Space\Moon.lwo
+
+	^ SunLight -20000 -90000 10000
+		#If you choose light zero, the camera headlight will no longer work; however, this may be the only way to tell that it does work
+		# Parms:  LightNumber, x, y, z
+		L 0
+			setAmbient(0,0,0,1)
+			setDiffuse(0.9,0.9,0.8,1.0)
+			setSpecular(0.9,0.9,0.8,1.0)
+	
+# Place a coordinate jack here so we can see where things are
+^ TestJack 20 20 20
+	P F root
+		Objects\testJack.lwo
+		
+# Test the camera centered node
+C
+	Objects\testCenterObj.lwo
+	# Create a headlight, a bit more blue and soft
+	L 1
+		setAmbient(0,0,0,1)
+		setDiffuse(0.3,0.3,0.3,1.0)
+		setSpecular(0.3,0.3,0.3,1.0)
+		# setDirection(x,y,z) # not sure how this works, I am guessing a unit vector for which way its pointed.
+		# setConstantAttenuation(atten) # Not sure about constant attenuation
+		# setLinearAttenuation(atten) # A distance before the frop off?
+		# setQuadraticAttenuation(atten) # drops off more like a real light
+		# setSpotExponent(x) # No idea how this works, look it up
+		# setSpotCutoff(x) # No idea how this works, look it up
+		

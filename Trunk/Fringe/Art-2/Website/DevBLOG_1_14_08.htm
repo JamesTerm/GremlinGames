@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Developers Blog 1/14/08</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<script language="JavaScript" type="text/JavaScript">
+<!--
+function MM_reloadPage(init) {  //reloads the window if Nav4 resized
+  if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
+    document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
+  else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
+}
+MM_reloadPage(true);
+//-->
+</script>
+</head>
+
+<body bgcolor="#000066" background="Backgrounds/blue-blackline.jpg" text="#FFFFFF">
+<p><img src="Titles%20and%20Logos/DevBlog.gif" width="520" height="75"> </p>
+<p>1/14/08</p>
+<p><strong><font size="+2">INTO THE FRINGE</font></strong></p>
+<p><strong>A lot of people ask what is involved with 
+  the creation of a new Massively Multi-player Online Game. With The Fringe, we are taking a hard road. This is a new game from the ground up. We are developing 
+  a new game engine using only open source components. All of the art is original, 
+  as are the models, storyline, and game-play. Quite frankly, we are in the 
+  creation of a new subgenre of sci-fi space games. Something that allows fans 
+  of any sci-fi movie or franchise to happily hop into a persistent universe and 
+  really affect the universe as it is being created.</strong> </p>
+<p><strong>Just like any game, it starts with an idea. We also needed a little 
+  luck and a lot of talent to create a game that was first thought of back in 
+  1997. At that time, the Internet was not able to handle the demands we had in mind, so we shelved the idea.</strong></p>
+<p><strong>Years later, the same team came back together and decided it was time to produce &quot;The Fringe.&quot; Our vision is to create a full-blown </strong><strong>Massively Multi-player Online Role Playing Game (MMORPG), that provides not only typical RPG style game-play, but also an exciting combat dimension that combines real-time strategy with edge-of-your-seat, first person, &quot;twitch&quot; style fighter simulation. Rather than making everyone wait for the full game, we decided to focus on the fighter combat aspects of the game, and release that as a mini-game called &quot;The Fringe-Alpha Team.&quot; </strong></p>
+<p> </p>
+<p><strong> I'm going to walk though some of the process of game creation 
+  and architecture, to give you some insight into my role as the art director of a large game 
+  being produced by a small company.</strong></p>
+<p><strong> The first step we took was to write a game story and produce a sampling 
+  of concept art. </strong><strong>Fortunately, we had a good idea of how we wanted the game to feel. This 
+  is not a &quot;sit back, relax, and mine rocks all day&quot; type of game. We did not want 
+  our players to have to constantly worry about doing mundane tasks in order to slowly 
+  acquire wealth. After all, that's what most of us have to do every day, in our 
+  real lives.</strong> </p>
+<p><strong>The universe we  are creating is  bold! It's at the edge of space 
+  where 3 different governments constantly fuel controversy. There are different 
+  fighting styles to choose from. You are not limited to a single way to control 
+  ships. There are different ways to engage your opponents. We wanted our game 
+  to have extremes in piloting options, and strategies that have a really tactile feel. 
+  We're trying to let players create and take advantage of strategies 
+  that are &quot;outside the box,&quot; not set in stone types of strategies built into the game. 
+  There are big guns and high speeds. The game requires wit, skill, strategy, 
+  and a  bit of unscrupulousness, from time to time. Best of all, every player, 
+  regardless of their level, can join in with his or her online comrades and be a useful part 
+  of the group.</strong></p>
+<p align="center"><a href="personality.htm"><img src="Titles%20and%20Logos/UnionPlain.gif" width="109" height="87" border="0"></a> 
+  <a href="personality.htm"><img src="Titles%20and%20Logos/FedPlain.gif" width="116" height="79" border="0"></a><a href="personality.htm"><img src="Titles%20and%20Logos/ColonialPlain.gif" width="152" height="94" border="0"></a></p>
+<p align="center">&nbsp;</p>
+<p><strong>Right now, we are in production of the first component of our game, 
+  Fighter Combat! </strong></p>
+<p><strong>The concept of the fighter is that it is a strategic strike unit. Fighter 
+  pilots will be assigned targets of strategic importance to a team victory. In 
+  the final game, fighters are a likely first step for players, but by no means 
+  unimportant.</strong></p>
+<p><strong>We borrowed a lot from modern flight simulation games. Fighter craft 
+  attempt to simulate atmospheric flight, even though this is a space simulation game. We knew that some physics &quot;cheating&quot; would make the game much more fun to play (after all, there is no sound in space either, but total silence would make for an awfully boring game). We were also able to put in traditional space style maneuvers that would offer the pilot the ability to &quot;Slide&quot; 
+  or turn off the simulated flight. This allows them to pivot on their axis to bring their guns to bear on other ships chasing them, or strafe across the hull of a 
+  large ship to maximize damage.</strong></p>
+<p><strong>The role 
+  of a fighter pilot as an interceptor is to reach the enemy fast, ahead of their battle group, and disarm larger ships by strategically hitting turrets and critical components. Fighters are fast, extremely fast! This will be 
+  the first game I've seen where the fighters are too fast to fly in close quarters. 
+  They have more speed and power than can possibly be used in effective close 
+  range combat. They use all of that speed to reach the enemy and then slow down 
+  to engage targets or eliminate enemy fighters. Not only is it easy to smack 
+  into larger enemy vessels, but the speed takes a toll on the pilot as well. 
+  Pilots are susceptible to G-forces. High-speed maneuvers can cause a pilot to 
+  blackout, or red-out on negative G's. With training, your pilot can sustain higher 
+  G's and remain coherent. Fighters can be outfitted with even more powerful engines 
+  and can actually fly themselves apart if you are not careful!</strong> </p>
+<p><strong>So, what does all that look like in a game? Well, it looks FAST! There are many visual cues built into the game to give the player 
+  the almost tangible feeling of speed. Pilots get tunnel vision while the afterburners are engaged. 
+  The ship rattles, strains, and sometimes breaks under high G maneuvers. A dynamic chase-plane and cockpit centered view allows for that roller-coaster feeling 
+  while in the pilot's chair. Pilots will also look ahead to get a better feel 
+  of the surrounding environment. When the controls move up, for example, the 
+  pilots head looks up to see where he needs to be. This is the same thing a real 
+  pilot would do, or the same thing we all do when driving our cars every day. 
+  Nobody looks straight ahead all the time, yet most games set  the camera angle up that way.</strong> </p>
+<p><strong>Fighters also pack quite a punch for their size. Some are more specialized 
+  than others, and newer, more interesting fighters become available as the pilot 
+  increases in rank. All fighters carry a basic array of missiles and guns to 
+  perform their tasks. Guns are usually used to take care of other fighters, but 
+  there are small agile warheads to track and destroy fighters as well. Cannons 
+  and larger missiles are effective for damaging larger ship components and weapons.</strong> </p>
+<p><strong>Each ship is customizable. Guns, ammunition, sensors, communications 
+  systems, power cores, engines, missile arrays, shields, and armor are all interchangeable 
+  and upgradeable. Each fighter also has customizable skins that can be painted to 
+  a player's liking. There are several paint schemes to choose from, and more become 
+  available as the player's rank increases.</strong></p>
+<p> </p>
+<p><strong>Currently, we are in production of the &quot;Team Alpha&quot; installment 
+  of The Fringe. This is unique in the online game experience. Players have a chance to start playing early 
+  in the process of game development. Not only can they create and develop a character, but they can 
+  test out the newest weapons and ships before the launch of the full RPG. We will reward our early players with special items in the full version of The Fringe, and </strong><strong>they will be the commanding officers for  
+  new players; able to put together their own command units.</strong> </p>
+<p><strong>As the art director (and chief pixel pusher), my job is to lead development of new fighters and obstacles to be 
+  included in the Team Alpha release.</strong> </p>
+<p><strong>The process usually starts with a sketch, or sometimes a rough model.</strong></p>
+<p><img src="DevBlog/01_14_08Media/ScannedImage.jpg" width="412" height="290"><img src="DevBlog/01_14_08Media/ScannedImage-2.jpg" width="338" height="290"></p>
+<p> </p>
+<p><strong>Some fighter types have been with the game since the beginning stages.</strong></p>
+<p><strong>The Q-19 Hunter was built in 1997, and was actually used in a demo reel. This 
+  ship was designed for the original &quot;Fringe Online&quot; game concept.</strong></p>
+<p><img src="DevBlog/01_14_08Media/Q-19_01.jpg" width="372" height="290"><img src="DevBlog/01_14_08Media/Q-19_02.jpg" width="301" height="290"></p>
+<p><strong>When we revisited the idea in 2003, some of the ships were redesigned as rough 
+  models, to better visualize their evolution. Several ships were added, as 
+  well as some new ship classes. The back story of the game evolved and gained more detail, and the differing <a href="personality.htm">factions</a> drove distinctive design styles.</strong></p>
+<p><strong>This is where the Q-19 evolved into the rough concept of the Q-23 Lightning:</strong></p>
+<p><img src="DevBlog/01_14_08Media/Q-23_01.jpg" width="375" height="290"><img src="DevBlog/01_14_08Media/Q-23_02.jpg" width="300" height="290"></p>
+<p>&nbsp;</p>
+<p><strong>Some ship concepts didn't quite get off the ground (many were odd, and some were just plain ugly!)</strong>.</p>
+<p><img src="DevBlog/01_14_08Media/QP-22A.jpg" width="306" height="150"><img src="DevBlog/01_14_08Media/Stinger-B.jpg" width="278" height="150"><img src="DevBlog/01_14_08Media/Vultreise.jpg" width="215" height="150"><img src="DevBlog/01_14_08Media/Wraith.jpg" width="225" height="150"></p>
+<p> </p>
+<p><strong>Finally, in the fall of 2007, we decided to put everything into the game and 
+  develop some real ships. This is the first time that the ships were designed 
+  to be game playable, with UV maps and articulations. We wanted to show aggressive styling, but also wanted it to 
+  be apparent that these ships were built by various human factions. It was our 
+  goal to make each vessel visually attractive and purposefully built, in a logical 
+  manner. We see a lot of space games where ships just look like stacks of blocks, 
+  or clusters of odd organic shapes with engines strapped to the back. </strong><strong>We wanted ships to look like something humans would actually use in combat. 
+  We were inspired by television shows such as Sci-fi Channel's new version of &quot;Battlestar 
+  Galactica,&quot; and older shows such as &quot;Babylon 5.&quot;</strong> </p>
+<p>&nbsp;</p>
+<p>The &quot;Q-Fighter&quot; has now taken on its most evolved shape, and emerges 
+  as the Colonial Q-33A LanceEagle. </p>
+<p><img src="DevBlog/01_14_08Media/Q-33_Banner..jpg" width="800" height="602"></p>
+<p>&nbsp;</p>
+<p><strong>Other vessels are also in various stages of production. </strong></p>
+<p>Union Vexhall AF-4, Original Rough 2003</p>
+<p><img src="DevBlog/01_14_08Media/Vexhall_Old_01.jpg" width="313" height="200"><img src="DevBlog/01_14_08Media/Vexhall_Old_02.jpg" width="287" height="200"></p>
+<p>Current Version, January 2008</p>
+<p><img src="DevBlog/01_14_08Media/Vexhal_01.jpg" width="424" height="330"><img src="DevBlog/01_14_08Media/Vexhal_02.jpg" width="445" height="330"></p>
+<p> </p>
+<p><strong>Larger ships are also in production, and will play a role in the &quot;Team 
+  Alpha&quot; release.</strong></p>
+<p>Union Carrier Orion, December 2007 (Actual in-game screen capture) </p>
+<p><img src="DevBlog/01_14_08Media/ScreenCapOrion.jpg" width="869" height="590"><br>
+</p>
+</body>
+</html>

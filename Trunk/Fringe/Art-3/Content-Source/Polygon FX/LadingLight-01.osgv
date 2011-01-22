@@ -1,0 +1,12 @@
+~osgv version 1
+	
+^ Sun
+	P T CAMERA
+		^ actor 0,0,0
+			10m-LadingLight.lwo
+			#@ Run start 0 stop 14
+
+			#~ While START Run
+		
+
+

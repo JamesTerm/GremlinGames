@@ -1,0 +1,11 @@
+~osgv version 1
+	
+^ 30m-ThrustGlow_Actor
+	O F CAM_POINTER
+		^ 30m-ThrustGlow_Offset 0 0 5
+			30m-ThrustGlow.lws
+			@ Run start 0 stop 14
+			~ While START Run
+		
+
+

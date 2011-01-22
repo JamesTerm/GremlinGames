@@ -1,0 +1,126 @@
+~osgv version 1
+######################################################
+# FEDERATION CRUSIER RAMORA-01
+#####################################################
+####################################################
+		
+^ Ramora-01
+	Ramora Setup.lws
+		$ Engine-01
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-02
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-03
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-04
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-05
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-06
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-07
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-08
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-09
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-10
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-11
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-12
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-13
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-14
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-15
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-16
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-17
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+		$ Engine-18
+			#RamoraEngine.osgv
+			..\..\Polygon FX\30m-ThrustGlow.osgv
+
+		$ MedCannon-01
+			..\..\Weapons\MedCannon\MedRail-01.lwo
+		$ MedCannon-02
+			..\..\Weapons\MedCannon\MedRail-01.lwo
+		$ MedCannon-03
+			..\..\Weapons\MedCannon\MedRail-01.lwo
+		$ MedCannon-04
+			..\..\Weapons\MedCannon\MedRail-01.lwo
+
+		$ RedBlinker-01
+			..\..\Polygon FX\10m-RedBlinker.osgv
+
+		$ LightTurretMount
+			
+		$ MedMissileRack-01
+		$ MedMissileRack-02
+		$ MedMissileRack-03
+		$ MedMissileRack-04
+		
+		$ Docking
+
+	@ Stop stop 0 stop 0
+	@ Arm stop 1 Armed 160
+	@ Armed Armed 160 Armed 160
+	@ DisArm Armed 160 DisArm 300
+		
+	~ On START Stop
+	~ Toggle Ramora-01.Arm Arm Armed Armed DisArm
+	#~ Toggle Ramora-01.
+	#~ Toggle Ramora-01.
+	#~ Toggle Ramora-01.
+
+% Toggle a Ramora-01.Arm
+#% Toggle s Ramora-01.Decel 
+#% Toggle a Ramora-01.Bomb
+#% Toggle c Ramora-01.Land
+
+
+#^ SunLight -20000 -90000 10000
+		#If you choose light zero, the camera headlight will no longer work; however, this may be the only way to tell that it does work
+		# Parms:  LightNumber, x, y, z
+#		L 0
+#			setAmbient(.3,-.3,-.3,0)
+#			setDiffuse(1.9,1.9,1.5,1.0)
+#			setSpecular(1.9,1.9,1.5,1.0)
+			
+# Test the camera centered node
+C
+	L 1
+		setAmbient(.-3,-.3,-.3,1) # R,G,B,RGB multiplier? (on = 1/off = 0) 
+		setDiffuse(0.2,0.2,0.2,1)
+		setSpecular(10,10,10,1)
+
+		# setDirection(x,y,z) # not sure how this works, I am guessing a unit vector for which way its pointed.  Defaults to (0,0,1)
+		# Attenuation is based on 1 / (C + L*d + Q*d*d)
+		setConstantAttenuation(.5)  
+		setLinearAttenuation(0.001)
+		setQuadraticAttenuation(0) 
+		# setSpotExponent(x) # No idea how this works, look it up
+		# setSpotCutoff(x) # No idea how this works, look it up
+	
+
+

@@ -1,0 +1,9 @@
+~osgv version 1
+######################################################
+# Ring Training obsticle
+#####################################################
+
+^ ring
+	ring_01.lws
+		$ green_light_01
+		..\..\Polygon FX\10m_4side_green_light.osgv

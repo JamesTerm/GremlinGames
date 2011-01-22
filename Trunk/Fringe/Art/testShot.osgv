@@ -1,0 +1,140 @@
+~osgv version 1
+
+############  Features and USAGE INSTRUCTIONS  ###################################################################
+#
+#	This file is used as an input file for osgv.exe.  You should make a file association between files
+#	of type *.osgv and osgv.exe.  OSGV is intended to be a tool for Justin and other artists to see their
+#	creations in a full game environment, and an opportunity for us to prototype technologies.  While we will
+#	be reusing the technologies, OSGV is written as a rapid prototype without any error handling to speak of,
+#	so if this file is not correct, no attempt is made to handle it nicely.  
+#	WARNING: assume everything is case sensitive.
+#	
+#	- The "~osgv version 1" must be the first non-comment, non-blank line.  
+#		The version number will change for backwards compatability
+#	- # signs are the start of a comment, everything including and after a # on a line is ignored
+#	- Blank lines are ignored
+#
+#	- Right now there are several kinds of lines.  Most of these are denoted by a character in the beginning of the line
+#		1. ^ lines represent ACTORS.  They have a name, a position, and an orientation, and scale in the scene
+#			Think of ACTORS as a NULL object in a LW scene you can use to place other scenes.  Everything
+#			tabbed under an actor is parented to the ACTOR.  The syntax of the ACTOR is like this:
+#			^ ActorName posX posY posZ rotH rotP rotR scaleX scaleY scaleZ
+#			All of the position and rotation values default to 0 and Scale defaults to 1.  Remember that actors
+#			are not just humanoid.  They can be ANYTHING in the scene, including the environment (stadium or 
+#			whatever), a weapon, a prop, etc.
+#		2. Lines with no prefix are just files read in.  These are usually Scenes that are read in that represent
+#			all of the actions an Actor can do.  All files are read in relative to where this osgv file is placed, 
+#			so you should place this osgv file in the LightWave Content Directory.  
+#		3. @ lines represent an ACTION.  They describe sequences of frames in the actor's scene.  The syntax:
+#			@ ActionName StartPose StartFrame EndPose EndFrame [On frame EventName][While|Toggle startFrame-endFrame EventName]
+#			So there are Poses, and an Action moves from one Pose to the next.  They may or may not be the 
+#			same pose.  For example, anything that is looped will have the same start and end pose.
+#			You should have an Action that moves from every pose to every other pose that might be reached.
+#			If an event happens that causes a new action to be performed, and that action does not start
+#			Where the last action ends, a transition action will be chosen that moves from one to the other
+#			smoothly.  Once an action starts, it will always complete, even if interrupted, so keep them short.
+#			Delayed events are in square brackets.  There can be 0 or more of them, and can be On, Toggle, or While events.
+#		4. ~ lines represent an IMPULSE.  It is a sequence of actions that are tied to an EVENT.  Syntax:
+#			~ Toggle|While|On EventName act1 act2 act3 act4 act5 act6 act7 act8
+#			Toggle and While events loop until completed.  On happens only once when the event is fired.
+#			START is a special automatic event that happens at launch.  Other events have global names,
+#			that are bound to the KEY BINDINGS below.  Since Event Names are global, you may want to follow
+#			the ActorName.EventName convention I have used.
+#			You have to have atleast one action, and you can have as many as 8 in an IMPULSE.  The last
+#			action listed on a looping impulse (if there is more than one action) will not be fired 
+#			until the impulse ends.  The second to last action in a looping impulse (if there is more than one action)
+#			is the action that is looped.  Everything before that happens one time.  Remember that looping actions
+#			may be cancelled by another impulse, so while once an ACTION is fired, not all of the actions
+#			in an impulse may play.
+#		5. % lines represent KEY BINDINGS.  They bind a keyboard key to a specific EVENT.  Syntax:
+#			% Toggle|While|On key EventName
+#			Key Bindings are global, so they can be placed anywhere in the file, close to an actor, 
+#			at the beginning, at the end, wherever.  The EventName is also global, so I have used the convention
+#			ActorName.EventName to direct events completely at the actor.  Remember all Event Names and keys are 
+#			case sensitive.  I have added the "Toggle" event type because it would be hard for an artist to scrub
+#			while holding a key down.  You should match the event types in the Key Binding to where the event
+#			is used in an IMPULSE: While|Toggle|On.
+#		6. ! lines represent Effects.  It is a special effect that is tied to an EVENT.  Syntax:
+#			! Toggle|While|On EventName EffectName [EffectParameters]
+#			We will have Effects tied to playing an audio clip (SoundEffect) and all different ParticleEffects:
+#			FireEffect, ExplosionEffect, ExplosionDebrisEffect, SmokeEffect, SmokeTrailEffect
+#			We will be able to add new Effects to other DLL's written in the future
+#		7. S lines represent a scaled item.  This is how you would "fake" really large scaled items that are in the
+#			distance, like planets, moons, the sun light source and lens flare, and the star-box itself.  Syntax:
+#			S scalefactor
+#			Use this as a node with several children parented to it.  Use a scalefactor of 0 to represent
+#			objects that are an infinite distance away (the player will never reach them), like the star box.
+#			If we were to place a LWO of the earth (the diameter of the earth is 12756 km X 12715 km), we might scale
+#			that by a factor of 0.0001 and make the spheroid 1275.6 m X 1271.5 m and place its center around
+#			1,300 m from the center of our scene (In LW or with the command above).  As we moved closer to the planet, it is parented to the camera
+#			such that our relative motion is also decreased by a factor of 0.0001 (the scalefactor) so we do not
+#			fly through it so fast.  We still want to make the objects pretty big so we do not throw off the
+#			illusion.  It might take some practice to get it right.
+#		8. L Lines represent light sources, see EarthMoon.osgv for an example
+#		9. C lines are nodes parented to the Camera, there are no other parameters.
+#			See EarthMoon.osgv for an example
+#		10. $ lines create a new Actor and insert it in an existing scene graph.  Syntax:
+#			$ NodeName
+#			This line looks for a node named NodeName underneath the parent, and then inserts
+#			an Actor node right above it in the scene graph.  This is great for replacing NULL objects with an Actor
+#		11. I lines represent an image in the scene mapped onto a polygon Syntax:
+#			I width height trans filename
+#			trans is a character 't' or 'T' for transparency blending the alpha
+#			or 'a' or 'A' to select additive blending mode, using the alpha channel.
+#			Use to blend the alpha channel transparency.  All Lighting is turned off (100% luminous)
+#		12. B lines represent a billboarded image that always points at the camera.
+#			See osg::Billboard.  At this time, only POINT_ROT_EYE is used, and the image
+#			is centered.  This format causes somewhat of a rotation along the bank axis.
+#			it is very useful for one part of the lens-flare.  Syntax is the same as I above (except it is B).
+#		12. P Nodes are "Point At" nodes that are parents of other things.  P nodes point
+#			at another object in the scene along the +Z axis.  It points at the other 
+#			object in the scene with the proper name, OR it could point at CAMERA.  Syntax:
+#			P name NodeName|CAMERA
+#
+#
+#	#### Future Features
+#		See GremlinGames\osgv\DevNotes.txt for some ideas for features I have in mind.  As you use osgv and this file, keep these ideas
+#		in mind, help me prioritize them, and let me know about bugs and other feature requests.  If a feature
+#		I have listed does not sound useful, let me know that too.  Remember every minute I spend doing 
+#		one thing is time I could be doing something that is more important.  Some of the things may be valuable 
+#		in future games, but we are trying to focus on something we can get out fast.  Prioritize Me!  
+#
+#			
+##################################################################################################################
+	
+^ FullScene # The rest of these should stay default
+	Scenes\Test Shots\ScuddPuppy Pass Union Crusader.lws
+	@ Stand stand 0 stand 0
+	@ StartWalkFromStand stand 0 walk 30
+	@ Walk walk 30 walk 120
+	@ StartRunFromWalk walk 120 run 150 
+	@ Run run 150 run 190
+	@ EndRunToWalk run 190 walk 200
+	@ EndWalkToStand walk 200 stand 210
+	@ PickNose stand 210 stand 250
+	@ ScratchButt stand 250 stand 280 [On 10 FullScene.Fart][While 0-30 FullScene.Hide]
+	~ On START Stand
+	~ Toggle FullScene.Walk Walk Stand	# starts walking when w pressed, returns to stand when w pressed again
+	#~ While FullScene.Run Run Stand		# Will Loop through Run while r is pressed, then returns to stand
+	~ While FullScene.WalkSeq Walk Walk Run Stand # Does two walks, loops the Run, then stands when s is released
+	~ On FullScene.PickNose PickNose			# Does this one thing, then returns to what it was doing
+	~ On FullScene.Gross PickNose ScratchButt	# Can do multiple things
+	! On FullScene.Fart SoundEffect Sounds\Thunder.wav 500.0	#relative path of file, and loudness distance in meters 
+	$ WingNULL	# We want to parent all of these sub-items to the WingNULL NULL object
+		shuttle.osgv	#we can include other files with other actors
+		#! While FullScene.Run FireEffect (0,0,0) 8 1		# position, scale, intensity
+		#! While FullScene.Run SmokeEffect (0,0,0) 8 1
+		! While FullScene.Run ExplosionEffect (0,0,0) 16 1
+		#! While FullScene.Run ExplosionDebrisEffect (0,0,0) 8 1
+		#! While FullScene.Run SoundEffect Sounds\lthrust.wav 100.0 202 73236 0 1 # name, range, loop start, loop stop, smart loop, one at a time
+	 
+# These are the key bindings that drive everything in the scene.  
+# It does not matter where they are.  They can be placed in the beginning, end, or close to the actor
+# It does not matter how they are tabbed.  The Event Names are Global
+# Be careful not to assign the same keys as already assigned, press 'h' in the viewer to see the help screen
+% Toggle o FullScene.Walk
+% While r FullScene.Run
+% While i FullScene.WalkSeq
+% On p FullScene.PickNose
+% On g FullScene.Gross
+

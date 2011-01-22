@@ -1,0 +1,108 @@
+App.progressCountTotal = 13;
+App.progressCountCurrent = 0;
+fw.dismissBatchDialogWhenDone = true;
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/1_24_01.jpg');
+App.progressCountCurrent = 1;
+App.batchStatusString = '1_24_01.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/1_24_01_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/1_24_01_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/1_24_01_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/1_24_01_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/1_24_01_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/1_24_01_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Crusader_no_surface.jpg');
+App.progressCountCurrent = 2;
+App.batchStatusString = 'Crusader_no_surface.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Crusader_no_surface_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Crusader_no_surface_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Crusader_no_surface_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Crusader_no_surface_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Crusader_no_surface_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Crusader_no_surface_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Curader_rough.jpg');
+App.progressCountCurrent = 3;
+App.batchStatusString = 'Curader_rough.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Curader_rough_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Curader_rough_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Curader_rough_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Curader_rough_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Curader_rough_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Curader_rough_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Karackuss_cap.jpg');
+App.progressCountCurrent = 4;
+App.batchStatusString = 'Karackuss_cap.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Karackuss_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Karackuss_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Karackuss_cap_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Karackuss_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Karackuss_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Karackuss_cap_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Orion skim-001-w_Q33.jpg');
+App.progressCountCurrent = 5;
+App.batchStatusString = 'Orion skim-001-w_Q33.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Orion skim-001-w_Q33_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Orion skim-001-w_Q33_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Orion skim-001-w_Q33_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Orion skim-001-w_Q33_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Orion skim-001-w_Q33_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Orion skim-001-w_Q33_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Q-33_Banner..jpg');
+App.progressCountCurrent = 6;
+App.batchStatusString = 'Q-33_Banner..jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Q-33_Banner_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Q-33_Banner_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Q-33_Banner_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Q-33_Banner_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Q-33_Banner_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Q-33_Banner_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Q33_cap.jpg');
+App.progressCountCurrent = 7;
+App.batchStatusString = 'Q33_cap.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Q33_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Q33_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Q33_cap_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Q33_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Q33_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Q33_cap_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Ramora pass over Orion.jpg');
+App.progressCountCurrent = 8;
+App.batchStatusString = 'Ramora pass over Orion.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ramora pass over Orion_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ramora pass over Orion_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ramora pass over Orion_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ramora pass over Orion_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ramora pass over Orion_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ramora pass over Orion_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Ramora_cap.jpg');
+App.progressCountCurrent = 9;
+App.batchStatusString = 'Ramora_cap.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ramora_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ramora_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ramora_cap_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ramora_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ramora_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ramora_cap_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/RingInSpace.jpg');
+App.progressCountCurrent = 10;
+App.batchStatusString = 'RingInSpace.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/RingInSpace_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/RingInSpace_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/RingInSpace_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/RingInSpace_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/RingInSpace_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/RingInSpace_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/Ring_cap.jpg');
+App.progressCountCurrent = 11;
+App.batchStatusString = 'Ring_cap.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ring_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ring_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/Ring_cap_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ring_cap_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ring_cap_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/Ring_cap_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/ScreenCapOrion.jpg');
+App.progressCountCurrent = 12;
+App.batchStatusString = 'ScreenCapOrion.jpg';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/ScreenCapOrion_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/ScreenCapOrion_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/ScreenCapOrion_jpg.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/ScreenCapOrion_jpg.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/ScreenCapOrion_jpg.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/ScreenCapOrion_jpg.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+doc = fw.openDocument('file:///D|/Gremlin Games/Fringe/WebDev/Gallery-RAW/WebsiteBG-RamoraLaunch.JPG');
+App.progressCountCurrent = 13;
+App.batchStatusString = 'WebsiteBG-RamoraLaunch.JPG';
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/WebsiteBG-RamoraLaunch_JPG.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/WebsiteBG-RamoraLaunch_JPG.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/images/WebsiteBG-RamoraLaunch_JPG.jpg',({applyScale:false, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:"100", useScale:true, xSize:0, ySize:0}));
+if (!Files.exists('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/WebsiteBG-RamoraLaunch_JPG.jpg') || confirm('file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/WebsiteBG-RamoraLaunch_JPG.jpg already exists. Click OK to replace the file.')) 
+fw.exportDocumentAs(doc, 'file:///D|/Gremlin Games/Fringe/WebDev/Gallery/thumbnails/WebsiteBG-RamoraLaunch_JPG.jpg',({applyScale:true, colorMode:"24 bit", exportFormat:"JPEG", jpegQuality:80, jpegSmoothness:0, jpegSubsampling:0, name:"JPEG - Better Quality", numEntriesRequested:0, percentScale:100, useScale:false, xSize:-144, ySize:-144}));
+fw.closeDocument(doc);
+'done';

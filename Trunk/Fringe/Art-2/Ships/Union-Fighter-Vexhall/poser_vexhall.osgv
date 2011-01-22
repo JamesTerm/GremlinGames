@@ -1,0 +1,27 @@
+~osgv version 1
+######################################################
+#Authored by justin 2/26/08
+######################################################
+
+^ Poser_vexhall
+	Poser_setup.lws
+
+#### Parent/Stucture ####
+
+	$ engine_01
+		FighterThrust.osgv
+	$ engine_02
+		FighterThrust.osgv
+	#$ engine_03
+		FighterThrust.osgv
+	#$ engine_03
+		FighterThrust.osgv
+	$ landinglight_01
+		..\..\Polygon FX\LadingLight-01.osgv
+	$ landinglight_02
+		..\..\Polygon FX\LadingLight-01.osgv
+	$ blinker_red_01
+		..\..\Polygon FX\10m-RedBlinker.osgv
+	$ blinker_green_01
+		..\..\Polygon FX\10m-GreenBlinker.osgv
+
