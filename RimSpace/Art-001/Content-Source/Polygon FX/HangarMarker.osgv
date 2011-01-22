@@ -1,0 +1,7 @@
+~osgv version 1
+	
+^ HangarMarker
+	HangarBanner.lws
+				
+	@ Run start 0 stop 150
+	~ While START Run

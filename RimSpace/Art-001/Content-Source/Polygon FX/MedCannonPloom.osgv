@@ -1,0 +1,10 @@
+~osgv version 1
+	
+^ MedPloom
+	MedCannon01.lws
+
+	@ Pause Stop 0 Stop 0	
+	@ Fire fireA 0 fireB 30
+	
+	~ While START Pause
+	~ While Ship.FireWeapon Fire Pause

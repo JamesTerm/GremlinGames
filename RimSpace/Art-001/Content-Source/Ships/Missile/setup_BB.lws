@@ -1,0 +1,1198 @@
+LWSC
+3
+
+RenderRangeType 0
+FirstFrame 1
+LastFrame 300
+FrameStep 1
+RenderRangeArbitrary 1-300
+PreviewFirstFrame 0
+PreviewLastFrame 300
+PreviewFrameStep 1
+CurrentFrame 40
+FramesPerSecond 30
+
+LoadObjectLayer 1 Content-Source/Missile-javelin/Javelin_01.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 2 Content-Source/Missile-javelin/Javelin_01.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  12
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 1.3666666666666667 0 0 0 0 0 0 0
+  Key 0 1.3999999999999999 0 0 0 0 0 0 0
+  Key 0 1.4333333333333333 0 0 0 0 0 0 0
+  Key 0 1.4666666666666666 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Key 0 1.5333333333333334 0 0 0 0 0 0 0
+  Key 0 1.5666666666666667 0 0 0 0 0 0 0
+  Key 0 1.6000000000000001 0 0 0 0 0 0 0
+  Key 0 1.6333333333333333 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  12
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 1.3666666666666667 0 0 0 0 0 0 0
+  Key 0 1.3999999999999999 0 0 0 0 0 0 0
+  Key 0 1.4333333333333333 0 0 0 0 0 0 0
+  Key 0 1.4666666666666666 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Key 0 1.5333333333333334 0 0 0 0 0 0 0
+  Key 0 1.5666666666666667 0 0 0 0 0 0 0
+  Key 0 1.6000000000000001 0 0 0 0 0 0 0
+  Key 0 1.6333333333333333 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  12
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 1.3666666666666667 0 0 0 0 0 0 0
+  Key 0 1.3999999999999999 0 0 0 0 0 0 0
+  Key 0 1.4333333333333333 0 0 0 0 0 0 0
+  Key 0 1.4666666666666666 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Key 0 1.5333333333333334 0 0 0 0 0 0 0
+  Key 0 1.5666666666666667 0 0 0 0 0 0 0
+  Key 0 1.6000000000000001 0 0 0 0 0 0 0
+  Key 0 1.6333333333333333 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  12
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 1.3666666666666667 0 0 0 0 0 0 0
+  Key 0 1.3999999999999999 0 0 0 0 0 0 0
+  Key 0 1.4333333333333333 0 0 0 0 0 0 0
+  Key 0 1.4666666666666666 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Key 0 1.5333333333333334 0 0 0 0 0 0 0
+  Key 0 1.5666666666666667 0 0 0 0 0 0 0
+  Key 0 1.6000000000000001 0 0 0 0 0 0 0
+  Key 0 1.6333333333333333 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  12
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 1.3666666666666667 0 0 0 0 0 0 0
+  Key 0 1.3999999999999999 0 0 0 0 0 0 0
+  Key 0 1.4333333333333333 0 0 0 0 0 0 0
+  Key 0 1.4666666666666666 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Key 0 1.5333333333333334 0 0 0 0 0 0 0
+  Key 0 1.5666666666666667 0 0 0 0 0 0 0
+  Key 0 1.6000000000000001 0 0 0 0 0 0 0
+  Key 0 1.6333333333333333 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  12
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 0.33333333333333331 0 0 0 0 0 0 0
+  Key 0 1.3666666666666667 0 0 0 0 0 0 0
+  Key 0 1.3999999999999999 0 0 0 0 0 0 0
+  Key 0 1.4333333333333333 0 0 0 0 0 0 0
+  Key 0 1.4666666666666666 0 0 0 0 0 0 0
+  Key 0 1.5 0 0 0 0 0 0 0
+  Key 0 1.5333333333333334 0 0 0 0 0 0 0
+  Key 0 1.5666666666666667 0 0 0 0 0 0 0
+  Key 0 1.6000000000000001 0 0 0 0 0 0 0
+  Key 0 1.6333333333333333 0 0 0 0 0 0 0
+  Key 0 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  15
+  Key 0.20800061523914337 0 0 0 0 0 0 0 0
+  Key 0.20800061523914337 0.33333333333333331 0 0 0 0 0.51934231486585403 0.41547385189268321 0
+  Key 1.1428167819976807 0.59999999999999998 0 0 0 0 0.33264977198380691 0.20790610748987934 0
+  Key 0.74855649471282959 0.76666666666666672 0 0 0 0 -0.032458359544927422 -0.11035842245275324 0
+  Key 1 1.3333333333333333 0 0 0 0 0.22396476732359991 0.087328268931462213 0
+  Key 0.98569566011428833 1.3666666666666667 0 0 0 0 9.3128946092393657e-005 0.00074503156873914926 0
+  Key 0.99556577205657959 1.3999999999999999 0 0 0 0 -0.00085715949535369873 -0.0060001164674758911 0
+  Key 1.0066790580749512 1.4333333333333333 0 0 0 0 -0.00096106529235839844 -0.0057663917541503906 0
+  Key 0.98571181297302246 1.4666666666666666 0 0 0 0 -0.00097348292668660475 -0.0048674146334330244 0
+  Key 1.0047340393066406 1.5 0 0 0 0 -0.00097467899322509774 -0.003898715972900391 0
+  Key 1.0217543840408325 1.5333333333333334 0 0 0 0 -0.00097396969795227051 -0.0029219090938568115 0
+  Key 1.0027742385864258 1.5666666666666667 0 0 0 0 -0.00097215175628662109 -0.0019443035125732422 0
+  Key 0.98779451847076416 1.6000000000000001 0 0 0 0 -0.00096803903579711914 -0.00096803903579711914 0
+  Key 1.0148379802703857 1.6333333333333333 0 0 0 0 -0.0018494923909505208 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  15
+  Key 0.20800061523914337 0 0 0 0 0 0 0 0
+  Key 0.20800061523914337 0.33333333333333331 0 0 0 0 0.51934231486585403 0.41547385189268321 0
+  Key 1.1428167819976807 0.59999999999999998 0 0 0 0 0.33264977198380691 0.20790610748987934 0
+  Key 0.74855649471282959 0.76666666666666672 0 0 0 0 -0.032458359544927422 -0.11035842245275324 0
+  Key 1 1.3333333333333333 0 0 0 0 0.22396476732359991 0.087328268931462213 0
+  Key 0.98569566011428833 1.3666666666666667 0 0 0 0 9.3128946092393657e-005 0.00074503156873914926 0
+  Key 0.99556577205657959 1.3999999999999999 0 0 0 0 -0.00085715949535369873 -0.0060001164674758911 0
+  Key 1.0066790580749512 1.4333333333333333 0 0 0 0 -0.00096106529235839844 -0.0057663917541503906 0
+  Key 0.98571181297302246 1.4666666666666666 0 0 0 0 -0.00097348292668660475 -0.0048674146334330244 0
+  Key 1.0047340393066406 1.5 0 0 0 0 -0.00097467899322509774 -0.003898715972900391 0
+  Key 1.0217543840408325 1.5333333333333334 0 0 0 0 -0.00097396969795227051 -0.0029219090938568115 0
+  Key 1.0027742385864258 1.5666666666666667 0 0 0 0 -0.00097215175628662109 -0.0019443035125732422 0
+  Key 0.98779451847076416 1.6000000000000001 0 0 0 0 -0.00096803903579711914 -0.00096803903579711914 0
+  Key 1.0148379802703857 1.6333333333333333 0 0 0 0 -0.0018494923909505208 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  15
+  Key 0.20800061523914337 0 0 0 0 0 0 0 0
+  Key 0.20800061523914337 0.33333333333333331 0 0 0 0 0.51934231486585403 0.41547385189268321 0
+  Key 1.1428167819976807 0.59999999999999998 0 0 0 0 0.33264977198380691 0.20790610748987934 0
+  Key 0.74855649471282959 0.76666666666666672 0 0 0 0 -0.032458359544927422 -0.11035842245275324 0
+  Key 1 1.3333333333333333 0 0 0 0 0.22396476732359991 0.087328268931462213 0
+  Key 0.98569566011428833 1.3666666666666667 0 0 0 0 9.3128946092393657e-005 0.00074503156873914926 0
+  Key 0.99556577205657959 1.3999999999999999 0 0 0 0 -0.00085715949535369873 -0.0060001164674758911 0
+  Key 1.0066790580749512 1.4333333333333333 0 0 0 0 -0.00096106529235839844 -0.0057663917541503906 0
+  Key 0.98571181297302246 1.4666666666666666 0 0 0 0 -0.00097348292668660475 -0.0048674146334330244 0
+  Key 1.0047340393066406 1.5 0 0 0 0 -0.00097467899322509774 -0.003898715972900391 0
+  Key 1.0217543840408325 1.5333333333333334 0 0 0 0 -0.00097396969795227051 -0.0029219090938568115 0
+  Key 1.0027742385864258 1.5666666666666667 0 0 0 0 -0.00097215175628662109 -0.0019443035125732422 0
+  Key 0.98779451847076416 1.6000000000000001 0 0 0 0 -0.00096803903579711914 -0.00096803903579711914 0
+  Key 1.0148379802703857 1.6333333333333333 0 0 0 0 -0.0018494923909505208 0 0
+  Key 1 1.6666666666666667 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Javelin_01.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject LightPivot
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject LightPivot
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 2.0943949222564702 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject LightPivot
+ShowObject 7 3
+Group 0
+SchematicPosition 1.200000 -0.800000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key -2.0943949222564702 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AmbientColor 1 1 1
+AmbientIntensity 0.05
+
+AddLight
+LightName Light
+ShowLight 1 5
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0.78539813999999997 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0.6108652200000001 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+LightColor 1 1 1
+LightIntensity 0.5
+AffectCaustics 1
+LightType 1
+ShadowType 1
+ShadowColor 0 0 0
+
+AddLight
+LightName Light
+ShowLight 1 5
+SchematicPosition 0.600000 -0.400000
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0.78539813999999997 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0.6108652200000001 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000004
+LightColor 1 1 1
+LightIntensity 0.5
+AffectCaustics 1
+LightType 1
+ShadowType 1
+ShadowColor 0 0 0
+
+AddLight
+LightName Light
+ShowLight 1 5
+SchematicPosition 1.200000 -0.800000
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 2 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0.78539813999999997 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0.6108652200000001 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000005
+LightColor 1 1 1
+LightIntensity 0.5
+AffectCaustics 1
+LightType 1
+ShadowType 1
+ShadowColor 0 0 0
+
+AddLight
+LightName Engine
+ShowLight 1 5
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -1.4488629102706907 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+LightColor 0.156863 0.580392 1
+LightIntensity 0.3
+LightType 1
+LightFalloffType 2
+LightRange 5
+ShadowType 1
+ShadowColor 0 0 0
+
+AddLight
+LightName Engine
+ShowLight 1 5
+SchematicPosition 0.600000 -0.400000
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 2.3579547405242924 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+LightColor 1 0.654902 0.309804
+LightIntensity 0.3
+LightType 1
+LightFalloffType 2
+LightRange 5
+ShadowType 1
+ShadowColor 0 0 0
+
+AddCamera
+CameraName Camera
+ShowCamera 1 2
+CameraMotion
+NumChannels 6
+Channel 0
+{ Envelope
+  1
+  Key -5.4608964920043963 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key -0.64256346225738525 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 1.2865666151046748 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 1.8989192247390747 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key -0.097738452255725861 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0.52708941698074352 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ZoomFactor 3.2
+ResolutionMultiplier 1.0
+FrameSize 640 480
+PixelAspect 1
+MaskPosition 0 0 640 480
+MotionBlur 0
+FieldRendering 0
+ApertureHeight 0.015
+UseGlobalResolution 0
+UseGlobalMask 0
+UseGlobalBlur 0
+Plugin CameraHandler 1 Perspective
+EndPlugin
+
+GlobalFrameSize 640 480
+GlobalMultiplier 1.0
+GlobalFieldRendering 0
+GlobalMotionBlur 0
+GlobalMaskPosition 0 0 640 480
+GlobalFilmHeight 0.015
+GlobalPixelAspect 1
+
+Antialiasing 0
+AntiAliasingLevel -1
+ReconstructionFilter 0
+AdaptiveSampling 0
+
+SolidBackdrop 1
+BackdropColor 0 0 0
+ZenithColor 0 0.1569 0.3137
+SkyColor 0.4706 0.7059 0.9412
+GroundColor 0.1961 0.1569 0.1176
+NadirColor 0.3922 0.3137 0.2353
+FogType 0
+FogMinDistance 0
+FogMaxDistance 1
+FogMinAmount 0
+FogMaxAmount 1
+FogColor 0.5098 0.5098 0.549
+BackdropFog 0
+DitherIntensity 1
+AnimatedDither 0
+
+RenderMode 2
+RayTraceEffects 0
+DepthBufferAA 0
+RayRecursionLimit 16
+DataOverlayLabel  
+SaveRGB 0
+SaveAlpha 0
+
+ViewConfiguration 0
+DefineView 0
+ViewType 9
+ViewLevel 5
+ViewAimpoint 0 0 0
+ViewZoomFactor 11.63178
+
+GridNumber 80
+GridSize 2
+CameraViewBG 0
+ShowMotionPath 1
+ShowFogRadius 0
+ShowFogEffect 0
+ShowSafeAreas 0
+ShowFieldChart 0
+OverlayColor_fv 0 0 0
+MeshBackgroundGroup 1
+
+CurrentObject 1
+CurrentLight 4
+CurrentCamera 0
+GraphEditorData
+{ GraphEd_Favorites
+}
+{ GE_Expression_Lib
+  1
+}
+ImageEditorData
+NumberOfClips 4
+Clip 0
+{ ClipObject
+  "BAKE_javelin1.bmp"
+  128
+  0
+}
+Clip 1
+{ ClipObject
+  "javelin1_thustTRANS.bmp"
+  128
+  0
+}
+Clip 2
+{ ClipObject
+  "MedMount1.bmp"
+  128
+  0
+}
+Clip 3
+{ ClipObject
+  "BAKE_MedMount1.bmp"
+  128
+  0
+}

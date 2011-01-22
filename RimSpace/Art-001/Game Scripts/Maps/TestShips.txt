@@ -1,0 +1,1 @@
+Simple map for testing fighters. (1 on 1 odds)(est load 15sec)

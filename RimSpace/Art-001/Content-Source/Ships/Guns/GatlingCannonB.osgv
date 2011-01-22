@@ -1,0 +1,15 @@
+~osgv version 1
+	
+^ GatlingCannonB
+	GatlingCannonB.lws
+	$ Fire
+		../../Polygon FX/MGun-01.osgv
+
+	@ Pause Stop 0 Stop 0	
+	@ Fire fireA 1 fireB 4
+	
+	~ While START Pause
+	~ While Ship.FireWeapon Fire Pause
+
+	#% While x Ship.FireWeapon
+	! while Ship.FireWeapon SoundEffect ..\..\Audio\Vucan02.wav 80 3072 5888 1 1 0.5

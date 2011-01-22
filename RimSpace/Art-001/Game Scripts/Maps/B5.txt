@@ -1,0 +1,1 @@
+A map concept. This map is roughly playable. However, it is in a very unfinished state. (odds 1 on 1)(est load 25sec)

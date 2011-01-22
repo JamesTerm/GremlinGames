@@ -1,0 +1,21 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/11/09
+######################################################
+
+## Ship Name
+^ MedMount
+	MedMount.lws
+
+## Actions #####
+
+	
+
+#### Editable Accs #### (use universal naming structure)
+
+	$ Missile
+		Missile_Javelin.osgv
+
+
+#### Actions/Key Bindings ####
+	

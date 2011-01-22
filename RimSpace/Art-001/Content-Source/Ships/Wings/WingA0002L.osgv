@@ -1,0 +1,36 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/11/09
+######################################################
+
+## Ship Name
+^ WingA0001L
+	WingA00002L.lws
+
+## Actions #####
+
+	@ Pause Stop 1 Stop 1
+	~ On START Pause
+	
+	@ Brake A 11 B 14
+	@ Holdbrake A 14 B 14
+	@ Return B 15 C 20
+	~ While Ship.Brake Brake Holdbrake Holdbrake Return
+
+#### Editable Accs #### (use universal naming structure)
+
+	$ VaporTrail
+		! While VAPOR_TRAIL SmokeTrailEffect (0,0,0) 0.2 4 #### = (X,Y,Z) size duration
+
+#	$ Accs01
+#		..\..\
+#	$ Accs02
+#		..\..\
+
+
+#### Actions/Key Bindings ####
+	
+
+
+#### For Testing ####
+	% While s Ship.Brake

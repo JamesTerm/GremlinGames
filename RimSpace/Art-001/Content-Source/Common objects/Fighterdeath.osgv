@@ -1,0 +1,54 @@
+~osgv version 1
+######################################################
+#Authored by Justin 4/24/08
+######################################################
+
+^ FighterDeath
+	..\Polygon FX\Explosion-01.lws
+		^ Particle
+			^ Haze
+				P T CAMERA
+					^ ThrustOffset 0 0 0
+						..\Polygon FX\Explosion_Redhaze.lws
+
+						#@ Run start 20 stop 29
+						@ Splode booma 30 boomb 90
+						~ on DESTROY Splode
+							
+		# Still respond to collisions and sound effects (except there is no Bounding Box, so these will not get fired)
+		! On COLLIDE SoundEffect ..\Audio\metal_crashB.wav 35.0 0 103680
+		! On CANNON_HIT SoundEffect ..\Audio\bang_2.wav 27.0 0 9376
+		! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+		! On CANNON_HIT FireEffect (0,0,0) 1 1
+	
+		# This impulse is really about firing delayed events, a primary and secondary explosion
+		# The most important thing here is that you call HIDE when it is all over
+		@ DestructionSeq desta 0 destb 200 [On 30 CommonDest.PrimaryExpl] [On 100 CommonDest.SecondaryExpl] [On 200 HIDE]
+	
+		# We are having BOTH DESTROY and SHOT_DOWN do the same thing, but you can seperate them
+		~ On DESTROY DestructionSeq
+		~ On SHOT_DOWN DestructionSeq
+		! On DESTROY SoundEffect ..\Audio\metal_crashB.wav 100.0 0 103680
+		! On SHOT_DOWN SoundEffect ..\Audio\bang_2.wav 100.0 0 9376
+	
+		# Play another larger particle explosion at the point of collision / last hit
+		! On DESTROY ExplosionEffect (0,0,0) 5 1
+		! On DESTROY FireEffect (0,0,0) 5 1
+		! On SHOT_DOWN ExplosionEffect (0,0,0) 3 1
+		! On SHOT_DOWN FireEffect (0,0,0) 3 1
+	
+		# place whatever kinds of effects you want here for the different explosions
+		! On CommonDest.PrimaryExpl ExplosionEffect (0,0,0) 10 1
+		! On CommonDest.PrimaryExpl FireEffect (0,0,0) 10 1
+		! On CommonDest.SecondaryExpl ExplosionEffect (0,0,10) 15 1
+		! On CommonDest.SecondaryExpl FireEffect (0,0,10) 15 1
+	
+	#@ Run start 29 stop 29
+	@ Splode booma 30 boomb 90 [On 0 boomsound]
+	! On boomsound SoundEffect ..\Audio\explosion_01.wav 100.0
+	~ On DESTROY Splode
+	~ On SHOT_DOWN Splode
+	~ On Testkill Splode
+		% On j Testkill Splode
+	
+	

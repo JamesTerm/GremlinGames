@@ -1,0 +1,24 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/11/09
+######################################################
+
+## Ship Name
+^ Booster001
+	BoosterBRAKE0001.lws
+
+## Actions #####
+
+#	@ Pause Stop 1 Stop 1
+#	~ On START Pause
+	
+#	@ Brake A 11 B 14
+#	@ Holdbrake A 14 B 14
+#	@ Return B 15 C 20
+#	~ While Ship.Brake Brake Holdbrake Holdbrake Return
+
+
+#	% While s Ship.Brake
+
+	! !Loop Thrust_BU MapFramesEffect (0.5,1.0,10,14)
+	% Range 3 Thrust_BU 0 1

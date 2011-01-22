@@ -1,0 +1,35 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/14/09
+######################################################
+
+^ AsteroidCity
+	AsteroidCitySetup.lws
+
+#### Visual Accs ##########
+
+	$ Blinker01
+		..\Polygon FX\10m-RedBlinker.osgv
+	$ Blinker02
+		..\Polygon FX\10m-RedBlinker.osgv
+	$ Blinker03
+		..\Polygon FX\10m-RedBlinker.osgv
+	$ Blinker04
+		..\Polygon FX\10m-RedBlinker.osgv
+	$ Blinker05
+		..\Polygon FX\10m-RedBlinker.osgv
+	
+	$ Gantry01
+		Accs\Gantry.osgv
+	$ Gantry02
+		Accs\Gantry.osgv
+	$ Gantry03
+		Accs\Gantry.osgv
+
+#### FX ##########
+
+	! On CANNON_HIT SoundEffect ..\Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	#! On COLLIDE SoundEffect ..\Audio\metal_crashA.wav 35.0 0 84096
+	! On COLLIDE SoundEffect ..\Audio\metal_crashB.wav 35.0 0 13680

@@ -1,0 +1,38 @@
+~osgv version 1
+######################################################
+#Authored by rick 4/18/08
+#
+# This will be used as the temporary explosion for objects until Justin makes a nicer one
+######################################################
+
+^ CommonDestruction
+	# Still respond to collisions and sound effects (except there is no Bounding Box, so these will not get fired)
+	! On COLLIDE SoundEffect ..\Audio\metal_crashB.wav 35.0 0 103680
+	! On CANNON_HIT SoundEffect ..\Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	
+	# This impulse is really about firing delayed events, a primary and secondary explosion
+	# The most important thing here is that you call HIDE when it is all over
+	@ DestructionSeq desta 0 destb 200 [On 30 CommonDest.PrimaryExpl] [On 100 CommonDest.SecondaryExpl] [On 200 HIDE]
+	
+	# We are having BOTH DESTROY and SHOT_DOWN do the same thing, but you can seperate them
+	~ On DESTROY DestructionSeq
+	~ On SHOT_DOWN DestructionSeq
+	! On DESTROY SoundEffect ..\Audio\metal_crashB.wav 100.0 0 103680
+	! On SHOT_DOWN SoundEffect ..\Audio\bang_2.wav 100.0 0 9376
+	
+	# Play another larger particle explosion at the point of collision / last hit
+	! On DESTROY ExplosionEffect (0,0,0) 5 1
+	! On DESTROY FireEffect (0,0,0) 5 1
+	! On SHOT_DOWN ExplosionEffect (0,0,0) 3 1
+	! On SHOT_DOWN FireEffect (0,0,0) 3 1
+	
+	# place whatever kinds of effects you want here for the different explosions
+	! On CommonDest.PrimaryExpl ExplosionEffect (0,0,0) 10 1
+	! On CommonDest.PrimaryExpl FireEffect (0,0,0) 10 1
+	! On CommonDest.SecondaryExpl ExplosionEffect (0,0,10) 15 1
+	! On CommonDest.SecondaryExpl FireEffect (0,0,10) 15 1
+	
+	
+	

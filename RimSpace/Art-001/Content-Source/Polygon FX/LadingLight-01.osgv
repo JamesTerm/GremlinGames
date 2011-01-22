@@ -1,0 +1,10 @@
+~osgv version 1
+	
+^ Sun
+	P T CAMERA
+		U 2000 10000	# Here is how we make the light scale at distances, params are nominal dist and far dist
+			^ actor 0,0,0
+				10m-LadingLight.lwo
+				
+				#@ Run start 0 stop 14
+				#~ While START Run

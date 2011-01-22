@@ -1,0 +1,14 @@
+~osgv version 1
+	
+^ Burnerring
+	U 200 6000	# Here is how we make the light scale at distances, params are nominal dist and far dist
+		BurnerRing01.lws
+
+	@ Hold Stop 0 Stop 0
+	~ On START Hold	
+
+	@ Boom fireA 0 fireB 30 [On 1 boomsound.FX]
+	! On boomsound.FX SoundEffect ..\Audio\explosion.wav 300.0
+
+	~ While Ship.AfterBurner Boom Hold Hold
+	% On t Ship.AfterBurner

@@ -1,0 +1,5 @@
+~osgv version 1
+
+# This file is used for the retical that is directly in front of the ship
+^ PrimaryRetical 0 0 1		
+	B .025 .025 t [Targeting Crosshairs/Q-33-01.tga]

@@ -1,0 +1,471 @@
+LWSC
+3
+
+RenderRangeType 0
+FirstFrame 1
+LastFrame 300
+FrameStep 1
+RenderRangeArbitrary 1-300
+PreviewFirstFrame 0
+PreviewLastFrame 300
+PreviewFrameStep 1
+CurrentFrame 0
+FramesPerSecond 30
+Plugin MasterHandler 1 .HyperVoxels
+EndPlugin
+
+LoadObjectLayer 1 D:Gremlin Games/Fringe/Art-3/Content-Source/Polygon FX/SinglePoint.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+Plugin CustomObjHandler 1 HyperVoxelsDrawing
+EndPlugin
+Plugin DisplacementHandler 1 HyperVoxelsParticles
+EndPlugin
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AmbientColor 1 1 1
+AmbientIntensity 0.05
+
+AddLight
+LightName Light
+ShowLight 1 5
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+LightColor 1 1 1
+LightIntensity 0.8
+AffectCaustics 1
+LightType 0
+ShadowType 1
+ShadowColor 0 0 0
+
+AddCamera
+CameraName Camera
+ShowCamera 1 2
+CameraMotion
+NumChannels 6
+Channel 0
+{ Envelope
+  1
+  Key 0.064999990165233612 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key -3.6173899173736572 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ZoomFactor 3.2
+ResolutionMultiplier 1.0
+FrameSize 512 512
+PixelAspect 1
+MaskPosition 0 0 640 480
+MotionBlur 0
+FieldRendering 0
+ApertureHeight 0.015
+UseGlobalResolution 0
+UseGlobalMask 0
+UseGlobalBlur 0
+Plugin CameraHandler 1 Perspective
+EndPlugin
+
+GlobalFrameSize 640 480
+GlobalMultiplier 1.0
+GlobalFieldRendering 0
+GlobalMotionBlur 0
+GlobalMaskPosition 0 0 640 480
+GlobalFilmHeight 0.015
+GlobalPixelAspect 1
+
+Antialiasing 1
+AntiAliasingLevel -1
+ReconstructionFilter 0
+FilterType 1
+AdaptiveSampling 0
+
+SolidBackdrop 1
+BackdropColor 0 0 0
+ZenithColor 0 0.1569 0.3137
+SkyColor 0.4706 0.7059 0.9412
+GroundColor 0.1961 0.1569 0.1176
+NadirColor 0.3922 0.3137 0.2353
+FogType 0
+FogMinDistance 0
+FogMaxDistance 1
+FogMinAmount 0
+FogMaxAmount 1
+FogColor 0.5098 0.5098 0.549
+BackdropFog 0
+Plugin VolumetricHandler 1 HyperVoxelsFilter
+{ HyperVoxelData
+  HVFlags 2 0 1 1
+  HVBlendingGroups 0
+  { HVObject
+    { HVFlags
+      "SinglePoint"
+      1 0 0 1 0 0 0
+    }
+    { HVChannels
+      ParticleSize 1.2 0
+      Color 0.78399998 0.78399998 0.78399998 0
+      DiffuseSharp 0 0
+      VLuminosity 1.5 0
+      VColor 0.96078432 0.84705877 0.49411759 0
+      VThickness 0.80000001 0
+      VSmoothness 0.64999998 0
+      VShadowStrength 0.050000001 0
+      VAmbientIntensity 0.11 0
+      VRenderQuality 3
+      VShadowQuality 2
+      VolumetricShadows 1
+      VIllumination 2
+      VLight1 536870912
+      TextureEffect 2
+      TextureAmplitude 0.33000001 0
+      TextureShadows 0
+    }
+    { HVTextures
+      { TextureBlock
+        7
+        { Texture
+          { Gradient
+            "(-128)"
+            Channel 7
+            { Opacity
+              0
+              1
+              0
+            }
+            Enable 1
+            Negative 0
+          }
+          ParamName "Slope"
+          ItemName "(none)"
+          GradStart 0
+          GradEnd 1
+          GradRepeat 0
+          KeyFloats 0 0.3921569 0.56862748 0.28235301 1 0.76842111 0.3921569 0.56862748 0.28235301 1 0.89999998 0.57254899 0.4666667 0.372549 1
+          KeyInts 0 0 0
+        }
+      }
+      { TextureBlock
+        32
+        { Texture
+          { Gradient
+            "(-128)"
+            Channel 32
+            { Opacity
+              0
+              1
+              0
+            }
+            Enable 1
+            Negative 0
+          }
+          ParamName "Local Density"
+          ItemName "(none)"
+          GradStart 0
+          GradEnd 1
+          GradRepeat 0
+          KeyFloats 0 4 4 4 1 0.45789471 0.97647059 0.89019608 0.60784322 1
+          KeyInts 0 0
+        }
+      }
+      { TextureBlock
+        35
+        { Texture
+          { Gradient
+            "(-128)"
+            Channel 35
+            { Opacity
+              0
+              1
+              0
+            }
+            Enable 1
+            Negative 0
+          }
+          ParamName "Local Density"
+          ItemName "(none)"
+          GradStart 0
+          GradEnd 1
+          GradRepeat 0
+          KeyFloats 0 0.85490197 0.30588236 0.070588239 1 0.43508771 0.98823529 0.93725491 0.77254903 1
+          KeyInts 0 0
+        }
+      }
+      { TextureBlock
+        -1
+        { Texture
+          { Procedural
+            "(-128)"
+            Channel -1
+            { Opacity
+              0
+              1
+              0
+            }
+            Enable 1
+            Negative 0
+          }
+          { TextureMap
+            { Center
+              0 0 0
+              0
+            }
+            { Size
+              1 1 1
+              0
+            }
+            { Rotation
+              0 0 0
+              0
+            }
+            { Falloff
+              0
+              0 0 0
+              0
+            }
+            RefObject "(none)"
+            Coordinates 0
+          }
+          Axis 2
+          TextureValue 1
+          { Func
+            "fBm"
+            6
+            -0.5
+            0.5
+          }
+        }
+      }
+    }
+    { Shaders
+    }
+    { HVParticles
+      Color 0 "(none)"
+      Weight 0 "(none)"
+    }
+    { HVoxelCache
+      FileName ""
+      Min 0 0 0
+      Max 0 0 0
+    }
+  }
+}
+EndPlugin
+DitherIntensity 1
+AnimatedDither 0
+
+RenderMode 2
+RayTraceEffects 0
+DepthBufferAA 0
+RayRecursionLimit 16
+DataOverlayLabel  
+SaveRGB 0
+SaveAlpha 0
+
+ViewConfiguration 0
+DefineView 0
+ViewType 9
+ViewLevel 5
+ViewAimpoint 0 0 0
+ViewZoomFactor 4
+
+GridNumber 80
+GridSize 1
+CameraViewBG 0
+ShowMotionPath 1
+ShowFogRadius 0
+ShowFogEffect 0
+ShowSafeAreas 0
+ShowFieldChart 0
+OverlayColor_fv 0 0 0
+MeshBackgroundGroup 1
+
+CurrentObject 0
+CurrentLight 0
+CurrentCamera 0
+GraphEditorData
+{ GraphEd_Favorites
+}
+{ GE_Expression_Lib
+  1
+}
+ImageEditorData
+NumberOfClips 0

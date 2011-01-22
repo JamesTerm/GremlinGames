@@ -1,0 +1,10 @@
+raw
+RAW
+Raw
+cdr
+CDR
+sfk
+cpt
+cfg
+svn
+ScreenCaptures

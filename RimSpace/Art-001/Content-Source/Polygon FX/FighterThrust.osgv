@@ -1,0 +1,27 @@
+~osgv version 1
+#authored by justin 9/16/09
+###########################
+	
+O F CAM_POINTER
+	^ engineflair
+		engine_flair.lws
+		
+		@ Run start 0 stop 30
+		~ While START Run
+
+		@ Thrust A 30 B 60	
+		@ HoldThrust B 60 B 90
+		@ ReturnThrust B 90 C 120
+		~ While Ship.Thrust Thrust HoldThrust HoldThrust ReturnThrust
+
+		@ Brake A 120 B 150
+		@ HoldBrake B 150 B 180	
+		@ ReturnBrake B 180 C 210
+		~ While Ship.Brake Brake HoldBrake HoldBrake ReturnBrake
+
+
+##### Test Only! comment key bindings out for final##########
+#############################################################
+
+% While w Ship.Thrust
+% While s Ship.Brake

@@ -1,0 +1,13 @@
+~osgv version 1
+	
+^ Sun
+	P T CAMERA
+		U 5000 25000	# Here is how we make the light scale at distances, params are nominal dist and far dist
+			^ ThrustOffset 0 0 0
+				10m-GreenBlinker.lws
+
+				@ Run start 0 stop 60
+				~ While START Run
+		
+
+
