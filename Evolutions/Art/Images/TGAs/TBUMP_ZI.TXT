@@ -1,0 +1,5 @@
+A set of tileable textures, rendered in POV-Ray, by Truman Brown.
+
+Includes POV source.
+
+
