@@ -41,6 +41,17 @@ namespace Fringe
 				}
 			}
 
+		protected:
+			virtual void PostCreateCamera(GG_Framework::UI::MainWindow& mainWin)
+			{
+			}
+
+			virtual void PostRealizeCamera(GG_Framework::UI::MainWindow& mainWin)
+			{
+				mainWin.SetFullScreen(true);
+				mainWin.SetWindowText("Fringe Demo");
+			}
+
 		private:
 			IEvent::HandlerList ehl;
 		};

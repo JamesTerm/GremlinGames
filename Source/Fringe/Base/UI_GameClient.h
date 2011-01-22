@@ -11,8 +11,7 @@ namespace Fringe
 		{
 		public:
 			UI_GameClient(	GG_Framework::Logic::Network::IClient& client, 
-				GG_Framework::Logic::Network::SynchronizedTimer& logic_timer, 
-				GG_Framework::Base::Timer& osg_timer, const char* contentDirLW);
+				GG_Framework::Logic::Network::SynchronizedTimer& timer, const char* contentDirLW);
 			~UI_GameClient();
 
 			void ShipChangedControl(Ship* ship, PlayerID controllingPlayerID);

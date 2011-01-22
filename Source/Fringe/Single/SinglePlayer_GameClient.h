@@ -5,16 +5,14 @@ class SinglePlayer_GameClient : public Fringe::Base::UI_GameClient
 {
 public:
 	SinglePlayer_GameClient(	GG_Framework::Logic::Network::IClient& client, 
-		GG_Framework::Logic::Network::SynchronizedTimer& logic_timer, 
-		GG_Framework::Base::Timer& osg_timer, const char* contentDirLW) :
-	UI_GameClient(client, logic_timer, osg_timer, contentDirLW)
+		GG_Framework::Logic::Network::SynchronizedTimer& timer, const char* contentDirLW) :
+	UI_GameClient(client, timer, contentDirLW)
 	{
 		GG_Framework::UI::MainWindow* mainWin = GG_Framework::UI::MainWindow::GetMainWindow();
 
 		// The Help screen is F1
 		m_helpScreen = new Fringe::Base::HelpScreen();
 		m_helpScreen->Enable(true);
-
 		mainWin->GetKeyboard_Mouse().AddKeyBindingR(false, "HELP", osgGA::GUIEventAdapter::KEY_F1);
 		mainWin->GetMainCamera()->addPostDrawCallback(*m_helpScreen);
 		mainWin->GetKeyboard_Mouse().GlobalEventMap.Event_Map["HELP"].Subscribe(
@@ -29,7 +27,7 @@ protected:
 		++numPasses;
 		__super::GameTimerUpdate(time_s);
 
-		// Wait before the logic_timer is up to start auto-pilot, let the player disable
+		// Wait before the timer is up to start auto-pilot, let the player disable
 		if (m_helpScreen && (time_s > 30.0))
 		{
 			// Turn off the help screen and place in auto pilot if we have not started moving on our own yet

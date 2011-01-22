@@ -3,7 +3,6 @@
 
 #include <osg\Camera>
 
-
 namespace Fringe
 {
 	namespace Base
@@ -40,7 +39,6 @@ namespace Fringe
 			void ToggleEnabled(){m_enabled = !m_enabled;}
 			bool IsEnabled() const {return m_enabled && !m_lockedOff;}
 			void Enable(bool enable){m_enabled = enable;}
-
 
 			virtual void operator () (const osg::Camera &cam ) const;
 

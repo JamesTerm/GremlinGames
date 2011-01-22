@@ -5,9 +5,8 @@ using namespace Fringe::Base;
 
 
 UI_GameClient::UI_GameClient(	GG_Framework::Logic::Network::IClient& client, 
-	GG_Framework::Logic::Network::SynchronizedTimer& logic_timer, 
-	GG_Framework::Base::Timer& osg_timer, const char* contentDirLW) :
-GG_Framework::Logic::UI_GameClient(client, logic_timer, osg_timer, contentDirLW), m_stardust(NULL)
+	GG_Framework::Logic::Network::SynchronizedTimer& timer, const char* contentDirLW) :
+GG_Framework::Logic::UI_GameClient(client, timer, contentDirLW), m_stardust(NULL)
 {
 	GG_Framework::UI::MainWindow* mainWin = GG_Framework::UI::MainWindow::GetMainWindow();
 	mainWin->GetKeyboard_Mouse().AddKeyBinding(']', "FlyNextShip", false);
