@@ -1,0 +1,13 @@
+xcopy /y /d "..\release_bin\*.dll"
+xcopy /y /d "..\release_bin\osgv.exe"
+xcopy /y /d "..\release_bin\osgviewer.exe"
+xcopy /y /d "..\release_bin\Fringe.Client.exe"
+xcopy /y /d "..\release_bin\Fringe.Server.exe"
+xcopy /y /d "..\release_bin\Fringe.Single.exe"
+xcopy /y /d "..\release_bin\GuardianVR.Client.exe"
+xcopy /y /d "..\release_bin\GuardianVR.Server.exe"
+xcopy /y /d "..\release_bin\GuardianVR.Single.exe"
+xcopy /y /d "..\release_bin\ImageResizer.exe"
+xcopy /y /d "..\release_bin\osgvAXMFC.ocx"
+xcopy /y /d "..\release_bin\osgvWPF.exe"
+
