@@ -1,0 +1,1325 @@
+LWSC
+3
+
+RenderRangeType 0
+FirstFrame 1
+LastFrame 300
+FrameStep 1
+RenderRangeArbitrary 1-300
+PreviewFirstFrame 0
+PreviewLastFrame 600
+PreviewFrameStep 1
+CurrentFrame 123
+FramesPerSecond 30
+Plugin MasterHandler 1 .SceneEditorStandardBanks
+EndPlugin
+Plugin MasterHandler 2 SceneEditor
+VERS 2
+{ CurrentWorkspace
+  Name "<default>"
+  WindowDimensions 104 116 2bc 12c
+  Divider1 0.5
+  LayoutItemFilterEnabled 0
+  LayoutItemChannelFilterEnabled 0
+  SurfaceFilterEnabled 0
+  SurfaceChannelFilterEnabled 0
+  ChannelFilterEnabled 0
+  { Bank
+    PresetID 5f425042
+    Column 5f425042 0 74
+    Column 5f425042 1 90
+    Column 5f425042 2 90
+    Column 5f425042 3 90
+    Column 5f425042 4 90
+    Column 5f425042 5 90
+    Column 5f425042 6 90
+    Column 5f425042 7 90
+  }
+  { SurfaceListBank
+    PresetID 5f425042
+    Column 5f425042 0 74
+    Column 5f425042 1 90
+    Column 5f425042 2 90
+    Column 5f425042 3 90
+    Column 5f425042 4 90
+    Column 5f425042 5 90
+    Column 5f425042 6 90
+    Column 5f425042 7 90
+  }
+  { ChannelListBank
+    PresetID 5f425042
+    Column 5f425042 0 74
+    Column 5f425042 1 90
+    Column 5f425042 2 90
+    Column 5f425042 3 90
+    Column 5f425042 4 90
+    Column 5f425042 5 90
+    Column 5f425042 6 90
+    Column 5f425042 7 90
+  }
+  BackgroundColorOdd 78 78 78 ff
+  BackgroundColorEven 6f 6f 6f ff
+  HierarchyIndent c
+  HighlightColor b5 b0 a5 ff
+  DefaultObjectColor 60 e0 f0 ff
+  DefaultBoneColor 60 e0 f0 ff
+  DefaultLightColor f0 60 f0 ff
+  DefaultCameraColor 20 e0 20 ff
+  AutoApplyToViewPorts 1
+  MultiselectSimilarTypes 1
+  LimitColorRange 1
+  ColorsAsHSV 0
+  ShowSelectionOrder 1
+  EnvelopeButtonOpensGraphEditor 1
+  ShowRenderExtents 1
+  BlockPeriod 0.033333335
+  BlockWidthMin 3
+  BlockWidthMax c8
+  ShowKeyTicks 1
+  OverrideBlockColors 0
+  BlockKeyColor 99 ae cf ff
+  BlockGroupColor 64 85 b6 ff
+  DSAllowChannelGroupSelection 1
+}
+EndPlugin
+
+LoadObjectLayer 1 D:Gremlin Games/Gremlin ART/Gremlin Logo Animated 01_v001.lwo
+ShowObject 6 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 -6.2830977399416001 0
+  Key -6.2831850051879883 20 0 0 0 0 -6.2830977399416001 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 2 D:Gremlin Games/Gremlin ART/Gremlin Logo Animated 01_v001.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 5
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 6.2830104771191788 0
+  Key 6.2831850051879874 10 0 0 0 0 6.2830104771191788 0 0
+  Behaviors 5 5
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+
+LockedChannels 31
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 3 D:Gremlin Games/Gremlin ART/Gremlin Logo Animated 01_v001.lwo
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -11.219733238220218 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 5
+{ Envelope
+  2
+  Key 0.37524577975273132 0 0 0 0 0 0 -6.4249962712419491 0
+  Key -6.0510563850402832 1.3666666666666667 0 0 0 0 -6.4249962712419491 0 0
+  Behaviors 5 5
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+
+LockedChannels 28
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000003
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Cog Master
+ShowObject 7 3
+Group 0
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 63
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 3 D:Gremlin Games/Gremlin ART/Gremlin Logo Animated 01_v001.lwo
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -11.219733238220218 0 0 0 0 0 0 15.740302114936233 0
+  Behaviors 5 5
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 10.711232197522778 0
+  Behaviors 5 5
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 5
+{ Envelope
+  2
+  Key 0.37524577975273132 0 0 0 0 0 0 -6.4249962712419491 0
+  Key -6.0510563850402832 1.3666666666666667 0 0 0 0 -6.4249962712419491 0 0
+  Behaviors 5 5
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+
+LockedChannels 28
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000006
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+LoadObjectLayer 3 D:Gremlin Games/Gremlin ART/Gremlin Logo Animated 01_v001.lwo
+ShowObject 7 3
+Group 0
+SchematicPosition 1.200000 -0.800000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key -11.219733238220218 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 5
+{ Envelope
+  2
+  Key 0.37524577975273132 0 0 0 0 0 0 -6.4249962712419491 0
+  Key -6.0510563850402832 1.3666666666666667 0 0 0 0 -6.4249962712419491 0 0
+  Behaviors 5 5
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 5 5
+}
+
+LockedChannels 28
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000007
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Cog Master
+ShowObject 7 3
+Group 0
+SchematicPosition 0.600000 -0.400000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key -2.1031222343444829 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 31
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AddNullObject Cog Master
+ShowObject 7 3
+Group 0
+SchematicPosition 1.200000 -0.800000
+ObjectMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 2.0891578197479252 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 31
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 10000000
+NodeDisplacement 0
+{ Nodal_Block
+  { Root
+    Location 0 0
+    Zoom 1
+    Disabled 1
+  }
+  Version 1
+  { Nodes
+    Server "Displacement"
+    { Tag
+      RealName "Displacement"
+      Name "Displacement"
+      Coordinates -10 -10
+      Mode 1
+      { Data
+      }
+      Preview ""
+      Comment ""
+    }
+  }
+  { Connections
+    NodeName "Displacement"
+    InputName "Input"
+    InputNodeName ""
+    InputOutputName ""
+  }
+}
+NodeDisplacementOrder 0
+ShadowOptions 7
+
+AmbientColor 1 1 1
+AmbientIntensity 0
+
+AddLight
+LightName Light
+ShowLight 1 5
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 1.9994254524561903 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 -1.9994254524561903 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 1.9994254524561903 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ParentItem 30000000
+LightColor 0.843137 0.780392 0.52549
+LightIntensity 0.9
+AffectCaustics 1
+LightType 2
+LightFalloffType 2
+LightRange 6
+LightConeAngle 45
+LightEdgeAngle 10
+ShadowType 1
+ShadowColor 0 0 0
+
+AddLight
+LightName Volume Spot
+ShowLight 1 5
+LightMotion
+NumChannels 9
+Channel 0
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  1
+  Key 100 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  1
+  Key 3.1415925025939941 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 6
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 7
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 8
+{ Envelope
+  1
+  Key 1 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+LightColor 0.878431 0.866667 0.694118
+LightIntensity 0.5
+LightType 2
+LightConeAngle 8.999999
+LightEdgeAngle 1
+VolumetricLighting 1
+{ Volumetrics
+  { Options
+    Flags 1 2 0 0 1 1 0
+    Sprite 0 1
+    Dissolve 0.80000001 0
+    Shadow 0.5 0
+    Radius 0.15707962 0
+    Base 89.669998 0
+    Height 150 0
+    Luminosity 1 0
+    Opacity 0 0
+    Attenuation 0.25 0
+    RedShift 0 0
+    Density 1 0
+    Color 0.90980393 0.90980393 0.81568629 0
+    { Nodes
+      { Root
+        Location 0 0
+        Zoom 1
+        Disabled 1
+      }
+      Version 1
+      { Nodes
+        Server "NodalLight"
+        { Tag
+          RealName "NodalLight"
+          Name "NodalLight"
+          Coordinates -10 -10
+          Mode 1
+          { Data
+          }
+          Preview ""
+          Comment ""
+        }
+      }
+      { Connections
+        NodeName "NodalLight"
+        InputName "Color"
+        InputNodeName ""
+        InputOutputName ""
+        NodeName "NodalLight"
+        InputName "Luminosity"
+        InputNodeName ""
+        InputOutputName ""
+        NodeName "NodalLight"
+        InputName "Opacity"
+        InputNodeName ""
+        InputOutputName ""
+        NodeName "NodalLight"
+        InputName "Attenuation"
+        InputNodeName ""
+        InputOutputName ""
+        NodeName "NodalLight"
+        InputName "Red Shift"
+        InputNodeName ""
+        InputOutputName ""
+        NodeName "NodalLight"
+        InputName "Density"
+        InputNodeName ""
+        InputOutputName ""
+      }
+    }
+    JitteredSampling 1
+  }
+  { Texture
+    { ImageMap
+      "(-128)"
+      Channel 1954051186
+      { Opacity
+        0
+        1
+        0
+      }
+      Enable 1
+      Negative 0
+    }
+    { TextureMap
+      { Center
+        0 0 0
+        0
+      }
+      { Size
+        1 1 1
+        0
+      }
+      { Rotation
+        0 0 0
+        0
+      }
+      { Falloff
+        0
+        0 0 0
+        0
+      }
+      RefObject "(none)"
+      Coordinates 0
+    }
+    Projection 0
+    Axis 2
+    { Image
+    }
+    WrapOptions 1 1
+    { WidthWrap
+      1
+      0
+    }
+    { HeightWrap
+      1
+      0
+    }
+    AntiAliasing 1 1
+    PixelBlending 1
+  }
+}
+ShadowType 1
+ShadowColor 0 0 0
+
+AddCamera
+CameraName Camera 04
+ShowCamera 1 2
+CameraMotion
+NumChannels 6
+Channel 0
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 -15.194097135226858 0
+  Key -15.200428009033203 0.66666666666666663 0 0 0 0 -15.194097135226858 -3.9927692413330078 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  1
+  Key 0 0 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  2
+  Key -42.276687622070313 0 0 0 0 0 0 36.466353041884403 0
+  Key -5.795140266418457 0.66666666666666663 0 0 0 0 36.466353041884403 9.0616911924802341 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 1.1078216889558956 0
+  Key 1.1082832813262939 0.66666666666666663 0 0 0 0 1.1078216889558956 0.30247917542090785 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 -0.026169046914761188 0
+  Key -0.026179950684309006 0.66666666666666663 0 0 0 0 -0.026169046914761188 -0.0028193818691831371 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 -0.5966543009359605 0
+  Key -0.59690290689468384 0.66666666666666663 0 0 0 0 -0.5966543009359605 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 3
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ZoomFactor 1.46
+ResolutionMultiplier 1.0
+FrameSize 640 480
+PixelAspect 1
+MaskPosition 0 0 640 480
+MotionBlur 0
+FieldRendering 0
+ApertureHeight 0.015
+UseGlobalResolution 0
+UseGlobalMask 0
+UseGlobalBlur 0
+Plugin CameraHandler 1 Perspective
+EndPlugin
+
+AddCamera
+CameraName Camera 01
+ShowCamera 1 2
+CameraMotion
+NumChannels 6
+Channel 0
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 20 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 1
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 20 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 2
+{ Envelope
+  2
+  Key -134.50003051757812 0 0 0 0 0 0 64.099123467306441 0
+  Key -70.400016784667969 20 0 0 0 0 64.099123467306441 0 0
+  Behaviors 1 1
+}
+Channel 3
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 20 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 4
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 20 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+Channel 5
+{ Envelope
+  2
+  Key 0 0 0 0 0 0 0 0 0
+  Key 0 20 0 0 0 0 0 0 0
+  Behaviors 1 1
+}
+
+LockedChannels 3
+PathAlignLookAhead 0.033
+PathAlignMaxLookSteps 10
+PathAlignReliableDist 0.001
+ZoomFactor 3.2
+ResolutionMultiplier 1.0
+FrameSize 640 480
+PixelAspect 1
+MaskPosition 0 0 640 480
+MotionBlur 0
+FieldRendering 0
+ApertureHeight 0.015
+UseGlobalResolution 0
+UseGlobalMask 0
+UseGlobalBlur 0
+Plugin CameraHandler 1 Perspective
+EndPlugin
+
+GlobalFrameSize 800 600
+GlobalMultiplier 1.0
+GlobalFieldRendering 0
+GlobalMotionBlur 0
+GlobalMaskPosition 0 0 800 600
+GlobalFilmHeight 0.015
+GlobalPixelAspect 1
+
+Antialiasing 1
+AntiAliasingLevel 0
+ReconstructionFilter 6
+AdaptiveSampling 0
+
+SolidBackdrop 1
+BackdropColor 0 0 0
+ZenithColor 0 0.1569 0.3137
+SkyColor 0.4706 0.7059 0.9412
+GroundColor 0.1961 0.1569 0.1176
+NadirColor 0.3922 0.3137 0.2353
+FogType 0
+FogMinDistance 0
+FogMaxDistance 1
+FogMinAmount 0
+FogMaxAmount 1
+FogColor 0.5098 0.5098 0.549
+BackdropFog 0
+ZBufferAA 1
+DitherIntensity 1
+AnimatedDither 0
+
+RenderMode 2
+RayTraceEffects 11
+DepthBufferAA 1
+RayRecursionLimit 16
+DataOverlayLabel  
+OutputFilenameFormat 1
+SaveRGB 1
+SaveRGBImagesPrefix D:\rendered\Cam4\cam4
+RGBImageSaver LW_BMP24(.bmp)
+SaveAlpha 0
+
+ViewConfiguration 0
+DefineView 0
+ViewType 9
+ViewLevel 5
+ViewAimpoint 0 0 0
+ViewZoomFactor 4.82323
+
+GridNumber 80
+GridSize 10
+CameraViewBG 0
+ShowMotionPath 1
+ShowFogRadius 0
+ShowFogEffect 0
+ShowSafeAreas 0
+ShowFieldChart 0
+OverlayColor_fv 0 0 0
+MeshBackgroundGroup 1
+
+CurrentObject 0
+CurrentLight 1
+CurrentCamera 0
+GraphEditorData
+{ GraphEd_Favorites
+}
+{ GE_Expression_Lib
+  1
+}
+ImageEditorData
+NumberOfClips 0
