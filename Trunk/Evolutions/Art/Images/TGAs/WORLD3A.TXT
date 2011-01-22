@@ -1,0 +1,6 @@
+World3a.jpg is a replacement for world3.tif. There has been some problem with the
+latest. It looks like by reorganising avalon there was made mistake and a corrupt
+version was placed. This file is a JPG  exported from Photoshop with quality set at
+high. If someone wants the uncompressed version feel free to contact me.
+				Rob Oudendijk
+				rob@twics.com

@@ -1,0 +1,13 @@
+Plantec's Texture Tiles
+thenar@cinenet.net
+
+Hi gang, Plantex is my first texture collection.  I hope you can use them. The names are only vaguely
+accurate.   They work great in TS for making planets, surfaces etc.   By applying metalic sheen and
+using the same texture as a bump map you can get some interesting texture effects.  Rufmetal is intersting 
+if you use it as a bump map and as a texture map and then use an environment picture over that with 
+metal gloss on.   Mess around with the phong and specular settings.  try droppin out the texture map
+and using yellow to make rough gold.  
+	I'm building  more as we speak.
+
+Peter Plantec
+
