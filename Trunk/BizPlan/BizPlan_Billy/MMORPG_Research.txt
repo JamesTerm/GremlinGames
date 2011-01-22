@@ -1,0 +1,113 @@
+ Erisian
+Dread Lord
+ 
+Join Date: Mar 2005
+Location: Bar Harbour, Maine
+Posts: 124
+	
+New MMORPG Delivery/Business Model Idea (AKA MUDing Makes Me Happy!)
+I'm sick of always getting basically the same boring gameplay experience from MMORPGs. I am sick of a very pretty databasing and accounting program being sold to me under that oh-so-seductive name of RPG. If you enjoy games like WoW or Everquest, I say: Cool. Whatever. Personally, I enjoyed Anarchy Online, but it had nothing to do with the game itself- I just loved the setting.
+
+Here's my problem: There's no RP. I don't give a flying fork if I play on an RP server and there are people around who don't RP- I'm not some wacky living in his mom's basement that can only get his rocks off by nagging other people into his freaky-deaky game of submission. My problem is that actually enjoying the parts of RPG gaming that I enjoy- meaningful, character driven development- are effectively impossible in a MMORPG.
+
+Remember NWN's multiplayer components? This is very close to what I would enjoy, except I freaking HATE AD&D 3rd Edition. So what's my idea?
+
+Modding games is all the rage these days, why not do it with an MMORPG? Ultima Online let people run their own servers. Why doesn't someone else try this? Think about it this way: all the game-development company would have to pay for is a server-browser server and system. No huge server loads for 10000000000 people all playing on our servers at once; people could run their own servers for them and their friends. With 5-10 or even better, 30-40 people on a server, there's room for meaningful character development, interaction, orginization, all that jazz.
+
+Let me explain further: I am a MUDder by trade. I played on one RP MUD for a good... 8 years I'd say (word up to the TURNING POINT if anyone's out there) and it was great. On average, there were generally 15 people on at any time, with a peak of around 25 at the busiest hours. It was great; there were player governments, player guilds, and a devoted staff who roamed the game world doing things with people. It was always an adventure, and when it wasn't, you could just find someone and MAKE one.
+
+MMORPG gaming is never like this, for me; even when I am in a good guild, with people I know, the endless grind of killing the same enemies over and over or doing the same quests that a billion other people have done, just to get the same equipment everyone else has, bores me into apathy.
+
+So, then, the business model: 5 bucks for a regular subscription; this reflects lower server costs. 15 bucks a month to buy the 'developer' package that lets you run your own server, with full graphical and statistical customization. You could earn your very own unique sword in game! Think about how cool that would be!
+
+You could add rules for transferring characters between servers (some system requiring permission from the people running the server you're moving to), they could probably sell packs of pre-made monster and player and scenery models every month, there'd be tons of opportunities.
+
+Ideally, I would see the rules set used be the old World of Darkness systems that White Wolf made, but that's just because I believe there's room to please basically every player using that system (seriously, there are a couple world of darkness games that aren't about sad whiny vampires.)
+
+
+
+8888888888888888888888888888888888888888888888
+
+
+Tobolds MMORPG Blog
+Wednesday, June 09, 2004
+ 
+MMORPG business models
+
+If you ask somebody only slightly acquainted with MMORPG what a MMORPG is, he is quite likely to answer "Oh, those are the games with the monthly fee!". In fact the variations of this business model in existing MMORPG seem to go no further than whether to let the players pay for both the client and the monthly fee, or give the client away and just take the monthly fee. And I think that this business model is sub-optimal.
+
+A first problem is that this business model excludes a certain number of potential players. Not everybody has a credit card, especially not outside the USA, and only few games offer game time cards or other alternative modes of payment. And for some people $15 or so per month is simply too much.
+
+On the other hand, gaming is becoming more and more socially acceptable, and the average age of the gamer is slowly increasing. That means that nowadays quite a number of potential MMORPG customers exist that have a job, and for whom $15 per month is a negligible cost, much less than what they pay for their other hobbies. But besides the doubtful advantage of opening a second account, current MMORPG do not offer these people any chance to spend more than $15 per month on the game of their choice. I already mentioned this as a driving force for the secondary MMORPG market, where virtual goods and information are traded for real world money.
+
+GuildWars is an example of a game where the developers have recognized this twin problem of people having not enough or too much money. Once it comes out, people can buy the basic client, and play it for free, which makes the game accessible to everybody who can afford the price of a video game, without needing a credit card. Kids for who $50 or so is still too much can still receive GuildWars as a birthday present from grandma, provided they know how to persuade grandma not to give them socks instead. But the basic GuildWars client only gives access to a limited number of zones. And more zones will be available later, but you will need to pay for them. So the more you pay, the more game you get.
+
+This solution also solves the third problem of the monthly fee business model: Player retention. Nowadays people rarely get back into a MMORPG that they stopped playing previously. Even if their interest just wanes a little bit, the monthly fee encourages them to cancel their account, which then makes it difficult to start playing again. A game like GuildWars could easily inform their players by e-mail that a new expansion with new zones has come out, and that would encourage people to get back playing that game.
+
+The most successful online game in terms of earnings for the game company per player is Magic the Gathering Online, in spite of it having lots of problems with bugs and server stability since v2.0 came out. It is an online version of the tradeable card game, and works on the same business model: The client is free, no monthly fee, but if you want to play, you need cards, and those cost $3.69 for a pack of 15 random cards, out of over 3000 different ones. And it is incredible how much money people are willing to spend for these virtual cards, several hundred dollars on average per player, with some players spending thousands. I too spent far too much money on that game. But it is still on my hard disk, and I still have all these virtual cards, so I could restart playing any time. That is the sort of business model MMORPG should be dreaming of.
+
+The question then is, what to sell to your players in a MMORPG. Access to zones? Virtual currency? Special items and equipment? Virtual land and houses? Given the economic potential, I'm sure some day somebody will figure out a viable solution to this question.
+
+Now some players would certainly object to the ability of buying yourself power in a MMORPG with money. But fact is that the current system isn't much fairer: You buy yourself power in a MMORPG with time. Somebody who has more time than money, a "time-holder", will certainly prefer the current system. But other people have more money than time, and these "money-holders" probably would like a game in which they aren't always at the bottom of the ladder, just because they have a job and family that eats up their time. Somebody willing to buy EQ platinum on EBay would most certainly be even more willing to buy it directly from Sony, if the price is right. And the advantage to the game company of this model is obvious: A "time is power" system just encourages people to eat up more bandwith, while a "money is power" system (or just additional component) brings them cold, hard cash.
+
+I'm not sure it will work for GuildWars. Buying access to zones only makes sense if you have explored all the existing zones and are getting bored with them. So the buyers need both time and money. Time will tell whether this concept is a success. I think some of the social virtual worlds (which are similar to MMORPG technically, but don't have a gameplay involving killing monsters and leveling your character), like There or Second Life, have alternative business models. I've heard of land sales in Second Life, for example. But I'm not really an expert on these kind of virtual worlds, so I don't know the details. But when something is found that people are willing to pay for in a virtual world, it will come to MMORPG fast enough.
+- posted by Tobold @ 10:24 AM Permanent Link 
+
+***********************************************************************************************************************************
+tobolds.blogspot.com -> excellent blog for lots of player opinion. . . .
+
+
+http://www.readwriteweb.com/archives/002442.php
+
+http://www.legendmud.org/raph/gaming/busmodels.html
+
+http://terranova.blogs.com/terra_nova/2003/11/the_coming_mmor.html
+
+http://www.mxac.com.au/drt/AntiMMORPG.htm
+
+www.gamasutra.com/gdc2005/ features/20050317/postcard-waugh.htm
+
+www.gamespot.com/pc/rpg/anarchyonline/news_6115157.html 
+
+http://www.mmorpg.net/
+
+http://www.mxac.com.au/drt/PlayerPyramid.htm
+
+http://www.ludonauts.com/index.php/2005/02/07/p200
+
+http://internetgames.about.com/b/a/138318.htm
+
+http://www.mmorpg.com/index.cfm
+
+http://www.gamemaker.nl/
+
+http://www.gamespot.com/pc/rpg/darkageofcamelot/news_6089360.html
+
+http://www.free-press-release.com/news/200312/1071798835.html
+
+http://www.devmaster.net/articles/mmorpg-postmortem/part1.php
+
+http://www.census.gov/
+
+
+http://news.com.com/2100-1040-823258.html
+http://www.businessweek.com/technology/content/dec2001/tc20011213_2329.htm
+http://www.eurogamer.net/article.php?article_id=126
+
+
+...............................................................
+Programming resources
+...............................................................
+
+http://www.rit.edu/~jpw9607/index.htm
+
+http://www.eastcoastgames.com/resources/links.html
+
+http://www.course.com/catalog/product.cfm?category=Game%20Development&subcategory=Programming%20Techniques&isbn=1-59200-205-6
+
+
+
+
+ 
+
+
