@@ -1,0 +1,21 @@
+~osgv version 1
+######################################################
+#Authored by justin 8/11/09
+######################################################
+
+^ Asteroid002
+	Asteroid002.lwo
+
+
+	! On CANNON_HIT SoundEffect ..\..\..\Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	#! On COLLIDE SoundEffect ..\..\..\Audio\metal_crashA.wav 35.0 0 84096
+	! On COLLIDE SoundEffect ..\..\..\Audio\metal_crashB.wav 35.0 0 103680
+	
+	# You want to provide a few frames before dying to show the last of the particle explosions
+	#@ Die_Seq die1 0 die2 30 [On 30 HIDE]
+	
+	# For now, they both do the same thing.  The bulk of the effect needs to be in the DestructionProxy
+	#~ On DESTROY Die_Seq
+	#~ On SHOT_DOWN Die_Seq

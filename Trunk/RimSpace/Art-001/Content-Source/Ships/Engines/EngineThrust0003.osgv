@@ -1,0 +1,10 @@
+~osgv version 1
+#authored by justin 9/14/09
+###########################
+	
+^ Enginethrust0003
+	Engine0003-THRUST.lws
+	
+	@ Run A 1 B 36
+	~ While START Run Run
+#	~ While Ship.Coast Run Run

@@ -1,0 +1,28 @@
+~osgv version 1
+#authored by justin 9/14/09
+###########################
+	
+^ Thrust-01
+	O F CAM_POINTER
+		U 200 35000	# Here is how we make the light scale at distances, params are nominal dist and far dist
+			^ THRUST_ACTOR
+				EngineThrust.lws
+
+				@ Run runA 0 runB 15
+				~ While START Run Run
+	
+				@ Thrust accelA 15 accelB 45	
+				@ HoldThrust accelB 45 accelC 60
+				@ ReturnThrust accelC 60 accelD 90
+
+				@ Brake BrakeA 90 BrakeB 120			
+				@ HoldBrake brakeC 120 brakeD 135
+				@ ReturnBrake brakeB 135 brakeC 165
+
+				~ While Ship.Thrust Thrust HoldThrust HoldThrust ReturnThrust
+				~ While Ship.Brake Brake HoldBrake HoldBrake ReturnBrake
+
+#### These keys will need to come out later. ONLY for testing now #####################
+		
+				#% While w Ship.Thrust
+				#% While s Ship.Brake

@@ -1,0 +1,129 @@
+~osgv version 1
+######################################################
+# FEDERATION CRUSIER RAMORA-01
+#####################################################
+		
+^ Ramora-01
+	Ramora Setup.lws
+		$ Engine-01
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-02
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-03
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-04
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-05
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+			! While SPAWN SoundEffect Ramora01.wav 60.0 0 48000
+			! Toggle engine01.fire SoundEffect Ramora01.wav 60.0 0 48000
+			P T RefractionNull
+		$ Engine-06
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-07
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-08
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-09
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-10
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-11
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-12
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-13
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-14
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+			! While SPAWN SoundEffect Ramora01.wav 60.0 0 48000
+			! Toggle engine02.fire SoundEffect Ramora01.wav 60.0 0 48000
+		$ Engine-15
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-16
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-17
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+		$ Engine-18
+			#RamoraEngine.osgv
+			../../../Polygon FX/FighterEngineBLUE.osgv
+
+		$ MedCannon-01
+			MedRail-01.lwo
+		$ MedCannon-02
+			MedRail-01.lwo
+		$ MedCannon-03
+			MedRail-01.lwo
+		$ MedCannon-04
+			MedRail-01.lwo
+
+		$ RedBlinker-01
+			..\..\..\Polygon FX\10m-RedBlinker.osgv
+
+		$ LightTurretMount
+			
+		$ MedMissileRack-01
+		$ MedMissileRack-02
+		$ MedMissileRack-03
+		$ MedMissileRack-04
+		
+		$ Docking
+
+	@ Stop stop 0 stop 0 [On 200 engine01.fire] [On 100 engine02.fire]
+	~ On SPAWN Stop
+
+	
+	@ Arm stop 1 Armed 160 [On 0 Ramora.Arm1]
+	@ Armed Armed 160 Armed 160
+	@ DisArm Armed 160 DisArm 300 [On 0 Ramora.Arm1]
+	~ Toggle Ramora-01.Arm Arm Armed Armed DisArm
+	% Toggle a Ramora-01.Arm
+	! On Ramora.Arm1 SoundEffect Audio\Ramora_Arm.wav 50 0 280320
+		
+	
+	
+	#~ Toggle Ramora-01.
+	#~ Toggle Ramora-01.
+	#~ Toggle Ramora-01.
+
+
+	#% Toggle s Ramora-01.Decel 
+	#% Toggle a Ramora-01.Bomb
+	#% Toggle c Ramora-01.Land
+
+### Rick Playing with custom particle effects 2/16/10
+	! On CANNON_HIT SoundEffect ..\..\..\Audio\bang_2.wav 27.0 0 9376
+	#! On CANNON_HIT SmokeTrailEffect (0,0,0) 2 1
+	#! On CANNON_HIT ExplosionEffect (0,0,0) 5 5
+	! On CANNON_HIT CustomParticleEffect (0,0,0) 5 5 ~..\..\..\Polygon FX\CustomFireEffect1.fx
+	
+	! On COLLIDE SoundEffect ..\..\..\Audio\metal_crashA.wav 35.0 0 84096
+	#! On COLLIDE SoundEffect ..\..\..\Audio\metal_crashB.wav 35.0 0 103680
+	
+	# You want to provide a few frames before dying to show the last of the particle explosions
+	@ Die_Seq die1 0 die2 30 [On 30 HIDE]
+	
+## Rick Added Destruciton Temp 4/23/08
+	# For now, they both do the same thing.  The bulk of the effect needs to be in the DestructionProxy
+	~ On DESTROY Die_Seq
+	~ On SHOT_DOWN Die_Seq
+
+### Justin edited original smoke trails 4/14/08 ###
+

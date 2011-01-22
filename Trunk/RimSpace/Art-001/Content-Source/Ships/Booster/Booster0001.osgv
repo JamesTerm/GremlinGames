@@ -1,0 +1,19 @@
+~osgv version 1
+#authored by justin 9/24/09
+###########################
+	
+^ Booster0001
+	Booster0001.lws
+
+	@ Run runA 0 runB 10
+	~ While START Run Run
+
+	$ BrakesUpper
+		Booster0001_Brakes.osgv
+	$ BoostThrust
+		../../Polygon FX/BoosterEngineBLUE.osgv
+
+#### These keys will need to come out later. ONLY for testing now #####################
+		
+
+			% While t Ship.AfterBurner

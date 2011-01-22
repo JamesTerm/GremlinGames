@@ -1,0 +1,10 @@
+~osgv version 1
+#authored by justin 9/14/09
+###########################
+	
+^ EngineFan0001
+	EngineFan0001.lws
+	
+	@ Run A 0 B 60
+	~ While START Run Run
+#	~ While Ship.Coast Run Run

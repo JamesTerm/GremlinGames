@@ -1,0 +1,47 @@
+~osgv version 1
+#authored by justin 9/14/09
+###########################
+	
+^ Engine0001
+	Engine0001.lws
+	
+	$ EngineFan
+		EngineFan0001.osgv
+	$ Thrust
+		../../Polygon FX/FighterEngineBLUE.osgv
+
+			~ While SPAWN
+			! While SPAWN SoundEffect ../../Audio/g-33engines-02.wav 40.0 0 27328 1 1 0.5
+
+
+	@ Run A 1 B 8
+	~ While START Run Run
+#	~ While Ship.Coast Run Run
+
+	@ Brake A 20 B 28
+	@ Holdbrake B 28 C 28
+	@ Return B 28 C 36
+	~ While Ship.Brake Brake Holdbrake Holdbrake Return
+
+	@ Thrust A 40 B 48 
+	@ HoldThrust B 48 C 48
+	@ ReturnThrust C 48 D 56 
+	~ While Ship.Thrust Thrust HoldThrust HoldThrust ReturnThrust
+
+	% While s Ship.Brake
+	% While w Ship.Thrust
+	
+	# 2 Exclamation marks means this effect happens even in the Bounding Box Scene, Important for MapFramesEffect
+	# Use Loop For a MapFramesEffect.  The effect frame ALWAYS gets set when the value of the event changes.
+	# The parameters for MapFramesEffect are: minEventVal, maxEventVal, minFrame, maxFrame
+	# The linear interpolation is clamped at the ends of the ranges
+#	! !Loop Test.Brake MapFramesEffect (0.0,1.0,20,28)
+	
+	# Here is a test keybinding that runs through event values in a loop as long as the key is held.
+	# It goes from min to max, holds the max a few seconds, then returns from max to min, holding min a few seconds
+	# If you let go of the key, the value will remain at its current time.
+#	% Range q Test.Brake 0 1
+
+
+#	Ship.AfterBurner_Brake
+#	Ship.AfterBurner

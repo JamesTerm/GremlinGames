@@ -1,0 +1,115 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/9/09
+######################################################
+
+## Ship Name
+^ Q34
+	SetUp.lws
+
+## PARENTED Items #####
+#### Editable Accs #### (use universal naming structure)
+
+
+	$ Brakes
+		Q34Brakes.osgv
+
+	$ Engine01
+		..\..\Engines\Engine0001.osgv
+
+	$ Wing-AL
+		..\..\Wings\WingA0001L.osgv
+	$ Wing-AR
+		..\..\Wings\WingA0001R.osgv
+	$ Wing-BL
+		..\..\Wings\WingB0001L.osgv
+	$ Wing-BR
+		..\..\Wings\WingB0001L.osgv
+#	$ Wing-CL
+#		..\..\Wings\WingB0002L.osgv
+#	$ Wing-CR
+#		..\..\Wings\WingB0002L.osgv
+	$ Wing-DL
+		..\..\Wings\WingB0002L.osgv
+	$ Wing-DR
+		..\..\Wings\WingB0002L.osgv
+#	$ Wing-EL
+#		..\..\Wings\WingB0003L.osgv
+
+
+	$ Gun01
+		..\..\Guns\GatlingCannonB.osgv
+	$ Gun02
+		..\..\Guns\GatlingCannonB.osgv
+	$ Gun03
+		..\..\Guns\GatlingCannonB.osgv
+	$ Gun04
+		..\..\Guns\GatlingCannonB.osgv
+
+	$ Comm
+		..\..\Comm\Comm00001.lwo
+
+#	$ Accs01
+#		..\..\
+#	$ Accs02
+#		..\..\
+#	$ Accs03
+#		..\..\
+
+#	$ Booster01
+#		..\..\Booster\Booster0001.lwo
+#	$ Booster02
+#		..\..\Booster\Booster0001.lwo
+
+	$ MissileMount1
+		..\..\Missile\MedMount.osgv
+	$ MissileMount2
+		..\..\Missile\MedMount.osgv
+	$ MissileMount3
+		..\..\Missile\MedMount.osgv
+	$ MissileMount4
+		..\..\Missile\MedMount.osgv
+
+#### Visual Accs ####
+
+	$ LandingLight
+		..\..\..\Polygon FX\LadingLight-01.osgv
+	$ Burner
+		..\..\..\Polygon FX\BurnerRing01.osgv
+
+#### Actions/Key Bindings ####
+	
+	@ Stance stance 10 stance 10 [On 0 Q34.Stance1] [On 10 Q34.Stance2]
+	~ On START Stance
+	! On Q34.Stance1 SoundEffect ..\..\..\Audio\TGT-02.WAV 1000.0
+	! On Q34.Stance2 SoundEffect ..\..\..\Audio\static_1.wav 500.0
+
+	@ Accel stance 20 accelb 29 [On 0 Q34.Accel1] [On 10 Q34.Accel2]
+	@ Haccel accelb 30 accelc 30
+	@ Raccel accelc 31 stance 40 [On 0 Q34.Accel1]
+	~ While Ship.Thrust Accel Haccel Haccel Raccel
+	#! On Q34.Accel1 SoundEffect ..\..\..\Audio\motor_servo_lift.mp3 500.0
+	#! On Q34.Accel2 SoundEffect ..\..\..\Audio\Rocket_Away.mp3 500.0
+	% While w Q34.Accel
+
+	! On CANNON_HIT SoundEffect ..\..\..\Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	#! On COLLIDE SoundEffect ..\..\..\Audio\metal_crashA.wav 35.0 0 84096
+	! On COLLIDE SoundEffect ..\..\..\Audio\metal_crashB.wav 35.0 0 103680
+
+	# You want to provide a few frames before dying to show the last of the particle explosions
+	@ Die_Seq die1 0 die2 30 [On 30 HIDE]
+
+	! While Ship.UI.Cannon_Overheat SoundEffect ..\..\..\Audio\WeaponNearOverheat.WAV 100
+	! While Ship.UI.Cannon_Warning SoundEffect ..\..\..\Audio\BEEP-01.WAV 100
+	
+	# For now, they both do the same thing.  The bulk of the effect needs to be in the DestructionProxy
+	~ On DESTROY Die_Seq
+	~ On SHOT_DOWN Die_Seq
+
+
+#### For Testing ####
+	% While s Q34.Brake
+	% While x Ship.FireWeapon
+	#! while Ship.FireWeapon SoundEffect Q_33Audio\Vucan.wav 500.0 25600 35200

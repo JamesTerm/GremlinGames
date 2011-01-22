@@ -1,0 +1,37 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/9/09
+######################################################
+
+## Ship Name
+^ Q34-Brakes
+	BrakesUpper.lws
+
+## Actions #####
+
+#	@ Pause Stop 1 Stop 1
+#	~ On START Pause
+	
+#	@ Brake A 11 B 14
+#	@ Holdbrake A 14 B 14
+#	@ Return B 15 C 20
+#	~ While Ship.Brake Brake Holdbrake Holdbrake Return
+
+#	~ While START Pause
+#	~ While Ship.Brake Brake Return Pause	
+#	@ Brake stance 45 brake 50 [On 0 Ship.Brake1] [On 15 Ship.Brake2]
+#	@ Hbrake brake 50 brakeb 55
+#	@ Rbrake brakeb 55 stance 60 [On 0 Ship.Brake1]
+#	~ While Ship.Brake Brake Hbrake Hbrake Rbrake
+#	@ Pause Stop 1 Stop 1	
+#	@ Brake A 11 B 14
+#	@ Holdbrake B 14 B 14
+#	@ Return B 15 C 20
+#	~ While Ship.Brake Brake Holdbrake Holdbrake Return
+#	! On Ship.Brake1 SoundEffect Q_33Audio\motor_servo_lift.mp3 500.0
+#	! On Ship.Brake2 SoundEffect Q_33Audio\SHAWEE.wav 500.0
+
+#	% While s Ship.Brake
+
+	! !Loop Thrust_BU MapFramesEffect (0.0,0.5,10,14)
+	% Range 3 Thrust_BU 0 1

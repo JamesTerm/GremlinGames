@@ -1,0 +1,23 @@
+~osgv version 1
+######################################################
+#Authored by justin 2/2/10
+######################################################
+
+^ B5
+	B5-01.lws
+	@ Run A 0 B 2399
+	~ While START Run Run
+
+#### Visual Accs ##########
+
+	#$ Blinker01
+		#..\Polygon FX\10m-RedBlinker.osgv
+	
+
+#### FX ##########
+
+	! On CANNON_HIT SoundEffect ..\Audio\bang_2.wav 27.0 0 9376
+	! On CANNON_HIT ExplosionEffect (0,0,0)1 1
+	! On CANNON_HIT FireEffect (0,0,0) 1 1
+	#! On COLLIDE SoundEffect ..\Audio\metal_crashA.wav 35.0 0 84096
+	! On COLLIDE SoundEffect ..\Audio\metal_crashB.wav 35.0 0 13680

@@ -1,0 +1,5 @@
+~osgv version 1
+
+# This file is used for the retical that is directly in front of the ship
+^ PrimaryRetical 0 -7.5 1000		# 1000 meters in front of the camera, down slightly for gun position
+	B 35 35 t [Targeting Crosshairs/Vexhall-01.tga]

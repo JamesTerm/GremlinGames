@@ -1,0 +1,9 @@
+~osgv version 1
+	
+^ MedCannon01
+	MedCannon01.lws
+	$ Fire
+		../../Polygon FX/MedCannonPloom.osgv
+
+	#% While x Ship.FireWeapon
+	! while Ship.FireWeapon SoundEffect ..\..\Audio\explosion2.wav 50 6000 60000

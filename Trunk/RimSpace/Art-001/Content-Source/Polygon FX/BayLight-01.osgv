@@ -1,0 +1,20 @@
+~osgv version 1
+	
+^ Sun
+	P T CAMERA
+		U 2000 10000	# Here is how we make the light scale at distances, params are nominal dist and far dist
+			^ actor 0,0,0
+				10m-LadingLight.lwo
+				P T RefractionNull
+					#^ refraction1 0 0 -15 0 0 0 3 3 3
+						#P T CAMERA
+							#refraction1.lwo
+					#^ refraction1 0 0 -30 0 0 0 5 5 5
+						#P T CAMERA
+							#refraction1.lwo
+					^ refraction2 0 0 -150 0 0 0 5 5 5
+						P T CAMERA
+							refraction1.lwo
+
+				#@ Run start 0 stop 14
+				#~ While START Run

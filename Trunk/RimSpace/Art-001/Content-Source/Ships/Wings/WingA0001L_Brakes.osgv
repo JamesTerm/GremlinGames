@@ -1,0 +1,22 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/11/09
+######################################################
+
+## Ship Name
+^ WingA0001L
+	WingA0001L_Brakes.lws
+
+## Actions #####
+
+#	@ Pause Stop 1 Stop 1
+#	~ On START Pause
+	
+#	@ Brake A 11 B 14
+#	@ Holdbrake A 14 B 14
+#	@ Return B 15 C 20
+#	~ While Ship.Brake Brake Holdbrake Holdbrake Return
+
+
+	! !Loop Thrust_BL MapFramesEffect (0.0,0.5,10,14)
+	% Range a Thrust_BL 0 1

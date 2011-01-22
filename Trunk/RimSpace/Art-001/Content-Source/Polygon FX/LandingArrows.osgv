@@ -1,0 +1,7 @@
+~osgv version 1
+	
+^ LandingArrows
+	LandingArrows.lws
+				
+	@ Run start 0 stop 32
+	~ While START Run

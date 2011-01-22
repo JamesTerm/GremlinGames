@@ -1,0 +1,12 @@
+~osgv version 1
+	
+^ 30m-ThrustGlow_Actor
+	O F CAM_POINTER
+		U 1000 5000	# Here is how we make the light scale at distances, params are nominal dist and far dist
+			^ 30m-ThrustGlow_Offset 0 0 5
+				30m-ThrustGlow.lws
+				@ Run start 0 stop 14
+				~ While START Run
+		
+
+

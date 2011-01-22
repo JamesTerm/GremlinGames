@@ -1,0 +1,62 @@
+~osgv version 1
+######################################################
+#Authored by justin 8/12/09
+######################################################
+
+^ Q34Test
+	Q34-LanceEagleTEST.lwo
+
+
+#### Parent/Stucture ####
+
+	$ brakes_left
+		brake_left.osgv
+	$ brakes_right
+		brake_right.osgv
+	$ engine_01
+		q33_engine_green.osgv
+	$ engine_02
+		q33_engine_green.osgv
+	$ gun_01
+		Q_33 Gun\Q-33-Gun-02.osgv
+	$ gun_02
+		Q_33 Gun\Q-33-Gun-03.osgv
+	$ gun_03
+		Q_33 Gun\Q-33-Gun-02.osgv
+	$ gun_04
+		Q_33 Gun\Q-33-Gun-02.osgv
+	$ bombbay
+		Colonial-Fighter-Q33-BombBay.lwo
+	$ landinglight
+		..\..\..\Polygon FX\LadingLight-01.osgv
+	$ blinker_red_01
+		..\..\..\Polygon FX\10m-RedBlinker.osgv
+	$ blinker_green_01
+		..\..\..\Polygon FX\10m-GreenBlinker.osgv
+
+#### Actions/Key Bindings ####
+	
+	@ Stance stance 10 stance 10 [On 0 Q33_A3.Stance1] [On 10 Q33_A3.Stance2]
+	~ On START Stance
+	! On Q33_A3.Stance1 SoundEffect Q_33Audio\TGT-02.WAV 1000.0
+	! On Q33_A3.Stance2 SoundEffect Q_33Audio\static_1.wav 500.0
+
+	@ Accel stance 10 accelb 25 [On 0 Q33_A3.Accel1] [On 10 Q33_A3.Accel2]
+	@ Haccel accelb 30 accelc 30
+	@ Raccel accelc 30 stance 45 [On 0 Q33_A3.Accel1]
+	~ While Q33_A3.Accel Accel Haccel Haccel Raccel
+	! On Q33_A3.Accel1 SoundEffect Q_33Audio\motor_servo_lift.mp3 500.0
+	! On Q33_A3.Accel2 SoundEffect Q_33Audio\Rocket_Away.mp3 500.0
+	% While w Q33_A3.Accel
+	
+	@ Brake stance 45 brake 50 [On 0 Q33_A3.Brake1] [On 15 Q33_A3.Brake2]
+	@ Hbrake brake 50 brakeb 55
+	@ Rbrake brakeb 55 stance 60 [On 0 Q33_A3.Brake1]
+	~ While Q33_A3.Brake Brake Hbrake Hbrake Rbrake
+	! On Q33_A3.Brake1 SoundEffect Q_33Audio\motor_servo_lift.mp3 500.0
+	! On Q33_A3.Brake2 SoundEffect Q_33Audio\SHAWEE.wav 500.0
+	% While s Q33_A3.Brake
+
+#### For Testing ####
+	% While x Ship.FireWeapon
+	! while Ship.FireWeapon SoundEffect Q_33Audio\Vucan.wav 500.0 25600 35200

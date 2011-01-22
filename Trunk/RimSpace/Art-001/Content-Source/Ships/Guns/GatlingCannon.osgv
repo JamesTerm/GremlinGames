@@ -1,0 +1,12 @@
+~osgv version 1
+	
+^ GatlingCannon
+	VexhallCannon.lws
+	$ Fire
+		../../Polygon FX/MGun-01.osgv
+
+	@ Pause Stop 0 Stop 0	
+	@ Fire fireA 1 fireB 4
+	
+	~ While START Pause
+	~ While Ship.FireWeapon Fire Pause

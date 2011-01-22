@@ -1,0 +1,13 @@
+~osgv version 1
+######################################################
+#Authored by justin 4/8/08
+#Bullet plus audio effect
+######################################################
+
+^ RailFodder
+	Asteroid003.lwo
+
+	#@ Shoot shootA 1 shootB 31
+	~ On Fire Shoot
+	
+	! On Fire SoundEffect ..\..\Audio\fringebullets1-1.mp3 0.0001 0 35070

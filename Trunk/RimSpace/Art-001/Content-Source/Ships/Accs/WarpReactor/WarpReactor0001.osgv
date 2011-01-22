@@ -1,0 +1,10 @@
+~osgv version 1
+#authored by justin 9/28/09
+###########################
+	
+^ WarpReactor0001
+	WarpReactor0001.lws
+	
+	@ Run A 0 B 30
+	~ While START Run Run
+#	~ While Ship.Coast Run Run

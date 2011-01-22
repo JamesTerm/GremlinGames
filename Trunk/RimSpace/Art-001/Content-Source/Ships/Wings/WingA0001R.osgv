@@ -1,0 +1,21 @@
+~osgv version 1
+######################################################
+#Authored by justin 9/11/09
+######################################################
+
+## Ship Name
+^ WingA0001R
+	WingA0001R.lws
+
+#### Editable Accs #### (use universal naming structure)
+
+	$ VaporTrail
+		! While VAPOR_TRAIL SmokeTrailEffect (0,0,0) 0.2 4 #### = (X,Y,Z) size duration
+	$ BrakesRight
+		WingA0001R_Brakes.osgv
+
+#	$ Accs01
+#		..\..\
+#	$ Accs02
+#		..\..\
+
