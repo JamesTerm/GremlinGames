@@ -12,7 +12,6 @@ void cls(void *hConsole=NULL);
 extern double g_WorldScaleFactor;
 extern bool g_TestPhysics;
 extern bool g_UseMouse;
-extern bool g_SingleThreaded;
 
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
@@ -399,7 +398,7 @@ void CommandLineInterface()
 			else if (!_strnicmp( input_line, "Mouse", 5))
 			{
 				bool UseMouse=atoi(str_1)==1;
-				g_UseMouse=g_SingleThreaded=UseMouse;
+				g_UseMouse=UseMouse;
 			}
 			else if (!_strnicmp( input_line, "Join", 4))
 			{

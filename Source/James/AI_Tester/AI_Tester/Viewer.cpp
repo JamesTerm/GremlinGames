@@ -10,29 +10,12 @@ using namespace AI_Tester;
 using namespace GG_Framework::Base;
 using namespace GG_Framework::UI;
 
-bool g_SingleThreaded=false;
-
-class AITester_MainWindow : public MainWindow
-{
-	public:
-		AITester_MainWindow(bool useAntiAlias, double throttle_fps, unsigned screenWidth, unsigned screenHeight, bool useUserPrefs,Timer &timer) :
-		  MainWindow(useUserPrefs, throttle_fps, screenWidth, screenHeight, useUserPrefs, timer) {}
-
-		virtual void PostRealize()
-		{
-			SetFullScreen(false);
-			SetWindowText("AI Tester");
-			__super::PostRealize();
-		}
-};
-
 void Viewer::ViewerCallback::operator()(osg::Node *node,osg::NodeVisitor *nv)
 {
 	if (m_pParent->m_Callback)
 		m_pParent->m_Callback->UpdateScene(m_pParent->m_RootNode,m_pParent->m_Geode);
 	traverse(node,nv);
 }
-
 void Viewer::Start()
 {
 	// Content Directory
@@ -44,26 +27,14 @@ void Viewer::Start()
 
 	// Create a new scope, so all auto-variables will be deleted when they fall out
 	{
-		MainWindow::SINGLE_THREADED_MAIN_WINDOW = g_SingleThreaded;
-
-		// We are going to use this single timer to fire against
-		OSG::OSG_Timer osg_timer("AI_tester-OSG Timer Log.csv");
-		OSG::OSG_Timer logic_timer("AI_tester-Logic Timer Log.csv");
-		GG_Framework::Base::Timer* osg_timer_ref = NULL;
-		if (GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW)
-			osg_timer_ref = &logic_timer;
-		else
-			osg_timer_ref = &osg_timer;
-
 		// Create the singletons, These must be instantiated before the scene manager too - Rick
-		m_MainWin = new AITester_MainWindow(true, 60.0, 0, 0, true, *osg_timer_ref);
+		m_MainWin = new MainWindow(true, 0.0, 0, 0, true);
 		MainWindow &mainWin=*m_MainWin;
 
-		// Watch for logging the timer
+		// We are going to use this single timer to fire against
+		OSG::OSG_Timer timer("OSGV Timer Log.csv");
 		mainWin.GetKeyboard_Mouse().AddKeyBindingR(false, "ToggleFrameLog", osgGA::GUIEventAdapter::KEY_F7);
-		logic_timer.Logger.ListenForToggleEvent(mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFrameLog"]);
-		if (!GG_Framework::UI::MainWindow::SINGLE_THREADED_MAIN_WINDOW)
-			osg_timer.Logger.ListenForToggleEvent(mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFrameLog"]);
+		timer.Logger.ListenForToggleEvent(mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFrameLog"]);
 
 		// Create the scene manager with each of the files
 		osg::Group* mainGroup = NULL;
@@ -88,6 +59,7 @@ void Viewer::Start()
 
 		// We can tie the events to Toggle fullscreen
 		mainWin.GetKeyboard_Mouse().AddKeyBindingR(false, "ToggleFullScreen", osgGA::GUIEventAdapter::KEY_F3);
+		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["ToggleFullScreen"].Subscribe(mainWin.ehl, mainWin, &MainWindow::ToggleFullScreen);
 
 		// Set the scene and realize the camera at full size
 		//mainWin.GetMainCamera()->SetSceneNode(actorScene.GetScene(), 0.0f);
@@ -95,7 +67,7 @@ void Viewer::Start()
 		// make sure the root node is group so we can add extra nodes to it.
 		osg::Group* group = new osg::Group;
 		{
-			// create the empty scene (HUD style)
+			// create the hud.
 			osg::Camera* camera = new osg::Camera;
 			camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
 			camera->setProjectionMatrixAsOrtho2D(0,c_Scene_XRes_InPixels,0,c_Scene_YRes_InPixels);
@@ -111,8 +83,11 @@ void Viewer::Start()
 
 			group->addChild(camera);
 		}
-		mainWin.GetMainCamera()->SetSceneNode(group);
+		mainWin.GetMainCamera()->SetSceneNode(group, 0.0f);
+
 		mainWin.Realize();
+		mainWin.SetFullScreen(false);
+		mainWin.SetWindowText("AI Tester");
 
 		// Let all of the scene know we are starting
 		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["START"].Fire();
@@ -127,33 +102,29 @@ void Viewer::Start()
 		// Connect the argParser to the camera, in case it wants to handle stats (I do not know that I like this here)
 		//argParser.AttatchCamera(&mainWin, &timer);
 
-		// Here is the logic loop
+		// Loop while we are waiting for the Connection to be made and all of the scenes
 		double dTime_s = 0.0;
-		double currTime_s = 0.0;
-		double syncTimer_s = 0.0;
+		double currTime = 0.0;
 		do
 		{
 			if (!m_UseSyntheticTimeDeltas)
-				dTime_s = logic_timer.FireTimer();
+				dTime_s = timer.FireTimer();
 			else
 				dTime_s = 0.016;  //hard code a typical 60 fps
-			currTime_s = logic_timer.GetCurrTime_s();
-			if (m_Callback)
-				m_Callback->UpdateData(dTime_s);
-			//printf("\r %f      ",dTime_s);
-			// Every 5 seconds or so, make sure my OSG thread has the same time
-			if (syncTimer_s > 5.0)
-			{
-				syncTimer_s += dTime_s;
-				osg_timer_ref->SetCurrTime_NoEvent(currTime_s);
-				syncTimer_s = 0.0;
-			}
 
+			currTime = timer.GetCurrTime_s();
+			if (m_Callback)
+			{
+				m_Callback->UpdateData(dTime_s);
+				m_Callback->UpdateScene(m_RootNode,m_Geode);
+			}
+			Audio::ISoundSystem::Instance().SystemFrameUpdate();
+			//printf("\r %f      ",dTime_s);
 		}
-		while(mainWin.Update(currTime_s, dTime_s));
+		while(mainWin.Update(currTime, dTime_s));
 
 		// Write the log file
-		logic_timer.Logger.WriteLog();
+		timer.Logger.WriteLog();
 
 		// Sleep to make sure everything completes
 		ThreadSleep(200);
