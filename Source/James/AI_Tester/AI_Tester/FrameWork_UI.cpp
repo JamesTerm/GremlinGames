@@ -465,17 +465,17 @@ void UI_GameClient::UpdateScene(osg::Group *rootNode,osg::Geode *geode)
 	}
 }
 
-Fringe_GameClient::Fringe_GameClient() : m_controlledEntity(NULL),m_UI_Controller(NULL)
+UI_Controller_GameClient::UI_Controller_GameClient() : m_controlledEntity(NULL),m_UI_Controller(NULL)
 {
 }
 
-Fringe_GameClient::~Fringe_GameClient()
+UI_Controller_GameClient::~UI_Controller_GameClient()
 {
 	delete m_UI_Controller;
 	m_UI_Controller=NULL;
 }
 
-void Fringe_GameClient::SetControlledEntity(Entity2D* newEntity)
+void UI_Controller_GameClient::SetControlledEntity(Entity2D* newEntity)
 {
 	//printf("UI_GameClient::SetControlledEntity\n");
 	if (newEntity != m_controlledEntity)

@@ -70,7 +70,7 @@ class RimSpace_GameAttributes
 		std::string &GetTeamName() {return m_TeamName;}
 		const std::string &GetTeamName() const {return m_TeamName;}
 		//Read only... only the game client should set this initially 
-		Character_Type GetCharacter_Type() {return m_Character_Type;}
+		Character_Type GetCharacter_Type() const {return m_Character_Type;}
 	private:
 		friend GameClient;
 		std::string m_TeamName;
