@@ -267,7 +267,7 @@ void SetUpUI(GUIThread *&UI_thread,Viewer_Callback_Interface *ViewerCallback)
 #pragma warning(disable : 4996)
 void CommandLineInterface()
 {
-	Fringe_GameClient game;
+	UI_Controller_GameClient game;
 	#if 0
 	GUIThread *UI_thread=NULL;
 	#else
@@ -420,7 +420,7 @@ void CommandLineInterface()
 				class commonStuff
 				{
 					public:
-						commonStuff(GUIThread *_UI_thread,Fringe_GameClient &_game) : UI_thread(_UI_thread),game(_game)		{}
+						commonStuff(GUIThread *_UI_thread,UI_Controller_GameClient &_game) : UI_thread(_UI_thread),game(_game)		{}
 						Ship_Tester *Control_A_Bomber()
 						{
 							SetUpUI(UI_thread,&game);
@@ -487,7 +487,7 @@ void CommandLineInterface()
 						}
 					private:
 						GUIThread *UI_thread;
-						Fringe_GameClient &game;
+						UI_Controller_GameClient &game;
 				} _(UI_thread,game);
 				int Test=atoi(str_1);
 				enum

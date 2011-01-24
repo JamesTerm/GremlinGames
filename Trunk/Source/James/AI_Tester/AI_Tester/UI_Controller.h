@@ -168,11 +168,11 @@ class UI_Controller
 };
 
 
-class Fringe_GameClient : public UI_GameClient
+class UI_Controller_GameClient : public UI_GameClient
 {
 	public:
-		Fringe_GameClient();
-		~Fringe_GameClient();
+		UI_Controller_GameClient();
+		~UI_Controller_GameClient();
 		virtual void SetControlledEntity(Entity2D* newEntity);
 		virtual void AboutTo_RemoveEntity(Entity2D *Entity) {if (Entity==m_controlledEntity) SetControlledEntity(NULL);}
 	private:
