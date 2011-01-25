@@ -178,12 +178,45 @@ void Ship_2D::TestPosAtt_Delta(const osg::Vec2d pos_m, double att, double dTime_
 	#endif
 }
 
-
-void Ship_2D::Initialize(Entity2D::EventMap& em)
+void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 {
-	__super::Initialize(em);
+	__super::Initialize(em,props);
+	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
+	if (ship_props)
+	{
+		ship_props->Initialize(this);
+	}
+	else
+	{
+		double Scale=0.2;  //we must scale everything down to see on the view
+		MAX_SPEED = 2000.0 * Scale;
+		ENGAGED_MAX_SPEED = 400.0 * Scale;
+		ACCEL = 60.0 * Scale;
+		BRAKE = 50.0 * Scale;
+		STRAFE = BRAKE; //could not find this one
+		AFTERBURNER_ACCEL = 107.0 * Scale;
+		AFTERBURNER_BRAKE = BRAKE;
+
+		double RAMP_UP_DUR = 1.0;
+		double RAMP_DOWN_DUR = 1.0;
+		EngineRampAfterBurner= AFTERBURNER_ACCEL/RAMP_UP_DUR;
+		EngineRampForward= ACCEL/RAMP_UP_DUR;
+		EngineRampReverse= BRAKE/RAMP_UP_DUR;
+		EngineRampStrafe= STRAFE/RAMP_UP_DUR;
+		EngineDeceleration= ACCEL/RAMP_DOWN_DUR;
+
+		MaxAccelLeft=40.0 * Scale;
+		MaxAccelRight=40.0 * Scale;
+		MaxAccelForward=87.0 * Scale;
+		MaxAccelReverse=70.0 * Scale;
+		MaxTorqueYaw=2.5;
+		dHeading = DEG_2_RAD(270.0);
+	}
+
+	Camera_Restraint=G_Dampener=1.0;
 	Mass  = m_Physics.GetMass();
-	
+	MaxTorqueYaw*= Mass;  //TODO fix
+
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
 	m_Physics.GetPilotInfo().GLimit = 8.0;
@@ -194,23 +227,6 @@ void Ship_2D::Initialize(Entity2D::EventMap& em)
 	double RadiusOfConcentratedMass=m_Physics.GetRadiusOfConcentratedMass();
 	m_IntendedOrientationPhysics.SetRadiusOfConcentratedMass(RadiusOfConcentratedMass);
 	m_RadialArmDefault=RadiusOfConcentratedMass*RadiusOfConcentratedMass;
-	
-	double Scale=0.2;  //we must scale everything down to see on the view
-	MAX_SPEED = 2000.0 * Scale;
-	ENGAGED_MAX_SPEED = 400.0 * Scale;
-	ACCEL = 60.0 * Scale;
-	BRAKE = 50.0 * Scale;
-	STRAFE = BRAKE; //could not find this one
-	AFTERBURNER_ACCEL = 107.0 * Scale;
-	AFTERBURNER_BRAKE = BRAKE;
-
-	double RAMP_UP_DUR = 1.0;
-	double RAMP_DOWN_DUR = 1.0;
-	EngineRampAfterBurner= AFTERBURNER_ACCEL/RAMP_UP_DUR;
-	EngineRampForward= ACCEL/RAMP_UP_DUR;
-	EngineRampReverse= BRAKE/RAMP_UP_DUR;
-	EngineRampStrafe= STRAFE/RAMP_UP_DUR;
-	EngineDeceleration= ACCEL/RAMP_DOWN_DUR;
 
 	//Pass these acceleration derivatives on to the Physics/Flight-Dynamics
 	{
@@ -221,14 +237,6 @@ void Ship_2D::Initialize(Entity2D::EventMap& em)
 		_.DecDeltaPos=_.DecDeltaNeg=Deceleration;
 	}
 
-	MaxAccelLeft=40.0 * Scale;
-	MaxAccelRight=40.0 * Scale;
-	MaxAccelForward=87.0 * Scale;
-	MaxAccelReverse=70.0 * Scale;
-	MaxTorqueYaw=2.5 * Mass;  //TODO fix
-	Camera_Restraint=G_Dampener=1.0;
-
-	dHeading = DEG_2_RAD(270.0);
 	m_IntendedOrientation = GetAtt_r();
 	m_IntendedOrientationPhysics.SetMass(Mass);
 }

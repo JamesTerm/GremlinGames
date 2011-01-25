@@ -90,7 +90,7 @@ void Actor_Text::Init_IntendedOrientation()
 	{
 		char IntendedImage[128];
 		strcpy(IntendedImage,"^\n");
-		for (size_t i=0;i<m_CharacterDiminsions.y();i++)
+		for (size_t i=0;i<m_CharacterDimensions.y();i++)
 			strcat(IntendedImage," \n");
 		m_IntendedOrientation->setText(IntendedImage);
 	}
@@ -134,8 +134,8 @@ void Actor_Text::update(osg::NodeVisitor *nv, osg::Drawable *draw)
 			}
 
 			{//Now to determine the size the setCharacterSize is roughly one pixel per meter with the default font
-				double XSize=m_EntityProperties_Interface->GetDiminsions()[0] / m_CharacterDiminsions[0] * g_WorldScaleFactor;
-				double YSize=m_EntityProperties_Interface->GetDiminsions()[1] / m_CharacterDiminsions[1] * g_WorldScaleFactor;
+				double XSize=m_EntityProperties_Interface->GetDimensions()[0] / m_CharacterDimensions[0] * g_WorldScaleFactor;
+				double YSize=m_EntityProperties_Interface->GetDimensions()[1] / m_CharacterDimensions[1] * g_WorldScaleFactor;
 				double SizeToUse=max(XSize,YSize); //we want bigger always so it is easier to see
 				SizeToUse=max(SizeToUse,5.0);  //Anything smaller than 5 is not visible
 				if (SizeToUse!=m_FontSize)
@@ -288,6 +288,33 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],Character_Type Type)
 	return NewEntity;
 }
 
+Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properties &props)
+{
+	Entity2D *NewEntity=NULL;
+	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(&props);
+	if (ship_props)
+	{
+		Ship_2D *NewShip;
+		NewShip=new Ship_Tester(EntityName);
+
+		NewEntity=NewShip;
+		NewShip->GetGameAttributes().m_Character_Type=e_Default_Inert;
+	}
+	else
+	{
+		NewEntity=new Entity2D(EntityName);
+
+	}
+
+	assert(NewEntity);
+
+	Entity2D::EventMap* newEm = new Entity2D::EventMap(true);
+	m_MapList.push_back(newEm);
+	NewEntity->Initialize(*newEm,ship_props);
+	return NewEntity;
+
+}
+
 void GameClient::AddEntity(Entity2D *Entity)
 {
 	m_Entities.push_back(Entity);
@@ -354,47 +381,72 @@ Entity2D *UI_GameClient::AddEntity(const char EntityName[],Character_Type Type)
 	Entity2D *NewEntity=CreateEntity(EntityName,Type);
 	__super::AddEntity(NewEntity); //Added to game client
 	const char *TextImage=NULL;
-	osg::Vec2d Diminsion;
+	osg::Vec2d Dimension;
 	switch (Type)
 	{
 		case e_Default_Inert:
 			TextImage="O";
-			Diminsion[0]=1,Diminsion[1]=1;
+			Dimension[0]=1,Dimension[1]=1;
 			break;
 		case e_CaptialShip:
 			TextImage="|\\/\\/|\n+----+";
-			Diminsion[0]=6,Diminsion[1]=2;
+			Dimension[0]=6,Dimension[1]=2;
 			break;
 		case e_Bomber:
 			TextImage="/^\\\n-||B||-";
-			Diminsion[0]=7,Diminsion[1]=2;
+			Dimension[0]=7,Dimension[1]=2;
 			break;
 		case e_Fighter:
 			TextImage="|\n/F\\\nI";
-			Diminsion[0]=3,Diminsion[1]=3;
+			Dimension[0]=3,Dimension[1]=3;
 			break;
 		case e_Flak:
 			TextImage="/\"\"\\\n0FL0\n^  ^";
-			Diminsion[0]=4,Diminsion[1]=3;
+			Dimension[0]=4,Dimension[1]=3;
 			break;
 		case e_Scout:
 			TextImage="|\n/$\\";
-			Diminsion[0]=3,Diminsion[1]=2;
+			Dimension[0]=3,Dimension[1]=2;
 			break;
 		case e_Sniper:
 			TextImage="|\nH\n/^\\";
-			Diminsion[0]=3,Diminsion[1]=3;
+			Dimension[0]=3,Dimension[1]=3;
 			break;
 		case e_SpawnShip:
 			TextImage="/^\\\n|:|\nC|:|D\n/*\\";
-			Diminsion[0]=5,Diminsion[1]=4;
+			Dimension[0]=5,Dimension[1]=4;
 			break;
 	}
 	assert(TextImage);
 	osg::ref_ptr<Actor_Text> NewActor=new Actor_Text(TextImage);
-	NewActor->GetCharacterDiminsions()=Diminsion;
+	NewActor->GetCharacterDimensions()=Dimension;
 	//This can be removed if we do not want to see this image
 	if (Type!=e_Default_Inert)
+		NewActor->Init_IntendedOrientation();
+	m_NewActors.push_back(NewActor);
+	//Bind the Entity with its actor
+	NewActor->SetEntityProperties_Interface(NewEntity);
+	return NewEntity;
+}
+
+Entity2D *UI_GameClient::AddEntity(const char EntityName[],const Entity_Properties &props)
+{
+	OpenThreads::ScopedLock<OpenThreads::Mutex> lock(m_BlockActorLists);
+	Entity2D *NewEntity=CreateEntity(EntityName,props);
+	__super::AddEntity(NewEntity); //Added to game client
+	const char *TextImage=NULL;
+	osg::Vec2d Dimension;
+
+	const UI_Ship_Properties *ui_ship=dynamic_cast<const UI_Ship_Properties *>(&props);
+	assert(ui_ship);  //this is all we have for now
+	ui_ship->Initialize(&TextImage,Dimension);
+
+	assert(TextImage);
+	osg::ref_ptr<Actor_Text> NewActor=new Actor_Text(TextImage);
+	NewActor->GetCharacterDimensions()=Dimension;
+
+	//This can be removed if we do not want to see this image
+	if (ui_ship)
 		NewActor->Init_IntendedOrientation();
 	m_NewActors.push_back(NewActor);
 	//Bind the Entity with its actor

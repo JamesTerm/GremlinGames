@@ -219,8 +219,10 @@ void DisplayHelp()
 		"Start\n"
 		"timer <use synthetic deltas>\n"
 		"Stop\n"
-		"AddShip <name> <type> <x> <y>\n"
+		"AddCharacter <name> <type> <x> <y>\n"
 		"0-inert 1-capital 2-bomber 3-fighter 4-flak 5-scout 6-sniper 7-spawn\n"
+		"LoadShip <filename> <ship name>\n"
+		"AddShip <unique name> <name> <x> <y>\n"
 		"Follow <name> <FollowShip> <rel x=-40> <rel y=-40>"
 		"SetPos <name> <x> <y>\n"
 		"SetAtt <name> <degrees> \n"
@@ -268,6 +270,60 @@ void SetUpUI(GUIThread *&UI_thread,Viewer_Callback_Interface *ViewerCallback)
 void CommandLineInterface()
 {
 	UI_Controller_GameClient game;
+
+	class Commands
+	{
+		private:	
+			typedef map<string ,UI_Ship_Properties,greater<string>> ShipMap;
+			ShipMap Character_Database;
+			UI_Controller_GameClient &game;
+
+		public:
+		Commands(UI_Controller_GameClient &_game) : game(_game) {}
+
+		void LoadShip(const char *FileName,const char *ShipName)
+		{
+			ShipMap::iterator iter=Character_Database.find(ShipName);
+			if (iter==Character_Database.end())
+			{
+				//New entry
+				Character_Database[ShipName]=UI_Ship_Properties();
+				UI_Ship_Properties &new_entry=Character_Database[ShipName];  //reference to avoid copy
+				GG_Framework::Logic::Scripting::Script script;
+				script.LoadScript(FileName,true);
+				script.NameMap["Entity"] = "Ship";
+				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
+
+				new_entry.LoadFromScript(script);
+			}
+			else
+				printf("%s already loaded\n",ShipName);
+		}
+		Entity2D *AddShip(const char *str_1,const char *str_2,const char *str_3,const char *str_4,const char *str_5)
+		{
+			Entity2D *ret=NULL;
+			ShipMap::iterator iter=Character_Database.find(str_2);
+			if (iter!=Character_Database.end())
+			{
+				double x=atof(str_3);
+				double y=atof(str_4);
+				double heading=atof(str_5);
+				Entity2D *TestEntity=NULL;
+				TestEntity=game.AddEntity(str_1,(*iter).second);
+				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
+				if (ship)
+				{
+					ship->SetPosition(x,y);
+					ship->SetAttitude(heading * (PI/180.0));
+					ret=ship;
+				}
+			}
+			else
+				printf("%s Ship not found, try loading it\n",str_2);
+			return ret;
+		}
+	} _command(game);
+
 	#if 0
 	GUIThread *UI_thread=NULL;
 	#else
@@ -317,7 +373,7 @@ void CommandLineInterface()
 				assert(UI_thread && UI_thread->GetUI());
 				UI_thread->GetUI()->SetUseSyntheticTimeDeltas(atoi(str_1)==1);
 			}
-			else if (!_strnicmp( input_line, "Add", 3))
+			else if (!_strnicmp( input_line, "AddCharacter", 4))
 			{
 				int ShipType=atoi(str_2);
 				double x=atof(str_3);
@@ -332,6 +388,15 @@ void CommandLineInterface()
 					ship->SetAttitude(heading * (PI/180.0));
 				}
 			}
+			else if (!_strnicmp( input_line, "LoadShip", 5))
+			{
+				_command.LoadShip(str_1,str_2);
+			}
+			else if (!_strnicmp( input_line, "AddShip", 4))
+			{
+				_command.AddShip(str_1,str_2,str_3,str_4,str_5);
+			}
+
 			else if (!_strnicmp( input_line, "SetPos", 6))
 			{
 				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity(str_1));
@@ -493,6 +558,7 @@ void CommandLineInterface()
 				enum
 				{
 					eCurrent,
+					eControlABomber,
 					eFollowShipTest,
 					eFollowPathTest,
 					ePhysicsTest,
@@ -502,6 +568,13 @@ void CommandLineInterface()
 				switch(Test)
 				{
 					case eCurrent:
+						{
+							_command.LoadShip("TestShip.lua","TestShip");
+							Entity2D *TestEntity=_command.AddShip("test1","TestShip",str_3,str_4,str_5);
+							game.SetControlledEntity(TestEntity);
+						}
+						break;
+					case eControlABomber:
 					{
 						Ship_Tester *ship=_.Control_A_Bomber();
 						//UI_thread->GetUI()->SetCallbackInterface(&game);
