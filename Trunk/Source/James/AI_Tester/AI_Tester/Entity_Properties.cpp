@@ -75,7 +75,9 @@ void Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& scr
 	err = script.GetGlobalTable("Ship");
 	ASSERT_MSG(!err, err);
 	{
-		err = script.GetField("dHeading", NULL, NULL, &m_dHeading);
+		double dHeading;
+		err = script.GetField("dHeading", NULL, NULL, &dHeading);
+		m_dHeading=DEG_2_RAD(dHeading);
 		ASSERT_MSG(!err, err);
 
 		err = script.GetField("ACCEL", NULL, NULL, &m_ACCEL);
