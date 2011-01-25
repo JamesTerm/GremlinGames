@@ -223,8 +223,9 @@ void DisplayHelp()
 		"0-inert 1-capital 2-bomber 3-fighter 4-flak 5-scout 6-sniper 7-spawn\n"
 		"LoadShip <filename> <ship name>\n"
 		"AddShip <unique name> <name> <x> <y>\n"
-		"Follow <name> <FollowShip> <rel x=-40> <rel y=-40>"
+		"Follow <name> <FollowShip> <rel x=-40> <rel y=-40>\n"
 		"SetPos <name> <x> <y>\n"
+		"MovePos <name> <x> <y>\n"
 		"SetAtt <name> <degrees> \n"
 		"Control <name>\n"
 		"Mouse <1=use>\n"
@@ -402,10 +403,14 @@ void CommandLineInterface()
 				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity(str_1));
 				double x=atof(str_2);
 				double y=atof(str_3);
-				#if 0
 				if (ship)
 					ship->SetPosition(x,y);
-				#else
+			}
+			else if (!_strnicmp( input_line, "MovePos", 5))
+			{
+				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity(str_1));
+				double x=atof(str_2);
+				double y=atof(str_3);
 				if (ship)
 				{
 					Goal *oldgoal=ship->ClearGoal();
@@ -420,7 +425,6 @@ void CommandLineInterface()
 					Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
 					ship->SetGoal(goal);
 				}
-				#endif
 			}
 			else if (!_strnicmp( input_line, "Follow", 6))
 			{
@@ -569,6 +573,8 @@ void CommandLineInterface()
 				{
 					case eCurrent:
 						{
+							g_WorldScaleFactor=100.0;
+							game.SetDisableEngineRampUp2(true);
 							_command.LoadShip("TestShip.lua","TestShip");
 							Entity2D *TestEntity=_command.AddShip("test1","TestShip",str_3,str_4,str_5);
 							game.SetControlledEntity(TestEntity);

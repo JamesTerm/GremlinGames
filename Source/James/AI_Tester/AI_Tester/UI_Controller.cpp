@@ -279,6 +279,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Analog_StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->EventValue_Map["Analog_Slider_Accel"].Remove(*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed);
+		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 
 		Flush_AI_BaseResources();
 	}
@@ -317,6 +318,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Analog_StrafeRight"].Subscribe(ehl,*this, &UI_Controller::StrafeRight);
 		em->EventValue_Map["Analog_Slider_Accel"].Subscribe(ehl,*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetCurrentSpeed);
+		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 
 		// Tell the HUD the name of this ship
 		//m_HUD_UI->m_addnText = m_ship->GetName();
@@ -520,6 +522,30 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
 				//This works but I really did not like the feel of it
 				double SpeedCalibrated=((Speed/2.0)+0.5)*SpeedToUse;
+				m_LastSliderTime[1]=Speed;
+				if (SpeedCalibrated!=m_CruiseSpeed)
+				{
+					m_ship->SetRequestedSpeed(SpeedCalibrated);
+					m_CruiseSpeed=SpeedCalibrated;
+				}
+			}
+		}
+		else
+			Ship_Thrust(0.0);
+	}
+}
+
+void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
+{
+	if (m_Ship_Keyboard_currAccel[1]==0.0)
+	{
+		if (m_ship->GetAlterTrajectory())
+		{
+			if ((fabs(Speed-m_LastSliderTime[1])>0.05)||(Speed==0))
+			{
+				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
+				//This works but I really did not like the feel of it
+				double SpeedCalibrated=Speed*SpeedToUse;
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
 				{

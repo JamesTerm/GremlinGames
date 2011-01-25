@@ -109,6 +109,7 @@ class UI_Controller
 		void Ship_Brake(double Intensity);
 
 		void Joystick_SetCurrentSpeed(double Speed);
+		void Joystick_SetCurrentSpeed_2(double Speed);
 
 		void Ship_StrafeLeft(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? -m_ship->STRAFE : 0.0;	}
 		void Ship_StrafeRight(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? m_ship->STRAFE : 0.0;	}
