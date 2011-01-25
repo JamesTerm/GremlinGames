@@ -20,13 +20,13 @@ class Entity2D : public EntityPropertiesInterface
 		};
 
 		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(Entity2D::EventMap& em);
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual ~Entity2D(); //Game Client will be nuking this pointer
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
 		FlightDynamics_2D &GetPhysics() {return m_Physics;}
 		const FlightDynamics_2D &GetPhysics() const {return m_Physics;}
-		virtual const osg::Vec2d &GetDiminsions() const {return m_Dimensions;}
+		virtual const osg::Vec2d &GetDimensions() const {return m_Dimensions;}
 		virtual void ResetPos();
 		// This is where both the vehicle entity and camera need to align to, by default we use the actual orientation
 		virtual const double &GetIntendedOrientation() const {return ((PosAtt *)m_PosAtt_Read.get())->m_att_r;}
@@ -40,6 +40,7 @@ class Entity2D : public EntityPropertiesInterface
 	private:
 		friend Ship_Tester;
 		friend GameClient; //For now the game client can set up initial settings like dimensions
+		friend Entity_Properties;
 		struct PosAtt
 		{
 			osg::Vec2d m_pos_m;

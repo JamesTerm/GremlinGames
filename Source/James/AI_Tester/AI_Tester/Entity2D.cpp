@@ -19,9 +19,11 @@ Entity2D::~Entity2D()
 {
 }
 
-void Entity2D::Initialize(Entity2D::EventMap& em)
+void Entity2D::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
 	m_eventMap = &em;
+	if (props)
+		props->Initialize(this);
 }
 
 //Note: If for some reason there are multiple threads which need to write we would need to put a critical section around this

@@ -14,7 +14,7 @@ class EntityPropertiesInterface
 		virtual const osg::Vec2d &GetPos_m() const =0;
 		virtual double GetAtt_r() const=0;
 		virtual const std::string &GetName() const=0;
-		virtual const osg::Vec2d &GetDiminsions() const=0;
+		virtual const osg::Vec2d &GetDimensions() const=0;
 		virtual const double &GetIntendedOrientation() const=0;
 		//I'm not sure if this would be needed in the real game, I use it so the actor knows what color to paint itself
 		virtual const char *GetTeamName() const {return "";}
@@ -44,7 +44,7 @@ class Actor_Text : public Actor, public osg::Drawable::UpdateCallback
 		osg::ref_ptr<osgText::Text> GetIntendedOrientation() {return m_IntendedOrientation;}
 		std::string &GetTextImage() {return m_TextImage;}
 		//For now just have the client code write these
-		osg::Vec2d &GetCharacterDiminsions() {return m_CharacterDiminsions;}
+		osg::Vec2d &GetCharacterDimensions() {return m_CharacterDimensions;}
 	protected:
 		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw);
 	private:
@@ -52,7 +52,9 @@ class Actor_Text : public Actor, public osg::Drawable::UpdateCallback
 		std::string m_TeamName; //cache team name to avoid flooding
 		osg::ref_ptr<osgText::Text> m_Text;
 		osg::ref_ptr<osgText::Text> m_IntendedOrientation;
-		osg::Vec2d m_CharacterDiminsions;
+		//Here is a quick reference on the character layout, used to determine size against the real dimensions, and also to center the intended orientation
+		//caret for ships
+		osg::Vec2d m_CharacterDimensions;
 		double m_FontSize; //cache the last size setting to avoid flooding
 };
 
@@ -94,6 +96,7 @@ class GameClient : public Viewer_Callback_Interface
 		//Derived classes may overload AddEntity and use these instead for the same functionality
 		void AddEntity(Entity2D *Entity);
 		Entity2D *CreateEntity(const char EntityName[],Character_Type Type=e_Default_Inert);
+		Entity2D *CreateEntity(const char EntityName[],const Entity_Properties &props);
 
 		//Note: we may need to put a critical section around this during a scene update
 		std::vector<Entity2D *> m_Entities;
@@ -106,6 +109,7 @@ class UI_GameClient : public GameClient
 {
 	public:
 		Entity2D *AddEntity(const char EntityName[],Character_Type Type=e_Default_Inert);
+		Entity2D *AddEntity(const char EntityName[],const Entity_Properties &props);
 		void RemoveEntity(Entity2D *Entity); 
 		void RemoveEntity(const char EntityName[]); 
 	protected:

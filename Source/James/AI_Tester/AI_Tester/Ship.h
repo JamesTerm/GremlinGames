@@ -19,7 +19,7 @@ class Ship_2D : public Ship
 {
 	public:
 		Ship_2D(const char EntityName[]);
-		virtual void Initialize(Entity2D::EventMap& em);
+		virtual void Initialize(Entity2D::EventMap& em,const Entity_Properties *props=NULL);
 		virtual ~Ship_2D();
 
 		///This implicitly will place back in auto mode with a speed of zero
@@ -92,6 +92,7 @@ class Ship_2D : public Ship
 	private:
 		friend AI_Base_Controller;
 		friend UI_Controller;
+		friend Ship_Properties;
 
 		AI_Base_Controller* m_controller;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;

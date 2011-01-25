@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Entity_Properties.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FrameWork_UI.cpp"
 				>
 			</File>
@@ -259,6 +263,10 @@
 			</File>
 			<File
 				RelativePath=".\Entity2D.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Entity_Properties.h"
 				>
 			</File>
 			<File
