@@ -208,6 +208,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Robot_Tank.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Ship.cpp"
 				>
 			</File>
@@ -283,6 +287,10 @@
 			</File>
 			<File
 				RelativePath=".\Physics_2D.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Robot_Tank.h"
 				>
 			</File>
 			<File

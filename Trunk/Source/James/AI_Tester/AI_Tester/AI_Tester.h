@@ -15,6 +15,7 @@ namespace AI_Tester
 	#include "Entity2D.h"
 	#include "Goal.h"
 	#include "Ship.h"
+	#include "Robot_Tank.h"
 	#include "AI_Base_Controller.h"
 	#include "UI_Controller.h"
 }
