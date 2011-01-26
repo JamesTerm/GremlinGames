@@ -292,7 +292,6 @@ void CommandLineInterface()
 				UI_Ship_Properties &new_entry=Character_Database[ShipName];  //reference to avoid copy
 				GG_Framework::Logic::Scripting::Script script;
 				script.LoadScript(FileName,true);
-				script.NameMap["Entity"] = "Ship";
 				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 
 				new_entry.LoadFromScript(script);
@@ -562,6 +561,7 @@ void CommandLineInterface()
 				enum
 				{
 					eCurrent,
+					eTestLUAShip,
 					eControlABomber,
 					eFollowShipTest,
 					eFollowPathTest,
@@ -575,8 +575,17 @@ void CommandLineInterface()
 						{
 							g_WorldScaleFactor=100.0;
 							game.SetDisableEngineRampUp2(true);
+							_command.LoadShip("TestRobot.lua","TestRobot");
+							Entity2D *TestEntity=_command.AddShip("testrobot1","TestRobot",str_3,str_4,str_5);
+							game.SetControlledEntity(TestEntity);
+						}
+						break;
+					case eTestLUAShip:
+						{
+							g_WorldScaleFactor=100.0;
+							game.SetDisableEngineRampUp2(true);
 							_command.LoadShip("TestShip.lua","TestShip");
-							Entity2D *TestEntity=_command.AddShip("test1","TestShip",str_3,str_4,str_5);
+							Entity2D *TestEntity=_command.AddShip("testship1","TestShip",str_3,str_4,str_5);
 							game.SetControlledEntity(TestEntity);
 						}
 						break;

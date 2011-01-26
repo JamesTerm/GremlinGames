@@ -1,6 +1,6 @@
 #pragma once
 
-class Robot_Tank : public Ship_2D
+class Robot_Tank : public Ship_Tester
 {
 	public:
 		Robot_Tank(const char EntityName[]);
