@@ -4,7 +4,7 @@
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
 
-Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_2D(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
+Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
 }
 

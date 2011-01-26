@@ -294,9 +294,18 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(&props);
 	if (ship_props)
 	{
-		Ship_2D *NewShip;
-		NewShip=new Ship_Tester(EntityName);
+		Ship_2D *NewShip=NULL;
 
+		switch(ship_props->GetShipType())
+		{
+			case Ship_Properties::eDefault:
+				NewShip=new Ship_Tester(EntityName);
+				break;
+			case Ship_Properties::eRobotTank:
+				NewShip=new Robot_Tank(EntityName);
+				break;
+		}
+		assert(NewShip);
 		NewEntity=NewShip;
 		NewShip->GetGameAttributes().m_Character_Type=e_Default_Inert;
 	}

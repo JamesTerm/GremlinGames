@@ -7,6 +7,8 @@ class Entity_Properties
 		Entity_Properties();
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Entity2D *NewEntity) const;
+	protected:
+		std::string m_EntityName;  //derived classes can let base class know what type to read
 	private:
 		//std::string m_NAME;  <-do not need this
 		//Stuff needed for physics
@@ -25,6 +27,12 @@ class Ship_Properties : public Entity_Properties
 		Ship_Properties();
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Ship_2D *NewShip) const;
+		enum Ship_Type
+		{
+			eDefault,
+			eRobotTank
+		};
+		Ship_Type GetShipType() const {return m_ShipType;}
 	private:
 		// This is the rate used by the keyboard
 		double m_dHeading;
@@ -44,6 +52,7 @@ class Ship_Properties : public Entity_Properties
 
 		double m_MaxAccelLeft,m_MaxAccelRight,m_MaxAccelForward,m_MaxAccelReverse;
 		double m_MaxTorqueYaw;
+		Ship_Type m_ShipType;
 };
 
 

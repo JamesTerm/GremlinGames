@@ -5,6 +5,7 @@ using namespace AI_Tester;
 
 Entity_Properties::Entity_Properties()
 {
+	m_EntityName="Entity";
 	//m_NAME="default";
 	m_Mass=10000.0;
 	m_Dimensions[0]=12.0;
@@ -15,7 +16,7 @@ void Entity_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& s
 {
 	const char* err;
 
-	err = script.GetGlobalTable("Entity");
+	err = script.GetGlobalTable(m_EntityName.c_str());
 	ASSERT_MSG(!err, err);
 	{
 		err = script.GetField("Mass", NULL, NULL, &m_Mass);
@@ -71,8 +72,18 @@ Ship_Properties::Ship_Properties()
 void Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
 {
 	const char* err;
-
+	m_ShipType=eDefault;
+	m_EntityName="Ship";
 	err = script.GetGlobalTable("Ship");
+	if (err)
+	{
+		err = script.GetGlobalTable("RobotTank");
+		if (!err)
+		{
+			m_ShipType=eRobotTank;
+			m_EntityName="RobotTank";
+		}
+	}
 	ASSERT_MSG(!err, err);
 	{
 		double dHeading;
@@ -176,6 +187,8 @@ void UI_Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& 
 {
 	const char* err;
 	err = script.GetGlobalTable("Ship");
+	if (err)
+		err = script.GetGlobalTable("RobotTank");
 	ASSERT_MSG(!err, err);
 	{
 		//Get the ships UI

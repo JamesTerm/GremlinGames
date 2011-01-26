@@ -12,13 +12,13 @@ TestShip = {
 	dHeading = 1200,
 	
 	Dimensions =
-	{ Length=0.5, Width=0.5 }, --These should be "roughly" correct in meters
+	{ Length=1, Width=1 }, --These should be "roughly" correct in meters
 	
 	UI =
 	{
-		Length=2, Width=7,
-		TextImage="/^\\\n-||X||-"
+		Length=5, Width=5,
+		TextImage="(   )\n|   |\n(-+-)\n|   |\n(   )"
 	}
 }
 
-Ship = TestShip
+RobotTank = TestShip
