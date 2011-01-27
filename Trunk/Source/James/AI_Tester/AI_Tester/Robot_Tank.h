@@ -10,7 +10,7 @@ class Robot_Tank : public Ship_Tester
 		//This will convert the force into both motor velocities and interpolate the final torque and force to apply
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 	private:
-		void UpdateVelocities();
-		void InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &LocalTorque,double dTime_s);
+		void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		void InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torque,double dTime_s);
 		double m_LeftLinearVelocity,m_RightLinearVelocity;
 };
