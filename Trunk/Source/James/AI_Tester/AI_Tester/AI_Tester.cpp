@@ -573,6 +573,7 @@ void CommandLineInterface()
 				{
 					case eCurrent:
 						{
+							UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
 							g_WorldScaleFactor=100.0;
 							game.SetDisableEngineRampUp2(true);
 							_command.LoadShip("TestRobot.lua","TestRobot");
