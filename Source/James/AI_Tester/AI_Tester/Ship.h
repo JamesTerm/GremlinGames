@@ -89,7 +89,6 @@ class Ship_2D : public Ship
 
 		eThrustState SetThrustState(eThrustState ts); // Handles the ON/OFF events, only for controlled entities
 
-	private:
 		friend AI_Base_Controller;
 		friend UI_Controller;
 		friend Ship_Properties;

@@ -1,5 +1,5 @@
 TestShip = {
-	Mass = 5, -- Weight kg
+	Mass = 25, -- Weight kg
 	MaxAccelLeft = 50, MaxAccelRight = 50, MaxAccelUp = 5, MaxAccelDown = 5, MaxAccelForward = 20, MaxAccelReverse = 20, 
 	MaxTorqueYaw = 25, 
 	
@@ -12,7 +12,7 @@ TestShip = {
 	dHeading = 1200,
 	
 	Dimensions =
-	{ Length=1, Width=1 }, --These should be "roughly" correct in meters
+	{ Length=0.94615, Width=0.6858 }, --These are 37.25 x 27 inches (will matter for turning radius!
 	
 	UI =
 	{
