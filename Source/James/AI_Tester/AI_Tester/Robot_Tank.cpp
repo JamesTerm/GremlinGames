@@ -39,20 +39,7 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Local
 	else
 	{
 		//going in different direction
-		//Cancel out the opposing forces 
-		double RemainderMagnitude=(LeftMagnitude-CommonMagnitude) + (RightMagnitude-CommonMagnitude);
-		double RemainderVelocity;
-		if (LeftMagnitude>RightMagnitude)
-		{
-			RemainderVelocity=m_LeftLinearVelocity>0?RemainderMagnitude:-RemainderMagnitude;
-			LeftLinearVelocity-=RemainderVelocity;  //take off the remainder for equal opposing forces
-		}
-		else
-		{
-			RemainderVelocity=m_RightLinearVelocity>0?RemainderMagnitude:-RemainderMagnitude;
-			RightLinearVelocity-=RemainderVelocity;  //take off the remainder for equal opposing forces
-		}
-		NewVelocityY=RemainderVelocity;
+		NewVelocityY=0;  //nothing to do... the common code will cancel them out
 	}
 
 	RightAngularDelta=LeftLinearVelocity / (2 * PI * Radius);
@@ -62,8 +49,9 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Local
 	{
 		double HalfRadius=Radius/2.0;
 		double Height=(sin(RightAngularDelta) * HalfRadius) + (sin(-LeftAngularDelta) * HalfRadius);
-		double Width=((1.0-cos(RightAngularDelta))*HalfRadius) + ((1.0-cos(LeftAngularDelta))*HalfRadius);
+		double Width=((1.0-cos(RightAngularDelta))*HalfRadius) + (-(1.0-cos(LeftAngularDelta))*HalfRadius);
 		double LinearAcceleration=Width-LocalVelocity[0];
+
 		LocalForce[0]=(LinearAcceleration*Mass) / dTime_s;
 		NewVelocityY+=Height;
 	}
