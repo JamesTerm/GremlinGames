@@ -12,10 +12,9 @@ Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_Lef
 }
 void Robot_Tank::UpdateVelocities()
 {
-
 }
 
-void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &LocalTorque)
+void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &LocalTorque,double dTime_s)
 {
 	osg::Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	double LeftLinearVelocity=m_LeftLinearVelocity,RightLinearVelocity=m_RightLinearVelocity;
@@ -27,6 +26,7 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Local
 	//We do not care about x, but we may want to keep an eye for intense x forces
 	LocalForce[0]=0.0;
 	double Radius=GetDimensions()[0];
+	double NewVelocityY;
 	//See if velocities are going in the same direction
 	if (m_LeftLinearVelocity * m_RightLinearVelocity >= 0)
 	{
@@ -34,21 +34,7 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Local
 		double CommonVelocity=m_LeftLinearVelocity>0?CommonMagnitude:-CommonMagnitude; //put back in the correct direction
 		LeftLinearVelocity-=CommonVelocity;
 		RightLinearVelocity-=CommonVelocity;
-		RightAngularDelta=LeftLinearVelocity / (2 * PI * Radius);
-		LeftAngularDelta=-(RightLinearVelocity / (2 * PI * Radius));
-
-		double NewYVelocity=CommonVelocity;
-		//We also need to add displacement of the turn... when both wheels are going in opposite directions, this displacement will cancel out
-		{
-			double HalfRadius=Radius/2.0;
-			double Height=(sin(RightAngularDelta) * HalfRadius) + (sin(-LeftAngularDelta) * HalfRadius);
-			double Width=((1.0-cos(RightAngularDelta))*HalfRadius) + ((1.0-cos(LeftAngularDelta))*HalfRadius);
-			double LinearAcceleration=Width-LocalVelocity[0];
-			LocalForce[0]=LinearAcceleration*Mass;
-			CommonVelocity+=Height;
-		}
-		double LinearAcceleration=CommonVelocity-LocalVelocity[1];
-		LocalForce[1]=LinearAcceleration*Mass;
+		NewVelocityY=CommonVelocity;
 	}
 	else
 	{
@@ -66,16 +52,27 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Local
 			RemainderVelocity=m_RightLinearVelocity>0?RemainderMagnitude:-RemainderMagnitude;
 			RightLinearVelocity-=RemainderVelocity;  //take off the remainder for equal opposing forces
 		}
-		//To to put the remainder back into linear force
-		double LinearAcceleration=RemainderVelocity-LocalVelocity[1];
-		LocalForce[1]=LinearAcceleration*Mass;
-		RightAngularDelta=LeftLinearVelocity / (2 * PI * Radius);
-		LeftAngularDelta=RightLinearVelocity / (2 * PI * Radius);
+		NewVelocityY=RemainderVelocity;
 	}
+
+	RightAngularDelta=LeftLinearVelocity / (2 * PI * Radius);
+	LeftAngularDelta=-(RightLinearVelocity / (2 * PI * Radius));
+
+	//We also need to add displacement of the left over turn..
+	{
+		double HalfRadius=Radius/2.0;
+		double Height=(sin(RightAngularDelta) * HalfRadius) + (sin(-LeftAngularDelta) * HalfRadius);
+		double Width=((1.0-cos(RightAngularDelta))*HalfRadius) + ((1.0-cos(LeftAngularDelta))*HalfRadius);
+		double LinearAcceleration=Width-LocalVelocity[0];
+		LocalForce[0]=(LinearAcceleration*Mass) / dTime_s;
+		NewVelocityY+=Height;
+	}
+	double LinearAcceleration=NewVelocityY-LocalVelocity[1];
+	LocalForce[1]=(LinearAcceleration*Mass) / dTime_s;
+
 	//Now then we'll compute the torque
 	double AngularAcceleration=(LeftAngularDelta+RightAngularDelta) - m_Physics.GetAngularVelocity();
-	LocalTorque = AngularAcceleration * Mass;
-
+	LocalTorque = (AngularAcceleration * Mass) / dTime_s;
 }
 
 void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
@@ -83,7 +80,7 @@ void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d 
 	UpdateVelocities();
 	osg::Vec2d NewLocalForce(LocalForce);
 	double NewTorque=LocalTorque;
-	InterpolateThrusterChanges(NewLocalForce,NewTorque);
+	InterpolateThrusterChanges(NewLocalForce,NewTorque,dTime_s);
 	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,TorqueRestraint,dTime_s);
 }
 
