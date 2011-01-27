@@ -1,6 +1,6 @@
 TestShip = {
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 50, MaxAccelRight = 50, MaxAccelUp = 5, MaxAccelDown = 5, MaxAccelForward = 20, MaxAccelReverse = 20, 
+	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelUp = 5, MaxAccelDown = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = 11, -- Maximum Speed (m/s)
@@ -9,7 +9,7 @@ TestShip = {
 	AFTERBURNER_ACCEL = 2, -- Take this to the limit
 	BRAKE = 10,     -- Brake Deceleration m/s2 (1g = 9.8)
 	-- Turn Rates (deg/sec)
-	dHeading = 1200,
+	dHeading = 275,
 	
 	Dimensions =
 	{ Length=0.94615, Width=0.6858 }, --These are 37.25 x 27 inches (will matter for turning radius!

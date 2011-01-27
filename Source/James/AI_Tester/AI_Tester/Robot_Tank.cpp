@@ -10,11 +10,46 @@ const double PI=M_PI;
 Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
 }
-void Robot_Tank::UpdateVelocities()
+void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
+	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
+
+	//First we apply the Y component force to the velocities in the direction that it currently is facing
+	//I'm writing this out so I can easily debug
+	{
+		double AccelerationDelta=LocalForce[1]/Mass;
+		double VelocityDelta=AccelerationDelta*dTime_s;
+		m_LeftLinearVelocity+=VelocityDelta;
+		m_RightLinearVelocity+=VelocityDelta;
+	}
+
+	#if 0
+	//determine direction
+	double ForceHeading;
+	{
+		osg::Vec2d LocalForce_norm(LocalForce);
+		LocalForce_norm.normalize();
+		ForceHeading=atan2(LocalForce_norm[0],LocalForce_norm[1]);
+		//DOUT2("x=%f y=%f h=%f\n",LocalForce[0],LocalForce[1],RAD_2_DEG(ForceHeading));
+	}
+	#endif
+	//Now to blend the torque into the velocities
+	{
+		double Radius=GetDimensions()[0];
+		//first convert to angular acceleration
+		double AccelerationDelta=Torque/Mass;
+		double AngularVelocityDelta=AccelerationDelta*dTime_s;
+		//Convert the angular velocity into linear velocity
+		double LinearVelocityDelta=AngularVelocityDelta * (2 * PI * Radius);
+		
+		//Now to apply to the velocities
+		m_LeftLinearVelocity+=LinearVelocityDelta/2;
+		m_RightLinearVelocity-=LinearVelocityDelta/2;
+	}
+	DOUT2("left=%f right=%f \n",m_LeftLinearVelocity,m_RightLinearVelocity);
 }
 
-void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &LocalTorque,double dTime_s)
+void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torque,double dTime_s)
 {
 	osg::Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	double LeftLinearVelocity=m_LeftLinearVelocity,RightLinearVelocity=m_RightLinearVelocity;
@@ -60,15 +95,16 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Local
 
 	//Now then we'll compute the torque
 	double AngularAcceleration=(LeftAngularDelta+RightAngularDelta) - m_Physics.GetAngularVelocity();
-	LocalTorque = (AngularAcceleration * Mass) / dTime_s;
+	Torque = (AngularAcceleration * Mass) / dTime_s;
 }
 
-void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	UpdateVelocities();
+	UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	osg::Vec2d NewLocalForce(LocalForce);
-	double NewTorque=LocalTorque;
+	double NewTorque=Torque;
 	InterpolateThrusterChanges(NewLocalForce,NewTorque,dTime_s);
-	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,TorqueRestraint,dTime_s);
+	//No torque restraint... restraints are applied during the update of velocities
+	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
 }
 
