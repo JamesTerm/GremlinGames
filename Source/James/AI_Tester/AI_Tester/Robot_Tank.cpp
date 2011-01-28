@@ -10,17 +10,23 @@ const double PI=M_PI;
 Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
 }
+
+void Robot_Tank::ResetPos()
+{
+	m_LeftLinearVelocity=m_RightLinearVelocity=0.0;
+	__super::ResetPos();
+}
+
 void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
+	double LinearVelocityDelta;
 
-	//First we apply the Y component force to the velocities in the direction that it currently is facing
+	//First we compute the Y component force to the velocities in the direction that it currently is facing
 	//I'm writing this out so I can easily debug
 	{
 		double AccelerationDelta=LocalForce[1]/Mass;
-		double VelocityDelta=AccelerationDelta*dTime_s;
-		m_LeftLinearVelocity+=VelocityDelta;
-		m_RightLinearVelocity+=VelocityDelta;
+		LinearVelocityDelta=AccelerationDelta*dTime_s;
 	}
 
 	#if 0
@@ -33,6 +39,7 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 		//DOUT2("x=%f y=%f h=%f\n",LocalForce[0],LocalForce[1],RAD_2_DEG(ForceHeading));
 	}
 	#endif
+	double LeftDelta,RightDelta;
 	//Now to blend the torque into the velocities
 	{
 		double Radius=GetDimensions()[0];
@@ -40,12 +47,52 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 		double AccelerationDelta=Torque/Mass;
 		double AngularVelocityDelta=AccelerationDelta*dTime_s;
 		//Convert the angular velocity into linear velocity
-		double LinearVelocityDelta=AngularVelocityDelta * (2 * PI * Radius);
-		
-		//Now to apply to the velocities
-		m_LeftLinearVelocity+=LinearVelocityDelta/2;
-		m_RightLinearVelocity-=LinearVelocityDelta/2;
+		double AngularVelocityDelta_linear=AngularVelocityDelta * (2 * PI * Radius);
+		//I'm keeping this first attempt, I like it because it is simple and reliable however, when going forward in fast speeds the torque will clobber the
+		//linear force with abrupt stopping 
+
+		LeftDelta=(AngularVelocityDelta_linear/2)+LinearVelocityDelta;
+		RightDelta=(-AngularVelocityDelta_linear/2)+LinearVelocityDelta;
+
+		#if 1
+		osg::Vec2d NewDelta(LeftDelta,RightDelta);
+		osg::Vec2d CurrentVelocity(m_LeftLinearVelocity,m_RightLinearVelocity);
+		for (size_t i=0;i<2;i++)
+		{
+			if (CurrentVelocity[i] * AngularVelocityDelta_linear >0.0)
+			{
+				//The left velocity is about to increase see if the linear velocity is going in the same direction
+				if ((CurrentVelocity[i] * LinearVelocityDelta)>0.0)
+					NewDelta[i]/=2;  //average out the linear and the angular
+			}
+			//Now to apply the final force restraint
+			double Restraint=(CurrentVelocity[i]>0.0)?MaxAccelForward:MaxAccelReverse;
+			if (Restraint>0.0)  //test for -1
+			{
+				Restraint=min(fabs(NewDelta[i]),Restraint);
+				if (NewDelta[i]<0.0)
+					Restraint*=-1.0;  //restore the negative sign
+				NewDelta[i]=Restraint;
+			}
+		}
+		LeftDelta=NewDelta[0];
+		RightDelta=NewDelta[1];
+
+		#endif
+
+
 	}
+	//Now to apply to the velocities with speed control  
+	double NewVelocity=m_LeftLinearVelocity+LeftDelta;
+	if (fabs(NewVelocity)>ENGAGED_MAX_SPEED)
+		NewVelocity=(NewVelocity>0)?ENGAGED_MAX_SPEED:-ENGAGED_MAX_SPEED;
+	m_LeftLinearVelocity=NewVelocity;
+
+	NewVelocity=m_RightLinearVelocity+RightDelta;
+	if (fabs(NewVelocity)>ENGAGED_MAX_SPEED)
+		NewVelocity=(NewVelocity>0)?ENGAGED_MAX_SPEED:-ENGAGED_MAX_SPEED;
+	m_RightLinearVelocity=NewVelocity;	
+
 	DOUT2("left=%f right=%f \n",m_LeftLinearVelocity,m_RightLinearVelocity);
 }
 

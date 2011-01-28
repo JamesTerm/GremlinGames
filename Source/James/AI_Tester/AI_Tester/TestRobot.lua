@@ -1,6 +1,6 @@
 TestShip = {
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelUp = 5, MaxAccelDown = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
+	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = 11, -- Maximum Speed (m/s)
