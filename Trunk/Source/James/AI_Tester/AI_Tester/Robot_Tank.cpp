@@ -50,13 +50,18 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 		double AngularVelocityDelta_linear=AngularVelocityDelta * (2 * PI * Radius);
 		//I'm keeping this first attempt, I like it because it is simple and reliable however, when going forward in fast speeds the torque will clobber the
 		//linear force with abrupt stopping 
+		osg::Vec2d CurrentVelocity(m_LeftLinearVelocity,m_RightLinearVelocity);
+		{
+			//Scale down the amount of torque based on current speed... this helps not slow down the linear force when turning
+			double FilterScaler=1.0 - (CurrentVelocity.length() / (ENGAGED_MAX_SPEED*2.0));
+			AngularVelocityDelta_linear*=FilterScaler;
+		}
 
 		LeftDelta=(AngularVelocityDelta_linear/2)+LinearVelocityDelta;
 		RightDelta=(-AngularVelocityDelta_linear/2)+LinearVelocityDelta;
 
 		#if 1
 		osg::Vec2d NewDelta(LeftDelta,RightDelta);
-		osg::Vec2d CurrentVelocity(m_LeftLinearVelocity,m_RightLinearVelocity);
 		for (size_t i=0;i<2;i++)
 		{
 			if (CurrentVelocity[i] * AngularVelocityDelta_linear >0.0)
