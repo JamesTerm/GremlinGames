@@ -6,6 +6,7 @@ using namespace GG_Framework::Base;
 using namespace std;
 
 const double PI=M_PI;
+const double Pi2=M_PI*2.0;
 
 Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
@@ -42,12 +43,12 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 	double LeftDelta,RightDelta;
 	//Now to blend the torque into the velocities
 	{
-		double Radius=GetDimensions()[0];
+		double Width=GetDimensions()[0];
 		//first convert to angular acceleration
 		double AccelerationDelta=Torque/Mass;
 		double AngularVelocityDelta=AccelerationDelta*dTime_s;
 		//Convert the angular velocity into linear velocity
-		double AngularVelocityDelta_linear=AngularVelocityDelta * (2 * PI * Radius);
+		double AngularVelocityDelta_linear=AngularVelocityDelta * Width;
 		//I'm keeping this first attempt, I like it because it is simple and reliable however, when going forward in fast speeds the torque will clobber the
 		//linear force with abrupt stopping 
 		osg::Vec2d CurrentVelocity(m_LeftLinearVelocity,m_RightLinearVelocity);
@@ -98,7 +99,7 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 		NewVelocity=(NewVelocity>0)?ENGAGED_MAX_SPEED:-ENGAGED_MAX_SPEED;
 	m_RightLinearVelocity=NewVelocity;	
 
-	DOUT2("left=%f right=%f \n",m_LeftLinearVelocity,m_RightLinearVelocity);
+	DOUT2("left=%f right=%f Ang=%f\n",m_LeftLinearVelocity,m_RightLinearVelocity,RAD_2_DEG(m_Physics.GetAngularVelocity()));
 }
 
 void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torque,double dTime_s)
@@ -112,7 +113,7 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torqu
 	double LeftAngularDelta;
 	//We do not care about x, but we may want to keep an eye for intense x forces
 	LocalForce[0]=0.0;
-	double Radius=GetDimensions()[0];
+	double Width=GetDimensions()[0];
 	double NewVelocityY;
 	//See if velocities are going in the same direction
 	if (m_LeftLinearVelocity * m_RightLinearVelocity >= 0)
@@ -129,24 +130,26 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torqu
 		NewVelocityY=0;  //nothing to do... the common code will cancel them out
 	}
 
-	RightAngularDelta=LeftLinearVelocity / (2 * PI * Radius);
-	LeftAngularDelta=-(RightLinearVelocity / (2 * PI * Radius));
+	RightAngularDelta=LeftLinearVelocity / (Pi2 * Width);
+	LeftAngularDelta=-(RightLinearVelocity / (Pi2 * Width));
 
 	//We also need to add displacement of the left over turn..
 	{
-		double HalfRadius=Radius/2.0;
-		double Height=(sin(RightAngularDelta) * HalfRadius) + (sin(-LeftAngularDelta) * HalfRadius);
-		double Width=((1.0-cos(RightAngularDelta))*HalfRadius) + (-(1.0-cos(LeftAngularDelta))*HalfRadius);
+		double RAD_Slice=RightAngularDelta *Pi2 * dTime_s;
+		double LAD_Slice=LeftAngularDelta * Pi2 * dTime_s;
+		double Radius=Width/2.0;
+		double Height=(sin(RAD_Slice) * Radius) + (sin(-LAD_Slice) * Radius);
+		double Width=((1.0-cos(RAD_Slice))*Radius) + (-(1.0-cos(LAD_Slice))*Radius);
 		double LinearAcceleration=Width-LocalVelocity[0];
 
 		LocalForce[0]=(LinearAcceleration*Mass) / dTime_s;
-		NewVelocityY+=Height;
+		NewVelocityY+=(Height / dTime_s);
 	}
 	double LinearAcceleration=NewVelocityY-LocalVelocity[1];
 	LocalForce[1]=(LinearAcceleration*Mass) / dTime_s;
 
 	//Now then we'll compute the torque
-	double AngularAcceleration=(LeftAngularDelta+RightAngularDelta) - m_Physics.GetAngularVelocity();
+	double AngularAcceleration=((LeftAngularDelta+RightAngularDelta)*Pi2) - m_Physics.GetAngularVelocity();
 	Torque = (AngularAcceleration * Mass) / dTime_s;
 }
 
