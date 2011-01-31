@@ -3,16 +3,16 @@ TestShip = {
 	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
 	MaxTorqueYaw = 25, 
 	
-	MAX_SPEED = 11, -- Maximum Speed (m/s)
-	ENGAGED_MAX_SPEED = 11, -- Engagement Speed
+	MAX_SPEED = 2.916, -- Maximum Speed (m/s)
+	ENGAGED_MAX_SPEED = 2.916, -- Engagement Speed
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	AFTERBURNER_ACCEL = 2, -- Take this to the limit
 	BRAKE = 10,     -- Brake Deceleration m/s2 (1g = 9.8)
 	-- Turn Rates (deg/sec)
-	dHeading = 275,
+	dHeading = 514,
 	
 	Dimensions =
-	{ Length=0.94615, Width=0.6858 }, --These are 37.25 x 27 inches (will matter for turning radius!
+	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
 	
 	UI =
 	{
