@@ -1,12 +1,9 @@
 #include "WPILib.h"
-#include "math.h"
-#include "Base/Vec2d.h"
-/**
- * This is a demo program showing the use of the RobotBase class.
- * The SimpleRobot class is the base of a robot application that will automatically call your
- * Autonomous and OperatorControl methods at the right time as controlled by the switches on
- * the driver station or the field controls.
- */ 
+
+ //This is a demo program showing the use of the RobotBase class.
+ //The SimpleRobot class is the base of a robot application that will automatically call your
+ //Autonomous and OperatorControl methods at the right time as controlled by the switches on
+ //the driver station or the field controls.
 class RobotDemo : public SimpleRobot
 {
 	RobotDrive myRobot; // robot drive system
@@ -19,10 +16,7 @@ public:
 	{
 		myRobot.SetExpiration(0.1);
 	}
-
-	/**
-	 * Drive left & right motors for 2 seconds then stop
-	 */
+	//Drive left & right motors for 2 seconds then stop
 	void Autonomous(void)
 	{
 		myRobot.SetSafetyEnabled(false);
@@ -30,10 +24,7 @@ public:
 		Wait(2.0); 				//    for 2 seconds
 		myRobot.Drive(0.0, 0.0); 	// stop robot
 	}
-
-	/**
-	 * Runs the motors with arcade steering. 
-	 */
+	 // Runs the motors with arcade steering. 
 	void OperatorControl(void)
 	{
 		myRobot.SetSafetyEnabled(true);
