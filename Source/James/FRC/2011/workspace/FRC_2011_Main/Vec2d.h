@@ -1,6 +1,13 @@
 
 #pragma once
 
+#if 0
+    inline bool isNaN(float v) { return _isnan(v)!=0; }
+    inline bool isNaN(double v) { return _isnan(v)!=0; }
+#else
+    inline bool isNaN(float v) { return false; }
+    inline bool isNaN(double v) { return false; }
+#endif
 namespace Base {
 
 /** General purpose double pair, uses include representation of
@@ -26,10 +33,10 @@ class Vec2d
 
         Vec2d(value_type x,value_type y) { _v[0]=x; _v[1]=y; }
 
+#if 0
         inline Vec2d(const Vec2f& vec) { _v[0]=vec._v[0]; _v[1]=vec._v[1]; }
-        
         inline operator Vec2f() const { return Vec2f(static_cast<float>(_v[0]),static_cast<float>(_v[1]));}
-
+#endif
 
         inline bool operator == (const Vec2d& v) const { return _v[0]==v._v[0] && _v[1]==v._v[1]; }
 
@@ -57,7 +64,7 @@ class Vec2d
         inline value_type y() const { return _v[1]; }
 
         inline bool valid() const { return !isNaN(); }
-        inline bool isNaN() const { return osg::isNaN(_v[0]) || osg::isNaN(_v[1]); }
+        inline bool isNaN() const { return ::isNaN(_v[0]) || ::isNaN(_v[1]); }
 
         /** Dot product. */
         inline value_type operator * (const Vec2d& rhs) const
