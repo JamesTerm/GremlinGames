@@ -8,7 +8,10 @@
     inline bool isNaN(float v) { return false; }
     inline bool isNaN(double v) { return false; }
 #endif
-namespace Base {
+namespace Framework 
+{
+namespace Base 
+{
 
 /** General purpose double pair, uses include representation of
   * texture coordinates.
@@ -166,3 +169,4 @@ class Vec2d
 };    // end of class Vec2d
 
 }    // end of namespace Base
+}	//end of namespace Framework

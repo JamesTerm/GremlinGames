@@ -13,7 +13,7 @@ public:
 	class HandlerList
 	{
 
-		friend IEvent::IEventHandler;
+		//friend IEvent::IEventHandler;
 
 	public:
 		~HandlerList()
@@ -29,7 +29,7 @@ public:
 			_handlerList.clear();
 		}
 
-	private:
+	//private:
 		std::list<IEvent::IEventHandler*>	_handlerList;
 		void AddEventHandler(IEvent::IEventHandler* eh){_handlerList.push_back(eh);}
 		void RemoveEventHandler(IEvent::IEventHandler* eh){_handlerList.remove(eh);}
@@ -43,16 +43,16 @@ protected:
 		IEventHandler(IEvent& event, IEvent::HandlerList& ehl) : 
 		  _event(event), _ehl(&ehl) {_ehl->AddEventHandler(this);}
 		  virtual ~IEventHandler() {if (_ehl) _ehl->RemoveEventHandler(this);}
-	private:
+	//private:
 		IEvent::HandlerList* _ehl;
 		IEvent& _event;
 
-		friend HandlerList;
+		//friend HandlerList;
 	};
 
 	virtual void RemoveEventHandler(IEventHandler* eh) = 0;
 
-	friend HandlerList;
+	//friend HandlerList;
 
 };
 
@@ -122,7 +122,7 @@ public:
 			else
 				pos++;
 		}
-		ASSERT_MSG(false, "Event0::Remove() failed to find the handler");
+		//ASSERT_MSG(false, "Event0::Remove() failed to find the handler");
 	}
 
 protected:
@@ -172,6 +172,28 @@ private:
 template<class P1>
 class Event1 : public IEvent
 {
+private:
+	class IEventHandler1 : public IEventHandler
+	{
+	public:
+		IEventHandler1(Event1& event, IEvent::HandlerList& ehl) : IEventHandler(event, ehl) {}
+		virtual void Fire(P1 p1) = 0;
+	};
+
+	template<class T>
+	class EventHandler1 : public IEventHandler1
+	{
+	public:
+		EventHandler1(Event1& event, IEvent::HandlerList& ehl, T& client, void (T::*delegate)(P1 p1)) : 
+		  IEventHandler1(event, ehl), _client(client), _delegate(delegate) {}
+		  virtual void Fire(P1 p1){(_client.*_delegate)(p1);}
+
+		  T& _client;
+		  void (T::*_delegate)(P1 p1);
+	};
+
+	std::list<IEventHandler1*>	_handlerList;
+	
 public:
 
 	virtual ~Event1() {ClearAllHandlers();}
@@ -201,22 +223,6 @@ public:
 	template<class T>
 		void Subscribe(IEvent::HandlerList& ehl, T& client, void (T::*delegate)(P1 p1))
 	{
-#ifdef _DEBUG
-		// Make sure there is only one event handler from this client with this delegate
-		{
-			std::list<IEventHandler1*>::iterator pos;
-			for (pos = _handlerList.begin(); pos != _handlerList.end();)
-			{
-				EventHandler1<T>* posPtr = dynamic_cast<EventHandler1<T>*>(*pos);
-				if ((posPtr) && (&posPtr->_client == &client) && (posPtr->_delegate == delegate))
-				{
-					ASSERT_MSG(false, "Event1::Subscribe() double entry");
-				}
-				else
-					pos++;
-			}
-		}
-#endif
 		_handlerList.push_back(new EventHandler1<T>(*this, ehl, client, delegate));
 	}
 
@@ -236,7 +242,7 @@ public:
 			else
 				pos++;
 		}
-		ASSERT_MSG(false, "Event1::Remove() failed to find the handler");
+		//ASSERT_MSG(false, "Event1::Remove() failed to find the handler");
 	}
 
 protected:
@@ -257,27 +263,6 @@ protected:
 		}
 	}
 
-private:
-	class IEventHandler1 : public IEventHandler
-	{
-	public:
-		IEventHandler1(Event1& event, IEvent::HandlerList& ehl) : IEventHandler(event, ehl) {}
-		virtual void Fire(P1 p1) = 0;
-	};
-
-	template<class T>
-	class EventHandler1 : public IEventHandler1
-	{
-	public:
-		EventHandler1(Event1& event, IEvent::HandlerList& ehl, T& client, void (T::*delegate)(P1 p1)) : 
-		  IEventHandler1(event, ehl), _client(client), _delegate(delegate) {}
-		  virtual void Fire(P1 p1){(_client.*_delegate)(p1);}
-
-		  T& _client;
-		  void (T::*_delegate)(P1 p1);
-	};
-
-	std::list<IEventHandler1*>	_handlerList;
 };
 
 

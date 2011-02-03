@@ -69,34 +69,5 @@ void StripCommentsAndTrailingWhiteSpace(char* line)
 		}
 	}
 }
-//////////////////////////////////////////////////////////////////////////
-
-std::string TrimString( const std::string& StrToTrim )
-{
-	// Find first non whitespace char in StrToTrim
-	std::string::size_type First = StrToTrim.find_first_not_of(std::string(" \n\t\r"));
-	// Check whether something went wrong?
-	if( First == std::string::npos )
-	{
-		First = StrToTrim.size()-1;
-	}
-
-	// Find last non whitespace char from StrToTrim
-	std::string::size_type Last = StrToTrim.find_last_not_of(std::string(" \n\t\r"));
-	// If something didn't go wrong, Last will be recomputed to get real length of substring
-	if( Last == std::string::npos )
-	{
-		Last = 0;
-	}
-
-	std::string::size_type count = (Last>First) ? (( Last + 1 ) - First) : 0;
-	if (count > 0)
-		return (StrToTrim.substr( First, count ));
-	else return std::string("");
-}
-
-
-
-
 
 };
