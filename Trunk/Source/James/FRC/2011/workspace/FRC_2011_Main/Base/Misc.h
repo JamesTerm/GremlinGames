@@ -1,26 +1,28 @@
 #pragma once
 #include <math.h>
+#include <stdlib.h>
+#include <map>
 
 typedef std::map<std::string, std::string, std::greater<std::string> > StringMap;
 
-namespace GG_Framework
+namespace Framework
 {
 	namespace Base
 	{
 
-		FRAMEWORK_BASE_API std::string BuildString(const char *format, ... );
-		FRAMEWORK_BASE_API void DebugOutput(const char *format, ... );
-		FRAMEWORK_BASE_API char* GetLastSlash(char* fn, char* before=NULL);
-		FRAMEWORK_BASE_API std::string GetContentDir_FromFile(const char* fn);
+		std::string BuildString(const char *format, ... );
+		void DebugOutput(const char *format, ... );
+		char* GetLastSlash(char* fn, char* before=NULL);
+		std::string GetContentDir_FromFile(const char* fn);
 
 		// Parses name=value pairs, stripping whitespace and comments starting with '#'
 		// Returns true if file was opened properly
-		FRAMEWORK_BASE_API bool ReadStringMapFromIniFile(std::string filename, StringMap& resMap);
-		FRAMEWORK_BASE_API void StripCommentsAndTrailingWhiteSpace(char* line);
-		FRAMEWORK_BASE_API std::string TrimString( const std::string& StrToTrim );
+		bool ReadStringMapFromIniFile(std::string filename, StringMap& resMap);
+		void StripCommentsAndTrailingWhiteSpace(char* line);
+		std::string TrimString( const std::string& StrToTrim );
 
 		//! Returns false iff c == [ 'f', 'F', 'n', 'N', '0', 0 ]
-		FRAMEWORK_BASE_API bool ParseBooleanFromChar(char c);
+		bool ParseBooleanFromChar(char c);
 
 		//! Trying to keep the Win32 FindFirstFile stuff wrapped
 		//! -4 for neither file exists
@@ -29,34 +31,13 @@ namespace GG_Framework
 		//! -1 First file time is earlier than second file time.
 		//! 0 The times are the same
 		//! 1 the second file time is earlier than the first
-		FRAMEWORK_BASE_API int CompareFileLastWriteTimes(const char* f1, const char* f2);
+		int CompareFileLastWriteTimes(const char* f1, const char* f2);
 
 		// Internal methods
-		struct FRAMEWORK_BASE_API track_memory_impl
+		struct track_memory_impl
 		{	static void add   ( void* p_data, const char* p_name );
 			static void remove( void* p_data, const char* p_name );
 		};
-
-		#ifdef _DEBUG
-
-		// In Debug mode we track memory
-		template< const typename class_name >
-		struct track_memory
-		{			// Constructor
-					track_memory( void )	{ track_memory_impl::add( this, typeid(class_name).name() ); }
-				
-					// Destructor
-					~track_memory( void )	{ track_memory_impl::remove( this, typeid(class_name).name() ); }
-		};
-
-		#else _DEBUG
-
-		// In release mode we compile out to nothing
-		template< const typename class_name >
-		struct track_memory {};
-
-		#endif _DEBUG
-
 	};
 };
 
