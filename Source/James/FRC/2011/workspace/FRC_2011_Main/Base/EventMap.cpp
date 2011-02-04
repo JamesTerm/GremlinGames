@@ -1,5 +1,10 @@
+typedef long long __int64;
 #include <string>
 #include <list>
+#include <vector>
+#include <map>
+#include <assert.h>
+#include "misc.h"
 #include "Event.h"
 #include "EventMap.h"
 
@@ -145,25 +150,28 @@ void Framework::Base::ValueLogger::WriteValues(FILE* logFile, double lastTime, d
 Framework::Base::ProfilingLogger::ProfilingLogger(string itemName) : 
 	Framework::Base::ValueLogger(itemName), begC(0), endC(0)
 {
-	QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
+	assert(false);  
+	//QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
 }
 //////////////////////////////////////////////////////////////////////////
 
 // Call these to write on the next frame
 void Framework::Base::ProfilingLogger::Start()
 {
-	QueryPerformanceCounter((LARGE_INTEGER *)&begC);
+	assert(false);  
+	//QueryPerformanceCounter((LARGE_INTEGER *)&begC);
 }
 void Framework::Base::ProfilingLogger::End()
 {
-	QueryPerformanceCounter((LARGE_INTEGER *)&endC);
+	assert(false);
+	//QueryPerformanceCounter((LARGE_INTEGER *)&endC);
 	V = ((double)(endC-begC)/(double)freq);
 }
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
 
-Framework::Base::Timer::Timer(string logFileName) : _currentTime_s(0.0), Logger(logFileName)
+Framework::Base::Timer::Timer(string logFileName) : Logger(logFileName),_currentTime_s(0.0) 
 {
 	Logger.ListenForTimerUpdate(CurrTimeChanged);
 }
@@ -213,6 +221,7 @@ Key::KeyStringMaps Key::KEY_STRING_MAPS;
 
 Key::KeyStringMaps::KeyStringMaps()
 {
+#if 0
    keyStringMap[osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON]   = "MOUSE_LEFT";
    keyStringMap[osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON] = "MOUSE_MIDDLE";
    keyStringMap[osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON]  = "MOUSE_RIGHT";
@@ -351,7 +360,8 @@ Key::KeyStringMaps::KeyStringMaps()
    keyStringMap[osgGA::GUIEventAdapter::KEY_Super_R]    = "SUPER_R";
    keyStringMap[osgGA::GUIEventAdapter::KEY_Hyper_L]    = "HYPER_L";
    keyStringMap[osgGA::GUIEventAdapter::KEY_Hyper_R]    = "HYPER_R";
-
+#endif
+   
    // ascii
    std::string ascii = "";
    for (char c = ' '; c <= '~'; c++)

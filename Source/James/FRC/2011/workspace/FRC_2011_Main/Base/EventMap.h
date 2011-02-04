@@ -36,11 +36,11 @@ namespace Framework
 		private:
 			void TimeChanged(double t);
 			double m_lastTime;
-			std::vector<double>* m_currRecordedTimeSet;
 			std::vector<std::vector<double>*> m_allRecordedTimes;
-			bool m_active;
-			IEvent::HandlerList ehl;
 			std::string m_logFileName;
+			bool m_active;
+			std::vector<double>* m_currRecordedTimeSet;
+			IEvent::HandlerList ehl;
 		};
 		//////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +48,7 @@ namespace Framework
 		class  ValueLogger
 		{
 		public:
-			ValueLogger(std::string itemName) : m_itemName(itemName), V(0.0), m_writeIndex(0) {}
+			ValueLogger(std::string itemName) :  V(0.0), m_itemName(itemName), m_writeIndex(0) {}
 			double V; //! Set this value to write on the next frame
 			void SetLogger(FrameLogger& fl);
 
@@ -117,7 +117,8 @@ namespace Framework
             if (isShiftChar(key))
             {
                key = unShiftChar(key);
-               flags |= osgGA::GUIEventAdapter::MODKEY_SHIFT;
+               assert(false);  //ensure this is not called for robot code
+               //flags |= osgGA::GUIEventAdapter::MODKEY_SHIFT;
             }
          }
 
@@ -163,7 +164,7 @@ namespace Framework
 		{
 		public:
 			EventMap(bool listOwned = false) : 
-			m_listOwned(listOwned), m_KB_Controlled(false), AlternateEventTime(NULL)
+				AlternateEventTime(NULL),m_listOwned(listOwned), m_KB_Controlled(false) 
 			{}
 
 			bool IsListOwned(){return m_listOwned;}
@@ -192,8 +193,8 @@ namespace Framework
 
 		private:
 			// Fired for key press and key release from the KBMCB
-			bool m_KB_Controlled;
 			bool m_listOwned;
+			bool m_KB_Controlled;
 		};	// EventMap
 		//////////////////////////////////////////////////////////////////////////
 
