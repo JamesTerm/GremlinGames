@@ -4,6 +4,7 @@
 #include "Base/Vec2d.h"
 #include "Base/Misc.h"
 #include "Base/Event.h"
+#include "Entity_Properties.h"
 #include "Base/EventMap.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
@@ -25,9 +26,11 @@ Entity2D::~Entity2D()
 {
 }
 
-void Entity2D::Initialize(Framework::Base::EventMap& em)
+void Entity2D::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
 {
 	m_eventMap = &em;
+	if (props)
+		props->Initialize(this);
 }
 
 //Note: If for some reason there are multiple threads which need to write we would need to put a critical section around this

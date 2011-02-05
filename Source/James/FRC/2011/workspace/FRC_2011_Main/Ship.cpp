@@ -5,6 +5,7 @@
 #include "Base/Misc.h"
 #include "Base/Event.h"
 #include "Base/EventMap.h"
+#include "Entity_Properties.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
 #include "Goal.h"
@@ -184,9 +185,15 @@ void Ship_2D::TestPosAtt_Delta(const Vec2d pos_m, double att, double dTime_s)
 	#endif
 }
 
-void Ship_2D::Initialize(Framework::Base::EventMap& em)
+void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *props)
 {
-	__super::Initialize(em);
+	__super::Initialize(em,props);
+	const Ship_Properties *ship_props=static_cast<const Ship_Properties *>(props);
+	if (ship_props)
+	{
+		ship_props->Initialize(this);
+	}
+	else
 	{
 		//TODO this is where we hard code the values!!
 		double Scale=0.2;  //we must scale everything down to see on the view
