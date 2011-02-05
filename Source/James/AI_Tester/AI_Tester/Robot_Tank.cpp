@@ -45,7 +45,7 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 	{
 		double Width=GetDimensions()[0];
 		//first convert to angular acceleration
-		double AccelerationDelta=Torque/Mass;
+		double AccelerationDelta=TorqueRestrained/Mass;
 		double AngularVelocityDelta=AccelerationDelta*dTime_s;
 		//Convert the angular velocity into linear velocity
 		double AngularVelocityDelta_linear=AngularVelocityDelta * Width;
