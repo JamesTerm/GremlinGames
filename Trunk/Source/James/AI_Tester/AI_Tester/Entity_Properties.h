@@ -30,9 +30,11 @@ class Ship_Properties : public Entity_Properties
 		enum Ship_Type
 		{
 			eDefault,
-			eRobotTank
+			eRobotTank,
+			eFRC2011_Robot
 		};
 		Ship_Type GetShipType() const {return m_ShipType;}
+		double GetEngagedMaxSpeed() const {return m_ENGAGED_MAX_SPEED;}
 	private:
 		// This is the rate used by the keyboard
 		double m_dHeading;

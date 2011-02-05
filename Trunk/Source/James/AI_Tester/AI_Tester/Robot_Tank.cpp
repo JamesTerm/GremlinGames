@@ -8,6 +8,10 @@ using namespace std;
 const double PI=M_PI;
 const double Pi2=M_PI*2.0;
 
+  /***********************************************************************************************************************************/
+ /*															Robot_Tank																*/
+/***********************************************************************************************************************************/
+
 Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
 }
@@ -99,7 +103,7 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 		NewVelocity=(NewVelocity>0)?ENGAGED_MAX_SPEED:-ENGAGED_MAX_SPEED;
 	m_RightLinearVelocity=NewVelocity;	
 
-	DOUT2("left=%f right=%f Ang=%f\n",m_LeftLinearVelocity,m_RightLinearVelocity,RAD_2_DEG(m_Physics.GetAngularVelocity()));
+	//DOUT2("left=%f right=%f Ang=%f\n",m_LeftLinearVelocity,m_RightLinearVelocity,RAD_2_DEG(m_Physics.GetAngularVelocity()));
 }
 
 void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torque,double dTime_s)
@@ -163,3 +167,40 @@ void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d 
 	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
 }
 
+  /***********************************************************************************************************************************/
+ /*															FRC_2011_Robot															*/
+/***********************************************************************************************************************************/
+FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control) : Robot_Tank(EntityName), m_RobotControl(robot_control)
+{
+}
+
+void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+{
+	__super::Initialize(em,props);
+	m_RobotControl->Initialize(props);
+}
+void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+{
+	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity(),GetRightVelocity());
+}
+
+  /***********************************************************************************************************************************/
+ /*															Robot_Control															*/
+/***********************************************************************************************************************************/
+
+void Robot_Control::Initialize(const Entity_Properties *props)
+{
+	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
+	assert(ship_props);
+	m_ENGAGED_MAX_SPEED=ship_props->GetEngagedMaxSpeed();
+}
+
+void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
+{
+	DOUT2("left=%f right=%f \n",LeftVelocity/m_ENGAGED_MAX_SPEED,RightVelocity/m_ENGAGED_MAX_SPEED);
+}
+void Robot_Control::UpdateArmHeight(double Height_m)
+{
+	//TODO
+}

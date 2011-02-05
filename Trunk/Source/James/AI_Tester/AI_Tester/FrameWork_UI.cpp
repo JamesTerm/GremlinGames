@@ -304,6 +304,9 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 			case Ship_Properties::eRobotTank:
 				NewShip=new Robot_Tank(EntityName);
 				break;
+			case Ship_Properties::eFRC2011_Robot:
+				NewShip=new FRC_2011_Robot_tester(EntityName);
+				break;
 		}
 		assert(NewShip);
 		NewEntity=NewShip;
