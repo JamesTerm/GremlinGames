@@ -3,23 +3,15 @@
 class UI_Controller;
 class AI_Base_Controller;
 
-inline osg::Vec2d GlobalToLocal(double Heading,const osg::Vec2d &GlobalVector);
-inline osg::Vec2d LocalToGlobal(double Heading,const osg::Vec2d &LocalVector);
-inline void NormalizeRotation(double &Rotation)
-{
-	const double Pi2=M_PI*2.0;
-	//Normalize the rotation
-	if (Rotation>M_PI)
-		Rotation-=Pi2;
-	else if (Rotation<-M_PI)
-		Rotation+=Pi2;
-}
+inline Framework::Base::Vec2d GlobalToLocal(double Heading,const Framework::Base::Vec2d &GlobalVector);
+inline Framework::Base::Vec2d LocalToGlobal(double Heading,const Framework::Base::Vec2d &LocalVector);
 
-class Ship_2D : public Ship
+class Ship_2D : public Entity2D
 {
 	public:
+		typedef Framework::Base::Vec2d Vec2D;
 		Ship_2D(const char EntityName[]);
-		virtual void Initialize(Entity2D::EventMap& em,const Entity_Properties *props=NULL);
+		virtual void Initialize(Framework::Base::EventMap& em);
 		virtual ~Ship_2D();
 
 		///This implicitly will place back in auto mode with a speed of zero
@@ -27,7 +19,7 @@ class Ship_2D : public Ship
 		void SetRequestedSpeed(double Speed);
 		double GetRequestedSpeed(){return m_RequestedSpeed;}
 		void FireAfterburner() {SetRequestedSpeed(GetMaxSpeed());}
-		void SetCurrentLinearAcceleration(const osg::Vec2d &Acceleration) {m_currAccel=Acceleration;}
+		void SetCurrentLinearAcceleration(const Vec2D &Acceleration) {m_currAccel=Acceleration;}
 		void SetCurrentAngularVelocity(double Velocity) {m_rotVel_rad_s=Velocity;}
 
 		// This is where both the vehicle entity and camera need to align to
@@ -56,7 +48,7 @@ class Ship_2D : public Ship
 		// Turn off all thruster controls
 		virtual void CancelAllControls();
 
-		AI_Base_Controller* GetController() {return m_controller;}
+		AI_Base_Controller *GetController() {return m_controller;}
 
 
 		enum eThrustState { TS_AfterBurner_Brake=0, TS_Brake, TS_Coast, TS_Thrust, TS_AfterBurner, TS_NotVisible };
@@ -69,15 +61,15 @@ class Ship_2D : public Ship
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
-		//virtual osg::Vec2d GetArtificialHorizonComponent() const;
+		//virtual Vec2D GetArtificialHorizonComponent() const;
 
 		///This will apply turn pitch and roll to the intended orientation
 		void UpdateIntendedOrientaton(double dTime_s);
 
 		virtual void ApplyTorqueThrusters(PhysicsEntity_2D &PhysicsToUse,double Torque,double TorqueRestraint,double dTime_s);
 		///Putting force and torque together will make it possible to translate this into actual force with position
-		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
-		virtual void TestPosAtt_Delta(const osg::Vec2d pos_m, double att,double dTime_s);
+		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
+		virtual void TestPosAtt_Delta(const Vec2D pos_m, double att,double dTime_s);
 
 		virtual void TimeChange(double dTime_s);
 
@@ -93,7 +85,7 @@ class Ship_2D : public Ship
 		friend UI_Controller;
 		friend Ship_Properties;
 
-		AI_Base_Controller* m_controller;
+		AI_Base_Controller *m_controller;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
 
 		// Used in Keyboard acceleration and braking
@@ -125,7 +117,7 @@ class Ship_2D : public Ship
 		FlightDynamics_2D m_IntendedOrientationPhysics;
 
 		//For slide mode all strafe is applied here
-		osg::Vec2d m_currAccel;  //This is the immediate request for thruster levels
+		Vec2D m_currAccel;  //This is the immediate request for thruster levels
 
 		///Typically this contains the distance of the intended direction from the actual direction.  This is the only variable responsible for
 		///changing the ship's orientation
@@ -143,14 +135,14 @@ class Ship_2D : public Ship
 		double m_Last_RequestedSpeed;  ///< This monitors the last caught requested speed from a speed delta change
 
 		// When notifying everything about thrusters, we want to keep a bit of an averager
-		Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
-		Blend_Averager<osg::Vec3d> m_TorqueReported_Averager;
+		//Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
+		//Blend_Averager<osg::Vec3d> m_TorqueReported_Averager;
 };
 
-class Physics_Tester : public Ship
+class Physics_Tester : public Entity2D
 {
 	public:
-		Physics_Tester(const char EntityName[]) : Ship(EntityName) {}
+		Physics_Tester(const char EntityName[]) : Entity2D(EntityName) {}
 };
 
 class Ship_Tester : public Ship_2D

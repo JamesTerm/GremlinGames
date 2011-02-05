@@ -1,9 +1,4 @@
-typedef long long __int64;
-#include <string>
-#include <list>
-#include <vector>
-#include <map>
-#include <assert.h>
+#include "Base_Includes.h"
 #include "misc.h"
 #include "Event.h"
 #include "EventMap.h"

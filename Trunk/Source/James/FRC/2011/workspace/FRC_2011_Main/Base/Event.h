@@ -149,9 +149,7 @@ protected:
 };
 
 
-//Note this typedef was written because wind river cannot seem to declare it within a templated class 
-class IEventHandler1;
-typedef std::list<IEventHandler1*>::iterator IEventHandler1_Iter;
+
 
 template<class P1>
 class Event1 : public IEvent
@@ -185,7 +183,7 @@ public:
 
 	void ClearAllHandlers()
 	{
-		IEventHandler1_Iter pos;
+		typename std::list<IEventHandler1*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); ++pos)
 		{
 			IEventHandler1* eh = *pos;
@@ -196,7 +194,7 @@ public:
 
 	void Fire(P1 p1)
 	{
-		IEventHandler1_Iter pos;
+		typename std::list<IEventHandler1*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); )
 		{
 			IEventHandler1* eh = *pos;
@@ -214,7 +212,7 @@ public:
 	template<class T>
 		void Remove(T& client, void (T::*delegate)(P1 p1))
 	{
-		IEventHandler1_Iter pos;
+		typename std::list<IEventHandler1*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			EventHandler1<T>* posPtr = dynamic_cast<EventHandler1<T>*>(*pos);
@@ -234,7 +232,7 @@ protected:
 	/// Only called from EventHandlerList when it is destroyed
 	virtual void RemoveEventHandler(IEvent::IEventHandler* eh)
 	{
-		IEventHandler1_Iter pos;
+		typename std::list<IEventHandler1*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			IEventHandler1* posPtr = *pos;
@@ -251,8 +249,7 @@ protected:
 };
 
 
-class IEventHandler2;
-typedef std::list<IEventHandler2*>::iterator IEventHandler2_Iter;
+
 
 
 template<class P1, class P2>
@@ -286,7 +283,7 @@ public:
 
 	void ClearAllHandlers()
 	{
-		IEventHandler2_Iter pos;
+		typename std::list<IEventHandler2*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); ++pos)
 		{
 			IEventHandler2* eh = *pos;
@@ -297,7 +294,7 @@ public:
 
 	void Fire(P1 p1, P2 p2)
 	{
-		IEventHandler2_Iter pos;
+		typename std::list<IEventHandler2*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); )
 		{
 			IEventHandler2* eh = *pos;
@@ -315,7 +312,7 @@ public:
 	template<class T>
 		void Remove(T& client, void (T::*delegate)(P1 p1, P2 p2))
 	{
-		IEventHandler2_Iter pos;
+		typename std::list<IEventHandler2*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			EventHandler2<T>* posPtr = dynamic_cast<EventHandler2<T>*>(*pos);
@@ -335,7 +332,7 @@ protected:
 	/// Only called from EventHandlerList when it is destroyed
 	virtual void RemoveEventHandler(IEvent::IEventHandler* eh)
 	{
-		IEventHandler2_Iter pos;
+		typename std::list<IEventHandler2*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			IEventHandler2* posPtr = *pos;
@@ -351,8 +348,6 @@ protected:
 
 };
 
-class IEventHandler3;
-typedef std::list<IEventHandler3*>::iterator IEventHandler3_Iter;
 
 
 template<class P1, class P2, class P3>
@@ -386,7 +381,7 @@ public:
 
 	void ClearAllHandlers()
 	{
-		IEventHandler3_Iter pos;
+		typename std::list<IEventHandler3*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); ++pos)
 		{
 			IEventHandler3* eh = *pos;
@@ -397,7 +392,7 @@ public:
 
 	void Fire(P1 p1, P2 p2, P3 p3)
 	{
-		IEventHandler3_Iter pos;
+		typename std::list<IEventHandler3*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); )
 		{
 			IEventHandler3* eh = *pos;
@@ -415,7 +410,7 @@ public:
 	template<class T>
 		void Remove(T& client, void (T::*delegate)(P1 p1, P2 p2, P3 p3))
 	{
-		IEventHandler3_Iter pos;
+		typename std::list<IEventHandler3*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			EventHandler3<T>* posPtr = dynamic_cast<EventHandler3<T>*>(*pos);
@@ -435,7 +430,7 @@ protected:
 	/// Only called from EventHandlerList when it is destroyed
 	virtual void RemoveEventHandler(IEvent::IEventHandler* eh)
 	{
-		IEventHandler3_Iter pos;
+		typename std::list<IEventHandler3*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			IEventHandler3* posPtr = *pos;
@@ -452,8 +447,6 @@ protected:
 };
 
 
-class IEventHandler4;
-typedef std::list<IEventHandler4*>::iterator IEventHandler4_Iter;
 
 
 
@@ -488,7 +481,7 @@ public:
 
 	void ClearAllHandlers()
 	{
-		IEventHandler4_Iter pos;
+		typename std::list<IEventHandler4*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); ++pos)
 		{
 			IEventHandler4* eh = *pos;
@@ -499,7 +492,7 @@ public:
 
 	void Fire(P1 p1, P2 p2, P3 p3, P4 p4)
 	{
-		IEventHandler4_Iter pos;
+		typename std::list<IEventHandler4*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end(); )
 		{
 			IEventHandler4* eh = *pos;
@@ -517,7 +510,7 @@ public:
 	template<class T>
 		void Remove(T& client, void (T::*delegate)(P1 p1, P2 p2, P3 p3, P4 p4))
 	{
-		IEventHandler4_Iter pos;
+		typename std::list<IEventHandler4*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			EventHandler4<T>* posPtr = dynamic_cast<EventHandler4<T>*>(*pos);
@@ -537,7 +530,7 @@ protected:
 	/// Only called from EventHandlerList when it is destroyed
 	virtual void RemoveEventHandler(IEvent::IEventHandler* eh)
 	{
-		IEventHandler4_Iter pos;
+		typename std::list<IEventHandler4*>::iterator pos;
 		for (pos = _handlerList.begin(); pos != _handlerList.end();)
 		{
 			IEventHandler4* posPtr = *pos;
