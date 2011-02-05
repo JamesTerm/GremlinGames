@@ -18,6 +18,10 @@ using namespace std;
 const double PI=M_PI;
 const double Pi2=M_PI*2.0;
 
+  /***********************************************************************************************************************************/
+ /*															Robot_Tank																*/
+/***********************************************************************************************************************************/
+
 Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
 }
@@ -171,5 +175,25 @@ void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Loca
 	InterpolateThrusterChanges(NewLocalForce,NewTorque,dTime_s);
 	//No torque restraint... restraints are applied during the update of velocities
 	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
+}
+
+
+  /***********************************************************************************************************************************/
+ /*															FRC_2011_Robot															*/
+/***********************************************************************************************************************************/
+
+FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control) : Robot_Tank(EntityName), m_RobotControl(robot_control)
+{
+}
+
+void FRC_2011_Robot::Initialize(EventMap& em, const Entity_Properties *props)
+{
+	__super::Initialize(em,props);
+	m_RobotControl->Initialize(props);
+}
+void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+{
+	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity(),GetRightVelocity());
 }
 

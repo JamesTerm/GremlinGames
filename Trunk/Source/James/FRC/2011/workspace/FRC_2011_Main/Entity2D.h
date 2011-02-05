@@ -22,6 +22,8 @@ class Entity2D
 
 	private:
 		friend class Ship_Tester;
+		friend class Entity_Properties;
+
 		struct PosAtt
 		{
 			Vec2D m_pos_m;
@@ -48,7 +50,7 @@ class Entity2D
 		Entity2D(const char EntityName[]);
 
 		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(Framework::Base::EventMap& em);
+		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual ~Entity2D(); //Game Client will be nuking this pointer
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
