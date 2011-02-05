@@ -110,12 +110,12 @@ public:
 	T GetValue(T newItem)
 	{
 		//first time init with newItem
-		if (m_Count==-1)
+		if (m_Count==(size_t)-1)
 		{
 			m_CurrentItem=m_LastRequestedItem=newItem;
 			m_Count=0;
 		}
-		T ret=m_CurrentItem;
+		//T ret=m_CurrentItem;   hmmm not used
 		if (newItem!=m_CurrentItem)
 		{
 			if (newItem==m_LastRequestedItem)

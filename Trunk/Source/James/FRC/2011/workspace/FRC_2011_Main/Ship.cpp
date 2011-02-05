@@ -1,8 +1,17 @@
-#include "stdafx.h"
-#include "AI_Tester.h"
+#include "Base/Base_Includes.h"
+#include <math.h>
+#include <assert.h>
+#include "Base/Vec2d.h"
+#include "Base/Misc.h"
+#include "Base/Event.h"
+#include "Base/EventMap.h"
+#include "Physics_2D.h"
+#include "Entity2D.h"
+#include "Goal.h"
+#include "Ship.h"
+#include "AI_Base_Controller.h"
 
-using namespace AI_Tester;
-using namespace GG_Framework::Base;
+using namespace Framework::Base;
 
 #undef __EnableOrientationResistance__  //This one can probably be removed
 #undef __DisableShipSpeedBoost__
@@ -18,37 +27,34 @@ const double PI=M_PI;
 const double Pi2=M_PI*2.0;
 const double Half_Pi=M_PI/2.0;
 
-namespace AI_Tester
-{
 
-inline const osg::Vec2d Vec2Multiply (const osg::Vec2d &A,const osg::Vec2d &rhs)
+inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
 {
-	return osg::Vec2d(A[0]*rhs._v[0], A[1]*rhs._v[1]);
+	return Vec2d(A[0]*rhs._v[0], A[1]*rhs._v[1]);
 }
 
-inline osg::Vec2d LocalToGlobal(double Heading,const osg::Vec2d &LocalVector)
+inline Vec2d LocalToGlobal(double Heading,const Vec2d &LocalVector)
 {
-	return osg::Vec2d(sin(Heading)*LocalVector[1]+cos(-Heading)*LocalVector[0],
+	return Vec2d(sin(Heading)*LocalVector[1]+cos(-Heading)*LocalVector[0],
 					  cos(Heading)*LocalVector[1]+sin(-Heading)*LocalVector[0]);
 }
-inline osg::Vec2d GlobalToLocal(double Heading,const osg::Vec2d &GlobalVector)
+inline Vec2d GlobalToLocal(double Heading,const Vec2d &GlobalVector)
 {
-	return osg::Vec2d(sin(-Heading)*GlobalVector[1]+cos(Heading)*GlobalVector[0],
+	return Vec2d(sin(-Heading)*GlobalVector[1]+cos(Heading)*GlobalVector[0],
 					  cos(-Heading)*GlobalVector[1]+sin(Heading)*GlobalVector[0]);
 }
 
 //This is really Local to Global for just the Y Component
-inline osg::Vec2d GetDirection(double Heading,double Intensity)
+inline Vec2d GetDirection(double Heading,double Intensity)
 {
-	return osg::Vec2d(sin(Heading)*Intensity,cos(Heading)*Intensity);
+	return Vec2d(sin(Heading)*Intensity,cos(Heading)*Intensity);
 }
 
-}
 
 //osg::Quat FromLW_Rot_Radians(double H, double P, double R);
 
-Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
-	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation),m_TorqueReported_Averager(0.0625)
+Ship_2D::Ship_2D(const char EntityName[]) : Entity2D(EntityName),
+	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation)
 {
 	SetSimFlightMode(true);  //this sets up the initial speed as well
 	SetStabilizeRotation(true); //This should always be true unless there is some ship failure
@@ -82,7 +88,7 @@ void Ship_2D::ResetPos()
 	//m_Last_AccDel = 0.0;
 	m_Last_RequestedSpeed=-1.0;
 	m_rotVel_rad_s = m_rotDisplacement_rad = 0.0;
-	m_currAccel =	osg::Vec2d(0,0);
+	m_currAccel =	Vec2d(0,0);
 	m_IntendedOrientation=GetAtt_r();
 	m_IntendedOrientationPhysics.ResetVectors();
 	SetStabilizeRotation(true); //This should always be true unless there is some ship failure
@@ -157,12 +163,12 @@ void Ship_2D::ApplyTorqueThrusters(PhysicsEntity_2D &PhysicsToUse,double Torque,
 
 
 ///Putting force and torque together will make it possible to translate this into actual force with position
-void Ship_2D::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+void Ship_2D::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	//assert(IsLocallyControlled());
 	
 	 //Apply force
-	osg::Vec2d ForceToApply=LocalToGlobal(GetAtt_r(),LocalForce);
+	Vec2d ForceToApply=LocalToGlobal(GetAtt_r(),LocalForce);
 
 	PhysicsToUse.ApplyFractionalForce(ForceToApply,dTime_s);
 
@@ -170,7 +176,7 @@ void Ship_2D::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &Lo
 	ApplyTorqueThrusters(PhysicsToUse,LocalTorque,TorqueRestraint,dTime_s);
 }
 
-void Ship_2D::TestPosAtt_Delta(const osg::Vec2d pos_m, double att, double dTime_s)
+void Ship_2D::TestPosAtt_Delta(const Vec2d pos_m, double att, double dTime_s)
 {
 	#if 0
 		if ((m_controller)&&(m_controller->IsUIControlled()))
@@ -178,16 +184,11 @@ void Ship_2D::TestPosAtt_Delta(const osg::Vec2d pos_m, double att, double dTime_
 	#endif
 }
 
-void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
+void Ship_2D::Initialize(Framework::Base::EventMap& em)
 {
-	__super::Initialize(em,props);
-	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
-	if (ship_props)
+	__super::Initialize(em);
 	{
-		ship_props->Initialize(this);
-	}
-	else
-	{
+		//TODO this is where we hard code the values!!
 		double Scale=0.2;  //we must scale everything down to see on the view
 		MAX_SPEED = 2000.0 * Scale;
 		ENGAGED_MAX_SPEED = 400.0 * Scale;
@@ -219,10 +220,6 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
-	m_Physics.GetPilotInfo().GLimit = 8.0;
-	m_Physics.GetPilotInfo().PassOutTime_s = 10.0;
-	m_Physics.GetPilotInfo().PassOutRecoveryTime_s = 1.0;
-	m_Physics.GetPilotInfo().MaxRecoveryTime_s = 10.0;
 
 	double RadiusOfConcentratedMass=m_Physics.GetRadiusOfConcentratedMass();
 	m_IntendedOrientationPhysics.SetRadiusOfConcentratedMass(RadiusOfConcentratedMass);
@@ -231,9 +228,9 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 	//Pass these acceleration derivatives on to the Physics/Flight-Dynamics
 	{
 		FlightDynamics_2D::LinearAccelerationRates &_=m_Physics.GetLinearAccelerationRates();
-		_.AccDeltaPos=osg::Vec2d(EngineRampStrafe,EngineRampForward);
-		_.AccDeltaNeg=osg::Vec2d(EngineRampStrafe,EngineRampReverse);
-		osg::Vec2d Deceleration(EngineDeceleration,EngineDeceleration);
+		_.AccDeltaPos=Vec2d(EngineRampStrafe,EngineRampForward);
+		_.AccDeltaNeg=Vec2d(EngineRampStrafe,EngineRampReverse);
+		Vec2d Deceleration(EngineDeceleration,EngineDeceleration);
 		_.DecDeltaPos=_.DecDeltaNeg=Deceleration;
 	}
 
@@ -273,7 +270,7 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 	ApplyTorqueThrusters(m_IntendedOrientationPhysics,TorqueToApply,MaxTorqueYaw,dTime_s);
 	{
 		//Run physics update for displacement
-		osg::Vec2d PositionDisplacement;
+		Vec2d PositionDisplacement;
 		double RotationDisplacement;
 		m_IntendedOrientationPhysics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
 		m_IntendedOrientation+=RotationDisplacement*YawResistance;
@@ -289,14 +286,14 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	// Find the current speed and use to determine the flight characteristics we will WANT to us
 	//osg::Vec3d LocalVelocity(GetAtt_quat().conj() * m_Physics.GetLinearVelocity());
-	osg::Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+	Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	double currSpeed = LocalVelocity[1];
 	bool manualMode = !((m_SimFlightMode)&&(m_currAccel[0]==0));
 	bool afterBurnerOn = (m_RequestedSpeed > GetEngaged_Max_Speed());
 	bool afterBurnerBrakeOn = (currSpeed > GetEngaged_Max_Speed());
 	//const FlightCharacteristics& currFC((afterBurnerOn||afterBurnerBrakeOn) ? Afterburner_Characteristics : GetFlightCharacteristics());
 
-	osg::Vec2d ForceToApply;
+	Vec2d ForceToApply;
 
 	//Enable to monitor current speed
 	#if 0
@@ -334,8 +331,8 @@ void Ship_2D::TimeChange(double dTime_s)
 	}
 
 	//Apply the restraints now... I need this to compute my roll offset
-	osg::Vec2d AccRestraintPositive(MaxAccelRight,MaxAccelForward);
-	osg::Vec2d AccRestraintNegative(MaxAccelLeft,MaxAccelReverse);
+	Vec2d AccRestraintPositive(MaxAccelRight,MaxAccelForward);
+	Vec2d AccRestraintNegative(MaxAccelLeft,MaxAccelReverse);
 
 	if (!manualMode)
 	{
@@ -408,7 +405,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		}
 		#endif
 
-		osg::Vec2d GlobalForce;
+		Vec2d GlobalForce;
 		if (UsingRequestedSpeed)
 			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),SpeedToUse),dTime_s);
 		else
@@ -452,7 +449,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		}
 		#endif
 		//Hand off m_curAccel to a local... we want to preserve the members state
-		osg::Vec2d currAccel(m_currAccel);
+		Vec2d currAccel(m_currAccel);
 
 		#ifdef __TestFullForce__
 		ForceToApply=currAccel*Mass*dTime_s;
@@ -469,20 +466,20 @@ void Ship_2D::TimeChange(double dTime_s)
 		AccRestraintPositive[1]= afterBurnerOn ? AFTERBURNER_ACCEL : AFTERBURNER_BRAKE;
 		//This is not perfect in that all the accelerated and deceleration vector elements need to have this ramp value for non-sliding mode
 		//We may alternately consider putting it in slide mode when using afterburner
-		m_Physics.GetLinearAccelerationRates().AccDeltaPos=osg::Vec2d(EngineRampAfterBurner,EngineRampAfterBurner);
-		m_Physics.GetLinearAccelerationRates().DecDeltaPos=osg::Vec2d(EngineRampAfterBurner,EngineRampAfterBurner);
+		m_Physics.GetLinearAccelerationRates().AccDeltaPos=Vec2d(EngineRampAfterBurner,EngineRampAfterBurner);
+		m_Physics.GetLinearAccelerationRates().DecDeltaPos=Vec2d(EngineRampAfterBurner,EngineRampAfterBurner);
 	}
 	else
 	{
-		m_Physics.GetLinearAccelerationRates().AccDeltaPos=osg::Vec2d(EngineRampStrafe,EngineRampForward);
-		m_Physics.GetLinearAccelerationRates().DecDeltaPos=osg::Vec2d(EngineDeceleration,EngineDeceleration);
+		m_Physics.GetLinearAccelerationRates().AccDeltaPos=Vec2d(EngineRampStrafe,EngineRampForward);
+		m_Physics.GetLinearAccelerationRates().DecDeltaPos=Vec2d(EngineDeceleration,EngineDeceleration);
 	}
 
 	ForceToApply=m_Physics.ComputeRestrainedForce(ForceToApply,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 
 	if (!g_DisableEngineRampUp2)
 	{
-		const osg::Vec2d Target=ForceToApply/Mass;
+		const Vec2d Target=ForceToApply/Mass;
 		m_Physics.SetTargetAcceleration(Target);
 		m_Physics.Acceleration_TimeChangeUpdate(dTime_s);
 		ForceToApply=m_Physics.GetCurrentAcceleration()*Mass;
@@ -553,31 +550,15 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	// Now to run the time updates (displacement plus application of it)
 	GetPhysics().G_Dampener = G_Dampener;
-	Ship::TimeChange(dTime_s);
+	__super::TimeChange(dTime_s);
 
 	m_controller->UpdateUI(dTime_s);
 
 	//Reset my controller vars
 	m_rotVel_rad_s=0.0;
-	m_currAccel=osg::Vec2d(0,0);
+	m_currAccel=Vec2d(0,0);
 }
 
-//////////////////////////////////////////////////////////////////////////
-#if 0
-void Ship_2D::DestroyEntity(bool shotDown, osg::Vec3d collisionPt)
-{
-	__super::DestroyEntity(shotDown, collisionPt);
-
-	//Reset all of the intended vectors and thrusters.
-	// Anything that would keep the ship from flying with its current velocities. (linear and angular)
-	if (IsLocallyControlled())
-	{
-		SetSimFlightMode(false);
-		SetStabilizeRotation(false);
-	}
-}
-#endif
-//////////////////////////////////////////////////////////////////////////
 
 void Ship_2D::CancelAllControls()
 {
@@ -601,8 +582,8 @@ Ship_Tester::~Ship_Tester()
 void Ship_Tester::SetPosition(double x,double y) 
 {
 	
-	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
-	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	PosAtt *writePtr=m_PosAtt_Write;
+	PosAtt *readPtr=m_PosAtt_Read;
 	writePtr->m_pos_m.set(x,y);
 	writePtr->m_att_r=readPtr->m_att_r;  //make sure the entire structure is updated!
 	UpdatePosAtt();
@@ -611,8 +592,8 @@ void Ship_Tester::SetPosition(double x,double y)
 void Ship_Tester::SetAttitude(double radians)
 {
 
-	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
-	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	PosAtt *writePtr=m_PosAtt_Write;
+	PosAtt *readPtr=m_PosAtt_Read;
 	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
 	writePtr->m_att_r=radians;
 	UpdatePosAtt();

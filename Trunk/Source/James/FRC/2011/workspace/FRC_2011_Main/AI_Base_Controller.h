@@ -5,6 +5,7 @@
 class AI_Base_Controller
 {
 	public:
+		typedef Framework::Base::Vec2d Vec2D;
 		AI_Base_Controller(Ship_2D &ship);
 
 		///This is the single update point to all controlling of the ship.  The base class contains no goal arbitration, but does implement
@@ -33,18 +34,18 @@ class AI_Base_Controller
 		/// Use NULL when flying through way-points
 		/// Use (0,0) if you want to come to a stop, like at the end of a way-point series
 		/// Otherwise, use the velocity of the ship you are targeting or following to keep up with it
-		void DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d PositionPoint, double power, double dTime_s,osg::Vec2d* matchVel);
+		void DriveToLocation(Vec2D TrajectoryPoint,Vec2D PositionPoint, double power, double dTime_s,Vec2D* matchVel);
 		
 		Ship_2D &GetShip() {return m_ship;}
 	protected:
-		friend Ship_Tester;
+		friend class Ship_Tester;
 		Goal *m_Goal; //Dynamically set a goal for this controller
 	private:
-		friend UI_Controller;
-		UI_Controller *m_UI_Controller;
-
 		//TODO determine way to properly introduce UI_Controls here	
 		Ship_2D &m_ship;
+		
+		friend class UI_Controller;
+		UI_Controller *m_UI_Controller;
 };
 
 //TODO get these functions re-factored
@@ -55,8 +56,8 @@ struct WayPoint
 {
 	WayPoint() : Power(0.0), Position(0,0),TurnSpeedScaler(1.0) {}
 	double Power;
+	Framework::Base::Vec2d Position;
 	double TurnSpeedScaler;  //This will have a default value if not in script
-	osg::Vec2d Position;
 };
 
 //This is similar to Traverse_Edge in book (not to be confused with its MoveToPosition)
@@ -74,8 +75,8 @@ class Goal_Ship_MoveToPosition : public AtomicGoal
 		bool HitWayPoint();  
 
 	private:
-		AI_Base_Controller * const m_Controller;
 		WayPoint m_Point;
+		AI_Base_Controller * const m_Controller;
 		Ship_2D &m_ship;
 		bool m_Terminate;
 		bool m_UseSafeStop;
@@ -97,23 +98,26 @@ class Goal_Ship_FollowPath : public CompositeGoal
 class Goal_Ship_FollowShip : public AtomicGoal
 {
 public:
-	Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const osg::Vec2d &RelPosition);
+	typedef Framework::Base::Vec2d Vec2D;
+	Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition);
 	~Goal_Ship_FollowShip();
 	virtual void Activate();
 	virtual Goal_Status Process(double dTime_s);
 	virtual void Terminate();
 	//Allow client to change its relative position dynamically
-	void SetRelPosition(const osg::Vec2d &RelPosition);
+	void SetRelPosition(const Vec2D &RelPosition);
 private:
 	AI_Base_Controller * const m_Controller;
-	osg::Vec2d m_RelPosition,m_TrajectoryPosition;
-	Ship_2D &m_ship;
+	Vec2D m_RelPosition,m_TrajectoryPosition;
 	const Ship_2D &m_Followship;
+	Ship_2D &m_ship;
 	bool m_Terminate;
 };
 
+#if 0
 class AI_Controller : public AI_Base_Controller
 {
 	public:
 	private:
 };
+#endif

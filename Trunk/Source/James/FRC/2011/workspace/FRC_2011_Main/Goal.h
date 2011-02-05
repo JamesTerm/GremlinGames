@@ -31,8 +31,8 @@ class Goal
 		//TODO see if AddSubgoal really needs to be at this level 
 		Goal_Status GetStatus() const {return m_Status;}
 		//Here is a very common call to do in the first line of a process update
-		_inline void ActivateIfInactive() {if (m_Status==eInactive) Activate();}
-		_inline void ReActivateIfFailed() {if (m_Status==eFailed) Activate();}
+		inline void ActivateIfInactive() {if (m_Status==eInactive) Activate();}
+		inline void ReActivateIfFailed() {if (m_Status==eFailed) Activate();}
 
 		// This ensures that Composite Goals can safely allocate atomic goals and let the base implementation delete them
 		static void* operator new ( const size_t size );
