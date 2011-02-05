@@ -80,7 +80,8 @@ void Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& scr
 		err = script.GetGlobalTable("RobotTank");
 		if (!err)
 		{
-			m_ShipType=eRobotTank;
+			//m_ShipType=eRobotTank;	//keep around for less stress
+			m_ShipType=eFRC2011_Robot;
 			m_EntityName="RobotTank";
 		}
 	}
