@@ -34,7 +34,10 @@ class Ship_2D : public Entity2D
 		bool GetCoordinateTurns() const { return m_CoordinateTurns;}
 
 		void SetHeadingSpeedScale(double scale) {m_HeadingSpeedScale=scale;}
-		
+
+		enum eThrustState { TS_AfterBurner_Brake=0, TS_Brake, TS_Coast, TS_Thrust, TS_AfterBurner, TS_NotVisible };
+		eThrustState GetThrustState(){ return m_thrustState; }
+
 		/// We use a toggling mechanism to use afterburners since there is some internal functionality that behave differently
 		bool GetIsAfterBurnerOn() const { return (m_thrustState==TS_AfterBurner);	}
 		bool GetIsAfterBurnerBrakeOn() const { return (m_thrustState==TS_AfterBurner_Brake);	}
@@ -50,15 +53,13 @@ class Ship_2D : public Entity2D
 
 		AI_Base_Controller *GetController() {return m_controller;}
 
-
-		enum eThrustState { TS_AfterBurner_Brake=0, TS_Brake, TS_Coast, TS_Thrust, TS_AfterBurner, TS_NotVisible };
-		eThrustState GetThrustState(){ return m_thrustState; }
-
 		// This function fires the various thruster events and updates the ThrsutState
 		// Called from my own timer update when locally controlled, or from my RC Controller when remote controlled
 		//virtual void UpdateThrustState(const osg::Vec3d& localThrust, const osg::Vec3d& localTorque);
 
 	protected:
+		typedef Entity2D __super;
+
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
 		//virtual Vec2D GetArtificialHorizonComponent() const;
@@ -81,9 +82,8 @@ class Ship_2D : public Entity2D
 
 		eThrustState SetThrustState(eThrustState ts); // Handles the ON/OFF events, only for controlled entities
 
-		friend AI_Base_Controller;
-		friend UI_Controller;
-		friend Ship_Properties;
+		friend class AI_Base_Controller;
+		friend class UI_Controller;
 
 		AI_Base_Controller *m_controller;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
@@ -133,10 +133,6 @@ class Ship_2D : public Entity2D
 		eThrustState m_thrustState;
 		//double m_Last_AccDel;  ///< This monitors a previous AccDec session to determine when to reset the speed
 		double m_Last_RequestedSpeed;  ///< This monitors the last caught requested speed from a speed delta change
-
-		// When notifying everything about thrusters, we want to keep a bit of an averager
-		//Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
-		//Blend_Averager<osg::Vec3d> m_TorqueReported_Averager;
 };
 
 class Physics_Tester : public Entity2D

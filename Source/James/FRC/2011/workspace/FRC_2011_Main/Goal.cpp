@@ -1,9 +1,10 @@
-#include "stdafx.h"
-#include "AI_Tester.h"
+#include <stddef.h>
+#include <stdlib.h>
+#include <list>
+#include "Goal.h"
 
-using namespace AI_Tester;
 void* Goal::operator new ( const size_t size )
-{	return ::malloc( size );
+{	return malloc( size );
 }
 
 void  Goal::operator delete ( void* ptr )
@@ -11,7 +12,7 @@ void  Goal::operator delete ( void* ptr )
 }
 
 void* Goal::operator new [] ( const size_t size )
-{	return ::malloc( size );
+{	return malloc( size );
 }
 
 void  Goal::operator delete [] ( void* ptr )

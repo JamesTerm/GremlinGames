@@ -1,26 +1,5 @@
 #pragma once
 
-class Mouse_ShipDriver
-{
-public:
-	Mouse_ShipDriver(Ship_2D& ship,UI_Controller *parent, unsigned avgFrames);
-	void OnMouseMove(float mx, float my);
-	void DriveShip();
-
-private:
-	// Use this handler to tie events to this manipulator
-	IEvent::HandlerList ehl;
-	void OnMouseRoll(bool onoff){m_mouseRoll = onoff;}
-
-	Ship_2D& m_ship;
-	UI_Controller * const m_ParentUI_Controller;
-	osg::Vec2f m_lastMousePos;
-	osg::Vec2f* m_mousePosHist;
-	unsigned m_avgFrames;
-	unsigned m_currFrame;
-	bool m_mouseRoll;
-};
-
 class UI_Controller
 {
 	public:
@@ -83,8 +62,6 @@ class UI_Controller
 		virtual void CancelAllControls();
 
 	protected:
-		friend Mouse_ShipDriver;
-
 		void BlackoutHandler(double bl);
 
 		///All non-right button mouse movements will come here to be dispatched to the proper place
@@ -123,38 +100,20 @@ class UI_Controller
 		void Init_AutoPilotControls();
 		AI_Base_Controller *m_Base;
 		Ship_2D *m_ship; //there is an overwhelming use of the ship so we'll cache a pointer of it here
-		//osg::ref_ptr<HUD_PDCB> m_HUD_UI;
-		Mouse_ShipDriver *m_mouseDriver;
 
 		double m_LastSliderTime[2]; //Keep track of the slider to help it stay smooth;
+		bool m_SlideButtonToggle;
 		bool m_isControlled;
 
 		///This is used exclusively for keyboard turn methods
 		double m_Ship_Keyboard_rotVel_rad_s;
 		///This one is used exclusively for the Joystick and Mouse turn methods
 		double m_Ship_JoyMouse_rotVel_rad_s;
-		osg::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
-
-		//void ConnectHUD_Elements(bool connect);
-		//bool m_hud_connected;
-
-
-		//I have to monitor when it is down then up
-		bool m_SlideButtonToggle;
-		bool m_FireButton;
+		Framework::Base::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
 		double m_CruiseSpeed; ///< This is used with the Joystick control to only apply speed changes when a change occurs
 
-		// Build the various HUD elements
-		//void BuildHUD();
-		//bool m_targetLeadRetShowing;
-		//bool m_targetInRangeLeadRetShowing;
-
-		//osg::ref_ptr<GG_Framework::UI::ActorTransform> m_shipSiteRetical;
-		//osg::ref_ptr<osg::Geode> m_tgtDirLineGeode;
-
-		//osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_targetOutRangeLeadRetical;
-		//osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_targetInRangeLeadRetical;
-		//osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_tgtDirLineTransform;
+		//I have to monitor when it is down then up
+		bool m_FireButton;
 
 		// Are we flying in auto-pilot?
 		bool m_autoPilot;
@@ -163,21 +122,7 @@ class UI_Controller
 		// Are we disabling UI controls?
 		bool AreControlsDisabled();
 
-		bool m_Ship_UseHeadingSpeed;
 		bool m_Test1,m_Test2; //Testing
-
+		bool m_Ship_UseHeadingSpeed;
 };
 
-
-class UI_Controller_GameClient : public UI_GameClient
-{
-	public:
-		UI_Controller_GameClient();
-		~UI_Controller_GameClient();
-		virtual void SetControlledEntity(Entity2D* newEntity);
-		virtual void AboutTo_RemoveEntity(Entity2D *Entity) {if (Entity==m_controlledEntity) SetControlledEntity(NULL);}
-	private:
-		//The one, the only!
-		UI_Controller *m_UI_Controller;  //unfortunately this is late binding once the window is setup
-		Entity2D* m_controlledEntity;
-};

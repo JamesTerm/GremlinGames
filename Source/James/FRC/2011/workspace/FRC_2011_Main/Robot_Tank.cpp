@@ -1,8 +1,18 @@
-#include "stdafx.h"
-#include "AI_Tester.h"
+#include "Base/Base_Includes.h"
+#include <math.h>
+#include <assert.h>
+#include "Base/Vec2d.h"
+#include "Base/Misc.h"
+#include "Base/Event.h"
+#include "Base/EventMap.h"
+#include "Physics_2D.h"
+#include "Entity2D.h"
+#include "Goal.h"
+#include "Ship.h"
+#include "AI_Base_Controller.h"
+#include "Robot_Tank.h"
 
-using namespace AI_Tester;
-using namespace GG_Framework::Base;
+using namespace Framework::Base;
 using namespace std;
 
 const double PI=M_PI;
@@ -18,7 +28,7 @@ void Robot_Tank::ResetPos()
 	__super::ResetPos();
 }
 
-void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
 	double LinearVelocityDelta;
@@ -34,7 +44,7 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 	//determine direction
 	double ForceHeading;
 	{
-		osg::Vec2d LocalForce_norm(LocalForce);
+		Vec2d LocalForce_norm(LocalForce);
 		LocalForce_norm.normalize();
 		ForceHeading=atan2(LocalForce_norm[0],LocalForce_norm[1]);
 		//DOUT2("x=%f y=%f h=%f\n",LocalForce[0],LocalForce[1],RAD_2_DEG(ForceHeading));
@@ -45,13 +55,13 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 	{
 		double Width=GetDimensions()[0];
 		//first convert to angular acceleration
-		double AccelerationDelta=Torque/Mass;
+		double AccelerationDelta=TorqueRestrained/Mass;
 		double AngularVelocityDelta=AccelerationDelta*dTime_s;
 		//Convert the angular velocity into linear velocity
 		double AngularVelocityDelta_linear=AngularVelocityDelta * Width;
 		//I'm keeping this first attempt, I like it because it is simple and reliable however, when going forward in fast speeds the torque will clobber the
 		//linear force with abrupt stopping 
-		osg::Vec2d CurrentVelocity(m_LeftLinearVelocity,m_RightLinearVelocity);
+		Vec2d CurrentVelocity(m_LeftLinearVelocity,m_RightLinearVelocity);
 		{
 			//Scale down the amount of torque based on current speed... this helps not slow down the linear force when turning
 			double FilterScaler=1.0 - (CurrentVelocity.length() / (ENGAGED_MAX_SPEED*2.0));
@@ -62,7 +72,7 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 		RightDelta=(-AngularVelocityDelta_linear/2)+LinearVelocityDelta;
 
 		#if 1
-		osg::Vec2d NewDelta(LeftDelta,RightDelta);
+		Vec2d NewDelta(LeftDelta,RightDelta);
 		for (size_t i=0;i<2;i++)
 		{
 			if (CurrentVelocity[i] * AngularVelocityDelta_linear >0.0)
@@ -99,12 +109,12 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2
 		NewVelocity=(NewVelocity>0)?ENGAGED_MAX_SPEED:-ENGAGED_MAX_SPEED;
 	m_RightLinearVelocity=NewVelocity;	
 
-	DOUT2("left=%f right=%f Ang=%f\n",m_LeftLinearVelocity,m_RightLinearVelocity,RAD_2_DEG(m_Physics.GetAngularVelocity()));
+	//DOUT2("left=%f right=%f Ang=%f\n",m_LeftLinearVelocity,m_RightLinearVelocity,RAD_2_DEG(m_Physics.GetAngularVelocity()));
 }
 
-void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torque,double dTime_s)
+void Robot_Tank::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
 {
-	osg::Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+	Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	double LeftLinearVelocity=m_LeftLinearVelocity,RightLinearVelocity=m_RightLinearVelocity;
 	double LeftMagnitude=fabs(m_LeftLinearVelocity);
 	double RightMagnitude=fabs(m_RightLinearVelocity);
@@ -153,10 +163,10 @@ void Robot_Tank::InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torqu
 	Torque = (AngularAcceleration * Mass) / dTime_s;
 }
 
-void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	osg::Vec2d NewLocalForce(LocalForce);
+	Vec2d NewLocalForce(LocalForce);
 	double NewTorque=Torque;
 	InterpolateThrusterChanges(NewLocalForce,NewTorque,dTime_s);
 	//No torque restraint... restraints are applied during the update of velocities
