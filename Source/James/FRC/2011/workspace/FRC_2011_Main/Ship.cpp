@@ -586,4 +586,51 @@ void Ship_2D::CancelAllControls()
 	//	m_controller->CancelAllControls();
 }
 //////////////////////////////////////////////////////////////////////////
+/***********************************************************************************************************************************/
+/*													Ship_Tester																		*/
+/***********************************************************************************************************************************/
+
+Ship_Tester::~Ship_Tester()
+{
+	//not perfect but in a test environment will do
+	delete GetController()->m_Goal;
+	GetController()->m_Goal=NULL;
+	//assert(!GetController()->m_Goal);
+}
+
+void Ship_Tester::SetPosition(double x,double y) 
+{
+	
+	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	writePtr->m_pos_m.set(x,y);
+	writePtr->m_att_r=readPtr->m_att_r;  //make sure the entire structure is updated!
+	UpdatePosAtt();
+}
+
+void Ship_Tester::SetAttitude(double radians)
+{
+
+	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
+	writePtr->m_att_r=radians;
+	UpdatePosAtt();
+}
+
+Goal *Ship_Tester::ClearGoal()
+{
+	//Ensure there the current goal is clear
+	if (GetController()->m_Goal)
+	{
+		GetController()->m_Goal->Terminate();
+		//TODO determine how to ensure the update thread is finished with the process
+	}
+	return GetController()->m_Goal;
+}
+
+void Ship_Tester::SetGoal(Goal *goal) 
+{
+	GetController()->m_Goal=goal;
+}
 

@@ -1,63 +1,31 @@
 #pragma once
 
-class EntityPropertiesInterface
+inline void NormalizeRotation(double &Rotation)
 {
-	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		virtual const Vec2D &GetPos_m() const =0;
-		virtual double GetAtt_r() const=0;
-		virtual const std::string &GetName() const=0;
-		virtual const Vec2D &GetDimensions() const=0;
-		virtual const double &GetIntendedOrientation() const=0;
-		//I'm not sure if this would be needed in the real game, I use it so the actor knows what color to paint itself
-		virtual const char *GetTeamName() const {return "";}
-};
+	const double Pi2=M_PI*2.0;
+	//Normalize the rotation
+	if (Rotation>M_PI)
+		Rotation-=Pi2;
+	else if (Rotation<-M_PI)
+		Rotation+=Pi2;
+}
 
 class Ship_Tester;
 //This contains everything the AI needs for game play; Keeping this encapsulated will help keep a clear division
 //of what Entity3D looked like before applying AI with goals
 
 //Note Entity2D should not know anything about an actor
-class Entity2D : public EntityPropertiesInterface
+class Entity2D
 {
 	public:
-		Entity2D(const char EntityName[]);
+		typedef Framework::Base::Vec2d Vec2D;
 
-		class EventMap : public Base::EventMap
-		{
-		public:
-			EventMap(bool listOwned = false) : GG_Framework::UI::EventMap(listOwned) {}
-
-			// The hit, the other entity, local collision point, impulse time of the collision (1 frame?)
-			//Event3<Entity3D&, const osg::Vec3d&, double> Collision;
-		};
-
-		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
-		virtual ~Entity2D(); //Game Client will be nuking this pointer
-		const std::string &GetName() const {return m_Name;}
-		virtual void TimeChange(double dTime_s);
-		FlightDynamics_2D &GetPhysics() {return m_Physics;}
-		const FlightDynamics_2D &GetPhysics() const {return m_Physics;}
-		virtual const osg::Vec2d &GetDimensions() const {return m_Dimensions;}
-		virtual void ResetPos();
-		// This is where both the vehicle entity and camera need to align to, by default we use the actual orientation
-		virtual const double &GetIntendedOrientation() const {return ((PosAtt *)m_PosAtt_Read.get())->m_att_r;}
-		Entity2D::EventMap* GetEventMap(){return m_eventMap;}
-
-		//from EntityPropertiesInterface
-		virtual const osg::Vec2d &GetPos_m() const {return ((PosAtt *)m_PosAtt_Read.get())->m_pos_m;}
-		virtual double GetAtt_r() const {return ((PosAtt *)m_PosAtt_Read.get())->m_att_r;}
-	protected: 
-		FlightDynamics_2D m_Physics;
 	private:
-		friend Ship_Tester;
-		friend GameClient; //For now the game client can set up initial settings like dimensions
-		friend Entity_Properties;
+		friend class Ship_Tester;
 		struct PosAtt
 		{
-			osg::Vec2d m_pos_m;
-
+			Vec2D m_pos_m;
+	
 			//2d Orientation:
 			double m_att_r;  //a.k.a heading
 			//measurement in radians where 0 points north, pi/2 = east,  pi=south, and -pi/2 (or pi + pi/2) = west
@@ -66,43 +34,36 @@ class Entity2D : public EntityPropertiesInterface
 			//We can keep the general dimensions of the entity
 			//Note: we do not need pitch or roll axis so this keeps things much simpler
 		} m_PosAtt_Buffers[2];
-
+	
 		//All read cases use the read pointer, all write cases use the write pointer followed by an interlocked exchange of the pointers
-		OpenThreads::AtomicPtr m_PosAtt_Read,m_PosAtt_Write; 
+		PosAtt *m_PosAtt_Read,*m_PosAtt_Write; 
 		void UpdatePosAtt();
-
-		Entity2D::EventMap* m_eventMap;
-
-		osg::Vec2d m_Dimensions;
+	
+		Framework::Base::EventMap* m_eventMap;
+	
+		Vec2D m_Dimensions;
 		std::string m_Name;
+
+	public:
+		Entity2D(const char EntityName[]);
+
+		//This allows the game client to setup the ship's characteristics
+		virtual void Initialize(Framework::Base::EventMap& em);
+		virtual ~Entity2D(); //Game Client will be nuking this pointer
+		const std::string &GetName() const {return m_Name;}
+		virtual void TimeChange(double dTime_s);
+		FlightDynamics_2D &GetPhysics() {return m_Physics;}
+		const FlightDynamics_2D &GetPhysics() const {return m_Physics;}
+		virtual const Vec2D &GetDimensions() const {return m_Dimensions;}
+		virtual void ResetPos();
+		// This is where both the vehicle entity and camera need to align to, by default we use the actual orientation
+		virtual const double &GetIntendedOrientation() const {return m_PosAtt_Read->m_att_r;}
+		Framework::Base::EventMap* GetEventMap(){return m_eventMap;}
+
+		//from EntityPropertiesInterface
+		virtual const Vec2D &GetPos_m() const {return m_PosAtt_Read->m_pos_m;}
+		virtual double GetAtt_r() const {return m_PosAtt_Read->m_att_r;}
+	protected: 
+		FlightDynamics_2D m_Physics;
 };
 
-class RimSpace_GameAttributes
-{
-	public:
-		//This can be dynamic as people can switch sides (Let the UI work out how to change its colors)
-		std::string &GetTeamName() {return m_TeamName;}
-		const std::string &GetTeamName() const {return m_TeamName;}
-		//Read only... only the game client should set this initially 
-		Character_Type GetCharacter_Type() const {return m_Character_Type;}
-	private:
-		friend GameClient;
-		std::string m_TeamName;
-		Character_Type m_Character_Type;
-};
-
-class Ship : public Entity2D
-{
-	public:
-		Ship(const char EntityName[]) : Entity2D(EntityName) {}
-		//Note this is technically in ThrusterShip (but it doesn't matter for our test simulation)
-		//AI_Base_Controller* GetController() {return &m_Controller;}
-		RimSpace_GameAttributes &GetGameAttributes() {return m_GameAttributes;}
-		virtual const char *GetTeamName() const {return m_GameAttributes.GetTeamName().c_str();}
-	protected:
-		//Note: Only server side will aggregate this type while the client side only aggregates the base type
-		//Note: It has been a struggle to find the optimum place to expose this... I originally wanted to keep this encapsulated within the controller, but
-		//later found that Ideally the game client needs to populate the types and other game characteristics.  Ship is the ideal access place, as it is still
-		//a part of the fringe project, and entity is too generic (i.e. a part of framework)
-		RimSpace_GameAttributes m_GameAttributes;
-};

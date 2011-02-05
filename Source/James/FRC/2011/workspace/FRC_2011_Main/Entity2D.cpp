@@ -1,7 +1,10 @@
+#include "Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
 #include "Base/Vec2d.h"
 #include "Base/Misc.h"
+#include "Base/Event.h"
+#include "Base/EventMap.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
 
@@ -11,8 +14,9 @@ const double Pi2=M_PI*2.0;
  /*																	Entity2D														*/
 /***********************************************************************************************************************************/
 
-Entity2D::Entity2D(const char EntityName[]) : m_Dimensions(1.0,1.0),m_Name(EntityName),
-	m_PosAtt_Read(&m_PosAtt_Buffers[0]),m_PosAtt_Write(&m_PosAtt_Buffers[1])
+Entity2D::Entity2D(const char EntityName[]) : 
+	m_PosAtt_Read(&m_PosAtt_Buffers[0]),m_PosAtt_Write(&m_PosAtt_Buffers[1]),
+	m_Dimensions(1.0,1.0),m_Name(EntityName)
 {
 	ResetPos();
 }
@@ -21,11 +25,9 @@ Entity2D::~Entity2D()
 {
 }
 
-void Entity2D::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+void Entity2D::Initialize(Framework::Base::EventMap& em)
 {
 	m_eventMap = &em;
-	if (props)
-		props->Initialize(this);
 }
 
 //Note: If for some reason there are multiple threads which need to write we would need to put a critical section around this
@@ -38,19 +40,19 @@ void Entity2D::UpdatePosAtt()
 	//exchange.  I believe the results would be the same for both reliability and performance.  We could test both cases to make sure in the real
 	//world tests.  (I am not sure if I can put enough stress here to know for sure)
 
-	void *Temp=m_PosAtt_Write.get();
+	PosAtt *Temp=m_PosAtt_Write;
 	//exchange the pointers this works since this is the only thread doing all of the writing
-	m_PosAtt_Write.assign(m_PosAtt_Read.get(),m_PosAtt_Write.get());
-	m_PosAtt_Read.assign(Temp,m_PosAtt_Read.get());
+	m_PosAtt_Write=m_PosAtt_Read;
+	m_PosAtt_Read=Temp;
 }
 
 void Entity2D::ResetPos()
 {
 	//CancelAllControls();
 	m_Physics.ResetVectors();
-	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+	PosAtt *writePtr=m_PosAtt_Write;
 	//SetPosAtt(m_origPos, FromLW_Rot(m_origAtt[0], m_origAtt[1], m_origAtt[2]));
-	writePtr->m_pos_m=osg::Vec2d(0.0,0.0);
+	writePtr->m_pos_m=Vec2D(0.0,0.0);
 	writePtr->m_att_r=0.0;  //a.k.a heading
 	//GetEventMap()->Event_Map["ResetPos"].Fire();
 	UpdatePosAtt();
@@ -58,12 +60,12 @@ void Entity2D::ResetPos()
 
 void Entity2D::TimeChange(double dTime_s)
 {
-	osg::Vec2d PositionDisplacement;
+	Vec2D PositionDisplacement;
 	double RotationDisplacement;
 	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
 	//This is using an atomic double buffering mechanism... should be thread safe
-	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
-	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	PosAtt *writePtr=m_PosAtt_Write;
+	PosAtt *readPtr=m_PosAtt_Read;
 	writePtr->m_pos_m=readPtr->m_pos_m+PositionDisplacement;
 
 	double Rotation=readPtr->m_att_r+RotationDisplacement;
@@ -72,62 +74,3 @@ void Entity2D::TimeChange(double dTime_s)
 	UpdatePosAtt();
 }
 
-
-  /***********************************************************************************************************************************/
- /*														RimSpace_GameAttributes														*/
-/***********************************************************************************************************************************/
-
-  /***********************************************************************************************************************************/
- /*														AI_Controller																*/
-/***********************************************************************************************************************************/
-
-  /***********************************************************************************************************************************/
- /*														Ship																		*/
-/***********************************************************************************************************************************/
-  /***********************************************************************************************************************************/
- /*													Ship_Tester																		*/
-/***********************************************************************************************************************************/
-
-Ship_Tester::~Ship_Tester()
-{
-	//not perfect but in a test environment will do
-	delete GetController()->m_Goal;
-	GetController()->m_Goal=NULL;
-	//assert(!GetController()->m_Goal);
-}
-
-void Ship_Tester::SetPosition(double x,double y) 
-{
-	
-	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
-	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
-	writePtr->m_pos_m.set(x,y);
-	writePtr->m_att_r=readPtr->m_att_r;  //make sure the entire structure is updated!
-	UpdatePosAtt();
-}
-
-void Ship_Tester::SetAttitude(double radians)
-{
-
-	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
-	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
-	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
-	writePtr->m_att_r=radians;
-	UpdatePosAtt();
-}
-
-Goal *Ship_Tester::ClearGoal()
-{
-	//Ensure there the current goal is clear
-	if (GetController()->m_Goal)
-	{
-		GetController()->m_Goal->Terminate();
-		//TODO determine how to ensure the update thread is finished with the process
-	}
-	return GetController()->m_Goal;
-}
-
-void Ship_Tester::SetGoal(Goal *goal) 
-{
-	GetController()->m_Goal=goal;
-}
