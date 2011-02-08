@@ -48,7 +48,7 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	// We can now use double-tap to fire the afterburners (for when we have them)
 	joy.AddJoy_Button_Default(2,"Thrust");
 	joy.AddJoy_Button_Default(3,"Brake");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Joystick_SetCurrentSpeed_2");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2");
 	//These are not assigned by default but can configured to use via xml preferences
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.01,true);
 	joy.AddJoy_Button_Default(6,"Slide",false);
@@ -86,7 +86,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventOnOff_Map["StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->Event_Map["ToggleAutoPilot"].Remove(*this, &UI_Controller::TryToggleAutoPilot);
 		em->EventOnOff_Map["SPAWN"].Remove(*this, &UI_Controller::OnSpawn);
-		em->Event_Map["UseMouse"].Remove(*this, &UI_Controller::UseMouse);
+		//em->Event_Map["UseMouse"].Remove(*this, &UI_Controller::UseMouse);
 		em->EventOnOff_Map["Test1"].Remove(*this, &UI_Controller::Test1);
 		em->EventOnOff_Map["Test2"].Remove(*this, &UI_Controller::Test2);
 		//em->Event_Map["ShowHUD"].Remove(*m_HUD_UI.get(), &HUD_PDCB::ToggleEnabled);
@@ -119,7 +119,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["ToggleAutoPilot"].Subscribe(ehl, *this, &UI_Controller::TryToggleAutoPilot);
 		em->EventOnOff_Map["SPAWN"].Subscribe(ehl, *this, &UI_Controller::OnSpawn);
 
-		em->Event_Map["UseMouse"].Subscribe(ehl, *this, &UI_Controller::UseMouse);
+		//em->Event_Map["UseMouse"].Subscribe(ehl, *this, &UI_Controller::UseMouse);
 		em->EventOnOff_Map["Test1"].Subscribe(ehl, *this, &UI_Controller::Test1);
 		em->EventOnOff_Map["Test2"].Subscribe(ehl, *this, &UI_Controller::Test2);
 

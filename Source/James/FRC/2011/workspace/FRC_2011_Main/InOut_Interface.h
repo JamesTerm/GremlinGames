@@ -21,7 +21,7 @@ class Robot_Control : public Robot_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
 		{
-			m_RobotDrive.SetLeftRightMotorOutputs(LeftVelocity/m_ENGAGED_MAX_SPEED,RightVelocity/m_ENGAGED_MAX_SPEED);
+			m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_ENGAGED_MAX_SPEED),(float)(RightVelocity/m_ENGAGED_MAX_SPEED));
 		}
 		virtual void UpdateArmHeight(double Height_m) {}
 };

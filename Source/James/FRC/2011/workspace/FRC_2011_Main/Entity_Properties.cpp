@@ -42,6 +42,13 @@ Ship_Properties::Ship_Properties()
 	m_AFTERBURNER_ACCEL = 60.0;    //we could use these, but I don't think it is necessary 
 	m_AFTERBURNER_BRAKE = m_BRAKE;
 
+	//These are the most important that setup the force restraints
+	m_MaxAccelLeft=5.0;		//The left and right apply to strafe (are ignored for 2011 robot)
+	m_MaxAccelRight=5.0;
+	m_MaxAccelForward=5.0;
+	m_MaxAccelReverse=5.0;
+	m_MaxTorqueYaw=25.0;
+
 	//I'm leaving these in event though they are not going to be used
 	double RAMP_UP_DUR = 1.0;
 	double RAMP_DOWN_DUR = 1.0;
