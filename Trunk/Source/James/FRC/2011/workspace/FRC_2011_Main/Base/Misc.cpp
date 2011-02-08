@@ -1,5 +1,7 @@
 #include <string>
 
+namespace Framework
+{
 namespace Base
 {
 
@@ -70,4 +72,5 @@ void StripCommentsAndTrailingWhiteSpace(char* line)
 	}
 }
 
-};
+	}
+}

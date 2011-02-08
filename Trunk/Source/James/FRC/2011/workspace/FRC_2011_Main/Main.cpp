@@ -73,21 +73,20 @@ public:
 			robot.Initialize(eventMap,&robot_props);
 			//Bind the ship's eventmap to the joystick
 			joy_binder.SetControlledEventMap(robot.GetEventMap());
-			{	//To to bind the UI controller to the robot
-				AI_Base_Controller *controller=robot.GetController();
-				assert(controller);
-				UI_Controller UI(joy_binder,controller); 
-				
-				if (controller->Try_SetUIController(&UI))
-				{
-					//Success... now to let the entity set things up
-					UI.HookUpUI(true);
-				}
-				else
-				{
-					UI.Set_AI_Base_Controller(NULL);   //no luck... flush ship association
-					assert(false);
-				}
+			//To to bind the UI controller to the robot
+			AI_Base_Controller *controller=robot.GetController();
+			assert(controller);
+			UI_Controller UI(joy_binder,controller); 
+			
+			if (controller->Try_SetUIController(&UI))
+			{
+				//Success... now to let the entity set things up
+				UI.HookUpUI(true);
+			}
+			else
+			{
+				UI.Set_AI_Base_Controller(NULL);   //no luck... flush ship association
+				assert(false);
 			}
 			
 			while (IsOperatorControl())
