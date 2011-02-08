@@ -19,7 +19,7 @@ using namespace Framework::Base;
 #undef __DisableSpeedControl__  //This one is great for test purposes
 #undef DEBUG_AFTERBURNER
 
-bool g_DisableEngineRampUp2=false;
+bool g_DisableEngineRampUp2=true;  //we need not use engine ramping for the robot
 
   /***************************************************************************************************************/
  /*													Ship_2D														*/

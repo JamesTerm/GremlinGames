@@ -17,9 +17,9 @@ Entity_Properties::Entity_Properties()
 {
 	m_EntityName="Entity";
 	//m_NAME="default";
-	m_Mass=10000.0;
-	m_Dimensions[0]=12.0;
-	m_Dimensions[1]=12.0;
+	m_Mass=25.0;
+	m_Dimensions[0]=0.6477;
+	m_Dimensions[1]=0.9525;
 };
 
 
@@ -32,17 +32,17 @@ void Entity_Properties::Initialize(Entity2D *NewEntity) const
 
 Ship_Properties::Ship_Properties()
 {
-	m_dHeading = DEG_2_RAD(270.0);
+	m_dHeading = DEG_2_RAD(514.0);
 
-	double Scale=0.2;  //we must scale everything down to see on the view
-	m_MAX_SPEED = 2000.0 * Scale;
-	m_ENGAGED_MAX_SPEED = 400.0 * Scale;
-	m_ACCEL = 60.0 * Scale;
-	m_BRAKE = 50.0 * Scale;
-	m_STRAFE = m_BRAKE; //could not find this one
-	m_AFTERBURNER_ACCEL = 107.0 * Scale;
+	m_MAX_SPEED = 2.916;
+	m_ENGAGED_MAX_SPEED = 2.916;
+	m_ACCEL = 10.0;
+	m_BRAKE = 10.0;
+	m_STRAFE = m_BRAKE;
+	m_AFTERBURNER_ACCEL = 60.0;    //we could use these, but I don't think it is necessary 
 	m_AFTERBURNER_BRAKE = m_BRAKE;
 
+	//I'm leaving these in event though they are not going to be used
 	double RAMP_UP_DUR = 1.0;
 	double RAMP_DOWN_DUR = 1.0;
 	m_EngineRampAfterBurner= m_AFTERBURNER_ACCEL/RAMP_UP_DUR;
