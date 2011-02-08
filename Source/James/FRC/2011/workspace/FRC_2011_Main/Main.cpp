@@ -89,16 +89,16 @@ public:
 				assert(false);
 			}
 			
+			double tm = GetTime();
 			while (IsOperatorControl())
 			{
-				//TODO we may want to measure the actual time delta here... this however is safer for initial testing
 				//I'll keep this around as a synthetic time option for debug purposes
-				double time=0.016;
+				//double time=0.016;
+				double time=GetTime() - tm;
 				joy_binder.UpdateJoyStick(time);
 				robot.TimeChange(time);
-				//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
-				//run at a pace that doesn't spike the CPU
-				Wait(0.016);				
+				//It seems this will yield about a 20 ms loop, so we'll keep it as it is in the example
+				Wait(0.005);				
 			}
 		}
 	}
