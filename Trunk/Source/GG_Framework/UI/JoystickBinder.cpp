@@ -15,7 +15,7 @@ JoyStick_Binder::JoyStick_Binder( ConfigurationManager *config) :
 m_Joystick(Base::GetDirectInputJoystick()),m_controlledEventMap(NULL), m_eventTime(0.0), m_Config(config)
 
 {
-	memset(m_lastReleaseTime,0.0,sizeof(m_lastReleaseTime));
+	memset(m_lastReleaseTime,0,sizeof(m_lastReleaseTime));
 }
 
 void JoyStick_Binder::SetControlledEventMap(GG_Framework::UI::EventMap* em)
@@ -214,7 +214,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 								//Now to use the attributes to tweak the value
 								if (key.isSquared)
 								{
-									const double YSensitivity=0.01;
+									//const double YSensitivity=0.01;
 									double Temp=Value*Value;
 									Temp*=key.Multiplier; //not sure if this is useful but is added for completeness
 									if (Temp<key.FilterRange) 
@@ -246,7 +246,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 					bool IsPressed=((1<<i) & joyinfo.ButtonBank[0])!=0;
 
 					//I'm writing this out long hand so that I can access my original key (grabbing its contents)
-					std::vector<std::string> *ButtonEvents=GetBindingsForJoyButton(i);
+					//std::vector<std::string> *ButtonEvents=GetBindingsForJoyButton(i);
 
 					JoyButtonBindings::iterator iter;
 					if (!IsPressed) m_lastReleaseTime[i]=m_eventTime;
@@ -269,7 +269,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 					}
 
 					//TODO see if there is a more proper std method to test for NULL (e.g. empty, which doesn't work here)
-					if (!m_UseDoubleClickBindings[i]._Has_container())
+					if (!m_UseDoubleClickBindings[i]._Mynode())
 					{
 						//First try to find the product specific binding
 						Button_EventEntry key(i,joyinfo2.ProductName.c_str());
