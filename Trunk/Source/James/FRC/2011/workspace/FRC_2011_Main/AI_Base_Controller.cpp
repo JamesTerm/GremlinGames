@@ -10,6 +10,8 @@
 #include "Goal.h"
 #include "Ship.h"
 #include "AI_Base_Controller.h"
+#include "Base/Joystick.h"
+#include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
 
 using namespace Framework::Base;
