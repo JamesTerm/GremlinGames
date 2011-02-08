@@ -10,12 +10,15 @@
 #include "Goal.h"
 #include "Ship.h"
 #include "AI_Base_Controller.h"
+#include "Base/Joystick.h"
+#include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
+
 
 #undef __EnableTestKeys__
 
 using namespace Framework::Base;
-
+using namespace Framework::UI;
 
   /***************************************************************************************************************/
  /*												UI_Controller													*/
@@ -27,7 +30,7 @@ void UI_Controller::Init_AutoPilotControls()
 
 
 //! TODO: Use the script to grab the head position to provide the HUD
-UI_Controller::UI_Controller(AI_Base_Controller *base_controller) : 
+UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_controller) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
 	m_Base(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_CruiseSpeed(0.0),m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),
 	/*m_hud_connected(false),*/
@@ -37,49 +40,19 @@ UI_Controller::UI_Controller(AI_Base_Controller *base_controller) :
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
 	m_LastSliderTime[0]=m_LastSliderTime[1]=0.0;
 
-	//TODO hard code the events
+	//TODO hard code the events to the correct mappings
+	//I'll need to add parm for instance name to support multiple joysticks
 	
-	#if 0
-	// Hard code these key bindings at first
-	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
-	JoyStick_Binder &joy = MainWindow::GetMainWindow()->GetJoystick();
-	kbm.AddKeyBindingR(true, "Ship.TryFireMainWeapon", osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON);
 	joy.AddJoy_Button_Default(0,"Ship.TryFireMainWeapon");
 	joy.AddJoy_Button_Default(1,"Missile.Launch");
 	// We can now use double-tap to fire the afterburners (for when we have them)
-	kbm.AddKeyBindingR(true, "RequestAfterburner", GG_Framework::Base::Key('w', GG_Framework::Base::Key::DBL));
-	kbm.AddKeyBindingR(true, "Thrust", GG_Framework::Base::Key('w'));
 	joy.AddJoy_Button_Default(2,"Thrust");
-	kbm.AddKeyBindingR(true, "Brake", 's');
 	joy.AddJoy_Button_Default(3,"Brake");
-	kbm.AddKeyBindingR(false, "Stop", 'x');
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eSlider1,"Joystick_SetCurrentSpeed");
-
-	kbm.AddKeyBindingR(true, "Turn_R", 'd');
-	kbm.AddKeyBindingR(true, "Turn_L", 'a');
-
-	kbm.AddKeyBindingR(false, "UseMouse", '/');
-
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Joystick_SetCurrentSpeed_2");
 	//These are not assigned by default but can configured to use via xml preferences
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.01,true);
-	//hmmm could use this to thrust
-	//joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Analog_Pitch",true,1.0,0.01,true);
-
-	kbm.AddKeyBindingR(true, "StrafeRight", 'e');
-	kbm.AddKeyBindingR(true, "StrafeLeft", 'q');
-
-	kbm.AddKeyBindingR(false, "UserResetPos", ' ');
-	kbm.AddKeyBindingR(false, "Slide", 'g');
 	joy.AddJoy_Button_Default(6,"Slide",false);
-
-	kbm.AddKeyBindingR(true, "StrafeLeft", osgGA::GUIEventAdapter::KEY_Left);
-	kbm.AddKeyBindingR(true, "StrafeRight", osgGA::GUIEventAdapter::KEY_Right);
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
-	//kbm.AddKeyBindingR(false, "ShowHUD", osgGA::GUIEventAdapter::KEY_F4);
-
-	kbm.AddKeyBindingR(false, "ToggleAutoPilot", 'z');
-	#endif
-	
+	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
 	
 	Init_AutoPilotControls();
 }
@@ -493,6 +466,8 @@ void UI_Controller::HookUpUI(bool ui)
 	//GG_Framework::UI::MainWindow& mainWin = *GG_Framework::UI::MainWindow::GetMainWindow();
 	if (m_isControlled)
 	{
+		//Note: This is handled explicitly in the main; however, I may want to add a member here... probably not since I do not wish to deviate from
+		//the original source
 		//mainWin.GetJoystick().SetControlledEventMap(m_ship->GetEventMap());
 	}
 

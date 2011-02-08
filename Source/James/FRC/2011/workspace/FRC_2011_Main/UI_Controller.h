@@ -11,7 +11,7 @@ class UI_Controller
 			Dir_Right = 1,
 		};
 
-		UI_Controller(AI_Base_Controller *base_controller=NULL);
+		UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
 		virtual ~UI_Controller();
 
 		///This is the most important method, as we must have a ship to control
