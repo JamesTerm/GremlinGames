@@ -95,6 +95,7 @@ public:
 				//I'll keep this around as a synthetic time option for debug purposes
 				//double time=0.016;
 				double time=GetTime() - tm;
+				tm=GetTime();
 				joy_binder.UpdateJoyStick(time);
 				robot.TimeChange(time);
 				//It seems this will yield about a 20 ms loop, so we'll keep it as it is in the example
