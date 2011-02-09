@@ -22,6 +22,74 @@
 
 const bool c_UseDefaultControls=false;
 
+
+class SetUp_Manager
+{
+	protected:
+		//Note: The order of the members are critical, as they are instantiated in the constructor
+		Driver_Station_Joystick m_Joystick;  
+		Framework::UI::JoyStick_Binder m_JoyBinder;
+		Ship_Properties m_RobotProps;  //This will be upgraded soon
+		Robot_Control m_Control; // robot drive system
+		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
+		Framework::Base::EventMap m_EventMap;
+		UI_Controller *m_pUI;
+	public:
+		SetUp_Manager() : m_Joystick(1,0), //for now 1 joystick starting at port 0 (i.e. no offset)
+			m_JoyBinder(m_Joystick),m_pRobot(NULL),m_pUI(NULL)
+		{
+			m_Control.Initialize(&m_RobotProps);
+			m_pRobot = new FRC_2011_Robot("FRC2011_Robot",&m_Control);
+			m_pRobot->Initialize(m_EventMap,&m_RobotProps);
+			//Bind the ship's eventmap to the joystick
+			m_JoyBinder.SetControlledEventMap(m_pRobot->GetEventMap());
+
+			//To to bind the UI controller to the robot
+			AI_Base_Controller *controller=m_pRobot->GetController();
+			assert(controller);
+			m_pUI=new UI_Controller(m_JoyBinder,controller); 
+			if (controller->Try_SetUIController(m_pUI))
+			{
+				//Success... now to let the entity set things up
+				m_pUI->HookUpUI(true);
+			}
+			else
+			{
+				m_pUI->Set_AI_Base_Controller(NULL);   //no luck... flush ship association
+				assert(false);
+			}
+		}
+		void TimeChange(double dTime_s)
+		{
+			m_JoyBinder.UpdateJoyStick(dTime_s);
+			m_pRobot->TimeChange(dTime_s);
+		}
+
+		~SetUp_Manager()
+		{
+			//Note: in visual studio the delete pointer implicitly checks for NULL, but I do not want to assume this for wind river.
+			if (m_pUI)
+			{
+				delete m_pUI;
+				m_pUI=NULL;
+			}
+			if (m_pRobot)
+			{
+				delete m_pRobot;
+				m_pRobot=NULL;
+			}
+		}
+};
+
+class SetUp_Autonomous : public SetUp_Manager
+{
+	public:
+		bool IsStillRunning()
+		{
+			return true; //TODO
+		}
+};
+
 class RobotDemo : public SimpleRobot
 {
 public:
@@ -60,6 +128,28 @@ public:
 		lcd->UpdateLCD();
 	}
 
+	//Drive left & right motors for 2 seconds then stop
+	void Autonomous(void)
+	{
+		SetUp_Autonomous main_autonomous;
+		double tm = GetTime();
+		GetWatchdog().SetEnabled(true);
+		while (main_autonomous.IsStillRunning())
+		{
+			GetWatchdog().Feed();
+			//TODO find out why autonomous timer is not working!
+			//I'll keep this around as a synthetic time option for debug purposes
+			double time=0.020;
+			//double time=GetTime() - tm;
+			//tm=GetTime();
+			//Framework::Base::DebugOutput("%f\n",time),
+			main_autonomous.TimeChange(time);
+			//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
+			//run at a pace that doesn't spike the CPU
+			Wait(0.005);				
+		}
+	}
+
 	void OperatorControl(void)
 	{
 #if 0
@@ -95,49 +185,18 @@ public:
 		}
 		else
 		{
-			//TODO all of this will be moved to a manager class when starting the autonomous implementation
-
-			//Set up input
-			Driver_Station_Joystick joystick(1,0);  //for now 1 joystick starting at port 0 (i.e. no offset)
-			Framework::UI::JoyStick_Binder joy_binder(joystick);
-
-			Ship_Properties robot_props;  //This will be upgraded soon
-			Robot_Control control; // robot drive system
-			control.Initialize(&robot_props);
-			FRC_2011_Robot robot("FRC2011_Robot",&control);
-			Framework::Base::EventMap eventMap;
-			robot.Initialize(eventMap,&robot_props);
-			//Bind the ship's eventmap to the joystick
-			joy_binder.SetControlledEventMap(robot.GetEventMap());
-
-			//To to bind the UI controller to the robot
-			AI_Base_Controller *controller=robot.GetController();
-			assert(controller);
-			UI_Controller UI(joy_binder,controller); 
-			if (controller->Try_SetUIController(&UI))
-			{
-				//Success... now to let the entity set things up
-				UI.HookUpUI(true);
-			}
-			else
-			{
-				UI.Set_AI_Base_Controller(NULL);   //no luck... flush ship association
-				assert(false);
-			}
-
+			SetUp_Manager main;
 			double tm = GetTime();
 			GetWatchdog().SetEnabled(true);
 			while (IsOperatorControl())
 			{
 				GetWatchdog().Feed();
-				//TODO we may want to measure the actual time delta here... this however is safer for initial testing
 				//I'll keep this around as a synthetic time option for debug purposes
 				//double time=0.020;
 				double time=GetTime() - tm;
 				tm=GetTime();
 				//Framework::Base::DebugOutput("%f\n",time),
-				joy_binder.UpdateJoyStick(time);
-				robot.TimeChange(time);
+				main.TimeChange(time);
 				//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
 				//run at a pace that doesn't spike the CPU
 				Wait(0.005);				
