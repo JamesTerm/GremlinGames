@@ -132,9 +132,10 @@ public:
 				GetWatchdog().Feed();
 				//TODO we may want to measure the actual time delta here... this however is safer for initial testing
 				//I'll keep this around as a synthetic time option for debug purposes
-				//double time=0.016;
+				//double time=0.020;
 				double time=GetTime() - tm;
-				//Framework::Base::DebugOutput("%f\n",tm),
+				tm=GetTime();
+				//Framework::Base::DebugOutput("%f\n",time),
 				joy_binder.UpdateJoyStick(time);
 				robot.TimeChange(time);
 				//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
