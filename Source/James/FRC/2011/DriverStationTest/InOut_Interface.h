@@ -6,7 +6,7 @@ class Robot_Control : public Robot_Control_Interface
 	double m_ENGAGED_MAX_SPEED;  //cache this to covert velocity to motor setting
 	RobotDrive m_RobotDrive;
 	public:
-		Robot_Control() : m_RobotDrive(1,2) 
+		Robot_Control() : m_RobotDrive(1,2,3,4)
 		{
 			//I'm giving a whole second before the timeout kicks in... I do not want false positives!
 			//m_RobotDrive.SetExpiration(1.0);
@@ -21,9 +21,7 @@ class Robot_Control : public Robot_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
 		{
-			//the negative addresses a UI bug with the harness
-			m_RobotDrive.SetLeftRightMotorSpeeds((float)(-LeftVelocity/m_ENGAGED_MAX_SPEED),(float)(RightVelocity/m_ENGAGED_MAX_SPEED));
-			//m_RobotDrive.SetLeftRightMotorSpeeds((float)(LeftVelocity/m_ENGAGED_MAX_SPEED),(float)(RightVelocity/m_ENGAGED_MAX_SPEED));
+			m_RobotDrive.SetLeftRightMotorSpeeds((float)(LeftVelocity/m_ENGAGED_MAX_SPEED),(float)(RightVelocity/m_ENGAGED_MAX_SPEED));
 		}
 		virtual void UpdateArmHeight(double Height_m) {}
 };
