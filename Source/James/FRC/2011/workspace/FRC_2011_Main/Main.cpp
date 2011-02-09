@@ -33,7 +33,7 @@ public:
 	//Drive left & right motors for 2 seconds then stop
 	void Autonomous(void)
 	{
-		RobotDrive myRobot(1,2); // robot drive system
+		RobotDrive myRobot(1,2,3,4); // robot drive system
 		myRobot.SetExpiration(0.1);
 		
 		myRobot.SetSafetyEnabled(false);
