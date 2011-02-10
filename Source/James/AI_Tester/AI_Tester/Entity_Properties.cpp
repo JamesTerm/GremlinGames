@@ -47,6 +47,54 @@ void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
 }
 
   /***********************************************************************************************************************************/
+ /*														Ship_1D_Properties															*/
+/***********************************************************************************************************************************/
+
+Ship_1D_Properties::Ship_1D_Properties()
+{
+	double Scale=0.2;  //we must scale everything down to see on the view
+	m_MAX_SPEED = 400.0 * Scale;
+	m_ACCEL = 60.0 * Scale;
+	m_BRAKE = 50.0 * Scale;
+
+	m_MaxAccelForward=87.0 * Scale;
+	m_MaxAccelReverse=70.0 * Scale;
+};
+
+void Ship_1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+{
+	const char* err;
+	m_ShipType=eDefault;
+	m_EntityName="Ship1D";
+	err = script.GetGlobalTable("Ship1D");
+	ASSERT_MSG(!err, err);
+	{
+		err = script.GetField("ACCEL", NULL, NULL, &m_ACCEL);
+		ASSERT_MSG(!err, err);
+		err = script.GetField("BRAKE", NULL, NULL, &m_BRAKE);
+
+		script.GetField("MaxAccelForward", NULL, NULL, &m_MaxAccelForward);
+		script.GetField("MaxAccelReverse", NULL, NULL, &m_MaxAccelReverse);
+
+		err = script.GetField("MAX_SPEED", NULL, NULL, &m_MAX_SPEED);
+		ASSERT_MSG(!err, err);
+	}
+	script.Pop();
+
+	// Let the base class finish things up
+	__super::LoadFromScript(script);
+}
+
+void Ship_1D_Properties::Initialize(Ship_1D *NewShip) const
+{
+	NewShip->MAX_SPEED=m_MAX_SPEED;
+	NewShip->ACCEL=m_ACCEL;
+	NewShip->BRAKE=m_BRAKE;
+	NewShip->MaxAccelForward=m_MaxAccelForward;
+	NewShip->MaxAccelReverse=m_MaxAccelReverse;
+}
+
+  /***********************************************************************************************************************************/
  /*															Entity_Properties														*/
 /***********************************************************************************************************************************/
 
@@ -118,6 +166,12 @@ Ship_Properties::Ship_Properties()
 	m_EngineRampReverse= m_BRAKE/RAMP_UP_DUR;
 	m_EngineRampStrafe= m_STRAFE/RAMP_UP_DUR;
 	m_EngineDeceleration= m_ACCEL/RAMP_DOWN_DUR;
+
+	m_MaxAccelLeft=40.0 * Scale;
+	m_MaxAccelRight=40.0 * Scale;
+	m_MaxAccelForward=87.0 * Scale;
+	m_MaxAccelReverse=70.0 * Scale;
+	m_MaxTorqueYaw=2.5;
 };
 
 void Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)

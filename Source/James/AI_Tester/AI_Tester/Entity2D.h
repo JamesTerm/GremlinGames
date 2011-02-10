@@ -5,14 +5,8 @@ class Entity1D
 	public:
 		Entity1D(const char EntityName[]);
 
-		class EventMap : public GG_Framework::UI::EventMap
-		{
-			public:
-				EventMap(bool listOwned = false) : GG_Framework::UI::EventMap(listOwned) {}
-		};
-
 		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(Entity1D::EventMap& em, const Entity1D_Properties *props=NULL);
+		virtual void Initialize(GG_Framework::Base::EventMap& em, const Entity1D_Properties *props=NULL);
 		virtual ~Entity1D(); //Game Client will be nuking this pointer
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
@@ -22,7 +16,7 @@ class Entity1D
 		virtual void ResetPos();
 		// This is where both the entity and camera need to align to, by default we use the actual position
 		virtual const double &GetIntendedPosition() const {return m_Position;}
-		Entity1D::EventMap* GetEventMap(){return m_eventMap;}
+		GG_Framework::Base::EventMap* GetEventMap(){return m_eventMap;}
 
 		virtual double GetPos_m() const {return m_Position;}
 	protected: 
@@ -31,7 +25,7 @@ class Entity1D
 		friend GameClient; //For now the game client can set up initial settings like the dimension
 		friend Entity1D_Properties;
 
-		Entity1D::EventMap* m_eventMap;
+		GG_Framework::Base::EventMap* m_eventMap;
 		double m_Dimension;
 		double m_Position;
 		std::string m_Name;

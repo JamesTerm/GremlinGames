@@ -15,6 +15,34 @@ class Entity1D_Properties
 		double m_Dimension; //Dimension- Length
 };
 
+class Ship_1D;
+class Ship_1D_Properties : public Entity1D_Properties
+{
+	public:
+		Ship_1D_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(Ship_1D *NewShip) const;
+		enum Ship_Type
+		{
+			eDefault,
+			eRobotArm,
+		};
+		Ship_Type GetShipType() const {return m_ShipType;}
+		double GetMaxSpeed() const {return m_MAX_SPEED;}
+	private:
+		//! We can break this up even more if needed
+		//double m_EngineRampForward,m_EngineRampReverse,m_EngineRampAfterBurner;
+		//double m_EngineDeceleration;
+
+		//! Engaged max speed is basically the fastest speed prior to using after-burner.  For AI and auto pilot it is the trigger speed to
+		//! enable the afterburner
+		double m_MAX_SPEED;
+		double m_ACCEL, m_BRAKE;
+
+		double m_MaxAccelForward,m_MaxAccelReverse;
+		Ship_Type m_ShipType;
+};
+
 class Entity2D;
 class Entity_Properties
 {
