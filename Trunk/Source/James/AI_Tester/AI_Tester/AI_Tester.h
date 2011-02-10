@@ -19,4 +19,5 @@ namespace AI_Tester
 	#include "Robot_Tank.h"
 	#include "AI_Base_Controller.h"
 	#include "UI_Controller.h"
+	#include "FRC2011_Robot.h"
 }
