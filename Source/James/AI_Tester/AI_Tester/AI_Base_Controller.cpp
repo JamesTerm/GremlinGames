@@ -329,3 +329,44 @@ void Goal_Ship_FollowShip::Terminate()
 	//TODO this may be an inline check
 	m_Terminate=true;
 }
+
+
+  /***********************************************************************************************************************************/
+ /*													Goal_NotifyWhenComplete															*/
+/***********************************************************************************************************************************/
+
+
+Goal_NotifyWhenComplete::Goal_NotifyWhenComplete(GG_Framework::Base::EventMap &em,char *EventName) : m_EventName(EventName),m_EventMap(em)
+{
+	m_Status=eInactive;
+}
+
+void Goal_NotifyWhenComplete::Activate()
+{
+	m_Status=eActive; 
+}
+
+Goal::Goal_Status Goal_NotifyWhenComplete::Process(double dTime_s)
+{
+	//Client will activate
+	if (m_Status==eInactive)
+		return m_Status;
+
+	if (m_Status==eActive)
+	{
+		m_Status=ProcessSubgoals(dTime_s);
+		if (m_Status==eCompleted)
+		{
+			m_EventMap.Event_Map[m_EventName].Fire(); //Fire the event
+			Terminate();
+		}
+	}
+	return m_Status;
+}
+
+void Goal_NotifyWhenComplete::Terminate()
+{
+	//ensure its all clean
+	RemoveAllSubgoals();
+	m_Status=eInactive; //make this inactive
+}

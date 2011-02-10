@@ -112,6 +112,24 @@ private:
 	bool m_Terminate;
 };
 
+
+//This goal simply will fire an event when all goals are complete
+class Goal_NotifyWhenComplete : public CompositeGoal
+{
+public:
+	Goal_NotifyWhenComplete(GG_Framework::Base::EventMap &em,char *EventName);
+	//give public access for client to populate goals
+	virtual void AddSubgoal(Goal *g) {__super::AddSubgoal(g);}
+	//client activates manually when goals are added
+	virtual void Activate();
+	virtual Goal_Status Process(double dTime_s);
+	virtual void Terminate();
+
+private:
+	std::string m_EventName;  //name to fire when complete
+	GG_Framework::Base::EventMap &m_EventMap;
+};
+
 class AI_Controller : public AI_Base_Controller
 {
 	public:
