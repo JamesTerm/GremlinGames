@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Ship_1D.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.cpp"
 				>
 				<FileConfiguration
@@ -295,6 +299,10 @@
 			</File>
 			<File
 				RelativePath=".\Ship.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Ship_1D.h"
 				>
 			</File>
 			<File

@@ -18,7 +18,7 @@ Entity1D::~Entity1D()
 {
 }
 
-void Entity1D::Initialize(Entity1D::EventMap& em, const Entity1D_Properties *props)
+void Entity1D::Initialize(GG_Framework::Base::EventMap& em, const Entity1D_Properties *props)
 {
 	m_eventMap = &em;
 	if (props)
