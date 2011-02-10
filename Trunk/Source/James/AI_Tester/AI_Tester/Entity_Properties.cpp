@@ -3,6 +3,53 @@
 
 using namespace AI_Tester;
 
+  /***********************************************************************************************************************************/
+ /*															Entity1D_Properties														*/
+/***********************************************************************************************************************************/
+
+Entity1D_Properties::Entity1D_Properties()
+{
+	m_EntityName="Entity1D";
+	m_Mass=10000.0;
+	m_Dimension=12.0;
+};
+
+void Entity1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+{
+	const char* err;
+
+	err = script.GetGlobalTable(m_EntityName.c_str());
+	ASSERT_MSG(!err, err);
+	{
+		err = script.GetField("Mass", NULL, NULL, &m_Mass);
+		ASSERT_MSG(!err, err);
+
+		//Get the ship dimensions
+		err = script.GetFieldTable("Dimensions");
+		if (!err)
+		{
+			//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
+			err = script.GetField("Length", NULL, NULL,&m_Dimension);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+		else
+			m_Dimension=2.0;
+
+	}
+	script.Pop();
+}
+
+void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
+{
+	NewEntity->m_Dimension=m_Dimension;
+	NewEntity->GetPhysics().SetMass(m_Mass);
+}
+
+  /***********************************************************************************************************************************/
+ /*															Entity_Properties														*/
+/***********************************************************************************************************************************/
+
 Entity_Properties::Entity_Properties()
 {
 	m_EntityName="Entity";
@@ -46,6 +93,10 @@ void Entity_Properties::Initialize(Entity2D *NewEntity) const
 	NewEntity->m_Dimensions[1]=m_Dimensions[1];
 	NewEntity->GetPhysics().SetMass(m_Mass);
 }
+
+  /***********************************************************************************************************************************/
+ /*															Ship_Properties															*/
+/***********************************************************************************************************************************/
 
 Ship_Properties::Ship_Properties()
 {
@@ -170,6 +221,10 @@ void Ship_Properties::Initialize(Ship_2D *NewShip) const
 	NewShip->MaxAccelReverse=m_MaxAccelReverse;
 	NewShip->MaxTorqueYaw=m_MaxTorqueYaw;
 }
+
+  /***********************************************************************************************************************************/
+ /*														UI_Ship_Properties															*/
+/***********************************************************************************************************************************/
 
 UI_Ship_Properties::UI_Ship_Properties()
 {

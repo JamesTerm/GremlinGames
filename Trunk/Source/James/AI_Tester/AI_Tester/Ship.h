@@ -89,6 +89,9 @@ class Ship_2D : public Ship
 
 		eThrustState SetThrustState(eThrustState ts); // Handles the ON/OFF events, only for controlled entities
 
+		//Override with the controller to be used with ship.  Specific ships have specific type of controllers.
+		virtual AI_Base_Controller *Create_Controller();
+
 		friend AI_Base_Controller;
 		friend UI_Controller;
 		friend Ship_Properties;

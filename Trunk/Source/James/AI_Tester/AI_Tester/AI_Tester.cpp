@@ -365,8 +365,11 @@ void CommandLineInterface()
 			}
 			else if (!_strnicmp( input_line, "Stop", 4))
 			{
+				//Disengage UI control
+				game.SetControlledEntity(NULL);
 				delete UI_thread;
 				UI_thread=NULL;
+				game.RemoveAllEntities();
 			}
 			else if (!_strnicmp( input_line, "timer", 5))
 			{
