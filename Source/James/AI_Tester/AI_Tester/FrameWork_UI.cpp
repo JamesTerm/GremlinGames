@@ -165,11 +165,16 @@ void Actor_Text::update(osg::NodeVisitor *nv, osg::Drawable *draw)
  /*																GameClient															*/
 /***********************************************************************************************************************************/
 
-GameClient::~GameClient()
+void GameClient::RemoveAllEntities()
 {
 	for (size_t i=0;i<m_Entities.size();i++)
 		delete m_Entities[i];
 	m_Entities.clear();
+}
+
+GameClient::~GameClient()
+{
+	RemoveAllEntities();
 }
 
 Entity2D *GameClient::CreateEntity(const char EntityName[],Character_Type Type)

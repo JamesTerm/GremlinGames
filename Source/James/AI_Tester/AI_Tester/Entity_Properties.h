@@ -1,5 +1,20 @@
 #pragma once
 
+class Entity1D;
+class Entity1D_Properties
+{
+	public:
+		Entity1D_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(Entity1D *NewEntity) const;
+	protected:
+		std::string m_EntityName;  //derived classes can let base class know what type to read
+	private:
+		//Stuff needed for physics
+		double m_Mass;
+		double m_Dimension; //Dimension- Length
+};
+
 class Entity2D;
 class Entity_Properties
 {

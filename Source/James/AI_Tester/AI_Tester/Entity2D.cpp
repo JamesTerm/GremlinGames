@@ -6,6 +6,41 @@ using namespace AI_Tester;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
+ /*																	Entity1D														*/
+/***********************************************************************************************************************************/
+
+Entity1D::Entity1D(const char EntityName[]) : m_Dimension(1.0),m_Name(EntityName),m_Position(0.0)
+{
+	ResetPos();
+}
+
+Entity1D::~Entity1D() 
+{
+}
+
+void Entity1D::Initialize(Entity1D::EventMap& em, const Entity1D_Properties *props)
+{
+	m_eventMap = &em;
+	if (props)
+		props->Initialize(this);
+}
+
+void Entity1D::ResetPos()
+{
+	//CancelAllControls();
+	m_Physics.ResetVectors();
+	m_Position=0.0;
+}
+
+void Entity1D::TimeChange(double dTime_s)
+{
+	double PositionDisplacement;
+	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement);
+	m_Position+=PositionDisplacement;
+}
+
+
+  /***********************************************************************************************************************************/
  /*																	Entity2D														*/
 /***********************************************************************************************************************************/
 

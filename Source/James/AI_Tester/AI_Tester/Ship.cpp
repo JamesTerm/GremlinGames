@@ -62,8 +62,6 @@ Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
 
 	m_Physics.SetUsingAccelerationRate(!g_DisableEngineRampUp2);
 
-	//TODO make the AI Controller here once we get to that point
-	m_controller = new AI_Base_Controller(*this);
 	ResetPos();
 }
 
@@ -173,13 +171,20 @@ void Ship_2D::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &Lo
 void Ship_2D::TestPosAtt_Delta(const osg::Vec2d pos_m, double att, double dTime_s)
 {
 	#if 0
-		if ((m_controller)&&(m_controller->IsUIControlled()))
+		if (m_controller->IsUIControlled())
 			DOUT1 ("%f %f %f %f",dTime_s,pos_m[0],pos_m[1],pos_m[2]);
 	#endif
 }
 
+AI_Base_Controller *Ship_2D::Create_Controller() 
+{
+	return new AI_Base_Controller(*this);
+}
+
 void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 {
+	//TODO make the AI Controller here once we get to that point
+	m_controller = Create_Controller();
 	__super::Initialize(em,props);
 	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
 	if (ship_props)
@@ -284,8 +289,7 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 void Ship_2D::TimeChange(double dTime_s)
 {
 	// Update my controller
-	if (m_controller)
-		m_controller->UpdateController(dTime_s);
+	m_controller->UpdateController(dTime_s);
 
 	// Find the current speed and use to determine the flight characteristics we will WANT to us
 	//osg::Vec3d LocalVelocity(GetAtt_quat().conj() * m_Physics.GetLinearVelocity());
@@ -582,7 +586,6 @@ void Ship_2D::DestroyEntity(bool shotDown, osg::Vec3d collisionPt)
 void Ship_2D::CancelAllControls()
 {
 	//__super::CancelAllControls();
-	//if (m_controller )
 	//	m_controller->CancelAllControls();
 }
 //////////////////////////////////////////////////////////////////////////

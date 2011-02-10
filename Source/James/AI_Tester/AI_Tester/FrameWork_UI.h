@@ -86,7 +86,8 @@ class GameClient : public Viewer_Callback_Interface
 		//For now use Inert type to populate obstacles (will not be a ship entity)
 		virtual Entity2D *AddEntity(const char EntityName[],Character_Type Type=e_Default_Inert);
 		Entity2D *GetEntity(const char EntityName[]);
-		virtual void RemoveEntity(Entity2D *Entity); 
+		virtual void RemoveEntity(Entity2D *Entity);
+		void RemoveAllEntities();
 		//for testing purposes only
 		void SetDisableEngineRampUp2(bool DisableRampUp);
 	protected:
