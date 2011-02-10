@@ -271,6 +271,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ship.h"
+				>
+			</File>
+			<File
 				RelativePath=".\UI_Controller.h"
 				>
 			</File>

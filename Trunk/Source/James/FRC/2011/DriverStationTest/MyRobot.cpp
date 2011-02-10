@@ -61,6 +61,7 @@ class SetUp_Manager
 		}
 		void TimeChange(double dTime_s)
 		{
+			if (dTime_s==0.0) return; //avoid division by zero errors
 			m_JoyBinder.UpdateJoyStick(dTime_s);
 			m_pRobot->TimeChange(dTime_s);
 		}
@@ -83,10 +84,47 @@ class SetUp_Manager
 
 class SetUp_Autonomous : public SetUp_Manager
 {
+	private:
+		void StopLoop()
+		{
+			m_StillRunning=false;
+		}
+		bool m_StillRunning;
+		IEvent::HandlerList ehl;
 	public:
+		SetUp_Autonomous()
+		{
+			m_pUI->SetAutoPilot(true);  //we are not driving the robot
+			//Now to set up our goal
+			Ship_Tester *ship=m_pRobot;  //we can always cast down
+			double x=0.0;
+			double y=5.0;  //five meters
+			assert(ship);
+			{
+				Goal *oldgoal=ship->ClearGoal();
+				if (oldgoal)
+					delete oldgoal;
+				//Construct a way point
+				WayPoint wp;
+				wp.Position[0]=x;
+				wp.Position[1]=y;
+				wp.Power=1.0;
+				//Now to setup the goal
+				Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
+
+				//wrap the goal in a notify goal
+				Goal_NotifyWhenComplete *notify_goal=new Goal_NotifyWhenComplete(m_EventMap,"Complete"); //will fire Complete once it is done
+				notify_goal->AddSubgoal(goal);  //only one goal (for now)
+				notify_goal->Activate(); //now with the goal(s) loaded activate it
+				//Now to subscribe to this event... it will call Stop Loop when the goal is finished
+				m_EventMap.Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Autonomous::StopLoop);
+				ship->SetGoal(notify_goal);
+			}
+
+		}
 		bool IsStillRunning()
 		{
-			return true; //TODO
+			return m_StillRunning;
 		}
 };
 
@@ -137,16 +175,15 @@ public:
 		while (main_autonomous.IsStillRunning())
 		{
 			GetWatchdog().Feed();
-			//TODO find out why autonomous timer is not working!
-			//I'll keep this around as a synthetic time option for debug purposes
-			double time=0.020;
-			//double time=GetTime() - tm;
-			//tm=GetTime();
+			double time=GetTime() - tm;
+			tm=GetTime();
 			//Framework::Base::DebugOutput("%f\n",time),
+			//I'll keep this around as a synthetic time option for debug purposes
+			//time=0.020;
 			main_autonomous.TimeChange(time);
-			//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
-			//run at a pace that doesn't spike the CPU
-			Wait(0.005);				
+			//This is to simulate a 20ms interval... we'll need to measure the amount of overhead in the real robot
+			Wait(0.002);				
+			Wait(0.002);				
 		}
 	}
 
@@ -199,7 +236,7 @@ public:
 				main.TimeChange(time);
 				//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
 				//run at a pace that doesn't spike the CPU
-				Wait(0.005);				
+				Wait(0.004);				
 			}
 		}
 	}
