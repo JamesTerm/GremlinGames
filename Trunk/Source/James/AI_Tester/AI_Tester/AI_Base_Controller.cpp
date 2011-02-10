@@ -170,7 +170,8 @@ bool Goal_Ship_MoveToPosition::HitWayPoint()
 {
 	// Base a tolerance2 for how close we want to get to the way point based on the current velocity,
 	// within a second of reaching the way point, just move to the next one
-	double tolerance2 = (m_ship.GetPhysics().GetLinearVelocity().length2() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
+	//TODO 0.0001 is used for FRC testing, but I'll need to see if this is too lean for the game
+	double tolerance2 = m_UseSafeStop ? 0.0001 : (m_ship.GetPhysics().GetLinearVelocity().length2() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
 	osg::Vec2d currPos = m_ship.GetPos_m();
 	return ((m_Point.Position-currPos).length2() < tolerance2);
 }
