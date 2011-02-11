@@ -73,10 +73,10 @@ class Ship_2D : public Ship
 		enum eThrustState { TS_AfterBurner_Brake=0, TS_Brake, TS_Coast, TS_Thrust, TS_AfterBurner, TS_NotVisible };
 		eThrustState GetThrustState(){ return m_thrustState; }
 
-		// This function fires the various thruster events and updates the ThrsutState
-		// Called from my own timer update when locally controlled, or from my RC Controller when remote controlled
-		//virtual void UpdateThrustState(const osg::Vec3d& localThrust, const osg::Vec3d& localTorque);
-
+		//The UI controller will call this when attaching or detaching control.  The Bind parameter will either bind or unbind.  Since these are 
+		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
+		//should be no member variables needed to implement the bindings
+		virtual void BindAdditionalEventControls(bool Bind) {}
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.

@@ -78,7 +78,7 @@ void Ship_2D::ResetPos()
 
 	m_RequestedVelocity = 0.0;
 	//m_Last_AccDel = 0.0;
-	m_Last_RequestedVelocity=-1.0;
+	m_Last_RequestedVelocity=0.0;
 	m_rotAccel_rad_s = m_rotDisplacement_rad = 0.0;
 	m_currAccel =	osg::Vec2d(0,0);
 	m_IntendedOrientation=GetAtt_r();
@@ -94,7 +94,11 @@ void Ship_2D::SetSimFlightMode(bool SimFlightMode)
 	//And to not do extra work on the m_RequestedVelocity.
 	if (m_SimFlightMode!=SimFlightMode)
 	{
-		m_RequestedVelocity=m_Physics.GetLinearVelocity()[1];
+		//osg::Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+		//m_RequestedVelocity=LocalVelocity[1];
+		//unfortunately a slide turn maneuver requires this, but fortunately is is for UI.  This is not perfect if the user intended to go backwards
+		//but that would not be something desirable
+		m_RequestedVelocity=m_Physics.GetLinearVelocity().length(); 
 		m_SimFlightMode=SimFlightMode;	
 		DebugOutput("SimFlightMode=%d\n",SimFlightMode);
 	}
@@ -373,7 +377,7 @@ void Ship_2D::TimeChange(double dTime_s)
 			//If there is any turning while no deltas are on... kick on the requested velocity
 			if (YawPitchActive)
 			{
-				m_Last_RequestedVelocity=-1.0;  //active the requested velocity mode by setting this to -1 (this will keep it on until a new velocity delta is used)
+				m_Last_RequestedVelocity=0.0;  //active the requested velocity mode by setting this to 0 (this will keep it on until a new velocity delta is used)
 				UsingRequestedVelocity=true;
 			}
 			else
