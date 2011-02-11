@@ -130,9 +130,9 @@ class UI_Controller
 		bool m_isControlled;
 
 		///This is used exclusively for keyboard turn methods
-		double m_Ship_Keyboard_rotVel_rad_s;
+		double m_Ship_Keyboard_rotAcc_rad_s;
 		///This one is used exclusively for the Joystick and Mouse turn methods
-		double m_Ship_JoyMouse_rotVel_rad_s;
+		double m_Ship_JoyMouse_rotAcc_rad_s;
 		osg::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
 
 		//void ConnectHUD_Elements(bool connect);

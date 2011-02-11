@@ -404,12 +404,12 @@ void UI_Controller::Ship_Turn(double dir,bool UseHeadingSpeed)
 	if (fabs(dir)<0.001)  //Weed out empty Joystick calls that have no effect
 		return;
 	m_Ship_UseHeadingSpeed=UseHeadingSpeed;
-	m_Ship_JoyMouse_rotVel_rad_s=(UseHeadingSpeed?dir*m_ship->dHeading:dir)*m_ship->Camera_Restraint;
+	m_Ship_JoyMouse_rotAcc_rad_s=(UseHeadingSpeed?dir*m_ship->dHeading:dir)*m_ship->Camera_Restraint;
 }
 
 void UI_Controller::Ship_Turn(Directions dir)
 {
-	m_Ship_Keyboard_rotVel_rad_s=(double)dir*m_ship->dHeading*m_ship->Camera_Restraint;
+	m_Ship_Keyboard_rotAcc_rad_s=(double)dir*m_ship->dHeading*m_ship->Camera_Restraint;
 	m_Ship_UseHeadingSpeed=true;
 }
 
@@ -470,7 +470,7 @@ void UI_Controller::UserResetPos()
 
 void UI_Controller::ResetPos()
 {
-	m_Ship_Keyboard_rotVel_rad_s =	m_Ship_JoyMouse_rotVel_rad_s = 0.0;
+	m_Ship_Keyboard_rotAcc_rad_s =	m_Ship_JoyMouse_rotAcc_rad_s = 0.0;
 	m_Ship_Keyboard_currAccel = m_Ship_JoyMouse_currAccel =	osg::Vec2d(0,0);
 
 	//m_HUD_UI->Reset();
@@ -620,27 +620,23 @@ void UI_Controller::UpdateController(double dTime_s)
 		
 		
 			//add all the various input types to the main rotation velocity
-			double rotVel=(m_Ship_Keyboard_rotVel_rad_s+m_Ship_JoyMouse_rotVel_rad_s);
+			double rotAcc=(m_Ship_Keyboard_rotAcc_rad_s+m_Ship_JoyMouse_rotAcc_rad_s);
 			//We may have same strange undesired flicker effect if the mouse and keyboard turns are used simultaneously! So if the keyboard is used, then
 			//the mouse will get ignored
 			m_ship->m_LockShipHeadingToOrientation=m_Ship_UseHeadingSpeed;
 
-			if (m_Ship_Keyboard_rotVel_rad_s!=0) 
+			if (m_Ship_Keyboard_rotAcc_rad_s!=0) 
 			{
 				m_ship->m_LockShipHeadingToOrientation=true;
-				rotVel=m_Ship_Keyboard_rotVel_rad_s;
+				rotAcc=m_Ship_Keyboard_rotAcc_rad_s;
 				m_Ship_UseHeadingSpeed=true;
 			}
 
-			m_ship->SetCurrentAngularAcceleration(rotVel);
+			m_ship->SetCurrentAngularAcceleration(rotAcc);
 
-			//flush the JoyMouse rotation vec3 since it works on an additive nature
-			m_Ship_JoyMouse_rotVel_rad_s=0.0;
+			//flush the JoyMouse rotation acceleration since it works on an additive nature
+			m_Ship_JoyMouse_rotAcc_rad_s=0.0;
 			m_Ship_JoyMouse_currAccel=osg::Vec2d(0.0,0.0);
-
-			//TODO add method here
-			// If we do go back to the AI, make sure it's reactions  reset
-			//m_Base->ResetAI_Reaction(); 
 		}
 		else
 		{
