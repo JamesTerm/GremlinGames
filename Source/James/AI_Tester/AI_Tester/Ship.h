@@ -23,12 +23,12 @@ class Ship_2D : public Ship
 		virtual ~Ship_2D();
 
 		///This implicitly will place back in auto mode with a speed of zero
-		void Stop(){SetRequestedSpeed(0.0);}
-		void SetRequestedSpeed(double Speed);
-		double GetRequestedSpeed(){return m_RequestedSpeed;}
-		void FireAfterburner() {SetRequestedSpeed(GetMaxSpeed());}
+		void Stop(){SetRequestedVelocity(0.0);}
+		void SetRequestedVelocity(double Velocity);
+		double GetRequestedVelocity(){return m_RequestedVelocity;}
+		void FireAfterburner() {SetRequestedVelocity(GetMaxSpeed());}
 		void SetCurrentLinearAcceleration(const osg::Vec2d &Acceleration) {m_currAccel=Acceleration;}
-		void SetCurrentAngularVelocity(double Velocity) {m_rotVel_rad_s=Velocity;}
+		void SetCurrentAngularAcceleration(double Acceleration) {m_rotAccel_rad_s=Acceleration;}
 
 		// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
@@ -117,10 +117,10 @@ class Ship_2D : public Ship
 		double EngineDeceleration,EngineRampStrafe;
 	
 		//Use this technique when m_AlterTrajectory is true
-		double m_RequestedSpeed;
+		double m_RequestedVelocity;
 		double m_AutoLevelDelay; ///< The potential gimbal lock, and user rolling will trigger a delay for the autolevel (when enabled)
 		double m_HeadingSpeedScale; //used by auto pilot control to have slower turn speeds for way points
-		double m_rotVel_rad_s;
+		double m_rotAccel_rad_s;
 
 		//All input for turn pitch and roll apply to this, both the camera and ship need to align to it
 		double m_IntendedOrientation;
@@ -143,7 +143,7 @@ class Ship_2D : public Ship
 		Threshold_Averager<eThrustState,5> m_thrustState_Average;
 		eThrustState m_thrustState;
 		//double m_Last_AccDel;  ///< This monitors a previous AccDec session to determine when to reset the speed
-		double m_Last_RequestedSpeed;  ///< This monitors the last caught requested speed from a speed delta change
+		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
 
 		// When notifying everything about thrusters, we want to keep a bit of an averager
 		Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
