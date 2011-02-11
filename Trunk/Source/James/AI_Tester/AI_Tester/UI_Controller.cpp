@@ -359,7 +359,7 @@ void UI_Controller::Ship_AfterBurner_Thrust(bool on)
 void UI_Controller::Ship_Thrust(bool on)
 {	
 	if (on)
-		m_Ship_Keyboard_currAccel[1] = m_ship->ACCEL;
+		m_Ship_Keyboard_currAccel[1] = m_ship->GetAccelSpeed();
 	else
 		m_Ship_Keyboard_currAccel[1] = 0.0;
 }
@@ -367,7 +367,7 @@ void UI_Controller::Ship_Thrust(bool on)
 void UI_Controller::Ship_Brake(bool on)
 {	
 	if (on)
-		m_Ship_Keyboard_currAccel[1] = -m_ship->BRAKE;
+		m_Ship_Keyboard_currAccel[1] = -m_ship->GetBrakeSpeed();
 	else
 		m_Ship_Keyboard_currAccel[1] = 0.0;
 }
@@ -376,27 +376,27 @@ void UI_Controller::Ship_Thrust(double Intensity)
 {	
 	if (fabs(Intensity)<0.001)  //Weed out empty Joystick calls that have no effect
 		return;
-	m_Ship_JoyMouse_currAccel[1] = m_ship->ACCEL*Intensity;
+	m_Ship_JoyMouse_currAccel[1] = m_ship->GetAccelSpeed()*Intensity;
 }
 
 void UI_Controller::Ship_Brake(double Intensity)
 {	
 	if (fabs(Intensity)<0.001)  //Weed out empty Joystick calls that have no effect
 		return;
-	m_Ship_JoyMouse_currAccel[1] = -m_ship->BRAKE*Intensity;
+	m_Ship_JoyMouse_currAccel[1] = -m_ship->GetBrakeSpeed()*Intensity;
 }
 
 void UI_Controller::Ship_StrafeLeft(double Intensity)	
 {		
 	if (fabs(Intensity)<0.001)  //Weed out empty Joystick calls that have no effect
 		return;
-	m_Ship_JoyMouse_currAccel[0]=  -m_ship->STRAFE*Intensity;	
+	m_Ship_JoyMouse_currAccel[0]=  -m_ship->GetStrafeSpeed()*Intensity;	
 }
 void UI_Controller::Ship_StrafeRight(double Intensity)	
 {
 	if (fabs(Intensity)<0.001)  //Weed out empty Joystick calls that have no effect
 		return;
-	m_Ship_JoyMouse_currAccel[0]=  m_ship->STRAFE*Intensity;	
+	m_Ship_JoyMouse_currAccel[0]=  m_ship->GetStrafeSpeed()*Intensity;	
 }
 
 void UI_Controller::Ship_Turn(double dir,bool UseHeadingSpeed) 
@@ -404,12 +404,12 @@ void UI_Controller::Ship_Turn(double dir,bool UseHeadingSpeed)
 	if (fabs(dir)<0.001)  //Weed out empty Joystick calls that have no effect
 		return;
 	m_Ship_UseHeadingSpeed=UseHeadingSpeed;
-	m_Ship_JoyMouse_rotAcc_rad_s=(UseHeadingSpeed?dir*m_ship->dHeading:dir)*m_ship->Camera_Restraint;
+	m_Ship_JoyMouse_rotAcc_rad_s=(UseHeadingSpeed?dir*m_ship->GetHeadingSpeed():dir)*m_ship->GetCameraRestraintScaler();
 }
 
 void UI_Controller::Ship_Turn(Directions dir)
 {
-	m_Ship_Keyboard_rotAcc_rad_s=(double)dir*m_ship->dHeading*m_ship->Camera_Restraint;
+	m_Ship_Keyboard_rotAcc_rad_s=(double)dir*m_ship->GetHeadingSpeed()*m_ship->GetCameraRestraintScaler();
 	m_Ship_UseHeadingSpeed=true;
 }
 
@@ -623,25 +623,20 @@ void UI_Controller::UpdateController(double dTime_s)
 			double rotAcc=(m_Ship_Keyboard_rotAcc_rad_s+m_Ship_JoyMouse_rotAcc_rad_s);
 			//We may have same strange undesired flicker effect if the mouse and keyboard turns are used simultaneously! So if the keyboard is used, then
 			//the mouse will get ignored
-			m_ship->m_LockShipHeadingToOrientation=m_Ship_UseHeadingSpeed;
+			bool LockShipHeadingToOrientation=m_Ship_UseHeadingSpeed;
 
 			if (m_Ship_Keyboard_rotAcc_rad_s!=0) 
 			{
-				m_ship->m_LockShipHeadingToOrientation=true;
+				LockShipHeadingToOrientation=true;
 				rotAcc=m_Ship_Keyboard_rotAcc_rad_s;
 				m_Ship_UseHeadingSpeed=true;
 			}
 
-			m_ship->SetCurrentAngularAcceleration(rotAcc);
+			m_ship->SetCurrentAngularAcceleration(rotAcc,LockShipHeadingToOrientation);
 
 			//flush the JoyMouse rotation acceleration since it works on an additive nature
 			m_Ship_JoyMouse_rotAcc_rad_s=0.0;
 			m_Ship_JoyMouse_currAccel=osg::Vec2d(0.0,0.0);
-		}
-		else
-		{
-			// From Rick:  James, what does this do? Should we be setting member variables of another class directly?
-			m_ship->m_LockShipHeadingToOrientation=false;
 		}
 	}
 }

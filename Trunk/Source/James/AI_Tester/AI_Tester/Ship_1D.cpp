@@ -85,29 +85,16 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 
 void Ship_1D::UpdateIntendedPosition(double dTime_s)
 {
-	double Vel=0.0,VelControlled=0.0;
-	
-	//distribute the rotation velocity to the correct case
 	if (m_LockShipToPosition)
-		VelControlled=m_currAccel;
+		m_IntendedPosition+=m_currAccel;
 	else
-		Vel=m_currAccel;
-
-
-	m_IntendedPosition+=Vel;
-
-	double ForceToApply=m_IntendedPositionPhysics.GetForceFromVelocity(VelControlled,dTime_s);
-	//compute the restrained force here
-	ForceToApply=m_IntendedPositionPhysics.ComputeRestrainedForce(ForceToApply,MaxAccelForward*Mass,MaxAccelReverse*Mass,dTime_s);
-	m_IntendedPositionPhysics.ApplyFractionalForce(ForceToApply,dTime_s);
 	{
-		//Run physics update for displacement
-		double PositionDisplacement;
-		m_IntendedPositionPhysics.TimeChangeUpdate(dTime_s,PositionDisplacement);
-		m_IntendedPosition+=PositionDisplacement;
+		//Keep the intended position locked to the current position, since we are not managing it like we do in 2D/3D.
+		//once the mouse kicks in it will be in the correct starting place to switch modes
+		m_IntendedPosition=GetPos_m();
 	}
 }
-//////////////////////////////////////////////////////////////////////////
+
 
 void Ship_1D::TimeChange(double dTime_s)
 {
@@ -131,8 +118,8 @@ void Ship_1D::TimeChange(double dTime_s)
 	double AccRestraintNegative=MaxAccelReverse;
 
 	//Unlike in 2D the intended position and velocity control now resides in the same vector to apply force.  To implement, we'll branch depending on
-	//which last UI control was used (i.e. LockShipToPosition) so manual controls like joystick manipulate the speed controls, while automated controls
-	//use the intended branch.  I could clean up the UpdateIntendedPosition with this change, but for now I'll keep the functionality intact.
+	//which last LockShipToPosition was used.  Typically speaking the mouse, AI, or SetIntendedPosition() will branch to the non locked mode, while the
+	//joystick and keyboard will conduct the locked mode
 	if (m_LockShipToPosition)
 	{
 		if (!manualMode)
@@ -230,8 +217,7 @@ void Ship_1D::TimeChange(double dTime_s)
 			double DistanceToUse=posDisplacement_m;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			//In this case we are locked to position so the restraints were already added
-			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,-1,-1,dTime_s,MatchVel);
+			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVel);
 		}
 
 		#ifndef __DisableSpeedControl__

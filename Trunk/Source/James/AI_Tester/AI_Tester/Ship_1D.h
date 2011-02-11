@@ -12,7 +12,18 @@ class Ship_1D : public Entity1D
 		void Stop(){SetRequestedVelocity(0.0);}
 		void SetRequestedVelocity(double Velocity);
 		double GetRequestedVelocity(){return m_RequestedVelocity;}
-		void SetCurrentLinearAcceleration(double Acceleration) {m_currAccel=Acceleration;}
+
+		/// \param LockShipHeadingToPosition for this given time slice if this is true the intended orientation is restrained
+		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
+		/// is not restrained and the ship applies its restraints to catch up to the orientation. \note this defaults to true since this is 
+		/// most likely never going to be used with a mouse or AI
+		void SetCurrentLinearAcceleration(double Acceleration,bool LockShipToPosition=true) 
+		{ m_LockShipToPosition=LockShipToPosition,m_currAccel=Acceleration;
+		}
+		/// This is like setting a way point since there is one dimension there is only one setting to use here
+		void SetIntendedPosition(double Position) 
+		{ m_LockShipToPosition=false,m_IntendedPosition=Position;
+		}
 
 		// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedPosition;}
@@ -63,7 +74,8 @@ class Ship_1D : public Entity1D
 		double m_currAccel;  //This is the immediate request for thruster levels
 
 		bool m_SimFlightMode;  ///< If true auto strafing will occur to keep ship in line with its position
-		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
 
 		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity  from a speed delta change
+	private:
+		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
 };
