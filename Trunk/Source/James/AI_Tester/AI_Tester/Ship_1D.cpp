@@ -112,7 +112,7 @@ void Ship_1D::UpdateIntendedPosition(double dTime_s)
 void Ship_1D::TimeChange(double dTime_s)
 {
 
-	// Find the current speed and use to determine the flight characteristics we will WANT to us
+	// Find the current velocity and use to determine the flight characteristics we will WANT to us
 	double LocalVelocity=m_Physics.GetLinearVelocity();
 	double currFwdVel = LocalVelocity;
 	bool manualMode = !((m_SimFlightMode)&&(m_currAccel==0));
@@ -126,25 +126,11 @@ void Ship_1D::TimeChange(double dTime_s)
 		posDisplacement_m=m_IntendedPosition-GetPos_m();
 	}
 
-	//Note: We use -1 for roll here to get a great effect on being in perfect sync to the intended orientation 
-	//(provided the user doesn't exceed the turning speed of the roll)
-	double Ships_ForceRestraint=MaxAccelForward*Mass;
-	{
-		//This will increase the ships speed if it starts to lag further behind
-		#ifndef __DisableShipSpeedBoost__
-		//For joystick and keyboard we can use -1 to lock to the intended quat
-		if (m_LockShipToPosition)
-		{
-			Ships_ForceRestraint=-1.0;  //we are locked to the orientation!
-		}
-		#endif
-	}
-
 	//Apply the restraints now... I need this to compute my roll offset
 	double AccRestraintPositive=MaxAccelForward;
 	double AccRestraintNegative=MaxAccelReverse;
 
-	//Unlike in 2D the intended position and speed control now reside in the same velocity to apply force.  To implement, we'll branch depending on
+	//Unlike in 2D the intended position and velocity control now resides in the same vector to apply force.  To implement, we'll branch depending on
 	//which last UI control was used (i.e. LockShipToPosition) so manual controls like joystick manipulate the speed controls, while automated controls
 	//use the intended branch.  I could clean up the UpdateIntendedPosition with this change, but for now I'll keep the functionality intact.
 	if (m_LockShipToPosition)
@@ -155,69 +141,68 @@ void Ship_1D::TimeChange(double dTime_s)
 			//The most undesired effect is that when no delta is applied neither should any extra force be applied.  There is indeed a distinction
 			//between cruise control (e.g. slider) and using a Key button entry in this regard.  The else case here keeps these more separated where
 			//you are either using one mode or the other
-			double SpeedDelta=m_currAccel*dTime_s;
+			double VelocityDelta=m_currAccel*dTime_s;
 
-			bool UsingRequestedSpeed=false;
+			bool UsingRequestedVelocity=false;
 			bool YawPitchActive=(fabs(posDisplacement_m)>0.001);
 
-			//Note: m_RequestedVelocity is not altered with the speed delta, but it will keep up to date
-			if (SpeedDelta!=0) //if user is changing his adjustments then reset the speed to current velocity
+			//Note: m_RequestedVelocity is not altered with the velocity delta, but it will keep up to date
+			if (VelocityDelta!=0) //if user is changing his adjustments then reset the velocity to current velocity
 			{
 				if (!YawPitchActive)
-					m_RequestedVelocity=m_Last_RequestedVelocity=currFwdVel+SpeedDelta;
+					m_RequestedVelocity=m_Last_RequestedVelocity=currFwdVel+VelocityDelta;
 				else
 				{
 					//If speeding/braking during hard turns do not use currFwdVel as the centripetal forces will lower it
-					m_RequestedVelocity+=SpeedDelta;
+					m_RequestedVelocity+=VelocityDelta;
 					m_Last_RequestedVelocity=m_RequestedVelocity;
-					UsingRequestedSpeed=true;
+					UsingRequestedVelocity=true;
 				}
 			}
 			else
 			{
-				//If there is any turning while no deltas are on... kick on the requested speed
+				//If there is any turning while no deltas are on... kick on the requested velocity
 				if (YawPitchActive)
 				{
-					m_Last_RequestedVelocity=-1.0;  //active the requested speed mode by setting this to -1 (this will keep it on until a new Speed delta is used)
-					UsingRequestedSpeed=true;
+					m_Last_RequestedVelocity=-1.0;  //active the requested velocity mode by setting this to -1 (this will keep it on until a new velocity delta is used)
+					UsingRequestedVelocity=true;
 				}
 				else
-					UsingRequestedSpeed=(m_RequestedVelocity!=m_Last_RequestedVelocity);
+					UsingRequestedVelocity=(m_RequestedVelocity!=m_Last_RequestedVelocity);
 			}
 
-			//Just transfer the acceleration directly into our speed to use variable
-			double SpeedToUse=(UsingRequestedSpeed)? m_RequestedVelocity:currFwdVel+SpeedDelta;
+			//Just transfer the acceleration directly into our velocity to use variable
+			double VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:currFwdVel+VelocityDelta;
 
 
 			#ifndef __DisableSpeedControl__
 			{
 				if (m_currAccel<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
 				{
-					if ((SpeedToUse) < -MAX_SPEED)
+					if ((VelocityToUse) < -MAX_SPEED)
 					{
-						SpeedToUse = -MAX_SPEED;
+						m_RequestedVelocity = VelocityToUse = -MAX_SPEED;
 						m_currAccel=0.0;
 					}
 				}
 				else 
 				{
 					double MaxSpeed=MAX_SPEED;
-					if ((SpeedToUse) > MaxSpeed)
+					if ((VelocityToUse) > MaxSpeed)
 					{
-						SpeedToUse=MaxSpeed;
-						m_RequestedVelocity=MaxSpeed;
+						m_RequestedVelocity = VelocityToUse=MaxSpeed;
 						m_currAccel=0.0;
 					}
 				}
 			}
 			#endif
 
-			if (UsingRequestedSpeed)
-				ForceToApply=m_Physics.GetForceFromVelocity(SpeedToUse,dTime_s);
+			if (UsingRequestedVelocity)
+				ForceToApply=m_Physics.GetForceFromVelocity(VelocityToUse,dTime_s);
 			else
 				ForceToApply=m_Physics.GetForceFromVelocity(currFwdVel,dTime_s);  
 
-			if (!UsingRequestedSpeed)
+			if (!UsingRequestedVelocity)
 				ForceToApply+=m_currAccel * Mass;
 		}
 		else   //Manual mode
@@ -225,10 +210,10 @@ void Ship_1D::TimeChange(double dTime_s)
 			#ifndef __DisableSpeedControl__
 			{
 				{
-					double SpeedDelta=m_currAccel*dTime_s;
-					if ((LocalVelocity+SpeedDelta>MAX_SPEED)&&(m_currAccel>0))
+					double VelocityDelta=m_currAccel*dTime_s;
+					if ((LocalVelocity+VelocityDelta>MAX_SPEED)&&(m_currAccel>0))
 							m_currAccel=0.0;
-					else if ((LocalVelocity+SpeedDelta<-MAX_SPEED)&&(m_currAccel<0))
+					else if ((LocalVelocity+VelocityDelta<-MAX_SPEED)&&(m_currAccel<0))
 						m_currAccel=0.0;
 				}
 			}
