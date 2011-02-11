@@ -230,7 +230,8 @@ void Ship_1D::TimeChange(double dTime_s)
 			double DistanceToUse=posDisplacement_m;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVel);
+			//In this case we are locked to position so the restraints were already added
+			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,-1,-1,dTime_s,MatchVel);
 		}
 
 		#ifndef __DisableSpeedControl__
