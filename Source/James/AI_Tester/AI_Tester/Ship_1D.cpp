@@ -30,7 +30,7 @@ void Ship_1D::ResetPos()
 	__super::ResetPos();
 
 	m_RequestedVelocity = m_currAccel =0.0;
-	m_Last_RequestedVelocity=-1.0;
+	m_Last_RequestedVelocity=0.0;
 	m_IntendedPosition=0.0;
 	m_IntendedPositionPhysics.ResetVectors();
 	//m_Physics.ResetVectors(); called from entity 1D's reset
@@ -52,6 +52,7 @@ void Ship_1D::SetSimFlightMode(bool SimFlightMode)
 void Ship_1D::SetRequestedVelocity(double Velocity)
 {
 	SetSimFlightMode(true);
+	m_LockShipToPosition=true;  //unlike in 2D/3D setting this has an impact on the locking management
 	if (Velocity>0.0)
 		m_RequestedVelocity=MIN(Velocity,GetMaxSpeed());
 	else
@@ -70,11 +71,11 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 	else
 	{
 		MAX_SPEED = 1.0;
-		ACCEL = 0.25;
-		BRAKE = 0.25;
+		ACCEL = 1.0;
+		BRAKE = 1.0;
 
-		MaxAccelForward=0.25;
-		MaxAccelReverse=0.25;
+		MaxAccelForward=1.0;
+		MaxAccelReverse=1.0;
 	}
 	Mass  = m_Physics.GetMass();
 
@@ -86,13 +87,13 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 void Ship_1D::UpdateIntendedPosition(double dTime_s)
 {
 	if (m_LockShipToPosition)
-		m_IntendedPosition+=m_currAccel;
-	else
 	{
 		//Keep the intended position locked to the current position, since we are not managing it like we do in 2D/3D.
 		//once the mouse kicks in it will be in the correct starting place to switch modes
 		m_IntendedPosition=GetPos_m();
 	}
+	else
+		m_IntendedPosition+=m_currAccel;
 }
 
 
@@ -131,32 +132,12 @@ void Ship_1D::TimeChange(double dTime_s)
 			double VelocityDelta=m_currAccel*dTime_s;
 
 			bool UsingRequestedVelocity=false;
-			bool YawPitchActive=(fabs(posDisplacement_m)>0.001);
 
 			//Note: m_RequestedVelocity is not altered with the velocity delta, but it will keep up to date
 			if (VelocityDelta!=0) //if user is changing his adjustments then reset the velocity to current velocity
-			{
-				if (!YawPitchActive)
-					m_RequestedVelocity=m_Last_RequestedVelocity=currFwdVel+VelocityDelta;
-				else
-				{
-					//If speeding/braking during hard turns do not use currFwdVel as the centripetal forces will lower it
-					m_RequestedVelocity+=VelocityDelta;
-					m_Last_RequestedVelocity=m_RequestedVelocity;
-					UsingRequestedVelocity=true;
-				}
-			}
+				m_RequestedVelocity=m_Last_RequestedVelocity=currFwdVel+VelocityDelta;
 			else
-			{
-				//If there is any turning while no deltas are on... kick on the requested velocity
-				if (YawPitchActive)
-				{
-					m_Last_RequestedVelocity=-1.0;  //active the requested velocity mode by setting this to -1 (this will keep it on until a new velocity delta is used)
-					UsingRequestedVelocity=true;
-				}
-				else
-					UsingRequestedVelocity=(m_RequestedVelocity!=m_Last_RequestedVelocity);
-			}
+				UsingRequestedVelocity=(m_RequestedVelocity!=m_Last_RequestedVelocity);
 
 			//Just transfer the acceleration directly into our velocity to use variable
 			double VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:currFwdVel+VelocityDelta;

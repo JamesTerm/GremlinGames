@@ -36,6 +36,10 @@ class Ship_1D : public Entity1D
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
 
+		//The UI controller will call this when attaching or detaching control.  The Bind parameter will either bind or unbind.  Since these are 
+		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
+		//should be no member variables needed to implement the bindings
+		virtual void BindAdditionalEventControls(bool Bind) {}
 	protected:
 		///This will apply turn pitch and roll to the intended orientation
 		void UpdateIntendedPosition(double dTime_s);

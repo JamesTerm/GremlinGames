@@ -282,6 +282,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 
 		Flush_AI_BaseResources();
+		m_ship->BindAdditionalEventControls(false);
 	}
 	m_Base=controller;
 	if (m_Base)
@@ -322,6 +323,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 
 		// Tell the HUD the name of this ship
 		//m_HUD_UI->m_addnText = m_ship->GetName();
+
+		m_ship->BindAdditionalEventControls(true);
 	}
 }
 
