@@ -28,7 +28,13 @@ class Ship_2D : public Ship
 		double GetRequestedVelocity(){return m_RequestedVelocity;}
 		void FireAfterburner() {SetRequestedVelocity(GetMaxSpeed());}
 		void SetCurrentLinearAcceleration(const osg::Vec2d &Acceleration) {m_currAccel=Acceleration;}
-		void SetCurrentAngularAcceleration(double Acceleration) {m_rotAccel_rad_s=Acceleration;}
+
+		/// \param LockShipHeadingToOrientation for this given time slice if this is true the intended orientation is restrained
+		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
+		/// is not restrained and the ship applies its restraints to catch up to the orientation
+		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation) 
+		{	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation,m_rotAccel_rad_s=Acceleration;
+		}
 
 		// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
@@ -49,6 +55,11 @@ class Ship_2D : public Ship
 
 		double GetMaxSpeed() const		    {return MAX_SPEED;}
 		double GetEngaged_Max_Speed() const {return ENGAGED_MAX_SPEED;}
+		double GetStrafeSpeed() const		{return STRAFE;}
+		double GetAccelSpeed() const		{return ACCEL;}
+		double GetBrakeSpeed() const		{return BRAKE;}
+		double GetCameraRestraintScaler() const		{return Camera_Restraint;}
+		double GetHeadingSpeed() const		{ return dHeading;}
 
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
@@ -93,7 +104,6 @@ class Ship_2D : public Ship
 		virtual AI_Base_Controller *Create_Controller();
 
 		friend AI_Base_Controller;
-		friend UI_Controller;
 		friend Ship_Properties;
 
 		AI_Base_Controller* m_controller;
@@ -138,8 +148,6 @@ class Ship_2D : public Ship
 		bool m_StabilizeRotation;  ///< If true (should always be true) this will fire reverse thrusters to stabilize rotation when idle
 		bool m_CoordinateTurns;   ///< Most of the time this is true, but in some cases (e.g. Joystick w/rudder pedals) it may be false
 
-		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
-
 		Threshold_Averager<eThrustState,5> m_thrustState_Average;
 		eThrustState m_thrustState;
 		//double m_Last_AccDel;  ///< This monitors a previous AccDec session to determine when to reset the speed
@@ -148,6 +156,9 @@ class Ship_2D : public Ship
 		// When notifying everything about thrusters, we want to keep a bit of an averager
 		Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
 		Blend_Averager<osg::Vec3d> m_TorqueReported_Averager;
+	private:
+		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
+
 };
 
 class Physics_Tester : public Ship

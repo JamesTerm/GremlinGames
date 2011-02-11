@@ -68,7 +68,7 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 	double AngularDistance=m_ship.m_IntendedOrientationPhysics.ComputeAngularDistance(VectorOffset);
 	//printf("\r %f          ",RAD_2_DEG(AngularDistance));
 
-	m_ship.SetCurrentAngularAcceleration(-AngularDistance);
+	m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
 
 	//first negotiate the max speed given the power
 	double MaxSpeed=m_ship.ENGAGED_MAX_SPEED;
