@@ -48,7 +48,7 @@ class UI_Controller
 		void Slider_Accel(double Intensity);
 		void Brake(bool on){if (AreControlsDisabled() && on) return; Ship_Brake(on);}
 		void Stop() {if (AreControlsDisabled()) return; m_ship->Stop();}
-		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedSpeed(speed);}
+		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedVelocity(speed);}
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
 		virtual void ResetPos();

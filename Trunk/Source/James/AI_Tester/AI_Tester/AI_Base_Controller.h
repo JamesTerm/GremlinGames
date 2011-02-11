@@ -24,7 +24,7 @@ class AI_Base_Controller
 		bool HasAutoPilotRoute() {return true;}
 		bool GetCanUserPilot() {return true;}
 
-		void SetShipSpeed(double speed_mps) {m_ship.SetRequestedSpeed(speed_mps);}
+		void SetShipVelocity(double velocity_mps) {m_ship.SetRequestedVelocity(velocity_mps);}
 
 		/// \param TrajectoryPoint- This is the point that your nose of your ship will orient to from its current position (usually the same as PositionPoint)
 		/// \param PositionPoint- This is the point where your ship will be to position to (Usually the same as TrajectoryPoint)

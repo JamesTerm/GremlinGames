@@ -68,7 +68,7 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 	double AngularDistance=m_ship.m_IntendedOrientationPhysics.ComputeAngularDistance(VectorOffset);
 	//printf("\r %f          ",RAD_2_DEG(AngularDistance));
 
-	m_ship.SetCurrentAngularVelocity(-AngularDistance);
+	m_ship.SetCurrentAngularAcceleration(-AngularDistance);
 
 	//first negotiate the max speed given the power
 	double MaxSpeed=m_ship.ENGAGED_MAX_SPEED;
@@ -81,7 +81,7 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 			//DEBUG_AUTO_PILOT_SPEED("\rRamora Speeds: Max=%4.1f, Power = %3.1f, Curr = %3.1f",MaxSpeed, power, m_ship.m_Physics.GetLinearVelocity().length());
 		}
 		else if (power>1.0)
-			SetShipSpeed(MIN(power, MaxSpeed));
+			SetShipVelocity(MIN(power, MaxSpeed));
 	}
 
 	if (matchVel)
@@ -108,9 +108,9 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 
 			//Now we simply use the positive forward thruster 
 			if (LocalVelocity[1]>0.0)  //only forward not reverse...
-				SetShipSpeed(MIN(LocalVelocity[1],ScaledSpeed));
+				SetShipVelocity(MIN(LocalVelocity[1],ScaledSpeed));
 			else
-				SetShipSpeed(0);  //We do not want to contribute forces in the wrong direction!
+				SetShipVelocity(MAX(LocalVelocity[1],-ScaledSpeed));  //Fortunately the ships do not go in reverse that much  :)
 		}
 		
 		else
@@ -136,7 +136,7 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 		}
 	}
 	else
-		SetShipSpeed(ScaledSpeed);
+		SetShipVelocity(ScaledSpeed);
 }
 
 //TODO this needs to be somewhat re-factored into states from which it will decide to execute
@@ -196,7 +196,7 @@ Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
 		else
 		{
 			//for now just stop, but we may want to have a way to identify if we are in a series, perhaps the derived class overrides this and can be more intelligent
-			m_Controller->SetShipSpeed(0.0);
+			m_Controller->SetShipVelocity(0.0);
 			m_Status=eCompleted;
 		}
 	}

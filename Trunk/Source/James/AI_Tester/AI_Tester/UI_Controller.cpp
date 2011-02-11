@@ -352,7 +352,7 @@ void UI_Controller::Ship_AfterBurner_Thrust(bool on)
 		//osg::Vec2d LocalVelocity(m_ship->GetAtt_quat().conj() * m_ship->GetPhysics().GetLinearVelocity());
 		osg::Vec2d LocalVelocity=GlobalToLocal(m_ship->GetAtt_r(),m_ship->GetPhysics().GetLinearVelocity());
 		double currSpeed = LocalVelocity[1];
-		m_ship->SetRequestedSpeed(MIN(currSpeed, m_ship->GetEngaged_Max_Speed()));
+		m_ship->SetRequestedVelocity(MIN(currSpeed, m_ship->GetEngaged_Max_Speed()));
 	}
 }
 
@@ -525,7 +525,7 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
 				{
-					m_ship->SetRequestedSpeed(SpeedCalibrated);
+					m_ship->SetRequestedVelocity(SpeedCalibrated);
 					m_CruiseSpeed=SpeedCalibrated;
 				}
 			}
@@ -549,7 +549,7 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
 				{
-					m_ship->SetRequestedSpeed(SpeedCalibrated);
+					m_ship->SetRequestedVelocity(SpeedCalibrated);
 					m_CruiseSpeed=SpeedCalibrated;
 				}
 			}
@@ -632,7 +632,7 @@ void UI_Controller::UpdateController(double dTime_s)
 				m_Ship_UseHeadingSpeed=true;
 			}
 
-			m_ship->SetCurrentAngularVelocity(rotVel);
+			m_ship->SetCurrentAngularAcceleration(rotVel);
 
 			//flush the JoyMouse rotation vec3 since it works on an additive nature
 			m_Ship_JoyMouse_rotVel_rad_s=0.0;
