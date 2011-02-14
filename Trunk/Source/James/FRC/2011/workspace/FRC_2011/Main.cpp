@@ -34,8 +34,8 @@ class SetUp_Manager
 		Framework::Base::EventMap m_EventMap;
 		UI_Controller *m_pUI;
 	public:
-		SetUp_Manager() : m_Joystick(1,0), //for now 1 joystick starting at port 0 (i.e. no offset)
-			m_JoyBinder(m_Joystick),m_pRobot(NULL),m_pUI(NULL)
+		SetUp_Manager(bool UseSafety) : m_Joystick(1,0), //for now 1 joystick starting at port 0 (i.e. no offset)
+			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
 			m_Control.Initialize(&m_RobotProps);
 			m_pRobot = new FRC_2011_Robot("FRC2011_Robot",&m_Control);
@@ -91,7 +91,7 @@ class SetUp_Autonomous : public SetUp_Manager
 		bool m_StillRunning;
 		IEvent::HandlerList ehl;
 	public:
-		SetUp_Autonomous()
+		SetUp_Autonomous() : SetUp_Manager(false)  //autonomous mode cannot have safety on
 		{
 			m_pUI->SetAutoPilot(true);  //we are not driving the robot
 			//Now to set up our goal
@@ -173,7 +173,7 @@ public:
 		}
 		else
 		{
-			SetUp_Manager main;
+			SetUp_Manager main(true);  //use false to disable safety
 			double tm = GetTime();
 			while (IsOperatorControl())
 			{
