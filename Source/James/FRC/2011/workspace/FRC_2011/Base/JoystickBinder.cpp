@@ -203,23 +203,18 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 							if (AnalogEvents)
 							{
 								//Now to use the attributes to tweak the value
-								if (key.isSquared)
-								{
-									//const double YSensitivity=0.01;
-									double Temp=Value*Value;
-									Temp*=key.Multiplier; //not sure if this is useful but is added for completeness
-									if (Temp<key.FilterRange) 
-										Temp=0.0;
+								//First evaluate dead zone range... if out of range subtract out the offset for no loss in precision
+								//The /(1.0-filter range) will restore the full range
+								
+								double Temp=fabs(Value); //take out the sign... put it back in the end
+								Temp=(Temp>=key.FilterRange) ? Temp-key.FilterRange:0.0; 
 
-									//Now to restore the sign
-									Value=(Value<0.0)?-Temp:Temp;
-								}
-								else
-								{
-									Value*=key.Multiplier;
-									if (fabs(Value)<key.FilterRange)
-										Value=0.0;
-								}
+								Temp=key.Multiplier*(Temp/(1.0-key.FilterRange)); //apply scale first then 
+								if (key.isSquared) Temp*=Temp;  //square it if it is squared
+
+								//Now to restore the sign
+								Value=(Value<0.0)?-Temp:Temp;
+	
 								std::vector<std::string>::iterator pos;
 								for (pos = AnalogEvents->begin(); pos != AnalogEvents->end(); ++pos)
 									m_controlledEventMap->EventValue_Map[*pos].Fire(key.IsFlipped?-Value:Value);
@@ -258,6 +253,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 								m_UseDoubleClickBindings[i]=iter;
 						}
 					}
+
 					//TODO see if there is a more proper std method to test for NULL (e.g. empty, which doesn't work here)
 					if (!m_UseDoubleClickBindings[i]._Mynode())
 					{
@@ -271,7 +267,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 					}
 					else
 						iter=m_UseDoubleClickBindings[i];  //for release case (arguably would check for release here)
-					
+
 					//If we found any events for this button
 					if (iter!=m_JoyButtonBindings.end())
 					{
