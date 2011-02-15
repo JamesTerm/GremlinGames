@@ -69,8 +69,6 @@ Ship_2D::Ship_2D(const char EntityName[]) : Entity2D(EntityName),
 
 	m_Physics.SetUsingAccelerationRate(!g_DisableEngineRampUp2);
 
-	//TODO make the AI Controller here once we get to that point
-	m_controller = new AI_Base_Controller(*this);
 	ResetPos();
 }
 
@@ -85,10 +83,10 @@ void Ship_2D::ResetPos()
 {
 	__super::ResetPos();
 
-	m_RequestedSpeed = 0.0;
+	m_RequestedVelocity = 0.0;
 	//m_Last_AccDel = 0.0;
-	m_Last_RequestedSpeed=-1.0;
-	m_rotVel_rad_s = m_rotDisplacement_rad = 0.0;
+	m_Last_RequestedVelocity=-1.0;
+	m_rotAccel_rad_s = m_rotDisplacement_rad = 0.0;
 	m_currAccel =	Vec2d(0,0);
 	m_IntendedOrientation=GetAtt_r();
 	m_IntendedOrientationPhysics.ResetVectors();
@@ -100,12 +98,16 @@ void Ship_2D::ResetPos()
 void Ship_2D::SetSimFlightMode(bool SimFlightMode)	
 {
 	//It seems that some people want/need to call this function repeatedly so I have included a valve branch here to prevent the debug flooding
-	//And to not do extra work on the m_RequestedSpeed.
+	//And to not do extra work on the m_RequestedVelocity.
 	if (m_SimFlightMode!=SimFlightMode)
 	{
-		m_RequestedSpeed=m_Physics.GetLinearVelocity().length();
+		//Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+		//m_RequestedVelocity=LocalVelocity[1];
+		//unfortunately a slide turn maneuver requires this, but fortunately is is for UI.  This is not perfect if the user intended to go backwards
+		//but that would not be something desirable
+		m_RequestedVelocity=m_Physics.GetLinearVelocity().length(); 
 		m_SimFlightMode=SimFlightMode;	
-		DebugOutput("SimFlightMode=%d\n",SimFlightMode);
+		//DebugOutput("SimFlightMode=%d\n",SimFlightMode);
 	}
 }
 
@@ -122,11 +124,15 @@ Ship_2D::eThrustState Ship_2D::SetThrustState(Ship_2D::eThrustState ts)
 	return m_thrustState;
 };
 
-void Ship_2D::SetRequestedSpeed(double Speed)
+void Ship_2D::SetRequestedVelocity(double Velocity)
 {
 	//assert(IsLocallyControlled());
 	SetSimFlightMode(true);
-	m_RequestedSpeed=MIN(Speed,GetMaxSpeed());
+	if (Velocity>0.0)
+		m_RequestedVelocity=MIN(Velocity,GetMaxSpeed());
+	else
+		m_RequestedVelocity=MAX(Velocity,-GetMaxSpeed());
+
 }
 
 
@@ -180,13 +186,19 @@ void Ship_2D::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalFo
 void Ship_2D::TestPosAtt_Delta(const Vec2d pos_m, double att, double dTime_s)
 {
 	#if 0
-		if ((m_controller)&&(m_controller->IsUIControlled()))
+		if (m_controller->IsUIControlled())
 			DOUT1 ("%f %f %f %f",dTime_s,pos_m[0],pos_m[1],pos_m[2]);
 	#endif
 }
 
+AI_Base_Controller *Ship_2D::Create_Controller() 
+{
+	return new AI_Base_Controller(*this);
+}
+
 void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *props)
 {
+	m_controller = Create_Controller();
 	__super::Initialize(em,props);
 	const Ship_Properties *ship_props=static_cast<const Ship_Properties *>(props);
 	if (ship_props)
@@ -195,7 +207,6 @@ void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *
 	}
 	else
 	{
-		//TODO this is where we hard code the values!!
 		double Scale=0.2;  //we must scale everything down to see on the view
 		MAX_SPEED = 2000.0 * Scale;
 		ENGAGED_MAX_SPEED = 400.0 * Scale;
@@ -252,9 +263,9 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 	
 	//distribute the rotation velocity to the correct case
 	if (m_LockShipHeadingToOrientation)
-		rotVelControlled=m_rotVel_rad_s;
+		rotVelControlled=m_rotAccel_rad_s;
 	else
-		rotVel=m_rotVel_rad_s;
+		rotVel=m_rotAccel_rad_s;
 
 	//Make sure the look ahead is within a reasonable distance from the ship; otherwise the quat delta's may give error as to yaw and pitch corrections
 	//To make this look smooth we will compute it as resistance
@@ -268,7 +279,7 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 	}
 	#endif
 
-	// From Rick: James, Why are we not multiplying by time here?  I think the m_rotVel_rad_s might be artificially high
+	// From Rick: James, Why are we not multiplying by time here?  I think the m_rotAccel_rad_s might be artificially high
 	// From James: rotVel represents the delta to use at that given moment and should be artificially high as this gives you the
 	// "snappiness" feeling when looking around this the mouse
 	m_IntendedOrientation+=rotVel*YawResistance;
@@ -283,21 +294,27 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 		m_IntendedOrientation+=RotationDisplacement*YawResistance;
 	}
 }
+
+void Ship_2D::SetIntendedOrientation(double IntendedOrientation) 
+{
+	m_LockShipHeadingToOrientation=false; //this must be false for this to work (if not already)
+	m_IntendedOrientation=IntendedOrientation;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 void Ship_2D::TimeChange(double dTime_s)
 {
 	// Update my controller
-	if (m_controller)
-		m_controller->UpdateController(dTime_s);
+	m_controller->UpdateController(dTime_s);
 
-	// Find the current speed and use to determine the flight characteristics we will WANT to us
+	// Find the current velocity and use to determine the flight characteristics we will WANT to us
 	//osg::Vec3d LocalVelocity(GetAtt_quat().conj() * m_Physics.GetLinearVelocity());
 	Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
-	double currSpeed = LocalVelocity[1];
+	double currVelocity = LocalVelocity[1];
 	bool manualMode = !((m_SimFlightMode)&&(m_currAccel[0]==0));
-	bool afterBurnerOn = (m_RequestedSpeed > GetEngaged_Max_Speed());
-	bool afterBurnerBrakeOn = (currSpeed > GetEngaged_Max_Speed());
+	bool afterBurnerOn = (m_RequestedVelocity > GetEngaged_Max_Speed());
+	bool afterBurnerBrakeOn = (fabs(currVelocity) > GetEngaged_Max_Speed());
 	//const FlightCharacteristics& currFC((afterBurnerOn||afterBurnerBrakeOn) ? Afterburner_Characteristics : GetFlightCharacteristics());
 
 	Vec2d ForceToApply;
@@ -343,49 +360,52 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	if (!manualMode)
 	{
-		//This first system combined the speed request and the accel delta's as one but this runs into undesired effects with the accel deltas
+		//This first system combined the velocity request and the accel delta's as one but this runs into undesired effects with the accel deltas
 		//The most undesired effect is that when no delta is applied neither should any extra force be applied.  There is indeed a distinction
 		//between cruise control (e.g. slider) and using a Key button entry in this regard.  The else case here keeps these more separated where
 		//you are either using one mode or the other
-		double SpeedDelta=m_currAccel[1]*dTime_s;
+		double VelocityDelta=m_currAccel[1]*dTime_s;
 
-		bool UsingRequestedSpeed=false;
+		bool UsingRequestedVelocity=false;
 		bool YawPitchActive=(fabs(m_rotDisplacement_rad)>0.001);
 
-		//Note: m_RequestedSpeed is not altered with the speed delta, but it will keep up to date
-		if (SpeedDelta!=0) //if user is changing his adjustments then reset the speed to current velocity
+		//Note: m_RequestedVelocity is not altered with the velocity delta, but it will keep up to date
+		if (VelocityDelta!=0) //if user is changing his adjustments then reset the velocity to current velocity
 		{
 			if (!YawPitchActive)
-				m_RequestedSpeed=m_Last_RequestedSpeed=currSpeed+SpeedDelta;
+				m_RequestedVelocity=m_Last_RequestedVelocity=currVelocity+VelocityDelta;
 			else
 			{
-				//If speeding/braking during hard turns do not use currSpeed as the centripetal forces will lower it
-				m_RequestedSpeed+=SpeedDelta;
-				m_Last_RequestedSpeed=m_RequestedSpeed;
-				UsingRequestedSpeed=true;
+				//If speeding/braking during hard turns do not use currVelocity as the centripetal forces will lower it
+				m_RequestedVelocity+=VelocityDelta;
+				m_Last_RequestedVelocity=m_RequestedVelocity;
+				UsingRequestedVelocity=true;
 			}
 		}
 		else
 		{
-			//If there is any turning while no deltas are on... kick on the requested speed
+			//If there is any turning while no deltas are on... kick on the requested velocity
 			if (YawPitchActive)
 			{
-				m_Last_RequestedSpeed=-1.0;  //active the requested speed mode by setting this to -1 (this will keep it on until a new Speed delta is used)
-				UsingRequestedSpeed=true;
+				//active the requested velocity mode by setting this to 0 (this will keep it on until a new velocity delta is used)
+				//TODO work out a new system for resetting this I cannot use zero, but -1 is not correct either since we can use
+				//negative direction
+				m_Last_RequestedVelocity=-1.0;  
+				UsingRequestedVelocity=true;
 			}
 			else
-				UsingRequestedSpeed=(m_RequestedSpeed!=m_Last_RequestedSpeed);
+				UsingRequestedVelocity=(m_RequestedVelocity!=m_Last_RequestedVelocity);
 		}
 
-		//Just transfer the acceleration directly into our speed to use variable
-		double SpeedToUse=(UsingRequestedSpeed)? m_RequestedSpeed:currSpeed+SpeedDelta;
+		//Just transfer the acceleration directly into our velocity to use variable
+		double VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:currVelocity+VelocityDelta;
 
 		#if 0
 		if (stricmp(GetName().c_str(),"Q33_2")==0)
 		{
-			//DOUT2("%f %f %f",m_RequestedSpeed,m_Last_RequestedSpeed,m_RequestedSpeed-m_Last_RequestedSpeed);
-			//DOUT2("%f %f %f",m_RequestedSpeed,currSpeed,m_RequestedSpeed-currSpeed);
-			//DOUT3("%f",SpeedDelta);
+			//DOUT2("%f %f %f",m_RequestedVelocity,m_Last_RequestedVelocity,m_RequestedVelocity-m_Last_RequestedVelocity);
+			//DOUT2("%f %f %f",m_RequestedVelocity,currVelocity,m_RequestedVelocity-currVelocity);
+			//DOUT3("%f",VelocityDelta);
 		}
 		#endif
 
@@ -393,19 +413,18 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			if (m_currAccel[1]<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
 			{
-				if ((SpeedToUse) < -ENGAGED_MAX_SPEED)
+				if ((VelocityToUse) < -ENGAGED_MAX_SPEED)
 				{
-					SpeedToUse = -ENGAGED_MAX_SPEED;
+					m_RequestedVelocity = VelocityToUse = -ENGAGED_MAX_SPEED;
 					m_currAccel[1]=0.0;
 				}
 			}
 			else 
 			{
 				double MaxSpeed=afterBurnerOn?MAX_SPEED:ENGAGED_MAX_SPEED;
-				if ((SpeedToUse) > MaxSpeed)
+				if ((VelocityToUse) > MaxSpeed)
 				{
-					SpeedToUse=MaxSpeed;
-					m_RequestedSpeed=MaxSpeed;
+					m_RequestedVelocity=VelocityToUse=MaxSpeed;
 					m_currAccel[1]=0.0;
 				}
 			}
@@ -413,19 +432,19 @@ void Ship_2D::TimeChange(double dTime_s)
 		#endif
 
 		Vec2d GlobalForce;
-		if (UsingRequestedSpeed)
-			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),SpeedToUse),dTime_s);
+		if (UsingRequestedVelocity)
+			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),VelocityToUse),dTime_s);
 		else
 		{
 			//We basically are zeroing the strafe here, and adding the forward/reverse element next
-			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),currSpeed),dTime_s);  
+			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),currVelocity),dTime_s);  
 		}
 
 		//so we'll need to convert to local
 		//ForceToApply=(GetAtt_quat().conj() * GlobalForce);
 		ForceToApply=GlobalToLocal(GetAtt_r(),GlobalForce);
 
-		if (!UsingRequestedSpeed)
+		if (!UsingRequestedVelocity)
 			ForceToApply[1]+=m_currAccel[1] * Mass;
 		//This shows no force being applied when key is released
 		#if 0
@@ -433,7 +452,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			osg::Vec3d acc=ForceToApply/Mass;
 			DOUT2("%f %f",acc[0],acc[1]);
-			DOUT3("%f %f",SpeedToUse,Mass);
+			DOUT3("%f %f",VelocityToUse,Mass);
 		}
 		#endif
 	}
@@ -447,10 +466,10 @@ void Ship_2D::TimeChange(double dTime_s)
 			for (size_t i=0;i<2;i++)
 			{
 				double MaxSpeedThisAxis=i==1?MaxForwardSpeed:ENGAGED_MAX_SPEED;
-				double SpeedDelta=(m_currAccel[1]*dTime_s);
-				if ((LocalVelocity[i]+SpeedDelta>MaxSpeedThisAxis)&&(m_currAccel[i]>0))
+				double VelocityDelta=(m_currAccel[1]*dTime_s);
+				if ((LocalVelocity[i]+VelocityDelta>MaxSpeedThisAxis)&&(m_currAccel[i]>0))
 						m_currAccel[i]=0.0;
-				else if ((LocalVelocity[i]+SpeedDelta<-ENGAGED_MAX_SPEED)&&(m_currAccel[i]<0))
+				else if ((LocalVelocity[i]+VelocityDelta<-ENGAGED_MAX_SPEED)&&(m_currAccel[i]<0))
 					m_currAccel[i]=0.0;
 			}
 		}
@@ -514,11 +533,11 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			//osg::Vec3d test2=m_Physics.GetVelocityFromDistance_Angular(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s);
 			osg::Vec3d test=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,osg::Vec3d(0,0,0));
-			//DOUT2("%f %f %f",m_rotVel_rad_s[0],m_rotVel_rad_s[1],m_rotVel_rad_s[2]);
+			//DOUT2("%f %f %f",m_rotAccel_rad_s[0],m_rotAccel_rad_s[1],m_rotAccel_rad_s[2]);
 			DOUT2("%f %f %f",rotVel[0],test[0],rotVel[0]-test[0]);
 			//DOUT2("%f %f %f",test2[0],test[0],test2[0]-test[0]);
 			if (fabs(test[0])>=0.0001)
-				DebugOutput("%f %f %f %f",rotVel[0],test[0],rotVel[0]-test[0],m_rotVel_rad_s[0]);
+				DebugOutput("%f %f %f %f",rotVel[0],test[0],rotVel[0]-test[0],m_rotAccel_rad_s[0]);
 		}
 		#endif
 
@@ -547,7 +566,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		TorqueToApply=m_Physics.GetTorqueFromVelocity(rotVel,dTime_s);
 	}
 	else
-		TorqueToApply=m_rotVel_rad_s*Mass*dTime_s;
+		TorqueToApply=m_rotAccel_rad_s*Mass*dTime_s;
 
 
 	//To be safe we reset this to zero (I'd put a critical section around this line of code if there are thread issues
@@ -562,7 +581,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	m_controller->UpdateUI(dTime_s);
 
 	//Reset my controller vars
-	m_rotVel_rad_s=0.0;
+	m_rotAccel_rad_s=0.0;
 	m_currAccel=Vec2d(0,0);
 }
 
@@ -588,7 +607,7 @@ Ship_Tester::~Ship_Tester()
 
 void Ship_Tester::SetPosition(double x,double y) 
 {
-	
+
 	PosAtt *writePtr=m_PosAtt_Write;
 	PosAtt *readPtr=m_PosAtt_Read;
 	writePtr->m_pos_m.set(x,y);

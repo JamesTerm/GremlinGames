@@ -15,14 +15,20 @@ class Ship_2D : public Entity2D
 		virtual ~Ship_2D();
 
 		///This implicitly will place back in auto mode with a speed of zero
-		void Stop(){SetRequestedSpeed(0.0);}
-		void SetRequestedSpeed(double Speed);
-		double GetRequestedSpeed(){return m_RequestedSpeed;}
-		void FireAfterburner() {SetRequestedSpeed(GetMaxSpeed());}
+		void Stop(){SetRequestedVelocity(0.0);}
+		void SetRequestedVelocity(double Velocity);
+		double GetRequestedVelocity(){return m_RequestedVelocity;}
+		void FireAfterburner() {SetRequestedVelocity(GetMaxSpeed());}
 		void SetCurrentLinearAcceleration(const Vec2D &Acceleration) {m_currAccel=Acceleration;}
-		void SetCurrentAngularVelocity(double Velocity) {m_rotVel_rad_s=Velocity;}
 
-		// This is where both the vehicle entity and camera need to align to
+		/// \param LockShipHeadingToOrientation for this given time slice if this is true the intended orientation is restrained
+		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
+		/// is not restrained and the ship applies its restraints to catch up to the orientation
+		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation) 
+		{	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation,m_rotAccel_rad_s=Acceleration;
+		}
+
+		/// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
 
 		// virtual void ResetPos();
@@ -44,6 +50,11 @@ class Ship_2D : public Entity2D
 
 		double GetMaxSpeed() const		    {return MAX_SPEED;}
 		double GetEngaged_Max_Speed() const {return ENGAGED_MAX_SPEED;}
+		double GetStrafeSpeed() const		{return STRAFE;}
+		double GetAccelSpeed() const		{return ACCEL;}
+		double GetBrakeSpeed() const		{return BRAKE;}
+		double GetCameraRestraintScaler() const		{return Camera_Restraint;}
+		double GetHeadingSpeed() const		{ return dHeading;}
 
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
@@ -53,10 +64,10 @@ class Ship_2D : public Entity2D
 
 		AI_Base_Controller *GetController() {return m_controller;}
 
-		// This function fires the various thruster events and updates the ThrsutState
-		// Called from my own timer update when locally controlled, or from my RC Controller when remote controlled
-		//virtual void UpdateThrustState(const osg::Vec3d& localThrust, const osg::Vec3d& localTorque);
-
+		//The UI controller will call this when attaching or detaching control.  The Bind parameter will either bind or unbind.  Since these are 
+		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
+		//should be no member variables needed to implement the bindings
+		virtual void BindAdditionalEventControls(bool Bind) {}
 	protected:
 		typedef Entity2D __super;
 
@@ -82,11 +93,16 @@ class Ship_2D : public Entity2D
 
 		eThrustState SetThrustState(eThrustState ts); // Handles the ON/OFF events, only for controlled entities
 
+		//Override with the controller to be used with ship.  Specific ships have specific type of controllers.
+		virtual AI_Base_Controller *Create_Controller();
+
 		friend class AI_Base_Controller;
-		friend class UI_Controller;
 		friend class Ship_Properties;
 
-		AI_Base_Controller *m_controller;
+		///This is to only be used by AI controller (this will have LockShipHeadingToOrientation set to false)
+		void SetIntendedOrientation(double IntendedOrientation);
+
+		AI_Base_Controller* m_controller;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
 
 		// Used in Keyboard acceleration and braking
@@ -107,10 +123,10 @@ class Ship_2D : public Entity2D
 		double EngineDeceleration,EngineRampStrafe;
 	
 		//Use this technique when m_AlterTrajectory is true
-		double m_RequestedSpeed;
+		double m_RequestedVelocity;
 		double m_AutoLevelDelay; ///< The potential gimbal lock, and user rolling will trigger a delay for the autolevel (when enabled)
 		double m_HeadingSpeedScale; //used by auto pilot control to have slower turn speeds for way points
-		double m_rotVel_rad_s;
+		double m_rotAccel_rad_s;
 
 		//All input for turn pitch and roll apply to this, both the camera and ship need to align to it
 		double m_IntendedOrientation;
@@ -128,12 +144,14 @@ class Ship_2D : public Entity2D
 		bool m_StabilizeRotation;  ///< If true (should always be true) this will fire reverse thrusters to stabilize rotation when idle
 		bool m_CoordinateTurns;   ///< Most of the time this is true, but in some cases (e.g. Joystick w/rudder pedals) it may be false
 
-		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
-
 		Threshold_Averager<eThrustState,5> m_thrustState_Average;
 		eThrustState m_thrustState;
 		//double m_Last_AccDel;  ///< This monitors a previous AccDec session to determine when to reset the speed
-		double m_Last_RequestedSpeed;  ///< This monitors the last caught requested speed from a speed delta change
+		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
+
+	private:
+		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
+
 };
 
 class Physics_Tester : public Entity2D

@@ -78,13 +78,13 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		assert(false);
 	}
 	#endif
-	
+
 	Vec2d VectorOffset=TrajectoryPoint-m_ship.GetPos_m();
 
 	double AngularDistance=m_ship.m_IntendedOrientationPhysics.ComputeAngularDistance(VectorOffset);
 	//printf("\r %f          ",RAD_2_DEG(AngularDistance));
 
-	m_ship.SetCurrentAngularVelocity(-AngularDistance);
+	m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
 
 	//first negotiate the max speed given the power
 	double MaxSpeed=m_ship.ENGAGED_MAX_SPEED;
@@ -97,7 +97,7 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 			//DEBUG_AUTO_PILOT_SPEED("\rRamora Speeds: Max=%4.1f, Power = %3.1f, Curr = %3.1f",MaxSpeed, power, m_ship.m_Physics.GetLinearVelocity().length());
 		}
 		else if (power>1.0)
-			SetShipSpeed(MIN(power, MaxSpeed));
+			SetShipVelocity(MIN(power, MaxSpeed));
 	}
 
 	if (matchVel)
@@ -124,9 +124,9 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 
 			//Now we simply use the positive forward thruster 
 			if (LocalVelocity[1]>0.0)  //only forward not reverse...
-				SetShipSpeed(MIN(LocalVelocity[1],ScaledSpeed));
+				SetShipVelocity(MIN(LocalVelocity[1],ScaledSpeed));
 			else
-				SetShipSpeed(0);  //We do not want to contribute forces in the wrong direction!
+				SetShipVelocity(MAX(LocalVelocity[1],-ScaledSpeed));  //Fortunately the ships do not go in reverse that much  :)
 		}
 		
 		else
@@ -152,8 +152,57 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		}
 	}
 	else
-		SetShipSpeed(ScaledSpeed);
+		SetShipVelocity(ScaledSpeed);
 }
+
+  /***********************************************************************************************************************************/
+ /*												Goal_Ship_RotateToPosition															*/
+/***********************************************************************************************************************************/
+
+Goal_Ship_RotateToPosition::Goal_Ship_RotateToPosition(AI_Base_Controller *controller, double Heading) : m_Controller(controller), m_Heading(Heading),
+	m_ship(controller->GetShip()),m_Terminate(false)
+{
+	m_Status=eInactive;
+}
+Goal_Ship_RotateToPosition::~Goal_Ship_RotateToPosition()
+{
+	Terminate(); //more for completion
+}
+
+void Goal_Ship_RotateToPosition::Activate() 
+{
+	m_Status=eActive;
+	//During the activation we'll set the requested intended orientation
+	m_Controller->SetIntendedOrientation(m_Heading);
+}
+
+Goal::Goal_Status Goal_Ship_RotateToPosition::Process(double dTime_s)
+{
+	//TODO this may be an inline check
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	if (m_Status==eActive)
+	{
+		if (m_ship.GetIntendedOrientation()==m_Heading)
+		{
+			double rotation_delta=m_ship.GetAtt_r()-m_Heading;
+			NormalizeRotation(rotation_delta);
+			//TODO check IsStuck for failed case
+			if (IsZero(rotation_delta))
+				m_Status=eCompleted;
+		}
+		else
+			m_Status=eFailed;  //Some thing else took control of the ship
+	}
+	return m_Status;
+}
+
+
 
 //TODO this needs to be somewhat re-factored into states from which it will decide to execute
 //The base version is some kind of auto pilot, which for the tester I don't really care to implement
@@ -213,7 +262,7 @@ Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
 		else
 		{
 			//for now just stop, but we may want to have a way to identify if we are in a series, perhaps the derived class overrides this and can be more intelligent
-			m_Controller->SetShipSpeed(0.0);
+			m_Controller->SetShipVelocity(0.0);
 			m_Status=eCompleted;
 		}
 	}
@@ -348,8 +397,8 @@ void Goal_Ship_FollowShip::Terminate()
 }
 
 
-/***********************************************************************************************************************************/
-/*													Goal_NotifyWhenComplete															*/
+  /***********************************************************************************************************************************/
+ /*													Goal_NotifyWhenComplete															*/
 /***********************************************************************************************************************************/
 
 
