@@ -34,6 +34,7 @@ class AI_Base_Controller
 		/// Use (0,0) if you want to come to a stop, like at the end of a way-point series
 		/// Otherwise, use the velocity of the ship you are targeting or following to keep up with it
 		void DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d PositionPoint, double power, double dTime_s,osg::Vec2d* matchVel);
+		void SetIntendedOrientation(double IntendedOrientation) {m_ship.SetIntendedOrientation(IntendedOrientation);}
 		
 		Ship_2D &GetShip() {return m_ship;}
 	protected:
@@ -45,6 +46,22 @@ class AI_Base_Controller
 
 		//TODO determine way to properly introduce UI_Controls here	
 		Ship_2D &m_ship;
+};
+
+//This will explicitly rotate the ship to a particular heading.  It may be moving or still.
+class Goal_Ship_RotateToPosition : public AtomicGoal
+{
+	public:
+		Goal_Ship_RotateToPosition(AI_Base_Controller *controller,double Heading);
+		~Goal_Ship_RotateToPosition();
+		virtual void Activate();
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate() {m_Terminate=true;}
+	private:
+		AI_Base_Controller * const m_Controller;
+		double m_Heading;
+		Ship_2D &m_ship;
+		bool m_Terminate;
 };
 
 //TODO get these functions re-factored

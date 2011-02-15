@@ -36,7 +36,7 @@ class Ship_2D : public Ship
 		{	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation,m_rotAccel_rad_s=Acceleration;
 		}
 
-		// This is where both the vehicle entity and camera need to align to
+		/// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
 
 		// virtual void ResetPos();
@@ -105,6 +105,9 @@ class Ship_2D : public Ship
 
 		friend AI_Base_Controller;
 		friend Ship_Properties;
+
+		///This is to only be used by AI controller (this will have LockShipHeadingToOrientation set to false)
+		void SetIntendedOrientation(double IntendedOrientation);
 
 		AI_Base_Controller* m_controller;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;

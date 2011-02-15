@@ -291,6 +291,13 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 		m_IntendedOrientation+=RotationDisplacement*YawResistance;
 	}
 }
+
+void Ship_2D::SetIntendedOrientation(double IntendedOrientation) 
+{
+	m_LockShipHeadingToOrientation=false; //this must be false for this to work (if not already)
+	m_IntendedOrientation=IntendedOrientation;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 void Ship_2D::TimeChange(double dTime_s)
