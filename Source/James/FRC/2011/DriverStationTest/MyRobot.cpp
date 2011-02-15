@@ -92,7 +92,7 @@ class SetUp_Autonomous : public SetUp_Manager
 		bool m_StillRunning;
 		IEvent::HandlerList ehl;
 	public:
-		SetUp_Autonomous()
+		SetUp_Autonomous() : m_StillRunning(true)
 		{
 			m_pUI->SetAutoPilot(true);  //we are not driving the robot
 			//Now to set up our goal
