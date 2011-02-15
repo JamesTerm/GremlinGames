@@ -97,8 +97,6 @@ class SetUp_Autonomous : public SetUp_Manager
 			m_pUI->SetAutoPilot(true);  //we are not driving the robot
 			//Now to set up our goal
 			Ship_Tester *ship=m_pRobot;  //we can always cast down
-			double x=0.0;
-			double y=5.0;  //five meters
 			assert(ship);
 			{
 				Goal *oldgoal=ship->ClearGoal();
@@ -109,8 +107,8 @@ class SetUp_Autonomous : public SetUp_Manager
 				#if 0
 				//Construct a way point
 				WayPoint wp;
-				wp.Position[0]=x;
-				wp.Position[1]=y;
+				wp.Position[0]=0.0;
+				wp.Position[1]=5.0;  //five meters
 				wp.Power=1.0;
 				//Now to setup the goal
 				Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
