@@ -139,6 +139,55 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 		SetShipVelocity(ScaledSpeed);
 }
 
+  /***********************************************************************************************************************************/
+ /*												Goal_Ship_RotateToPosition															*/
+/***********************************************************************************************************************************/
+
+Goal_Ship_RotateToPosition::Goal_Ship_RotateToPosition(AI_Base_Controller *controller, double Heading) : m_Controller(controller), m_Heading(Heading),
+	m_ship(controller->GetShip()),m_Terminate(false)
+{
+	m_Status=eInactive;
+}
+Goal_Ship_RotateToPosition::~Goal_Ship_RotateToPosition()
+{
+	Terminate(); //more for completion
+}
+
+void Goal_Ship_RotateToPosition::Activate() 
+{
+	m_Status=eActive;
+	//During the activation we'll set the requested intended orientation
+	m_Controller->SetIntendedOrientation(m_Heading);
+}
+
+Goal::Goal_Status Goal_Ship_RotateToPosition::Process(double dTime_s)
+{
+	//TODO this may be an inline check
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	if (m_Status==eActive)
+	{
+		if (m_ship.GetIntendedOrientation()==m_Heading)
+		{
+			double rotation_delta=m_ship.GetAtt_r()-m_Heading;
+			NormalizeRotation(rotation_delta);
+			//TODO check IsStuck for failed case
+			if (IsZero(rotation_delta))
+				m_Status=eCompleted;
+		}
+		else
+			m_Status=eFailed;  //Some thing else took control of the ship
+	}
+	return m_Status;
+}
+
+
+
 //TODO this needs to be somewhat re-factored into states from which it will decide to execute
 //The base version is some kind of auto pilot, which for the tester I don't really care to implement
 //I believe I'll want to AI Controller to override, but call methods from the base as at that level it can decide

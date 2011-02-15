@@ -280,9 +280,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Analog_Slider_Accel"].Remove(*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
-
-		Flush_AI_BaseResources();
 		m_ship->BindAdditionalEventControls(false);
+		Flush_AI_BaseResources();
 	}
 	m_Base=controller;
 	if (m_Base)

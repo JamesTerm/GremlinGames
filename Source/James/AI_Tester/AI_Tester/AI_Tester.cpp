@@ -227,6 +227,7 @@ void DisplayHelp()
 		"SetPos <name> <x> <y>\n"
 		"MovePos <name> <x> <y>\n"
 		"SetAtt <name> <degrees> \n"
+		"MoveAtt <name> <degrees> \n"
 		"Control <name>\n"
 		"Mouse <1=use>\n"
 		"Join <ship name> <team name>\n"
@@ -425,6 +426,20 @@ void CommandLineInterface()
 					wp.Power=1.0;
 					//Now to setup the goal
 					Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
+					ship->SetGoal(goal);
+				}
+			}
+			else if (!_strnicmp( input_line, "MoveAtt", 5))
+			{
+				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity(str_1));
+				double heading=atof(str_2);
+				if (ship)
+				{
+					Goal *oldgoal=ship->ClearGoal();
+					if (oldgoal)
+						delete oldgoal;
+					//Now to setup the goal
+					Goal_Ship_RotateToPosition *goal=new Goal_Ship_RotateToPosition(ship->GetController(),DEG_2_RAD(heading));
 					ship->SetGoal(goal);
 				}
 			}
