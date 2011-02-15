@@ -66,3 +66,17 @@ class FRC_2011_Robot_tester : public FRC_2011_Robot, public Robot_Control
 		FRC_2011_Robot_tester(const char EntityName[]) : FRC_2011_Robot(EntityName,this) {}
 };
 
+class FRC_2011_Robot_Properties : public UI_Ship_Properties
+{
+	public:
+		FRC_2011_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(FRC_2011_Robot *NewRobot) const;
+	private:
+		//These are all of the arm's ship 1D properties
+		double m_Arm_MinRange,m_Arm_MaxRange;  //range of arm height
+		double m_Arm_MAX_SPEED;
+		double m_Arm_ACCEL, m_Arm_BRAKE;
+		double m_Arm_MaxAccelForward,m_Arm_MaxAccelReverse;
+
+};
