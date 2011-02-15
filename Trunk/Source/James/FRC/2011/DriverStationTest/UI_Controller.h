@@ -27,7 +27,7 @@ class UI_Controller
 		void Slider_Accel(double Intensity);
 		void Brake(bool on){if (AreControlsDisabled() && on) return; Ship_Brake(on);}
 		void Stop() {if (AreControlsDisabled()) return; m_ship->Stop();}
-		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedSpeed(speed);}
+		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedVelocity(speed);}
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
 		virtual void ResetPos();
@@ -88,8 +88,8 @@ class UI_Controller
 		void Joystick_SetCurrentSpeed(double Speed);
 		void Joystick_SetCurrentSpeed_2(double Speed);
 
-		void Ship_StrafeLeft(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? -m_ship->STRAFE : 0.0;	}
-		void Ship_StrafeRight(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? m_ship->STRAFE : 0.0;	}
+		void Ship_StrafeLeft(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? -m_ship->GetStrafeSpeed() : 0.0;	}
+		void Ship_StrafeRight(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? m_ship->GetStrafeSpeed() : 0.0;	}
 
 		void Ship_StrafeLeft(double Intensity);
 		void Ship_StrafeRight(double Intensity);
@@ -106,9 +106,9 @@ class UI_Controller
 		bool m_isControlled;
 
 		///This is used exclusively for keyboard turn methods
-		double m_Ship_Keyboard_rotVel_rad_s;
+		double m_Ship_Keyboard_rotAcc_rad_s;
 		///This one is used exclusively for the Joystick and Mouse turn methods
-		double m_Ship_JoyMouse_rotVel_rad_s;
+		double m_Ship_JoyMouse_rotAcc_rad_s;
 		Framework::Base::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
 		double m_CruiseSpeed; ///< This is used with the Joystick control to only apply speed changes when a change occurs
 
