@@ -5,6 +5,7 @@ class Entity1D_Properties
 {
 	public:
 		Entity1D_Properties();
+		Entity1D_Properties(char EntityName[],double Mass,double Dimension);
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Entity1D *NewEntity) const;
 	protected:
@@ -20,13 +21,18 @@ class Ship_1D_Properties : public Entity1D_Properties
 {
 	public:
 		Ship_1D_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		void Initialize(Ship_1D *NewShip) const;
+		//Allow to construct props in constructor instead of using script
 		enum Ship_Type
 		{
 			eDefault,
 			eRobotArm,
 		};
+		Ship_1D_Properties(char EntityName[], double Mass,double Dimension,
+			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
+			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0);
+
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(Ship_1D *NewShip) const;
 		Ship_Type GetShipType() const {return m_ShipType;}
 		double GetMaxSpeed() const {return m_MAX_SPEED;}
 	private:
@@ -40,7 +46,9 @@ class Ship_1D_Properties : public Entity1D_Properties
 		double m_ACCEL, m_BRAKE;
 
 		double m_MaxAccelForward,m_MaxAccelReverse;
+		double m_MinRange,m_MaxRange;
 		Ship_Type m_ShipType;
+		bool m_UsingRange;
 };
 
 class Entity2D;

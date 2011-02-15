@@ -278,6 +278,9 @@ void CommandLineInterface()
 		private:	
 			typedef map<string ,UI_Ship_Properties,greater<string>> ShipMap;
 			ShipMap Character_Database;
+			typedef map<string ,FRC_2011_Robot_Properties,greater<string>> RobotMap;
+			RobotMap Robot_Database;
+
 			UI_Controller_GameClient &game;
 
 		public:
@@ -323,6 +326,47 @@ void CommandLineInterface()
 				printf("%s Ship not found, try loading it\n",str_2);
 			return ret;
 		}
+		void LoadRobot(const char *FileName,const char *RobotName)
+		{
+			RobotMap::iterator iter=Robot_Database.find(RobotName);
+			if (iter==Robot_Database.end())
+			{
+				//New entry
+				Robot_Database[RobotName]=FRC_2011_Robot_Properties();
+				FRC_2011_Robot_Properties &new_entry=Robot_Database[RobotName];  //reference to avoid copy
+				GG_Framework::Logic::Scripting::Script script;
+				script.LoadScript(FileName,true);
+				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
+
+				new_entry.LoadFromScript(script);
+			}
+			else
+				printf("%s already loaded\n",RobotName);
+		}
+		Entity2D *AddRobot(const char *str_1,const char *str_2,const char *str_3,const char *str_4,const char *str_5)
+		{
+			Entity2D *ret=NULL;
+			RobotMap::iterator iter=Robot_Database.find(str_2);
+			if (iter!=Robot_Database.end())
+			{
+				double x=atof(str_3);
+				double y=atof(str_4);
+				double heading=atof(str_5);
+				Entity2D *TestEntity=NULL;
+				TestEntity=game.AddEntity(str_1,(*iter).second);
+				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
+				if (ship)
+				{
+					ship->SetPosition(x,y);
+					ship->SetAttitude(heading * (PI/180.0));
+					ret=ship;
+				}
+			}
+			else
+				printf("%s Robot not found, try loading it\n",str_2);
+			return ret;
+		}
+
 	} _command(game);
 
 	#if 0
@@ -399,6 +443,14 @@ void CommandLineInterface()
 			else if (!_strnicmp( input_line, "AddShip", 4))
 			{
 				_command.AddShip(str_1,str_2,str_3,str_4,str_5);
+			}
+			else if (!_strnicmp( input_line, "LoadRobot", 5))
+			{
+				_command.LoadRobot(str_1,str_2);
+			}
+			else if (!_strnicmp( input_line, "AddRobot", 4))
+			{
+				_command.AddRobot(str_1,str_2,str_3,str_4,str_5);
 			}
 
 			else if (!_strnicmp( input_line, "SetPos", 6))
@@ -594,8 +646,8 @@ void CommandLineInterface()
 							UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
 							g_WorldScaleFactor=100.0;
 							game.SetDisableEngineRampUp2(true);
-							_command.LoadShip("TestRobot.lua","TestRobot");
-							Entity2D *TestEntity=_command.AddShip("testrobot1","TestRobot",str_3,str_4,str_5);
+							_command.LoadRobot("TestRobot.lua","TestRobot");
+							Entity2D *TestEntity=_command.AddRobot("testrobot1","TestRobot",str_3,str_4,str_5);
 							game.SetControlledEntity(TestEntity);
 						}
 						break;
