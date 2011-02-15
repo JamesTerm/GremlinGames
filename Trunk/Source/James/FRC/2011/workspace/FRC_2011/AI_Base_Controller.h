@@ -25,7 +25,7 @@ class AI_Base_Controller
 		bool HasAutoPilotRoute() {return true;}
 		bool GetCanUserPilot() {return true;}
 
-		void SetShipSpeed(double speed_mps) {m_ship.SetRequestedSpeed(speed_mps);}
+		void SetShipVelocity(double velocity_mps) {m_ship.SetRequestedVelocity(velocity_mps);}
 
 		/// \param TrajectoryPoint- This is the point that your nose of your ship will orient to from its current position (usually the same as PositionPoint)
 		/// \param PositionPoint- This is the point where your ship will be to position to (Usually the same as TrajectoryPoint)
@@ -35,6 +35,7 @@ class AI_Base_Controller
 		/// Use (0,0) if you want to come to a stop, like at the end of a way-point series
 		/// Otherwise, use the velocity of the ship you are targeting or following to keep up with it
 		void DriveToLocation(Vec2D TrajectoryPoint,Vec2D PositionPoint, double power, double dTime_s,Vec2D* matchVel);
+		void SetIntendedOrientation(double IntendedOrientation) {m_ship.SetIntendedOrientation(IntendedOrientation);}
 		
 		Ship_2D &GetShip() {return m_ship;}
 	protected:
@@ -43,9 +44,25 @@ class AI_Base_Controller
 	private:
 		//TODO determine way to properly introduce UI_Controls here	
 		Ship_2D &m_ship;
-		
+
 		friend class UI_Controller;
 		UI_Controller *m_UI_Controller;
+};
+
+//This will explicitly rotate the ship to a particular heading.  It may be moving or still.
+class Goal_Ship_RotateToPosition : public AtomicGoal
+{
+	public:
+		Goal_Ship_RotateToPosition(AI_Base_Controller *controller,double Heading);
+		~Goal_Ship_RotateToPosition();
+		virtual void Activate();
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate() {m_Terminate=true;}
+	private:
+		AI_Base_Controller * const m_Controller;
+		double m_Heading;
+		Ship_2D &m_ship;
+		bool m_Terminate;
 };
 
 //TODO get these functions re-factored
@@ -97,22 +114,23 @@ class Goal_Ship_FollowPath : public CompositeGoal
 
 class Goal_Ship_FollowShip : public AtomicGoal
 {
-public:
-	typedef Framework::Base::Vec2d Vec2D;
-	Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition);
-	~Goal_Ship_FollowShip();
-	virtual void Activate();
-	virtual Goal_Status Process(double dTime_s);
-	virtual void Terminate();
-	//Allow client to change its relative position dynamically
-	void SetRelPosition(const Vec2D &RelPosition);
-private:
-	AI_Base_Controller * const m_Controller;
-	Vec2D m_RelPosition,m_TrajectoryPosition;
-	const Ship_2D &m_Followship;
-	Ship_2D &m_ship;
-	bool m_Terminate;
+	public:
+		typedef Framework::Base::Vec2d Vec2D;
+		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition);
+		~Goal_Ship_FollowShip();
+		virtual void Activate();
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate();
+		//Allow client to change its relative position dynamically
+		void SetRelPosition(const Vec2D &RelPosition);
+	private:
+		AI_Base_Controller * const m_Controller;
+		Vec2D m_RelPosition,m_TrajectoryPosition;
+		const Ship_2D &m_Followship;
+		Ship_2D &m_ship;
+		bool m_Terminate;
 };
+
 
 //This goal simply will fire an event when all goals are complete
 class Goal_NotifyWhenComplete : public CompositeGoal

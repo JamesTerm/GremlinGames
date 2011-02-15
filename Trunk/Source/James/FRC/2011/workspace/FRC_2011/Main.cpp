@@ -97,20 +97,24 @@ class SetUp_Autonomous : public SetUp_Manager
 			m_pUI->SetAutoPilot(true);  //we are not driving the robot
 			//Now to set up our goal
 			Ship_Tester *ship=m_pRobot;  //we can always cast down
-			double x=0.0;
-			double y=5.0;  //five meters
 			assert(ship);
 			{
 				Goal *oldgoal=ship->ClearGoal();
 				if (oldgoal)
 					delete oldgoal;
+				//Matt change this to 1 to test length instead of rotation
+				#if 0
 				//Construct a way point
 				WayPoint wp;
-				wp.Position[0]=x;
-				wp.Position[1]=y;
+				wp.Position[0]=0.0;
+				wp.Position[1]=5.0; //five meters
 				wp.Power=1.0;
 				//Now to setup the goal
 				Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
+				#else
+				//Rotate 180 degrees.  (Note: I skipped adding 180 to current heading since we assume it starts at 0)
+				Goal_Ship_RotateToPosition *goal=new Goal_Ship_RotateToPosition(ship->GetController(),DEG_2_RAD(180.0));
+				#endif
 
 				//wrap the goal in a notify goal
 				Goal_NotifyWhenComplete *notify_goal=new Goal_NotifyWhenComplete(m_EventMap,"Complete"); //will fire Complete once it is done
