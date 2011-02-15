@@ -88,7 +88,10 @@ void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
-	m_Arm.Initialize(em);
+
+	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
+	m_Arm.Initialize(em,ArmProps);
 }
 void FRC_2011_Robot::ResetPos()
 {
@@ -123,16 +126,35 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 
 void Robot_Control::Initialize(const Entity_Properties *props)
 {
-	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
-	assert(ship_props);
-	m_ENGAGED_MAX_SPEED=ship_props->GetEngagedMaxSpeed();
+	const FRC_2011_Robot_Properties *robot_props=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+	assert(robot_props);
+	m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
+	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 }
 
 void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
 {
-	DOUT2("left=%f right=%f \n",LeftVelocity/m_ENGAGED_MAX_SPEED,RightVelocity/m_ENGAGED_MAX_SPEED);
+	DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
 }
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {
 	//DOUT4("Arm=%f",Velocity);
+}
+
+  /***********************************************************************************************************************************/
+ /*													FRC_2011_Robot_Properties														*/
+/***********************************************************************************************************************************/
+
+FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
+	"Arm",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	2.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	2.0,2.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	Ship_1D_Properties::eRobotArm,
+	true,	//Using the range
+	0.0,9.0 //0 - 9
+	)
+{
 }

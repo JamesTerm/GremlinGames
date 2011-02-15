@@ -59,7 +59,6 @@ class Ship_1D : public Entity1D
 		//Stuff needed for physics
 		double Mass;
 		double MaxAccelForward,MaxAccelReverse;
-		double Camera_Restraint;
 
 		//I don't think we would need this for the game, but it is possible, (certainly not for the robot arm)
 		//! We can break this up even more if needed

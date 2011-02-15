@@ -14,6 +14,13 @@ Entity1D_Properties::Entity1D_Properties()
 	m_Dimension=12.0;
 };
 
+Entity1D_Properties::Entity1D_Properties(char EntityName[],double Mass,double Dimension)
+{
+	m_EntityName=EntityName;
+	m_Mass=Mass;
+	m_Dimension=Dimension;
+}
+
 void Entity1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
 {
 	const char* err;
@@ -59,7 +66,29 @@ Ship_1D_Properties::Ship_1D_Properties()
 
 	m_MaxAccelForward=87.0 * Scale;
 	m_MaxAccelReverse=70.0 * Scale;
+	m_MinRange=m_MaxRange=0.0;
+	m_UsingRange=false;
 };
+
+Ship_1D_Properties::Ship_1D_Properties(char EntityName[], double Mass,double Dimension,
+				   double MAX_SPEED,
+				   double ACCEL,double BRAKE,
+				   double MaxAccelForward, double MaxAccelReverse,
+				   Ship_Type ShipType,bool UsingRange,
+				   double MinRange, double MaxRange
+				   ) : Entity1D_Properties(EntityName,Mass,Dimension)
+{
+	m_MAX_SPEED = MAX_SPEED;
+	m_ACCEL = ACCEL;
+	m_BRAKE = BRAKE;
+	m_MaxAccelForward=MaxAccelForward;
+	m_MaxAccelReverse=MaxAccelReverse;
+	m_ShipType=ShipType;
+	m_MinRange=MinRange;
+	m_MaxRange=MaxRange;
+	m_UsingRange=UsingRange;
+
+}
 
 void Ship_1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
 {
@@ -81,6 +110,8 @@ void Ship_1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& 
 	}
 	script.Pop();
 
+	//TODO support range in script
+
 	// Let the base class finish things up
 	__super::LoadFromScript(script);
 }
@@ -92,6 +123,8 @@ void Ship_1D_Properties::Initialize(Ship_1D *NewShip) const
 	NewShip->BRAKE=m_BRAKE;
 	NewShip->MaxAccelForward=m_MaxAccelForward;
 	NewShip->MaxAccelReverse=m_MaxAccelReverse;
+
+	//TODO support range in ship 1D
 }
 
   /***********************************************************************************************************************************/

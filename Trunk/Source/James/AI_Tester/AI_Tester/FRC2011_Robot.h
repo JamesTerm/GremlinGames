@@ -56,7 +56,8 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
 		virtual void UpdateArmVelocity(double Velocity);
 	private:
-		double m_ENGAGED_MAX_SPEED;  //cache this to covert velocity to motor setting
+		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
+		double m_ArmMaxSpeed;
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
@@ -70,13 +71,10 @@ class FRC_2011_Robot_Properties : public UI_Ship_Properties
 {
 	public:
 		FRC_2011_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		void Initialize(FRC_2011_Robot *NewRobot) const;
+		//I'm not going to implement script support mainly due to lack of time, but also this is a specific object that
+		//most likely is not going to be sub-classed (i.e. sealed)... if this turns out different later we can implement
+		//virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
 	private:
-		//These are all of the arm's ship 1D properties
-		double m_Arm_MinRange,m_Arm_MaxRange;  //range of arm height
-		double m_Arm_MAX_SPEED;
-		double m_Arm_ACCEL, m_Arm_BRAKE;
-		double m_Arm_MaxAccelForward,m_Arm_MaxAccelReverse;
-
+		Ship_1D_Properties m_ArmProps;
 };
