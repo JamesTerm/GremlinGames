@@ -278,8 +278,8 @@ void Goal_Ship_MoveToPosition::Terminate()
  /*													Goal_Ship_FollowPath															*/
 /***********************************************************************************************************************************/
 
-Goal_Ship_FollowPath::Goal_Ship_FollowPath(AI_Base_Controller *controller,std::list<WayPoint> path,bool LoopMode) : m_Path(path),m_PathCopy(path),
-	m_Controller(controller),m_LoopMode(LoopMode)
+Goal_Ship_FollowPath::Goal_Ship_FollowPath(AI_Base_Controller *controller,std::list<WayPoint> path,bool LoopMode) : 
+	m_Controller(controller),m_Path(path),m_PathCopy(path),	m_LoopMode(LoopMode)
 {
 	m_Status=eInactive;
 }
@@ -402,7 +402,7 @@ void Goal_Ship_FollowShip::Terminate()
 /***********************************************************************************************************************************/
 
 
-Goal_NotifyWhenComplete::Goal_NotifyWhenComplete(Framework::Base::EventMap &em,char *EventName) : m_EventName(EventName),m_EventMap(em)
+Goal_NotifyWhenComplete::Goal_NotifyWhenComplete(EventMap &em,char *EventName) : m_EventName(EventName),m_EventMap(em)
 {
 	m_Status=eInactive;
 }
