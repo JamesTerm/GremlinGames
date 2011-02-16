@@ -6,12 +6,90 @@
 #include "Base/Event.h"
 #include "Base/EventMap.h"
 #include "Entity_Properties.h"
+#include "Physics_1D.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
 #include "Goal.h"
+#include "Ship_1D.h"
 #include "Ship.h"
 
 using namespace Framework::Base;
+
+  /***********************************************************************************************************************************/
+ /*															Entity1D_Properties														*/
+/***********************************************************************************************************************************/
+
+Entity1D_Properties::Entity1D_Properties()
+{
+	m_EntityName="Entity1D";
+	m_Mass=10000.0;
+	m_Dimension=12.0;
+};
+
+Entity1D_Properties::Entity1D_Properties(char EntityName[],double Mass,double Dimension)
+{
+	m_EntityName=EntityName;
+	m_Mass=Mass;
+	m_Dimension=Dimension;
+}
+
+void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
+{
+	NewEntity->m_Dimension=m_Dimension;
+	NewEntity->GetPhysics().SetMass(m_Mass);
+}
+
+  /***********************************************************************************************************************************/
+ /*														Ship_1D_Properties															*/
+/***********************************************************************************************************************************/
+
+Ship_1D_Properties::Ship_1D_Properties()
+{
+	double Scale=0.2;  //we must scale everything down to see on the view
+	m_MAX_SPEED = 400.0 * Scale;
+	m_ACCEL = 60.0 * Scale;
+	m_BRAKE = 50.0 * Scale;
+
+	m_MaxAccelForward=87.0 * Scale;
+	m_MaxAccelReverse=70.0 * Scale;
+	m_MinRange=m_MaxRange=0.0;
+	m_UsingRange=false;
+};
+
+Ship_1D_Properties::Ship_1D_Properties(char EntityName[], double Mass,double Dimension,
+				   double MAX_SPEED,
+				   double ACCEL,double BRAKE,
+				   double MaxAccelForward, double MaxAccelReverse,
+				   Ship_Type ShipType,bool UsingRange,
+				   double MinRange, double MaxRange
+				   ) : Entity1D_Properties(EntityName,Mass,Dimension)
+{
+	m_MAX_SPEED = MAX_SPEED;
+	m_ACCEL = ACCEL;
+	m_BRAKE = BRAKE;
+	m_MaxAccelForward=MaxAccelForward;
+	m_MaxAccelReverse=MaxAccelReverse;
+	m_ShipType=ShipType;
+	m_MinRange=MinRange;
+	m_MaxRange=MaxRange;
+	m_UsingRange=UsingRange;
+
+}
+
+void Ship_1D_Properties::Initialize(Ship_1D *NewShip) const
+{
+	NewShip->MAX_SPEED=m_MAX_SPEED;
+	NewShip->ACCEL=m_ACCEL;
+	NewShip->BRAKE=m_BRAKE;
+	NewShip->MaxAccelForward=m_MaxAccelForward;
+	NewShip->MaxAccelReverse=m_MaxAccelReverse;
+
+	//TODO support range in ship 1D
+}
+
+  /***********************************************************************************************************************************/
+ /*															Entity_Properties														*/
+/***********************************************************************************************************************************/
 
 Entity_Properties::Entity_Properties()
 {
@@ -22,13 +100,16 @@ Entity_Properties::Entity_Properties()
 	m_Dimensions[1]=0.9525;
 };
 
-
 void Entity_Properties::Initialize(Entity2D *NewEntity) const
 {
 	NewEntity->m_Dimensions[0]=m_Dimensions[0];
 	NewEntity->m_Dimensions[1]=m_Dimensions[1];
 	NewEntity->GetPhysics().SetMass(m_Mass);
 }
+
+  /***********************************************************************************************************************************/
+ /*															Ship_Properties															*/
+/***********************************************************************************************************************************/
 
 Ship_Properties::Ship_Properties()
 {
