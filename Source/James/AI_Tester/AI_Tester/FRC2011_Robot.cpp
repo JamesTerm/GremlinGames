@@ -138,7 +138,7 @@ void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelo
 }
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {
-	//DOUT4("Arm=%f",Velocity);
+	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 }
 
   /***********************************************************************************************************************************/
