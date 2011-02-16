@@ -1,5 +1,54 @@
 #pragma once
 
+class Entity1D;
+class Entity1D_Properties
+{
+	public:
+		Entity1D_Properties();
+		Entity1D_Properties(char EntityName[],double Mass,double Dimension);
+		void Initialize(Entity1D *NewEntity) const;
+	protected:
+		std::string m_EntityName;  //derived classes can let base class know what type to read
+	private:
+		//Stuff needed for physics
+		double m_Mass;
+		double m_Dimension; //Dimension- Length
+};
+
+class Ship_1D;
+class Ship_1D_Properties : public Entity1D_Properties
+{
+	public:
+		Ship_1D_Properties();
+		//Allow to construct props in constructor instead of using script
+		enum Ship_Type
+		{
+			eDefault,
+			eRobotArm,
+		};
+		Ship_1D_Properties(char EntityName[], double Mass,double Dimension,
+			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
+			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0);
+
+		void Initialize(Ship_1D *NewShip) const;
+		Ship_Type GetShipType() const {return m_ShipType;}
+		double GetMaxSpeed() const {return m_MAX_SPEED;}
+	private:
+		//! We can break this up even more if needed
+		//double m_EngineRampForward,m_EngineRampReverse,m_EngineRampAfterBurner;
+		//double m_EngineDeceleration;
+
+		//! Engaged max speed is basically the fastest speed prior to using after-burner.  For AI and auto pilot it is the trigger speed to
+		//! enable the afterburner
+		double m_MAX_SPEED;
+		double m_ACCEL, m_BRAKE;
+
+		double m_MaxAccelForward,m_MaxAccelReverse;
+		double m_MinRange,m_MaxRange;
+		Ship_Type m_ShipType;
+		bool m_UsingRange;
+};
+
 class Entity2D;
 class Entity_Properties
 {
