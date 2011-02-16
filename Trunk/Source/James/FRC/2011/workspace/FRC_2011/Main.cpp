@@ -164,7 +164,7 @@ public:
 	{
 		if (c_UseDefaultControls)
 		{
-			RobotDrive myRobot(1,2); // robot drive system
+			RobotDrive myRobot(1,2,3,4); // robot drive system
 			Joystick stick(1); // only 1 joystick
 			myRobot.SetExpiration(0.1);
 			
