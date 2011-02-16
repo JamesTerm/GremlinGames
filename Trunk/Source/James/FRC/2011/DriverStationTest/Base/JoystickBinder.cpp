@@ -108,16 +108,16 @@ void JoyStick_Binder::AddJoy_Button_Binding(size_t WhichButton,const char eventN
 
 
 void JoyStick_Binder::AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped,double Multiplier,
-											double FilterRange,bool isSquared)
+											double FilterRange,bool isSquared,const char ProductName[])
 {
 	//removed intercept since we are not using a config manager
-	AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,isSquared);
+	AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,isSquared,ProductName);
 }
 
-void JoyStick_Binder::AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff,bool dbl_click)
+void JoyStick_Binder::AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff,bool dbl_click,const char ProductName[])
 {
 	//removed intercept since we are not using a config manager
-	AddJoy_Button_Binding(WhichButton,eventName,useOnOff,dbl_click);
+	AddJoy_Button_Binding(WhichButton,eventName,useOnOff,dbl_click,ProductName);
 }
 
 bool JoyStick_Binder::IsDoubleClicked(size_t i)
