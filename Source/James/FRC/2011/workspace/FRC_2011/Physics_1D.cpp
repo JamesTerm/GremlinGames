@@ -40,8 +40,7 @@ void PhysicsEntity_1D::ResetVectors()
 PhysicsEntity_1D::PhysicsEntity_1D()
 {
 	//Plug in some good defaults
-	m_EntityMass=500; //about 5000 pounds
-	//m_EntityMass=200; //about 2000 pounds
+	m_EntityMass=5.0;
 	m_StaticFriction=0.8;
 	m_KineticFriction=0.2;
 	m_SummedExternalForces=0.0;

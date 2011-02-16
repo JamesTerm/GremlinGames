@@ -5,6 +5,7 @@
 #include "Base/Misc.h"
 #include "Base/Event.h"
 #include "Base/EventMap.h"
+#include "Physics_1D.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
 #include "Goal.h"
@@ -165,6 +166,7 @@ void Robot_Tank::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,dou
 	//Now then we'll compute the torque
 	double AngularAcceleration=((LeftAngularDelta+RightAngularDelta)*Pi2) - m_Physics.GetAngularVelocity();
 	Torque = (AngularAcceleration * Mass) / dTime_s;
+	//DebugOutput("angular=%f %f %f\n",LeftLinearVelocity,RightLinearVelocity,m_Physics.GetAngularVelocity());
 }
 
 void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)

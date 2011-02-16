@@ -5,6 +5,7 @@
 #include "Base/Misc.h"
 #include "Base/Event.h"
 #include "Base/EventMap.h"
+#include "Physics_1D.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
 #include "Goal.h"
@@ -48,9 +49,9 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	// We can now use double-tap to fire the afterburners (for when we have them)
 	joy.AddJoy_Button_Default(2,"Thrust");
 	joy.AddJoy_Button_Default(3,"Brake");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.04,false);
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.04,false,"Joystick_1");
 	//These are not assigned by default but can configured to use via xml preferences
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",true,1.0,0.04,true);
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",true,1.0,0.04,true,"Joystick_1");
 	joy.AddJoy_Button_Default(6,"Slide",false);
 	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
 
