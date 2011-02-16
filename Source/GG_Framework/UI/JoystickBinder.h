@@ -32,10 +32,10 @@ public:
 	///This binds all the axis, rotations, sliders to an event
 	/// \param IsFlipped this will simply multiply a -1.0 coefficient
 	void AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped=false,double Multiplier=1.0,double FilterRange=0.0,
-		bool isSquared=false);
+		bool isSquared=false,const char ProductName[]="any");
 	/// \param WhichButton while in theory there are up to 128 buttons supported I'm only going to support the first 32 for now
 	/// Use the JoystickTest program to determine the numbers of the buttons
-	void AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff=true,bool dbl_click=false);
+	void AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff=true,bool dbl_click=false,const char ProductName[]="any");
 	//TODO see if I really need RemoveJoy_x_Binding methods
 
 
