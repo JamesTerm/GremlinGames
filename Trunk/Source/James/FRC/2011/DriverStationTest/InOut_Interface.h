@@ -3,27 +3,23 @@
 
 class Robot_Control : public Robot_Control_Interface
 {
-	double m_ENGAGED_MAX_SPEED;  //cache this to covert velocity to motor setting
 	RobotDrive m_RobotDrive;
+	RobotDrive m_ArmMotor;
+
+	double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
+	double m_ArmMaxSpeed;
 	public:
-		Robot_Control() : m_RobotDrive(1,2,3,4)
+		Robot_Control() : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6)
 		{
 			//I'm giving a whole second before the timeout kicks in... I do not want false positives!
 			//m_RobotDrive.SetExpiration(1.0);
 			//m_RobotDrive.SetSafetyEnabled(true);
 		}
 		virtual ~Robot_Control() {}
-		virtual void Initialize(const Entity_Properties *props)
-		{
-			const Ship_Properties *ship_props=static_cast<const Ship_Properties *>(props);
-			m_ENGAGED_MAX_SPEED=ship_props->GetEngagedMaxSpeed();
-		}
+		virtual void Initialize(const Entity_Properties *props);
 	protected: //from Robot_Control_Interface
-		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
-		{
-			m_RobotDrive.SetLeftRightMotorSpeeds((float)(LeftVelocity/m_ENGAGED_MAX_SPEED),(float)(RightVelocity/m_ENGAGED_MAX_SPEED));
-		}
-		virtual void UpdateArmHeight(double Height_m) {}
+		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
+		virtual void UpdateArmVelocity(double Velocity);
 };
 
 class Driver_Station_Joystick : public Framework::Base::IJoystick
