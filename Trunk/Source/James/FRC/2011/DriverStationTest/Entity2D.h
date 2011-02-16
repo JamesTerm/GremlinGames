@@ -99,3 +99,4 @@ class Entity2D
 	protected: 
 		FlightDynamics_2D m_Physics;
 };
+

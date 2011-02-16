@@ -80,5 +80,6 @@ class Ship_1D : public Entity1D
 
 		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity  from a speed delta change
 	private:
+		//typedef Entity1D __super;
 		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
 };
