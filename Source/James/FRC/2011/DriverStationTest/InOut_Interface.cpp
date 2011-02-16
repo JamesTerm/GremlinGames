@@ -51,8 +51,8 @@ Driver_Station_Joystick::Driver_Station_Joystick(int NoJoysticks,int StartingPor
 {
 	m_ds = DriverStation::GetInstance();
 	Framework::Base::IJoystick::JoystickInfo common;
-	common.ProductName="Driver_Station";
-	common.InstanceName="Joystick_1";
+	common.ProductName="Joystick_1";
+	common.InstanceName="Driver_Station";
 	common.JoyCapFlags=
 		JoystickInfo::fX_Axis|JoystickInfo::fY_Axis|JoystickInfo::fZ_Axis|
 		JoystickInfo::fX_Rot|JoystickInfo::fY_Rot;
@@ -62,11 +62,11 @@ Driver_Station_Joystick::Driver_Station_Joystick(int NoJoysticks,int StartingPor
 	common.bPresent=true;
 	m_JoyInfo.push_back(common);
 	//Go ahead and add other inputs
-	common.InstanceName="Joystick_2";
+	common.ProductName="Joystick_2";
 	m_JoyInfo.push_back(common);
-	common.InstanceName="Joystick_3";
+	common.ProductName="Joystick_3";
 	m_JoyInfo.push_back(common);
-	common.InstanceName="Joystick_4";
+	common.ProductName="Joystick_4";
 	m_JoyInfo.push_back(common);
 }
 
