@@ -19,8 +19,13 @@
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
 #include "InOut_Interface.h"
+#include "FRC2011_Robot.h"
 
 using namespace Framework::Base;
+
+  /***********************************************************************************************************************************/
+ /*														Driver_Station_Joystick														*/
+/***********************************************************************************************************************************/
 
 size_t Driver_Station_Joystick::GetNoJoysticksFound() 
 {
@@ -74,4 +79,27 @@ Driver_Station_Joystick::Driver_Station_Joystick(int NoJoysticks,int StartingPor
 
 Driver_Station_Joystick::~Driver_Station_Joystick()
 {
+}
+
+  /***********************************************************************************************************************************/
+ /*															Robot_Control															*/
+/***********************************************************************************************************************************/
+
+void Robot_Control::Initialize(const Entity_Properties *props)
+{
+	const FRC_2011_Robot_Properties *robot_props=static_cast<const FRC_2011_Robot_Properties *>(props);
+	assert(robot_props);
+	m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
+	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+}
+
+void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
+{
+	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
+	m_RobotDrive.SetLeftRightMotorSpeeds((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
+}
+void Robot_Control::UpdateArmVelocity(double Velocity)
+{
+	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
+	m_ArmMotor.SetLeftRightMotorSpeeds((float)(Velocity/m_ArmMaxSpeed),(float)(Velocity/m_ArmMaxSpeed));  //always the same velocity for both!
 }

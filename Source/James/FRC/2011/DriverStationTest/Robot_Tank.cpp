@@ -180,22 +180,3 @@ void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Loca
 }
 
 
-  /***********************************************************************************************************************************/
- /*															FRC_2011_Robot															*/
-/***********************************************************************************************************************************/
-
-FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control) : Robot_Tank(EntityName), m_RobotControl(robot_control)
-{
-}
-
-void FRC_2011_Robot::Initialize(EventMap& em, const Entity_Properties *props)
-{
-	__super::Initialize(em,props);
-	m_RobotControl->Initialize(props);
-}
-void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
-{
-	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity(),GetRightVelocity());
-}
-

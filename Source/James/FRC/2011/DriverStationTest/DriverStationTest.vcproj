@@ -197,6 +197,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FRC2011_Robot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Goal.cpp"
 				>
 			</File>
@@ -252,6 +256,10 @@
 			</File>
 			<File
 				RelativePath=".\Entity_Properties.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FRC2011_Robot.h"
 				>
 			</File>
 			<File
