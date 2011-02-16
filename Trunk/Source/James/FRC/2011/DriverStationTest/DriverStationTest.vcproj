@@ -225,6 +225,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Ship_1D.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UI_Controller.cpp"
 				>
 			</File>
@@ -272,6 +276,10 @@
 			</File>
 			<File
 				RelativePath=".\ship.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Ship_1D.h"
 				>
 			</File>
 			<File

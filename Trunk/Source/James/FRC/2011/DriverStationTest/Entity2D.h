@@ -10,6 +10,37 @@ inline void NormalizeRotation(double &Rotation)
 		Rotation+=Pi2;
 }
 
+class Entity1D
+{
+	private:
+		friend class Entity1D_Properties;
+
+		Framework::Base::EventMap* m_eventMap;
+		double m_Dimension;
+		double m_Position;
+		std::string m_Name;
+	public:
+		Entity1D(const char EntityName[]);
+
+		//This allows the game client to setup the ship's characteristics
+		virtual void Initialize(Framework::Base::EventMap& em, const Entity1D_Properties *props=NULL);
+		virtual ~Entity1D(); //Game Client will be nuking this pointer
+		const std::string &GetName() const {return m_Name;}
+		virtual void TimeChange(double dTime_s);
+		PhysicsEntity_1D &GetPhysics() {return m_Physics;}
+		const PhysicsEntity_1D &GetPhysics() const {return m_Physics;}
+		virtual double GetDimension() const {return m_Dimension;}
+		virtual void ResetPos();
+		// This is where both the entity and camera need to align to, by default we use the actual position
+		virtual const double &GetIntendedPosition() const {return m_Position;}
+		Framework::Base::EventMap* GetEventMap(){return m_eventMap;}
+
+		virtual double GetPos_m() const {return m_Position;}
+	protected: 
+		PhysicsEntity_1D m_Physics;
+};
+
+
 class Ship_Tester;
 //This contains everything the AI needs for game play; Keeping this encapsulated will help keep a clear division
 //of what Entity3D looked like before applying AI with goals
@@ -68,4 +99,3 @@ class Entity2D
 	protected: 
 		FlightDynamics_2D m_Physics;
 };
-

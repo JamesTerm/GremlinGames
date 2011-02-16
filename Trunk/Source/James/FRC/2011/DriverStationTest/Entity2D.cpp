@@ -6,10 +6,46 @@
 #include "Base/Event.h"
 #include "Entity_Properties.h"
 #include "Base/EventMap.h"
+#include "Physics_1D.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
 
 const double Pi2=M_PI*2.0;
+
+  /***********************************************************************************************************************************/
+ /*																	Entity1D														*/
+/***********************************************************************************************************************************/
+
+Entity1D::Entity1D(const char EntityName[]) : m_Dimension(1.0),m_Name(EntityName),m_Position(0.0)
+{
+	ResetPos();
+}
+
+Entity1D::~Entity1D() 
+{
+}
+
+void Entity1D::Initialize(Framework::Base::EventMap& em, const Entity1D_Properties *props)
+{
+	m_eventMap = &em;
+	if (props)
+		props->Initialize(this);
+}
+
+void Entity1D::ResetPos()
+{
+	//CancelAllControls();
+	m_Physics.ResetVectors();
+	m_Position=0.0;
+}
+
+void Entity1D::TimeChange(double dTime_s)
+{
+	double PositionDisplacement;
+	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement);
+	m_Position+=PositionDisplacement;
+}
+
 
   /***********************************************************************************************************************************/
  /*																	Entity2D														*/

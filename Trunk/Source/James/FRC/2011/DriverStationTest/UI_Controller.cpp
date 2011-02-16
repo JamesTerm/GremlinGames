@@ -5,6 +5,7 @@
 #include "Base/Misc.h"
 #include "Base/Event.h"
 #include "Base/EventMap.h"
+#include "Physics_1D.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
 #include "Goal.h"
