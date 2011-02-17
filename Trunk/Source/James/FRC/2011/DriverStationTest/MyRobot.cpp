@@ -32,7 +32,7 @@ class SetUp_Manager
 		//Note: The order of the members are critical, as they are instantiated in the constructor
 		Driver_Station_Joystick m_Joystick;  
 		Framework::UI::JoyStick_Binder m_JoyBinder;
-		Ship_Properties m_RobotProps;  //This will be upgraded soon
+		FRC_2011_Robot_Properties m_RobotProps;
 		Robot_Control m_Control; // robot drive system
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
 		Framework::Base::EventMap m_EventMap;
