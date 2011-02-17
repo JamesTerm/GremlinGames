@@ -29,7 +29,7 @@ using namespace Framework::Base;
 
 size_t Driver_Station_Joystick::GetNoJoysticksFound() 
 {
-	return 1;    //TODO see if this is detectable... we can hard code for now
+	return m_NoJoysticks;
 }
 
 bool Driver_Station_Joystick::read_joystick (size_t nr, JoyState &Info)

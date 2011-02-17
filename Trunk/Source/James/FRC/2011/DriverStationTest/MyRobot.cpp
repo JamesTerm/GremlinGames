@@ -38,7 +38,7 @@ class SetUp_Manager
 		Framework::Base::EventMap m_EventMap;
 		UI_Controller *m_pUI;
 	public:
-		SetUp_Manager() : m_Joystick(1,0), //for now 1 joystick starting at port 0 (i.e. no offset)
+		SetUp_Manager() : m_Joystick(2,0), //2 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_pRobot(NULL),m_pUI(NULL)
 		{
 			m_Control.Initialize(&m_RobotProps);
