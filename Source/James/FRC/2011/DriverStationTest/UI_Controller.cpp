@@ -15,7 +15,7 @@
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
 
-
+#define __UsingXTerminator__
 #undef __EnableTestKeys__
 
 using namespace Framework::Base;
@@ -54,6 +54,14 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",true,1.0,0.04,true,"Joystick_1");
 	joy.AddJoy_Button_Default(6,"Slide",false);
 	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
+
+	#ifdef __UsingXTerminator__
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Rot,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_1");
+	joy.AddJoy_Button_Default(6,"Arm_SetPos0feet",false);
+	joy.AddJoy_Button_Default(5,"Arm_SetPos3feet",false);
+	joy.AddJoy_Button_Default(4,"Arm_SetPos6feet",false);
+	joy.AddJoy_Button_Default(8,"Arm_SetPos9feet",false);
+	#endif
 
 	Init_AutoPilotControls();
 }
