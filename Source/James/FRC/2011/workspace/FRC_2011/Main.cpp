@@ -19,6 +19,7 @@
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
 #include "InOut_Interface.h"
+#include "FRC2011_Robot.h"
 
 const bool c_UseDefaultControls=false;
 
@@ -30,13 +31,13 @@ class SetUp_Manager
 		//Note: The order of the members are critical, as they are instantiated in the constructor
 		Driver_Station_Joystick m_Joystick;  
 		Framework::UI::JoyStick_Binder m_JoyBinder;
-		Ship_Properties m_RobotProps;  //This will be upgraded soon
+		FRC_2011_Robot_Properties m_RobotProps;
 		Robot_Control m_Control; // robot drive system
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
 		Framework::Base::EventMap m_EventMap;
 		UI_Controller *m_pUI;
 	public:
-		SetUp_Manager(bool UseSafety) : m_Joystick(1,0), //for now 1 joystick starting at port 0 (i.e. no offset)
+		SetUp_Manager(bool UseSafety) : m_Joystick(2,0), //2 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
 			m_Control.Initialize(&m_RobotProps);
