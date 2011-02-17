@@ -98,13 +98,13 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 {
 }
 
-void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
 
-	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+	const FRC_2011_Robot_Properties *RobotProps=static_cast<const FRC_2011_Robot_Properties *>(props);
 	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
 	m_Arm.Initialize(em,ArmProps);
 }
@@ -121,7 +121,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	arm_entity.TimeChange(dTime_s);
 }
 
-void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity(),GetRightVelocity());
