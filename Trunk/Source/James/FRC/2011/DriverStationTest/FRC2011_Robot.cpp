@@ -33,7 +33,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	//TODO add method to read height here
 	__super::TimeChange(dTime_s);
 	m_RobotControl->UpdateArmVelocity(m_Physics.GetLinearVelocity());
-	double Pos_m=GetPos_m();
+	//double Pos_m=GetPos_m();
 	//DOUT4("Arm=%f Pos=%fm %fft %fin",m_Physics.GetLinearVelocity(),Pos_m,Pos_m*3.2808399,Pos_m*39.3700787);
 }
 

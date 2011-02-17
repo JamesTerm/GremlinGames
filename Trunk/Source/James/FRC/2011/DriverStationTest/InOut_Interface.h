@@ -9,11 +9,16 @@ class Robot_Control : public Robot_Control_Interface
 	double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 	double m_ArmMaxSpeed;
 	public:
-		Robot_Control() : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6)
+		Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6)
 		{
-			//I'm giving a whole second before the timeout kicks in... I do not want false positives!
-			//m_RobotDrive.SetExpiration(1.0);
-			//m_RobotDrive.SetSafetyEnabled(true);
+			if (UseSafety)
+			{
+				//I'm giving a whole second before the timeout kicks in... I do not want false positives!
+				//m_RobotDrive.SetExpiration(1.0);
+				//m_RobotDrive.SetSafetyEnabled(true);
+			}
+			//else
+				//m_RobotDrive.SetSafetyEnabled(false);
 		}
 		virtual ~Robot_Control() {}
 		virtual void Initialize(const Entity_Properties *props);
