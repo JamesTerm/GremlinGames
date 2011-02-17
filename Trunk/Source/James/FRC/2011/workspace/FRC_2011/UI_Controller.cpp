@@ -15,7 +15,9 @@
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
 
-
+#define __WindRiverJoysticks__
+#undef __UsingXTerminator__
+#undef __UsingWPTH_UI__ //The WPLib Testing Harness UI (where the second joystick is on the UI itself)
 #undef __EnableTestKeys__
 
 using namespace Framework::Base;
@@ -43,18 +45,34 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 
 	//TODO hard code the events to the correct mappings
 	//I'll need to add parm for instance name to support multiple joysticks
-
-	joy.AddJoy_Button_Default(0,"Ship.TryFireMainWeapon");
-	joy.AddJoy_Button_Default(1,"Missile.Launch");
-	// We can now use double-tap to fire the afterburners (for when we have them)
-	joy.AddJoy_Button_Default(2,"Thrust");
-	joy.AddJoy_Button_Default(3,"Brake");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.04,false,"Joystick_1");
 	//These are not assigned by default but can configured to use via xml preferences
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",true,1.0,0.04,true,"Joystick_1");
 	joy.AddJoy_Button_Default(6,"Slide",false);
 	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
 
+	#ifdef __UsingXTerminator__
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Rot,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_1");
+	joy.AddJoy_Button_Default(6,"Arm_SetPos0feet",false);
+	joy.AddJoy_Button_Default(5,"Arm_SetPos3feet",false);
+	joy.AddJoy_Button_Default(4,"Arm_SetPos6feet",false);
+	joy.AddJoy_Button_Default(8,"Arm_SetPos9feet",false);
+	#endif
+	#ifdef __UsingWPTH_UI__
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_2");
+	joy.AddJoy_Button_Default(0,"Arm_SetPos0feet",false,false,"Joystick_2");
+	//Not sure why the simulator skipped 1
+	joy.AddJoy_Button_Default(2,"Arm_SetPos3feet",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default(3,"Arm_SetPos6feet",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default(4,"Arm_SetPos9feet",false,false,"Joystick_2");
+	#endif
+	#ifdef __WindRiverJoysticks__
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_2");
+	joy.AddJoy_Button_Default(0,"Arm_SetPos0feet",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default(1,"Arm_SetPos3feet",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default(2,"Arm_SetPos6feet",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default(3,"Arm_SetPos9feet",false,false,"Joystick_2");
+	#endif
 	Init_AutoPilotControls();
 }
 

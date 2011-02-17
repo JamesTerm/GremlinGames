@@ -31,25 +31,5 @@ class Robot_Control_Interface
 		virtual void Initialize(const Entity_Properties *props)=0;
 
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)=0;  ///< in meters per second
-		virtual void UpdateArmHeight(double Height_m)=0;  ///< in meters
-};
-
-///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
-///the Robot_Control_Interface
-class FRC_2011_Robot : public Robot_Tank
-{
-	private:
-		typedef Robot_Tank __super;
-		Robot_Control_Interface * const m_RobotControl;
-	public:
-		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control);
-		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
-		
-		virtual void TimeChange(double dTime_s) 
-		{
-			__super::TimeChange(dTime_s);
-		}
-	protected:
-		//This method is the perfect moment to obtain the new velocities and apply to the interface
-		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Framework::Base::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		virtual void UpdateArmVelocity(double Velocity)=0;  ///< in meters per second
 };
