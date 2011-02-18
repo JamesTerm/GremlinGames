@@ -144,6 +144,9 @@ void Robot_Control::UpdateArmVelocity(double Velocity)
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot_Properties														*/
 /***********************************************************************************************************************************/
+const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
+const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
+const double c_ArmLength_m=1.8288;  //6 feet(
 
 FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	"Arm",
