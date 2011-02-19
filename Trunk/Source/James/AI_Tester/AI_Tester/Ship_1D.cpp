@@ -77,6 +77,8 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 
 		MaxAccelForward=1.0;
 		MaxAccelReverse=1.0;
+		m_UsingRange=false;
+		m_MaxRange=m_MaxRange=0;
 	}
 	Mass  = m_Physics.GetMass();
 
@@ -141,7 +143,7 @@ void Ship_1D::TimeChange(double dTime_s)
 				UsingRequestedVelocity=(m_RequestedVelocity!=m_Last_RequestedVelocity);
 
 			//Just transfer the acceleration directly into our velocity to use variable
-			double VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:currFwdVel+VelocityDelta;
+			double VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:currFwdVel;
 
 
 			#ifndef __DisableSpeedControl__
@@ -166,11 +168,16 @@ void Ship_1D::TimeChange(double dTime_s)
 			}
 			#endif
 
-			if (UsingRequestedVelocity)
-				ForceToApply=m_Physics.GetForceFromVelocity(VelocityToUse,dTime_s);
-			else
-				ForceToApply=m_Physics.GetForceFromVelocity(currFwdVel,dTime_s);  
-
+			if (m_UsingRange)
+			{
+				double Position=GetPos_m();
+				//check to see if we are going reach limit
+				if ((VelocityToUse + Position) > m_MaxRange)
+					VelocityToUse=m_MaxRange-Position;
+				else if ((VelocityToUse + Position) < m_MinRange)
+					VelocityToUse=m_MinRange-Position;
+			}
+			ForceToApply=m_Physics.GetForceFromVelocity(VelocityToUse,dTime_s);
 			if (!UsingRequestedVelocity)
 				ForceToApply+=m_currAccel * Mass;
 		}
@@ -197,6 +204,14 @@ void Ship_1D::TimeChange(double dTime_s)
 
 		{
 			double DistanceToUse=posDisplacement_m;
+			//Most likely these should never get triggered unless there is some kind of control like the mouse that can go beyond the limit
+			if (m_UsingRange)
+			{
+				if (m_IntendedPosition>m_MaxRange)
+					DistanceToUse=m_MaxRange-GetPos_m();
+				else if(m_IntendedPosition<m_MinRange)
+					DistanceToUse=m_MinRange-GetPos_m();
+			}
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
 			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVel);
