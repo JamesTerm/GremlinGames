@@ -21,13 +21,24 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control)
 {
 }
+
+double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
+{
+	return (sin(Angle_r*c_GearToArmRatio)*c_ArmLength_m)+c_GearHeightOffset;
+}
+
+double FRC_2011_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
+{
+	return asin((Height_m-c_GearHeightOffset)/c_ArmLength_m) * c_ArmToGearRatio;
+}
+
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	//TODO add method to read height here
 	__super::TimeChange(dTime_s);
 	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
 	double Pos_m=GetPos_m();
-	double height=(sin(Pos_m*c_GearToArmRatio)*c_ArmLength_m)+c_GearHeightOffset;
+	double height=AngleToHeight_m(Pos_m);
 	DOUT4("Arm=%f Angle=%f %fft %fin",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
 }
 
@@ -45,23 +56,19 @@ void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Veloc
 
 void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 {
-	double height_m=0.0 - c_GearHeightOffset;
-	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio );
+	SetIntendedPosition( HeightToAngle_r(0.0) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
-	double height_m=0.9144 - c_GearHeightOffset;
-	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio);
+	SetIntendedPosition( HeightToAngle_r(0.9144) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
-	double height_m=1.8288 - c_GearHeightOffset;
-	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio);
+	SetIntendedPosition( HeightToAngle_r(1.8288) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
-	double height_m=2.7432 - c_GearHeightOffset;
-	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio);
+	SetIntendedPosition( HeightToAngle_r(2.7432) );
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)

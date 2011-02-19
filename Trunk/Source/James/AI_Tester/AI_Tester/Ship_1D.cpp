@@ -256,3 +256,49 @@ void Ship_1D::TimeChange(double dTime_s)
 
 	m_currAccel=0.0;
 }
+
+  /***********************************************************************************************************************************/
+ /*												Goal_Ship1D_MoveToPosition															*/
+/***********************************************************************************************************************************/
+
+Goal_Ship1D_MoveToPosition::Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position) :
+	m_ship(ship),m_Position(position),m_Terminate(false)
+{
+	m_Status=eInactive;
+}
+Goal_Ship1D_MoveToPosition::~Goal_Ship1D_MoveToPosition()
+{
+	Terminate(); //more for completion
+}
+
+void Goal_Ship1D_MoveToPosition::Activate() 
+{
+	m_Status=eActive;
+	//During the activation we'll set the requested position
+	m_ship.SetIntendedPosition(m_Position);
+}
+
+Goal::Goal_Status Goal_Ship1D_MoveToPosition::Process(double dTime_s)
+{
+	//TODO this may be an inline check
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	if (m_Status==eActive)
+	{
+		if (m_ship.GetIntendedPosition()==m_Position)
+		{
+			double position_delta=m_ship.GetPos_m()-m_Position;
+			//TODO check IsStuck for failed case
+			if (IsZero(position_delta))
+				m_Status=eCompleted;
+		}
+		else
+			m_Status=eFailed;  //Some thing else took control of the ship
+	}
+	return m_Status;
+}

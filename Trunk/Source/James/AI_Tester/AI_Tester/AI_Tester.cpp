@@ -631,6 +631,7 @@ void CommandLineInterface()
 				enum
 				{
 					eCurrent,
+					eTestGoals,
 					eTestLUAShip,
 					eControlABomber,
 					eFollowShipTest,
@@ -651,6 +652,65 @@ void CommandLineInterface()
 							game.SetControlledEntity(TestEntity);
 						}
 						break;
+					case eTestGoals:
+						{
+							FRC_2011_Robot *Robot=dynamic_cast<FRC_2011_Robot *>(game.GetEntity("testrobot1"));
+							if (Robot)
+							{
+								Ship_1D &Arm=Robot->GetArm();
+								Goal *oldgoal=Robot->ClearGoal();
+								if (oldgoal)
+									delete oldgoal;
+
+								//Now to setup the goal
+								double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);
+								Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+								//Construct a way point
+								WayPoint wp;
+								wp.Position[0]=0;
+								wp.Position[1]=8.5;
+								wp.Power=1.0;
+								//Now to setup the goal
+								Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+								MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
+								Initial_Start_Goal->AddGoal(goal_arm);
+								Initial_Start_Goal->AddGoal(goal_drive);
+
+								wp.Position[1]=9;
+								Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+								wp.Position[1]=8.5;
+								Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+								Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
+								wp.Position[1]=0;
+								Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+								position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+								Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+								MultitaskGoal *End_Goal=new MultitaskGoal;
+								End_Goal->AddGoal(goal_arm2);
+								End_Goal->AddGoal(goal_drive4);
+
+								//wrap the goal in a notify goal
+								Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete"); //will fire Complete once it is done
+								//Inserted in reverse since this is LIFO stack list
+								MainGoal->AddSubgoal(End_Goal);
+								MainGoal->AddSubgoal(goal_drive3);
+								MainGoal->AddSubgoal(goal_waitfordrop);
+								//TODO drop claw here
+								MainGoal->AddSubgoal(goal_drive2);
+								MainGoal->AddSubgoal(Initial_Start_Goal);
+								MainGoal->Activate(); //now with the goal(s) loaded activate it
+								//Now to subscribe to this event... it will call Stop Loop when the goal is finished
+								//Robot->GetEventMap()->Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Autonomous::StopLoop);
+
+								Robot->SetGoal(MainGoal);
+							}
+							else
+								printf("Robot not found\n");
+							break;
+						}
 					case eTestLUAShip:
 						{
 							g_WorldScaleFactor=100.0;
