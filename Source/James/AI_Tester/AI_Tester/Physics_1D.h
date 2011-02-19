@@ -27,8 +27,8 @@ class PhysicsEntity_1D
 			double KineticFriction ///<The amount of friction to be applied when object is moving
 			);
 
-		void SetLinearVelocity( double LinearVelocity);
-		double GetLinearVelocity() const;
+		void SetVelocity( double Velocity);
+		double GetVelocity() const;
 
 		///These will auto sum for each call made, the forces last for one second during each timer update, so you have to call them repeatedly to 
 		///continue to apply force.  If you want to apply a force for a specific amount of time, this can be achieved by calling this
@@ -58,7 +58,7 @@ class PhysicsEntity_1D
 		double m_EntityMass;
 		double m_StaticFriction,m_KineticFriction;
 
-		double m_LinearVelocity;		///< This must represent global orientation for external forces to work properly
+		double m_Velocity;
 
 		///This variable is factored in but is managed externally 
 		double m_SummedExternalForces;

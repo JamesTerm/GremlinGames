@@ -5,6 +5,13 @@ using namespace AI_Tester;
 using namespace GG_Framework::Base;
 using namespace std;
 
+const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
+const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
+const double c_ArmLength_m=1.8288;  //6 feet
+const double c_ArmToGearRatio=72.0/28.0;
+const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
+const double c_PotentiometerToGearRatio=1.875;
+const double c_GearHeightOffset=1.397;  //55 inches
 
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Arm														*/
@@ -18,9 +25,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	//TODO add method to read height here
 	__super::TimeChange(dTime_s);
-	m_RobotControl->UpdateArmVelocity(m_Physics.GetLinearVelocity());
+	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
 	double Pos_m=GetPos_m();
-	DOUT4("Arm=%f Pos=%fm %fft %fin",m_Physics.GetLinearVelocity(),Pos_m,Pos_m*3.2808399,Pos_m*39.3700787);
+	double height=(sin(Pos_m*c_GearToArmRatio)*c_ArmLength_m)+c_GearHeightOffset;
+	DOUT4("Arm=%f Angle=%f %fft %fin",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
 }
 
 void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Velocity)
@@ -37,19 +45,23 @@ void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Veloc
 
 void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 {
-	SetIntendedPosition(0.0);
+	double height_m=0.0 - c_GearHeightOffset;
+	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
-	SetIntendedPosition(0.9144);
+	double height_m=0.9144 - c_GearHeightOffset;
+	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio);
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
-	SetIntendedPosition(1.8288);
+	double height_m=1.8288 - c_GearHeightOffset;
+	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio);
 }
 void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
-	SetIntendedPosition(2.7432);
+	double height_m=2.7432 - c_GearHeightOffset;
+	SetIntendedPosition(asin(height_m/c_ArmLength_m) * c_ArmToGearRatio);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -144,9 +156,6 @@ void Robot_Control::UpdateArmVelocity(double Velocity)
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot_Properties														*/
 /***********************************************************************************************************************************/
-const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
-const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
-const double c_ArmLength_m=1.8288;  //6 feet(
 
 FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	"Arm",
@@ -157,7 +166,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	2.0,2.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
-	0.0,9.0 //0 - 9
+	c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
 	)
 {
 }

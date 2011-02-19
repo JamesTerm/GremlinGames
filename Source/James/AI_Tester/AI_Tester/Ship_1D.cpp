@@ -44,7 +44,7 @@ void Ship_1D::SetSimFlightMode(bool SimFlightMode)
 	//And to not do extra work on the m_RequestedVelocity.
 	if (m_SimFlightMode!=SimFlightMode)
 	{
-		m_RequestedVelocity=m_Physics.GetLinearVelocity();
+		m_RequestedVelocity=m_Physics.GetVelocity();
 		m_SimFlightMode=SimFlightMode;	
 		DebugOutput("SimFlightMode=%d\n",SimFlightMode);
 	}
@@ -102,7 +102,7 @@ void Ship_1D::TimeChange(double dTime_s)
 {
 
 	// Find the current velocity and use to determine the flight characteristics we will WANT to us
-	double LocalVelocity=m_Physics.GetLinearVelocity();
+	double LocalVelocity=m_Physics.GetVelocity();
 	double currFwdVel = LocalVelocity;
 	bool manualMode = !((m_SimFlightMode)&&(m_currAccel==0));
 
