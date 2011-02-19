@@ -43,7 +43,7 @@ bool AI_Base_Controller::Try_SetUIController(UI_Controller *controller)
 	return true;
 }
 
-void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d PositionPoint, double power, double dTime_s,osg::Vec2d* matchVel)
+void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d PositionPoint, double power, double dTime_s,osg::Vec2d* matchVel,bool LockOrientation)
 {
 	if (	_isnan(TrajectoryPoint[0]) ||
 			_isnan(TrajectoryPoint[1]) ||
@@ -65,10 +65,12 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 
 	osg::Vec2d VectorOffset=TrajectoryPoint-m_ship.GetPos_m();
 
-	double AngularDistance=m_ship.m_IntendedOrientationPhysics.ComputeAngularDistance(VectorOffset);
-	//printf("\r %f          ",RAD_2_DEG(AngularDistance));
-
-	m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
+	if (!LockOrientation)
+	{
+		double AngularDistance=m_ship.m_IntendedOrientationPhysics.ComputeAngularDistance(VectorOffset);
+		//printf("\r %f          ",RAD_2_DEG(AngularDistance));
+		m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
+	}
 
 	//first negotiate the max speed given the power
 	double MaxSpeed=m_ship.ENGAGED_MAX_SPEED;
@@ -200,8 +202,8 @@ Goal::Goal_Status Goal_Ship_RotateToPosition::Process(double dTime_s)
  /*												Goal_Ship_MoveToPosition															*/
 /***********************************************************************************************************************************/
 
-Goal_Ship_MoveToPosition::Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop) : m_Point(waypoint), m_Controller(controller),
-	m_ship(controller->GetShip()),m_Terminate(false),m_UseSafeStop(UseSafeStop)
+Goal_Ship_MoveToPosition::Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop,bool LockOrientation) : m_Point(waypoint), m_Controller(controller),
+	m_ship(controller->GetShip()),m_Terminate(false),m_UseSafeStop(UseSafeStop),m_LockOrientation(LockOrientation)
 {
 	m_Status=eInactive;
 }
@@ -240,7 +242,7 @@ Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
 		//TODO check IsStuck for failed case
 		if (!HitWayPoint())
 		{
-			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &osg::Vec2d(0,0):NULL);
+			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &osg::Vec2d(0,0):NULL,m_LockOrientation);
 		}
 		else
 		{
@@ -377,6 +379,33 @@ void Goal_Ship_FollowShip::Terminate()
 {
 	//TODO this may be an inline check
 	m_Terminate=true;
+}
+
+  /***********************************************************************************************************************************/
+ /*															Goal_Wait																*/
+/***********************************************************************************************************************************/
+
+Goal_Wait::Goal_Wait(double seconds) : m_TimeToWait(seconds)
+{
+	m_Status=eInactive;
+}
+
+void Goal_Wait::Activate()
+{
+	m_Status=eActive; 
+	m_TimeAccrued=0.0;
+}
+Goal::Goal_Status Goal_Wait::Process(double dTime_s)
+{
+	ActivateIfInactive();
+	m_TimeAccrued+=dTime_s;
+	if (m_TimeAccrued>m_TimeToWait)
+		m_Status=eCompleted;
+	return m_Status;
+}
+void Goal_Wait::Terminate()
+{
+	m_Status=eInactive;
 }
 
 
