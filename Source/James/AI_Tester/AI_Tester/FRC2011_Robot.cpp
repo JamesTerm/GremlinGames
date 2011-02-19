@@ -166,7 +166,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	2.0,2.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
-	c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
+	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
 	)
 {
 }
