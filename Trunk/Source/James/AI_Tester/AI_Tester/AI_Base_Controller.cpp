@@ -2,6 +2,7 @@
 #include "AI_Tester.h"
 
 using namespace AI_Tester;
+using namespace GG_Framework::Base;
 
 const double Pi2=M_PI*2.0;
 
@@ -9,7 +10,7 @@ const double Pi2=M_PI*2.0;
  /*														AI_Base_Controller															*/
 /***********************************************************************************************************************************/
 
-AI_Base_Controller::AI_Base_Controller(Ship_2D &ship) : m_ship(ship),m_UI_Controller(NULL),m_Goal(NULL)
+AI_Base_Controller::AI_Base_Controller(Ship_2D &ship) : m_Goal(NULL),m_ship(ship),m_UI_Controller(NULL)
 {
 }
 
@@ -263,8 +264,8 @@ void Goal_Ship_MoveToPosition::Terminate()
  /*													Goal_Ship_FollowPath															*/
 /***********************************************************************************************************************************/
 
-Goal_Ship_FollowPath::Goal_Ship_FollowPath(AI_Base_Controller *controller,std::list<WayPoint> path,bool LoopMode) : m_Path(path),m_PathCopy(path),
-	m_Controller(controller),m_LoopMode(LoopMode)
+Goal_Ship_FollowPath::Goal_Ship_FollowPath(AI_Base_Controller *controller,std::list<WayPoint> path,bool LoopMode) : 
+	m_Controller(controller),m_Path(path),m_PathCopy(path),m_LoopMode(LoopMode)
 {
 	m_Status=eInactive;
 }
@@ -414,7 +415,7 @@ void Goal_Wait::Terminate()
 /***********************************************************************************************************************************/
 
 
-Goal_NotifyWhenComplete::Goal_NotifyWhenComplete(GG_Framework::Base::EventMap &em,char *EventName) : m_EventName(EventName),m_EventMap(em)
+Goal_NotifyWhenComplete::Goal_NotifyWhenComplete(EventMap &em,char *EventName) : m_EventName(EventName),m_EventMap(em)
 {
 	m_Status=eInactive;
 }

@@ -38,14 +38,14 @@ class AI_Base_Controller
 		
 		Ship_2D &GetShip() {return m_ship;}
 	protected:
-		friend Ship_Tester;
+		friend class Ship_Tester;
 		Goal *m_Goal; //Dynamically set a goal for this controller
 	private:
-		friend UI_Controller;
-		UI_Controller *m_UI_Controller;
-
 		//TODO determine way to properly introduce UI_Controls here	
 		Ship_2D &m_ship;
+
+		friend class UI_Controller;
+		UI_Controller *m_UI_Controller;
 };
 
 //This will explicitly rotate the ship to a particular heading.  It may be moving or still.
@@ -72,8 +72,8 @@ struct WayPoint
 {
 	WayPoint() : Power(0.0), Position(0,0),TurnSpeedScaler(1.0) {}
 	double Power;
-	double TurnSpeedScaler;  //This will have a default value if not in script
 	osg::Vec2d Position;
+	double TurnSpeedScaler;  //This will have a default value if not in script
 };
 
 //This is similar to Traverse_Edge in book (not to be confused with its MoveToPosition)
@@ -91,8 +91,8 @@ class Goal_Ship_MoveToPosition : public AtomicGoal
 		bool HitWayPoint();  
 
 	private:
-		AI_Base_Controller * const m_Controller;
 		WayPoint m_Point;
+		AI_Base_Controller * const m_Controller;
 		Ship_2D &m_ship;
 		bool m_Terminate;
 		bool m_UseSafeStop;
@@ -114,20 +114,20 @@ class Goal_Ship_FollowPath : public CompositeGoal
 
 class Goal_Ship_FollowShip : public AtomicGoal
 {
-public:
-	Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const osg::Vec2d &RelPosition);
-	~Goal_Ship_FollowShip();
-	virtual void Activate();
-	virtual Goal_Status Process(double dTime_s);
-	virtual void Terminate();
-	//Allow client to change its relative position dynamically
-	void SetRelPosition(const osg::Vec2d &RelPosition);
-private:
-	AI_Base_Controller * const m_Controller;
-	osg::Vec2d m_RelPosition,m_TrajectoryPosition;
-	Ship_2D &m_ship;
-	const Ship_2D &m_Followship;
-	bool m_Terminate;
+	public:
+		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const osg::Vec2d &RelPosition);
+		~Goal_Ship_FollowShip();
+		virtual void Activate();
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate();
+		//Allow client to change its relative position dynamically
+		void SetRelPosition(const osg::Vec2d &RelPosition);
+	private:
+		AI_Base_Controller * const m_Controller;
+		osg::Vec2d m_RelPosition,m_TrajectoryPosition;
+		const Ship_2D &m_Followship;
+		Ship_2D &m_ship;
+		bool m_Terminate;
 };
 
 class Goal_Wait : public AtomicGoal
@@ -145,22 +145,24 @@ class Goal_Wait : public AtomicGoal
 //This goal simply will fire an event when all goals are complete
 class Goal_NotifyWhenComplete : public CompositeGoal
 {
-public:
-	Goal_NotifyWhenComplete(GG_Framework::Base::EventMap &em,char *EventName);
-	//give public access for client to populate goals
-	virtual void AddSubgoal(Goal *g) {__super::AddSubgoal(g);}
-	//client activates manually when goals are added
-	virtual void Activate();
-	virtual Goal_Status Process(double dTime_s);
-	virtual void Terminate();
+	public:
+		Goal_NotifyWhenComplete(GG_Framework::Base::EventMap &em,char *EventName);
+		//give public access for client to populate goals
+		virtual void AddSubgoal(Goal *g) {__super::AddSubgoal(g);}
+		//client activates manually when goals are added
+		virtual void Activate();
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate();
 
-private:
-	std::string m_EventName;  //name to fire when complete
-	GG_Framework::Base::EventMap &m_EventMap;
+	private:
+		std::string m_EventName;  //name to fire when complete
+		GG_Framework::Base::EventMap &m_EventMap;
 };
 
+#if 0
 class AI_Controller : public AI_Base_Controller
 {
 	public:
 	private:
 };
+#endif
