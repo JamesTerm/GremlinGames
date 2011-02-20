@@ -25,6 +25,8 @@ const double c_ArmLength_m=1.8288;  //6 feet
 const double c_ArmToGearRatio=72.0/28.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 const double c_PotentiometerToGearRatio=1.875;
+const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
+const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 
   /***********************************************************************************************************************************/
@@ -40,15 +42,28 @@ double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
 {
 	return (sin(Angle_r*c_GearToArmRatio)*c_ArmLength_m)+c_GearHeightOffset;
 }
+double FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r)
+{
+	return (sin(Angle_r)*c_ArmLength_m)+c_GearHeightOffset;
+}
 
 double FRC_2011_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
 {
 	return asin((Height_m-c_GearHeightOffset)/c_ArmLength_m) * c_ArmToGearRatio;
 }
 
+double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
+{
+	double ret=((raw / 512.0)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
+	ret*=c_PotentiometerToArm;  //convert to arm's gear ratio
+	return ret;
+}
+
+
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
-	//TODO add method to read height here
+	//Update the position to where the potentiometer says where it actually is
+	//SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
 	__super::TimeChange(dTime_s);
 	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
 	double Pos_m=GetPos_m();

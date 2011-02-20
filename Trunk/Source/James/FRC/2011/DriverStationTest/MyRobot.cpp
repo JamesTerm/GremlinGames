@@ -294,6 +294,7 @@ public:
 			SetUp_Manager main(true);
 			double tm = GetTime();
 			GetWatchdog().SetEnabled(true);
+			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 			while (IsOperatorControl())
 			{
 				GetWatchdog().Feed();
@@ -305,6 +306,7 @@ public:
 				main.TimeChange(time);
 				//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
 				//run at a pace that doesn't spike the CPU
+				lcd->UpdateLCD();
 				Wait(0.004);				
 			}
 		}
