@@ -49,7 +49,7 @@ class Ship_1D : public Entity1D
 		// Watch for being made the controlled ship
 		virtual bool IsPlayerControllable(){return true;}
 
-		friend Ship_1D_Properties;
+		friend class Ship_1D_Properties;
 
 		double MAX_SPEED;
 

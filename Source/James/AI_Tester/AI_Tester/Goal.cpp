@@ -3,19 +3,19 @@
 
 using namespace AI_Tester;
 void* Goal::operator new ( const size_t size )
-{	return ::malloc( size );
+{	return malloc( size );
 }
 
 void  Goal::operator delete ( void* ptr )
-{	::free( ptr );
+{	free( ptr );
 }
 
 void* Goal::operator new [] ( const size_t size )
-{	return ::malloc( size );
+{	return malloc( size );
 }
 
 void  Goal::operator delete [] ( void* ptr )
-{	::free( ptr );
+{	free( ptr );
 }
 
   /***************************************************************************************************************/

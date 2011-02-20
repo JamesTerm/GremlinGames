@@ -20,6 +20,7 @@ class FRC_2011_Robot : public Robot_Tank
 		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control);
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
+		virtual void TimeChange(double dTime_s);
 
 		class Robot_Arm : public Ship_1D
 		{
@@ -47,7 +48,6 @@ class FRC_2011_Robot : public Robot_Tank
 	protected:
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
-		virtual void TimeChange(double dTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
 		Robot_Control_Interface * const m_RobotControl;
