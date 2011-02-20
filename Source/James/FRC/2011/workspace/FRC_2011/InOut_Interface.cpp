@@ -1,4 +1,5 @@
 #include "WPILib.h"
+
 #include "Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
@@ -102,4 +103,19 @@ void Robot_Control::UpdateArmVelocity(double Velocity)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 	m_ArmMotor.SetLeftRightMotorOutputs((float)(Velocity/m_ArmMaxSpeed),(float)(Velocity/m_ArmMaxSpeed));  //always the same velocity for both!
+}
+
+double Robot_Control::GetArmCurrentPosition()
+{
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	DriverStation *ds=DriverStation::GetInstance();
+	double raw_value = (double) ds->GetAnalogIn(1); //TODO determine what channel this is
+	double ret=FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
+	//I may keep these on as they should be useful feedback
+	#if 1
+	double height=FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(ret);
+	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);
+	//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
+	#endif
+	return ret;
 }

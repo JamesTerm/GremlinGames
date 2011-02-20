@@ -34,7 +34,7 @@ class AI_Base_Controller
 		/// Use NULL when flying through way-points
 		/// Use (0,0) if you want to come to a stop, like at the end of a way-point series
 		/// Otherwise, use the velocity of the ship you are targeting or following to keep up with it
-		void DriveToLocation(Vec2D TrajectoryPoint,Vec2D PositionPoint, double power, double dTime_s,Vec2D* matchVel);
+		void DriveToLocation(Vec2D TrajectoryPoint,Vec2D PositionPoint, double power, double dTime_s,Vec2D* matchVel,bool LockOrientation=false);
 		void SetIntendedOrientation(double IntendedOrientation) {m_ship.SetIntendedOrientation(IntendedOrientation);}
 		
 		Ship_2D &GetShip() {return m_ship;}
@@ -81,7 +81,7 @@ struct WayPoint
 class Goal_Ship_MoveToPosition : public AtomicGoal
 {
 	public:
-		Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true);
+		Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true,bool LockOrientation=false);
 		~Goal_Ship_MoveToPosition();
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
@@ -97,6 +97,7 @@ class Goal_Ship_MoveToPosition : public AtomicGoal
 		Ship_2D &m_ship;
 		bool m_Terminate;
 		bool m_UseSafeStop;
+		bool m_LockOrientation;
 };
 
 class Goal_Ship_FollowPath : public CompositeGoal
@@ -131,6 +132,17 @@ class Goal_Ship_FollowShip : public AtomicGoal
 		bool m_Terminate;
 };
 
+class Goal_Wait : public AtomicGoal
+{
+	public:
+		Goal_Wait(double seconds);
+		virtual void Activate();
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate();
+	private:
+		double m_TimeAccrued;
+		double m_TimeToWait;
+};
 
 //This goal simply will fire an event when all goals are complete
 class Goal_NotifyWhenComplete : public CompositeGoal

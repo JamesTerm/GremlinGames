@@ -29,12 +29,12 @@ double PhysicsEntity_1D::GetMass() const
 
 void PhysicsEntity_1D::CopyFrom(const PhysicsEntity_1D& rhs)
 {
-	m_LinearVelocity= rhs.m_LinearVelocity;
+	m_Velocity= rhs.m_Velocity;
 }
 
 void PhysicsEntity_1D::ResetVectors()
 {
-	m_LinearVelocity= 0.0;
+	m_Velocity= 0.0;
 }
 
 PhysicsEntity_1D::PhysicsEntity_1D()
@@ -55,13 +55,13 @@ void PhysicsEntity_1D::SetFriction(double StaticFriction,double KineticFriction)
 	m_KineticFriction=KineticFriction;
 }
 
-void PhysicsEntity_1D::SetLinearVelocity(double LinearVelocity)
+void PhysicsEntity_1D::SetVelocity(double Velocity)
 { 
-	m_LinearVelocity=LinearVelocity;
+	m_Velocity=Velocity;
 }
-double PhysicsEntity_1D::GetLinearVelocity() const
+double PhysicsEntity_1D::GetVelocity() const
 {
-	return m_LinearVelocity;
+	return m_Velocity;
 }
 
 void PhysicsEntity_1D::ApplyFractionalForce( double force,double FrameDuration)
@@ -69,15 +69,15 @@ void PhysicsEntity_1D::ApplyFractionalForce( double force,double FrameDuration)
 	//I'm writing this out so I can easily debug
 	double AccelerationDelta=force/m_EntityMass;
 	double VelocityDelta=AccelerationDelta*FrameDuration;
-	m_LinearVelocity+=VelocityDelta;
+	m_Velocity+=VelocityDelta;
 
 	//if (AccelerationDelta[1]!=0)
-	//	DebugOutput("Acc%f Vel%f\n",AccelerationDelta[1],m_LinearVelocity[1]);
+	//	DebugOutput("Acc%f Vel%f\n",AccelerationDelta[1],m_Velocity[1]);
 }
 
 double PhysicsEntity_1D::GetForceFromVelocity(double vDesiredVelocity,double DeltaTime_s)
 {
-	double DeltaVelocity=(vDesiredVelocity-GetLinearVelocity());
+	double DeltaVelocity=(vDesiredVelocity-GetVelocity());
 	//A=Delta V / Delta T
 	double Acceleration=DeltaVelocity/DeltaTime_s;  //This may be pretty quick (apply Force restrictions later)
 
@@ -98,7 +98,7 @@ double PhysicsEntity_1D::GetForceFromVelocity(double vDesiredVelocity,double Del
 inline double PhysicsEntity_1D::GetVelocityFromCollision(double ThisVelocityToUse,double otherEntityMass,double otherEntityVelocity)
 {
 	//almost not quite
-	//return (m_LinearVelocity*(m_EntityMass-otherEntityMass)) / (m_EntityMass+otherEntityMass);
+	//return (m_Velocity*(m_EntityMass-otherEntityMass)) / (m_EntityMass+otherEntityMass);
 
 	/// en.wikipedia.org/wiki/Elastic_collision
 	// Here is the equation
@@ -179,5 +179,5 @@ double PhysicsEntity_1D::ComputeRestrainedForce(double LocalForce,double ForceRe
 void PhysicsEntity_1D::TimeChangeUpdate(double DeltaTime_s,double &PositionDisplacement)
 {
 	//Transfer the velocity to displacement
-	PositionDisplacement = m_LinearVelocity * DeltaTime_s;
+	PositionDisplacement = m_Velocity * DeltaTime_s;
 }
