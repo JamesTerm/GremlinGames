@@ -26,7 +26,7 @@ class Ship_1D : public Entity1D
 		}
 
 		// This is where both the vehicle entity and camera need to align to
-		virtual const double &GetIntendedOrientation() const {return m_IntendedPosition;}
+		virtual const double &GetIntendedPosition() const {return m_IntendedPosition;}
 		void SetSimFlightMode(bool SimFlightMode);
 
 		// virtual void ResetPos();
@@ -67,7 +67,6 @@ class Ship_1D : public Entity1D
 	
 		//Use this technique when m_AlterTrajectory is true
 		double m_RequestedVelocity;
-
 		//All input for turn pitch and roll apply to this, both the camera and ship need to align to it
 		double m_IntendedPosition;
 		//We need the m_IntendedPosition to work with its own physics
@@ -75,11 +74,27 @@ class Ship_1D : public Entity1D
 
 		//For slide mode all strafe is applied here
 		double m_currAccel;  //This is the immediate request for thruster levels
-
-		bool m_SimFlightMode;  ///< If true auto strafing will occur to keep ship in line with its position
-
 		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity  from a speed delta change
+		double m_MinRange,m_MaxRange;
+		bool m_SimFlightMode;  ///< If true auto strafing will occur to keep ship in line with its position
+		bool m_UsingRange; 
+
 	private:
-		//typedef Entity1D __super;
 		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
+};
+
+
+//This is similar to Traverse_Edge in book (not to be confused with its MoveToPosition)
+class Goal_Ship1D_MoveToPosition : public AtomicGoal
+{
+	public:
+		Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position);
+		~Goal_Ship1D_MoveToPosition();
+		virtual void Activate();
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate() {m_Terminate=true;}
+	private:
+		Ship_1D &m_ship;
+		double m_Position;
+		bool m_Terminate;
 };

@@ -10,17 +10,14 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
-	protected:
-		//This method is the perfect moment to obtain the new velocities and apply to the interface
-		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
-		virtual void BindAdditionalEventControls(bool Bind);
-	private:
-		Robot_Control_Interface * const m_RobotControl;
+
 		class Robot_Arm : public Ship_1D
 		{
 			public:
 				Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
+				static double HeightToAngle_r(double Height_m);
+				static double AngleToHeight_m(double Angle_r);
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void TimeChange(double dTime_s);
@@ -33,7 +30,17 @@ class FRC_2011_Robot : public Robot_Tank
 				void SetPos9feet();
 				Robot_Control_Interface * const m_RobotControl;
 				double m_LastNormalizedVelocity;  //this is managed direct from being set to avoid need for precision tolerance
-		} m_Arm;
+		};
+
+		//Accessor needed for setting goals
+		Robot_Arm &GetArm() {return m_Arm;}
+	protected:
+		//This method is the perfect moment to obtain the new velocities and apply to the interface
+		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		virtual void BindAdditionalEventControls(bool Bind);
+	private:
+		Robot_Control_Interface * const m_RobotControl;
+		Robot_Arm m_Arm;
 };
 
 class FRC_2011_Robot_Properties : public Ship_Properties
