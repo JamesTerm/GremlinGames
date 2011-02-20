@@ -5,11 +5,12 @@ class Robot_Control : public Robot_Control_Interface
 {
 	RobotDrive m_RobotDrive;
 	RobotDrive m_ArmMotor;
+	Solenoid m_Claw;
 
 	double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 	double m_ArmMaxSpeed;
 	public:
-		Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6)
+		Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Claw(1)
 		{
 			if (UseSafety)
 			{
@@ -26,6 +27,7 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
 		virtual void UpdateArmVelocity(double Velocity);
 		virtual double GetArmCurrentPosition();
+		virtual void CloseClaw(bool Close) {m_Claw.Set(Close);}
 };
 
 class Driver_Station_Joystick : public Framework::Base::IJoystick

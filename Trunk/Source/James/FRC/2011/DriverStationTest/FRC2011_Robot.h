@@ -31,6 +31,7 @@ class FRC_2011_Robot : public Robot_Tank
 				void SetPos3feet();
 				void SetPos6feet();
 				void SetPos9feet();
+				void CloseClaw(bool Close);
 				Robot_Control_Interface * const m_RobotControl;
 				double m_LastNormalizedVelocity;  //this is managed direct from being set to avoid need for precision tolerance
 		};

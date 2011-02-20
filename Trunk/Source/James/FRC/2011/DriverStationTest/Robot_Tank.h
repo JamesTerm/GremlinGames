@@ -35,4 +35,6 @@ class Robot_Control_Interface
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
 		///This is in radians of the arm's gear ratio
 		virtual double GetArmCurrentPosition()=0;
+		//true=close false=open
+		virtual void CloseClaw(bool Close)=0;
 };
