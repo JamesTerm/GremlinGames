@@ -231,7 +231,7 @@ public:
 		}
 		else
 		{
-			SetUp_Manager main;
+			SetUp_Manager main(true);
 			double tm = GetTime();
 			GetWatchdog().SetEnabled(true);
 			while (IsOperatorControl())

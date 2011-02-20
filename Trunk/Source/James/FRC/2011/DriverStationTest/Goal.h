@@ -57,6 +57,7 @@ class  AtomicGoal : public Goal
 class  CompositeGoal : public Goal
 {
 	protected:  //from Goal
+		~CompositeGoal();
 		virtual void Activate() {}
 		virtual Goal_Status Process(double dTime_s) {return eCompleted;}
 		virtual void Terminate() {}
@@ -74,3 +75,20 @@ class  CompositeGoal : public Goal
 		SubgoalList m_SubGoals;
 };
 
+//Similar to a Composite goal where it is composed of a list of goals, but this one will process all goals simultaneously
+class MultitaskGoal : public Goal
+{
+	public:
+		~MultitaskGoal();
+		///first add the goals here
+		void AddGoal(Goal *g) {m_GoalsToProcess.push_back(g);}
+		///Then call this to manually activate once all goals are added
+		virtual void Activate();
+	protected:  //from Goal
+		virtual Goal_Status Process(double dTime_s);
+		virtual void Terminate();
+		void RemoveAllGoals();
+	private:
+		typedef std::list<Goal *> GoalList;
+		GoalList m_GoalsToProcess;
+};
