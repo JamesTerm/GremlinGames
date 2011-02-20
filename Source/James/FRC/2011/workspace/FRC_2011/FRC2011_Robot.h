@@ -21,6 +21,7 @@ class FRC_2011_Robot : public Robot_Tank
 				static double AngleToHeight_m(double Angle_r);
 				//given the raw potentiometer converts to the arm angle
 				static double PotentiometerRaw_To_Arm_r(double raw);
+				void CloseClaw(bool Close);
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void TimeChange(double dTime_s);
@@ -32,7 +33,6 @@ class FRC_2011_Robot : public Robot_Tank
 				void SetPos3feet();
 				void SetPos6feet();
 				void SetPos9feet();
-				void CloseClaw(bool Close);
 				Robot_Control_Interface * const m_RobotControl;
 				double m_LastNormalizedVelocity;  //this is managed direct from being set to avoid need for precision tolerance
 		};
@@ -59,4 +59,31 @@ class FRC_2011_Robot_Properties : public Ship_Properties
 		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
 	private:
 		Ship_1D_Properties m_ArmProps;
+};
+
+class Goal_OperateClaw : public AtomicGoal
+{
+	private:
+		FRC_2011_Robot &m_Robot;
+		bool m_Terminate;
+		bool m_IsClosed;
+	public:
+		Goal_OperateClaw(FRC_2011_Robot &robot,bool Close) : m_Robot(robot),m_Terminate(false),m_IsClosed(Close) 
+		{	m_Status=eInactive;
+		}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			if (m_Terminate)
+			{
+				if (m_Status==eActive)
+					m_Status=eFailed;
+				return m_Status;
+			}
+			ActivateIfInactive();
+			m_Robot.GetArm().CloseClaw(m_IsClosed);
+			m_Status=eCompleted;
+			return m_Status;
+		}
+		virtual void Terminate() {m_Terminate=true;}
 };
