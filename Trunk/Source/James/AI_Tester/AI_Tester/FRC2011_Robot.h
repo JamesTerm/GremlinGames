@@ -10,6 +10,9 @@ class Robot_Control_Interface
 
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)=0;  ///< in meters per second
 		virtual void UpdateArmVelocity(double Velocity)=0;  ///< in meters per second
+		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
+		///This is in radians of the arm's gear ratio
+		virtual double GetArmCurrentPosition()=0;
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -28,7 +31,10 @@ class FRC_2011_Robot : public Robot_Tank
 				Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				static double HeightToAngle_r(double Height_m);
+				static double Arm_AngleToHeight_m(double Angle_r);
 				static double AngleToHeight_m(double Angle_r);
+				//given the raw potentiometer converts to the arm angle
+				static double PotentiometerRaw_To_Arm_r(double raw);
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void TimeChange(double dTime_s);
@@ -58,11 +64,16 @@ class FRC_2011_Robot : public Robot_Tank
 ///are correct
 class Robot_Control : public Robot_Control_Interface
 {
+	public:
+		Robot_Control(FRC_2011_Robot *Robot) : m_Robot(Robot) {}
 	protected: //from Robot_Control_Interface
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
 		virtual void UpdateArmVelocity(double Velocity);
+		//pacify this by returning its current value
+		virtual double GetArmCurrentPosition() {return m_Robot->GetArm().GetPos_m();}
 	private:
+		FRC_2011_Robot * const m_Robot;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
 };
@@ -71,7 +82,7 @@ class Robot_Control : public Robot_Control_Interface
 class FRC_2011_Robot_tester : public FRC_2011_Robot, public Robot_Control
 {
 	public:
-		FRC_2011_Robot_tester(const char EntityName[]) : FRC_2011_Robot(EntityName,this) {}
+		FRC_2011_Robot_tester(const char EntityName[]) : FRC_2011_Robot(EntityName,this),Robot_Control(this) {}
 };
 
 class FRC_2011_Robot_Properties : public UI_Ship_Properties
