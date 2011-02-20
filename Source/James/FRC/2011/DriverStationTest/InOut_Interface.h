@@ -25,6 +25,7 @@ class Robot_Control : public Robot_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
 		virtual void UpdateArmVelocity(double Velocity);
+		virtual double GetArmCurrentPosition();
 };
 
 class Driver_Station_Joystick : public Framework::Base::IJoystick

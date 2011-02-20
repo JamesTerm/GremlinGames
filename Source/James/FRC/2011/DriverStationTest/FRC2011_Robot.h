@@ -17,7 +17,10 @@ class FRC_2011_Robot : public Robot_Tank
 				Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				static double HeightToAngle_r(double Height_m);
+				static double Arm_AngleToHeight_m(double Angle_r);
 				static double AngleToHeight_m(double Angle_r);
+				//given the raw potentiometer converts to the arm angle
+				static double PotentiometerRaw_To_Arm_r(double raw);
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void TimeChange(double dTime_s);
