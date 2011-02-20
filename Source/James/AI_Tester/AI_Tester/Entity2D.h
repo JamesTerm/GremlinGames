@@ -19,6 +19,8 @@ class Entity1D
 		GG_Framework::Base::EventMap* GetEventMap(){return m_eventMap;}
 
 		virtual double GetPos_m() const {return m_Position;}
+		//This is used when a sensor need to correct for the actual position
+		void SetPos_m(double value) {m_Position=value;}
 	protected: 
 		PhysicsEntity_1D m_Physics;
 	private:
