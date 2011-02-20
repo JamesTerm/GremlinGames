@@ -78,7 +78,7 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 		MaxAccelForward=1.0;
 		MaxAccelReverse=1.0;
 		m_UsingRange=false;
-		m_MaxRange=m_MaxRange=0;
+		m_MinRange=m_MaxRange=0;
 	}
 	Mass  = m_Physics.GetMass();
 
