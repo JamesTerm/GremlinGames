@@ -83,8 +83,9 @@ void Ship_1D_Properties::Initialize(Ship_1D *NewShip) const
 	NewShip->BRAKE=m_BRAKE;
 	NewShip->MaxAccelForward=m_MaxAccelForward;
 	NewShip->MaxAccelReverse=m_MaxAccelReverse;
-
-	//TODO support range in ship 1D
+	NewShip->m_UsingRange=m_UsingRange;
+	NewShip->m_MinRange=m_MinRange;
+	NewShip->m_MaxRange=m_MaxRange;
 }
 
   /***********************************************************************************************************************************/

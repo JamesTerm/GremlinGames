@@ -8,7 +8,7 @@ void* Goal::operator new ( const size_t size )
 }
 
 void  Goal::operator delete ( void* ptr )
-{	::free( ptr );
+{	free( ptr );
 }
 
 void* Goal::operator new [] ( const size_t size )
@@ -16,7 +16,26 @@ void* Goal::operator new [] ( const size_t size )
 }
 
 void  Goal::operator delete [] ( void* ptr )
-{	::free( ptr );
+{	free( ptr );
+}
+
+  /***************************************************************************************************************/
+ /*												CompositeGoal													*/
+/***************************************************************************************************************/
+
+void CompositeGoal::RemoveAllSubgoals()
+{
+	for (SubgoalList::iterator it = m_SubGoals.begin(); it!=m_SubGoals.end(); ++it)
+	{
+		(*it)->Terminate();
+		delete *it;
+	}
+	m_SubGoals.clear();
+}
+
+CompositeGoal::~CompositeGoal()
+{
+	RemoveAllSubgoals();
 }
 
 Goal::Goal_Status CompositeGoal::ProcessSubgoals(double dTime_s)
@@ -45,12 +64,63 @@ Goal::Goal_Status CompositeGoal::ProcessSubgoals(double dTime_s)
 	return StatusOfSubGoals;
 }
 
-void CompositeGoal::RemoveAllSubgoals()
+
+
+  /***************************************************************************************************************/
+ /*												MultitaskGoal													*/
+/***************************************************************************************************************/
+
+
+void MultitaskGoal::RemoveAllGoals()
 {
-	for (SubgoalList::iterator it = m_SubGoals.begin(); it!=m_SubGoals.end(); ++it)
+	for (GoalList::iterator it = m_GoalsToProcess.begin(); it!=m_GoalsToProcess.end(); ++it)
 	{
 		(*it)->Terminate();
 		delete *it;
 	}
-	m_SubGoals.clear();
+	m_GoalsToProcess.clear();
+}
+
+MultitaskGoal::~MultitaskGoal()
+{
+	RemoveAllGoals();
+}
+
+void MultitaskGoal::Activate()
+{
+	for (GoalList::iterator it = m_GoalsToProcess.begin(); it!=m_GoalsToProcess.end(); ++it)
+		(*it)->Activate();
+}
+Goal::Goal_Status MultitaskGoal::Process(double dTime_s)
+{
+	ActivateIfInactive();
+	Goal_Status status;
+	size_t NonActiveCount=0;
+	for (GoalList::iterator it = m_GoalsToProcess.begin(); it!=m_GoalsToProcess.end(); ++it)
+	{
+		status=(*it)->Process(dTime_s);
+		if (status!=eActive)
+			NonActiveCount++;
+	}
+	if (NonActiveCount<m_GoalsToProcess.size())
+		m_Status=eActive;
+	else
+	{
+		status=eCompleted;
+		//Check the final status it is completed unless any goal failed
+		for (GoalList::iterator it = m_GoalsToProcess.begin(); it!=m_GoalsToProcess.end(); ++it)
+		{
+			if ((*it)->GetStatus()==eFailed)
+				status=eFailed;
+		}
+		m_Status=status;
+	}
+	return status;
+}
+
+void MultitaskGoal::Terminate()
+{
+	//ensure its all clean
+	RemoveAllGoals();
+	m_Status=eInactive; //make this inactive
 }
