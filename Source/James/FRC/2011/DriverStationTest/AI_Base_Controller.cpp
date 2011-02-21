@@ -259,7 +259,8 @@ Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
 		//TODO check IsStuck for failed case
 		if (!HitWayPoint())
 		{
-			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &Vec2d(0,0):NULL,m_LockOrientation);
+			Vec2d Temp(0,0);
+			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &Temp:NULL,m_LockOrientation);
 		}
 		else
 		{

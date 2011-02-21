@@ -69,8 +69,6 @@ class Ship_2D : public Entity2D
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 	protected:
-		//typedef Entity2D __super;
-
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
 		//virtual Vec2D GetArtificialHorizonComponent() const;
@@ -150,6 +148,7 @@ class Ship_2D : public Entity2D
 		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
 
 	private:
+		//typedef Entity2D __super;
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
 
 };
