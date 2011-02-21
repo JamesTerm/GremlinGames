@@ -7,6 +7,7 @@ class FRC_2011_Robot : public Robot_Tank
 	public:
 		typedef Framework::Base::Vec2d Vec2D;
 		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control);
+		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
@@ -44,6 +45,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
+		void OpenDeploymentDoor(bool Open);
 		typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;

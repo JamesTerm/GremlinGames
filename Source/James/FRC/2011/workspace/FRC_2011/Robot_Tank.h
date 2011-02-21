@@ -38,4 +38,5 @@ class Robot_Control_Interface
 		virtual double GetArmCurrentPosition()=0;
 		//true=close false=open
 		virtual void CloseClaw(bool Close)=0;
+		virtual void OpenDeploymentDoor(bool Open)=0;
 };
