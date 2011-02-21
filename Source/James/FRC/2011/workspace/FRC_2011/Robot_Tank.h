@@ -29,7 +29,8 @@ class Robot_Control_Interface
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
 		virtual void Initialize(const Entity_Properties *props)=0;
-
+		//Encoders populate this with current velocity of motors
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)=0;  ///< in meters per second
 		virtual void UpdateArmVelocity(double Velocity)=0;  ///< in meters per second
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
