@@ -116,9 +116,10 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
+	const double starting_line=5.49656;  //18.03333
 	WayPoint wp;
 	wp.Position[0]=0;
-	wp.Position[1]=8.5;
+	wp.Position[1]=starting_line; 
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
@@ -127,9 +128,9 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	Initial_Start_Goal->AddGoal(goal_arm);
 	Initial_Start_Goal->AddGoal(goal_drive);
 
-	wp.Position[1]=9;
+	wp.Position[1]=starting_line+0.5;
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	wp.Position[1]=8.5;
+	wp.Position[1]=starting_line;
 	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 	Goal_OperateClaw *goal_OpenClaw=new Goal_OperateClaw(*Robot,false);
 	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second

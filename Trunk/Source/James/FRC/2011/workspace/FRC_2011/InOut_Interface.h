@@ -5,29 +5,37 @@ class Robot_Control : public Robot_Control_Interface
 {
 	RobotDrive m_RobotDrive;
 	RobotDrive m_ArmMotor;
-	Solenoid m_Claw;
+	Solenoid m_OnClaw,m_OffClaw;
+	Encoder m_LeftEncoder,m_RightEncoder;
 
 	double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 	double m_ArmMaxSpeed;
 	public:
-		Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Claw(1)
+		Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_OnClaw(2),m_OffClaw(1),
+			m_LeftEncoder(4,3,4,4),m_RightEncoder(4,1,4,2)
 		{
 			if (UseSafety)
 			{
 				//I'm giving a whole second before the timeout kicks in... I do not want false positives!
-				m_RobotDrive.SetExpiration(1.0);
+				m_RobotDrive.SetExpiration(5.0);
 				m_RobotDrive.SetSafetyEnabled(true);
 			}
 			else
 				m_RobotDrive.SetSafetyEnabled(false);
+			m_LeftEncoder.Start(),m_RightEncoder.Start();
 		}
-		virtual ~Robot_Control() {}
+		virtual ~Robot_Control() 
+		{
+			m_LeftEncoder.Stop(),m_RightEncoder.Stop();  //TODO Move for autonomous mode only
+			m_RobotDrive.SetSafetyEnabled(false);			
+		}
 		virtual void Initialize(const Entity_Properties *props);
 	protected: //from Robot_Control_Interface
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
 		virtual void UpdateArmVelocity(double Velocity);
 		virtual double GetArmCurrentPosition();
-		virtual void CloseClaw(bool Close) {m_Claw.Set(Close);}
+		virtual void CloseClaw(bool Close) {m_OnClaw.Set(Close),m_OffClaw.Set(!Close);}
 };
 
 class Driver_Station_Joystick : public Framework::Base::IJoystick

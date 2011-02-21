@@ -62,8 +62,14 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
+	//{
+	//	double LeftVelocity,RightVelocity;
+	//	m_RobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	//}
 	//Update the position to where the potentiometer says where it actually is
 	//SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
+	//Temp
+	//m_RobotControl->GetArmCurrentPosition();
 	__super::TimeChange(dTime_s);
 	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
 	//double Pos_m=GetPos_m();
@@ -181,9 +187,9 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	"Arm",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	2.0,   //Max Speed
+	6.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	2.0,2.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	6.0,6.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
