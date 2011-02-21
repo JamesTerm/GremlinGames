@@ -63,8 +63,8 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	//joy.AddJoy_Button_Default(0,"Arm_SetPos0feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default(0,"Arm_Claw",true,false,"Joystick_2");
 	//Not sure why the simulator skipped 1
-	joy.AddJoy_Button_Default(2,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default(3,"Arm_SetPos6feet",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default(2,"Robot_OpenDoor",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default(3,"Arm_SetPos0feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default(4,"Arm_SetPos9feet",false,false,"Joystick_2");
 	#endif
 	#ifdef __WindRiverJoysticks__
