@@ -6,6 +6,7 @@ class FRC_2011_Robot : public Robot_Tank
 {
 	public:
 		typedef Framework::Base::Vec2d Vec2D;
+		//typedef osg::Vec2d Vec2D;
 		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
@@ -49,6 +50,7 @@ class FRC_2011_Robot : public Robot_Tank
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
+		bool m_UsingEncoders;
 };
 
 class FRC_2011_Robot_Properties : public Ship_Properties
