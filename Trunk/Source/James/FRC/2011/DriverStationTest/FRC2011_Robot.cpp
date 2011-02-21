@@ -62,10 +62,6 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
-	//{
-	//	double LeftVelocity,RightVelocity;
-	//	m_RobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
-	//}
 	//Update the position to where the potentiometer says where it actually is
 	//SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
 	//Temp
@@ -138,7 +134,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control)
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(false)
 {
 }
 
@@ -160,6 +156,17 @@ void FRC_2011_Robot::ResetPos()
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
+	if (m_UsingEncoders)
+	{
+		double LeftVelocity,RightVelocity;
+		m_RobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+		Vec2d LocalVelocity;
+		double AngularVelocity;
+		InterpolateVelocities(LeftVelocity,RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+		GetPhysics().SetLinearVelocity(LocalToGlobal(GetAtt_r(),LocalVelocity));
+		GetPhysics().SetAngularVelocity(AngularVelocity);
+	}
+
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
