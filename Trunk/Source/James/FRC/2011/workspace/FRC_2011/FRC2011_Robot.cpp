@@ -171,9 +171,19 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity(),GetRightVelocity());
 }
 
+void FRC_2011_Robot::OpenDeploymentDoor(bool Open)
+{
+	m_RobotControl->OpenDeploymentDoor(Open);
+}
+
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 {
-	//Nothing to bind here since the base has everything we need, but other components will need their bindings
+	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+		em->EventOnOff_Map["Robot_OpenDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::OpenDeploymentDoor);
+	else
+		em->EventOnOff_Map["Robot_OpenDoor"]  .Remove(*this, &FRC_2011_Robot::OpenDeploymentDoor);
+
 	Ship_1D &ArmShip_Access=m_Arm;
 	ArmShip_Access.BindAdditionalEventControls(Bind);
 }

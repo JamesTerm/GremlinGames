@@ -36,12 +36,10 @@ class SetUp_Manager
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
 		Framework::Base::EventMap m_EventMap;
 		UI_Controller *m_pUI;
-		Compressor m_Compress;
 	public:
 		SetUp_Manager(bool UseSafety) : m_Joystick(2,0), //2 joysticks starting at port 0
-			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL),m_Compress(5,2)
+			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
-			m_Compress.Start();
 			m_Control.Initialize(&m_RobotProps);
 			m_pRobot = new FRC_2011_Robot("FRC2011_Robot",&m_Control);
 			m_pRobot->Initialize(m_EventMap,&m_RobotProps);
@@ -83,7 +81,6 @@ class SetUp_Manager
 				delete m_pRobot;
 				m_pRobot=NULL;
 			}
-			m_Compress.Stop();
 		}
 };
 

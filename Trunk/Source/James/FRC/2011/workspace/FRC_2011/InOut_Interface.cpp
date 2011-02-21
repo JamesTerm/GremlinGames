@@ -127,3 +127,4 @@ double Robot_Control::GetArmCurrentPosition()
 	#endif
 	return ret;
 }
+
