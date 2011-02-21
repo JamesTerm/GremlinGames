@@ -95,6 +95,13 @@ void Robot_Control::Initialize(const Entity_Properties *props)
 	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 }
 
+void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
+{
+	LeftVelocity=0.0,RightVelocity=0.0;
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.Get(),m_RightEncoder.Get());	
+}
+
 void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
 {
 	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
@@ -103,7 +110,8 @@ void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelo
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
-	m_ArmMotor.SetLeftRightMotorSpeeds((float)(Velocity/m_ArmMaxSpeed),(float)(Velocity/m_ArmMaxSpeed));  //always the same velocity for both!
+	float VelocityToUse=(float)(Velocity/m_ArmMaxSpeed);
+	m_ArmMotor.SetLeftRightMotorSpeeds(VelocityToUse,VelocityToUse);  //always the same velocity for both!
 }
 
 double Robot_Control::GetArmCurrentPosition()

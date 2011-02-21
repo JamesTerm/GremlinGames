@@ -27,6 +27,7 @@ class FRC_2011_Robot : public Robot_Tank
 				virtual void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
 			private:
+				//typedef Ship_1D __super;
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetPos0feet();
 				void SetPos3feet();
@@ -43,6 +44,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
+		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 };
