@@ -18,6 +18,8 @@ inline void NormalizeRotation(double &Rotation)
 class Ship_2D : public Ship
 {
 	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
 		Ship_2D(const char EntityName[]);
 		virtual void Initialize(Entity2D::EventMap& em,const Entity_Properties *props=NULL);
 		virtual ~Ship_2D();
@@ -27,7 +29,7 @@ class Ship_2D : public Ship
 		void SetRequestedVelocity(double Velocity);
 		double GetRequestedVelocity(){return m_RequestedVelocity;}
 		void FireAfterburner() {SetRequestedVelocity(GetMaxSpeed());}
-		void SetCurrentLinearAcceleration(const osg::Vec2d &Acceleration) {m_currAccel=Acceleration;}
+		void SetCurrentLinearAcceleration(const Vec2D &Acceleration) {m_currAccel=Acceleration;}
 
 		/// \param LockShipHeadingToOrientation for this given time slice if this is true the intended orientation is restrained
 		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
@@ -48,7 +50,10 @@ class Ship_2D : public Ship
 		bool GetCoordinateTurns() const { return m_CoordinateTurns;}
 
 		void SetHeadingSpeedScale(double scale) {m_HeadingSpeedScale=scale;}
-		
+
+		enum eThrustState { TS_AfterBurner_Brake=0, TS_Brake, TS_Coast, TS_Thrust, TS_AfterBurner, TS_NotVisible };
+		eThrustState GetThrustState(){ return m_thrustState; }
+
 		/// We use a toggling mechanism to use afterburners since there is some internal functionality that behave differently
 		bool GetIsAfterBurnerOn() const { return (m_thrustState==TS_AfterBurner);	}
 		bool GetIsAfterBurnerBrakeOn() const { return (m_thrustState==TS_AfterBurner_Brake);	}
@@ -67,11 +72,7 @@ class Ship_2D : public Ship
 		// Turn off all thruster controls
 		virtual void CancelAllControls();
 
-		AI_Base_Controller* GetController() {return m_controller;}
-
-
-		enum eThrustState { TS_AfterBurner_Brake=0, TS_Brake, TS_Coast, TS_Thrust, TS_AfterBurner, TS_NotVisible };
-		eThrustState GetThrustState(){ return m_thrustState; }
+		AI_Base_Controller *GetController() {return m_controller;}
 
 		//The UI controller will call this when attaching or detaching control.  The Bind parameter will either bind or unbind.  Since these are 
 		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
@@ -80,15 +81,15 @@ class Ship_2D : public Ship
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
-		//virtual osg::Vec2d GetArtificialHorizonComponent() const;
+		//virtual Vec2D GetArtificialHorizonComponent() const;
 
 		///This will apply turn pitch and roll to the intended orientation
 		void UpdateIntendedOrientaton(double dTime_s);
 
 		virtual void ApplyTorqueThrusters(PhysicsEntity_2D &PhysicsToUse,double Torque,double TorqueRestraint,double dTime_s);
 		///Putting force and torque together will make it possible to translate this into actual force with position
-		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
-		virtual void TestPosAtt_Delta(const osg::Vec2d pos_m, double att,double dTime_s);
+		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
+		virtual void TestPosAtt_Delta(const Vec2D pos_m, double att,double dTime_s);
 
 		virtual void TimeChange(double dTime_s);
 
@@ -103,8 +104,8 @@ class Ship_2D : public Ship
 		//Override with the controller to be used with ship.  Specific ships have specific type of controllers.
 		virtual AI_Base_Controller *Create_Controller();
 
-		friend AI_Base_Controller;
-		friend Ship_Properties;
+		friend class AI_Base_Controller;
+		friend class Ship_Properties;
 
 		///This is to only be used by AI controller (this will have LockShipHeadingToOrientation set to false)
 		void SetIntendedOrientation(double IntendedOrientation);
@@ -141,7 +142,7 @@ class Ship_2D : public Ship
 		FlightDynamics_2D m_IntendedOrientationPhysics;
 
 		//For slide mode all strafe is applied here
-		osg::Vec2d m_currAccel;  //This is the immediate request for thruster levels
+		Vec2D m_currAccel;  //This is the immediate request for thruster levels
 
 		///Typically this contains the distance of the intended direction from the actual direction.  This is the only variable responsible for
 		///changing the ship's orientation
@@ -160,6 +161,7 @@ class Ship_2D : public Ship
 		Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
 		Blend_Averager<osg::Vec3d> m_TorqueReported_Averager;
 	private:
+		//typedef Entity2D __super;
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
 
 };

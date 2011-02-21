@@ -5,6 +5,8 @@
 class AI_Base_Controller
 {
 	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
 		AI_Base_Controller(Ship_2D &ship);
 
 		///This is the single update point to all controlling of the ship.  The base class contains no goal arbitration, but does implement
@@ -33,7 +35,7 @@ class AI_Base_Controller
 		/// Use NULL when flying through way-points
 		/// Use (0,0) if you want to come to a stop, like at the end of a way-point series
 		/// Otherwise, use the velocity of the ship you are targeting or following to keep up with it
-		void DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d PositionPoint, double power, double dTime_s,osg::Vec2d* matchVel,bool LockOrientation=false);
+		void DriveToLocation(Vec2D TrajectoryPoint,Vec2D PositionPoint, double power, double dTime_s,Vec2D* matchVel,bool LockOrientation=false);
 		void SetIntendedOrientation(double IntendedOrientation) {m_ship.SetIntendedOrientation(IntendedOrientation);}
 		
 		Ship_2D &GetShip() {return m_ship;}
@@ -115,16 +117,18 @@ class Goal_Ship_FollowPath : public CompositeGoal
 class Goal_Ship_FollowShip : public AtomicGoal
 {
 	public:
-		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const osg::Vec2d &RelPosition);
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition);
 		~Goal_Ship_FollowShip();
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate();
 		//Allow client to change its relative position dynamically
-		void SetRelPosition(const osg::Vec2d &RelPosition);
+		void SetRelPosition(const Vec2D &RelPosition);
 	private:
 		AI_Base_Controller * const m_Controller;
-		osg::Vec2d m_RelPosition,m_TrajectoryPosition;
+		Vec2D m_RelPosition,m_TrajectoryPosition;
 		const Ship_2D &m_Followship;
 		Ship_2D &m_ship;
 		bool m_Terminate;
@@ -145,6 +149,10 @@ class Goal_Wait : public AtomicGoal
 //This goal simply will fire an event when all goals are complete
 class Goal_NotifyWhenComplete : public CompositeGoal
 {
+	private:
+		//typedef CompositeGoal __super;
+		std::string m_EventName;  //name to fire when complete
+		GG_Framework::Base::EventMap &m_EventMap;
 	public:
 		Goal_NotifyWhenComplete(GG_Framework::Base::EventMap &em,char *EventName);
 		//give public access for client to populate goals
@@ -153,10 +161,6 @@ class Goal_NotifyWhenComplete : public CompositeGoal
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate();
-
-	private:
-		std::string m_EventName;  //name to fire when complete
-		GG_Framework::Base::EventMap &m_EventMap;
 };
 
 #if 0

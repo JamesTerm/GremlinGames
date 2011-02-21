@@ -6,6 +6,8 @@
 class Robot_Tank : public Ship_Tester
 {
 	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
 		Robot_Tank(const char EntityName[]);
 		double GetLeftVelocity() const {return m_LeftLinearVelocity;}
 		double GetRightVelocity() const {return m_RightLinearVelocity;}
@@ -13,10 +15,11 @@ class Robot_Tank : public Ship_Tester
 		virtual void ResetPos();
 	protected:
 		//This will convert the force into both motor velocities and interpolate the final torque and force to apply
-		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
-		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
+		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 	private:
-		void InterpolateThrusterChanges(osg::Vec2d &LocalForce,double &Torque,double dTime_s);
+		//typedef Ship_2D __super;
+		void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		double m_LeftLinearVelocity,m_RightLinearVelocity;
 };
 
