@@ -3,6 +3,7 @@
 
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
+using namespace osg;
 using namespace std;
 
 const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
@@ -13,7 +14,6 @@ const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 const double c_PotentiometerToGearRatio=1.875;
 const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
-const double c_PotentiometerAngleOffset=DEG_2_RAD(10.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 
   /***********************************************************************************************************************************/
@@ -24,14 +24,14 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control)
 {
 }
-double FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r)
-{
-	return (sin(Angle_r)*c_ArmLength_m)+c_GearHeightOffset;
-}
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
 {
 	return (sin(Angle_r*c_GearToArmRatio)*c_ArmLength_m)+c_GearHeightOffset;
+}
+double FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r)
+{
+	return (sin(Angle_r)*c_ArmLength_m)+c_GearHeightOffset;
 }
 
 double FRC_2011_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
@@ -49,8 +49,14 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
+	//{
+	//	double LeftVelocity,RightVelocity;
+	//	m_RobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	//}
 	//Update the position to where the potentiometer says where it actually is
-	SetPos_m(m_RobotControl->GetArmCurrentPosition());
+	//SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
+	//Temp
+	//m_RobotControl->GetArmCurrentPosition();
 	__super::TimeChange(dTime_s);
 	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
 	double Pos_m=GetPos_m();
@@ -86,6 +92,10 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
 	SetIntendedPosition( HeightToAngle_r(2.7432) );
 }
+void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
+{
+	m_RobotControl->CloseClaw(Close);
+}
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
@@ -97,6 +107,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos3feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
+		em->EventOnOff_Map["Arm_Claw"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
 
 	}
 	else
@@ -106,8 +117,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos3feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
+		em->EventOnOff_Map["Arm_Claw"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
 	}
-
 }
 
   /***********************************************************************************************************************************/
@@ -141,7 +152,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	arm_entity.TimeChange(dTime_s);
 }
 
-void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const osg::Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity(),GetRightVelocity());
@@ -167,6 +178,11 @@ void Robot_Control::Initialize(const Entity_Properties *props)
 	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 }
 
+void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
+{
+	//May want to produce some synthetic date for testing
+}
+
 void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
 {
 	DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
@@ -175,6 +191,10 @@ void Robot_Control::UpdateArmVelocity(double Velocity)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 }
+void Robot_Control::CloseClaw(bool Close)
+{
+}
+
 
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot_Properties														*/
@@ -184,9 +204,9 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	"Arm",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	2.0,   //Max Speed
+	6.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	2.0,2.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	6.0,6.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio

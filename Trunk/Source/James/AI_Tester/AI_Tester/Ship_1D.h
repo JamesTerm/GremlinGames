@@ -80,6 +80,7 @@ class Ship_1D : public Entity1D
 		bool m_UsingRange; 
 
 	private:
+		//typedef Entity1D __super;
 		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
 };
 

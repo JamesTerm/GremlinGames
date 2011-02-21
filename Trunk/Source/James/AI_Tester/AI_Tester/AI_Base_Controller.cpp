@@ -3,6 +3,7 @@
 
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
+using namespace osg;
 
 const double Pi2=M_PI*2.0;
 
@@ -44,8 +45,10 @@ bool AI_Base_Controller::Try_SetUIController(UI_Controller *controller)
 	return true;
 }
 
-void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d PositionPoint, double power, double dTime_s,osg::Vec2d* matchVel,bool LockOrientation)
+void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoint, double power, double dTime_s,Vec2d* matchVel,bool LockOrientation)
 {
+	//Supposedly in some compilers _isnan should be available, but isn't defined in math.h... Oh well I don't need this overhead anyhow
+	#if 1
 	if (	_isnan(TrajectoryPoint[0]) ||
 			_isnan(TrajectoryPoint[1]) ||
 			_isnan(PositionPoint[0]) ||
@@ -63,8 +66,9 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 		printf("dTime_s = %f, power = %f\n", dTime_s, power);
 		assert(false);
 	}
+	#endif
 
-	osg::Vec2d VectorOffset=TrajectoryPoint-m_ship.GetPos_m();
+	Vec2d VectorOffset=TrajectoryPoint-m_ship.GetPos_m();
 
 	if (!LockOrientation)
 	{
@@ -90,15 +94,15 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 	if (matchVel)
 	{
 		VectorOffset=PositionPoint-m_ship.GetPos_m();
-		//osg::Vec2d LocalVectorOffset(m_ship.GetAtt_quat().conj() * VectorOffset);
-		osg::Vec2d LocalVectorOffset=GlobalToLocal(m_ship.GetAtt_r(),VectorOffset);
-		//osg::Vec2d LocalMatchVel(m_ship.GetAtt_quat().conj() * (*matchVel));
-		osg::Vec2d LocalMatchVel=GlobalToLocal(m_ship.GetAtt_r(),*matchVel);
+		//Vec2d LocalVectorOffset(m_ship.GetAtt_quat().conj() * VectorOffset);
+		Vec2d LocalVectorOffset=GlobalToLocal(m_ship.GetAtt_r(),VectorOffset);
+		//Vec2d LocalMatchVel(m_ship.GetAtt_quat().conj() * (*matchVel));
+		Vec2d LocalMatchVel=GlobalToLocal(m_ship.GetAtt_r(),*matchVel);
 
-		osg::Vec2d ForceRestraintPositive(m_ship.MaxAccelRight*m_ship.Mass,m_ship.MaxAccelForward*m_ship.Mass);
-		osg::Vec2d ForceRestraintNegative(m_ship.MaxAccelLeft*m_ship.Mass,m_ship.MaxAccelReverse*m_ship.Mass);
+		Vec2d ForceRestraintPositive(m_ship.MaxAccelRight*m_ship.Mass,m_ship.MaxAccelForward*m_ship.Mass);
+		Vec2d ForceRestraintNegative(m_ship.MaxAccelLeft*m_ship.Mass,m_ship.MaxAccelReverse*m_ship.Mass);
 		//Note: it is possible to overflow in extreme distances, if we challenge this then I should have an overflow check in physics
-		osg::Vec2d LocalVelocity=m_ship.m_Physics.GetVelocityFromDistance_Linear(LocalVectorOffset,ForceRestraintPositive,ForceRestraintNegative,dTime_s, LocalMatchVel);
+		Vec2d LocalVelocity=m_ship.m_Physics.GetVelocityFromDistance_Linear(LocalVectorOffset,ForceRestraintPositive,ForceRestraintNegative,dTime_s, LocalMatchVel);
 
 		//The logic here should make use of making coordinated turns anytime the forward/reverse velocity has a greater distance than the sides or up/down.
 		//Usually if the trajectory point is the same as the position point it will perform coordinated turns most of the time while the nose is pointing
@@ -120,8 +124,8 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 		{  //This technique makes use of strafe thrusters.  (Currently we can do coordinated turns with this)
 			//It is useful for certain situations.  One thing is for sure, it can get the ship
 			//to a point more efficiently than the above method, which may be useful for an advanced tactic.
-			//osg::Vec2d GlobalVelocity(m_ship.GetAtt_quat() * LocalVelocity); 
-			osg::Vec2d GlobalVelocity=LocalToGlobal(m_ship.GetAtt_r(),LocalVelocity); 
+			//Vec2d GlobalVelocity(m_ship.GetAtt_quat() * LocalVelocity); 
+			Vec2d GlobalVelocity=LocalToGlobal(m_ship.GetAtt_r(),LocalVelocity); 
 			//now to cap off the velocity speeds
 			for (size_t i=0;i<2;i++)
 			{
@@ -131,9 +135,9 @@ void AI_Base_Controller::DriveToLocation(osg::Vec2d TrajectoryPoint,osg::Vec2d P
 					GlobalVelocity[i]=-ScaledSpeed;
 			}
 			//Ideally GetForceFromVelocity could work with local orientation for FlightDynmic types, but for now we convert
-			osg::Vec2d GlobalForce(m_ship.m_Physics.GetForceFromVelocity(GlobalVelocity,dTime_s));
-			//osg::Vec2d LocalForce(m_ship.GetAtt_quat().conj() * GlobalForce);
-			osg::Vec2d LocalForce=GlobalToLocal(m_ship.GetAtt_r(),GlobalForce); //First get the local force
+			Vec2d GlobalForce(m_ship.m_Physics.GetForceFromVelocity(GlobalVelocity,dTime_s));
+			//Vec2d LocalForce(m_ship.GetAtt_quat().conj() * GlobalForce);
+			Vec2d LocalForce=GlobalToLocal(m_ship.GetAtt_r(),GlobalForce); //First get the local force
 			//Now to fire all the thrusters given the acceleration
 			m_ship.SetCurrentLinearAcceleration(LocalForce/m_ship.Mass);
 		}
@@ -222,9 +226,9 @@ bool Goal_Ship_MoveToPosition::HitWayPoint()
 {
 	// Base a tolerance2 for how close we want to get to the way point based on the current velocity,
 	// within a second of reaching the way point, just move to the next one
-	//TODO 0.0001 is used for FRC testing, but I'll need to see if this is too lean for the game
+	//Note for FRC... moving at 2mps it will come within an inch of its point with this tolerance
 	double tolerance2 = m_UseSafeStop ? 0.0001 : (m_ship.GetPhysics().GetLinearVelocity().length2() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
-	osg::Vec2d currPos = m_ship.GetPos_m();
+	Vec2d currPos = m_ship.GetPos_m();
 	return ((m_Point.Position-currPos).length2() < tolerance2);
 }
 
@@ -243,7 +247,8 @@ Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
 		//TODO check IsStuck for failed case
 		if (!HitWayPoint())
 		{
-			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &osg::Vec2d(0,0):NULL,m_LockOrientation);
+			Vec2d Temp(0,0);
+			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &Temp:NULL,m_LockOrientation);
 		}
 		else
 		{
@@ -308,14 +313,14 @@ void Goal_Ship_FollowPath::Terminate()
  /*													Goal_Ship_FollowShip															*/
 /***********************************************************************************************************************************/
 
-void Goal_Ship_FollowShip::SetRelPosition(const osg::Vec2d &RelPosition)  
+void Goal_Ship_FollowShip::SetRelPosition(const Vec2d &RelPosition)  
 {
 	m_RelPosition=RelPosition;
 	m_TrajectoryPosition=RelPosition;
 	m_TrajectoryPosition[1] += 100.0;	// Just point forward
 }
 
-Goal_Ship_FollowShip::Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const osg::Vec2d &RelPosition) : m_Controller(controller),
+Goal_Ship_FollowShip::Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2d &RelPosition) : m_Controller(controller),
 	m_Followship(Followship),m_ship(controller->GetShip()),m_Terminate(false)
 {
 	SetRelPosition(RelPosition);
@@ -348,9 +353,9 @@ Goal::Goal_Status Goal_Ship_FollowShip::Process(double dTime_s)
 		if (true)
 		{
 			// This is the "correct" offset position
-			osg::Vec2d globalGoalPositionPoint;
-			osg::Vec2d globalGoalTrajectoryPoint;
-			osg::Vec2d globalGoalVelocity;
+			Vec2d globalGoalPositionPoint;
+			Vec2d globalGoalTrajectoryPoint;
+			Vec2d globalGoalVelocity;
 			globalGoalPositionPoint=globalGoalTrajectoryPoint=m_Followship.GetPos_m();
 			globalGoalVelocity = m_Followship.GetPhysics().GetLinearVelocity();
 
@@ -368,7 +373,7 @@ Goal::Goal_Status Goal_Ship_FollowShip::Process(double dTime_s)
 		else
 		{
 			// Just drive straight so we can deal with avoidance
-			osg::Vec2d globalGoalPositionPoint = m_Followship.GetPos_m() + m_Followship.GetPhysics().GetLinearVelocity();
+			Vec2d globalGoalPositionPoint = m_Followship.GetPos_m() + m_Followship.GetPhysics().GetLinearVelocity();
 			//UpdateIntendedLocation(globalGoalPositionPoint,globalGoalPositionPoint, 1.0, NULL);
 			m_Controller->DriveToLocation(globalGoalPositionPoint, globalGoalPositionPoint, 1.0, dTime_s, NULL);
 			m_Status=eFailed;
