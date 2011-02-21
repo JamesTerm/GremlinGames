@@ -68,6 +68,7 @@ class FRC_2011_Robot : public Robot_Tank
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
+		bool m_UsingEncoders;
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values

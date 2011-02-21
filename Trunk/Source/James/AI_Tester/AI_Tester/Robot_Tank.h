@@ -17,6 +17,8 @@ class Robot_Tank : public Ship_Tester
 		//This will convert the force into both motor velocities and interpolate the final torque and force to apply
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		//This method converts the given left right velocities into a form local linear velocity and angular velocity
+		void InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 	private:
 		//typedef Ship_2D __super;
 		void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
