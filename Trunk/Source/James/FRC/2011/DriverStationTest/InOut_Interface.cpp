@@ -128,3 +128,9 @@ double Robot_Control::GetArmCurrentPosition()
 	#endif
 	return ret;
 }
+
+void Servo::SetAngle(float angle)
+{
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	lcd->PrintfLine(DriverStationLCD::kUser_Line2, "Servo=%f", angle);
+}
