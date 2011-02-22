@@ -7,11 +7,12 @@ class FRC_2011_Robot : public Robot_Tank
 	public:
 		typedef Framework::Base::Vec2d Vec2D;
 		//typedef osg::Vec2d Vec2D;
-		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control);
+		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
+		static double RPS_To_LinearVelocity(double RPS);
 
 		class Robot_Arm : public Ship_1D
 		{
@@ -47,6 +48,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
 		void OpenDeploymentDoor(bool Open);
+		void ReleaseLazySusan(bool Release);
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;

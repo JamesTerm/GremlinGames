@@ -87,6 +87,30 @@ Driver_Station_Joystick::~Driver_Station_Joystick()
  /*															Robot_Control															*/
 /***********************************************************************************************************************************/
 
+Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(2),m_OffClaw(1),
+	m_LeftEncoder(4,3,4,4),m_RightEncoder(4,1,4,2),m_DeployDoor(10),m_LazySusan(9),m_Potentiometer(1)
+{
+	m_Compress.Start();
+	if (UseSafety)
+	{
+		//I'm giving a whole second before the timeout kicks in... I do not want false positives!
+		//m_RobotDrive.SetExpiration(1.0);
+		//m_RobotDrive.SetSafetyEnabled(true);
+	}
+	//else
+	//	m_RobotDrive.SetSafetyEnabled(false);
+	const double EncoderPulseRate=(1.0/360.0);
+	m_LeftEncoder.SetDistancePerPulse(EncoderPulseRate),m_RightEncoder.SetDistancePerPulse(EncoderPulseRate);
+	m_LeftEncoder.Start(),m_RightEncoder.Start();
+}
+
+Robot_Control::~Robot_Control() 
+{
+	m_LeftEncoder.Stop(),m_RightEncoder.Stop();  //TODO Move for autonomous mode only
+	//m_RobotDrive.SetSafetyEnabled(false);
+	m_Compress.Stop();
+}
+
 void Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const FRC_2011_Robot_Properties *robot_props=static_cast<const FRC_2011_Robot_Properties *>(props);
@@ -99,7 +123,10 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.Get(),m_RightEncoder.Get());	
+	//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);	
+	LeftVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(m_LeftEncoder.GetRate());
+	RightVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(m_RightEncoder.GetRate());
+	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 }
 
 void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
@@ -115,13 +142,12 @@ void Robot_Control::UpdateArmVelocity(double Velocity)
 }
 
 double Robot_Control::GetArmCurrentPosition()
-{
-	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	DriverStation *ds=DriverStation::GetInstance();
-	double raw_value = (double) ds->GetAnalogIn(1); //TODO determine what channel this is
+{	
+	double raw_value = (double)m_Potentiometer.GetAverageValue();
 	double ret=FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
 	//I may keep these on as they should be useful feedback
-	#if 1
+	#if 0
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	double height=FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(ret);
 	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);
 	//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
@@ -134,3 +160,4 @@ void Servo::SetAngle(float angle)
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->PrintfLine(DriverStationLCD::kUser_Line2, "Servo=%f", angle);
 }
+
