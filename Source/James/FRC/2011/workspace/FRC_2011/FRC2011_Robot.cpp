@@ -28,7 +28,8 @@ const double c_PotentiometerToGearRatio=60.0/32.0;
 const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
-
+const double c_WheelDiameter=0.1524;  //6 inches
+const double c_MotorToWheelGearRatio=12.0/36.0;
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
@@ -174,6 +175,11 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
+}
+
+double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
+{
+	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
 }
 
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)

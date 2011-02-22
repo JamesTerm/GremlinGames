@@ -12,6 +12,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
+		static double RPS_To_LinearVelocity(double RPS);
 
 		class Robot_Arm : public Ship_1D
 		{
