@@ -47,6 +47,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
 		void OpenDeploymentDoor(bool Open);
+		void ReleaseLazySusan(bool Release);
 		typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;

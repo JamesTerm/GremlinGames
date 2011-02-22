@@ -48,7 +48,7 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.1,false,"Joystick_1");
 	//These are not assigned by default but can configured to use via xml preferences
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",true,1.0,0.1,true,"Joystick_1");
-	joy.AddJoy_Button_Default(6,"Slide",false);
+	//joy.AddJoy_Button_Default(6,"Slide",false);
 	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
 
 	#ifdef __UsingXTerminator__
@@ -75,6 +75,7 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Button_Default( 9,"Arm_SetPos9feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 0,"Arm_Claw",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 7,"Robot_OpenDoor",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 8,"Robot_ReleaseLazySusan",true,false,"Joystick_2");
 	#endif
 	Init_AutoPilotControls();
 }
