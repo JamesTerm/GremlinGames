@@ -11,11 +11,12 @@ const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmLength_m=1.8288;  //6 feet
 const double c_ArmToGearRatio=72.0/28.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-const double c_PotentiometerToGearRatio=1.875;
+const double c_PotentiometerToGearRatio=60.0/32.0;
 const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
-
+const double c_WheelDiameter=0.1524;  //6 inches
+const double c_MotorToWheelGearRatio=12.0/36.0;
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
@@ -41,7 +42,11 @@ double FRC_2011_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
 
 double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 {
-	double ret=((raw / 512.0)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
+	const int MinRawRange=-2;
+	const int MaxRawRange=966;
+	const int RawRange=MaxRawRange-MinRawRange;
+	const int RawRangeHalf=RawRange/2;
+	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
 	ret*=c_PotentiometerToArm;  //convert to arm's gear ratio
 	return ret;
 }
@@ -51,7 +56,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	//Update the position to where the potentiometer says where it actually is
 	//SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
-	//Temp
+	//Temp testing potentiometer readings without applying to current position
 	//m_RobotControl->GetArmCurrentPosition();
 	__super::TimeChange(dTime_s);
 	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
@@ -120,8 +125,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
   /***********************************************************************************************************************************/
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
-FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(false)
+FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders)
 {
 }
 
@@ -159,6 +164,11 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	arm_entity.TimeChange(dTime_s);
 }
 
+double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
+{
+	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
+}
+
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
@@ -169,19 +179,28 @@ void FRC_2011_Robot::OpenDeploymentDoor(bool Open)
 {
 	m_RobotControl->OpenDeploymentDoor(Open);
 }
+void FRC_2011_Robot::ReleaseLazySusan(bool Release)
+{
+	m_RobotControl->ReleaseLazySusan(Release);
+}
 
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
+	{
 		em->EventOnOff_Map["Robot_OpenDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::OpenDeploymentDoor);
+		em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
+	}
 	else
+	{
 		em->EventOnOff_Map["Robot_OpenDoor"]  .Remove(*this, &FRC_2011_Robot::OpenDeploymentDoor);
+		em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
+	}
 
 	Ship_1D &ArmShip_Access=m_Arm;
 	ArmShip_Access.BindAdditionalEventControls(Bind);
 }
-
 
   /***********************************************************************************************************************************/
  /*															Robot_Control															*/
@@ -219,6 +238,10 @@ void Robot_Control::OpenDeploymentDoor(bool Open)
 	DebugOutput("OpenDeploymentDoor=%d\n",Open);
 }
 
+void Robot_Control::ReleaseLazySusan(bool Release)
+{
+	DebugOutput("ReleaseLazySusan=%d\n",Release);
+}
 
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot_Properties														*/

@@ -14,8 +14,9 @@ class Robot_Control_Interface
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
 		///This is in radians of the arm's gear ratio
 		virtual double GetArmCurrentPosition()=0;
-		virtual void CloseClaw(bool Close)=0;    //true=close false=open
+		virtual void CloseClaw(bool Close)=0;  //true=close false=open
 		virtual void OpenDeploymentDoor(bool Open)=0;
+		virtual void ReleaseLazySusan(bool Release)=0;
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -25,11 +26,12 @@ class FRC_2011_Robot : public Robot_Tank
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control);
+		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
+		static double RPS_To_LinearVelocity(double RPS);
 
 		class Robot_Arm : public Ship_1D
 		{
@@ -65,6 +67,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
 		void OpenDeploymentDoor(bool Open);
+		void ReleaseLazySusan(bool Release);
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
@@ -86,6 +89,7 @@ class Robot_Control : public Robot_Control_Interface
 		virtual double GetArmCurrentPosition() {return m_Robot->GetArm().GetPos_m();}
 		virtual void CloseClaw(bool Close);  //true=close false=open
 		virtual void OpenDeploymentDoor(bool Open);
+		virtual void ReleaseLazySusan(bool Release);
 	private:
 		FRC_2011_Robot * const m_Robot;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
