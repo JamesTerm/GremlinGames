@@ -14,26 +14,8 @@ class Robot_Control : public Robot_Control_Interface
 	double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 	double m_ArmMaxSpeed;
 	public:
-		Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(2),m_OffClaw(1),
-			m_LeftEncoder(4,3,4,4),m_RightEncoder(4,1,4,2),m_DeployDoor(10),m_LazySusan(9),m_Potentiometer(1)
-		{
-			m_Compress.Start();
-			if (UseSafety)
-			{
-				//I'm giving a whole second before the timeout kicks in... I do not want false positives!
-				m_RobotDrive.SetExpiration(1.0);
-				m_RobotDrive.SetSafetyEnabled(true);
-			}
-			else
-				m_RobotDrive.SetSafetyEnabled(false);
-			m_LeftEncoder.Start(),m_RightEncoder.Start();
-		}
-		virtual ~Robot_Control() 
-		{
-			m_LeftEncoder.Stop(),m_RightEncoder.Stop();  //TODO Move for autonomous mode only
-			m_RobotDrive.SetSafetyEnabled(false);
-			m_Compress.Stop();
-		}
+		Robot_Control(bool UseSafety);
+		virtual ~Robot_Control(); 
 		virtual void Initialize(const Entity_Properties *props);
 	protected: //from Robot_Control_Interface
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
