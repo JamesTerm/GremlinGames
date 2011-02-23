@@ -1,3 +1,7 @@
+#undef  __DisableCompressor__
+#define __EncoderHack__
+#undef  __ShowPotentiometerReadings__
+
 #include "WPILib.h"
 
 #include "Base/Base_Includes.h"
@@ -89,7 +93,10 @@ Driver_Station_Joystick::~Driver_Station_Joystick()
 Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(2),m_OffClaw(1),
 	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_DeployDoor(10),m_LazySusan(9),m_Potentiometer(1)
 {
+	#ifndef __DisableCompressor__
 	m_Compress.Start();
+	#endif
+	
 	if (UseSafety)
 	{
 		//I'm giving a whole second before the timeout kicks in... I do not want false positives!
@@ -125,13 +132,20 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);	
 	LeftVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(m_LeftEncoder.GetRate());
 	RightVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(m_RightEncoder.GetRate());
+	#ifdef __EncoderHack__
+	LeftVelocity=RightVelocity;  //Unfortunately the left encoder is not working remove once 
+	#endif
 	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 }
 
 void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
 {
 	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
-	m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
+	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
+	//m_RobotDrive.SetLeftRightMotorOutputs(0.0f,(float)(RightVelocity/m_RobotMaxSpeed));
+	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),0.0f);
+	//Unfortunately the actual wheels are reversed
+	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVelocity/m_RobotMaxSpeed),(float)(LeftVelocity/m_RobotMaxSpeed));
 }
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {
@@ -143,9 +157,10 @@ void Robot_Control::UpdateArmVelocity(double Velocity)
 double Robot_Control::GetArmCurrentPosition()
 {	
 	double raw_value = (double)m_Potentiometer.GetAverageValue();
-	double ret=FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
+	//Note the value is inverted with the negative operator
+	double ret=-FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
 	//I may keep these on as they should be useful feedback
-	#if 0
+	#ifdef __ShowPotentiometerReadings__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	double height=FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(ret);
 	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);

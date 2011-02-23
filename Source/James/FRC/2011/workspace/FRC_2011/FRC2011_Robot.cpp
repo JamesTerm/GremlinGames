@@ -1,3 +1,6 @@
+#define __DisablePotentiometerCalibration__
+const bool c_UsingArmLimits=false;
+
 #include "Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
@@ -55,10 +58,7 @@ double FRC_2011_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
 
 double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 {
-	const int MinRawRange=-2;
-	const int MaxRawRange=966;
-	const int RawRange=MaxRawRange-MinRawRange;
-	const int RawRangeHalf=RawRange/2;
+	const int RawRangeHalf=512;
 	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
 	ret*=c_PotentiometerToArm;  //convert to arm's gear ratio
 	return ret;
@@ -68,7 +68,9 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	//Update the position to where the potentiometer says where it actually is
-	//SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
+	#ifndef __DisablePotentiometerCalibration__
+	SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
+	#endif
 	//Temp testing potentiometer readings without applying to current position
 	//m_RobotControl->GetArmCurrentPosition();
 	__super::TimeChange(dTime_s);
@@ -224,11 +226,11 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	"Arm",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	6.0,   //Max Speed
+	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	6.0,6.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
-	true,	//Using the range
+	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
 	)
 {
