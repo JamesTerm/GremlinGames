@@ -1,5 +1,10 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
+namespace AI_Tester
+{
+	#include "Calibration_Testing.h"
+	#include "FRC2011_Robot.h"
+}
 
 using namespace AI_Tester;
 using namespace std;

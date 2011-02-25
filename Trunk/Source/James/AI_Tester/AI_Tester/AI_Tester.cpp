@@ -6,6 +6,8 @@
 namespace AI_Tester
 {
 	#include "Viewer.h"
+	#include "Calibration_Testing.h"
+	#include "FRC2011_Robot.h"
 }
 
 void cls(void *hConsole=NULL);
