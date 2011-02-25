@@ -6,7 +6,7 @@ namespace AI_Tester
 	#include "FRC2011_Robot.h"
 }
 
-#define __DisablePotentiometerCalibration__
+#undef __DisablePotentiometerCalibration__
 
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
@@ -158,6 +158,7 @@ void FRC_2011_Robot::ResetPos()
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
+	m_RobotControl->TimeChange(dTime_s);  //This must be first so the simulutors can have the correct times
 	if (m_UsingEncoders)
 	{
 		double LeftVelocity,RightVelocity;
@@ -172,7 +173,6 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
-	m_RobotControl->TimeChange(dTime_s);
 }
 
 double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
@@ -227,7 +227,7 @@ void Robot_Control::Initialize(const Entity_Properties *props)
 
 void Robot_Control::TimeChange(double dTime_s)
 {
-	m_Potentiometer.TimeChange(dTime_s);
+	m_Potentiometer.SetTimeDelta(dTime_s);
 }
 
 void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
@@ -242,13 +242,16 @@ void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelo
 }
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {
+	//TODO we should submit potentiometer ratio, but for now lets factor out this complexity
+	float VelocityToUse=(float)(Velocity/m_ArmMaxSpeed);
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
-	m_Potentiometer.UpdatePotentiometerVelocity(Velocity);
+	m_Potentiometer.UpdatePotentiometerVelocity(VelocityToUse);
+	m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 }
 
 double Robot_Control::GetArmCurrentPosition()
 {
-	return m_Potentiometer.GetPotentiometerCurrentPosition();
+	return m_Potentiometer.GetPotentiometerCurrentPosition()*c_GearToArmRatio;
 }
 
 void Robot_Control::CloseClaw(bool Close)
