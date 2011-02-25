@@ -4,6 +4,9 @@
 class Robot_Control_Interface
 {
 	public:
+		//This is only needed for simulation
+		virtual void TimeChange(double dTime_s)=0;
+
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
 		virtual void Initialize(const Entity_Properties *props)=0;
@@ -80,13 +83,15 @@ class Robot_Control : public Robot_Control_Interface
 {
 	public:
 		Robot_Control(FRC_2011_Robot *Robot) : m_Robot(Robot) {}
+		//This is only needed for simulation
+		virtual void TimeChange(double dTime_s);
 	protected: //from Robot_Control_Interface
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
 		virtual void UpdateArmVelocity(double Velocity);
 		//pacify this by returning its current value
-		virtual double GetArmCurrentPosition() {return m_Robot->GetArm().GetPos_m();}
+		virtual double GetArmCurrentPosition();
 		virtual void CloseClaw(bool Close);  //true=close false=open
 		virtual void OpenDeploymentDoor(bool Open);
 		virtual void ReleaseLazySusan(bool Release);
@@ -94,6 +99,7 @@ class Robot_Control : public Robot_Control_Interface
 		FRC_2011_Robot * const m_Robot;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
+		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control

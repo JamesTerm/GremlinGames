@@ -1,5 +1,12 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
+namespace AI_Tester
+{
+	#include "Calibration_Testing.h"
+	#include "FRC2011_Robot.h"
+}
+
+#define __DisablePotentiometerCalibration__
 
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
@@ -55,9 +62,12 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	//Update the position to where the potentiometer says where it actually is
-	//SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
+	#ifndef __DisablePotentiometerCalibration__
+	SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
+	#else
 	//Temp testing potentiometer readings without applying to current position
-	//m_RobotControl->GetArmCurrentPosition();
+	m_RobotControl->GetArmCurrentPosition();
+	#endif
 	__super::TimeChange(dTime_s);
 	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
 	double Pos_m=GetPos_m();
@@ -162,6 +172,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
+	m_RobotControl->TimeChange(dTime_s);
 }
 
 double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
@@ -214,6 +225,11 @@ void Robot_Control::Initialize(const Entity_Properties *props)
 	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 }
 
+void Robot_Control::TimeChange(double dTime_s)
+{
+	m_Potentiometer.TimeChange(dTime_s);
+}
+
 void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	//May want to produce some synthetic date for testing
@@ -227,7 +243,14 @@ void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelo
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
+	m_Potentiometer.UpdatePotentiometerVelocity(Velocity);
 }
+
+double Robot_Control::GetArmCurrentPosition()
+{
+	return m_Potentiometer.GetPotentiometerCurrentPosition();
+}
+
 void Robot_Control::CloseClaw(bool Close)
 {
 	DebugOutput("CloseClaw=%d\n",Close);

@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Calibration_Testing.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Entity2D.cpp"
 				>
 			</File>
@@ -271,6 +275,10 @@
 			</File>
 			<File
 				RelativePath=".\AI_Tester.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Calibration_Testing.h"
 				>
 			</File>
 			<File
