@@ -17,6 +17,7 @@ const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 const double c_PotentiometerToGearRatio=60.0/32.0;
 const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
 
+//const double c_TestRate=3.0;
 //const double c_TestRate=6.0;
 const double c_TestRate=18.0;
 
@@ -46,7 +47,7 @@ double Potentiometer_Tester::GetPotentiometerCurrentPosition()
 	double Pos_m=GetPos_m();
 	double height=FRC_2011_Robot::Robot_Arm::AngleToHeight_m(Pos_m);
 
-	DOUT5("Pot=%f Angle=%f %fft %fin",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
+	//DOUT5("Pot=%f Angle=%f %fft %fin",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
 
 	return Pos_m;
 }
