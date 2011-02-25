@@ -1,6 +1,3 @@
-#define __DisablePotentiometerCalibration__
-const bool c_UsingArmLimits=false;
-
 #include "Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
@@ -18,6 +15,9 @@ const bool c_UsingArmLimits=false;
 #include "AI_Base_Controller.h"
 #include "Robot_Tank.h"
 #include "FRC2011_Robot.h"
+
+#define __DisablePotentiometerCalibration__
+const bool c_UsingArmLimits=false;
 
 using namespace Framework::Base;
 using namespace std;
@@ -38,8 +38,14 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 /***********************************************************************************************************************************/
 
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control)
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0)
 {
+}
+
+void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
+{
+	m_LastPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+	__super::Initialize(em,props);
 }
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
@@ -67,17 +73,38 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 
 void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
+	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
+	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
+
 	//Update the position to where the potentiometer says where it actually is
 	#ifndef __DisablePotentiometerCalibration__
-	SetPos_m(m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio);
-	#endif
+	if (m_LastTime!=0.0)
+	{
+		double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
+		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll add a positive number to the scaler
+		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
+		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
+		m_CalibratedScaler=PotentiometerSpeed!=0.0?LastSpeed/PotentiometerSpeed:1.0;
+		double Discrepancy=PotentiometerSpeed-LastSpeed;
+		//DOUT5("pSpeed=%f cal=%f Disc=%f",PotentiometerSpeed,m_CalibratedScaler,Discrepancy);
+		SetPos_m(NewPosition);
+		m_LastPosition=NewPosition;
+	}
+	m_LastTime=dTime_s;
+	#else
 	//Temp testing potentiometer readings without applying to current position
-	//m_RobotControl->GetArmCurrentPosition();
+	m_RobotControl->GetArmCurrentPosition();
+	#endif
 	__super::TimeChange(dTime_s);
-	m_RobotControl->UpdateArmVelocity(m_Physics.GetVelocity());
-	//double Pos_m=GetPos_m();
-	//double height=AngleToHeight_m(Pos_m);
-	//DOUT4("Arm=%f Angle=%f %fft %fin",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
+	double CurrentVelocity=m_Physics.GetVelocity();
+	m_RobotControl->UpdateArmVelocity(CurrentVelocity*m_CalibratedScaler);
+	//Show current height (only in AI Tester)
+	#if 0
+	double Pos_m=GetPos_m();
+	double height=AngleToHeight_m(Pos_m);
+	DOUT4("Arm=%f Angle=%f %fft %fin",CurrentVelocity,RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
+	#endif
 }
 
 void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Velocity)
