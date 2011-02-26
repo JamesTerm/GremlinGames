@@ -19,7 +19,7 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void Initialize(const Entity_Properties *props);
 	protected: //from Robot_Control_Interface
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
-		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		virtual void UpdateArmVelocity(double Velocity);
 		virtual double GetArmCurrentPosition();
 		virtual void CloseClaw(bool Close) {m_OnClaw.Set(Close),m_OffClaw.Set(!Close);}
