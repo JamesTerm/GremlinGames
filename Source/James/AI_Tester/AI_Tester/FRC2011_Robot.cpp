@@ -74,7 +74,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	{
 		double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
 		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
-		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll add a positive number to the scaler
+		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
 		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
 		m_CalibratedScaler=PotentiometerSpeed!=0.0?LastSpeed/PotentiometerSpeed:1.0;
@@ -162,10 +162,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders)
 {
-	m_UsingEncoders=true;  //Testing
-	m_Encoder_Last_LinearVelocity=Vec2d(0,0);
-	m_Encoder_Last_AngularVelocity=0.0;
-	m_CalibratedScalerX=m_CalibratedScalerY=m_CalibratedAngularScaler=1.0;
+	//m_UsingEncoders=true;  //Testing
+	m_CalibratedScalerLeft=m_CalibratedScalerRight=1.0;
 }
 
 void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -191,24 +189,21 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	{
 		Vec2d LocalVelocity;
 		double AngularVelocity;
-		double LeftVelocity,RightVelocity;
-		m_RobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
-		InterpolateVelocities(LeftVelocity,RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
-		//The order here is as such where if the encoder's distance is greater (in either direction), we'll add a positive number to the scaler
-		double EncoderSpeed=fabs(LocalVelocity[0]);
-		m_CalibratedScalerX=EncoderSpeed!=0.0?fabs(m_Encoder_Last_LinearVelocity[0])/EncoderSpeed:1.0;
-		EncoderSpeed=fabs(LocalVelocity[1]);
-		m_CalibratedScalerY=EncoderSpeed!=0.0?fabs(m_Encoder_Last_LinearVelocity[1])/EncoderSpeed:1.0;
-		EncoderSpeed=fabs(AngularVelocity);
-		m_CalibratedAngularScaler=EncoderSpeed!=0.0?fabs(m_Encoder_Last_AngularVelocity)/EncoderSpeed:1.0;
-	
-		m_Encoder_Last_LinearVelocity=LocalVelocity;
-		m_Encoder_Last_AngularVelocity=AngularVelocity;
+		double Encoder_LeftVelocity,Encoder_RightVelocity;
+		double Entity_LeftSpeed=fabs(GetLeftVelocity());
+		double Entity_RightSpeed=fabs(GetRightVelocity());
+		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+		
+		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+		//The order here is as such where if the encoder's distance is greater (in either direction), we'll multiply by a value less than one
+		double EncoderSpeed=fabs(Encoder_LeftVelocity);
+		m_CalibratedScalerLeft=!IsZero(EncoderSpeed)?Entity_LeftSpeed/EncoderSpeed:1.0;
+		EncoderSpeed=fabs(Encoder_RightVelocity);
+		m_CalibratedScalerRight=!IsZero(EncoderSpeed)?Entity_RightSpeed/EncoderSpeed:1.0;
+
+		//DOUT4("Left=%f Right=%f",m_CalibratedScalerLeft,m_CalibratedScalerRight);
 
 		#if 1
-		//LocalVelocity[0]*=m_CalibratedScalerX;
-		//LocalVelocity[1]*=m_CalibratedScalerY;
-		//AngularVelocity*=m_CalibratedAngularScaler;
 		GetPhysics().SetLinearVelocity(LocalToGlobal(GetAtt_r(),LocalVelocity));
 		GetPhysics().SetAngularVelocity(AngularVelocity);
 		#else
@@ -229,7 +224,7 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity(),GetRightVelocity());
+	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity()*m_CalibratedScalerLeft,GetRightVelocity()*m_CalibratedScalerRight);
 }
 
 void FRC_2011_Robot::OpenDeploymentDoor(bool Open)
