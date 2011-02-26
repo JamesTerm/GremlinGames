@@ -14,7 +14,7 @@ Entity1D_Properties::Entity1D_Properties()
 	m_Dimension=12.0;
 };
 
-Entity1D_Properties::Entity1D_Properties(char EntityName[],double Mass,double Dimension)
+Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,double Dimension)
 {
 	m_EntityName=EntityName;
 	m_Mass=Mass;
@@ -70,7 +70,7 @@ Ship_1D_Properties::Ship_1D_Properties()
 	m_UsingRange=false;
 };
 
-Ship_1D_Properties::Ship_1D_Properties(char EntityName[], double Mass,double Dimension,
+Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
 				   double MAX_SPEED,
 				   double ACCEL,double BRAKE,
 				   double MaxAccelForward, double MaxAccelReverse,

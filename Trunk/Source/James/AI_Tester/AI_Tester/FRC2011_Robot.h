@@ -78,6 +78,10 @@ class FRC_2011_Robot : public Robot_Tank
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
+		Vec2D m_Encoder_Last_LinearVelocity;  //used for calibration
+		double m_Encoder_Last_AngularVelocity; //used for calibration
+		double m_CalibratedScalerX,m_CalibratedScalerY; //used for calibration
+		double m_CalibratedAngularScaler;
 		bool m_UsingEncoders;
 };
 
@@ -104,6 +108,7 @@ class Robot_Control : public Robot_Control_Interface
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
 		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
+		Encoder_Tester m_Encoders;
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control

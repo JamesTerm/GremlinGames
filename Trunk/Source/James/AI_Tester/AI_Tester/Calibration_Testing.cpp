@@ -19,15 +19,20 @@ const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
 
 //const double c_TestRate=3.0;
 //const double c_TestRate=6.0;
-const double c_TestRate=18.0;
+const double c_Potentiometer_TestRate=18.0;
+
+
+  /***************************************************************************************************************/
+ /*											Potentiometer_Tester												*/
+/***************************************************************************************************************/
 
 Potentiometer_Tester::Potentiometer_Tester() : m_PotentiometerProps(
 	"Potentiometer",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	c_TestRate,   //Max Speed
+	c_Potentiometer_TestRate,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	c_TestRate,c_TestRate, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	c_Potentiometer_TestRate,c_Potentiometer_TestRate,
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
@@ -55,4 +60,74 @@ double Potentiometer_Tester::GetPotentiometerCurrentPosition()
 void Potentiometer_Tester::TimeChange()
 {
 	__super::TimeChange(m_Time_s);
+}
+
+  /***************************************************************************************************************/
+ /*												Encoder_Simulator												*/
+/***************************************************************************************************************/
+
+const double c_Encoder_TestRate=2.916;
+const double c_Encoder_MaxAccel=5.0;
+
+Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
+	EntityName,
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	c_Encoder_TestRate,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
+	Ship_1D_Properties::eRobotArm,
+	false	//Not using the range
+	),Ship_1D(EntityName)
+{
+	Initialize(m_DummyMap,&m_EncoderProps);
+}
+
+void Encoder_Simulator::UpdateEncoderVelocity(double Velocity)
+{
+	SetRequestedVelocity(Velocity*m_EncoderProps.GetMaxSpeed());
+}
+
+double Encoder_Simulator::GetEncoderVelocity()
+{
+	return m_Physics.GetVelocity();
+}
+
+void Encoder_Simulator::TimeChange()
+{
+	__super::TimeChange(m_Time_s);
+}
+
+
+  /***************************************************************************************************************/
+ /*													Encoder_Tester												*/
+/***************************************************************************************************************/
+
+Encoder_Tester::Encoder_Tester() : m_LeftEncoder("LeftEncoder"),m_RightEncoder("RightEncoder")
+{
+
+}
+
+void Encoder_Tester::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
+{
+	LeftVelocity=m_LeftEncoder.GetEncoderVelocity();
+	RightVelocity=m_RightEncoder.GetEncoderVelocity();
+}
+
+void Encoder_Tester::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
+{
+	m_LeftEncoder.UpdateEncoderVelocity(LeftVelocity);
+	m_RightEncoder.UpdateEncoderVelocity(RightVelocity);
+}
+
+void Encoder_Tester::SetTimeDelta(double dTime_s)
+{
+	m_LeftEncoder.SetTimeDelta(dTime_s);
+	m_RightEncoder.SetTimeDelta(dTime_s);
+}
+
+void Encoder_Tester::TimeChange()
+{
+	m_LeftEncoder.TimeChange();
+	m_RightEncoder.TimeChange();
 }
