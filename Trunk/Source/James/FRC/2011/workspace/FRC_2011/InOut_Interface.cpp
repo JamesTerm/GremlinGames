@@ -138,14 +138,14 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 }
 
-void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
+void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
 	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
 	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
 	//m_RobotDrive.SetLeftRightMotorOutputs(0.0f,(float)(RightVelocity/m_RobotMaxSpeed));
 	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),0.0f);
 	//Unfortunately the actual wheels are reversed
-	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVelocity/m_RobotMaxSpeed),(float)(LeftVelocity/m_RobotMaxSpeed));
+	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVoltage),(float)(LeftVoltage));
 }
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {

@@ -34,7 +34,7 @@ class Robot_Control_Interface
 		virtual void Initialize(const Entity_Properties *props)=0;
 		//Encoders populate this with current velocity of motors
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
-		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)=0;  ///< in meters per second
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
 		virtual void UpdateArmVelocity(double Velocity)=0;  ///< in meters per second
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
 		///This is in radians of the arm's gear ratio
