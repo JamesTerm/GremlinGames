@@ -78,7 +78,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
 		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
 		m_CalibratedScaler=PotentiometerSpeed!=0.0?LastSpeed/PotentiometerSpeed:1.0;
-		double Discrepancy=PotentiometerSpeed-LastSpeed;
+		//double Discrepancy=PotentiometerSpeed-LastSpeed;
 		//DOUT5("pSpeed=%f cal=%f Disc=%f",PotentiometerSpeed,m_CalibratedScaler,Discrepancy);
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
@@ -92,7 +92,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	double CurrentVelocity=m_Physics.GetVelocity();
 	m_RobotControl->UpdateArmVelocity(CurrentVelocity*m_CalibratedScaler);
 	//Show current height (only in AI Tester)
-	#if 1
+	#if 0
 	double Pos_m=GetPos_m();
 	double height=AngleToHeight_m(Pos_m);
 	DOUT4("Arm=%f Angle=%f %fft %fin",CurrentVelocity,RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
@@ -162,6 +162,10 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders)
 {
+	m_UsingEncoders=true;  //Testing
+	m_Encoder_Last_LinearVelocity=Vec2d(0,0);
+	m_Encoder_Last_AngularVelocity=0.0;
+	m_CalibratedScalerX=m_CalibratedScalerY=m_CalibratedAngularScaler=1.0;
 }
 
 void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -182,16 +186,34 @@ void FRC_2011_Robot::ResetPos()
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
-	m_RobotControl->TimeChange(dTime_s);  //This must be first so the simulutors can have the correct times
+	m_RobotControl->TimeChange(dTime_s);  //This must be first so the simulators can have the correct times
 	if (m_UsingEncoders)
 	{
-		double LeftVelocity,RightVelocity;
-		m_RobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
 		Vec2d LocalVelocity;
 		double AngularVelocity;
+		double LeftVelocity,RightVelocity;
+		m_RobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
 		InterpolateVelocities(LeftVelocity,RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+		//The order here is as such where if the encoder's distance is greater (in either direction), we'll add a positive number to the scaler
+		double EncoderSpeed=fabs(LocalVelocity[0]);
+		m_CalibratedScalerX=EncoderSpeed!=0.0?fabs(m_Encoder_Last_LinearVelocity[0])/EncoderSpeed:1.0;
+		EncoderSpeed=fabs(LocalVelocity[1]);
+		m_CalibratedScalerY=EncoderSpeed!=0.0?fabs(m_Encoder_Last_LinearVelocity[1])/EncoderSpeed:1.0;
+		EncoderSpeed=fabs(AngularVelocity);
+		m_CalibratedAngularScaler=EncoderSpeed!=0.0?fabs(m_Encoder_Last_AngularVelocity)/EncoderSpeed:1.0;
+	
+		m_Encoder_Last_LinearVelocity=LocalVelocity;
+		m_Encoder_Last_AngularVelocity=AngularVelocity;
+
+		#if 1
+		//LocalVelocity[0]*=m_CalibratedScalerX;
+		//LocalVelocity[1]*=m_CalibratedScalerY;
+		//AngularVelocity*=m_CalibratedAngularScaler;
 		GetPhysics().SetLinearVelocity(LocalToGlobal(GetAtt_r(),LocalVelocity));
 		GetPhysics().SetAngularVelocity(AngularVelocity);
+		#else
+		DOUT4("Left=%f Right=%f",LeftVelocity,RightVelocity);
+		#endif
 	}
 
 	__super::TimeChange(dTime_s);
@@ -252,17 +274,21 @@ void Robot_Control::Initialize(const Entity_Properties *props)
 void Robot_Control::TimeChange(double dTime_s)
 {
 	m_Potentiometer.SetTimeDelta(dTime_s);
+	m_Encoders.SetTimeDelta(dTime_s);
 }
 
 void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
-	//May want to produce some synthetic date for testing
-	LeftVelocity=1.0,RightVelocity=-1.0;
+	m_Encoders.GetLeftRightVelocity(LeftVelocity,RightVelocity);
 }
 
 void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
 {
-	DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
+	double LeftVelocityToUse=LeftVelocity/m_RobotMaxSpeed;
+	double RightVelocityToUse=RightVelocity/m_RobotMaxSpeed;
+	DOUT2("left=%f right=%f \n",LeftVelocity,RightVelocity);
+	m_Encoders.UpdateLeftRightVelocity(LeftVelocityToUse,RightVelocityToUse);
+	m_Encoders.TimeChange();   //have this velocity immediately take effect
 }
 void Robot_Control::UpdateArmVelocity(double Velocity)
 {
