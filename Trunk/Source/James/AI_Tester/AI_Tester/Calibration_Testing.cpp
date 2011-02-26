@@ -76,6 +76,11 @@ const double c_Encoder_TestRate=2.4;
 const double c_Encoder_MaxAccel=4.0;
 #endif
 
+#if ENCODER_TEST_RATE==2
+const double c_Encoder_TestRate=1.1;
+const double c_Encoder_MaxAccel=2.0;
+#endif
+
 Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 	EntityName,
 	2.0,    //Mass
@@ -90,9 +95,9 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 	Initialize(m_DummyMap,&m_EncoderProps);
 }
 
-void Encoder_Simulator::UpdateEncoderVelocity(double Velocity)
+void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 {
-	SetRequestedVelocity(Velocity*m_EncoderProps.GetMaxSpeed());
+	SetRequestedVelocity(Voltage*m_EncoderProps.GetMaxSpeed());
 }
 
 double Encoder_Simulator::GetEncoderVelocity()
@@ -121,10 +126,10 @@ void Encoder_Tester::GetLeftRightVelocity(double &LeftVelocity,double &RightVelo
 	RightVelocity=m_RightEncoder.GetEncoderVelocity();
 }
 
-void Encoder_Tester::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
+void Encoder_Tester::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
-	m_LeftEncoder.UpdateEncoderVelocity(LeftVelocity);
-	m_RightEncoder.UpdateEncoderVelocity(RightVelocity);
+	m_LeftEncoder.UpdateEncoderVoltage(LeftVoltage);
+	m_RightEncoder.UpdateEncoderVoltage(RightVoltage);
 }
 
 void Encoder_Tester::SetTimeDelta(double dTime_s)

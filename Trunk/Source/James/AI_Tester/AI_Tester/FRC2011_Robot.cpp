@@ -163,7 +163,7 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders)
 {
 	//m_UsingEncoders=true;  //Testing
-	m_CalibratedScalerLeft=m_CalibratedScalerRight=1.0;
+	m_CalibratedScaler=1.0;
 }
 
 void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -196,12 +196,13 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		
 		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 		//The order here is as such where if the encoder's distance is greater (in either direction), we'll multiply by a value less than one
-		double EncoderSpeed=fabs(Encoder_LeftVelocity);
-		m_CalibratedScalerLeft=!IsZero(EncoderSpeed)?Entity_LeftSpeed/EncoderSpeed:1.0;
-		EncoderSpeed=fabs(Encoder_RightVelocity);
-		m_CalibratedScalerRight=!IsZero(EncoderSpeed)?Entity_RightSpeed/EncoderSpeed:1.0;
-
-		//DOUT4("Left=%f Right=%f",m_CalibratedScalerLeft,m_CalibratedScalerRight);
+		double EncoderSpeed=LocalVelocity.length();
+		double EntitySpeed=m_Physics.GetLinearVelocity().length();
+		//When the distance is close enough to zero use the scaled value as before
+		m_CalibratedScaler=!IsZero(EntitySpeed)?EncoderSpeed/EntitySpeed:
+			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
+		ENGAGED_MAX_SPEED=MAX_SPEED*m_CalibratedScaler;
+		//DOUT4("scaler=%f Eng=%f",m_CalibratedScaler,ENGAGED_MAX_SPEED);
 
 		#if 1
 		GetPhysics().SetLinearVelocity(LocalToGlobal(GetAtt_r(),LocalVelocity));
@@ -224,7 +225,7 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	m_RobotControl->UpdateLeftRightVelocity(GetLeftVelocity()*m_CalibratedScalerLeft,GetRightVelocity()*m_CalibratedScalerRight);
+	m_RobotControl->UpdateLeftRightVoltage(GetLeftVelocity()/ENGAGED_MAX_SPEED,GetRightVelocity()/ENGAGED_MAX_SPEED);
 }
 
 void FRC_2011_Robot::OpenDeploymentDoor(bool Open)
@@ -277,12 +278,13 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	m_Encoders.GetLeftRightVelocity(LeftVelocity,RightVelocity);
 }
 
-void Robot_Control::UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity)
+void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
-	double LeftVelocityToUse=LeftVelocity/m_RobotMaxSpeed;
-	double RightVelocityToUse=RightVelocity/m_RobotMaxSpeed;
-	DOUT2("left=%f right=%f \n",LeftVelocity,RightVelocity);
-	m_Encoders.UpdateLeftRightVelocity(LeftVelocityToUse,RightVelocityToUse);
+	double LeftVoltageToUse=min(LeftVoltage,1.0);
+	double RightVoltageToUse=min(RightVoltage,1.0);
+	//DOUT2("left=%f right=%f \n",LeftVelocity,RightVelocity);
+	DOUT2("left=%f right=%f \n",LeftVoltageToUse,RightVoltageToUse);
+	m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse,RightVoltageToUse);
 	m_Encoders.TimeChange();   //have this velocity immediately take effect
 }
 void Robot_Control::UpdateArmVelocity(double Velocity)
