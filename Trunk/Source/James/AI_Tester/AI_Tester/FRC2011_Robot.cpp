@@ -190,8 +190,6 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		Vec2d LocalVelocity;
 		double AngularVelocity;
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
-		double Entity_LeftSpeed=fabs(GetLeftVelocity());
-		double Entity_RightSpeed=fabs(GetRightVelocity());
 		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 		
 		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
