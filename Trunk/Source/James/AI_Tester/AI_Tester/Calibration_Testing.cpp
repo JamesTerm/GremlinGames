@@ -65,9 +65,16 @@ void Potentiometer_Tester::TimeChange()
   /***************************************************************************************************************/
  /*												Encoder_Simulator												*/
 /***************************************************************************************************************/
-
+#define ENCODER_TEST_RATE 1
+#if ENCODER_TEST_RATE==0
 const double c_Encoder_TestRate=2.916;
 const double c_Encoder_MaxAccel=5.0;
+#endif
+
+#if ENCODER_TEST_RATE==1
+const double c_Encoder_TestRate=2.4;
+const double c_Encoder_MaxAccel=4.0;
+#endif
 
 Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 	EntityName,

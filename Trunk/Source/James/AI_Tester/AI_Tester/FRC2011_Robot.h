@@ -78,10 +78,7 @@ class FRC_2011_Robot : public Robot_Tank
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
-		Vec2D m_Encoder_Last_LinearVelocity;  //used for calibration
-		double m_Encoder_Last_AngularVelocity; //used for calibration
-		double m_CalibratedScalerX,m_CalibratedScalerY; //used for calibration
-		double m_CalibratedAngularScaler;
+		double m_CalibratedScalerLeft,m_CalibratedScalerRight; //used for calibration
 		bool m_UsingEncoders;
 };
 
