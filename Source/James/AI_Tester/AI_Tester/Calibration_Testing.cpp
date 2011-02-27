@@ -41,9 +41,9 @@ Potentiometer_Tester::Potentiometer_Tester() : m_PotentiometerProps(
 {
 	Initialize(m_DummyMap,&m_PotentiometerProps);
 }
-void Potentiometer_Tester::UpdatePotentiometerVelocity(double Velocity)
+void Potentiometer_Tester::UpdatePotentiometerVoltage(double Voltage)
 {
-	SetRequestedVelocity(Velocity*m_PotentiometerProps.GetMaxSpeed());
+	SetRequestedVelocity(Voltage*m_PotentiometerProps.GetMaxSpeed());
 }
 
 double Potentiometer_Tester::GetPotentiometerCurrentPosition()
