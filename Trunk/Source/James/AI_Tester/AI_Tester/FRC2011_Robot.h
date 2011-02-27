@@ -13,7 +13,7 @@ class Robot_Control_Interface
 		//Encoders populate this with current velocity of motors
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;  ///< in meters per second
-		virtual void UpdateArmVelocity(double Velocity)=0;  ///< in meters per second
+		virtual void UpdateArmVoltage(double Voltage)=0;  ///< in meters per second
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
 		///This is in radians of the arm's gear ratio
 		virtual double GetArmCurrentPosition()=0;
@@ -64,6 +64,7 @@ class FRC_2011_Robot : public Robot_Tank
 				double m_LastPosition;  //used for calibration
 				double m_CalibratedScaler; //used for calibration
 				double m_LastTime; //used for calibration
+				double m_MaxSpeedReference; //used for calibration
 		};
 
 		//Accessor needed for setting goals
@@ -94,7 +95,7 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
-		virtual void UpdateArmVelocity(double Velocity);
+		virtual void UpdateArmVoltage(double Voltage);
 		//pacify this by returning its current value
 		virtual double GetArmCurrentPosition();
 		virtual void CloseClaw(bool Close);  //true=close false=open
