@@ -20,7 +20,7 @@ class Robot_Control : public Robot_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
-		virtual void UpdateArmVelocity(double Velocity);
+		virtual void UpdateArmVoltage(double Voltage);
 		virtual double GetArmCurrentPosition();
 		virtual void CloseClaw(bool Close) {m_OnClaw.Set(Close),m_OffClaw.Set(!Close);}
 		virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}

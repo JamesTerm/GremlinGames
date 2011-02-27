@@ -147,11 +147,11 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	//Unfortunately the actual wheels are reversed
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVoltage),(float)(LeftVoltage));
 }
-void Robot_Control::UpdateArmVelocity(double Velocity)
+void Robot_Control::UpdateArmVoltage(double Voltage)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
-	float VelocityToUse=(float)(Velocity/m_ArmMaxSpeed);
-	m_ArmMotor.SetLeftRightMotorOutputs(VelocityToUse,VelocityToUse);  //always the same velocity for both!
+	float VoltageToUse=min((float)Voltage,1.0f);
+	m_ArmMotor.SetLeftRightMotorOutputs(VoltageToUse,VoltageToUse);  //always the same velocity for both!
 }
 
 double Robot_Control::GetArmCurrentPosition()

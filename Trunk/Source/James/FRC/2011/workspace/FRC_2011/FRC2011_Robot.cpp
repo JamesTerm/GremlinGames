@@ -46,6 +46,9 @@ void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const E
 {
 	m_LastPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
 	__super::Initialize(em,props);
+	const Ship_1D_Properties *ship=static_cast<const Ship_1D_Properties *>(props);
+	assert(ship);
+	m_MaxSpeedReference=ship->GetMaxSpeed();
 }
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
@@ -85,9 +88,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
 		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
-		m_CalibratedScaler=PotentiometerSpeed!=0.0?LastSpeed/PotentiometerSpeed:1.0;
-		//double Discrepancy=PotentiometerSpeed-LastSpeed;
-		//DOUT5("pSpeed=%f cal=%f Disc=%f",PotentiometerSpeed,m_CalibratedScaler,Discrepancy);
+		m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
+			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
+		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
+		//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
 	}
@@ -98,7 +102,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	#endif
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
-	m_RobotControl->UpdateArmVelocity(CurrentVelocity*m_CalibratedScaler);
+	m_RobotControl->UpdateArmVoltage(CurrentVelocity/MAX_SPEED);
 	//Show current height (only in AI Tester)
 	#if 0
 	double Pos_m=GetPos_m();
