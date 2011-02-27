@@ -42,6 +42,7 @@ class FRC_2011_Robot : public Robot_Tank
 				double m_LastPosition;  //used for calibration
 				double m_CalibratedScaler; //used for calibration
 				double m_LastTime; //used for calibration
+				double m_MaxSpeedReference; //used for calibration
 		};
 
 		//Accessor needed for setting goals
