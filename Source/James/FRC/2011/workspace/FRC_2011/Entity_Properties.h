@@ -5,7 +5,7 @@ class Entity1D_Properties
 {
 	public:
 		Entity1D_Properties();
-		Entity1D_Properties(char EntityName[],double Mass,double Dimension);
+		Entity1D_Properties(const char EntityName[],double Mass,double Dimension);
 		void Initialize(Entity1D *NewEntity) const;
 	protected:
 		std::string m_EntityName;  //derived classes can let base class know what type to read
@@ -26,7 +26,7 @@ class Ship_1D_Properties : public Entity1D_Properties
 			eDefault,
 			eRobotArm,
 		};
-		Ship_1D_Properties(char EntityName[], double Mass,double Dimension,
+		Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
 			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0);
 
