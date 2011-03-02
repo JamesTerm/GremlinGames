@@ -35,7 +35,7 @@ class Ship_2D : public Ship
 		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
 		/// is not restrained and the ship applies its restraints to catch up to the orientation
 		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation) 
-		{	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation,m_rotAccel_rad_s=Acceleration;
+		{	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation,m_rotAccel_rad_s=(Acceleration*m_ControlTurnScaler);
 		}
 
 		/// This is where both the vehicle entity and camera need to align to
@@ -78,6 +78,8 @@ class Ship_2D : public Ship
 		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
+		void SetControlVelocityScaler(double scale) {m_ControlVelocityScaler=scale;}
+		void SetControlTurnScaler(double scale) {m_ControlTurnScaler=scale;}
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
@@ -160,6 +162,7 @@ class Ship_2D : public Ship
 		// When notifying everything about thrusters, we want to keep a bit of an averager
 		Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
 		Blend_Averager<osg::Vec3d> m_TorqueReported_Averager;
+		double m_ControlTurnScaler,m_ControlVelocityScaler;
 	private:
 		//typedef Entity2D __super;
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)

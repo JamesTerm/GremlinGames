@@ -76,11 +76,15 @@ class FRC_2011_Robot : public Robot_Tank
 	private:
 		void OpenDeploymentDoor(bool Open);
 		void ReleaseLazySusan(bool Release);
+
+		void FightMode();
+		void ScoreMode();
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		double m_CalibratedScaler; //used for calibration
 		bool m_UsingEncoders;
+		bool m_Fightmode;
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
