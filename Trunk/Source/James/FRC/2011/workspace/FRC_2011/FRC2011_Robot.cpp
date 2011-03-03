@@ -18,21 +18,24 @@
 
 #define __DisablePotentiometerCalibration__
 const bool c_UsingArmLimits=false;
+const double PI=M_PI;
 
 using namespace Framework::Base;
 using namespace std;
 
-const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
+const double c_OptimalAngleUp_r=DEG_2_RAD(200.0);
 const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmLength_m=1.8288;  //6 feet
 const double c_ArmToGearRatio=72.0/28.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-const double c_PotentiometerToGearRatio=60.0/32.0;
-const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
+//const double c_PotentiometerToGearRatio=60.0/32.0;
+const double c_PotentiometerToGearRatio=5.0;
+const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
+
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
@@ -69,7 +72,7 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 {
 	const int RawRangeHalf=512;
 	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-	ret*=c_PotentiometerToArm;  //convert to arm's gear ratio
+	ret*=c_PotentiometerToArmRatio;  //convert to arm's gear ratio
 	return ret;
 }
 
@@ -123,13 +126,20 @@ void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Veloc
 	}
 }
 
+double ArmHeightToBack(double value)
+{
+	const double Vertical=PI/2.0*c_ArmToGearRatio;
+	return Vertical + (Vertical-value);
+}
+
 void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 {
 	SetIntendedPosition( HeightToAngle_r(0.0) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
-	SetIntendedPosition( HeightToAngle_r(0.9144) );
+	SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
+	//SetIntendedPosition(HeightToAngle_r(0.9144));
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
@@ -196,6 +206,15 @@ void FRC_2011_Robot::ResetPos()
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
+	if (!m_Fightmode)
+	{
+		double RequestedVelocity=GetRequestedVelocity();
+		//DOUT5("%f", RequestedVelocity);
+		if (RequestedVelocity > 0.1)
+			SetControlTurnScaler(-1.0);
+		else if (RequestedVelocity < -0.01)
+			SetControlTurnScaler(1.0);
+	}
 	if (m_UsingEncoders)
 	{
 		Vec2d LocalVelocity;
@@ -246,6 +265,19 @@ void FRC_2011_Robot::ReleaseLazySusan(bool Release)
 	m_RobotControl->ReleaseLazySusan(Release);
 }
 
+void FRC_2011_Robot::FightMode()
+{
+	m_Fightmode=true;
+	SetControlTurnScaler(1.0);
+	SetControlVelocityScaler(1.0);
+}
+
+void FRC_2011_Robot::ScoreMode()
+{
+	m_Fightmode=false;
+	SetControlVelocityScaler(-1.0);
+}
+
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
@@ -253,11 +285,15 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 	{
 		em->EventOnOff_Map["Robot_OpenDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::OpenDeploymentDoor);
 		em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
+		em->Event_Map["Robot_FightMode"].Subscribe(ehl, *this, &FRC_2011_Robot::FightMode);
+		em->Event_Map["Robot_ScoreMode"].Subscribe(ehl, *this, &FRC_2011_Robot::ScoreMode);
 	}
 	else
 	{
 		em->EventOnOff_Map["Robot_OpenDoor"]  .Remove(*this, &FRC_2011_Robot::OpenDeploymentDoor);
 		em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
+		em->Event_Map["Robot_FightMode"]  .Remove(*this, &FRC_2011_Robot::FightMode);
+		em->Event_Map["Robot_ScoreMode"]  .Remove(*this, &FRC_2011_Robot::ScoreMode);
 	}
 
 	Ship_1D &ArmShip_Access=m_Arm;
