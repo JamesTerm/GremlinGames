@@ -127,6 +127,7 @@ Ship_2D::eThrustState Ship_2D::SetThrustState(Ship_2D::eThrustState ts)
 
 void Ship_2D::SetRequestedVelocity(double Velocity)
 {
+	Velocity*=m_ControlVelocityScaler;
 	//assert(IsLocallyControlled());
 	SetSimFlightMode(true);
 	if (Velocity>0.0)
