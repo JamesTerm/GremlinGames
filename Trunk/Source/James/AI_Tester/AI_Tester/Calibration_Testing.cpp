@@ -14,9 +14,11 @@ const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
 const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmToGearRatio=72.0/28.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-const double c_PotentiometerToGearRatio=60.0/32.0;
-const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
-
+//const double c_PotentiometerToGearRatio=60.0/32.0;
+const double c_PotentiometerToGearRatio=5.0;
+const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+const double c_ArmToPotentiometerRatio=1.0/c_PotentiometerToArmRatio;
+const double c_GearToPotentiometer=1.0/c_PotentiometerToGearRatio;
 //const double c_TestRate=3.0;
 //const double c_TestRate=6.0;
 const double c_Potentiometer_TestRate=18.0;
@@ -35,7 +37,7 @@ Potentiometer_Tester::Potentiometer_Tester() : m_PotentiometerProps(
 	c_Potentiometer_TestRate,c_Potentiometer_TestRate,
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
-	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
+	DEG_2_RAD(-135.0),DEG_2_RAD(135.0)
 	),Ship_1D("Potentiometer")
 
 {
@@ -43,7 +45,7 @@ Potentiometer_Tester::Potentiometer_Tester() : m_PotentiometerProps(
 }
 void Potentiometer_Tester::UpdatePotentiometerVoltage(double Voltage)
 {
-	SetRequestedVelocity(Voltage*m_PotentiometerProps.GetMaxSpeed());
+	SetRequestedVelocity(Voltage*c_GearToPotentiometer*m_PotentiometerProps.GetMaxSpeed());
 }
 
 double Potentiometer_Tester::GetPotentiometerCurrentPosition()
