@@ -6,7 +6,7 @@ namespace AI_Tester
 	#include "FRC2011_Robot.h"
 }
 
-#define __DisablePotentiometerCalibration__
+#undef __DisablePotentiometerCalibration__
 const bool c_UsingArmLimits=true;
 
 using namespace AI_Tester;
@@ -19,8 +19,9 @@ const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmLength_m=1.8288;  //6 feet
 const double c_ArmToGearRatio=72.0/28.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-const double c_PotentiometerToGearRatio=60.0/32.0;
-const double c_PotentiometerToArm=c_PotentiometerToGearRatio * c_GearToArmRatio;
+//const double c_PotentiometerToGearRatio=60.0/32.0;
+const double c_PotentiometerToGearRatio=5.0;
+const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 const double c_WheelDiameter=0.1524;  //6 inches
@@ -61,7 +62,7 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 {
 	const int RawRangeHalf=512;
 	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-	ret*=c_PotentiometerToArm;  //convert to arm's gear ratio
+	ret*=c_PotentiometerToArmRatio;  //convert to arm's gear ratio
 	return ret;
 }
 
@@ -324,16 +325,15 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 }
 void Robot_Control::UpdateArmVoltage(double Voltage)
 {
-	//TODO we should submit potentiometer ratio, but for now lets factor out this complexity
 	float VoltageToUse=min((float)Voltage,1.0f);
-	DOUT4("Arm=%f",VoltageToUse);
+	//DOUT4("Arm=%f",VoltageToUse);
 	m_Potentiometer.UpdatePotentiometerVoltage(VoltageToUse);
 	m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 }
 
 double Robot_Control::GetArmCurrentPosition()
 {
-	return m_Potentiometer.GetPotentiometerCurrentPosition()*c_GearToArmRatio;
+	return m_Potentiometer.GetPotentiometerCurrentPosition()*c_PotentiometerToArmRatio;
 }
 
 void Robot_Control::CloseClaw(bool Close)
