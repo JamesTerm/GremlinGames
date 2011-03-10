@@ -101,7 +101,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	m_LastTime=dTime_s;
 	#else
 	//Temp testing potentiometer readings without applying to current position
-	m_RobotControl->GetArmCurrentPosition();
+	//m_RobotControl->GetArmCurrentPosition();
 	#endif
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
@@ -182,7 +182,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders)
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders),
+	m_Fightmode(true)
 {
 	//m_UsingEncoders=true;  //Testing
 	m_CalibratedScaler=1.0;
@@ -256,14 +257,14 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 	m_RobotControl->UpdateLeftRightVoltage(GetLeftVelocity()/ENGAGED_MAX_SPEED,GetRightVelocity()/ENGAGED_MAX_SPEED);
 }
 
-void FRC_2011_Robot::OpenDeploymentDoor(bool Open)
+void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
-	m_RobotControl->OpenDeploymentDoor(Open);
+	m_RobotControl->CloseDeploymentDoor(Close);
 }
-void FRC_2011_Robot::ReleaseLazySusan(bool Release)
-{
-	m_RobotControl->ReleaseLazySusan(Release);
-}
+//void FRC_2011_Robot::ReleaseLazySusan(bool Release)
+//{
+//	m_RobotControl->ReleaseLazySusan(Release);
+//}
 
 void FRC_2011_Robot::FightMode()
 {
@@ -283,15 +284,15 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventOnOff_Map["Robot_OpenDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::OpenDeploymentDoor);
-		em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
+		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::CloseDeploymentDoor);
+		//em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
 		em->Event_Map["Robot_FightMode"].Subscribe(ehl, *this, &FRC_2011_Robot::FightMode);
 		em->Event_Map["Robot_ScoreMode"].Subscribe(ehl, *this, &FRC_2011_Robot::ScoreMode);
 	}
 	else
 	{
-		em->EventOnOff_Map["Robot_OpenDoor"]  .Remove(*this, &FRC_2011_Robot::OpenDeploymentDoor);
-		em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
+		em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &FRC_2011_Robot::CloseDeploymentDoor);
+		//em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
 		em->Event_Map["Robot_FightMode"]  .Remove(*this, &FRC_2011_Robot::FightMode);
 		em->Event_Map["Robot_ScoreMode"]  .Remove(*this, &FRC_2011_Robot::ScoreMode);
 	}
