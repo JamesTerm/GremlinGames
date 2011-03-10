@@ -40,7 +40,7 @@ class Robot_Control_Interface
 		///This is in radians of the arm's gear ratio
 		virtual double GetArmCurrentPosition()=0;
 		virtual void CloseClaw(bool Close)=0;  //true=close false=open
-		virtual void OpenDeploymentDoor(bool Open)=0;
-		virtual void ReleaseLazySusan(bool Release)=0;
+		virtual void CloseDeploymentDoor(bool Open)=0;
+		//virtual void ReleaseLazySusan(bool Release)=0;
 };
 

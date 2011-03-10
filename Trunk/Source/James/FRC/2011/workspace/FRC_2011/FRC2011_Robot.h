@@ -52,8 +52,8 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
-		void OpenDeploymentDoor(bool Open);
-		void ReleaseLazySusan(bool Release);
+		void CloseDeploymentDoor(bool Close);
+		//void ReleaseLazySusan(bool Release);
 
 		void FightMode();
 		void ScoreMode();

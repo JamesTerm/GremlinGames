@@ -89,7 +89,7 @@ Goal *Get_TestLengthGoal(Ship_Tester *ship)
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
-	wp.Position[1]=5.0;  //five meters
+	wp.Position[1]=2.0;  //five meters
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
@@ -171,15 +171,15 @@ class SetUp_Autonomous : public SetUp_Manager
 			m_pUI->SetAutoPilot(true);  //we are not driving the robot
 			//Now to set up our goal
 			Ship_Tester *ship=m_pRobot;  //we can always cast down
-			assert(ship);
+			//assert(ship);
 			{
 				Goal *oldgoal=ship->ClearGoal();
 				if (oldgoal)
 					delete oldgoal;
 
-				//Goal *goal=Get_TestLengthGoal(ship);
+				Goal *goal=Get_TestLengthGoal(ship);
 				//Goal *goal=Get_TestRotationGoal(ship);
-				Goal *goal=Get_UberTubeGoal(m_pRobot);
+				//Goal *goal=Get_UberTubeGoal(m_pRobot);
 
 				//If the goal above can cast to a notify goal then we can use it
 				Goal_NotifyWhenComplete *notify_goal=dynamic_cast<Goal_NotifyWhenComplete *>(goal);
@@ -197,6 +197,13 @@ class SetUp_Autonomous : public SetUp_Manager
 			}
 
 		}
+		~SetUp_Autonomous()
+		{
+			Ship_Tester *ship=m_pRobot;  //we can always cast down
+			Goal *oldgoal=ship->ClearGoal();
+			if (oldgoal)
+				delete oldgoal;		
+		}
 		bool IsStillRunning()
 		{
 			return m_StillRunning;
@@ -213,24 +220,25 @@ class Robot_Main : public SimpleRobot
 {
 
 public:
-	//Drive left & right motors for 2 seconds then stop
+	
 	void Autonomous(void)
 	{
-		SetUp_Autonomous main_autonomous;
-		double tm = GetTime();
-		while (main_autonomous.IsStillRunning())
+		//SetUp_Autonomous main_autonomous;
+		//double tm = GetTime();
+		//while (main_autonomous.IsStillRunning())
+		while(IsAutonomous()&~IsDisabled())
 		{
-			double time=GetTime() - tm;
-			tm=GetTime();
+			//double time=GetTime() - tm;
+			//tm=GetTime();
 			//Framework::Base::DebugOutput("%f\n",time),
 			//I'll keep this around as a synthetic time option for debug purposes
 			//time=0.020;
-			main_autonomous.TimeChange(time);
+			//main_autonomous.TimeChange(time);
 			//TODO see how fast the loop runs (if possible)
-			Wait(0.005);				
+			Wait(0.010);				
 		}
-
 	}
+	
 	void OperatorControl(void)
 	{
 		if (c_UseDefaultControls)
@@ -262,7 +270,7 @@ public:
 				main.TimeChange(time);
 				//TODO see how fast the loop runs (if possible)
 				lcd->UpdateLCD();
-				Wait(0.005);				
+				Wait(0.010);				
 			}
 		}
 	}

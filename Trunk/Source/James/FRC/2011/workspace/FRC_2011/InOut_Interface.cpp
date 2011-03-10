@@ -90,8 +90,8 @@ Driver_Station_Joystick::~Driver_Station_Joystick()
  /*															Robot_Control															*/
 /***********************************************************************************************************************************/
 
-Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(2),m_OffClaw(1),
-	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_DeployDoor(10),m_LazySusan(9),m_Potentiometer(1)
+Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(4),m_OffClaw(3),
+	m_OnDeploy(2),m_OffDeploy(1),m_LeftEncoder(3,4),m_RightEncoder(1,2),m_Potentiometer(1)
 {
 	#ifndef __DisableCompressor__
 	m_Compress.Start();
@@ -151,6 +151,7 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 	float VoltageToUse=min((float)Voltage,1.0f);
+	Voltage *= (Voltage<0.0)? 0.025 : 0.5;
 	m_ArmMotor.SetLeftRightMotorOutputs(VoltageToUse,VoltageToUse);  //always the same velocity for both!
 }
 
