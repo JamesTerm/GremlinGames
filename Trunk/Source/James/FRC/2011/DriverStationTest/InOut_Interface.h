@@ -56,8 +56,9 @@ class Robot_Control : public Robot_Control_Interface
 	RobotDrive m_ArmMotor;
 	Compressor m_Compress;
 	Solenoid m_OnClaw,m_OffClaw;
+	Solenoid m_OnDeploy,m_OffDeploy;
 	Encoder m_LeftEncoder,m_RightEncoder;
-	Servo m_DeployDoor,m_LazySusan;
+	//Servo m_DeployDoor,m_LazySusan;
 	AnalogChannel m_Potentiometer;
 
 	double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
@@ -68,12 +69,13 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void Initialize(const Entity_Properties *props);
 	protected: //from Robot_Control_Interface
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
-		virtual void UpdateLeftRightVelocity(double LeftVelocity,double RightVelocity);
-		virtual void UpdateArmVelocity(double Velocity);
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
+		virtual void UpdateArmVoltage(double Voltage);
 		virtual double GetArmCurrentPosition();
 		virtual void CloseClaw(bool Close) {m_OnClaw.Set(Close),m_OffClaw.Set(!Close);}
-		virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
-		virtual void ReleaseLazySusan(bool Release) {m_LazySusan.SetAngle(Release?Servo::GetMaxAngle():Servo::GetMinAngle());}
+		virtual void CloseDeploymentDoor(bool Close) {m_OnDeploy.Set(Close),m_OffDeploy.Set(!Close);}
+		//virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
+		//virtual void ReleaseLazySusan(bool Release) {m_LazySusan.SetAngle(Release?Servo::GetMaxAngle():Servo::GetMinAngle());}
 };
 
 class Driver_Station_Joystick : public Framework::Base::IJoystick
