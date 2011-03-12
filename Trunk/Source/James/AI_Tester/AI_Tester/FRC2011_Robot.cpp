@@ -14,7 +14,7 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-const double c_OptimalAngleUp_r=DEG_2_RAD(200.0);
+const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
 const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmLength_m=1.8288;  //6 feet
 const double c_ArmToGearRatio=72.0/28.0;
@@ -26,6 +26,7 @@ const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
+
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
@@ -91,7 +92,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	m_LastTime=dTime_s;
 	#else
 	//Temp testing potentiometer readings without applying to current position
-	m_RobotControl->GetArmCurrentPosition();
+	//m_RobotControl->GetArmCurrentPosition();
 	#endif
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
@@ -128,8 +129,9 @@ void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
-	SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
-	//SetIntendedPosition(HeightToAngle_r(0.9144));
+	//Not used, but kept for reference
+	//SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
+	SetIntendedPosition(HeightToAngle_r(0.9144));
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
@@ -172,7 +174,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders),m_Fightmode(true)
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders)
 {
 	//m_UsingEncoders=true;  //Testing
 	m_CalibratedScaler=1.0;
@@ -197,22 +199,13 @@ void FRC_2011_Robot::ResetPos()
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
 	m_RobotControl->TimeChange(dTime_s);  //This must be first so the simulators can have the correct times
-	if (!m_Fightmode)
-	{
-		double RequestedVelocity=GetRequestedVelocity();
-		//DOUT5("%f", RequestedVelocity);
-		if (RequestedVelocity > 0.1)
-			SetControlTurnScaler(-1.0);
-		else if (RequestedVelocity < -0.01)
-			SetControlTurnScaler(1.0);
-	}
 	if (m_UsingEncoders)
 	{
 		Vec2d LocalVelocity;
 		double AngularVelocity;
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
 		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-		
+
 		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 		//The order here is as such where if the encoder's distance is greater (in either direction), we'll multiply by a value less than one
 		double EncoderSpeed=LocalVelocity.length();
@@ -247,44 +240,27 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 	m_RobotControl->UpdateLeftRightVoltage(GetLeftVelocity()/ENGAGED_MAX_SPEED,GetRightVelocity()/ENGAGED_MAX_SPEED);
 }
 
-void FRC_2011_Robot::OpenDeploymentDoor(bool Open)
+void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
-	m_RobotControl->OpenDeploymentDoor(Open);
+	m_RobotControl->CloseDeploymentDoor(Close);
 }
-void FRC_2011_Robot::ReleaseLazySusan(bool Release)
-{
-	m_RobotControl->ReleaseLazySusan(Release);
-}
-
-void FRC_2011_Robot::FightMode()
-{
-	m_Fightmode=true;
-	SetControlTurnScaler(1.0);
-	SetControlVelocityScaler(1.0);
-}
-
-void FRC_2011_Robot::ScoreMode()
-{
-	m_Fightmode=false;
-	SetControlVelocityScaler(-1.0);
-}
+//void FRC_2011_Robot::ReleaseLazySusan(bool Release)
+//{
+//	m_RobotControl->ReleaseLazySusan(Release);
+//}
 
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventOnOff_Map["Robot_OpenDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::OpenDeploymentDoor);
-		em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
-		em->Event_Map["Robot_FightMode"].Subscribe(ehl, *this, &FRC_2011_Robot::FightMode);
-		em->Event_Map["Robot_ScoreMode"].Subscribe(ehl, *this, &FRC_2011_Robot::ScoreMode);
+		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::CloseDeploymentDoor);
+		//em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
 	}
 	else
 	{
-		em->EventOnOff_Map["Robot_OpenDoor"]  .Remove(*this, &FRC_2011_Robot::OpenDeploymentDoor);
-		em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
-		em->Event_Map["Robot_FightMode"]  .Remove(*this, &FRC_2011_Robot::FightMode);
-		em->Event_Map["Robot_ScoreMode"]  .Remove(*this, &FRC_2011_Robot::ScoreMode);
+		em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &FRC_2011_Robot::CloseDeploymentDoor);
+		//em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
 	}
 
 	Ship_1D &ArmShip_Access=m_Arm;
@@ -341,15 +317,15 @@ void Robot_Control::CloseClaw(bool Close)
 	DebugOutput("CloseClaw=%d\n",Close);
 }
 
-void Robot_Control::OpenDeploymentDoor(bool Open)
+void Robot_Control::CloseDeploymentDoor(bool Close)
 {
-	DebugOutput("OpenDeploymentDoor=%d\n",Open);
+	DebugOutput("CloseDeploymentDoor=%d\n",Close);
 }
 
-void Robot_Control::ReleaseLazySusan(bool Release)
-{
-	DebugOutput("ReleaseLazySusan=%d\n",Release);
-}
+//void Robot_Control::ReleaseLazySusan(bool Release)
+//{
+//	DebugOutput("ReleaseLazySusan=%d\n",Release);
+//}
 
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot_Properties														*/
