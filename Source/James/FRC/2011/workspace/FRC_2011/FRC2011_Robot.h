@@ -55,14 +55,11 @@ class FRC_2011_Robot : public Robot_Tank
 		void CloseDeploymentDoor(bool Close);
 		//void ReleaseLazySusan(bool Release);
 
-		void FightMode();
-		void ScoreMode();
 		typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		double m_CalibratedScaler; //used for calibration
 		bool m_UsingEncoders;
-		bool m_Fightmode;
 };
 
 class FRC_2011_Robot_Properties : public Ship_Properties
