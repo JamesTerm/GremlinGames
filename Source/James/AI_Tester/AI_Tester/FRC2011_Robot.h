@@ -18,8 +18,8 @@ class Robot_Control_Interface
 		///This is in radians of the arm's gear ratio
 		virtual double GetArmCurrentPosition()=0;
 		virtual void CloseClaw(bool Close)=0;  //true=close false=open
-		virtual void OpenDeploymentDoor(bool Open)=0;
-		virtual void ReleaseLazySusan(bool Release)=0;
+		virtual void CloseDeploymentDoor(bool Open)=0;
+		//virtual void ReleaseLazySusan(bool Release)=0;
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -74,17 +74,14 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
-		void OpenDeploymentDoor(bool Open);
-		void ReleaseLazySusan(bool Release);
+		void CloseDeploymentDoor(bool Close);
+		//void ReleaseLazySusan(bool Release);
 
-		void FightMode();
-		void ScoreMode();
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		double m_CalibratedScaler; //used for calibration
 		bool m_UsingEncoders;
-		bool m_Fightmode;
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
@@ -103,8 +100,8 @@ class Robot_Control : public Robot_Control_Interface
 		//pacify this by returning its current value
 		virtual double GetArmCurrentPosition();
 		virtual void CloseClaw(bool Close);  //true=close false=open
-		virtual void OpenDeploymentDoor(bool Open);
-		virtual void ReleaseLazySusan(bool Release);
+		virtual void CloseDeploymentDoor(bool Close);
+		//virtual void ReleaseLazySusan(bool Release);
 	private:
 		FRC_2011_Robot * const m_Robot;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
