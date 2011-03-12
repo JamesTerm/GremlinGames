@@ -19,6 +19,7 @@ class FRC_2011_Robot : public Robot_Tank
 			public:
 				Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
+				virtual void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 				static double HeightToAngle_r(double Height_m);
 				static double Arm_AngleToHeight_m(double Angle_r);
 				static double AngleToHeight_m(double Angle_r);
@@ -38,6 +39,10 @@ class FRC_2011_Robot : public Robot_Tank
 				void SetPos9feet();
 				Robot_Control_Interface * const m_RobotControl;
 				double m_LastNormalizedVelocity;  //this is managed direct from being set to avoid need for precision tolerance
+				double m_LastPosition;  //used for calibration
+				double m_CalibratedScaler; //used for calibration
+				double m_LastTime; //used for calibration
+				double m_MaxSpeedReference; //used for calibration
 		};
 
 		//Accessor needed for setting goals
@@ -47,11 +52,13 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
-		void OpenDeploymentDoor(bool Open);
-		void ReleaseLazySusan(bool Release);
+		void CloseDeploymentDoor(bool Close);
+		//void ReleaseLazySusan(bool Release);
+
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
+		double m_CalibratedScaler; //used for calibration
 		bool m_UsingEncoders;
 };
 
