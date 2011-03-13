@@ -38,11 +38,11 @@ class SetUp_Manager
 		Framework::Base::EventMap m_EventMap;
 		UI_Controller *m_pUI;
 	public:
-		SetUp_Manager(bool UseSafety) : m_Joystick(2,0), //2 joysticks starting at port 0
+		SetUp_Manager(bool UseSafety,bool UseEncoders=false) : m_Joystick(2,0), //2 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
 			m_Control.Initialize(&m_RobotProps);
-			m_pRobot = new FRC_2011_Robot("FRC2011_Robot",&m_Control);
+			m_pRobot = new FRC_2011_Robot("FRC2011_Robot",&m_Control,UseEncoders);
 			m_pRobot->Initialize(m_EventMap,&m_RobotProps);
 			//Bind the ship's eventmap to the joystick
 			m_JoyBinder.SetControlledEventMap(m_pRobot->GetEventMap());
@@ -90,7 +90,7 @@ Goal *Get_TestLengthGoal(Ship_Tester *ship)
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
-	wp.Position[1]=5.0;  //five meters
+	wp.Position[1]=2.0;
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
@@ -114,9 +114,11 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
+	//Note: full length is 232 inches or 5.89 meters
+	const double starting_line=5.49656;  //18.03333
 	WayPoint wp;
 	wp.Position[0]=0;
-	wp.Position[1]=8.5;
+	wp.Position[1]=starting_line;
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
@@ -125,9 +127,9 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	Initial_Start_Goal->AddGoal(goal_arm);
 	Initial_Start_Goal->AddGoal(goal_drive);
 
-	wp.Position[1]=9;
+	wp.Position[1]=starting_line+0.5;
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	wp.Position[1]=8.5;
+	wp.Position[1]=starting_line;
 	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 	Goal_OperateClaw *goal_OpenClaw=new Goal_OperateClaw(*Robot,false);
 	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
@@ -153,6 +155,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	return MainGoal;
 };
 
+
 class SetUp_Autonomous : public SetUp_Manager
 {
 	private:
@@ -164,7 +167,8 @@ class SetUp_Autonomous : public SetUp_Manager
 		IEvent::HandlerList ehl;
 	public:
 		//autonomous mode cannot have safety on
-		SetUp_Autonomous() : SetUp_Manager(false),m_StillRunning(true)
+		//TODO set UseEncoders to true when this is working properly
+		SetUp_Autonomous() : SetUp_Manager(false,false),m_StillRunning(true)
 		{
 			m_pUI->SetAutoPilot(true);  //we are not driving the robot
 			//Now to set up our goal
@@ -245,7 +249,7 @@ public:
 		SetUp_Autonomous main_autonomous;
 		double tm = GetTime();
 		GetWatchdog().SetEnabled(true);
-		while (main_autonomous.IsStillRunning())
+		while (IsAutonomous() && !IsDisabled())
 		{
 			GetWatchdog().Feed();
 			double time=GetTime() - tm;
@@ -295,7 +299,7 @@ public:
 		}
 		else
 		{
-			SetUp_Manager main(true);
+			SetUp_Manager main(true);  //use false to disable safety
 			double tm = GetTime();
 			GetWatchdog().SetEnabled(true);
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
