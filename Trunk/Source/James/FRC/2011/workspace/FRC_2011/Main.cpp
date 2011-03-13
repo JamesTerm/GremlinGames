@@ -89,7 +89,7 @@ Goal *Get_TestLengthGoal(Ship_Tester *ship)
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
-	wp.Position[1]=2.0;  //five meters
+	wp.Position[1]=2.0;
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
@@ -113,10 +113,11 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
+	//Note: full length is 232 inches or 5.89 meters
 	const double starting_line=5.49656;  //18.03333
 	WayPoint wp;
 	wp.Position[0]=0;
-	wp.Position[1]=starting_line; 
+	wp.Position[1]=starting_line;
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
@@ -164,7 +165,7 @@ class SetUp_Autonomous : public SetUp_Manager
 		bool m_StillRunning;
 		IEvent::HandlerList ehl;
 	public:
-	   //autonomous mode cannot have safety on
+		//autonomous mode cannot have safety on
 		//TODO set UseEncoders to true when this is working properly
 		SetUp_Autonomous() : SetUp_Manager(false,false),m_StillRunning(true)
 		{
@@ -197,13 +198,6 @@ class SetUp_Autonomous : public SetUp_Manager
 			}
 
 		}
-		~SetUp_Autonomous()
-		{
-			Ship_Tester *ship=m_pRobot;  //we can always cast down
-			Goal *oldgoal=ship->ClearGoal();
-			if (oldgoal)
-				delete oldgoal;		
-		}
 		bool IsStillRunning()
 		{
 			return m_StillRunning;
@@ -226,7 +220,7 @@ public:
 		//SetUp_Autonomous main_autonomous;
 		//double tm = GetTime();
 		//while (main_autonomous.IsStillRunning())
-		while(IsAutonomous()&~IsDisabled())
+		while (IsAutonomous() && !IsDisabled())
 		{
 			//double time=GetTime() - tm;
 			//tm=GetTime();
