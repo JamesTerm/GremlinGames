@@ -91,12 +91,8 @@ Driver_Station_Joystick::~Driver_Station_Joystick()
  /*															Robot_Control															*/
 /***********************************************************************************************************************************/
 
-Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(4),m_OffClaw(3),
-	m_OnDeploy(2),m_OffDeploy(1),m_LeftEncoder(4,3,4,4),m_RightEncoder(4,1,4,2),m_Potentiometer(1)
+void Robot_Control::SetSafety(bool UseSafety)
 {
-	#ifndef __DisableCompressor__
-	m_Compress.Start();
-	#endif
 	if (UseSafety)
 	{
 		//I'm giving a whole second before the timeout kicks in... I do not want false positives!
@@ -105,6 +101,15 @@ Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(
 	}
 	//else
 	//	m_RobotDrive.SetSafetyEnabled(false);
+}
+
+Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(4),m_OffClaw(3),
+	m_OnDeploy(2),m_OffDeploy(1),m_LeftEncoder(4,3,4,4),m_RightEncoder(4,1,4,2),m_Potentiometer(1)
+{
+	#ifndef __DisableCompressor__
+	m_Compress.Start();
+	#endif
+	SetSafety(UseSafety);
 	const double EncoderPulseRate=(1.0/360.0);
 	m_LeftEncoder.SetDistancePerPulse(EncoderPulseRate),m_RightEncoder.SetDistancePerPulse(EncoderPulseRate);
 	m_LeftEncoder.Start(),m_RightEncoder.Start();

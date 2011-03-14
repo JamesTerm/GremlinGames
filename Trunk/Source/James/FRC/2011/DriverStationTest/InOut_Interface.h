@@ -67,6 +67,7 @@ class Robot_Control : public Robot_Control_Interface
 		Robot_Control(bool UseSafety);
 		virtual ~Robot_Control(); 
 		virtual void Initialize(const Entity_Properties *props);
+		void SetSafety(bool UseSafety);
 	protected: //from Robot_Control_Interface
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
