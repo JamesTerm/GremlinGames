@@ -83,6 +83,11 @@ class SetUp_Manager
 				m_pRobot=NULL;
 			}
 		}
+
+		void SetAutoPilot(bool autoPilot) {m_pUI->SetAutoPilot(autoPilot);}
+		FRC_2011_Robot *GetRobot() const {return m_pRobot;}
+		void SetSafety(bool UseSafety) {m_Control.SetSafety(UseSafety);}
+		void ResetPos() {m_pRobot->ResetPos();}
 };
 
 Goal *Get_TestLengthGoal(Ship_Tester *ship)
@@ -155,36 +160,11 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	return MainGoal;
 };
 
-
-class SetUp_Autonomous : public SetUp_Manager
-{
-	public:
-		//autonomous mode cannot have safety on
-		//TODO set UseEncoders to true when this is working properly
-		SetUp_Autonomous() : SetUp_Manager(false,false)
-		{
-			m_pUI->SetAutoPilot(true);  //we are not driving the robot
-			//Now to set up our goal
-			Ship_Tester *ship=m_pRobot;  //we can always cast down
-			assert(ship);
-			{
-				Goal *oldgoal=ship->ClearGoal();
-				if (oldgoal)
-					delete oldgoal;
-
-				//Goal *goal=Get_TestLengthGoal(ship);
-				//Goal *goal=Get_TestRotationGoal(ship);
-				Goal *goal=Get_UberTubeGoal(m_pRobot);
-				goal->Activate(); //now with the goal(s) loaded activate it
-				ship->SetGoal(goal);
-			}
-		}
-};
-
 class RobotDemo : public SimpleRobot
 {
+	SetUp_Manager m_Manager;
 public:
-	RobotDemo(void)
+	RobotDemo(void) : m_Manager(false) //disable safety by default
 	{
 		GetWatchdog().SetExpiration(0.1);
 	}
@@ -222,7 +202,25 @@ public:
 	//Drive left & right motors for 2 seconds then stop
 	void Autonomous(void)
 	{
-		SetUp_Autonomous main_autonomous;
+		m_Manager.ResetPos();  //We must reset the position to ensure the distance is measured properly
+		//autonomous mode cannot have safety on
+		m_Manager.SetSafety(false);
+		m_Manager.SetAutoPilot(true);  //we are not driving the robot
+		//Now to set up our goal
+		Ship_Tester *ship=m_Manager.GetRobot();  //we can always cast down
+		assert(ship);
+		{
+			Goal *oldgoal=ship->ClearGoal();
+			if (oldgoal)
+				delete oldgoal;
+
+			//Goal *goal=Get_TestLengthGoal(ship);
+			//Goal *goal=Get_TestRotationGoal(ship);
+			Goal *goal=Get_UberTubeGoal(m_Manager.GetRobot());
+			goal->Activate(); //now with the goal(s) loaded activate it
+			ship->SetGoal(goal);
+		}
+
 		double tm = GetTime();
 		GetWatchdog().SetEnabled(true);
 		while (IsAutonomous() && !IsDisabled())
@@ -233,7 +231,7 @@ public:
 			//Framework::Base::DebugOutput("%f\n",time),
 			//I'll keep this around as a synthetic time option for debug purposes
 			//time=0.020;
-			main_autonomous.TimeChange(time);
+			m_Manager.TimeChange(time);
 			//This is to simulate a 20ms interval... we'll need to measure the amount of overhead in the real robot
 			Wait(0.002);				
 			Wait(0.002);				
@@ -275,10 +273,12 @@ public:
 		}
 		else
 		{
-			SetUp_Manager main(true);  //use false to disable safety
+			m_Manager.SetAutoPilot(false);  //we are driving the robot
+
 			double tm = GetTime();
 			GetWatchdog().SetEnabled(true);
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+			m_Manager.SetSafety(true);
 			while (IsOperatorControl())
 			{
 				GetWatchdog().Feed();
@@ -287,7 +287,7 @@ public:
 				double time=GetTime() - tm;
 				tm=GetTime();
 				//Framework::Base::DebugOutput("%f\n",time),
-				main.TimeChange(time);
+				m_Manager.TimeChange(time);
 				//60 FPS is well tested with the code.  Since there is more overhead to implement the physics, the idea is to
 				//run at a pace that doesn't spike the CPU
 				lcd->UpdateLCD();
