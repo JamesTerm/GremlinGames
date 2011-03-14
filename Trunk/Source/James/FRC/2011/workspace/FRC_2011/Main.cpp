@@ -22,7 +22,7 @@
 #include "FRC2011_Robot.h"
 
 const bool c_UseDefaultControls=false;
-
+#undef __ShowLCD__
 
 
 class SetUp_Manager
@@ -82,6 +82,11 @@ class SetUp_Manager
 				m_pRobot=NULL;
 			}
 		}
+
+		void SetAutoPilot(bool autoPilot) {m_pUI->SetAutoPilot(autoPilot);}
+		FRC_2011_Robot *GetRobot() const {return m_pRobot;}
+		void SetSafety(bool UseSafety) {m_Control.SetSafety(UseSafety);}
+		void ResetPos() {m_pRobot->ResetPos();}
 };
 
 Goal *Get_TestLengthGoal(Ship_Tester *ship)
@@ -141,8 +146,8 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	End_Goal->AddGoal(goal_arm2);
 	End_Goal->AddGoal(goal_drive4);
 
-	//wrap the goal in a notify goal
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete"); //will fire Complete once it is done
+	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(End_Goal);
 	MainGoal->AddSubgoal(goal_drive3);
@@ -154,81 +159,49 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	return MainGoal;
 };
 
-
-class SetUp_Autonomous : public SetUp_Manager
-{
-	private:
-		void StopLoop()
-		{
-			m_StillRunning=false;
-		}
-		bool m_StillRunning;
-		IEvent::HandlerList ehl;
-	public:
-		//autonomous mode cannot have safety on
-		//TODO set UseEncoders to true when this is working properly
-		SetUp_Autonomous() : SetUp_Manager(false,false),m_StillRunning(true)
-		{
-			m_pUI->SetAutoPilot(true);  //we are not driving the robot
-			//Now to set up our goal
-			Ship_Tester *ship=m_pRobot;  //we can always cast down
-			//assert(ship);
-			{
-				Goal *oldgoal=ship->ClearGoal();
-				if (oldgoal)
-					delete oldgoal;
-
-				Goal *goal=Get_TestLengthGoal(ship);
-				//Goal *goal=Get_TestRotationGoal(ship);
-				//Goal *goal=Get_UberTubeGoal(m_pRobot);
-
-				//If the goal above can cast to a notify goal then we can use it
-				Goal_NotifyWhenComplete *notify_goal=dynamic_cast<Goal_NotifyWhenComplete *>(goal);
-				//otherwise wrap the goal in to a notify goal instantiated here
-				if (!notify_goal)
-				{
-					notify_goal=new Goal_NotifyWhenComplete(m_EventMap,"Complete"); //will fire Complete once it is done
-					notify_goal->AddSubgoal(goal);  //add the non-notify goal here (may be composite)
-				}
-
-				notify_goal->Activate(); //now with the goal(s) loaded activate it
-				//Now to subscribe to this event... it will call Stop Loop when the goal is finished
-				m_EventMap.Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Autonomous::StopLoop);
-				ship->SetGoal(notify_goal);
-			}
-
-		}
-		bool IsStillRunning()
-		{
-			return m_StillRunning;
-		}
-};
-
-
-
-
 //This is the main robot class used for FRC 2011 
 //The SimpleRobot class is the base of a robot application that will automatically call your
  //Autonomous and OperatorControl methods at the right time as controlled by the switches on the driver station or the field controls.
 class Robot_Main : public SimpleRobot
 {
+	SetUp_Manager m_Manager;
 
 public:
+	Robot_Main(void) : m_Manager(false) //disable safety by default
+	{
+	}
 	
 	void Autonomous(void)
 	{
-		//SetUp_Autonomous main_autonomous;
-		//double tm = GetTime();
-		//while (main_autonomous.IsStillRunning())
+		m_Manager.ResetPos();  //We must reset the position to ensure the distance is measured properly
+		//autonomous mode cannot have safety on
+		m_Manager.SetSafety(false);
+		m_Manager.SetAutoPilot(true);  //we are not driving the robot
+		//Now to set up our goal
+		Ship_Tester *ship=m_Manager.GetRobot();  //we can always cast down
+		//assert(ship);
+		{
+			Goal *oldgoal=ship->ClearGoal();
+			if (oldgoal)
+				delete oldgoal;
+
+			//Goal *goal=Get_TestLengthGoal(ship);
+			//Goal *goal=Get_TestRotationGoal(ship);
+			Goal *goal=Get_UberTubeGoal(m_Manager.GetRobot());
+			goal->Activate(); //now with the goal(s) loaded activate it
+			ship->SetGoal(goal);
+		}
+		
+		double tm = GetTime();
 		while (IsAutonomous() && !IsDisabled())
 		{
-			//double time=GetTime() - tm;
-			//tm=GetTime();
+			double time=GetTime() - tm;
+			tm=GetTime();
 			//Framework::Base::DebugOutput("%f\n",time),
 			//I'll keep this around as a synthetic time option for debug purposes
 			//time=0.020;
-			//main_autonomous.TimeChange(time);
-			//TODO see how fast the loop runs (if possible)
+			m_Manager.TimeChange(time);
+			//using this from test runs from robo wranglers code
 			Wait(0.010);				
 		}
 	}
@@ -251,9 +224,12 @@ public:
 		}
 		else
 		{
-			SetUp_Manager main(true);  //use false to disable safety
+			m_Manager.SetAutoPilot(false);  //we are driving the robot
 			double tm = GetTime();
+			#ifdef __ShowLCD__
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+			#endif
+			m_Manager.SetSafety(true);
 			while (IsOperatorControl())
 			{
 				//I'll keep this around as a synthetic time option for debug purposes
@@ -261,10 +237,12 @@ public:
 				double time=GetTime() - tm;
 				tm=GetTime();
 				//Framework::Base::DebugOutput("%f\n",time),
-				main.TimeChange(time);
-				//TODO see how fast the loop runs (if possible)
+				m_Manager.TimeChange(time);
+				#ifdef __ShowLCD__
 				lcd->UpdateLCD();
-				Wait(0.010);				
+				#endif
+				//using this from test runs from robo wranglers code
+				Wait(0.010);
 			}
 		}
 	}
