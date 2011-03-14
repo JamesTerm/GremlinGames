@@ -142,8 +142,8 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	End_Goal->AddGoal(goal_arm2);
 	End_Goal->AddGoal(goal_drive4);
 
-	//wrap the goal in a notify goal
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete"); //will fire Complete once it is done
+	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(End_Goal);
 	MainGoal->AddSubgoal(goal_drive3);
@@ -158,17 +158,10 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 
 class SetUp_Autonomous : public SetUp_Manager
 {
-	private:
-		void StopLoop()
-		{
-			m_StillRunning=false;
-		}
-		bool m_StillRunning;
-		IEvent::HandlerList ehl;
 	public:
 		//autonomous mode cannot have safety on
 		//TODO set UseEncoders to true when this is working properly
-		SetUp_Autonomous() : SetUp_Manager(false,false),m_StillRunning(true)
+		SetUp_Autonomous() : SetUp_Manager(false,false)
 		{
 			m_pUI->SetAutoPilot(true);  //we are not driving the robot
 			//Now to set up our goal
@@ -182,26 +175,9 @@ class SetUp_Autonomous : public SetUp_Manager
 				//Goal *goal=Get_TestLengthGoal(ship);
 				//Goal *goal=Get_TestRotationGoal(ship);
 				Goal *goal=Get_UberTubeGoal(m_pRobot);
-
-				//If the goal above can cast to a notify goal then we can use it
-				Goal_NotifyWhenComplete *notify_goal=dynamic_cast<Goal_NotifyWhenComplete *>(goal);
-				//otherwise wrap the goal in to a notify goal instantiated here
-				if (!notify_goal)
-				{
-					notify_goal=new Goal_NotifyWhenComplete(m_EventMap,"Complete"); //will fire Complete once it is done
-					notify_goal->AddSubgoal(goal);  //add the non-notify goal here (may be composite)
-				}
-
-				notify_goal->Activate(); //now with the goal(s) loaded activate it
-				//Now to subscribe to this event... it will call Stop Loop when the goal is finished
-				m_EventMap.Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Autonomous::StopLoop);
-				ship->SetGoal(notify_goal);
+				goal->Activate(); //now with the goal(s) loaded activate it
+				ship->SetGoal(goal);
 			}
-
-		}
-		bool IsStillRunning()
-		{
-			return m_StillRunning;
 		}
 };
 
