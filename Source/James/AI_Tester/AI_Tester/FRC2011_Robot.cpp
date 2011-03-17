@@ -3,6 +3,7 @@
 namespace AI_Tester
 {
 	#include "Calibration_Testing.h"
+	#include "PIDController.h"
 	#include "FRC2011_Robot.h"
 }
 
@@ -32,7 +33,7 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 /***********************************************************************************************************************************/
 
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0)
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_PIDController(1.0,1.0,0.25),	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0)
 {
 }
 
@@ -43,6 +44,9 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	const Ship_1D_Properties *ship=dynamic_cast<const Ship_1D_Properties *>(props);
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
+	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
+	m_PIDController.SetOutputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
+	m_PIDController.Enable();
 }
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
@@ -79,6 +83,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	{
 		double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
 		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		#if 0
 		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
 		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
@@ -86,6 +91,14 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
 		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
 		//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+		#else
+		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
+		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
+		double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
+		m_CalibratedScaler=1.0+control;
+		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
+		DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+		#endif
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
 	}

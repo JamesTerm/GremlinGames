@@ -7,6 +7,7 @@ namespace AI_Tester
 {
 	#include "Viewer.h"
 	#include "Calibration_Testing.h"
+	#include "PIDController.h"
 	#include "FRC2011_Robot.h"
 }
 
@@ -646,7 +647,9 @@ void CommandLineInterface()
 				{
 					case eCurrent:
 						{
-							//UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
+							#ifdef _DEBUG
+							UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
+							#endif
 							g_WorldScaleFactor=100.0;
 							game.SetDisableEngineRampUp2(true);
 							_command.LoadRobot("TestRobot.lua","TestRobot");

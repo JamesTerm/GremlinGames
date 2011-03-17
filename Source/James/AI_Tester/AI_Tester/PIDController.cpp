@@ -1,5 +1,10 @@
 #include "stdafx.h"
-#include "PIDController.h"
+namespace AI_Tester
+{
+	#include "PIDController.h"
+}
+
+using namespace AI_Tester;
 
 PIDController::PIDController(double p, double i, double d,double maximumOutput,double minimumOutput,double maximumInput,
 	double minimumInput,double m_tolerance,bool continuous,bool enabled) :
@@ -21,7 +26,7 @@ double PIDController::operator()(double setpoint,double input,double dTime_s)
 {
 	if (m_enabled)
 	{
-		m_error = setpoint - input;
+		m_error = (setpoint - input) * dTime_s;  //Using dTime_s will keep the errors consistent if time is erratic
 		if (m_continuous)
 		{
 			if (fabs(m_error) > 
@@ -35,8 +40,7 @@ double PIDController::operator()(double setpoint,double input,double dTime_s)
 			}
 		}
 
-		if (((m_totalError + m_error) * m_I < m_maximumOutput) &&
-				((m_totalError + m_error) * m_I > m_minimumOutput))
+		if (((m_totalError + m_error) * m_I < m_maximumOutput) && ((m_totalError + m_error) * m_I > m_minimumOutput))
 			m_totalError += m_error;
 
 				

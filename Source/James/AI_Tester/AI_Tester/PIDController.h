@@ -71,7 +71,6 @@ class PIDController
 		double m_tolerance;	//the percentage error that is considered on target
 		double m_error;
 		double m_result;
-		double m_period;
 		bool m_continuous;	// do the endpoints wrap around? eg. Absolute encoder
 		bool m_enabled;		//is the pid controller enabled
 };

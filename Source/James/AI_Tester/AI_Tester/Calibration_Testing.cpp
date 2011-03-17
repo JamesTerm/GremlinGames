@@ -3,6 +3,7 @@
 namespace AI_Tester
 {
 	#include "Calibration_Testing.h"
+	#include "PIDController.h"
 	#include "FRC2011_Robot.h"
 }
 
@@ -21,7 +22,8 @@ const double c_ArmToPotentiometerRatio=1.0/c_PotentiometerToArmRatio;
 const double c_GearToPotentiometer=1.0/c_PotentiometerToGearRatio;
 //const double c_TestRate=3.0;
 //const double c_TestRate=6.0;
-const double c_Potentiometer_TestRate=18.0;
+//const double c_Potentiometer_TestRate=18.0;
+const double c_Potentiometer_TestRate=24.0;
 
 
   /***************************************************************************************************************/
