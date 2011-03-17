@@ -3,6 +3,7 @@
 namespace AI_Tester
 {
 	#include "Calibration_Testing.h"
+	#include "PIDController.h"
 	#include "FRC2011_Robot.h"
 }
 
