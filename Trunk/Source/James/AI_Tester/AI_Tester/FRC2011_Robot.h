@@ -61,7 +61,7 @@ class FRC_2011_Robot : public Robot_Tank
 				void SetPos9feet();
 				Robot_Control_Interface * const m_RobotControl;
 				double m_LastNormalizedVelocity;  //this is managed direct from being set to avoid need for precision tolerance
-				PIDController m_PIDController;
+				PIDController2 m_PIDController;
 				double m_LastPosition;  //used for calibration
 				double m_CalibratedScaler; //used for calibration
 				double m_LastTime; //used for calibration
@@ -81,6 +81,7 @@ class FRC_2011_Robot : public Robot_Tank
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
+		PIDController2 m_PIDController;
 		double m_CalibratedScaler; //used for calibration
 		bool m_UsingEncoders;
 };
