@@ -2,10 +2,10 @@
 
 /// This manages a PID control loop.  This was originally written for First WPI library, but refactored to be non-threaded, where both input and output
 /// can be called on within this class.  It manages the integral calculations, and provides the PIDOutput
-class PIDController
+class PIDController2
 {
 	public:
-		PIDController(
+		PIDController2(
 			double p,					///< proportional coefficient
 			double i,					///< integral coefficient
 			double d,					///< derivative coefficient
@@ -17,7 +17,7 @@ class PIDController
 			bool continuous=false,		///< do the endpoints wrap around? eg. Absolute encoder
 			bool enabled=false	 		///< If client knows all the above, set to true; otherwise enable use Enable() for late binding
 			);
-		~PIDController();
+		~PIDController2();
 
 		///This is the main method which performs the computations, and must be called for each time slice
 		/// \return the final output result

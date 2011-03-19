@@ -83,22 +83,19 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	{
 		double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
 		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
-		#if 0
+
 		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
 		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
+		#if 0
 		m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
 			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
-		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
-		//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 		#else
-		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
-		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
 		double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
 		m_CalibratedScaler=1.0+control;
-		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
-		DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 		#endif
+		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
+		//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
 	}
@@ -187,7 +184,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_UsingEncoders(UseEncoders)
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_PIDController(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
 {
 	//m_UsingEncoders=true;  //Testing
 	m_CalibratedScaler=1.0;
@@ -202,6 +199,9 @@ void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
 	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
 	m_Arm.Initialize(em,ArmProps);
+	m_PIDController.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController.SetOutputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController.Enable();
 }
 void FRC_2011_Robot::ResetPos()
 {
@@ -223,9 +223,14 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//The order here is as such where if the encoder's distance is greater (in either direction), we'll multiply by a value less than one
 		double EncoderSpeed=LocalVelocity.length();
 		double EntitySpeed=m_Physics.GetLinearVelocity().length();
+		#if 0
 		//When the distance is close enough to zero use the scaled value as before
 		m_CalibratedScaler=!IsZero(EntitySpeed)?EncoderSpeed/EntitySpeed:
 			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
+		#else
+		double control=-m_PIDController(EntitySpeed,EncoderSpeed,dTime_s);
+		m_CalibratedScaler=1.0+control;
+		#endif
 		ENGAGED_MAX_SPEED=MAX_SPEED*m_CalibratedScaler;
 		//DOUT4("scaler=%f Eng=%f",m_CalibratedScaler,ENGAGED_MAX_SPEED);
 
