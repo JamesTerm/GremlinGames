@@ -21,6 +21,7 @@
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
 #include "InOut_Interface.h"
+#include "PIDController.h"
 #include "FRC2011_Robot.h"
 
 const bool c_UseDefaultControls=false;
