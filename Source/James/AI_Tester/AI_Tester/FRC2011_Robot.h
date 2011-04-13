@@ -81,7 +81,7 @@ class FRC_2011_Robot : public Robot_Tank
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
-		PIDController2 m_PIDController;
+		PIDController2 m_PIDController_Left,m_PIDController_Right;
 		double m_CalibratedScaler; //used for calibration
 		bool m_UsingEncoders;
 };
