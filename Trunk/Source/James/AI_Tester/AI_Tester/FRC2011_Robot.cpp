@@ -184,7 +184,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_PIDController(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_PIDController_Left(1.0,1.0,0.25),
+		m_PIDController_Right(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
 {
 	//m_UsingEncoders=true;  //Testing
 	m_CalibratedScaler=1.0;
@@ -199,9 +200,12 @@ void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
 	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
 	m_Arm.Initialize(em,ArmProps);
-	m_PIDController.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController.SetOutputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController.Enable();
+	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Left.SetOutputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Left.Enable();
+	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Right.SetOutputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Right.Enable();
 }
 void FRC_2011_Robot::ResetPos()
 {
@@ -214,32 +218,24 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	m_RobotControl->TimeChange(dTime_s);  //This must be first so the simulators can have the correct times
 	if (m_UsingEncoders)
 	{
-		Vec2d LocalVelocity;
-		double AngularVelocity;
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
 		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 
-		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
-		//The order here is as such where if the encoder's distance is greater (in either direction), we'll multiply by a value less than one
-		double EncoderSpeed=LocalVelocity.length();
-		double EntitySpeed=m_Physics.GetLinearVelocity().length();
-		#if 0
-		//When the distance is close enough to zero use the scaled value as before
-		m_CalibratedScaler=!IsZero(EntitySpeed)?EncoderSpeed/EntitySpeed:
-			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
-		#else
-		double control=-m_PIDController(EntitySpeed,EncoderSpeed,dTime_s);
-		m_CalibratedScaler=1.0+control;
-		#endif
+		double LeftVelocity=GetLeftVelocity();
+		double RightVelocity=GetRightVelocity();
+		double control_left=m_PIDController_Left(fabs(LeftVelocity),fabs(Encoder_LeftVelocity),dTime_s);
+		double control_right=m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
+		Vec2d Temp_LocalVelocity;
+		double Temp_AngularVelocity;
+		//Note this will separate what gets applied to the calibrated scaler (i.e. distance correction), and what gets applied to
+		//for making it go straight.  With this latest, it will do a fairly good job keeping the calibration, however I still need
+		//to apply angular correction, and I would need a better simulator to achieve.  I'll most likely finish that aspect on the
+		//actual robot once the other encoder is working.  At least this version keeps things stable.
+		InterpolateVelocities(control_left,control_right,Temp_LocalVelocity,Temp_AngularVelocity,dTime_s);
+		m_CalibratedScaler=1.0+(-Temp_LocalVelocity[1]);
 		ENGAGED_MAX_SPEED=MAX_SPEED*m_CalibratedScaler;
-		//DOUT4("scaler=%f Eng=%f",m_CalibratedScaler,ENGAGED_MAX_SPEED);
-
-		#if 1
-		GetPhysics().SetLinearVelocity(LocalToGlobal(GetAtt_r(),LocalVelocity));
-		GetPhysics().SetAngularVelocity(AngularVelocity);
-		#else
-		DOUT4("Left=%f Right=%f",LeftVelocity,RightVelocity);
-		#endif
+		//DOUT5("cl=%f cr=%f, scaler=%f Eng=%f",control_left,control_right,m_CalibratedScaler,ENGAGED_MAX_SPEED);
+		//TODO determine how to stabilize the turning case
 	}
 
 	__super::TimeChange(dTime_s);
