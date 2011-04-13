@@ -193,10 +193,11 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_PIDController(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_PIDController_Left(1.0,1.0,0.25),
+	m_PIDController_Right(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
 {
 	//m_UsingEncoders=true;  //Testing
-	m_CalibratedScaler=1.0;
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
 }
 
 void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
@@ -208,9 +209,13 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	const FRC_2011_Robot_Properties *RobotProps=static_cast<const FRC_2011_Robot_Properties *>(props);
 	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
 	m_Arm.Initialize(em,ArmProps);
-	m_PIDController.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController.SetOutputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController.Enable();
+	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Left.SetOutputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Left.Enable();
+	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Right.SetOutputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Right.Enable();
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 }
 void FRC_2011_Robot::ResetPos()
 {
@@ -222,32 +227,28 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 {
 	if (m_UsingEncoders)
 	{
-		Vec2d LocalVelocity;
-		double AngularVelocity;
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
 		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 
-		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
-		//The order here is as such where if the encoder's distance is greater (in either direction), we'll multiply by a value less than one
-		double EncoderSpeed=LocalVelocity.length();
-		double EntitySpeed=m_Physics.GetLinearVelocity().length();
-		#if 0
-		//When the distance is close enough to zero use the scaled value as before
-		m_CalibratedScaler=!IsZero(EntitySpeed)?EncoderSpeed/EntitySpeed:
-			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
-		#else
-		double control=-m_PIDController(EntitySpeed,EncoderSpeed,dTime_s);
-		m_CalibratedScaler=1.0+control;
-		#endif
-		ENGAGED_MAX_SPEED=MAX_SPEED*m_CalibratedScaler;
-		//DOUT4("scaler=%f Eng=%f",m_CalibratedScaler,ENGAGED_MAX_SPEED);
+		double LeftVelocity=GetLeftVelocity();
+		double RightVelocity=GetRightVelocity();
 
-		#if 1
-		GetPhysics().SetLinearVelocity(LocalToGlobal(GetAtt_r(),LocalVelocity));
-		GetPhysics().SetAngularVelocity(AngularVelocity);
-		#else
-		DOUT4("Left=%f Right=%f",LeftVelocity,RightVelocity);
-		#endif
+		double control_left=0.0,control_right=0.0;
+		//only adjust calibration when both velocities are in the same direction
+		if ((LeftVelocity * Encoder_LeftVelocity) > 0.0)
+		{
+			control_left=m_PIDController_Left(fabs(LeftVelocity),fabs(Encoder_LeftVelocity),dTime_s);
+			m_CalibratedScaler_Left=MAX_SPEED * (1.0 + (-control_left));
+		}
+		if ((RightVelocity * Encoder_RightVelocity) > 0.0)
+		{
+			control_right=m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
+			m_CalibratedScaler_Right=MAX_SPEED * (1.0 + (-control_right));
+		}
+
+		//Adjust the engaged max speed to avoid the PID from overflow lockup
+		ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
+		//DOUT5("cl=%f cr=%f, csl=%f csr=%f",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 	}
 
 	__super::TimeChange(dTime_s);
@@ -263,7 +264,7 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	m_RobotControl->UpdateLeftRightVoltage(GetLeftVelocity()/ENGAGED_MAX_SPEED,GetRightVelocity()/ENGAGED_MAX_SPEED);
+	m_RobotControl->UpdateLeftRightVoltage(GetLeftVelocity()/m_CalibratedScaler_Left,GetRightVelocity()/m_CalibratedScaler_Right);
 }
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
