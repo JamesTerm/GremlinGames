@@ -82,7 +82,7 @@ class FRC_2011_Robot : public Robot_Tank
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
-		double m_CalibratedScaler; //used for calibration
+		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
 		bool m_UsingEncoders;
 };
 
