@@ -1,6 +1,6 @@
 #undef  __DisableCompressor__
 #define __EncoderHack__
-#undef  __ShowPotentiometerReadings__
+#define  __ShowPotentiometerReadings__
 
 #include "WPILib.h"
 

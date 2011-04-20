@@ -17,7 +17,8 @@
 #include "PIDController.h"
 #include "FRC2011_Robot.h"
 
-#define __DisablePotentiometerCalibration__
+#undef __DisablePotentiometerCalibration__
+#define __UseTestKitArmRatios__
 const bool c_UsingArmLimits=false;
 const double PI=M_PI;
 
@@ -27,11 +28,24 @@ using namespace std;
 const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
 const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmLength_m=1.8288;  //6 feet
+
+#ifndef __UseTestKitArmRatios__
 const double c_ArmToGearRatio=72.0/28.0;
+#else
+const double c_ArmToGearRatio=54.0/12.0;
+#endif
+
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
+
+#ifndef __UseTestKitArmRatios__
 //const double c_PotentiometerToGearRatio=60.0/32.0;
 const double c_PotentiometerToGearRatio=5.0;
 const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+#else
+const double c_PotentiometerToArmRatio=36.0/54.0;
+const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
+#endif
+
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 const double c_WheelDiameter=0.1524;  //6 inches
@@ -110,11 +124,15 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 	m_LastTime=dTime_s;
 	#else
-	//Temp testing potentiometer readings without applying to current position
-	//m_RobotControl->GetArmCurrentPosition();
+	//Test potentiometer readings without applying to current position (disabled by default)
+	m_RobotControl->GetArmCurrentPosition();
 	#endif
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
+	#ifdef __UseTestKitArmRatios__
+	//ideally this should be in the UpdateArmVoltage, but it here to use the same macro within cpp file
+	CurrentVelocity*=-1.0; //need to reverse direction for test kit  :(
+	#endif
 	m_RobotControl->UpdateArmVoltage(CurrentVelocity/MAX_SPEED);
 	//Show current height (only in AI Tester)
 	#if 0

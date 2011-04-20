@@ -23,7 +23,7 @@
 #include "FRC2011_Robot.h"
 
 const bool c_UseDefaultControls=false;
-#undef __ShowLCD__
+#define __ShowLCD__
 
 
 class SetUp_Manager
