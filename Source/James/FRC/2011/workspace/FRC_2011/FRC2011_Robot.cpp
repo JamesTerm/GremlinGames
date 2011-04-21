@@ -19,7 +19,7 @@
 
 #undef __DisablePotentiometerCalibration__
 #define __UseTestKitArmRatios__
-const bool c_UsingArmLimits=false;
+const bool c_UsingArmLimits=true;
 const double PI=M_PI;
 
 using namespace Framework::Base;
@@ -56,7 +56,7 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 /***********************************************************************************************************************************/
 
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_PIDController(1.0,1.0,0.25),m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0)
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_PIDController(1.0,1.0,0.0),m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0)
 {
 }
 
