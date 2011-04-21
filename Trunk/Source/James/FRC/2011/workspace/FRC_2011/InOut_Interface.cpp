@@ -1,6 +1,6 @@
 #undef  __DisableCompressor__
 #define __EncoderHack__
-#define  __ShowPotentiometerReadings__
+#undef  __ShowPotentiometerReadings__
 
 #include "WPILib.h"
 
@@ -156,7 +156,8 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 	float VoltageToUse=min((float)Voltage,1.0f);
-	Voltage *= (Voltage<0.0)? 0.025 : 0.5;
+	//Voltage *= (Voltage<0.0)? 0.025 : 0.5;
+	//Voltage *= 0.5;
 	m_ArmMotor.SetLeftRightMotorOutputs(VoltageToUse,VoltageToUse);  //always the same velocity for both!
 }
 
