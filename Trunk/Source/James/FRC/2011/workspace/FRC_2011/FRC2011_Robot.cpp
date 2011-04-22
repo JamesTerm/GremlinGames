@@ -17,7 +17,6 @@
 #include "PIDController.h"
 #include "FRC2011_Robot.h"
 
-#undef __DisablePotentiometerCalibration__
 #define __UseTestKitArmRatios__
 const bool c_UsingArmLimits=true;
 const double PI=M_PI;
@@ -56,7 +55,8 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 /***********************************************************************************************************************************/
 
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_PIDController(1.0,1.0,0.0),m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0)
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_PIDController(1.0,1.0,0.0),m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
+	m_UsingPotentiometer(true)
 {
 }
 
@@ -101,32 +101,35 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 
 	//Update the position to where the potentiometer says where it actually is
-	#ifndef __DisablePotentiometerCalibration__
-	if (m_LastTime!=0.0)
+	if (m_UsingPotentiometer)
 	{
-		double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
-		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
-
-		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
-		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
-		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
-		#if 0
-		m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
-			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
-		#else
-		double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-		m_CalibratedScaler=1.0+control;
-		#endif
-		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
-		//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
-		SetPos_m(NewPosition);
-		m_LastPosition=NewPosition;
+		if (m_LastTime!=0.0)
+		{
+			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
+			double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+	
+			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
+			double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
+			double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
+			#if 0
+			m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
+				m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
+			#else
+			double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
+			m_CalibratedScaler=1.0+control;
+			#endif
+			MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
+			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+			SetPos_m(NewPosition);
+			m_LastPosition=NewPosition;
+		}
+		m_LastTime=dTime_s;
 	}
-	m_LastTime=dTime_s;
-	#else
-	//Test potentiometer readings without applying to current position (disabled by default)
-	m_RobotControl->GetArmCurrentPosition();
-	#endif
+	else
+	{
+		//Test potentiometer readings without applying to current position (disabled by default)
+		//m_RobotControl->GetArmCurrentPosition();
+	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
 	#ifdef __UseTestKitArmRatios__
@@ -151,6 +154,49 @@ void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Veloc
 		double VelocityScaled=Velocity*GetMaxSpeed();
 		SetRequestedVelocity(VelocityScaled);
 		m_LastNormalizedVelocity=Velocity;
+	}
+}
+
+void FRC_2011_Robot::Robot_Arm::ResetPos()
+{
+	__super::ResetPos();  //Let the super do it stuff first
+	if (m_UsingPotentiometer)
+	{
+		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		SetPos_m(NewPosition);
+		m_LastPosition=NewPosition;
+	}
+}
+
+void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
+{
+	//printf("\r%f       ",Value);
+	if (Value < -0.8)
+	{
+		if (m_UsingPotentiometer)
+		{
+			//first disable it
+			m_UsingPotentiometer=false;
+			//Now to reset stuff
+			printf("Disabling potentiometer\n");
+			m_PIDController.Reset();
+			MAX_SPEED=m_MaxSpeedReference;
+			m_LastPosition=0.0;
+			m_CalibratedScaler=1.0;
+			m_LastTime=0.0;
+			m_UsingRange=false;
+		}
+	}
+	else
+	{
+		if (!m_UsingPotentiometer)
+		{
+			m_UsingPotentiometer=true;
+			//setup the initial value with the potentiometers value
+			printf("Enabling potentiometer\n");
+			ResetPos();
+			m_UsingRange=true;
+		}
 	}
 }
 
@@ -189,6 +235,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Arm_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety);
+		
 		em->Event_Map["Arm_SetPos0feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos0feet);
 		em->Event_Map["Arm_SetPos3feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
@@ -199,6 +247,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 	else
 	{
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Arm_SetPotentiometerSafety"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety);
+		
 		em->Event_Map["Arm_SetPos0feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos0feet);
 		em->Event_Map["Arm_SetPos3feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
