@@ -36,8 +36,15 @@ class SetUp_Manager
 		Robot_Control m_Control; // robot drive system
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
 		Framework::Base::EventMap m_EventMap;
+		IEvent::HandlerList ehl;
 		UI_Controller *m_pUI;
 	public:
+		
+		void GoalComplete()
+		{
+			printf("Goals completed!\n");
+		}
+		
 		SetUp_Manager(bool UseSafety,bool UseEncoders=false) : m_Joystick(2,0), //2 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
@@ -61,6 +68,8 @@ class SetUp_Manager
 				m_pUI->Set_AI_Base_Controller(NULL);   //no luck... flush ship association
 				assert(false);
 			}
+			//This is for testing purposes
+			m_EventMap.Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Manager::GoalComplete);
 		}
 		void TimeChange(double dTime_s)
 		{
@@ -71,6 +80,8 @@ class SetUp_Manager
 
 		~SetUp_Manager()
 		{
+			m_EventMap.Event_Map["Complete"].Remove(*this,&SetUp_Manager::GoalComplete);
+
 			//Note: in visual studio the delete pointer implicitly checks for NULL, but I do not want to assume this for wind river.
 			if (m_pUI)
 			{
@@ -194,6 +205,11 @@ public:
 		}
 		
 		double tm = GetTime();
+		
+		#ifdef __ShowLCD__
+		DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+		#endif
+
 		while (IsAutonomous() && !IsDisabled())
 		{
 			double time=GetTime() - tm;
@@ -202,9 +218,13 @@ public:
 			//I'll keep this around as a synthetic time option for debug purposes
 			//time=0.020;
 			m_Manager.TimeChange(time);
+			#ifdef __ShowLCD__
+			lcd->UpdateLCD();
+			#endif
 			//using this from test runs from robo wranglers code
 			Wait(0.010);				
 		}
+		//printf("Autonomouse loop end IsA=%d IsD=%d \n",IsAutonomous(),IsDisabled());
 	}
 	
 	void OperatorControl(void)
