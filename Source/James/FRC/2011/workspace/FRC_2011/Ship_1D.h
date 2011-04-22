@@ -89,13 +89,13 @@ class Ship_1D : public Entity1D
 class Goal_Ship1D_MoveToPosition : public AtomicGoal
 {
 	public:
-		Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position);
+		Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position,double tolerance=0.02);
 		~Goal_Ship1D_MoveToPosition();
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate() {m_Terminate=true;}
 	private:
 		Ship_1D &m_ship;
-		double m_Position;
+		double m_Position,m_Tolerance;
 		bool m_Terminate;
 };
