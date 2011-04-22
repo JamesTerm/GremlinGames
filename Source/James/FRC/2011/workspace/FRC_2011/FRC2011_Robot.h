@@ -26,6 +26,7 @@ class FRC_2011_Robot : public Robot_Tank
 				//given the raw potentiometer converts to the arm angle
 				static double PotentiometerRaw_To_Arm_r(double raw);
 				void CloseClaw(bool Close);
+				virtual void ResetPos();
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void TimeChange(double dTime_s);
@@ -33,6 +34,7 @@ class FRC_2011_Robot : public Robot_Tank
 			private:
 				typedef Ship_1D __super;
 				void SetRequestedVelocity_FromNormalized(double Velocity);
+				void SetPotentiometerSafety(double Value);
 				void SetPos0feet();
 				void SetPos3feet();
 				void SetPos6feet();
@@ -44,6 +46,7 @@ class FRC_2011_Robot : public Robot_Tank
 				double m_CalibratedScaler; //used for calibration
 				double m_LastTime; //used for calibration
 				double m_MaxSpeedReference; //used for calibration
+				bool m_UsingPotentiometer; //dynamically able to turn off (e.g. panic button)
 		};
 
 		//Accessor needed for setting goals

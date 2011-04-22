@@ -155,10 +155,8 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 void Robot_Control::UpdateArmVoltage(double Voltage)
 {
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
-	float VoltageToUse=min((float)Voltage,1.0f);
-	//Voltage *= (Voltage<0.0)? 0.025 : 0.5;
-	//Voltage *= 0.5;
-	m_ArmMotor.SetLeftRightMotorOutputs(VoltageToUse,VoltageToUse);  //always the same velocity for both!
+	//Note: client code needs to check the levels are correct!
+	m_ArmMotor.SetLeftRightMotorOutputs(Voltage,Voltage);  //always the same velocity for both!
 }
 
 double Robot_Control::GetArmCurrentPosition()
