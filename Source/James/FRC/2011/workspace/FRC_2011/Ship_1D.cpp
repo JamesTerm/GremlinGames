@@ -304,8 +304,13 @@ Goal::Goal_Status Goal_Ship1D_MoveToPosition::Process(double dTime_s)
 		{
 			double position_delta=m_ship.GetPos_m()-m_Position;
 			//TODO check IsStuck for failed case
-			if (IsZero(position_delta))
+			//printf("\r%f        ",position_delta);
+			//if (IsZero(position_delta))
+			if (fabs(position_delta)<0.02)  //When testing the arm it would idle around 0.2825
+			{
+				//printf("completed %f\n",position_delta);
 				m_Status=eCompleted;
+			}
 		}
 		else
 			m_Status=eFailed;  //Some thing else took control of the ship
