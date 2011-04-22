@@ -46,7 +46,7 @@ template<class T, unsigned NUMELEMENTS>
 class Averager
 {
 public:
-	Averager() : m_currIndex((unsigned)-1), m_array(NULL)
+	Averager() : m_array(NULL), m_currIndex((unsigned)-1)
 	{
 		if (NUMELEMENTS > 1)
 			m_array = new T[NUMELEMENTS];
