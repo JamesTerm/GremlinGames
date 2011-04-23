@@ -241,7 +241,12 @@ bool Goal_Ship_MoveToPosition::HitWayPoint()
 	//Note for FRC... moving at 2mps it will come within an inch of its point with this tolerance
 	double tolerance2 = m_UseSafeStop ? 0.0001 : (m_ship.GetPhysics().GetLinearVelocity().length2() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
 	Vec2d currPos = m_ship.GetPos_m();
-	return ((m_Point.Position-currPos).length2() < tolerance2);
+	double position_delta=(m_Point.Position-currPos).length2();
+	bool ret=position_delta<tolerance2;
+	//printf("\r%f        ",position_delta);
+	//if (ret)
+	//	printf("completed %f\n",position_delta);
+	return ret;
 }
 
 Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
