@@ -106,7 +106,7 @@ Goal *Get_TestLengthGoal(Ship_Tester *ship)
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
-	wp.Position[1]=2.0;
+	wp.Position[1]=1.0;
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
@@ -120,13 +120,14 @@ Goal *Get_TestRotationGoal(Ship_Tester *ship)
 	return goal;
 }
 
-Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
+Goal *Get_UberTubeGoal_V1(FRC_2011_Robot *Robot)
 {
 	Ship_1D &Arm=Robot->GetArm();
 	//Now to setup the goal
 	Goal_OperateClaw *goal_CloseClaw=new Goal_OperateClaw(*Robot,true);
 
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
@@ -171,6 +172,93 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	return MainGoal;
 };
 
+Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
+{
+	Ship_1D &Arm=Robot->GetArm();
+	//Now to setup the goal
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	//Construct a way point
+	//Note: full length is 232 inches or 5.89 meters
+	//const double starting_line=5.49656;  //18.03333
+	const double starting_line=1.0; //hack not calibrated
+	WayPoint wp;
+	wp.Position[0]=0;
+	wp.Position[1]=starting_line;
+	wp.Power=1.0;
+	//Now to setup the goal
+	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
+	Initial_Start_Goal->AddGoal(goal_arm);
+	Initial_Start_Goal->AddGoal(goal_drive);
+
+	wp.Position[1]=starting_line+0.1;
+	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.83312);  //32.8 TODO find how much to lower
+	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
+
+	wp.Position[1]=starting_line;
+	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	wp.Position[1]=0;
+	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	MultitaskGoal *End_Goal=new MultitaskGoal;
+	End_Goal->AddGoal(goal_arm3);
+	End_Goal->AddGoal(goal_drive4);
+
+	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(End_Goal);
+	MainGoal->AddSubgoal(goal_drive3);
+	MainGoal->AddSubgoal(goal_waitfordrop);
+	MainGoal->AddSubgoal(goal_arm2);
+	MainGoal->AddSubgoal(goal_drive2);
+	MainGoal->AddSubgoal(Initial_Start_Goal);
+	return MainGoal;
+};
+
+Goal *Test_Arm(FRC_2011_Robot *Robot)
+{
+	Ship_1D &Arm=Robot->GetArm();
+	//Now to setup the goal
+
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
+	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	Goal_Ship1D_MoveToPosition *Initial_Start_Goal=goal_arm;  //using the same variable name
+
+	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.6);  //TODO find how much to lower
+	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
+	Goal_Wait *goal_waitfordrive=new Goal_Wait(2.0); //wait a half a second
+
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	Goal_Ship1D_MoveToPosition *End_Goal=goal_arm3;
+
+	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(End_Goal);
+	MainGoal->AddSubgoal(goal_waitfordrive);
+	MainGoal->AddSubgoal(goal_arm2);
+	MainGoal->AddSubgoal(goal_waitfordrop);
+	MainGoal->AddSubgoal(Initial_Start_Goal);
+	return MainGoal;
+};
+
 //This is the main robot class used for FRC 2011 
 //The SimpleRobot class is the base of a robot application that will automatically call your
  //Autonomous and OperatorControl methods at the right time as controlled by the switches on the driver station or the field controls.
@@ -192,14 +280,16 @@ public:
 		//Now to set up our goal
 		Ship_Tester *ship=m_Manager.GetRobot();  //we can always cast down
 		//assert(ship);
+		const bool DoAutonomous=false;
+		if (DoAutonomous)
 		{
 			Goal *oldgoal=ship->ClearGoal();
 			if (oldgoal)
 				delete oldgoal;
 
-			//Goal *goal=Get_TestLengthGoal(ship);
+			Goal *goal=Get_TestLengthGoal(ship);
 			//Goal *goal=Get_TestRotationGoal(ship);
-			Goal *goal=Get_UberTubeGoal(m_Manager.GetRobot());
+			//Goal *goal=Get_UberTubeGoal(m_Manager.GetRobot());
 			goal->Activate(); //now with the goal(s) loaded activate it
 			ship->SetGoal(goal);
 		}

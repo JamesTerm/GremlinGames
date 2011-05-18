@@ -17,15 +17,15 @@
 #include "PIDController.h"
 #include "FRC2011_Robot.h"
 
-#define __UseTestKitArmRatios__
+#undef __UseTestKitArmRatios__
 const bool c_UsingArmLimits=true;
 const double PI=M_PI;
 
 using namespace Framework::Base;
 using namespace std;
 
-const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
-const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
+const double c_OptimalAngleUp_r=DEG_2_RAD(44.3);  //70
+const double c_OptimalAngleDn_r=DEG_2_RAD(58.0);  //50
 const double c_ArmLength_m=1.8288;  //6 feet
 
 #ifndef __UseTestKitArmRatios__
@@ -37,9 +37,10 @@ const double c_ArmToGearRatio=54.0/12.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 
 #ifndef __UseTestKitArmRatios__
+const double c_PotentiometerToArmRatio=c_GearToArmRatio * (60.0/36.0);
+const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
 //const double c_PotentiometerToGearRatio=60.0/32.0;
-const double c_PotentiometerToGearRatio=5.0;
-const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
 #else
 const double c_PotentiometerToArmRatio=36.0/54.0;
 const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
@@ -55,8 +56,11 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 /***********************************************************************************************************************************/
 
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_PIDController(0.5,1.0,0.0),m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
-	m_UsingPotentiometer(true)
+	Ship_1D(EntityName),m_RobotControl(robot_control),
+	m_PIDController(0.5,1.0,0.0),
+	//m_PIDController(1.0,0.0,0.0),  //No integral
+	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
+	m_UsingPotentiometer(false)  //to be safe
 {
 }
 
@@ -102,6 +106,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 	//Update the position to where the potentiometer says where it actually is
 	if (m_UsingPotentiometer)
+	//if (false)	
 	{
 		if (m_LastTime!=0.0)
 		{
@@ -139,7 +144,14 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	//ideally this should be in the UpdateArmVoltage, but it here to use the same macro within cpp file
 	CurrentVelocity*=-1.0; //need to reverse direction for test kit  :(
 	#endif
-	m_RobotControl->UpdateArmVoltage(CurrentVelocity/MAX_SPEED);
+	double Voltage=CurrentVelocity/MAX_SPEED;
+	//Manually tweak the voltage by scaling if not using the potentiometer 
+	//if (!m_UsingPotentiometer)
+	//{
+	//	if (CurrentVelocity<0.0)
+	//		Voltage*=0.25;
+	//}
+	m_RobotControl->UpdateArmVoltage(Voltage);
 	//Show current height (only in AI Tester)
 	#if 0
 	double Pos_m=GetPos_m();
@@ -217,15 +229,19 @@ void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
 	//Not used, but kept for reference
 	//SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
-	SetIntendedPosition(HeightToAngle_r(0.9144));
+	//SetIntendedPosition(HeightToAngle_r(0.9144));  //actual
+	SetIntendedPosition(HeightToAngle_r(0.80001));  //31.5 inches
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
-	SetIntendedPosition( HeightToAngle_r(1.8288) );
+	//SetIntendedPosition( HeightToAngle_r(1.8288) );  //actual
+	//SetIntendedPosition( HeightToAngle_r(1.7018) );  //67 inches
+	SetIntendedPosition( HeightToAngle_r(1.08712) );  //42.8 inches
 }
 void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
-	SetIntendedPosition( HeightToAngle_r(2.7432) );
+	//SetIntendedPosition( HeightToAngle_r(2.7432) );  //actual
+	SetIntendedPosition( HeightToAngle_r(2.6543) ); //104.5 inches
 }
 void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
 {
