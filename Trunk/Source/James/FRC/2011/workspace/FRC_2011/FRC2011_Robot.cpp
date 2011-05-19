@@ -57,8 +57,8 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
 	Ship_1D(EntityName),m_RobotControl(robot_control),
-	m_PIDController(0.5,1.0,0.0),
-	//m_PIDController(1.0,0.0,0.0),  //No integral
+	//m_PIDController(0.5,1.0,0.0),
+	m_PIDController(1.0,0.5,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false)  //to be safe
 {
