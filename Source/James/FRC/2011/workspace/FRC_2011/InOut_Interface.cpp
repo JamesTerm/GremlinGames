@@ -1,4 +1,4 @@
-#undef  __DisableCompressor__
+#define  __DisableCompressor__
 #define __EncoderHack__
 #undef  __ShowPotentiometerReadings__
 
@@ -23,8 +23,8 @@
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
-#include "InOut_Interface.h"
 #include "PIDController.h"
+#include "InOut_Interface.h"
 #include "FRC2011_Robot.h"
 
 using namespace Framework::Base;
@@ -154,14 +154,22 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 }
 void Robot_Control::UpdateArmVoltage(double Voltage)
 {
+	//This prevents the motor from over heating when it is close enough to its destination
+	if (fabs(Voltage)<0.085)
+		Voltage=0;
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 	//Note: client code needs to check the levels are correct!
 	m_ArmMotor.SetLeftRightMotorOutputs(Voltage,Voltage);  //always the same velocity for both!
+	#ifdef __ShowPotentiometerReadings__
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "ArmVolt=%f ", Voltage);
+	#endif
 }
 
 double Robot_Control::GetArmCurrentPosition()
 {	
 	double raw_value = (double)m_Potentiometer.GetAverageValue();
+	raw_value = m_KalFilter(raw_value);  //apply the Kalman filter
 	//Note the value is inverted with the negative operator
 	double ret=-FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
 	//I may keep these on as they should be useful feedback

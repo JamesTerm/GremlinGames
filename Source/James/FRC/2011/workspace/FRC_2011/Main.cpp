@@ -18,8 +18,8 @@
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
-#include "InOut_Interface.h"
 #include "PIDController.h"
+#include "InOut_Interface.h"
 #include "FRC2011_Robot.h"
 
 const bool c_UseDefaultControls=false;
@@ -233,13 +233,13 @@ Goal *Test_Arm(FRC_2011_Robot *Robot)
 	Ship_1D &Arm=Robot->GetArm();
 	//Now to setup the goal
 
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	Goal_Ship1D_MoveToPosition *Initial_Start_Goal=goal_arm;  //using the same variable name
 
-	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.6);  //TODO find how much to lower
+	Goal_Wait *goal_waitfordrop=new Goal_Wait(5.0); //wait a half a second
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.8);  //TODO find how much to lower
 	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
 	Goal_Wait *goal_waitfordrive=new Goal_Wait(2.0); //wait a half a second
 
@@ -280,14 +280,15 @@ public:
 		//Now to set up our goal
 		Ship_Tester *ship=m_Manager.GetRobot();  //we can always cast down
 		//assert(ship);
-		const bool DoAutonomous=false;
+		const bool DoAutonomous=true;
 		if (DoAutonomous)
 		{
 			Goal *oldgoal=ship->ClearGoal();
 			if (oldgoal)
 				delete oldgoal;
 
-			Goal *goal=Get_TestLengthGoal(ship);
+			Goal *goal=Test_Arm(m_Manager.GetRobot());
+			//Goal *goal=Get_TestLengthGoal(ship);
 			//Goal *goal=Get_TestRotationGoal(ship);
 			//Goal *goal=Get_UberTubeGoal(m_Manager.GetRobot());
 			goal->Activate(); //now with the goal(s) loaded activate it
