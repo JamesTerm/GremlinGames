@@ -392,7 +392,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	5.0,5.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
