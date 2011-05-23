@@ -29,7 +29,7 @@ class Robot_Control : public Robot_Control_Interface
 		//virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
 		//virtual void ReleaseLazySusan(bool Release) {m_LazySusan.SetAngle(Release?Servo::GetMaxAngle():Servo::GetMinAngle());}
 	private:
-		KalmanFilter m_KalFilter;
+		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 };
 
 class Driver_Station_Joystick : public Framework::Base::IJoystick

@@ -1,6 +1,7 @@
 #define  __DisableCompressor__
 #define __EncoderHack__
 #undef  __ShowPotentiometerReadings__
+#define  __ShowEncoderReadings__
 
 #include "WPILib.h"
 
@@ -134,13 +135,21 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	//Note: We'll keep ability for Kalman filters, but it appears there is some overhead before it kicks in
+	//Chances are the encoder will not drop out like the potentiometer
+	double LeftRate=m_LeftEncoder.GetRate();
+	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
+	double RightRate=m_RightEncoder.GetRate();
+	//RightRate=m_KalFilter_EncodeRight(RightRate);
 	//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);	
-	LeftVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(m_LeftEncoder.GetRate());
-	RightVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(m_RightEncoder.GetRate());
+	LeftVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(LeftRate);
+	RightVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(RightRate);
 	#ifdef __EncoderHack__
 	LeftVelocity=RightVelocity;  //Unfortunately the left encoder is not working remove once 
 	#endif
+	#ifdef __ShowEncoderReadings__
 	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", LeftVelocity,RightVelocity);
+	#endif
 }
 
 void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
@@ -169,7 +178,7 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 double Robot_Control::GetArmCurrentPosition()
 {	
 	double raw_value = (double)m_Potentiometer.GetAverageValue();
-	raw_value = m_KalFilter(raw_value);  //apply the Kalman filter
+	raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
 	//Note the value is inverted with the negative operator
 	double ret=-FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
 	//I may keep these on as they should be useful feedback

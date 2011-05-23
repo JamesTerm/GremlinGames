@@ -11,6 +11,7 @@ class FRC_2011_Robot : public Robot_Tank
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
+		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
 		static double RPS_To_LinearVelocity(double RPS);
 
