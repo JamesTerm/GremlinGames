@@ -283,7 +283,6 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_PIDController_Left(1.0,1.0,0.25),
 	m_PIDController_Right(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
 {
-	//m_UsingEncoders=true;  //Testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
 }
 
@@ -337,7 +336,12 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
 		//DOUT5("cl=%f cr=%f, csl=%f csr=%f",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 	}
-
+	else
+	{
+		//Display encoders without applying calibration
+		double Encoder_LeftVelocity,Encoder_RightVelocity;
+		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+	}
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
