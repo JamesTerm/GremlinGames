@@ -351,6 +351,7 @@ public:
 		}
 		else
 		{
+			printf("Starting TeleOp Session\n");
 			m_Manager.ResetPos();  //This should avoid errors like the arm swinging backwards
 			m_Manager.GetRobot()->SetUseEncoders(false);
 			m_Manager.SetAutoPilot(false);  //we are driving the robot
@@ -359,7 +360,7 @@ public:
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 			#endif
 			m_Manager.SetSafety(true);
-			while (IsOperatorControl())
+			while (IsOperatorControl() && !IsDisabled())
 			{
 				//I'll keep this around as a synthetic time option for debug purposes
 				//double time=0.020;
