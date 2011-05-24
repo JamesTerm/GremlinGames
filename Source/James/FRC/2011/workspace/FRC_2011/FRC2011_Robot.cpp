@@ -196,8 +196,8 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			m_UsingPotentiometer=false;
 			//Now to reset stuff
 			printf("Disabling potentiometer\n");
-			m_PIDController.Reset();
-			m_RobotControl->Reset_Arm();
+			//m_PIDController.Reset();
+			ResetPos();
 			MAX_SPEED=m_MaxSpeedReference;
 			m_LastPosition=0.0;
 			m_CalibratedScaler=1.0;
