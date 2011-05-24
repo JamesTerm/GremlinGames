@@ -103,10 +103,11 @@ class SetUp_Manager
 
 Goal *Get_TestLengthGoal(Ship_Tester *ship)
 {
+	float position=DriverStation::GetInstance()->GetAnalogIn(1);
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
-	wp.Position[1]=1.0;
+	wp.Position[1]=position;
 	wp.Power=1.0;
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
@@ -282,18 +283,30 @@ public:
 		m_Manager.GetRobot()->SetUseEncoders(true);
 
 		//assert(ship);
-		const bool DoAutonomous=true;
+		size_t AutonomousValue=0;
+		DriverStation *ds = DriverStation::GetInstance();
+		AutonomousValue+=ds->GetDigitalIn(1)? 0x01 : 0x00;
+		AutonomousValue+=ds->GetDigitalIn(2)? 0x02 : 0x00;
+		AutonomousValue+=ds->GetDigitalIn(3)? 0x04 : 0x00;
+		AutonomousValue+=ds->GetDigitalIn(4)? 0x08 : 0x00;
+		printf("Autonomous mode= %d \n",AutonomousValue);
+		const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
 		if (DoAutonomous)
 		{
 			Goal *oldgoal=ship->ClearGoal();
 			if (oldgoal)
 				delete oldgoal;
 
-			Goal *goal=Test_Arm(m_Manager.GetRobot());
-			//Goal *goal=Get_TestLengthGoal(ship);
-			//Goal *goal=Get_TestRotationGoal(ship);
-			//Goal *goal=Get_UberTubeGoal(m_Manager.GetRobot());
-			goal->Activate(); //now with the goal(s) loaded activate it
+			Goal *goal=NULL;
+			switch (AutonomousValue)
+			{
+				case 1:		goal=Test_Arm(m_Manager.GetRobot());			break;
+				case 2:		goal=Get_TestLengthGoal(ship);					break;
+				case 3:		goal=Get_TestRotationGoal(ship);				break;
+				case 4:		goal=Get_UberTubeGoal(m_Manager.GetRobot());	break;
+			}
+			if (goal)
+				goal->Activate(); //now with the goal(s) loaded activate it
 			ship->SetGoal(goal);
 		}
 		
@@ -338,6 +351,7 @@ public:
 		}
 		else
 		{
+			m_Manager.ResetPos();  //This should avoid errors like the arm swinging backwards
 			m_Manager.GetRobot()->SetUseEncoders(false);
 			m_Manager.SetAutoPilot(false);  //we are driving the robot
 			double tm = GetTime();
