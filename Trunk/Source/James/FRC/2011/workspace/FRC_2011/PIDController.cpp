@@ -5,18 +5,26 @@
  /*												KalmanFilter												*/
 /***********************************************************************************************************/
 
-KalmanFilter::KalmanFilter()
+void KalmanFilter::Reset()
 {
+	m_FirstRun=true;
     //initial values for the kalman filter
     m_x_est_last = 0.0;
     m_last = 0.0;
-    //the noise in the system
-    m_Q = 0.022;
-    m_R = 0.617;
+}
+
+KalmanFilter::KalmanFilter(): m_Q(0.022),m_R(0.617)  //setup Q and R as the noise in the system
+{
 }
 
 double KalmanFilter::operator()(double input)
 {
+	//For first run set the last value to the measured value
+	if (m_FirstRun)
+	{
+		m_x_est_last=input;
+		m_FirstRun=false;
+	}
     //do a prediction
     double x_temp_est = m_x_est_last;
     double P_temp = m_last + m_Q;
