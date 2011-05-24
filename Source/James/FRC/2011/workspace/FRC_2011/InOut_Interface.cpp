@@ -123,6 +123,16 @@ Robot_Control::~Robot_Control()
 	m_Compress.Stop();
 }
 
+void Robot_Control::Reset_Arm()
+{
+	m_KalFilter_Arm.Reset();
+}
+
+void Robot_Control::Reset_Encoders()
+{
+	m_KalFilter_EncodeLeft.Reset(),m_KalFilter_EncodeRight.Reset();	
+}
+
 void Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const FRC_2011_Robot_Properties *robot_props=static_cast<const FRC_2011_Robot_Properties *>(props);
@@ -135,13 +145,10 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	//Note: We'll keep ability for Kalman filters, but it appears there is some overhead before it kicks in
-	//Chances are the encoder will not drop out like the potentiometer
 	double LeftRate=m_LeftEncoder.GetRate();
-	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
+	LeftRate=m_KalFilter_EncodeLeft(LeftRate);
 	double RightRate=m_RightEncoder.GetRate();
-	//RightRate=m_KalFilter_EncodeRight(RightRate);
-	//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);	
+	RightRate=m_KalFilter_EncodeRight(RightRate);
 	LeftVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(LeftRate);
 	RightVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(RightRate);
 	#ifdef __EncoderHack__
@@ -149,6 +156,7 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	#endif
 	#ifdef __ShowEncoderReadings__
 	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", LeftVelocity,RightVelocity);
+	//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);	
 	#endif
 }
 

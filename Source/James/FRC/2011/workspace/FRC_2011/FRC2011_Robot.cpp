@@ -177,6 +177,8 @@ void FRC_2011_Robot::Robot_Arm::ResetPos()
 	__super::ResetPos();  //Let the super do it stuff first
 	if (m_UsingPotentiometer)
 	{
+		m_PIDController.Reset();
+		m_RobotControl->Reset_Arm();
 		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
@@ -195,6 +197,7 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			//Now to reset stuff
 			printf("Disabling potentiometer\n");
 			m_PIDController.Reset();
+			m_RobotControl->Reset_Arm();
 			MAX_SPEED=m_MaxSpeedReference;
 			m_LastPosition=0.0;
 			m_CalibratedScaler=1.0;
@@ -307,6 +310,8 @@ void FRC_2011_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Arm.ResetPos();
+	m_RobotControl->Reset_Encoders();
+	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 }
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
