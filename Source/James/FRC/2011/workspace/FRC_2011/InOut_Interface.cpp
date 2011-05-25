@@ -1,7 +1,7 @@
 #define  __DisableCompressor__
 #define __EncoderHack__
 #undef  __ShowPotentiometerReadings__
-#define  __ShowEncoderReadings__
+#undef  __ShowEncoderReadings__
 
 #include "WPILib.h"
 
@@ -144,7 +144,6 @@ void Robot_Control::Initialize(const Entity_Properties *props)
 void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
-	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	double LeftRate=m_LeftEncoder.GetRate();
 	LeftRate=m_KalFilter_EncodeLeft(LeftRate);
 	double RightRate=m_RightEncoder.GetRate();
@@ -155,6 +154,7 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	LeftVelocity=RightVelocity;  //Unfortunately the left encoder is not working remove once 
 	#endif
 	#ifdef __ShowEncoderReadings__
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 	//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);	
 	#endif
