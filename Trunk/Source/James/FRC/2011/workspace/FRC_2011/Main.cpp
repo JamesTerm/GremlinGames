@@ -23,7 +23,7 @@
 #include "FRC2011_Robot.h"
 
 const bool c_UseDefaultControls=false;
-#define __ShowLCD__
+#undef __ShowLCD__
 
 
 class SetUp_Manager
@@ -185,7 +185,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	//Construct a way point
 	//Note: full length is 232 inches or 5.89 meters
 	//const double starting_line=5.49656;  //18.03333
-	const double starting_line=1.0; //hack not calibrated
+	const double starting_line=2.3; //hack not calibrated
 	WayPoint wp;
 	wp.Position[0]=0;
 	wp.Position[1]=starting_line;
