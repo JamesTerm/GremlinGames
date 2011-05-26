@@ -145,9 +145,9 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
 	double LeftRate=m_LeftEncoder.GetRate();
-	LeftRate=m_KalFilter_EncodeLeft(LeftRate);
+	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
 	double RightRate=m_RightEncoder.GetRate();
-	RightRate=m_KalFilter_EncodeRight(RightRate);
+	//RightRate=m_KalFilter_EncodeRight(RightRate);
 	LeftVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(LeftRate);
 	RightVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(RightRate);
 	#ifdef __EncoderHack__
@@ -186,7 +186,7 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 double Robot_Control::GetArmCurrentPosition()
 {	
 	double raw_value = (double)m_Potentiometer.GetAverageValue();
-	raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
+	//raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
 	//Note the value is inverted with the negative operator
 	double ret=-FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
 	//I may keep these on as they should be useful feedback
