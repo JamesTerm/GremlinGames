@@ -1,5 +1,22 @@
 #pragma once
 
+class KalmanFilter
+{
+	public:
+		KalmanFilter();
+		/// \return the filtered value
+		double operator()(double input);
+		void Reset();
+	private:
+	    //initial values for the kalman filter
+	    double m_x_est_last;
+	    double m_last;
+	    //the noise in the system
+	    const double m_Q;
+	    const double m_R;
+	    bool m_FirstRun; //This avoids a stall when first starting
+};
+
 /// This manages a PID control loop.  This was originally written for First WPI library, but refactored to be non-threaded, where both input and output
 /// can be called on within this class.  It manages the integral calculations, and provides the PIDOutput
 class PIDController2

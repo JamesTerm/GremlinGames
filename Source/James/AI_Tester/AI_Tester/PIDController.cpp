@@ -6,6 +6,53 @@ namespace AI_Tester
 
 using namespace AI_Tester;
 
+  /***********************************************************************************************************/
+ /*												KalmanFilter												*/
+/***********************************************************************************************************/
+
+void KalmanFilter::Reset()
+{
+	m_FirstRun=true;
+    //initial values for the kalman filter
+    m_x_est_last = 0.0;
+    m_last = 0.0;
+}
+
+KalmanFilter::KalmanFilter(): m_Q(0.022),m_R(0.617)  //setup Q and R as the noise in the system
+{
+}
+
+double KalmanFilter::operator()(double input)
+{
+	//For first run set the last value to the measured value
+	if (m_FirstRun)
+	{
+		m_x_est_last=input;
+		m_FirstRun=false;
+	}
+    //do a prediction
+    double x_temp_est = m_x_est_last;
+    double P_temp = m_last + m_Q;
+    //calculate the Kalman gain
+    double K = P_temp * (1.0/(P_temp + m_R));
+    //the 'noisy' value we measured
+    double z_measured = input;
+    //correct
+    double x_est = x_temp_est + K * (z_measured - x_temp_est); 
+    double P = (1- K) * P_temp;
+    
+    //update our last's
+    m_last = P;
+    m_x_est_last = x_est;
+    
+    return x_est;
+}
+
+  /***********************************************************************************************************/
+ /*												PIDController2												*/
+/***********************************************************************************************************/
+
+
 PIDController2::PIDController2(double p, double i, double d,double maximumOutput,double minimumOutput,double maximumInput,
 	double minimumInput,double m_tolerance,bool continuous,bool enabled) :
 	m_P(p),m_I(i),m_D(d),m_maximumOutput(maximumOutput),m_minimumOutput(minimumOutput),m_maximumInput(maximumInput),m_minimumInput(minimumInput),
