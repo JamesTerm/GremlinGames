@@ -85,8 +85,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
 
 		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
-		double PotentiometerDistance=fabs(NewPosition-m_LastPosition);
-		double PotentiometerSpeed=PotentiometerDistance/m_LastTime;
+		double Displacement=NewPosition-m_LastPosition;
+		double PotentiometerVelocity=Displacement/m_LastTime;
+		double PotentiometerSpeed=fabs(PotentiometerVelocity);
+
 		#if 0
 		m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
 			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
@@ -95,6 +97,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		m_CalibratedScaler=1.0+control;
 		#endif
 		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
+		//update the velocity to the potentiometer's velocity
+		m_Physics.SetVelocity(PotentiometerVelocity);
 		//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
@@ -290,6 +294,16 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
  /*															Robot_Control															*/
 /***********************************************************************************************************************************/
 
+void Robot_Control::Reset_Arm()
+{
+	m_KalFilter_Arm.Reset();
+}
+
+void Robot_Control::Reset_Encoders()
+{
+	m_KalFilter_EncodeLeft.Reset(),m_KalFilter_EncodeRight.Reset();	
+}
+
 void Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const FRC_2011_Robot_Properties *robot_props=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
@@ -328,7 +342,9 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 
 double Robot_Control::GetArmCurrentPosition()
 {
-	return m_Potentiometer.GetPotentiometerCurrentPosition()*c_PotentiometerToArmRatio;
+	double result=m_Potentiometer.GetPotentiometerCurrentPosition()*c_PotentiometerToArmRatio;
+	//result = m_KalFilter_Arm(result);  //apply the Kalman filter
+	return result;
 }
 
 void Robot_Control::CloseClaw(bool Close)

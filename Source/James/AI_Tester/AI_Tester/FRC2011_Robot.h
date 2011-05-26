@@ -10,6 +10,9 @@ class Robot_Control_Interface
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
 		virtual void Initialize(const Entity_Properties *props)=0;
+		virtual void Reset_Arm()=0; 
+		virtual void Reset_Encoders()=0;
+
 		//Encoders populate this with current velocity of motors
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
@@ -95,6 +98,9 @@ class Robot_Control : public Robot_Control_Interface
 		//This is only needed for simulation
 		virtual void TimeChange(double dTime_s);
 	protected: //from Robot_Control_Interface
+		//Will reset various members as needed (e.g. Kalman filters)
+		virtual void Reset_Arm(); 
+		virtual void Reset_Encoders();
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
@@ -110,6 +116,7 @@ class Robot_Control : public Robot_Control_Interface
 		double m_ArmMaxSpeed;
 		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
 		Encoder_Tester m_Encoders;
+		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
