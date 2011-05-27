@@ -160,13 +160,23 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	#endif
 }
 
+const double c_rMotorDriveForward_DeadZone=0.085;
+const double c_rMotorDriveReverse_DeadZone=0.01;
+const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
+const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
+
 void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
-	//This prevents the motor from over heating when it is close enough to its destination
-	if (fabs(LeftVoltage)<0.085)
-		LeftVoltage=0;
-	if (fabs(RightVoltage)<0.085)
-		RightVoltage=0;
+	//Eliminate the deadzone
+	if (LeftVoltage>0.0)
+		LeftVoltage=(LeftVoltage * c_rMotorDriveReverse_Range) + c_rMotorDriveReverse_DeadZone;
+	else if (LeftVoltage < 0.0)
+		LeftVoltage=(LeftVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+
+	if (RightVoltage>0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+	else if (RightVoltage < 0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) + c_rMotorDriveReverse_DeadZone;
 
 	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
 	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
@@ -175,11 +185,16 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	//Unfortunately the actual wheels are reversed
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVoltage),(float)(LeftVoltage));
 }
+
+const double c_Arm_DeadZone=0.085;
+const double c_Arm_Range=1.0-c_Arm_DeadZone;
+
 void Robot_Control::UpdateArmVoltage(double Voltage)
 {
-	//This prevents the motor from over heating when it is close enough to its destination
-	if (fabs(Voltage)<0.085)
-		Voltage=0;
+	//Eliminate the deadzone
+	//This also prevents the motor from over heating when it is close enough to its destination
+	if (fabs(Voltage)>0.0)
+		Voltage=(Voltage * c_Arm_Range) + c_Arm_DeadZone;
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 	//Note: client code needs to check the levels are correct!
 	m_ArmMotor.SetLeftRightMotorOutputs(Voltage,Voltage);  //always the same velocity for both!
