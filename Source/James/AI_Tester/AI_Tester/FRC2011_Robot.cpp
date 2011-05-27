@@ -245,6 +245,14 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
 		ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
 		//DOUT5("cl=%f cr=%f, csl=%f csr=%f",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
+
+		//Update the physics with the actual velocity
+		Vec2d LocalVelocity;
+		double AngularVelocity;
+		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+		//TODO add gyro's yaw readings for Angular velocity here
+		Vec2d GlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
+		m_Physics.SetLinearVelocity(GlobalVelocity);
 	}
 
 	__super::TimeChange(dTime_s);
