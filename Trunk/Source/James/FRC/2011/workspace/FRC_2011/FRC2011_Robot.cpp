@@ -128,8 +128,9 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			m_CalibratedScaler=1.0+control;
 			#endif
 			MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
-			//update the velocity to the potentiometer's velocity
-			m_Physics.SetVelocity(PotentiometerVelocity);
+			//update the velocity to the potentiometer's velocity (if we are locking to a position)
+			if (!GetLockShipToPosition())
+				m_Physics.SetVelocity(PotentiometerVelocity);
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
@@ -183,6 +184,7 @@ void FRC_2011_Robot::Robot_Arm::ResetPos()
 		m_PIDController.Reset();
 		m_RobotControl->Reset_Arm();
 		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		Stop();
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
 	}
@@ -345,6 +347,16 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//DOUT5("cl=%f cr=%f, csl=%f csr=%f",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 		//printf("\rcl=%f cr=%f, csl=%f csr=%f                ",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,Encoder_LeftVelocity,RightVelocity,Encoder_RightVelocity);
+		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
+		
+		//Update the physics with the actual velocity
+		Vec2d LocalVelocity;
+		double AngularVelocity;
+		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+		//TODO add gyro's yaw readings for Angular velocity here
+		Vec2d GlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
+		//printf("\rG[0]=%f G[1]=%f        ",GlobalVelocity[0],GlobalVelocity[1]);
+		m_Physics.SetLinearVelocity(GlobalVelocity);
 	}
 	else
 	{
