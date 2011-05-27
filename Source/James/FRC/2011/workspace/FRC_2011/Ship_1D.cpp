@@ -48,6 +48,11 @@ void Ship_1D::ResetPos()
 	SetSimFlightMode(true);  //This one is a tough call... probably should do it on reset
 }
 
+bool Ship_1D::GetLockShipToPosition()
+{
+	return m_LockShipToPosition;
+}
+
 void Ship_1D::SetSimFlightMode(bool SimFlightMode)	
 {
 	//It seems that some people want/need to call this function repeatedly so I have included a valve branch here to prevent the debug flooding
