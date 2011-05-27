@@ -162,6 +162,12 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 
 void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
+	//This prevents the motor from over heating when it is close enough to its destination
+	if (fabs(LeftVoltage)<0.085)
+		LeftVoltage=0;
+	if (fabs(RightVoltage)<0.085)
+		RightVoltage=0;
+
 	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
 	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
 	//m_RobotDrive.SetLeftRightMotorOutputs(0.0f,(float)(RightVelocity/m_RobotMaxSpeed));
