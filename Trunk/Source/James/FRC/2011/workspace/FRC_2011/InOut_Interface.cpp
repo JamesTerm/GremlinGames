@@ -160,18 +160,29 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	#endif
 }
 
-const double c_rMotorDriveForward_DeadZone=0.085;
-const double c_rMotorDriveReverse_DeadZone=0.01;
+const double c_rMotorDriveForward_DeadZone=0.110;
+const double c_rMotorDriveReverse_DeadZone=0.04;
+const double c_lMotorDriveForward_DeadZone=0.02;
+const double c_lMotorDriveReverse_DeadZone=0.115;
+
 const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
 const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
+const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
+const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
 
 void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
+	#if 0
+	float right=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
+	float left=DriverStation::GetInstance()->GetAnalogIn(2) - 1.0;
+	m_RobotDrive.SetLeftRightMotorOutputs(right,left);
+	return;
+	#endif
 	//Eliminate the deadzone
 	if (LeftVoltage>0.0)
-		LeftVoltage=(LeftVoltage * c_rMotorDriveReverse_Range) + c_rMotorDriveReverse_DeadZone;
+		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
 	else if (LeftVoltage < 0.0)
-		LeftVoltage=(LeftVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) + c_lMotorDriveReverse_DeadZone;
 
 	if (RightVoltage>0.0)
 		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
@@ -186,15 +197,24 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVoltage),(float)(LeftVoltage));
 }
 
-const double c_Arm_DeadZone=0.085;
+const double c_Arm_DeadZone=0.150;  //was 0.085 for cut off
 const double c_Arm_Range=1.0-c_Arm_DeadZone;
 
 void Robot_Control::UpdateArmVoltage(double Voltage)
 {
+	#if 0
+	float ToUse=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
+	m_ArmMotor.SetLeftRightMotorOutputs(ToUse,ToUse);
+	return;
+	#endif
+
 	//Eliminate the deadzone
-	//This also prevents the motor from over heating when it is close enough to its destination
-	if (fabs(Voltage)>0.0)
-		Voltage=(Voltage * c_Arm_Range) + c_Arm_DeadZone;
+	Voltage=(Voltage * c_Arm_Range) + c_Arm_DeadZone;
+	
+	//This prevents the motor from over heating when it is close enough to its destination
+	if (fabs(Voltage)<=c_Arm_DeadZone)
+		Voltage=0.0;
+	
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 	//Note: client code needs to check the levels are correct!
 	m_ArmMotor.SetLeftRightMotorOutputs(Voltage,Voltage);  //always the same velocity for both!
