@@ -7,7 +7,6 @@ namespace AI_Tester
 	#include "FRC2011_Robot.h"
 }
 
-#undef __DisablePotentiometerCalibration__
 const bool c_UsingArmLimits=true;
 
 using namespace AI_Tester;
@@ -21,8 +20,9 @@ const double c_ArmLength_m=1.8288;  //6 feet
 const double c_ArmToGearRatio=72.0/28.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 //const double c_PotentiometerToGearRatio=60.0/32.0;
-const double c_PotentiometerToGearRatio=5.0;
-const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+const double c_PotentiometerToArmRatio=36.0/54.0;
+const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 const double c_WheelDiameter=0.1524;  //6 inches
@@ -33,7 +33,11 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 /***********************************************************************************************************************************/
 
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_PIDController(1.0,1.0,0.25),	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0)
+	Ship_1D(EntityName),m_RobotControl(robot_control),
+	//m_PIDController(0.5,1.0,0.0),
+	m_PIDController(1.0,0.5,0.0),
+	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
+	m_UsingPotentiometer(false)  //to be safe
 {
 }
 
@@ -78,39 +82,49 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 
 	//Update the position to where the potentiometer says where it actually is
-	#ifndef __DisablePotentiometerCalibration__
-	if (m_LastTime!=0.0)
+	if (m_UsingPotentiometer)
+	//if (false)
 	{
-		double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
-		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		if (m_LastTime!=0.0)
+		{
+			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
+			double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
 
-		//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
-		double Displacement=NewPosition-m_LastPosition;
-		double PotentiometerVelocity=Displacement/m_LastTime;
-		double PotentiometerSpeed=fabs(PotentiometerVelocity);
+			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
+			double Displacement=NewPosition-m_LastPosition;
+			double PotentiometerVelocity=Displacement/m_LastTime;
+			double PotentiometerSpeed=fabs(PotentiometerVelocity);
+			//Give some tolerance to help keep readings stable
+			if (fabs(PotentiometerSpeed-LastSpeed)<0.5)
+				PotentiometerSpeed=LastSpeed;
+			#if 0
+			m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
+				m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
+			#else
+			double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
+			m_CalibratedScaler=1.0+control;
+			#endif
+			MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
 
-		#if 0
-		m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
-			m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
-		#else
-		double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-		m_CalibratedScaler=1.0+control;
-		#endif
-		MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
-		//update the velocity to the potentiometer's velocity
-		m_Physics.SetVelocity(PotentiometerVelocity);
-		//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
-		SetPos_m(NewPosition);
-		m_LastPosition=NewPosition;
+			//TODO investigate this against just setting the position
+			//update the velocity to the potentiometer's velocity (if we are locking to a position)
+			if (!GetLockShipToPosition())
+				m_Physics.SetVelocity(PotentiometerVelocity);
+			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+			SetPos_m(NewPosition);
+			m_LastPosition=NewPosition;
+		}
+		m_LastTime=dTime_s;
 	}
-	m_LastTime=dTime_s;
-	#else
-	//Temp testing potentiometer readings without applying to current position
-	//m_RobotControl->GetArmCurrentPosition();
-	#endif
+	else
+	{
+		//Test potentiometer readings without applying to current position (disabled by default)
+		m_RobotControl->GetArmCurrentPosition();
+	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
-	m_RobotControl->UpdateArmVoltage(CurrentVelocity/MAX_SPEED);
+	double Voltage=CurrentVelocity/MAX_SPEED;
+	m_RobotControl->UpdateArmVoltage(Voltage);
 	//Show current height (only in AI Tester)
 	#if 1
 	double Pos_m=GetPos_m();
@@ -128,6 +142,53 @@ void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Veloc
 		double VelocityScaled=Velocity*GetMaxSpeed();
 		SetRequestedVelocity(VelocityScaled);
 		m_LastNormalizedVelocity=Velocity;
+	}
+}
+
+void FRC_2011_Robot::Robot_Arm::ResetPos()
+{
+	__super::ResetPos();  //Let the super do it stuff first
+	if (m_UsingPotentiometer)
+	{
+		m_PIDController.Reset();
+		m_RobotControl->Reset_Arm();
+		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		Stop();
+		SetPos_m(NewPosition);
+		m_LastPosition=NewPosition;
+	}
+}
+
+void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
+{
+	//printf("\r%f       ",Value);
+	if (Value < -0.8)
+	{
+		if (m_UsingPotentiometer)
+		{
+			//first disable it
+			m_UsingPotentiometer=false;
+			//Now to reset stuff
+			printf("Disabling potentiometer\n");
+			//m_PIDController.Reset();
+			ResetPos();
+			MAX_SPEED=m_MaxSpeedReference;
+			m_LastPosition=0.0;
+			m_CalibratedScaler=1.0;
+			m_LastTime=0.0;
+			m_UsingRange=false;
+		}
+	}
+	else
+	{
+		if (!m_UsingPotentiometer)
+		{
+			m_UsingPotentiometer=true;
+			//setup the initial value with the potentiometers value
+			printf("Enabling potentiometer\n");
+			ResetPos();
+			m_UsingRange=true;
+		}
 	}
 }
 
@@ -166,6 +227,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Arm_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety);
+		
 		em->Event_Map["Arm_SetPos0feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos0feet);
 		em->Event_Map["Arm_SetPos3feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
@@ -176,6 +239,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 	else
 	{
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Arm_SetPotentiometerSafety"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety);
+		
 		em->Event_Map["Arm_SetPos0feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos0feet);
 		em->Event_Map["Arm_SetPos3feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
@@ -189,7 +254,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),m_PIDController_Left(1.0,1.0,0.25),
-		m_PIDController_Right(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
+	m_PIDController_Right(1.0,1.0,0.25),m_UsingEncoders(UseEncoders)
 {
 	//m_UsingEncoders=true;  //Testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
@@ -216,6 +281,8 @@ void FRC_2011_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Arm.ResetPos();
+	m_RobotControl->Reset_Encoders();
+	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 }
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
@@ -245,16 +312,25 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
 		ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
 		//DOUT5("cl=%f cr=%f, csl=%f csr=%f",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
-
+		//printf("\rcl=%f cr=%f, csl=%f csr=%f                ",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
+		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,Encoder_LeftVelocity,RightVelocity,Encoder_RightVelocity);
+		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
+		
 		//Update the physics with the actual velocity
 		Vec2d LocalVelocity;
 		double AngularVelocity;
 		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 		//TODO add gyro's yaw readings for Angular velocity here
 		Vec2d GlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
+		//printf("\rG[0]=%f G[1]=%f        ",GlobalVelocity[0],GlobalVelocity[1]);
 		m_Physics.SetLinearVelocity(GlobalVelocity);
 	}
-
+	else
+	{
+		//Display encoders without applying calibration
+		double Encoder_LeftVelocity,Encoder_RightVelocity;
+		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+	}
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
@@ -378,9 +454,9 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	"Arm",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	10.0,   //Max Speed
+	18.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	5.0,5.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio

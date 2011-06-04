@@ -38,6 +38,11 @@ void Ship_1D::ResetPos()
 	SetSimFlightMode(true);  //This one is a tough call... probably should do it on reset
 }
 
+bool Ship_1D::GetLockShipToPosition()
+{
+	return m_LockShipToPosition;
+}
+
 void Ship_1D::SetSimFlightMode(bool SimFlightMode)	
 {
 	//It seems that some people want/need to call this function repeatedly so I have included a valve branch here to prevent the debug flooding
@@ -261,8 +266,8 @@ void Ship_1D::TimeChange(double dTime_s)
  /*												Goal_Ship1D_MoveToPosition															*/
 /***********************************************************************************************************************************/
 
-Goal_Ship1D_MoveToPosition::Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position) :
-	m_ship(ship),m_Position(position),m_Terminate(false)
+Goal_Ship1D_MoveToPosition::Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position,double tolerance) :
+	m_ship(ship),m_Position(position),m_Tolerance(tolerance),m_Terminate(false)
 {
 	m_Status=eInactive;
 }
@@ -294,8 +299,12 @@ Goal::Goal_Status Goal_Ship1D_MoveToPosition::Process(double dTime_s)
 		{
 			double position_delta=m_ship.GetPos_m()-m_Position;
 			//TODO check IsStuck for failed case
-			if (IsZero(position_delta))
+			//printf("\r%f        ",position_delta);
+			if (fabs(position_delta)<m_Tolerance)  //When testing the arm it would idle around 0.02825
+			{
+				//printf("completed %f\n",position_delta);
 				m_Status=eCompleted;
+			}
 		}
 		else
 			m_Status=eFailed;  //Some thing else took control of the ship
