@@ -16,8 +16,9 @@ const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmToGearRatio=72.0/28.0;
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 //const double c_PotentiometerToGearRatio=60.0/32.0;
-const double c_PotentiometerToGearRatio=5.0;
-const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+const double c_PotentiometerToArmRatio=36.0/54.0;
+const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
 const double c_ArmToPotentiometerRatio=1.0/c_PotentiometerToArmRatio;
 const double c_GearToPotentiometer=1.0/c_PotentiometerToGearRatio;
 //const double c_TestRate=3.0;
@@ -52,7 +53,7 @@ void Potentiometer_Tester::UpdatePotentiometerVoltage(double Voltage)
 
 double Potentiometer_Tester::GetPotentiometerCurrentPosition()
 {
-	//TODO this really should be in native potentiometer ratios
+	//Note this is in native potentiometer ratios
 	double Pos_m=GetPos_m();
 	double height=FRC_2011_Robot::Robot_Arm::AngleToHeight_m(Pos_m);
 
