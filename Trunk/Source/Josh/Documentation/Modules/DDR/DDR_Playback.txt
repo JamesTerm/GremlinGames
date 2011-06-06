@@ -1,0 +1,138 @@
+
+DDR I/O port - imports and export commands with the help of the xml parser.  It talks and listens directly to the command dispatch.
+
+Import Commands
+--------------------
+Insert/Remove Clip
+Transport Commands (play stop etc.)
+Set In/Out points
+
+Export Commands
+-----------------------------
+SendProjectDescription ()
+SendClipDescription ()
+SendTransportPosition ()
+
+---------------------------------------------------XML Command Spec--------------------------------------------------------------------------
+
+DDR_Playback Import example:
+----------------------------
+<DDR>
+	<List>
+		<Clip ID="{BBECFD1D-9D7D-4cf7-8DE9-D9FFBC71ACA4}" Filename="c:\Temp\a.png" InPoint="0" OutPoint="10" AudioVolume="0.2"/>
+		<Clip ID="{02501DBF-E1E0-40c4-8E4C-7291DE664126}" Filename="c:\Temp\a.avi" InPoint="0" OutPoint="1.01"/>
+		<Clip ID="{EC12049D-643B-4952-8094-B7CFA395AEFF}" Filename="c:\Temp\q.m2t" InPoint="5" OutPoint="20.0"/>
+	</List>
+</DDR>
+
+Here is how to play
+<DDR>	<Control Speed="1"/>	</DDR>
+
+Here is how to seek (TODO determine if we need global time ability)
+<DDR>	<Control Local="00.01" ClipPos="2"/>	</DDR>
+
+Here is how to set the loop mode
+<DDR>	<Control Loop="true"> or <Control Loop="1">	</DDR>
+
+This would seek to a given position and start play at 110% speed
+<DDR> <Control Local="00.01" ClipPos="2" Speed="1.1"/> </DDR>
+
+This would load a clip and start playback
+<DDR> 
+    <List>
+        <Clip ID="{BBECFD1D-9D7D-4cf7-8DE9-D9FFBC71ACA4}" Filename="c:\Temp\a.png" InPoint="0" OutPoint="10" AudioVolume="0.2" />
+    </List>
+    <Control Speed="1.0"/> 
+</DDR>
+
+
+DDR_Playback Export example:
+----------------------------
+<DDRUI>
+    <List TotalLength="18.00">
+          <Clip ID="{BBECFD1D-9D7D-4cf7-8DE9-D9FFBC71ACA4}" Length="10.00" FrameRate="30" Interlaced="Progressive" Resolution="1440x1080" Type="MPEG2TS" Seek=0/>
+          <Clip ID="{02501DBF-E1E0-40c4-8E4C-7291DE664126}" Length="8.00" FrameRate="24" Interlaced="Field1First" Resolution="1280x1020" Seek=1/>
+          <Clip ID="{EC12049D-643B-4952-8094-B7CFA395AEFF}" Error="Some description"/>
+          <Clip ID="{36234808-A917-4596-91F9-014E0B1DC434}" Length="???" FrameRate="24" Interlaced="Field1First" Resolution="720x480" Seek=0/>
+          <Clip ID="{B76BE870-A169-4b9e-86C1-11923EC66BF6}" />
+    </List>
+    <Control Position="00.00" Local="00.01" ClipPos="2" Speed="1" Loop="1"/> 
+</DDRUI>
+
+When the actual status changes (e.g. it is playing, it could just send changed information:
+Note that we include local time, because the global time (ie. Position) may not be available if there are clips which cannot obtain duration.
+If global time is not available this will pass "???" for it.  Also the TotalLength will not be known until each clip has been processed, and
+only if all clips support obtaining duration (most can, but not all).
+
+<DDRUI>
+    <Control Position="00.10" local="00.01" ClipPos="2"/>
+</DDRUI>
+
+
+Notes:
+The original spec had Pause= for the Transport command, but we have currently decided to omit this since we are not attempting provide the DDR
+with transport status updates.  Instead we need to provide an update for when an unexpected transport update occurs like the end of a clip and
+the filter graph is stopped.  For this case sending back the Speed=0 should suffice.  If not we can always put back the paused.
+
+-------------------------------------------------DDR Playback Design-------------------------------------------------------------------------
+DDR Port- This will translate xml messages into commands and transmit DDR xml feedback to its corresponding GUI application.  The client of this
+class will choose the name of this application as well as the name of the corresponding GUI application.
+
+Command Dispatch-  This is merely an object to consolidate all import and export commands into one place
+
+Playback manager-  Handles transport commands.  during playback this will manage prepping clips (i.e. build filter graph) to be ready to play for
+seamless switching of media.  It communicates with the clip list manager to prep and play clips.  This will export position tracking info from
+the event listener, and attempt to compute project time from ProjectUpdate callbacks.  It will ensure there is enough prepped time ahead to handle
+the delay from prepping a new graph.  This also stores the buffer callback pointer to export the buffer callbacks to some device client.  This 
+means all DS Streamer Data Callback pointers point here, and need not worry about changing these at the lower level.  During the first event 
+callback this may assist the FileProperties database with known properties of the file currently playing.  This may help expedite allowing the 
+clip to control in/out points once the duration is known (This is currently an optional consideration).  The play list will keep track of its file
+index position, so that it can obtain files to stream as well as project start time.  It will work with the clip list manager to get this info.
+
+Clip List manager-  This owns the lists of clips and provides Playback Manager with enough information to play clips.  It may later provide more
+information through ProjectUpdate callbacks to improve determining how much time is left, and compute the current position in project time.
+These improvements are deferred to the file properties database to increase user performance for file insertion.  One important note to consider 
+is that it will catch many-to-one project updates through the project update interface, so it must be able to handle this and translate it back 
+into a one-to-one relationship when communicating with the playback manager.  It will need to translate global to local time and keep tabs on the
+duration.  Like the TimeLine it will have methods to insert and delete clips, and will retain data which pertains to the overall project, but
+will not have any info that deals with playback.  The file properties manager will supply file updates that go straight here.  This way I can
+have a one-to-one callback from file prop database.  It will ensure all clips affected receive the necessary updates (e.g. giving ability to set
+in/out points for clips that need it).
+
+Clip manager-  Manages in out point data.  This and any other unique clip data gets passed upstream through the project update interface.  This
+will cache the duration and seeking capabilities (yes redundant data from the file props database) for quick reference to assist in setting max
+for outpoint, and whether or not it is possible.  This can also be helpful to pass duration info to the playback manager so it can compute time
+left (to anticipate how large to queue graphs).
+
+Details for prepping files:
+I'll have a typical case of 3 clips prepped, and have a max for 5.  Once I obtain a duration I can alter the queue size by how much time is left.
+Ideally I want about 5 seconds of time left, but that depends on if I have duration info yet, or if I exceed my max of 5 graphs.  Reliability
+should be typical, but may stall (should be minimal time) in rare circumstances.
+
+File Properties Database:
+This runs a separate thread process which builds a temporary graph to obtain file information.  Requests are made from the clip manager, and then
+a completion signal is sent to the ProjectUpdate callback (typically pointing to the ClipList manager).  All properties for files are stored in
+a database here and can be referenced as needed (ie. using set or map).  I anticipate the amount of data will be small with no plans of purging
+yet.  During the first iteration... I will have no caching in place to ensure the first time experience is fast.  Later on we may wish to cache
+for immediate response.
+
+-------------------------------------------------Direct Show Design-----------------------------------------------------------------------------
+
+DS Streamer-  This brings together the base host with the wrapped file source and render filters.  It includes an event listener to send out
+event updates (e.g. time position) as well as buffer streaming.  This is the place to set in/out points as well as a master audio level.
+
+DS Event Listener- This will access the IMediaEvent interface and dispatch all events, passing selected ones upstream through the 
+EventListener_Interface.  Since this uses its own internal thread a client should have enough flexibility to do what ever is needed to process 
+the messages from the EventListener_Interface callbacks.  DShow automatically queues all events so all events triggered should show up here 
+(e.g. EC_COMPLETE).
+
+A/V Render Wrapper-  This will simply divert the streams to datacallback interfaces.  To wrap these allows for me to intercept the point at which
+I can signal to advance the clip list to the next clip.  For video I can force the source to attempt to send UYVY first and try other formats we
+support.  Finally if those fail I can inject a color conversion filter to a format that we can support.
+
+File Source Wrapper-  This will wrap the actual filtersource, and through IMediaSeeking I can monitor the position to determine how much time I
+have left, which in turn lets me know when to prep future filtergraphs.
+
+Base Host-  This code is already fully functional.  It handles the lower-end of setting up the filtergraph.  I've modified to allow to pass in a
+IBaseFilter for the source (I've also kept the original filename method as well).  Once I create my source filter and A/V sample grabbers, I can
+pass all of these here to put the entire graph together.
