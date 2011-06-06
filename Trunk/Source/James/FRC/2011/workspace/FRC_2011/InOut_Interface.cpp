@@ -197,7 +197,8 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVoltage),(float)(LeftVoltage));
 }
 
-const double c_Arm_DeadZone=0.150;  //was 0.085 for cut off
+//const double c_Arm_DeadZone=0.150;  //was 0.085 for cut off
+const double c_Arm_DeadZone=0.085;  //This has better results
 const double c_Arm_Range=1.0-c_Arm_DeadZone;
 
 void Robot_Control::UpdateArmVoltage(double Voltage)
@@ -208,8 +209,9 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 	return;
 	#endif
 
+	//TODO determine why the deadzone code has adverse results
 	//Eliminate the deadzone
-	Voltage=(Voltage * c_Arm_Range) + c_Arm_DeadZone;
+	//Voltage=(Voltage * c_Arm_Range) + c_Arm_DeadZone;
 	
 	//This prevents the motor from over heating when it is close enough to its destination
 	if (fabs(Voltage)<=c_Arm_DeadZone)
