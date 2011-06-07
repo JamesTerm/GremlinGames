@@ -35,7 +35,8 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
-	m_PIDController(1.0,0.5,0.0),
+	//m_PIDController(1.0,0.5,0.0),
+	m_PIDController(1.0,0.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false)  //to be safe
 {
@@ -82,8 +83,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 
 	//Update the position to where the potentiometer says where it actually is
-	if (m_UsingPotentiometer)
-	//if (false)
+	//if (m_UsingPotentiometer)
+	if (true)
 	{
 		if (m_LastTime!=0.0)
 		{
@@ -103,6 +104,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			#else
 			double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
 			m_CalibratedScaler=1.0+control;
+			//if (m_CalibratedScaler<0.25)  //Hack, safety check to avoid negative values
+			//	m_CalibratedScaler=1.0;
 			#endif
 			MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
 
@@ -416,11 +419,28 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse,RightVoltageToUse);
 	m_Encoders.TimeChange();   //have this velocity immediately take effect
 }
+
+//const double c_Arm_DeadZone=0.150;  //was 0.085 for out off
+const double c_Arm_DeadZone=0.085;   //This has better results
+const double c_Arm_Range=1.0-c_Arm_DeadZone;
+
 void Robot_Control::UpdateArmVoltage(double Voltage)
 {
-	float VoltageToUse=min((float)Voltage,1.0f);
-	//DOUT4("Arm=%f",VoltageToUse);
-	m_Potentiometer.UpdatePotentiometerVoltage(VoltageToUse);
+
+	//TODO determine why the deadzone code has adverse results
+	//Eliminate the deadzone
+	//Voltage=(Voltage * c_Arm_Range) + ((Voltage>0.0) ? c_Arm_DeadZone : -c_Arm_DeadZone); 
+
+	//This prevents the motor from over heating when it is close enough to its destination
+	//for the AI simulation, this simulated it not being able to use lower precision to correct
+	if (fabs(Voltage)<=c_Arm_DeadZone)
+		Voltage=0.0;
+	//else
+	//	printf("Arm=%f\n",Voltage);
+
+	//float VoltageToUse=min((float)Voltage,1.0f);
+	//DOUT5("Arm=%f",Voltage);
+	m_Potentiometer.UpdatePotentiometerVoltage(Voltage);
 	m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 }
 
@@ -456,7 +476,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	18.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	5.0,5.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	24.0,24.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio

@@ -25,6 +25,7 @@ const double c_GearToPotentiometer=1.0/c_PotentiometerToGearRatio;
 //const double c_TestRate=6.0;
 //const double c_Potentiometer_TestRate=18.0;
 const double c_Potentiometer_TestRate=24.0;
+//const double c_Potentiometer_TestRate=48.0;
 
 
   /***************************************************************************************************************/
