@@ -35,8 +35,8 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
-	m_PIDController(1.0,0.5,0.0),
-	//m_PIDController(1.0,0.0,0.0),
+	//m_PIDController(1.0,0.5,0.0),
+	m_PIDController(1.0,1.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false)  //to be safe
 {
@@ -50,8 +50,9 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
 	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
-	//Note: the min output range cannot reach absolute zero
-	m_PIDController.SetOutputRange((-m_MaxSpeedReference)+0.002,m_MaxSpeedReference);
+	//create a range small enough to saturate the voltage during a arm still test
+	//a smaller range improves recovery time
+	m_PIDController.SetOutputRange(-m_MaxSpeedReference*0.875,m_MaxSpeedReference*0.875);
 	m_PIDController.Enable();
 }
 
@@ -112,8 +113,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			#endif
 			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
 
-			//TODO investigate this against just setting the position
 			//update the velocity to the potentiometer's velocity (if we are locking to a position)
+			//If we are not locking to a position the code uses the velocity to compute the force needed
 			if (!GetLockShipToPosition())
 				m_Physics.SetVelocity(PotentiometerVelocity);
 			DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
@@ -130,6 +131,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
 	double Voltage=CurrentVelocity/MAX_SPEED;
+	//Clamp range, PID (i.e. integral) controls may saturate the amount needed
 	if (Voltage<-1.0)
 		Voltage=-1.0;
 	else if (Voltage>1.0)
