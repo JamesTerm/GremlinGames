@@ -182,12 +182,12 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	if (LeftVoltage>0.0)
 		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
 	else if (LeftVoltage < 0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) + c_lMotorDriveReverse_DeadZone;
+		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
 
 	if (RightVoltage>0.0)
 		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
 	else if (RightVoltage < 0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) + c_rMotorDriveReverse_DeadZone;
+		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
 
 	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
 	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
@@ -211,7 +211,7 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 
 	//TODO determine why the deadzone code has adverse results
 	//Eliminate the deadzone
-	//Voltage=(Voltage * c_Arm_Range) + c_Arm_DeadZone;
+	//Voltage=(Voltage * c_Arm_Range) + ((Voltage>0.0) ? c_Arm_DeadZone : -c_Arm_DeadZone);
 	
 	//This prevents the motor from over heating when it is close enough to its destination
 	if (fabs(Voltage)<=c_Arm_DeadZone)
