@@ -36,7 +36,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
-	m_PIDController(1.0,1.0,0.0),
+	m_PIDController(1.0,16.0,16.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false)  //to be safe
 {
@@ -97,6 +97,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			double Displacement=NewPosition-m_LastPosition;
 			double PotentiometerVelocity=Displacement/m_LastTime;
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
+			//Give some tolerance to help keep readings stable
+			const double tolerance=0.3;
+			if (fabs(PotentiometerSpeed)<tolerance && (fabs(LastSpeed)<tolerance))
+				PotentiometerSpeed=LastSpeed;
 
 			double m_CalibratedScaler=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
 			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
