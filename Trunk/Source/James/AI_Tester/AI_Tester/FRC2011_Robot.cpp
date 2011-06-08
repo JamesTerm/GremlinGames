@@ -50,7 +50,8 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
 	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
-	m_PIDController.SetOutputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
+	//Note: the min output range cannot reach absolute zero
+	m_PIDController.SetOutputRange((-m_MaxSpeedReference)+0.002,m_MaxSpeedReference);
 	m_PIDController.Enable();
 }
 
@@ -107,10 +108,9 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
 				m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
 			#else
-			double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			m_CalibratedScaler=1.0+control;  //TODO fix
+			double m_CalibratedScaler=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
 			#endif
-			MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
+			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
 
 			//TODO investigate this against just setting the position
 			//update the velocity to the potentiometer's velocity (if we are locking to a position)
