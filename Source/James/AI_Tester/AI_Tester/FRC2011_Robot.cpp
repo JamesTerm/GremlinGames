@@ -35,8 +35,8 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
-	//m_PIDController(1.0,0.5,0.0),
-	m_PIDController(1.0,0.0,0.0),
+	m_PIDController(1.0,0.5,0.0),
+	//m_PIDController(1.0,0.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false)  //to be safe
 {
@@ -97,15 +97,18 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
 			//Give some tolerance to help keep readings stable
 			if (fabs(PotentiometerSpeed-LastSpeed)<0.5)
-				PotentiometerSpeed=LastSpeed;
+			{
+				if (fabs(PotentiometerSpeed)>0.002)
+					PotentiometerSpeed=LastSpeed;
+				else
+					PotentiometerSpeed=0.0;
+			}
 			#if 0
 			m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
 				m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
 			#else
 			double control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			m_CalibratedScaler=1.0+control;
-			//if (m_CalibratedScaler<0.25)  //Hack, safety check to avoid negative values
-			//	m_CalibratedScaler=1.0;
+			m_CalibratedScaler=1.0+control;  //TODO fix
 			#endif
 			MAX_SPEED=m_MaxSpeedReference*m_CalibratedScaler;
 
@@ -113,7 +116,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			//update the velocity to the potentiometer's velocity (if we are locking to a position)
 			if (!GetLockShipToPosition())
 				m_Physics.SetVelocity(PotentiometerVelocity);
-			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+			DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
 		}
@@ -127,6 +130,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
 	double Voltage=CurrentVelocity/MAX_SPEED;
+	if (Voltage<-1.0)
+		Voltage=-1.0;
+	else if (Voltage>1.0)
+		Voltage=1.0;
 	m_RobotControl->UpdateArmVoltage(Voltage);
 	//Show current height (only in AI Tester)
 	#if 1
@@ -439,7 +446,7 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 	//	printf("Arm=%f\n",Voltage);
 
 	//float VoltageToUse=min((float)Voltage,1.0f);
-	//DOUT5("Arm=%f",Voltage);
+	//DOUT3("Arm Voltage=%f",Voltage);
 	m_Potentiometer.UpdatePotentiometerVoltage(Voltage);
 	m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 }
@@ -454,6 +461,7 @@ double Robot_Control::GetArmCurrentPosition()
 void Robot_Control::CloseClaw(bool Close)
 {
 	DebugOutput("CloseClaw=%d\n",Close);
+	m_Potentiometer.SetBypass(Close);
 }
 
 void Robot_Control::CloseDeploymentDoor(bool Close)

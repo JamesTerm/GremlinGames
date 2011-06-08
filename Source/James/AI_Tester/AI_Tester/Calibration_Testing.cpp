@@ -45,11 +45,15 @@ Potentiometer_Tester::Potentiometer_Tester() : m_PotentiometerProps(
 	),Ship_1D("Potentiometer")
 
 {
+	m_Bypass=false;
 	Initialize(m_DummyMap,&m_PotentiometerProps);
 }
 void Potentiometer_Tester::UpdatePotentiometerVoltage(double Voltage)
 {
-	SetRequestedVelocity(Voltage*c_GearToPotentiometer*m_PotentiometerProps.GetMaxSpeed());
+	if (!m_Bypass)
+		SetRequestedVelocity(Voltage*c_GearToPotentiometer*m_PotentiometerProps.GetMaxSpeed());
+	else
+		SetRequestedVelocity(0.0);
 }
 
 double Potentiometer_Tester::GetPotentiometerCurrentPosition()
