@@ -97,20 +97,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			double Displacement=NewPosition-m_LastPosition;
 			double PotentiometerVelocity=Displacement/m_LastTime;
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
-			//Give some tolerance to help keep readings stable
-			if (fabs(PotentiometerSpeed-LastSpeed)<0.5)
-			{
-				if (fabs(PotentiometerSpeed)>0.002)
-					PotentiometerSpeed=LastSpeed;
-				else
-					PotentiometerSpeed=0.0;
-			}
-			#if 0
-			m_CalibratedScaler=!IsZero(PotentiometerSpeed)?PotentiometerSpeed/LastSpeed:
-				m_CalibratedScaler>0.25?m_CalibratedScaler:1.0;  //Hack: be careful not to use a value to close to zero as a scaler otherwise it could deadlock
-			#else
+
 			double m_CalibratedScaler=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			#endif
 			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
 
 			//update the velocity to the potentiometer's velocity (if we are locking to a position)
