@@ -71,6 +71,8 @@ class Entity2D : public EntityPropertiesInterface
 		virtual double GetAtt_r() const {return ((PosAtt *)m_PosAtt_Read.get())->m_att_r;}
 	protected: 
 		FlightDynamics_2D m_Physics;
+		//Give derived class a callback to manipulate the velocity prior to displacement
+		virtual void InjectDisplacement() {}
 	private:
 		friend Ship_Tester;
 		friend GameClient; //For now the game client can set up initial settings like dimensions

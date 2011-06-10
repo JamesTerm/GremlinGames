@@ -81,6 +81,7 @@ class FRC_2011_Robot : public Robot_Tank
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
+		virtual void InjectDisplacement();
 	private:
 		void CloseDeploymentDoor(bool Close);
 		//void ReleaseLazySusan(bool Release);
@@ -91,6 +92,7 @@ class FRC_2011_Robot : public Robot_Tank
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
 		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
 		bool m_UsingEncoders;
+		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values

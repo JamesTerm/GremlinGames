@@ -56,26 +56,32 @@ const double c_rMidDistance=1.0/c_MidDistance;
 const double c_EndDistance=1.0-c_MidRangeZone;
 const double c_rEndDistance=1.0/c_EndDistance;
 
-void Potentiometer_Tester::UpdatePotentiometerVoltage(double Voltage)
+double GetTweakedVoltage(double Voltage)
 {
 	double VoltMag=fabs(Voltage);
 	double sign=Voltage / VoltMag;
+
 	//simulate stresses on the robot
-	if (Voltage>0.0)
+	if (VoltMag>0.0)
 	{
 		if (VoltMag<c_DeadZone)
 		{
 			DebugOutput("Buzz %f\n",Voltage);   //simulate no movement but hearing the motor
 			VoltMag=0.0;
 		}
-		else if (VoltMag<.150)
+		else if (VoltMag<c_MidRangeZone)
 			VoltMag=(VoltMag-c_DeadZone) * c_rMidDistance *0.5;
 		else
-			VoltMag=((VoltMag-c_MidDistance) * c_rEndDistance * 0.5) + 0.5;
+			VoltMag=((VoltMag-c_MidRangeZone) * c_rEndDistance * 0.5) + 0.5;
 
 		Voltage=VoltMag*sign;
 	}
+	return Voltage;
+}
 
+void Potentiometer_Tester::UpdatePotentiometerVoltage(double Voltage)
+{
+	Voltage=GetTweakedVoltage(Voltage);
 	if (!m_Bypass)
 		SetRequestedVelocity(Voltage*c_GearToPotentiometer*m_PotentiometerProps.GetMaxSpeed());
 	else
@@ -101,7 +107,7 @@ void Potentiometer_Tester::TimeChange()
   /***************************************************************************************************************/
  /*												Encoder_Simulator												*/
 /***************************************************************************************************************/
-#define ENCODER_TEST_RATE 1
+#define ENCODER_TEST_RATE 0
 #if ENCODER_TEST_RATE==0
 const double c_Encoder_TestRate=2.916;
 const double c_Encoder_MaxAccel=5.0;
@@ -164,6 +170,8 @@ void Encoder_Tester::GetLeftRightVelocity(double &LeftVelocity,double &RightVelo
 
 void Encoder_Tester::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
+	//LeftVoltage=GetTweakedVoltage(LeftVoltage);
+	//RightVoltage=GetTweakedVoltage(RightVoltage);
 	m_LeftEncoder.UpdateEncoderVoltage(LeftVoltage);
 	m_RightEncoder.UpdateEncoderVoltage(RightVoltage);
 }

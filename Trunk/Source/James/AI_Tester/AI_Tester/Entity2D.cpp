@@ -93,6 +93,7 @@ void Entity2D::TimeChange(double dTime_s)
 {
 	osg::Vec2d PositionDisplacement;
 	double RotationDisplacement;
+	InjectDisplacement();
 	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
 	//This is using an atomic double buffering mechanism... should be thread safe
 	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
