@@ -73,7 +73,9 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 {
 	if (m_enabled)
 	{
-		m_error = (setpoint - input) * dTime_s;  //Using dTime_s will keep the errors consistent if time is erratic
+		//m_error = (setpoint - input) * dTime_s;  //Using dTime_s will keep the errors consistent if time is erratic
+		//I have found that multiplying by time is not correct as it forces client to use large values
+		m_error = (setpoint - input);
 		if (m_continuous)
 		{
 			if (fabs(m_error) > 
