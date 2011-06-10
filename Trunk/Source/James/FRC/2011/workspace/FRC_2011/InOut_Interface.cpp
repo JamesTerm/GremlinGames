@@ -178,6 +178,8 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	m_RobotDrive.SetLeftRightMotorOutputs(right,left);
 	return;
 	#endif
+
+	#if 0
 	//Eliminate the deadzone
 	if (LeftVoltage>0.0)
 		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
@@ -188,12 +190,15 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
 	else if (RightVoltage < 0.0)
 		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
-
-	//DOUT2("left=%f right=%f \n",LeftVelocity/m_RobotMaxSpeed,RightVelocity/m_RobotMaxSpeed);
-	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),(float)(RightVelocity/m_RobotMaxSpeed));
-	//m_RobotDrive.SetLeftRightMotorOutputs(0.0f,(float)(RightVelocity/m_RobotMaxSpeed));
-	//m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVelocity/m_RobotMaxSpeed),0.0f);
+	#endif
+	
 	//Unfortunately the actual wheels are reversed
+	#ifdef __ShowEncoderReadings__
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
+	//printf("l=%.1f r=%.1f\n", LeftVoltage,RightVoltage);
+	#endif
+
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVoltage),(float)(LeftVoltage));
 }
 
