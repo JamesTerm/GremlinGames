@@ -100,5 +100,7 @@ class Entity2D
 		virtual double GetAtt_r() const {return m_PosAtt_Read->m_att_r;}
 	protected: 
 		FlightDynamics_2D m_Physics;
+		//Give derived class a callback to manipulate the velocity prior to displacement
+		virtual void InjectDisplacement() {}
 };
 

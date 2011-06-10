@@ -59,7 +59,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
-	m_PIDController(1.0,0.0,0.0),
+	m_PIDController(6.0,2.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false)  //to be safe
 {
@@ -130,8 +130,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 			//update the velocity to the potentiometer's velocity (if we are locking to a position)
 			//If we are not locking to a position the code uses the velocity to compute the force needed
-			if (!GetLockShipToPosition())
-				m_Physics.SetVelocity(PotentiometerVelocity);
+			//if (!GetLockShipToPosition())
+			//	m_Physics.SetVelocity(PotentiometerVelocity);
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
@@ -293,6 +293,7 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders)
 {
+	//m_UsingEncoders=true; //testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
 }
 
@@ -305,7 +306,7 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	const FRC_2011_Robot_Properties *RobotProps=static_cast<const FRC_2011_Robot_Properties *>(props);
 	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
 	m_Arm.Initialize(em,ArmProps);
-	const double OutputRange=MAX_SPEED*0.875; //create a small range
+	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController_Left.SetOutputRange(-OutputRange,OutputRange);
 	m_PIDController_Left.Enable();
@@ -325,7 +326,6 @@ void FRC_2011_Robot::ResetPos()
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
 	if (m_UsingEncoders)
-	//if (true)
 	{
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
 		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
@@ -348,19 +348,22 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
 		ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
-		//DOUT5("cl=%f cr=%f, csl=%f csr=%f",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
+		//DOUT5("p=%f e=%f d=%f cs=%f",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rcl=%f cr=%f, csl=%f csr=%f                ",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,Encoder_LeftVelocity,RightVelocity,Encoder_RightVelocity);
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
+		#if 1
 		//Update the physics with the actual velocity
 		Vec2d LocalVelocity;
 		double AngularVelocity;
 		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 		//TODO add gyro's yaw readings for Angular velocity here
-		Vec2d GlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
-		//m_Physics.SetLinearVelocity(GlobalVelocity);
+		//Store the value here to be picked up in GetOldVelocity()
+		m_EncoderGlobalVelocity=GlobalToLocal(GetAtt_r(),LocalVelocity);
+		//printf("\rG[0]=%f G[1]=%f        ",GlobalVelocity[0],GlobalVelocity[1]);
+		#endif
 	}
 	else
 	{
@@ -373,6 +376,12 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	arm_entity.TimeChange(dTime_s);
 }
 
+void FRC_2011_Robot::InjectDisplacement()
+{
+	if (m_UsingEncoders)
+		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
+}
+
 double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 {
 	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
@@ -381,7 +390,13 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	m_RobotControl->UpdateLeftRightVoltage(GetLeftVelocity()/m_CalibratedScaler_Left,GetRightVelocity()/m_CalibratedScaler_Right);
+	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
+	if (m_UsingEncoders)
+	{
+		if (fabs(LeftVelocity)+fabs(RightVelocity)<0.2)
+			LeftVelocity=RightVelocity=0;
+	}
+	m_RobotControl->UpdateLeftRightVoltage(LeftVelocity/m_CalibratedScaler_Left,RightVelocity/m_CalibratedScaler_Right);
 }
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)

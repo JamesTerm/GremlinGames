@@ -119,8 +119,8 @@ void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 
 void Robot_Tank::InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
 {
-	double LeftMagnitude=fabs(m_LeftLinearVelocity);
-	double RightMagnitude=fabs(m_RightLinearVelocity);
+	double LeftMagnitude=fabs(LeftLinearVelocity);
+	double RightMagnitude=fabs(RightLinearVelocity);
 	double CommonMagnitude=min(LeftMagnitude,RightMagnitude);
 	double RightAngularDelta;
 	double LeftAngularDelta;
@@ -128,10 +128,10 @@ void Robot_Tank::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	double Width=GetDimensions()[0];
 	double NewVelocityY;
 	//See if velocities are going in the same direction
-	if (m_LeftLinearVelocity * m_RightLinearVelocity >= 0)
+	if (LeftLinearVelocity * RightLinearVelocity >= 0)
 	{
 		//First lets simplify the the overall velocity by transferring the common speed to local force
-		double CommonVelocity=m_LeftLinearVelocity>0?CommonMagnitude:-CommonMagnitude; //put back in the correct direction
+		double CommonVelocity=LeftLinearVelocity>0?CommonMagnitude:-CommonMagnitude; //put back in the correct direction
 		LeftLinearVelocity-=CommonVelocity;
 		RightLinearVelocity-=CommonVelocity;
 		NewVelocityY=CommonVelocity;
