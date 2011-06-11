@@ -41,6 +41,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	m_UsingPotentiometer(false),  //to be safe
 	m_VoltageOverride(false)
 {
+	m_UsingPotentiometer=true;  //for testing on AI simulator (unless I make a control for this)
 }
 
 void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
@@ -51,9 +52,8 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
 	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
-	//create a range small enough to saturate the voltage during a arm still test
-	//a smaller range improves recovery time
-	m_PIDController.SetOutputRange(-m_MaxSpeedReference*0.875,m_MaxSpeedReference*0.875);
+	double tolerance=0.99; //we must be less than one to avoid lockup
+	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
 }
 
@@ -86,8 +86,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 
 	//Update the position to where the potentiometer says where it actually is
-	//if (m_UsingPotentiometer)
-	if (true)
+	if (m_UsingPotentiometer)
 	{
 		if (m_LastTime!=0.0)
 		{
