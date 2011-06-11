@@ -45,6 +45,10 @@ class Ship_1D : public Entity1D
 		///This will apply turn pitch and roll to the intended orientation
 		void UpdateIntendedPosition(double dTime_s);
 
+		///Client code can use this to evaluate the distance to intervene as necessary
+		///For example this could be used to allow more tolerance for position by killing voltage in the tolerance zone
+		virtual void PosDisplacementCallback(double posDisplacement_m) {}
+
 		virtual void TimeChange(double dTime_s);
 
 		// Watch for being made the controlled ship

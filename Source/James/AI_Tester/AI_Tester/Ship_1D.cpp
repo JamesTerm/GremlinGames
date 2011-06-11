@@ -120,6 +120,7 @@ void Ship_1D::TimeChange(double dTime_s)
 		UpdateIntendedPosition(dTime_s);
 		//Determine the angular distance from the intended orientation
 		posDisplacement_m=m_IntendedPosition-GetPos_m();
+		PosDisplacementCallback(posDisplacement_m);  //call the callback with this value
 	}
 
 	//Apply the restraints now... I need this to compute my roll offset
