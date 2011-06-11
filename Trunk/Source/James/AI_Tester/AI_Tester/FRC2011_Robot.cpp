@@ -261,7 +261,7 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
 	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
-	m_UsingEncoders(UseEncoders)
+	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
 	//m_UsingEncoders=true; //testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
@@ -358,15 +358,19 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
 }
 
+void FRC_2011_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
+{
+	m_VoltageOverride=false;
+	if ((m_UsingEncoders)&&(VelocityToUse==0.0))
+			m_VoltageOverride=true;
+}
+
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
-	if (m_UsingEncoders)
-	{
-		if (fabs(LeftVelocity)+fabs(RightVelocity)<0.2)
-			LeftVelocity=RightVelocity=0;
-	}
+	if (m_VoltageOverride)
+			LeftVelocity=0,RightVelocity=0;
 	m_RobotControl->UpdateLeftRightVoltage(LeftVelocity/m_CalibratedScaler_Left,RightVelocity/m_CalibratedScaler_Right);
 }
 
