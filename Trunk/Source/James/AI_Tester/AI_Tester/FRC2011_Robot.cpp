@@ -38,7 +38,8 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	//m_PIDController(1.0,0.5,0.0),
 	m_PIDController(6.0,2.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
-	m_UsingPotentiometer(false)  //to be safe
+	m_UsingPotentiometer(false),  //to be safe
+	m_VoltageOverride(false)
 {
 }
 
@@ -97,18 +98,9 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			double Displacement=NewPosition-m_LastPosition;
 			double PotentiometerVelocity=Displacement/m_LastTime;
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
-			//Give some tolerance to help keep readings stable
-			//const double tolerance=0.3;
-			//if (fabs(PotentiometerSpeed)<tolerance && (fabs(LastSpeed)<tolerance))
-			//	PotentiometerSpeed=LastSpeed;
 
 			double m_CalibratedScaler=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
 			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
-
-			//update the velocity to the potentiometer's velocity (if we are locking to a position)
-			//If we are not locking to a position the code uses the velocity to compute the force needed
-			//if (!GetLockShipToPosition())
-			//	m_Physics.SetVelocity(PotentiometerVelocity);
 
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			SetPos_m(NewPosition);
@@ -124,11 +116,18 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
 	double Voltage=CurrentVelocity/MAX_SPEED;
-	//Clamp range, PID (i.e. integral) controls may saturate the amount needed
-	if (Voltage<-1.0)
-		Voltage=-1.0;
-	else if (Voltage>1.0)
-		Voltage=1.0;
+
+	if (!m_VoltageOverride)
+	{
+		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
+		if (Voltage<-1.0)
+			Voltage=-1.0;
+		else if (Voltage>1.0)
+			Voltage=1.0;
+	}
+	else
+		Voltage=0.0;
+
 	m_RobotControl->UpdateArmVoltage(Voltage);
 	//Show current height (only in AI Tester)
 	#if 1
@@ -136,6 +135,13 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	double height=AngleToHeight_m(Pos_m);
 	DOUT4("Arm=%f Angle=%f %fft %fin",CurrentVelocity,RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
 	#endif
+}
+
+void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m)
+{
+	m_VoltageOverride=false;
+	if ((m_UsingPotentiometer)&&(fabs(posDisplacement_m)<0.02))
+		m_VoltageOverride=true;
 }
 
 void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Velocity)

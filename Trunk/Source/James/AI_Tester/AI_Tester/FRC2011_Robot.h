@@ -57,6 +57,7 @@ class FRC_2011_Robot : public Robot_Tank
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void PosDisplacementCallback(double posDisplacement_m);
 			private:
 				//typedef Ship_1D __super;
 				void SetRequestedVelocity_FromNormalized(double Velocity);
@@ -73,6 +74,7 @@ class FRC_2011_Robot : public Robot_Tank
 				double m_LastTime; //used for calibration
 				double m_MaxSpeedReference; //used for calibration
 				bool m_UsingPotentiometer; //dynamically able to turn off (e.g. panic button)
+				bool m_VoltageOverride;  //when true will kill voltage
 		};
 
 		//Accessor needed for setting goals
