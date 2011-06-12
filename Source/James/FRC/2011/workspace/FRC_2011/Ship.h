@@ -100,6 +100,9 @@ class Ship_2D : public Entity2D
 		///This is to only be used by AI controller (this will have LockShipHeadingToOrientation set to false)
 		void SetIntendedOrientation(double IntendedOrientation);
 
+		///This allows subclass to evaluate the requested velocity when it is in use
+		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s) {}
+
 		AI_Base_Controller* m_controller;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
 
