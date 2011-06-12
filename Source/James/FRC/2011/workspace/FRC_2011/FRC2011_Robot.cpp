@@ -61,8 +61,10 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	//m_PIDController(1.0,0.5,0.0),
 	m_PIDController(6.0,2.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
-	m_UsingPotentiometer(false)  //to be safe
+	m_UsingPotentiometer(false),  //to be safe
+	m_VoltageOverride(false)
 {
+	m_UsingPotentiometer=true;  //for testing on AI simulator (unless I make a control for this)
 }
 
 void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
@@ -73,9 +75,8 @@ void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const E
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
 	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
-	//create a range small enough to saturate the voltage during a arm still test
-	//a smaller range improves recovery time
-	m_PIDController.SetOutputRange(-m_MaxSpeedReference*0.875,m_MaxSpeedReference*0.875);
+	double tolerance=0.99; //we must be less than one to avoid lockup
+	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
 }
 
@@ -109,29 +110,20 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 	//Update the position to where the potentiometer says where it actually is
 	if (m_UsingPotentiometer)
-	//if (false)	
 	{
 		if (m_LastTime!=0.0)
 		{
 			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
 			double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
-	
+
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
 			double PotentiometerVelocity=Displacement/m_LastTime;
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
-			//Give some tolerance to help keep readings stable
-			const double tolerance=0.05;
-			if (fabs(PotentiometerSpeed)<tolerance && (fabs(LastSpeed)<tolerance))
-				PotentiometerSpeed=LastSpeed;
 
 			double m_CalibratedScaler=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
 			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
 
-			//update the velocity to the potentiometer's velocity (if we are locking to a position)
-			//If we are not locking to a position the code uses the velocity to compute the force needed
-			//if (!GetLockShipToPosition())
-			//	m_Physics.SetVelocity(PotentiometerVelocity);
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
@@ -150,11 +142,18 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	CurrentVelocity*=-1.0; //need to reverse direction for test kit  :(
 	#endif
 	double Voltage=CurrentVelocity/MAX_SPEED;
-	//Clamp range, PID (i.e. integral) controls may saturate the amount needed
-	if (Voltage<-1.0)
-		Voltage=-1.0;
-	else if (Voltage>1.0)
-		Voltage=1.0;
+
+	if (!m_VoltageOverride)
+	{
+		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
+		if (Voltage<-1.0)
+			Voltage=-1.0;
+		else if (Voltage>1.0)
+			Voltage=1.0;
+	}
+	else
+		Voltage=0.0;
+
 	m_RobotControl->UpdateArmVoltage(Voltage);
 	//Show current height (only in AI Tester)
 	#if 0
@@ -162,6 +161,13 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	double height=AngleToHeight_m(Pos_m);
 	DOUT4("Arm=%f Angle=%f %fft %fin",CurrentVelocity,RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
 	#endif
+}
+
+void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m)
+{
+	m_VoltageOverride=false;
+	if ((m_UsingPotentiometer)&&(fabs(posDisplacement_m)<0.02))
+		m_VoltageOverride=true;
 }
 
 void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Velocity)
@@ -291,7 +297,7 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
 	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
-	m_UsingEncoders(UseEncoders)
+	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
 	//m_UsingEncoders=true; //testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
@@ -387,15 +393,19 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
 }
 
+void FRC_2011_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
+{
+	m_VoltageOverride=false;
+	if ((m_UsingEncoders)&&(VelocityToUse==0.0))
+			m_VoltageOverride=true;
+}
+
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
-	if (m_UsingEncoders)
-	{
-		if (fabs(LeftVelocity)+fabs(RightVelocity)<0.2)
+	if (m_VoltageOverride)
 			LeftVelocity=RightVelocity=0;
-	}
 	m_RobotControl->UpdateLeftRightVoltage(LeftVelocity/m_CalibratedScaler_Left,RightVelocity/m_CalibratedScaler_Right);
 }
 
