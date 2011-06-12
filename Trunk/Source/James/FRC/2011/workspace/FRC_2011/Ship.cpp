@@ -434,7 +434,11 @@ void Ship_2D::TimeChange(double dTime_s)
 
 		Vec2d GlobalForce;
 		if (UsingRequestedVelocity)
+		{
 			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),VelocityToUse),dTime_s);
+			//Allow subclass to evaluate the requested velocity in use;
+			RequestedVelocityCallback(VelocityToUse,dTime_s);
+		}
 		else
 		{
 			//We basically are zeroing the strafe here, and adding the forward/reverse element next
