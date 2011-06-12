@@ -375,7 +375,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
 	if (m_VoltageOverride)
-			LeftVelocity=0,RightVelocity=0;
+			LeftVelocity=RightVelocity=0;
 	m_RobotControl->UpdateLeftRightVoltage(LeftVelocity/m_CalibratedScaler_Left,RightVelocity/m_CalibratedScaler_Right);
 }
 
