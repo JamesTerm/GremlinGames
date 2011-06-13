@@ -59,7 +59,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
-	m_PIDController(6.0,2.0,0.0),
+	m_PIDController(0.125,0.125,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false),  //to be safe
 	m_VoltageOverride(false)
@@ -166,7 +166,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m)
 {
 	m_VoltageOverride=false;
-	if ((m_UsingPotentiometer)&&(fabs(posDisplacement_m)<0.02))
+	//note 0.02 is fine for arm without claw
+	if ((m_UsingPotentiometer)&&(fabs(posDisplacement_m)<0.5))
 		m_VoltageOverride=true;
 }
 

@@ -179,7 +179,7 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	return;
 	#endif
 
-	#if 0
+	#if 1
 	//Eliminate the deadzone
 	if (LeftVoltage>0.0)
 		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
