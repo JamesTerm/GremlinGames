@@ -175,3 +175,8 @@ void PIDController2::Reset()
 	m_totalError = 0;
 	m_result = 0;
 }
+
+void PIDController2::ResetI()
+{
+	m_totalError = 0;
+}

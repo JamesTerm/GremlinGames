@@ -75,6 +75,8 @@ class PIDController2
 
 		///Resets the previous error, the integral term  (This does not disable as it does in the WPI lib)
 		void Reset();
+		/// A quick call often function that zero's the I only
+		void ResetI();
 	private:
 		double m_P;			// factor for "proportional" control
 		double m_I;			// factor for "integral" control

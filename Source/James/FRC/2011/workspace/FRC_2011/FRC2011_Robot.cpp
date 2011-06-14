@@ -152,7 +152,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			Voltage=1.0;
 	}
 	else
+	{
 		Voltage=0.0;
+		m_PIDController.ResetI();  //clear error for I for better transition back
+	}
 
 	m_RobotControl->UpdateArmVoltage(Voltage);
 	//Show current height (only in AI Tester)
@@ -167,7 +170,7 @@ void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m
 {
 	m_VoltageOverride=false;
 	//note 0.02 is fine for arm without claw
-	if ((m_UsingPotentiometer)&&(fabs(posDisplacement_m)<0.5))
+	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.1))
 		m_VoltageOverride=true;
 }
 
@@ -448,7 +451,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	18.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	24.0,24.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
 	Ship_1D_Properties::eRobotArm,
 	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
