@@ -59,7 +59,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
-	m_PIDController(0.125,0.125,0.0),
+	m_PIDController(1.0,0.125,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false),  //to be safe
 	m_VoltageOverride(false)
@@ -300,7 +300,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
+	m_PIDController_Left(1.0,0.125,0.0),	m_PIDController_Right(1.0,0.125,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
 	//m_UsingEncoders=true; //testing
