@@ -154,7 +154,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	else
 	{
 		Voltage=0.0;
-		m_PIDController.ResetI(m_MaxSpeedReference * -0.80);  //clear error for I for better transition back
+		m_PIDController.ResetI(m_MaxSpeedReference * -0.99);  //clear error for I for better transition back
 	}
 
 	m_RobotControl->UpdateArmVoltage(Voltage);
