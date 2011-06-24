@@ -219,8 +219,8 @@ void Robot_Control::UpdateArmVoltage(double Voltage)
 	//Voltage=(Voltage * c_Arm_Range) + ((Voltage>0.0) ? c_Arm_DeadZone : -c_Arm_DeadZone);
 	
 	//This prevents the motor from over heating when it is close enough to its destination
-	if (fabs(Voltage)<=c_Arm_DeadZone)
-		Voltage=0.0;
+	//if (fabs(Voltage)<=c_Arm_DeadZone)
+	//	Voltage=0.0;
 	
 	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
 	//Note: client code needs to check the levels are correct!

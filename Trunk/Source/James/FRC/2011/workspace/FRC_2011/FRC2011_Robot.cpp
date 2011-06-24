@@ -59,7 +59,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
-	m_PIDController(1.0,0.125,0.0),
+	m_PIDController(1.0,1.0/8.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false),  //to be safe
 	m_VoltageOverride(false)
@@ -75,7 +75,7 @@ void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const E
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
 	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
-	double tolerance=0.99; //we must be less than one to avoid lockup
+	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
 }
@@ -154,7 +154,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	else
 	{
 		Voltage=0.0;
-		m_PIDController.ResetI();  //clear error for I for better transition back
+		m_PIDController.ResetI(m_MaxSpeedReference * -0.80);  //clear error for I for better transition back
 	}
 
 	m_RobotControl->UpdateArmVoltage(Voltage);
@@ -300,7 +300,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	m_PIDController_Left(1.0,0.125,0.0),	m_PIDController_Right(1.0,0.125,0.0),
+	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
 	//m_UsingEncoders=true; //testing
