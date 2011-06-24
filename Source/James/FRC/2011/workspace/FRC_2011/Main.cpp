@@ -179,13 +179,19 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	//Now to setup the goal
 	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
 	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	//give ability to tweak the correct height
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(
+			(double)DriverStation::GetInstance()->GetAnalogIn(2));
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
 	//Note: full length is 232 inches or 5.89 meters
 	//const double starting_line=5.49656;  //18.03333
-	const double starting_line=2.3; //hack not calibrated
+	//const double starting_line=2.3; //hack not calibrated
+	//give ability to tweak on driver station
+	const double starting_line=(double)DriverStation::GetInstance()->GetAnalogIn(1);
+	
 	WayPoint wp;
 	wp.Position[0]=0;
 	wp.Position[1]=starting_line;
@@ -196,6 +202,9 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
 	Initial_Start_Goal->AddGoal(goal_arm);
 	Initial_Start_Goal->AddGoal(goal_drive);
+
+	//This is a hack only needed if we cannot use encoders.  This gives robot time to slow down.
+	Goal_Wait *goal_waitforstop=new Goal_Wait(1.0); 
 
 	wp.Position[1]=starting_line+0.1;
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
@@ -225,6 +234,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	MainGoal->AddSubgoal(goal_waitfordrop);
 	MainGoal->AddSubgoal(goal_arm2);
 	MainGoal->AddSubgoal(goal_drive2);
+	MainGoal->AddSubgoal(goal_waitforstop);
 	MainGoal->AddSubgoal(Initial_Start_Goal);
 	return MainGoal;
 };
@@ -280,7 +290,8 @@ public:
 		m_Manager.SetAutoPilot(true);  //we are not driving the robot
 		//Now to set up our goal
 		Ship_Tester *ship=m_Manager.GetRobot();  //we can always cast down
-		m_Manager.GetRobot()->SetUseEncoders(true);
+		//m_Manager.GetRobot()->SetUseEncoders(true);
+		m_Manager.GetRobot()->SetUseEncoders(false);
 
 		//assert(ship);
 		size_t AutonomousValue=0;
