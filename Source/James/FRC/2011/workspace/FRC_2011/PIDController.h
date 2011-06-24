@@ -77,6 +77,7 @@ class PIDController2
 		void Reset();
 		/// A quick call often function that zero's the I only
 		void ResetI();
+		void ResetI(double totalError);  //allow client to set to specific value
 	private:
 		double m_P;			// factor for "proportional" control
 		double m_I;			// factor for "integral" control

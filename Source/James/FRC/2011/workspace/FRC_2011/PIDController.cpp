@@ -180,3 +180,8 @@ void PIDController2::ResetI()
 {
 	m_totalError = 0;
 }
+
+void PIDController2::ResetI(double totalError)
+{
+	m_totalError = totalError;
+}
