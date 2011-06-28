@@ -337,7 +337,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
-		m_EncoderGlobalVelocity=GlobalToLocal(GetAtt_r(),LocalVelocity);
+		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
 		//printf("\rG[0]=%f G[1]=%f        ",GlobalVelocity[0],GlobalVelocity[1]);
 		#endif
 	}
