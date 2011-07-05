@@ -386,10 +386,19 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	arm_entity.TimeChange(dTime_s);
 }
 
-void FRC_2011_Robot::InjectDisplacement()
+bool FRC_2011_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
+	bool ret=false;
 	if (m_UsingEncoders)
+	{
+		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
 		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
+		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+		//We must set this back so that the PID can compute the entire error
+		m_Physics.SetLinearVelocity(computedVelocity);
+		ret=true;
+	}
+	return ret;
 }
 
 double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)

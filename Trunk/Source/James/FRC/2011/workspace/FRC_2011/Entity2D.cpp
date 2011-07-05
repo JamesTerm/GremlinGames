@@ -101,8 +101,9 @@ void Entity2D::TimeChange(double dTime_s)
 {
 	Vec2D PositionDisplacement;
 	double RotationDisplacement;
-	InjectDisplacement();
-	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
+	//Either we apply displacement computations here or the derived class will handle it
+	if (!InjectDisplacement(dTime_s,PositionDisplacement,RotationDisplacement))
+		m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
 	//This is using an atomic double buffering mechanism... should be thread safe
 	PosAtt *writePtr=m_PosAtt_Write;
 	PosAtt *readPtr=m_PosAtt_Read;
