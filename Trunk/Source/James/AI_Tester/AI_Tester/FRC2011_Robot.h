@@ -84,7 +84,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void InjectDisplacement();
+		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 	private:
 		void CloseDeploymentDoor(bool Close);
 		//void ReleaseLazySusan(bool Release);
