@@ -93,8 +93,9 @@ void Entity2D::TimeChange(double dTime_s)
 {
 	osg::Vec2d PositionDisplacement;
 	double RotationDisplacement;
-	InjectDisplacement();
-	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
+	//Either we apply displacement computations here or the derived class will handle it
+	if (!InjectDisplacement(dTime_s,PositionDisplacement,RotationDisplacement))
+		m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
 	//This is using an atomic double buffering mechanism... should be thread safe
 	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
 	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
