@@ -101,9 +101,19 @@ class SetUp_Manager
 		void ResetPos() {m_pRobot->ResetPos();}
 };
 
+float GetDS_Distance()
+{
+	DriverStation *ds = DriverStation::GetInstance();
+	float Multiplier=ds->GetDigitalIn(8)?2:1;
+	float position=ds->GetAnalogIn(1);
+	position*=Multiplier;
+	return position;
+}
+
 Goal *Get_TestLengthGoal(Ship_Tester *ship)
 {
-	float position=DriverStation::GetInstance()->GetAnalogIn(1);
+	//float position=DriverStation::GetInstance()->GetAnalogIn(1);
+	float position=GetDS_Distance();
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
@@ -190,7 +200,8 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	//const double starting_line=5.49656;  //18.03333
 	//const double starting_line=2.3; //hack not calibrated
 	//give ability to tweak on driver station
-	const double starting_line=(double)DriverStation::GetInstance()->GetAnalogIn(1);
+	//const double starting_line=(double)DriverStation::GetInstance()->GetAnalogIn(1);
+	const double starting_line=(double)GetDS_Distance();
 	
 	WayPoint wp;
 	wp.Position[0]=0;
@@ -244,7 +255,10 @@ Goal *Test_Arm(FRC_2011_Robot *Robot)
 	Ship_1D &Arm=Robot->GetArm();
 	//Now to setup the goal
 
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(
+			(double)DriverStation::GetInstance()->GetAnalogIn(2));
+
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	Goal_Ship1D_MoveToPosition *Initial_Start_Goal=goal_arm;  //using the same variable name
