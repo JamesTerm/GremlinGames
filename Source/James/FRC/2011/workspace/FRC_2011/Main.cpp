@@ -110,7 +110,7 @@ float GetDS_Distance()
 	return position;
 }
 
-Goal *Get_TestLengthGoal(Ship_Tester *ship)
+Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot)
 {
 	//float position=DriverStation::GetInstance()->GetAnalogIn(1);
 	float position=GetDS_Distance();
@@ -120,8 +120,17 @@ Goal *Get_TestLengthGoal(Ship_Tester *ship)
 	wp.Position[1]=position;
 	wp.Power=1.0;
 	//Now to setup the goal
-	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
-	return goal;
+	Goal_Ship_MoveToPosition *goal_move1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	Goal_Wait *goal_wait=new Goal_Wait(2.0); //wait
+	wp.Position[1]=0;
+	Goal_Ship_MoveToPosition *goal_move2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+
+	MainGoal->AddSubgoal(goal_move2);
+	MainGoal->AddSubgoal(goal_wait);
+	MainGoal->AddSubgoal(goal_move1);
+	return MainGoal;
 }
 
 Goal *Get_TestRotationGoal(Ship_Tester *ship)
@@ -215,7 +224,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	Initial_Start_Goal->AddGoal(goal_drive);
 
 	//This is a hack only needed if we cannot use encoders.  This gives robot time to slow down.
-	Goal_Wait *goal_waitforstop=new Goal_Wait(1.0); 
+	//Goal_Wait *goal_waitforstop=new Goal_Wait(1.0); 
 
 	wp.Position[1]=starting_line+0.1;
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
@@ -245,7 +254,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	MainGoal->AddSubgoal(goal_waitfordrop);
 	MainGoal->AddSubgoal(goal_arm2);
 	MainGoal->AddSubgoal(goal_drive2);
-	MainGoal->AddSubgoal(goal_waitforstop);
+	//MainGoal->AddSubgoal(goal_waitforstop);
 	MainGoal->AddSubgoal(Initial_Start_Goal);
 	return MainGoal;
 };
@@ -326,7 +335,7 @@ public:
 			switch (AutonomousValue)
 			{
 				case 1:		goal=Test_Arm(m_Manager.GetRobot());			break;
-				case 2:		goal=Get_TestLengthGoal(ship);					break;
+				case 2:		goal=Get_TestLengthGoal(m_Manager.GetRobot());	break;
 				case 3:		goal=Get_TestRotationGoal(ship);				break;
 				case 4:		goal=Get_UberTubeGoal(m_Manager.GetRobot());	break;
 			}
