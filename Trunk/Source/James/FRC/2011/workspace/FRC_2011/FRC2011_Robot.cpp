@@ -299,8 +299,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
-	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
+	m_PIDController_Left(1.0,8.0,0.0),	m_PIDController_Right(1.0,8.0,0.0),
+	//m_PIDController_Left(1.0,0.5,0.0),	m_PIDController_Right(1.0,0.5,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
 	//m_UsingEncoders=true; //testing
@@ -321,7 +321,7 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	m_PIDController_Left.SetOutputRange(-OutputRange,OutputRange);
 	m_PIDController_Left.Enable();
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Right.SetOutputRange(-OutputRange,OutputRange);
+	m_PIDController_Right.SetOutputRange(-1000,OutputRange);
 	m_PIDController_Right.Enable();
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 }
@@ -364,6 +364,16 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
+		#if 0
+		{
+			double PosY=GetPos_m()[1];
+			if (!m_VoltageOverride)
+				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+			else
+				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+		}
+		#endif
+		
 		#if 1
 		//Update the physics with the actual velocity
 		Vec2d LocalVelocity;
@@ -372,7 +382,8 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
 		m_EncoderGlobalVelocity=GlobalToLocal(GetAtt_r(),LocalVelocity);
-		//printf("\rG[0]=%f G[1]=%f        ",GlobalVelocity[0],GlobalVelocity[1]);
+		//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
+		//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		#endif
 	}
 	else
