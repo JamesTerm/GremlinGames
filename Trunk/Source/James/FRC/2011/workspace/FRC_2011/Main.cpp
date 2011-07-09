@@ -237,7 +237,9 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	wp.Position[1]=starting_line;
 	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 
-	wp.Position[1]=0;
+	//wp.Position[1]=0;
+	//instead of going all the way back to start we'll go half the distance (since the robot is having hard time going straight)
+	wp.Position[1]=starting_line/2.0;
 	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
 	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
