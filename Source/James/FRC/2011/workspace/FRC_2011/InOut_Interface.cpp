@@ -104,11 +104,14 @@ void Robot_Control::SetSafety(bool UseSafety)
 }
 
 Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),m_OnClaw(4),m_OffClaw(3),
-	m_OnDeploy(2),m_OffDeploy(1),m_LeftEncoder(3,4),m_RightEncoder(1,2),m_Potentiometer(1)
+	m_OnDeploy(2),m_OffDeploy(1),m_LeftEncoder(3,4),m_RightEncoder(1,2),m_Potentiometer(1),m_Camera(NULL)
 {
 	//Allow driver station to control if they want to run the compressor
 	if (DriverStation::GetInstance()->GetDigitalIn(7))
+	{
 		m_Compress.Start();
+		m_Camera=&AxisCamera::GetInstance();
+	}
 	SetSafety(UseSafety);
 	const double EncoderPulseRate=(1.0/360.0);
 	m_LeftEncoder.SetDistancePerPulse(EncoderPulseRate),m_RightEncoder.SetDistancePerPulse(EncoderPulseRate);
@@ -120,6 +123,7 @@ Robot_Control::~Robot_Control()
 	m_LeftEncoder.Stop(),m_RightEncoder.Stop();  //TODO Move for autonomous mode only
 	m_RobotDrive.SetSafetyEnabled(false);
 	m_Compress.Stop();
+	m_Camera=NULL;  //We don't own this, but I do wish to treat it like we do
 }
 
 void Robot_Control::Reset_Arm()
