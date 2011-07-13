@@ -110,7 +110,10 @@ void Viewer::Start()
 			if (!m_UseSyntheticTimeDeltas)
 				dTime_s = timer.FireTimer();
 			else
-				dTime_s = 0.016;  //hard code a typical 60 fps
+			{
+				//dTime_s = 0.016;  //hard code a typical 60 fps
+				dTime_s = 0.010;  //Testing robot autonomous loop
+			}
 
 			currTime = timer.GetCurrTime_s();
 			if (m_Callback)
