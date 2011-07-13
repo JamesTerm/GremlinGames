@@ -268,7 +268,7 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
-	//m_UsingEncoders=true; //testing
+	m_UsingEncoders=true; //testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
 }
 
@@ -330,6 +330,17 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
+		#if 1
+		if (Encoder_RightVelocity>0.0)
+		{
+			double PosY=GetPos_m()[1];
+			if (!m_VoltageOverride)
+				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+			else
+				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+		}
+		#endif
+
 		#if 1
 		//Update the physics with the actual velocity
 		Vec2d LocalVelocity;

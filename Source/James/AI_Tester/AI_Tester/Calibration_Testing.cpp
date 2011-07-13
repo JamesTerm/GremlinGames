@@ -107,7 +107,7 @@ void Potentiometer_Tester::TimeChange()
   /***************************************************************************************************************/
  /*												Encoder_Simulator												*/
 /***************************************************************************************************************/
-#define ENCODER_TEST_RATE 0
+#define ENCODER_TEST_RATE 1
 #if ENCODER_TEST_RATE==0
 const double c_Encoder_TestRate=4.0;
 const double c_Encoder_MaxAccel=10.0;
@@ -115,7 +115,7 @@ const double c_Encoder_MaxAccel=10.0;
 
 #if ENCODER_TEST_RATE==1
 const double c_Encoder_TestRate=2.916;
-const double c_Encoder_MaxAccel=5.0;
+const double c_Encoder_MaxAccel=2.8;
 #endif
 
 #if ENCODER_TEST_RATE==2
@@ -130,7 +130,7 @@ const double c_Encoder_MaxAccel=2.0;
 
 Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 	EntityName,
-	2.0,    //Mass
+	68.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	c_Encoder_TestRate,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
@@ -144,7 +144,10 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 
 void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 {
-	SetRequestedVelocity(Voltage*m_EncoderProps.GetMaxSpeed());
+	//This is how it would be if the motor was set to non-coast
+	//SetRequestedVelocity(Voltage*m_EncoderProps.GetMaxSpeed());
+	//For coast it is more like applying force
+	SetCurrentLinearAcceleration(Voltage*m_EncoderProps.GetMaxSpeed());
 }
 
 double Encoder_Simulator::GetEncoderVelocity()
