@@ -20,6 +20,8 @@ class Robot_Control : public Robot_Control_Interface
 		virtual ~Robot_Control(); 
 		virtual void Initialize(const Entity_Properties *props);
 		void SetSafety(bool UseSafety);
+		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
+		void ResetPos();
 	protected: //from Robot_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Reset_Arm(); 
