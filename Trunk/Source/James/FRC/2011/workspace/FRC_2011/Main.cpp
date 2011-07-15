@@ -98,7 +98,11 @@ class SetUp_Manager
 		void SetAutoPilot(bool autoPilot) {m_pUI->SetAutoPilot(autoPilot);}
 		FRC_2011_Robot *GetRobot() const {return m_pRobot;}
 		void SetSafety(bool UseSafety) {m_Control.SetSafety(UseSafety);}
-		void ResetPos() {m_pRobot->ResetPos();}
+		void ResetPos() 
+		{	
+			m_pRobot->ResetPos();
+			m_Control.ResetPos();
+		}
 };
 
 float GetDS_Distance()
@@ -327,12 +331,12 @@ public:
 		AutonomousValue+=ds->GetDigitalIn(4)? 0x08 : 0x00;
 		printf("Autonomous mode= %d \n",AutonomousValue);
 		const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
+		Goal *oldgoal=ship->ClearGoal();
+		if (oldgoal)
+			delete oldgoal;
+
 		if (DoAutonomous)
 		{
-			Goal *oldgoal=ship->ClearGoal();
-			if (oldgoal)
-				delete oldgoal;
-
 			Goal *goal=NULL;
 			switch (AutonomousValue)
 			{
@@ -367,6 +371,11 @@ public:
 			Wait(0.010);				
 		}
 		//printf("Autonomouse loop end IsA=%d IsD=%d \n",IsAutonomous(),IsDisabled());
+		oldgoal=ship->ClearGoal();
+		if (oldgoal)
+			delete oldgoal;
+		ship->SetGoal(NULL);
+
 	}
 	
 	void OperatorControl(void)
