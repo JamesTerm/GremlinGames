@@ -265,7 +265,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
+	//m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
+	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
 	m_UsingEncoders=true; //testing
@@ -330,8 +331,8 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
-		#if 1
-		if (Encoder_RightVelocity>0.0)
+		#if 0
+		if (Encoder_RightVelocity!=0.0)
 		{
 			double PosY=GetPos_m()[1];
 			if (!m_VoltageOverride)
@@ -386,7 +387,7 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 void FRC_2011_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
-	if ((m_UsingEncoders)&&(VelocityToUse==0.0))
+	if ((m_UsingEncoders)&&(VelocityToUse==0.0)&&(m_rotDisplacement_rad==0.0))
 			m_VoltageOverride=true;
 }
 
@@ -396,6 +397,15 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
 	if (m_VoltageOverride)
 			LeftVelocity=RightVelocity=0;
+	else
+	{
+		//For now only apply use this derivative when using the encoders (but this may improve regular drive with or without them)
+		//For the simulation code this must be on for the displacement to take effect
+		if (m_UsingEncoders)
+		{
+
+		}
+	}
 	m_RobotControl->UpdateLeftRightVoltage(LeftVelocity/m_CalibratedScaler_Left,RightVelocity/m_CalibratedScaler_Right);
 }
 

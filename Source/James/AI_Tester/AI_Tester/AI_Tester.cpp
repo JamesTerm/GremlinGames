@@ -277,7 +277,7 @@ Goal *Get_TestLengthGoal(Ship_Tester *ship)
 	wp.Position[1]=1.0;
 	wp.Power=1.0;
 	//Now to setup the goal
-	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp);
+	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp,true,true);
 	return goal;
 }
 
@@ -764,7 +764,7 @@ void CommandLineInterface()
 					case eCurrent:
 						{
 							#ifdef _DEBUG
-							UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
+							UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 							#endif
 							g_WorldScaleFactor=100.0;
 							game.SetDisableEngineRampUp2(true);
