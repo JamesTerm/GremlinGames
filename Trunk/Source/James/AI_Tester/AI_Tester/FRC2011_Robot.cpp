@@ -52,7 +52,7 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
 	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
-	double tolerance=0.99; //we must be less than one to avoid lockup
+	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
 }
@@ -139,7 +139,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m)
 {
 	m_VoltageOverride=false;
-	if ((m_UsingPotentiometer)&&(fabs(posDisplacement_m)<0.02))
+	//note 0.02 is fine for arm without claw
+	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.1))
 		m_VoltageOverride=true;
 }
 
@@ -350,7 +351,8 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
 		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
-		//printf("\rG[0]=%f G[1]=%f        ",GlobalVelocity[0],GlobalVelocity[1]);
+		//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
+		//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		#endif
 	}
 	else
@@ -397,7 +399,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
 	double LeftVoltage,RightVoltage;
 	if (m_VoltageOverride)
-			LeftVoltage=RightVoltage=0;
+		LeftVoltage=RightVoltage=0;
 	else
 	{
 		//For only apply this derivative when using the encoders (this may improve regular drive)
