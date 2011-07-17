@@ -299,8 +299,9 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
-	m_PIDController_Left(1.0,8.0,0.0),	m_PIDController_Right(1.0,8.0,0.0),
-	//m_PIDController_Left(1.0,0.5,0.0),	m_PIDController_Right(1.0,0.5,0.0),
+	m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
+	//m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
+	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
 	//m_UsingEncoders=true; //testing
@@ -321,7 +322,7 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	m_PIDController_Left.SetOutputRange(-OutputRange,OutputRange);
 	m_PIDController_Left.Enable();
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Right.SetOutputRange(-1000,OutputRange);
+	m_PIDController_Right.SetOutputRange(-OutputRange,OutputRange);
 	m_PIDController_Right.Enable();
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 }
@@ -357,7 +358,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		}
 
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
-		ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
+		//ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
 		//DOUT5("p=%f e=%f d=%f cs=%f",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rcl=%f cr=%f, csl=%f csr=%f                ",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,Encoder_LeftVelocity,RightVelocity,Encoder_RightVelocity);
@@ -365,6 +366,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
 		#if 0
+		if (Encoder_RightVelocity!=0.0)
 		{
 			double PosY=GetPos_m()[1];
 			if (!m_VoltageOverride)
@@ -373,7 +375,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
 		}
 		#endif
-		
+
 		#if 1
 		//Update the physics with the actual velocity
 		Vec2d LocalVelocity;
@@ -381,7 +383,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
-		m_EncoderGlobalVelocity=GlobalToLocal(GetAtt_r(),LocalVelocity);
+		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
 		//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		#endif
@@ -420,7 +422,7 @@ double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
 void FRC_2011_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
-	if ((m_UsingEncoders)&&(VelocityToUse==0.0))
+	if ((m_UsingEncoders)&&(VelocityToUse==0.0)&&(m_rotDisplacement_rad==0.0))
 			m_VoltageOverride=true;
 }
 
@@ -428,9 +430,29 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
+	double LeftVoltage,RightVoltage;
 	if (m_VoltageOverride)
-			LeftVelocity=RightVelocity=0;
-	m_RobotControl->UpdateLeftRightVoltage(LeftVelocity/m_CalibratedScaler_Left,RightVelocity/m_CalibratedScaler_Right);
+		LeftVoltage=RightVoltage=0;
+	else
+	{
+		//For only apply this derivative when using the encoders (this may improve regular drive)
+		//For the simulation code this must be on for the displacement to take effect
+		if (m_UsingEncoders)
+		{
+			double Encoder_LeftVelocity,Encoder_RightVelocity;
+			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+
+			//DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
+			//LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
+			double LeftAccDelta=LeftVelocity-Encoder_LeftVelocity,
+				   RightAccDelta=RightVelocity-Encoder_RightVelocity;
+			LeftVoltage=LeftAccDelta/m_CalibratedScaler_Left;
+			RightVoltage=RightAccDelta/m_CalibratedScaler_Right;
+		}
+		else  //Legacy mean tone submission
+			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
+	}
+	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)

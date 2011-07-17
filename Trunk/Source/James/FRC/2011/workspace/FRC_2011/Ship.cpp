@@ -53,7 +53,7 @@ inline Vec2d GetDirection(double Heading,double Intensity)
 }
 
 
-//osg::Quat FromLW_Rot_Radians(double H, double P, double R);
+//Quat FromLW_Rot_Radians(double H, double P, double R);
 
 Ship_2D::Ship_2D(const char EntityName[]) : Entity2D(EntityName),
 	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation)
@@ -138,12 +138,12 @@ void Ship_2D::SetRequestedVelocity(double Velocity)
 
 
 #if 0
-osg::Vec3d Ship_2D::GetArtificialHorizonComponent() const
+Vec3d Ship_2D::GetArtificialHorizonComponent() const
 {
 	//Here is the simplest case where we use the global coordinates as our orientation
-	osg::Vec3d GlobalForce(0.0,0.0,EARTH_G*Mass);
+	Vec3d GlobalForce(0.0,0.0,EARTH_G*Mass);
 	//Now to present this force in how it applies locally to our ship
-	osg::Vec3d ForceToApply(m_IntendedOrientation.conj() * GlobalForce);
+	Vec3d ForceToApply(m_IntendedOrientation.conj() * GlobalForce);
 	return ForceToApply;
 }
 #endif
@@ -274,7 +274,7 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 	#ifdef __EnableOrientationResistance__
 	if (!m_UseHeadingSpeed)
 	{
-		osg::Vec3d Offset(m_Physics.ComputeAngularDistance(m_IntendedOrientation));
+		Vec3d Offset(m_Physics.ComputeAngularDistance(m_IntendedOrientation));
 		const double MaxLookAt=M_PI*0.4; //the max amount to look ahead
 		YawResistance=fabs(Offset[0])<MaxLookAt?1.0-(fabs(Offset[0])/MaxLookAt):0.0;
 	}
@@ -310,7 +310,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	m_controller->UpdateController(dTime_s);
 
 	// Find the current velocity and use to determine the flight characteristics we will WANT to us
-	//osg::Vec3d LocalVelocity(GetAtt_quat().conj() * m_Physics.GetLinearVelocity());
+	//Vec3d LocalVelocity(GetAtt_quat().conj() * m_Physics.GetLinearVelocity());
 	Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	double currVelocity = LocalVelocity[1];
 	bool manualMode = !((m_SimFlightMode)&&(m_currAccel[0]==0));
@@ -323,7 +323,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	//Enable to monitor current speed
 	#if 0
 	{
-		osg::Vec3d Velocity=m_Physics.GetLinearVelocity();
+		Vec3d Velocity=m_Physics.GetLinearVelocity();
 		if (m_controller->IsUIControlled())
 			printf("\r%s %f mps               ",GetID().c_str(),m_Physics.GetSpeed(Velocity));
 		//printf("\r%f mph               ",m_Physics.GetSpeed(Velocity)*2.237);  //here's a cool quick conversion to get mph http://www.chrismanual.com/Intro/convfact.htm
@@ -443,6 +443,8 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			//We basically are zeroing the strafe here, and adding the forward/reverse element next
 			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),currVelocity),dTime_s);  
+			//Allow subclass to evaluate the requested velocity in use;
+			RequestedVelocityCallback(currVelocity,dTime_s);
 		}
 
 		//so we'll need to convert to local
@@ -455,7 +457,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		#if 0
 		if (stricmp(GetName().c_str(),"Q33_2")==0)
 		{
-			osg::Vec3d acc=ForceToApply/Mass;
+			Vec3d acc=ForceToApply/Mass;
 			DOUT2("%f %f",acc[0],acc[1]);
 			DOUT3("%f %f",VelocityToUse,Mass);
 		}
@@ -520,7 +522,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	if (m_StabilizeRotation)
 	{
 		//Here we have the original way to turn the ship
-		//osg::Vec3d rotVel=m_Physics.GetVelocityFromDistance_Angular(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s);
+		//Vec3d rotVel=m_Physics.GetVelocityFromDistance_Angular(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s);
 
 		//And now the new way using the match velocity, Notice how I divide by time to get the right numbers
 		//When this is locked to orientation (e.g. joystick keyboard) this will be ignored since the restraint is -1
@@ -533,11 +535,11 @@ void Ship_2D::TimeChange(double dTime_s)
 			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel);
 		}
 		//testing stuff  (eventually nuke this)
-		//osg::Vec3d rotVel=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,osg::Vec3d(0,0,0));
+		//Vec3d rotVel=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,Vec3d(0,0,0));
 		#if 0
 		{
-			//osg::Vec3d test2=m_Physics.GetVelocityFromDistance_Angular(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s);
-			osg::Vec3d test=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,osg::Vec3d(0,0,0));
+			//Vec3d test2=m_Physics.GetVelocityFromDistance_Angular(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s);
+			Vec3d test=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,Vec3d(0,0,0));
 			//DOUT2("%f %f %f",m_rotAccel_rad_s[0],m_rotAccel_rad_s[1],m_rotAccel_rad_s[2]);
 			DOUT2("%f %f %f",rotVel[0],test[0],rotVel[0]-test[0]);
 			//DOUT2("%f %f %f",test2[0],test[0],test2[0]-test[0]);
