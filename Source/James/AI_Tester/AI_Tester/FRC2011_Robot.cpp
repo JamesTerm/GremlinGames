@@ -326,7 +326,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
 		//ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
-		DOUT5("p=%f e=%f d=%f cs=%f",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
+		//DOUT5("p=%f e=%f d=%f cs=%f",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rcl=%f cr=%f, csl=%f csr=%f                ",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,Encoder_LeftVelocity,RightVelocity,Encoder_RightVelocity);
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
@@ -409,7 +409,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 			double Encoder_LeftVelocity,Encoder_RightVelocity;
 			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 
-			//DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
+			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
 			//LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
 			double LeftAccDelta=LeftVelocity-Encoder_LeftVelocity,
 				   RightAccDelta=RightVelocity-Encoder_RightVelocity;
@@ -417,7 +417,22 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 			RightVoltage=RightAccDelta/m_CalibratedScaler_Right;
 		}
 		else  //Legacy mean tone submission
+		{
+			#if 0
+			double Encoder_LeftVelocity,Encoder_RightVelocity;
+			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
+			#endif
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
+			#if 1
+			LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
+			//restore the sign
+			if (LeftVelocity<0)
+				LeftVoltage=-LeftVoltage;
+			if (RightVelocity<0)
+				RightVoltage=-RightVoltage;
+			#endif
+		}
 	}
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
