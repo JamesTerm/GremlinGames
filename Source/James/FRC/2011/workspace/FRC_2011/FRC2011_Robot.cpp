@@ -450,7 +450,22 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 			RightVoltage=RightAccDelta/m_CalibratedScaler_Right;
 		}
 		else  //Legacy mean tone submission
+		{
+			#if 0
+			double Encoder_LeftVelocity,Encoder_RightVelocity;
+			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
+			#endif
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
+			#if 1
+			LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
+			//restore the sign
+			if (LeftVelocity<0)
+				LeftVoltage=-LeftVoltage;
+			if (RightVelocity<0)
+				RightVoltage=-RightVoltage;
+			#endif
+		}
 	}
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
