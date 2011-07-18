@@ -269,7 +269,7 @@ void SetUpUI(GUIThread *&UI_thread,Viewer_Callback_Interface *ViewerCallback)
 		throw "Unable to start UI";
 }
 
-Goal *Get_TestLengthGoal(Ship_Tester *ship)
+Goal *Get_TestLengthGoal_OLD(Ship_Tester *ship)
 {
 	//Construct a way point
 	WayPoint wp;
@@ -279,6 +279,29 @@ Goal *Get_TestLengthGoal(Ship_Tester *ship)
 	//Now to setup the goal
 	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp,true,true);
 	return goal;
+}
+
+Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot)
+{
+	//float position=DriverStation::GetInstance()->GetAnalogIn(1);
+	float position=1.0;
+	//Construct a way point
+	WayPoint wp;
+	wp.Position[0]=0.0;
+	wp.Position[1]=position;
+	wp.Power=1.0;
+	//Now to setup the goal
+	Goal_Ship_MoveToPosition *goal_move1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	Goal_Wait *goal_wait=new Goal_Wait(2.0); //wait
+	wp.Position[1]=0;
+	Goal_Ship_MoveToPosition *goal_move2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+
+	MainGoal->AddSubgoal(goal_move2);
+	MainGoal->AddSubgoal(goal_wait);
+	MainGoal->AddSubgoal(goal_move1);
+	return MainGoal;
 }
 
 Goal *Get_UberTubeGoal_OLD(FRC_2011_Robot *Robot)
