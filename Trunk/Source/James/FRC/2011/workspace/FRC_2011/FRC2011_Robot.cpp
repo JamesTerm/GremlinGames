@@ -266,6 +266,12 @@ void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
 	m_RobotControl->CloseClaw(Close);
 }
 
+void FRC_2011_Robot::Robot_Arm::CloseElbow(bool Close)
+{
+	m_RobotControl->CloseElbow(Close);
+}
+
+
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
 	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
@@ -279,7 +285,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
 		em->EventOnOff_Map["Arm_Claw"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
-
+		em->EventOnOff_Map["Arm_Elbow"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
 	}
 	else
 	{
@@ -291,6 +297,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
 		em->EventOnOff_Map["Arm_Claw"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
+		em->EventOnOff_Map["Arm_Elbow"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
 	}
 }
 

@@ -6,6 +6,7 @@ class Robot_Control : public Robot_Control_Interface
 	RobotDrive m_RobotDrive;
 	RobotDrive m_ArmMotor;
 	Compressor m_Compress;
+	Solenoid m_OnElbow,m_OffElbow;
 	Solenoid m_OnClaw,m_OffClaw;
 	Solenoid m_OnDeploy,m_OffDeploy;
 	Encoder m_LeftEncoder,m_RightEncoder;
@@ -30,6 +31,7 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		virtual void UpdateArmVoltage(double Voltage);
 		virtual double GetArmCurrentPosition();
+		virtual void CloseElbow(bool Close) {m_OnElbow.Set(Close),m_OffElbow.Set(!Close);}
 		virtual void CloseClaw(bool Close) {m_OnClaw.Set(Close),m_OffClaw.Set(!Close);}
 		virtual void CloseDeploymentDoor(bool Close) {m_OnDeploy.Set(Close),m_OffDeploy.Set(!Close);}
 		//virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
