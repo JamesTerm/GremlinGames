@@ -77,9 +77,7 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Button_Default( 0,"Arm_Claw",true,false,"Joystick_2");
 
 	joy.AddJoy_Button_Default( 7,"Robot_CloseDoor",true,false,"Joystick_2");
-	
-	//joy.AddJoy_Button_Default( 7,"Robot_OpenDoor",true,false,"Joystick_2");
-	//joy.AddJoy_Button_Default( 8,"Robot_ReleaseLazySusan",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 8,"Arm_Elbow",true,false,"Joystick_2");
 	#endif
 	Init_AutoPilotControls();
 }
