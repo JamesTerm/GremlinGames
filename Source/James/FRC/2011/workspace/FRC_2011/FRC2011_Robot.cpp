@@ -306,8 +306,8 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
-	m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	//m_PIDController_Left(1.0,0.0,0.0),	m_PIDController_Right(1.0,0.0,0.0),
+	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
+	m_PIDController_Left(1.0,8.0,0.0),	m_PIDController_Right(1.0,8.0,0.0),
 	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
 {
@@ -326,10 +326,10 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	m_Arm.Initialize(em,ArmProps);
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Left.SetOutputRange(-OutputRange,OutputRange);
+	m_PIDController_Left.SetOutputRange(-1000,OutputRange);
 	m_PIDController_Left.Enable();
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Right.SetOutputRange(-OutputRange,OutputRange);
+	m_PIDController_Right.SetOutputRange(-1000,OutputRange);
 	m_PIDController_Right.Enable();
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 }
@@ -442,6 +442,9 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 		LeftVoltage=RightVoltage=0;
 	else
 	{
+		//This may be omitted as it appears to be very choppy; however, the solution may be to subtract less and take into account the current
+		//speed.  Ideally if squaring the values can bring the numbers down, then we may just go that route.
+		#if 0
 		//For only apply this derivative when using the encoders (this may improve regular drive)
 		//For the simulation code this must be on for the displacement to take effect
 		if (m_UsingEncoders)
@@ -457,6 +460,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 			RightVoltage=RightAccDelta/m_CalibratedScaler_Right;
 		}
 		else  //Legacy mean tone submission
+		#endif
 		{
 			#if 0
 			double Encoder_LeftVelocity,Encoder_RightVelocity;
