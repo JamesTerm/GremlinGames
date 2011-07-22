@@ -332,7 +332,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
-		#if 1
+		#if 0
 		if (Encoder_RightVelocity!=0.0)
 		{
 			double PosY=GetPos_m()[1];
@@ -351,6 +351,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
 		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
+		m_EncoderHeading=AngularVelocity;
 		//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		#endif
@@ -372,10 +373,13 @@ bool FRC_2011_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDispla
 	if (m_UsingEncoders)
 	{
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
+		//double computedAngularVelocity=m_Physics.GetAngularVelocity();
 		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
+		//m_Physics.SetAngularVelocity(m_EncoderHeading);
 		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 		//We must set this back so that the PID can compute the entire error
 		m_Physics.SetLinearVelocity(computedVelocity);
+		//m_Physics.SetAngularVelocity(computedAngularVelocity);
 		ret=true;
 	}
 	return ret;
@@ -402,27 +406,8 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 		LeftVoltage=RightVoltage=0;
 	else
 	{
-		//This may be omitted as it appears to be very choppy; however, the solution may be to subtract less and take into account the current
-		//speed.  Ideally if squaring the values can bring the numbers down, then we may just go that route.
-		#if 0
-		//For only apply this derivative when using the encoders (this may improve regular drive)
-		//For the simulation code this must be on for the displacement to take effect
-		if (m_UsingEncoders)
 		{
-			double Encoder_LeftVelocity,Encoder_RightVelocity;
-			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-
-			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
-			//LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
-			double LeftAccDelta=LeftVelocity-Encoder_LeftVelocity,
-				   RightAccDelta=RightVelocity-Encoder_RightVelocity;
-			LeftVoltage=LeftAccDelta/m_CalibratedScaler_Left;
-			RightVoltage=RightAccDelta/m_CalibratedScaler_Right;
-		}
-		else  //Legacy mean tone submission
-		#endif
-		{
-			#if 0
+			#if 1
 			double Encoder_LeftVelocity,Encoder_RightVelocity;
 			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
