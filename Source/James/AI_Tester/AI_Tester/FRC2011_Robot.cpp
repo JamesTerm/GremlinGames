@@ -561,3 +561,38 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	)
 {
 }
+
+  /***********************************************************************************************************************************/
+ /*														Goal_OperateSolenoid														*/
+/***********************************************************************************************************************************/
+
+Goal_OperateSolenoid::Goal_OperateSolenoid(FRC_2011_Robot &robot,FRC_2011_Robot::SolenoidDevices SolenoidDevice,bool Close) : m_Robot(robot),
+	m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsClosed(Close) 
+{	
+	m_Status=eInactive;
+}
+
+Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
+{
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	switch (m_SolenoidDevice)
+	{
+		case FRC_2011_Robot::eClaw:
+			m_Robot.GetArm().CloseClaw(m_IsClosed);
+			break;
+		case FRC_2011_Robot::eElbow:
+			m_Robot.GetArm().CloseElbow(m_IsClosed);
+			break;
+		case FRC_2011_Robot::eDeployment:
+			m_Robot.CloseDeploymentDoor(m_IsClosed);
+			break;
+	}
+	m_Status=eCompleted;
+	return m_Status;
+}
