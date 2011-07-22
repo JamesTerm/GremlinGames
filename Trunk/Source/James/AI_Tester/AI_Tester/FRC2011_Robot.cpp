@@ -229,11 +229,11 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 }
 void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
 {
-	m_RobotControl->CloseSolenoid(Robot_Control_2011::eClaw,Close);
+	m_RobotControl->CloseSolenoid(eClaw,Close);
 }
 void FRC_2011_Robot::Robot_Arm::CloseElbow(bool Close)
 {
-	m_RobotControl->CloseSolenoid(Robot_Control_2011::eElbow,Close);
+	m_RobotControl->CloseSolenoid(eElbow,Close);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -433,7 +433,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
-	m_RobotControl->CloseSolenoid(Robot_Control_2011::eDeployment,Close);
+	m_RobotControl->CloseSolenoid(eDeployment,Close);
 }
 
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
@@ -457,14 +457,14 @@ void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
 {
 	switch (index)
 	{
-		case eDeployment:
+		case FRC_2011_Robot::eDeployment:
 			DebugOutput("CloseDeploymentDoor=%d\n",Close);
 			break;
-		case eClaw:
+		case FRC_2011_Robot::eClaw:
 			DebugOutput("CloseClaw=%d\n",Close);
 			m_Potentiometer.SetBypass(Close);  //hmmm why did I do this?
 			break;
-		case eElbow:
+		case FRC_2011_Robot::eElbow:
 			DebugOutput("CloseElbow=%d\n",Close);
 			break;
 	}

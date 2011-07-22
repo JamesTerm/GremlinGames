@@ -30,6 +30,13 @@ class Robot_Control_Interface
 class FRC_2011_Robot : public Robot_Tank
 {
 	public:
+		enum SolenoidDevices
+		{
+			eDeployment,
+			eClaw,
+			eElbow
+		};
+
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders=false);
@@ -132,12 +139,7 @@ class Robot_Control_2011 : public Robot_Control
 {
 	public:
 		Robot_Control_2011(FRC_2011_Robot *Robot) : Robot_Control(Robot) {}
-		enum SolenoidDevices
-		{
-			eDeployment,
-			eClaw,
-			eElbow
-		};
+		//See FRC_2011_Robot for enumeration
 		virtual void CloseSolenoid(size_t index,bool Close);
 };
 
