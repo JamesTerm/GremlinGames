@@ -229,7 +229,11 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 }
 void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
 {
-	m_RobotControl->CloseClaw(Close);
+	m_RobotControl->CloseSolenoid(Robot_Control_2011::eClaw,Close);
+}
+void FRC_2011_Robot::Robot_Arm::CloseElbow(bool Close)
+{
+	m_RobotControl->CloseSolenoid(Robot_Control_2011::eElbow,Close);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -245,7 +249,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
 		em->EventOnOff_Map["Arm_Claw"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
-
+		em->EventOnOff_Map["Arm_Elbow"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
 	}
 	else
 	{
@@ -257,6 +261,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
 		em->EventOnOff_Map["Arm_Claw"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
+		em->EventOnOff_Map["Arm_Elbow"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
 	}
 }
 
@@ -428,29 +433,41 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
-	m_RobotControl->CloseDeploymentDoor(Close);
+	m_RobotControl->CloseSolenoid(Robot_Control_2011::eDeployment,Close);
 }
-//void FRC_2011_Robot::ReleaseLazySusan(bool Release)
-//{
-//	m_RobotControl->ReleaseLazySusan(Release);
-//}
 
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
-	{
 		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::CloseDeploymentDoor);
-		//em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
-	}
 	else
-	{
 		em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &FRC_2011_Robot::CloseDeploymentDoor);
-		//em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
-	}
 
 	Ship_1D &ArmShip_Access=m_Arm;
 	ArmShip_Access.BindAdditionalEventControls(Bind);
+}
+
+  /***********************************************************************************************************************************/
+ /*														Robot_Control_2011															*/
+/***********************************************************************************************************************************/
+
+
+void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
+{
+	switch (index)
+	{
+		case eDeployment:
+			DebugOutput("CloseDeploymentDoor=%d\n",Close);
+			break;
+		case eClaw:
+			DebugOutput("CloseClaw=%d\n",Close);
+			m_Potentiometer.SetBypass(Close);  //hmmm why did I do this?
+			break;
+		case eElbow:
+			DebugOutput("CloseElbow=%d\n",Close);
+			break;
+	}
 }
 
   /***********************************************************************************************************************************/
@@ -526,22 +543,6 @@ double Robot_Control::GetArmCurrentPosition()
 	//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 	return result;
 }
-
-void Robot_Control::CloseClaw(bool Close)
-{
-	DebugOutput("CloseClaw=%d\n",Close);
-	m_Potentiometer.SetBypass(Close);
-}
-
-void Robot_Control::CloseDeploymentDoor(bool Close)
-{
-	DebugOutput("CloseDeploymentDoor=%d\n",Close);
-}
-
-//void Robot_Control::ReleaseLazySusan(bool Release)
-//{
-//	DebugOutput("ReleaseLazySusan=%d\n",Release);
-//}
 
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot_Properties														*/
