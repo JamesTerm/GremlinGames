@@ -20,9 +20,9 @@ class Robot_Control_Interface
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
 		///This is in radians of the arm's gear ratio
 		virtual double GetArmCurrentPosition()=0;
-		virtual void CloseClaw(bool Close)=0;  //true=close false=open
-		virtual void CloseDeploymentDoor(bool Open)=0;
-		//virtual void ReleaseLazySusan(bool Release)=0;
+		/// \param The index is ordinal enumerated to specific robot's interpretation
+		/// \see subclass for enumeration specifics
+		virtual void CloseSolenoid(size_t index,bool Close)=0;  //true=close false=open
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -51,6 +51,7 @@ class FRC_2011_Robot : public Robot_Tank
 				static double AngleToHeight_m(double Angle_r);
 				//given the raw potentiometer converts to the arm angle
 				static double PotentiometerRaw_To_Arm_r(double raw);
+				void CloseElbow(bool Close);
 				void CloseClaw(bool Close);
 				virtual void ResetPos();
 			protected:
@@ -118,10 +119,7 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void UpdateArmVoltage(double Voltage);
 		//pacify this by returning its current value
 		virtual double GetArmCurrentPosition();
-		virtual void CloseClaw(bool Close);  //true=close false=open
-		virtual void CloseDeploymentDoor(bool Close);
-		//virtual void ReleaseLazySusan(bool Release);
-	private:
+	protected:
 		FRC_2011_Robot * const m_Robot;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
@@ -130,11 +128,24 @@ class Robot_Control : public Robot_Control_Interface
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 };
 
-///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class FRC_2011_Robot_tester : public FRC_2011_Robot, public Robot_Control
+class Robot_Control_2011 : public Robot_Control
 {
 	public:
-		FRC_2011_Robot_tester(const char EntityName[]) : FRC_2011_Robot(EntityName,this),Robot_Control(this) {}
+		Robot_Control_2011(FRC_2011_Robot *Robot) : Robot_Control(Robot) {}
+		enum SolenoidDevices
+		{
+			eDeployment,
+			eClaw,
+			eElbow
+		};
+		virtual void CloseSolenoid(size_t index,bool Close);
+};
+
+///This is only for the simulation where we need not have client code instantiate a Robot_Control
+class FRC_2011_Robot_tester : public FRC_2011_Robot, public Robot_Control_2011
+{
+	public:
+		FRC_2011_Robot_tester(const char EntityName[]) : FRC_2011_Robot(EntityName,this),Robot_Control_2011(this) {}
 };
 
 class FRC_2011_Robot_Properties : public UI_Ship_Properties
