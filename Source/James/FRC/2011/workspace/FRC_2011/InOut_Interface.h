@@ -3,19 +3,6 @@
 
 class Robot_Control : public Robot_Control_Interface
 {
-	RobotDrive m_RobotDrive;
-	RobotDrive m_ArmMotor;
-	Compressor m_Compress;
-	Solenoid m_OnElbow,m_OffElbow;
-	Solenoid m_OnClaw,m_OffClaw;
-	Solenoid m_OnDeploy,m_OffDeploy;
-	Encoder m_LeftEncoder,m_RightEncoder;
-	//Servo m_DeployDoor,m_LazySusan;
-	AnalogChannel m_Potentiometer;
-	AxisCamera *m_Camera;  //This is a singleton, but treated as a member that is optional
-
-	double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
-	double m_ArmMaxSpeed;
 	public:
 		Robot_Control(bool UseSafety);
 		virtual ~Robot_Control(); 
@@ -31,13 +18,30 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		virtual void UpdateArmVoltage(double Voltage);
 		virtual double GetArmCurrentPosition();
-		virtual void CloseElbow(bool Close) {m_OnElbow.Set(Close),m_OffElbow.Set(!Close);}
-		virtual void CloseClaw(bool Close) {m_OnClaw.Set(Close),m_OffClaw.Set(!Close);}
-		virtual void CloseDeploymentDoor(bool Close) {m_OnDeploy.Set(Close),m_OffDeploy.Set(!Close);}
-		//virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
-		//virtual void ReleaseLazySusan(bool Release) {m_LazySusan.SetAngle(Release?Servo::GetMaxAngle():Servo::GetMinAngle());}
+		
+		RobotDrive m_RobotDrive;
+		RobotDrive m_ArmMotor;
+		Compressor m_Compress;
+		Solenoid m_OnElbow,m_OffElbow;
+		Solenoid m_OnClaw,m_OffClaw;
+		Solenoid m_OnDeploy,m_OffDeploy;
+		Encoder m_LeftEncoder,m_RightEncoder;
+		//Servo m_DeployDoor,m_LazySusan;
+		AnalogChannel m_Potentiometer;
+		AxisCamera *m_Camera;  //This is a singleton, but treated as a member that is optional
+
+		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
+		double m_ArmMaxSpeed;
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
+};
+
+class Robot_Control_2011 : public Robot_Control
+{
+	public:
+		Robot_Control_2011(bool UseSafety) : Robot_Control(UseSafety) {}
+		//See FRC_2011_Robot for enumeration
+		virtual void CloseSolenoid(size_t index,bool Close);
 };
 
 class Driver_Station_Joystick : public Framework::Base::IJoystick

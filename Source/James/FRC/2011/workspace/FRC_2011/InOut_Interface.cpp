@@ -259,3 +259,38 @@ double Robot_Control::GetArmCurrentPosition()
 	return ret;
 }
 
+
+
+
+  /***********************************************************************************************************************************/
+ /*														Robot_Control_2011															*/
+/***********************************************************************************************************************************/
+
+
+void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
+{
+	//virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
+	//virtual void ReleaseLazySusan(bool Release) {m_LazySusan.SetAngle(Release?Servo::GetMaxAngle():Servo::GetMinAngle());}
+
+	switch (index)
+	{
+		case FRC_2011_Robot::eDeployment:
+			printf("CloseDeploymentDoor=%d\n",Close);
+			m_OnDeploy.Set(Close),m_OffDeploy.Set(!Close);
+			break;
+		case FRC_2011_Robot::eClaw:
+			printf("CloseClaw=%d\n",Close);
+			m_OnClaw.Set(Close),m_OffClaw.Set(!Close);
+			break;
+		case FRC_2011_Robot::eElbow:
+			printf("CloseElbow=%d\n",Close);
+			m_OnElbow.Set(Close),m_OffElbow.Set(!Close);
+			break;
+	}
+}
+
+
+
+
+
+
