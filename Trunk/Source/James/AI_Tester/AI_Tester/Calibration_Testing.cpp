@@ -115,7 +115,7 @@ const double c_Encoder_MaxAccel=10.0;
 
 #if ENCODER_TEST_RATE==1
 const double c_Encoder_TestRate=2.916;
-const double c_Encoder_MaxAccel=50.0;
+const double c_Encoder_MaxAccel=60.0;
 #endif
 
 #if ENCODER_TEST_RATE==2
@@ -144,8 +144,11 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 
 void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 {
+	double VoltageMag=pow(fabs(Voltage),0.5);
+	Voltage= (Voltage>0.0)?	VoltageMag:-VoltageMag;
 	//This is how it would be if the motor was set to non-coast
-	//SetRequestedVelocity(Voltage*m_EncoderProps.GetMaxSpeed());
+	SetRequestedVelocity(Voltage*m_EncoderProps.GetMaxSpeed());
+	#if 0
 	//For coast it is more like applying force
 	double Velocity=m_Physics.GetVelocity();
 	double MaxSpeed=m_EncoderProps.GetMaxSpeed();
@@ -154,6 +157,7 @@ void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 	//double friction=((Velocity>0.04)?-0.025 : (Velocity<-0.04)?+0.025 : 0.0 )* rTime ;  //There is a constant amount of friction opposite to current velocity
 	double friction=((Velocity>0.04)?-250 : (Velocity<-0.04)?+250 : 0.0 )* m_Time_s;  //There is a constant amount of friction opposite to current velocity
 	SetCurrentLinearAcceleration((Accel * filter * filter) + friction); //square the filter (matches read out better)
+	#endif
 }
 
 double Encoder_Simulator::GetEncoderVelocity()

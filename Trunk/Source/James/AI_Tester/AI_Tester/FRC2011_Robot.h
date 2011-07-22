@@ -97,6 +97,7 @@ class FRC_2011_Robot : public Robot_Tank
 		bool m_UsingEncoders;
 		bool m_VoltageOverride;  //when true will kill voltage
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
+		double m_EncoderHeading;
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
