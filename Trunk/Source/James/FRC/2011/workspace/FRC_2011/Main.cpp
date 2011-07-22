@@ -148,7 +148,7 @@ Goal *Get_UberTubeGoal_V1(FRC_2011_Robot *Robot)
 {
 	Ship_1D &Arm=Robot->GetArm();
 	//Now to setup the goal
-	Goal_OperateClaw *goal_CloseClaw=new Goal_OperateClaw(*Robot,true);
+	Goal_OperateSolenoid *goal_CloseClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,true);
 
 	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
 	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
@@ -172,7 +172,7 @@ Goal *Get_UberTubeGoal_V1(FRC_2011_Robot *Robot)
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 	wp.Position[1]=starting_line;
 	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	Goal_OperateClaw *goal_OpenClaw=new Goal_OperateClaw(*Robot,false);
+	Goal_OperateSolenoid *goal_OpenClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,false);
 	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
 	wp.Position[1]=0;
 	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
