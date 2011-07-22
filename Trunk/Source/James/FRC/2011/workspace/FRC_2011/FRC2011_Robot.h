@@ -5,6 +5,13 @@
 class FRC_2011_Robot : public Robot_Tank
 {
 	public:
+		enum SolenoidDevices
+		{
+			eDeployment,
+			eClaw,
+			eElbow
+		};
+
 		typedef Framework::Base::Vec2d Vec2D;
 		//typedef osg::Vec2d Vec2D;
 		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders=false);

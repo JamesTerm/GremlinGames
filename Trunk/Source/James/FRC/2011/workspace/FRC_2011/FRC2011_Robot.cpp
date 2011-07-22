@@ -263,14 +263,12 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 }
 void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
 {
-	m_RobotControl->CloseClaw(Close);
+	m_RobotControl->CloseSolenoid(eClaw,Close);
 }
-
 void FRC_2011_Robot::Robot_Arm::CloseElbow(bool Close)
 {
-	m_RobotControl->CloseElbow(Close);
+	m_RobotControl->CloseSolenoid(eElbow,Close);
 }
-
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
@@ -442,25 +440,6 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 		LeftVoltage=RightVoltage=0;
 	else
 	{
-		//This may be omitted as it appears to be very choppy; however, the solution may be to subtract less and take into account the current
-		//speed.  Ideally if squaring the values can bring the numbers down, then we may just go that route.
-		#if 0
-		//For only apply this derivative when using the encoders (this may improve regular drive)
-		//For the simulation code this must be on for the displacement to take effect
-		if (m_UsingEncoders)
-		{
-			double Encoder_LeftVelocity,Encoder_RightVelocity;
-			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-
-			//DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
-			//LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
-			double LeftAccDelta=LeftVelocity-Encoder_LeftVelocity,
-				   RightAccDelta=RightVelocity-Encoder_RightVelocity;
-			LeftVoltage=LeftAccDelta/m_CalibratedScaler_Left;
-			RightVoltage=RightAccDelta/m_CalibratedScaler_Right;
-		}
-		else  //Legacy mean tone submission
-		#endif
 		{
 			#if 0
 			double Encoder_LeftVelocity,Encoder_RightVelocity;
@@ -483,26 +462,16 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
-	m_RobotControl->CloseDeploymentDoor(Close);
+	m_RobotControl->CloseSolenoid(eDeployment,Close);
 }
-//void FRC_2011_Robot::ReleaseLazySusan(bool Release)
-//{
-//	m_RobotControl->ReleaseLazySusan(Release);
-//}
 
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
-	{
 		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::CloseDeploymentDoor);
-		//em->EventOnOff_Map["Robot_ReleaseLazySusan"].Subscribe(ehl, *this, &FRC_2011_Robot::ReleaseLazySusan);
-	}
 	else
-	{
 		em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &FRC_2011_Robot::CloseDeploymentDoor);
-		//em->EventOnOff_Map["Robot_ReleaseLazySusan"]  .Remove(*this, &FRC_2011_Robot::ReleaseLazySusan);
-	}
 
 	Ship_1D &ArmShip_Access=m_Arm;
 	ArmShip_Access.BindAdditionalEventControls(Bind);
