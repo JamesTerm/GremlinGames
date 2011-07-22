@@ -46,6 +46,7 @@ class FRC_2011_Robot : public Robot_Tank
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
 		static double RPS_To_LinearVelocity(double RPS);
+		void CloseDeploymentDoor(bool Close);
 
 		class Robot_Arm : public Ship_1D
 		{
@@ -94,9 +95,6 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 	private:
-		void CloseDeploymentDoor(bool Close);
-		//void ReleaseLazySusan(bool Release);
-
 		//typedef  Robot_Tank __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
@@ -162,29 +160,16 @@ class FRC_2011_Robot_Properties : public UI_Ship_Properties
 		Ship_1D_Properties m_ArmProps;
 };
 
-class Goal_OperateClaw : public AtomicGoal
+class Goal_OperateSolenoid : public AtomicGoal
 {
 	private:
 		FRC_2011_Robot &m_Robot;
+		const FRC_2011_Robot::SolenoidDevices m_SolenoidDevice;
 		bool m_Terminate;
 		bool m_IsClosed;
 	public:
-		Goal_OperateClaw(FRC_2011_Robot &robot,bool Close) : m_Robot(robot),m_Terminate(false),m_IsClosed(Close) 
-		{	m_Status=eInactive;
-		}
+		Goal_OperateSolenoid(FRC_2011_Robot &robot,FRC_2011_Robot::SolenoidDevices SolenoidDevice,bool Close);
 		virtual void Activate() {m_Status=eActive;}
-		virtual Goal_Status Process(double dTime_s)
-		{
-			if (m_Terminate)
-			{
-				if (m_Status==eActive)
-					m_Status=eFailed;
-				return m_Status;
-			}
-			ActivateIfInactive();
-			m_Robot.GetArm().CloseClaw(m_IsClosed);
-			m_Status=eCompleted;
-			return m_Status;
-		}
+		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate() {m_Terminate=true;}
 };
