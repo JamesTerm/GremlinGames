@@ -144,19 +144,28 @@ Goal *Get_TestRotationGoal(Ship_Tester *ship)
 	return goal;
 }
 
-Goal *Get_UberTubeGoal_V1(FRC_2011_Robot *Robot)
+Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 {
 	Ship_1D &Arm=Robot->GetArm();
+
 	//Now to setup the goal
+
+	//This must happen first to ensure the elbow starts to open at the correct angle
+	//TODO find the resting angle
+	Goal_Ship1D_MoveToPosition *goal_arm_initialrest=new Goal_Ship1D_MoveToPosition(Arm,0.5);
 	Goal_OperateSolenoid *goal_CloseClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,true);
 
 	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
+	//give ability to tweak the correct height
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r((double)DriverStation::GetInstance()->GetAnalogIn(2));
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
 	//Note: full length is 232 inches or 5.89 meters
-	const double starting_line=5.49656;  //18.03333
+	//const double starting_line=5.49656;  //18.03333
+	const double starting_line=(double)GetDS_Distance();
+
 	WayPoint wp;
 	wp.Position[0]=0;
 	wp.Position[1]=starting_line;
@@ -167,15 +176,24 @@ Goal *Get_UberTubeGoal_V1(FRC_2011_Robot *Robot)
 	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
 	Initial_Start_Goal->AddGoal(goal_arm);
 	Initial_Start_Goal->AddGoal(goal_drive);
+	Goal_OperateSolenoid *goal_OpenElbow=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eElbow,false);
+	Initial_Start_Goal->AddGoal(goal_OpenElbow);
 
-	wp.Position[1]=starting_line+0.5;
+	wp.Position[1]=starting_line+0.4572; //roughly 18 inches (Ideal would be half the distance of the pegs length)
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	wp.Position[1]=starting_line;
-	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	
 	Goal_OperateSolenoid *goal_OpenClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,false);
 	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
-	wp.Position[1]=0;
+	
+	//Note: Move the robot back enough to clear the peg without lowering the arm here (we will score by this point) ;)
+	wp.Position[1]=starting_line;
+	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	//Note: the last position could be back at start, but for now to be safe lets just go half the distance, unless its ability
+	//to drive straight is doing better
+	wp.Position[1]=starting_line/2.0;
 	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	
 	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
 	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
 
@@ -192,11 +210,13 @@ Goal *Get_UberTubeGoal_V1(FRC_2011_Robot *Robot)
 	MainGoal->AddSubgoal(goal_OpenClaw);
 	MainGoal->AddSubgoal(goal_drive2);
 	MainGoal->AddSubgoal(Initial_Start_Goal);
+	//Note: I need not bother multi-task these since the close claw is so quick
+	MainGoal->AddSubgoal(goal_arm_initialrest);
 	MainGoal->AddSubgoal(goal_CloseClaw);
 	return MainGoal;
 };
 
-Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
+Goal *Get_UberTubeGoal_V2(FRC_2011_Robot *Robot)
 {
 	Ship_1D &Arm=Robot->GetArm();
 	//Now to setup the goal
