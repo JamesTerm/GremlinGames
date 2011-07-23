@@ -70,14 +70,15 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	#ifdef __WindRiverJoysticks__
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",true,0.5,0.1,true,"Joystick_2");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 5,"Arm_SetPos0feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 6,"Arm_SetPos3feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default(10,"Arm_SetPos6feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 9,"Arm_SetPos9feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 0,"Arm_Claw",true,false,"Joystick_2");
-
-	joy.AddJoy_Button_Default( 7,"Robot_CloseDoor",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 8,"Arm_Elbow",true,false,"Joystick_2");
+
+	joy.AddJoy_Button_Default( 7,"Robot_CloseDoor",true,false,"Joystick_1");
 	#endif
 	Init_AutoPilotControls();
 }

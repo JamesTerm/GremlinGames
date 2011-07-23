@@ -46,6 +46,7 @@ class FRC_2011_Robot : public Robot_Tank
 				typedef Ship_1D __super;
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetPotentiometerSafety(double Value);
+				void SetPosRest();
 				void SetPos0feet();
 				void SetPos3feet();
 				void SetPos6feet();
