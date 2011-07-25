@@ -194,7 +194,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	wp.Position[1]=starting_line/2.0;
 	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 	
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.5);
 	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	MultitaskGoal *End_Goal=new MultitaskGoal;
@@ -298,24 +298,67 @@ Goal *Test_Arm(FRC_2011_Robot *Robot)
 
 	Goal_Ship1D_MoveToPosition *Initial_Start_Goal=goal_arm;  //using the same variable name
 
-	Goal_Wait *goal_waitfordrop=new Goal_Wait(5.0); //wait a half a second
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.8);  //TODO find how much to lower
+	//Goal_Wait *goal_waitfordrop=new Goal_Wait(5.0); //wait a half a second
+	//position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.8);  //TODO find how much to lower
+	//Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
+	//Goal_Wait *goal_waitfordrive=new Goal_Wait(2.0); //wait a half a second
+
+	//position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	//Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	//Goal_Ship1D_MoveToPosition *End_Goal=goal_arm3;
+
+	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	//MainGoal->AddSubgoal(End_Goal);
+	//MainGoal->AddSubgoal(goal_waitfordrive);
+	//MainGoal->AddSubgoal(goal_arm2);
+	//MainGoal->AddSubgoal(goal_waitfordrop);
+	MainGoal->AddSubgoal(Initial_Start_Goal);
+	return MainGoal;
+};
+
+
+Goal *Get_TestArmElbowClaw(FRC_2011_Robot *Robot)
+{
+	Ship_1D &Arm=Robot->GetArm();
+
+	//Now to setup the goal
+
+	//This must happen first to ensure the elbow starts to open at the correct angle
+	//TODO find the resting angle
+	Goal_Ship1D_MoveToPosition *goal_arm_initialrest=new Goal_Ship1D_MoveToPosition(Arm,0.5);
+	Goal_OperateSolenoid *goal_CloseClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,true);
+
+	//give ability to tweak the correct height
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r((double)DriverStation::GetInstance()->GetAnalogIn(2));
+	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+
+	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
+	Initial_Start_Goal->AddGoal(goal_arm);
+	Goal_OperateSolenoid *goal_OpenElbow=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eElbow,false);
+	Initial_Start_Goal->AddGoal(goal_OpenElbow);
+
+	Goal_OperateSolenoid *goal_OpenClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,false);
+	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
+	
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.5);
 	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
-	Goal_Wait *goal_waitfordrive=new Goal_Wait(2.0); //wait a half a second
 
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
-	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
-
-	Goal_Ship1D_MoveToPosition *End_Goal=goal_arm3;
+	Goal_Ship1D_MoveToPosition *End_Goal=goal_arm2;
 
 	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(End_Goal);
-	MainGoal->AddSubgoal(goal_waitfordrive);
-	MainGoal->AddSubgoal(goal_arm2);
 	MainGoal->AddSubgoal(goal_waitfordrop);
+	MainGoal->AddSubgoal(goal_OpenClaw);
 	MainGoal->AddSubgoal(Initial_Start_Goal);
+	//Note: I need not bother multi-task these since the close claw is so quick
+	MainGoal->AddSubgoal(goal_arm_initialrest);
+	MainGoal->AddSubgoal(goal_CloseClaw);
 	return MainGoal;
 };
 
@@ -360,10 +403,11 @@ public:
 			Goal *goal=NULL;
 			switch (AutonomousValue)
 			{
-				case 1:		goal=Test_Arm(m_Manager.GetRobot());			break;
-				case 2:		goal=Get_TestLengthGoal(m_Manager.GetRobot());	break;
-				case 3:		goal=Get_TestRotationGoal(ship);				break;
-				case 4:		goal=Get_UberTubeGoal(m_Manager.GetRobot());	break;
+				case 1:		goal=Test_Arm(m_Manager.GetRobot());				break;
+				case 2:		goal=Get_TestLengthGoal(m_Manager.GetRobot());		break;
+				//case 3:		goal=Get_TestRotationGoal(ship);				break;
+				case 3:		goal=Get_TestArmElbowClaw(m_Manager.GetRobot());	break;
+				case 4:		goal=Get_UberTubeGoal(m_Manager.GetRobot());		break;
 			}
 			if (goal)
 				goal->Activate(); //now with the goal(s) loaded activate it
