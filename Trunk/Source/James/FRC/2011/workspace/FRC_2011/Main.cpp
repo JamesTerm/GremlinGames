@@ -1,4 +1,6 @@
 #include "WPILib.h"
+#include "AxisCamera2.h"
+
 #include "Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
