@@ -151,8 +151,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	//Now to setup the goal
 
 	//This must happen first to ensure the elbow starts to open at the correct angle
-	//TODO find the resting angle
-	Goal_Ship1D_MoveToPosition *goal_arm_initialrest=new Goal_Ship1D_MoveToPosition(Arm,0.5);
+	Goal_Ship1D_MoveToPosition *goal_arm_initialrest=new Goal_Ship1D_MoveToPosition(Arm,0.06);
 	Goal_OperateSolenoid *goal_CloseClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,true);
 
 	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
@@ -327,8 +326,7 @@ Goal *Get_TestArmElbowClaw(FRC_2011_Robot *Robot)
 	//Now to setup the goal
 
 	//This must happen first to ensure the elbow starts to open at the correct angle
-	//TODO find the resting angle
-	Goal_Ship1D_MoveToPosition *goal_arm_initialrest=new Goal_Ship1D_MoveToPosition(Arm,0.5);
+	Goal_Ship1D_MoveToPosition *goal_arm_initialrest=new Goal_Ship1D_MoveToPosition(Arm,0.06);
 	Goal_OperateSolenoid *goal_CloseClaw=new Goal_OperateSolenoid(*Robot,FRC_2011_Robot::eClaw,true);
 
 	//give ability to tweak the correct height

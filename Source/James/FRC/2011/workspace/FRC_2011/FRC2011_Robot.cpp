@@ -241,11 +241,11 @@ double ArmHeightToBack(double value)
 
 void FRC_2011_Robot::Robot_Arm::SetPosRest()
 {
-	SetIntendedPosition( HeightToAngle_r(0.0) );
+	SetIntendedPosition( HeightToAngle_r(0.06) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 {
-	SetIntendedPosition( HeightToAngle_r(0.2) );  //TODO
+	SetIntendedPosition( HeightToAngle_r(-0.120119) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
