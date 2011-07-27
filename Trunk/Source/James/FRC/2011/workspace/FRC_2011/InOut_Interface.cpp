@@ -110,10 +110,10 @@ void Robot_Control::ResetPos()
 	//Allow driver station to control if they want to run the compressor
 	if (DriverStation::GetInstance()->GetDigitalIn(7))
 	{
-		printf("RobotControl reset compressor camera\n");
+		printf("RobotControl reset compressor\n");
 		m_Compress.Start();
-		m_Camera=&AxisCamera::GetInstance();
 	}
+	m_Camera=&AxisCamera::GetInstance();
 }
 
 Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),
@@ -253,7 +253,8 @@ double Robot_Control::GetArmCurrentPosition()
 	#ifdef __ShowPotentiometerReadings__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	double height=FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(ret);
-	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);
+	//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);
+	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %f %.1fft ", RAD_2_DEG(ret),height,height*3.2808399);
 	//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
 	#endif
 	return ret;
