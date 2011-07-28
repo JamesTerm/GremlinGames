@@ -3,7 +3,6 @@
 #undef  __ShowEncoderReadings__
 
 #include "WPILib.h"
-#include "AxisCamera2.h"
 
 #include "Base/Base_Includes.h"
 #include <math.h>
@@ -114,7 +113,7 @@ void Robot_Control::ResetPos()
 		printf("RobotControl reset compressor\n");
 		m_Compress.Start();
 	}
-	m_Camera=&AxisCamera::GetInstance();
+	//m_Camera=&AxisCamera::GetInstance();
 	//Wait(8.000);
 }
 
