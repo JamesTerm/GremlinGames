@@ -59,8 +59,8 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
-	//m_PIDController(1.0,1.0/8.0,0.0),
-	m_PIDController(1.0,1.0/2.0,0.0),
+	m_PIDController(1.0,1.0/8.0,0.0),
+	//m_PIDController(1.0,1.0/2.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false),  //to be safe
 	m_VoltageOverride(false)
@@ -170,7 +170,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		m_PIDController.ResetI(m_MaxSpeedReference * -0.99);  //clear error for I for better transition back
 	}
 
-	#if 1
+	#if 0
 		Voltage*=Voltage;  //square them for more give
 		//restore the sign
 		if (CurrentVelocity<0)
