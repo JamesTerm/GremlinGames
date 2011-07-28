@@ -28,7 +28,7 @@ class Robot_Control : public Robot_Control_Interface
 		Encoder m_LeftEncoder,m_RightEncoder;
 		//Servo m_DeployDoor,m_LazySusan;
 		AnalogChannel m_Potentiometer;
-		AxisCamera2 *m_Camera;  //This is a singleton, but treated as a member that is optional
+		AxisCamera *m_Camera;  //This is a singleton, but treated as a member that is optional
 
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
