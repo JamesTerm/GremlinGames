@@ -59,7 +59,8 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 	Ship_1D(EntityName),m_RobotControl(robot_control),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
-	m_PIDController(1.0,1.0/8.0,0.0),
+	//m_PIDController(1.0,1.0/8.0,0.0),
+	m_PIDController(1.0,1.0/2.0,0.0),
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),
 	m_UsingPotentiometer(false),  //to be safe
 	m_VoltageOverride(false)
@@ -125,6 +126,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
 
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
 		}
@@ -134,6 +137,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	{
 		//Test potentiometer readings without applying to current position (disabled by default)
 		m_RobotControl->GetArmCurrentPosition();
+		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
+		//MAX_SPEED=m_CalibratedScaler=1.0;
 	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
@@ -146,16 +151,31 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	if (!m_VoltageOverride)
 	{
 		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
-		if (Voltage<-1.0)
-			Voltage=-1.0;
-		else if (Voltage>1.0)
-			Voltage=1.0;
+		if (Voltage>0.0)
+		{
+			 if (Voltage>1.0)
+						Voltage=1.0;
+		}
+		else if (Voltage<0.0)
+		{
+			if (Voltage<-1.0)
+				Voltage=-1.0;
+		}
+		else
+			Voltage=0.0;  //is nan case
 	}
 	else
 	{
 		Voltage=0.0;
 		m_PIDController.ResetI(m_MaxSpeedReference * -0.99);  //clear error for I for better transition back
 	}
+
+	#if 1
+		Voltage*=Voltage;  //square them for more give
+		//restore the sign
+		if (CurrentVelocity<0)
+			Voltage=-Voltage;
+	#endif
 
 	m_RobotControl->UpdateArmVoltage(Voltage);
 	//Show current height (only in AI Tester)
@@ -239,26 +259,32 @@ double ArmHeightToBack(double value)
 	return Vertical + (Vertical-value);
 }
 
+double FRC_2011_Robot::Robot_Arm::GetPosRest()
+{
+	return HeightToAngle_r(-0.02);
+}
 void FRC_2011_Robot::Robot_Arm::SetPosRest()
 {
-	SetIntendedPosition( HeightToAngle_r(0.06) );
+	SetIntendedPosition(GetPosRest()  );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 {
-	SetIntendedPosition( HeightToAngle_r(-0.120119) );
+	SetIntendedPosition( HeightToAngle_r(0.02) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
 	//Not used, but kept for reference
 	//SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
 	//SetIntendedPosition(HeightToAngle_r(0.9144));  //actual
-	SetIntendedPosition(HeightToAngle_r(0.80001));  //31.5 inches
+	//SetIntendedPosition(HeightToAngle_r(0.80001));  //31.5 inches
+	SetIntendedPosition(HeightToAngle_r(0.94800));  //36 inches
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
 	//SetIntendedPosition( HeightToAngle_r(1.8288) );  //actual
 	//SetIntendedPosition( HeightToAngle_r(1.7018) );  //67 inches
-	SetIntendedPosition( HeightToAngle_r(1.08712) );  //42.8 inches
+	//SetIntendedPosition( HeightToAngle_r(1.08712) );  //42.8 inches
+	SetIntendedPosition( HeightToAngle_r(0.71000) );  //72 inches with elbow up
 }
 void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {

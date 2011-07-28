@@ -32,6 +32,7 @@ class FRC_2011_Robot : public Robot_Tank
 				static double HeightToAngle_r(double Height_m);
 				static double Arm_AngleToHeight_m(double Angle_r);
 				static double AngleToHeight_m(double Angle_r);
+				static double GetPosRest();
 				//given the raw potentiometer converts to the arm angle
 				static double PotentiometerRaw_To_Arm_r(double raw);
 				void CloseElbow(bool Close);

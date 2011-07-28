@@ -113,7 +113,7 @@ void Robot_Control::ResetPos()
 		printf("RobotControl reset compressor\n");
 		m_Compress.Start();
 	}
-	//m_Camera=&AxisCamera::GetInstance();
+	m_Camera=&AxisCamera::GetInstance();
 	//Wait(8.000);
 }
 
