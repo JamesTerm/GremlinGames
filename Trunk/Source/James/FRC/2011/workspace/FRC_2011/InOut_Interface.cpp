@@ -113,8 +113,6 @@ void Robot_Control::ResetPos()
 		printf("RobotControl reset compressor\n");
 		m_Compress.Start();
 	}
-	m_Camera=&AxisCamera::GetInstance();
-	//Wait(8.000);
 }
 
 Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),
@@ -126,6 +124,8 @@ Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(
 	const double EncoderPulseRate=(1.0/360.0);
 	m_LeftEncoder.SetDistancePerPulse(EncoderPulseRate),m_RightEncoder.SetDistancePerPulse(EncoderPulseRate);
 	m_LeftEncoder.Start(),m_RightEncoder.Start();
+	Wait(10.000);
+	m_Camera=&AxisCamera::GetInstance();
 }
 
 Robot_Control::~Robot_Control() 
