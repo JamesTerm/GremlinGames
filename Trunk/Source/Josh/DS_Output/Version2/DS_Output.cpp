@@ -715,10 +715,9 @@ double DS_Output_Internal::FillBuffer()
 	class Internal
 	{
 		public:
-			Internal(LPDIRECTSOUNDBUFFER lpdsb,__int64 &ClockPhaseOffset) : m_lpdsb(lpdsb),m_LastPlayPos(0),
+			Internal(LPDIRECTSOUNDBUFFER lpdsb,__int64 &ClockPhaseOffset) : m_lpdsb(lpdsb),
 				m_ClockPhaseOffset(ClockPhaseOffset)
 			{
-				m_LastCPUTime=time_type::get_current_time();  //set on the rare case that last play pos and play pos are 0 on first call
 				DS_Output_Core &DSOC=DS_Output_Core::GetDS_Output_Core();
 				m_BlockAlign=DSOC.GetWaveFormatToUse()->nBlockAlign;
 				m_BufferSampleSize=DSOC.GetBufferSampleSize();
@@ -742,21 +741,6 @@ double DS_Output_Internal::FillBuffer()
 				m_lpdsb->GetCurrentPosition(&playpos,NULL);
 				playpos/=m_BlockAlign; //convert to samples
 
-				#if 0
-				if (playpos==m_LastPlayPos)
-				{
-					//play cursor is stale add a CPU time delta to it to avoid overshooting
-					time_type delta=time_type::get_current_time()-m_LastCPUTime;
-					SampleOffset+= (DWORD)((double)delta * m_SampleRate);
-				}
-				else
-				{
-					m_LastPlayPos=playpos; //update the last play pos to the new time
-					m_LastCPUTime=time_type::get_current_time();
-				}
-				return AdvancePosition(playpos,SampleOffset);
-
-				#else
 				//Note: This design assumes the buffer size (of our secondary buffer) is the same size as the sample rate.  This is fine for now, but at some
 				//point I may need to make a distinction if I have to change the buffer size.
 				
@@ -787,7 +771,6 @@ double DS_Output_Internal::FillBuffer()
 				//	debug_output(p_debug_category,L"%d\n",Error);
 
 				return AdvancePosition((size_t)(CalibratePlayPos),SampleOffset);
-				#endif
 			}
 			///Note in a circular buffer the begin range may be greater than the end range
 			///This is all in samples
@@ -834,18 +817,39 @@ double DS_Output_Internal::FillBuffer()
 				//Get current play position
 				size_t playpos,playpos_latencyguard;
 				int result;
-				do 
 				{
-					Sleep(1);
+					//This piece will give more cpu time by giving a larger sleep
+					#if 1
 					playpos=GetPlayPos();
-					//pre-add the 1 ms to avoid over shooting
-					playpos_latencyguard=AdvancePosition(playpos,(size_t)(0.004 * m_SampleRate));
-					//playpos_latencyguard=playpos;
+					//playpos_latencyguard=AdvancePosition(playpos,(size_t)(0.004 * m_SampleRate));
+					playpos_latencyguard=playpos;
+					double SleepTime_ms= (((double)BeginRange-(double)playpos) * 1.0 / m_SampleRate) * 1000.0;
+					DWORD dwSleepTime_ms=(SleepTime_ms>=1.0)?(DWORD)SleepTime_ms:1;
+					//printf("%d\n",dwSleepTime_ms);
+					//debug_output(p_debug_category,L"%d\n",dwSleepTime_ms);
+					Sleep(dwSleepTime_ms);
 					result=IsInRange(playpos_latencyguard,BeginRange,EndRange);
-					#ifdef __WaitForPlay_Verbose__
-					playpos_list.push_back(playpos);
+					//We need to ensure we have slept enough so we'll poll to see where we are... typically this may happen once after the initial big sleep
+					if (result<0)
 					#endif
-				} while (result<0);
+					{
+						do 
+						{
+							Sleep(1);
+							//printf("Sleep 1\n");
+							playpos=GetPlayPos();
+							//The latency guard was needed for the old clocking mechanism of adding time for redundant cursor positions
+							//It appears the new clocking mechanism no longer needs this; however, I'll want to keep this around incase the
+							//overshooting problem happens in rare cases
+							//playpos_latencyguard=AdvancePosition(playpos,(size_t)(0.001 * m_SampleRate));
+							playpos_latencyguard=playpos;
+							result=IsInRange(playpos_latencyguard,BeginRange,EndRange);
+							#ifdef __WaitForPlay_Verbose__
+							playpos_list.push_back(playpos);
+							#endif
+						} while (result<0);
+					}
+				}
 				double ret=0.0;
 				if (result==0)
 				{
@@ -908,40 +912,6 @@ double DS_Output_Internal::FillBuffer()
 					}
 				}
 
-				#if 0
-				{
-					static time_type prevtime=0.0; 
-					time_type currenttime=time_type::get_current_time(); 
-					double time_ms=((double)(currenttime-prevtime)) * 1000.0;
-					if (time_ms >=15.0)
-					{
-						debug_output(p_debug_category,L"rate=%f\n",time_ms);
-						debug_output(p_debug_category,L"range from %d to %d\n",BeginRange,EndRange);
-						DWORD playpos;
-						m_lpdsb->GetCurrentPosition(&playpos,NULL);
-						playpos/=m_BlockAlign; //convert to samples
-						{
-							wstring sList;
-							wchar_t Buffer[16];
-							for (size_t i=0;i<playpos_list.size();i++)
-							{
-								_itow((int)playpos_list[i],Buffer,10);
-								sList+=Buffer;
-								sList+=L",";
-							}
-							_itow((int)playpos,Buffer,10);
-							sList+=L"Actual(";
-							sList+=Buffer;
-							sList+=L")";
-
-							debug_output(p_debug_category,L"%s\n",sList.c_str());
-						}
-
-					}
-					prevtime=currenttime; 
-				}
-				#endif
-
 				return ret;
 			}
 		private:
@@ -949,8 +919,6 @@ double DS_Output_Internal::FillBuffer()
 			DWORD m_BlockAlign;
 			size_t m_BufferSampleSize;
 			double m_SampleRate;
-			size_t m_LastPlayPos;  //Keep track of each play pos call
-			time_type m_LastCPUTime; //add cpu time on a stale play pos update
 			__int64 &m_ClockPhaseOffset;
 			double m_ClockScalar;
 	} _(m_lpdsb,m_ClockPhaseOffset);
