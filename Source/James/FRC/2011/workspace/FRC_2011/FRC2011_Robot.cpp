@@ -369,6 +369,7 @@ void FRC_2011_Robot::ResetPos()
 	m_Arm.ResetPos();
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 }
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
@@ -478,6 +479,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
 			#endif
+			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
 			#if 1
 			LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
