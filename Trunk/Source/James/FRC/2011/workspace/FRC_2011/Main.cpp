@@ -24,7 +24,6 @@
 #include "FRC2011_Robot.h"
 
 const bool c_UseDefaultControls=false;
-#undef __ShowLCD__
 
 
 class SetUp_Manager
@@ -76,6 +75,7 @@ class SetUp_Manager
 		{
 			if (dTime_s==0.0) return; //avoid division by zero errors
 			m_JoyBinder.UpdateJoyStick(dTime_s);
+			m_Control.TimeChange(dTime_s);
 			m_pRobot->TimeChange(dTime_s);
 		}
 
@@ -419,10 +419,6 @@ public:
 		
 		double tm = GetTime();
 		
-		#ifdef __ShowLCD__
-		DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-		#endif
-
 		while (IsAutonomous() && !IsDisabled())
 		{
 			double time=GetTime() - tm;
@@ -431,9 +427,6 @@ public:
 			//I'll keep this around as a synthetic time option for debug purposes
 			//time=0.020;
 			m_Manager.TimeChange(time);
-			#ifdef __ShowLCD__
-			lcd->UpdateLCD();
-			#endif
 			//using this from test runs from robo wranglers code
 			Wait(0.010);				
 		}
@@ -468,9 +461,6 @@ public:
 			m_Manager.GetRobot()->SetUseEncoders(false);
 			m_Manager.SetAutoPilot(false);  //we are driving the robot
 			double tm = GetTime();
-			#ifdef __ShowLCD__
-			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-			#endif
 			m_Manager.SetSafety(true);
 			while (IsOperatorControl() && !IsDisabled())
 			{
@@ -480,9 +470,6 @@ public:
 				tm=GetTime();
 				//Framework::Base::DebugOutput("%f\n",time),
 				m_Manager.TimeChange(time);
-				#ifdef __ShowLCD__
-				lcd->UpdateLCD();
-				#endif
 				//using this from test runs from robo wranglers code
 				Wait(0.010);
 			}

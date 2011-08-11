@@ -2,6 +2,10 @@
 #undef  __ShowPotentiometerReadings__
 #undef  __ShowEncoderReadings__
 
+#if defined(__ShowEncoderReadings__) || defined(__ShowPotentiometerReadings__) 
+#define __ShowLCD__
+#endif
+
 #include "WPILib.h"
 
 #include "Base/Base_Includes.h"
@@ -124,7 +128,9 @@ Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(
 	const double EncoderPulseRate=(1.0/360.0);
 	m_LeftEncoder.SetDistancePerPulse(EncoderPulseRate),m_RightEncoder.SetDistancePerPulse(EncoderPulseRate);
 	m_LeftEncoder.Start(),m_RightEncoder.Start();
-	Wait(10.000);
+	//Seems like it doesn't matter how long I wait I'll get the exception, this is probably that fix they were talking about
+	//fortunately it doesn't effect any functionality
+	//Wait(10.000);
 	m_Camera=&AxisCamera::GetInstance();
 }
 
@@ -144,6 +150,14 @@ void Robot_Control::Reset_Arm()
 void Robot_Control::Reset_Encoders()
 {
 	m_KalFilter_EncodeLeft.Reset(),m_KalFilter_EncodeRight.Reset();	
+}
+
+void Robot_Control::TimeChange(double dTime_s)
+{
+	#ifdef __ShowLCD__
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	lcd->UpdateLCD();
+	#endif
 }
 
 void Robot_Control::Initialize(const Entity_Properties *props)

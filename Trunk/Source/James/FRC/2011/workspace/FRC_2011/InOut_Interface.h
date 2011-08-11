@@ -7,6 +7,7 @@ class Robot_Control : public Robot_Control_Interface
 		Robot_Control(bool UseSafety);
 		virtual ~Robot_Control(); 
 		virtual void Initialize(const Entity_Properties *props);
+		virtual void TimeChange(double dTime_s);
 		void SetSafety(bool UseSafety);
 		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
 		void ResetPos();
