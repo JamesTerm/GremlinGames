@@ -4,9 +4,7 @@
 class Robot_Control_Interface
 {
 	public:
-		//This is only needed for simulation
 		virtual void TimeChange(double dTime_s)=0;
-
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
 		virtual void Initialize(const Entity_Properties *props)=0;
