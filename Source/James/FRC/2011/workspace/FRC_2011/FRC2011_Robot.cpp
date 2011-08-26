@@ -339,7 +339,7 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
 	m_PIDController_Left(1.0,8.0,0.0),	m_PIDController_Right(1.0,8.0,0.0),
 	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
-	m_UsingEncoders(UseEncoders),m_VoltageOverride(false)
+	m_UsingEncoders(UseEncoders),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
 	//m_UsingEncoders=true; //testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
@@ -369,7 +369,9 @@ void FRC_2011_Robot::ResetPos()
 	m_Arm.ResetPos();
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
+	 //ensure teleop has these set properly
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
+	m_UseDeadZoneSkip=true; 
 }
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
@@ -414,6 +416,11 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		}
 		#endif
 
+		if ((RightVelocity<Encoder_RightVelocity) && (LeftVelocity<Encoder_LeftVelocity))
+			m_UseDeadZoneSkip=false;
+		else
+			m_UseDeadZoneSkip=true;
+		
 		#if 1
 		//Update the physics with the actual velocity
 		Vec2d LocalVelocity;
@@ -491,7 +498,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 			#endif
 		}
 	}
-	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage,m_UseDeadZoneSkip);
 }
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)

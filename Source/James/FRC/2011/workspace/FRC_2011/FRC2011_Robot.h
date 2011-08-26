@@ -79,6 +79,7 @@ class FRC_2011_Robot : public Robot_Tank
 		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
 		bool m_UsingEncoders;
 		bool m_VoltageOverride;  //when true will kill voltage
+		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 };
 
