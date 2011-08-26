@@ -385,13 +385,14 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		double RightVelocity=GetRightVelocity();
 
 		double control_left=0.0,control_right=0.0;
-		//only adjust calibration when both velocities are in the same direction
-		if ((LeftVelocity * Encoder_LeftVelocity) > 0.0)
+		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
+		//allow the scaler to normalize if it need to start up again.
+		if (((LeftVelocity * Encoder_LeftVelocity) > 0.0)||(Encoder_LeftVelocity==0.0))
 		{
 			control_left=-m_PIDController_Left(fabs(LeftVelocity),fabs(Encoder_LeftVelocity),dTime_s);
 			m_CalibratedScaler_Left=MAX_SPEED+control_left;
 		}
-		if ((RightVelocity * Encoder_RightVelocity) > 0.0)
+		if (((RightVelocity * Encoder_RightVelocity) > 0.0)||(Encoder_RightVelocity==0.0))
 		{
 			control_right=-m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
 			m_CalibratedScaler_Right=MAX_SPEED+control_right;
@@ -406,7 +407,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
 		#if 0
-		if (Encoder_RightVelocity!=0.0)
+		if (RightVelocity!=0.0)
 		{
 			double PosY=GetPos_m()[1];
 			if (!m_VoltageOverride)

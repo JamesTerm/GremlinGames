@@ -430,7 +430,7 @@ public:
 			//using this from test runs from robo wranglers code
 			Wait(0.010);				
 		}
-		//printf("Autonomouse loop end IsA=%d IsD=%d \n",IsAutonomous(),IsDisabled());
+		printf("Autonomouse loop end IsA=%d IsD=%d \n",IsAutonomous(),IsDisabled());
 		oldgoal=ship->ClearGoal();
 		if (oldgoal)
 			delete oldgoal;
