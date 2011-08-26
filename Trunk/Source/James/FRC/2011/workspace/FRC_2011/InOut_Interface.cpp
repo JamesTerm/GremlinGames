@@ -197,7 +197,7 @@ const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
 const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
 const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
 
-void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
+void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage,bool UseDeadZoneSkip)
 {
 	#if 0
 	float right=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
@@ -206,18 +206,19 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	return;
 	#endif
 
-	#if 1
-	//Eliminate the deadzone
-	if (LeftVoltage>0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
-	else if (LeftVoltage < 0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
-
-	if (RightVoltage>0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
-	else if (RightVoltage < 0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
-	#endif
+	if (UseDeadZoneSkip)
+	{
+		//Eliminate the deadzone
+		if (LeftVoltage>0.0)
+			LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
+		else if (LeftVoltage < 0.0)
+			LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
+	
+		if (RightVoltage>0.0)
+			RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+		else if (RightVoltage < 0.0)
+			RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
+	}
 	
 	//Unfortunately the actual wheels are reversed
 	#ifdef __ShowEncoderReadings__
