@@ -39,10 +39,7 @@ class Robot_Control_Interface
 
 		//Encoders populate this with current velocity of motors
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
-		/// \param UseDeadZoneSkip.  When true this is ideal for telop, and for acceleration in autonomous as it always starts movement
-		/// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
-		/// linear distribution of voltage will help avoid over-compensation, especially as it gets closer to stopping
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage,bool UseDeadZoneSkip=true)=0;
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
 		virtual void UpdateArmVoltage(double Voltage)=0;
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
 		///This is in radians of the arm's gear ratio

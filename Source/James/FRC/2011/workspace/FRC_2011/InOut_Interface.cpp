@@ -187,17 +187,8 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 	#endif
 }
 
-const double c_rMotorDriveForward_DeadZone=0.110;
-const double c_rMotorDriveReverse_DeadZone=0.04;
-const double c_lMotorDriveForward_DeadZone=0.02;
-const double c_lMotorDriveReverse_DeadZone=0.115;
-
-const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
-const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
-const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
-const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
-
-void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage,bool UseDeadZoneSkip)
+//This is kept simple and straight forward, as it should be generic enough to work with multiple robots
+void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
 	#if 0
 	float right=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
@@ -206,28 +197,13 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	return;
 	#endif
 
-	if (UseDeadZoneSkip)
-	{
-		//Eliminate the deadzone
-		if (LeftVoltage>0.0)
-			LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
-		else if (LeftVoltage < 0.0)
-			LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
-	
-		if (RightVoltage>0.0)
-			RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
-		else if (RightVoltage < 0.0)
-			RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
-	}
-	
-	//Unfortunately the actual wheels are reversed
 	#ifdef __ShowEncoderReadings__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
 	//printf("l=%.1f r=%.1f\n", LeftVoltage,RightVoltage);
 	#endif
 
-	m_RobotDrive.SetLeftRightMotorOutputs((float)(RightVoltage),(float)(LeftVoltage));
+	m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVoltage),(float)(RightVoltage));
 }
 
 //const double c_Arm_DeadZone=0.150;  //was 0.085 for cut off

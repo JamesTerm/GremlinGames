@@ -472,6 +472,16 @@ void FRC_2011_Robot::RequestedVelocityCallback(double VelocityToUse,double Delta
 			m_VoltageOverride=true;
 }
 
+const double c_rMotorDriveForward_DeadZone=0.110;
+const double c_rMotorDriveReverse_DeadZone=0.04;
+const double c_lMotorDriveForward_DeadZone=0.02;
+const double c_lMotorDriveReverse_DeadZone=0.115;
+
+const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
+const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
+const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
+const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
+
 void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
@@ -498,8 +508,25 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 				RightVoltage=-RightVoltage;
 			#endif
 		}
+		// m_UseDeadZoneSkip,  When true this is ideal for telop, and for acceleration in autonomous as it always starts movement
+		// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
+		// linear distribution of voltage will help avoid over-compensation, especially as it gets closer to stopping
+		if (m_UseDeadZoneSkip)
+		{
+			//Eliminate the deadzone
+			if (LeftVoltage>0.0)
+				LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
+			else if (LeftVoltage < 0.0)
+				LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
+		
+			if (RightVoltage>0.0)
+				RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+			else if (RightVoltage < 0.0)
+				RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
+		}
 	}
-	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage,m_UseDeadZoneSkip);
+	//Unfortunately the actual wheels are reversed
+	m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
 }
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)

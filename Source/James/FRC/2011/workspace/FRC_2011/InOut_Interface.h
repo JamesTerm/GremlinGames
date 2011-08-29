@@ -16,7 +16,7 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void Reset_Arm(); 
 		virtual void Reset_Encoders();
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage,bool UseDeadZoneSkip=true);
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		virtual void UpdateArmVoltage(double Voltage);
 		virtual double GetArmCurrentPosition();
 		
