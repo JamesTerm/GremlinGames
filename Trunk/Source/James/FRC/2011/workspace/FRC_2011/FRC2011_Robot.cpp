@@ -525,7 +525,8 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 				RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
 		}
 	}
-	//Unfortunately the actual wheels are reversed
+	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
+	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
 	m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
 }
 
