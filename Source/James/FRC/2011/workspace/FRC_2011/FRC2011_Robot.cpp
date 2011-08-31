@@ -421,7 +421,8 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		m_UseDeadZoneSkip=false;
 		
 		//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
-		if (RightVelocity*LeftVelocity > 0.0)
+		//also only apply for lower speeds to avoid choppyness during the cruising phase
+		if ((RightVelocity*LeftVelocity > 0.0) && (fabs(RightVelocity)<1.0))
 		{
 			//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
 			m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
