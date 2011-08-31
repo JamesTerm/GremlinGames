@@ -387,12 +387,12 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		double control_left=0.0,control_right=0.0;
 		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
 		//allow the scaler to normalize if it need to start up again.
-		if (((LeftVelocity * Encoder_LeftVelocity) > 0.0)||(Encoder_LeftVelocity==0.0))
+		if (((LeftVelocity * Encoder_LeftVelocity) > 0.0) || IsZero(Encoder_LeftVelocity) )
 		{
 			control_left=-m_PIDController_Left(fabs(LeftVelocity),fabs(Encoder_LeftVelocity),dTime_s);
 			m_CalibratedScaler_Left=MAX_SPEED+control_left;
 		}
-		if (((RightVelocity * Encoder_RightVelocity) > 0.0)||(Encoder_RightVelocity==0.0))
+		if (((RightVelocity * Encoder_RightVelocity) > 0.0) || IsZero(Encoder_RightVelocity) )
 		{
 			control_right=-m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
 			m_CalibratedScaler_Right=MAX_SPEED+control_right;
@@ -417,10 +417,15 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		}
 		#endif
 
-		if ((RightVelocity<Encoder_RightVelocity) && (LeftVelocity<Encoder_LeftVelocity))
-			m_UseDeadZoneSkip=false;
-		else
-			m_UseDeadZoneSkip=true;
+		//For most cases we do not need the dead zone skip
+		m_UseDeadZoneSkip=false;
+		
+		//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
+		if (RightVelocity*LeftVelocity > 0.0)
+		{
+			//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
+			m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
+		}
 		
 		#if 1
 		//Update the physics with the actual velocity
@@ -499,14 +504,25 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 			#endif
 			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
-			#if 1
-			LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
-			//restore the sign
-			if (LeftVelocity<0)
-				LeftVoltage=-LeftVoltage;
-			if (RightVelocity<0)
-				RightVoltage=-RightVoltage;
-			#endif
+
+			//In teleop always square as it feels right and gives more control to the user
+			//for autonomous (i.e. using encoders) the natural distribution on acceleration will give the best results
+			//we can use the m_UseDeadZoneSkip to determine if we are accelerating, more important we must square on
+			//deceleration to improve our chance to not overshoot!
+			if ((!m_UsingEncoders) || (!m_UseDeadZoneSkip))
+			{
+				LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
+				//Clip the voltage as it can become really high values when squaring
+				if (LeftVoltage>1.0)
+					LeftVoltage=1.0;
+				if (RightVoltage>1.0)
+					RightVoltage=1.0;
+				//restore the sign
+				if (LeftVelocity<0)
+					LeftVoltage=-LeftVoltage;
+				if (RightVelocity<0)
+					RightVoltage=-RightVoltage;
+			}
 		}
 		// m_UseDeadZoneSkip,  When true this is ideal for telop, and for acceleration in autonomous as it always starts movement
 		// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
