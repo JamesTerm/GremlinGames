@@ -84,9 +84,30 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 			}
 		}
 
-		if (((m_totalError + m_error) * m_I < m_maximumOutput) && ((m_totalError + m_error) * m_I > m_minimumOutput))
-			m_totalError += m_error;
+		//Note: here is the original code, which is correct but incomplete; 
+		//this check really needs an else case, where if the error grows too large it would stop accumulating error and become stuck
+		//on an undesirable value
+		//if (((m_totalError + m_error) * m_I < m_maximumOutput) && ((m_totalError + m_error) * m_I > m_minimumOutput))
+		//	m_totalError += m_error;
 
+		double TotalErrorCheck=(m_totalError + m_error) * m_I;
+		if (TotalErrorCheck < m_maximumOutput)
+		{
+			if (TotalErrorCheck > m_minimumOutput)
+				m_totalError += m_error;
+			else //less than the minimum output
+			{
+				//accumulate by an error which would equal the minimum output
+				double MinError=(m_minimumOutput - ( m_I * m_totalError)) / m_I;
+				m_totalError += MinError;
+			}
+		}
+		else //greater than the maximum output
+		{
+			//accumulate by an error which would equal the maximum output
+			double MaxError=(m_maximumOutput - ( m_I * m_totalError)) / m_I;
+			m_totalError += MaxError;  
+		}
 				
 		m_result = m_P * m_error + m_I * m_totalError + m_D * (m_error - m_prevError);
 		m_prevError = m_error;
