@@ -337,7 +337,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	m_PIDController_Left(1.0,8.0,0.0),	m_PIDController_Right(1.0,8.0,0.0),
+	m_PIDController_Left(1.0,1.0,0.0),	m_PIDController_Right(1.0,1.0,0.0),
 	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
@@ -355,11 +355,12 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
 	m_Arm.Initialize(em,ArmProps);
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
+	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
 	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Left.SetOutputRange(-1000,OutputRange);
+	m_PIDController_Left.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Left.Enable();
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Right.SetOutputRange(-1000,OutputRange);
+	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 }
@@ -422,7 +423,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		
 		//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
 		//also only apply for lower speeds to avoid choppyness during the cruising phase
-		if ((RightVelocity*LeftVelocity > 0.0) && (fabs(RightVelocity)<1.0))
+		if ((RightVelocity*LeftVelocity > 0.0) && (fabs(RightVelocity)<0.5))
 		{
 			//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
 			m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
