@@ -79,6 +79,7 @@ void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const E
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
+	m_CalibratedScaler=MAX_SPEED;
 }
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
@@ -108,7 +109,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
-
+	double PotentiometerVelocity; //increased scope for debugging dump
+	
 	//Update the position to where the potentiometer says where it actually is
 	if (m_UsingPotentiometer)
 	{
@@ -119,11 +121,12 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
-			double PotentiometerVelocity=Displacement/m_LastTime;
+			PotentiometerVelocity=Displacement/m_LastTime;
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
 
-			double m_CalibratedScaler=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			MAX_SPEED=m_MaxSpeedReference+m_CalibratedScaler;
+			double control=0.0;
+			control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
+			m_CalibratedScaler=MAX_SPEED+control;
 
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
@@ -142,11 +145,11 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
-	#ifdef __UseTestKitArmRatios__
-	//ideally this should be in the UpdateArmVoltage, but it here to use the same macro within cpp file
-	CurrentVelocity*=-1.0; //need to reverse direction for test kit  :(
-	#endif
-	double Voltage=CurrentVelocity/MAX_SPEED;
+	//Unfortunately something happened when the wires got crossed during the texas round up, now needing to reverse the voltage
+	//This was also reversed for the testing kit.  We apply reverse on current velocity for squaring operation to work properly, and
+	//must not do this in the interface, since that will support next year's robot.
+	CurrentVelocity*=-1.0; 
+	double Voltage=CurrentVelocity/m_CalibratedScaler;
 
 	if (!m_VoltageOverride)
 	{
@@ -175,6 +178,17 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		//restore the sign
 		if (CurrentVelocity<0)
 			Voltage=-Voltage;
+	#endif
+
+	#if 0
+	if (Voltage!=0.0)
+	{
+		double PosY=m_LastPosition;
+		if (!m_VoltageOverride)
+			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler);
+		else
+			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler);
+	}
 	#endif
 
 	m_RobotControl->UpdateArmVoltage(Voltage);
@@ -233,9 +247,10 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			printf("Disabling potentiometer\n");
 			//m_PIDController.Reset();
 			ResetPos();
-			MAX_SPEED=m_MaxSpeedReference;
+			//This is no longer necessary
+			//MAX_SPEED=m_MaxSpeedReference;
 			m_LastPosition=0.0;
-			m_CalibratedScaler=1.0;
+			m_CalibratedScaler=MAX_SPEED;
 			m_LastTime=0.0;
 			m_UsingRange=false;
 		}
@@ -249,6 +264,7 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			printf("Enabling potentiometer\n");
 			ResetPos();
 			m_UsingRange=true;
+			m_CalibratedScaler=MAX_SPEED;
 		}
 	}
 }
