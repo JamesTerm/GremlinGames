@@ -68,7 +68,8 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Button_Default(4,"Arm_SetPos9feet",false,false,"Joystick_2");
 	#endif
 	#ifdef __WindRiverJoysticks__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",true,1.0,0.1,true,"Joystick_2");
+	//For the Y Axis 3rd paramter false = down for up like flying a plane
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 5,"Arm_SetPos0feet",false,false,"Joystick_2");
