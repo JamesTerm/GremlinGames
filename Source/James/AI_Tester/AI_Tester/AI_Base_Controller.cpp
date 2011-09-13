@@ -207,8 +207,9 @@ Goal::Goal_Status Goal_Ship_RotateToPosition::Process(double dTime_s)
  /*												Goal_Ship_MoveToPosition															*/
 /***********************************************************************************************************************************/
 
-Goal_Ship_MoveToPosition::Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop,bool LockOrientation) : m_Point(waypoint), m_Controller(controller),
-	m_ship(controller->GetShip()),m_Terminate(false),m_UseSafeStop(UseSafeStop),m_LockOrientation(LockOrientation)
+Goal_Ship_MoveToPosition::Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop,
+	bool LockOrientation,double safestop_tolerance) : m_Point(waypoint), m_Controller(controller),
+	m_ship(controller->GetShip()),m_SafeStopTolerance(safestop_tolerance),m_Terminate(false),m_UseSafeStop(UseSafeStop),m_LockOrientation(LockOrientation)
 {
 	m_Status=eInactive;
 }
@@ -227,9 +228,16 @@ bool Goal_Ship_MoveToPosition::HitWayPoint()
 	// Base a tolerance2 for how close we want to get to the way point based on the current velocity,
 	// within a second of reaching the way point, just move to the next one
 	//Note for FRC... moving at 2mps it will come within an inch of its point with this tolerance
-	double tolerance2 = m_UseSafeStop ? 0.0001 : (m_ship.GetPhysics().GetLinearVelocity().length2() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
+	double tolerance2 = m_UseSafeStop ? m_SafeStopTolerance : (m_ship.GetPhysics().GetLinearVelocity().length2() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
 	Vec2d currPos = m_ship.GetPos_m();
-	return ((m_Point.Position-currPos).length2() < tolerance2);
+	double position_delta=(m_Point.Position-currPos).length();
+	bool ret=position_delta<tolerance2;
+	#if 0
+	printf("\r%f        ",position_delta);
+	if (ret)
+		printf("completed %f\n",position_delta);
+	#endif
+	return ret;
 }
 
 Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
