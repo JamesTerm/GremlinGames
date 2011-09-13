@@ -9,7 +9,7 @@ const double Pi2=M_PI*2.0;
  /*																	Entity1D														*/
 /***********************************************************************************************************************************/
 
-Entity1D::Entity1D(const char EntityName[]) : m_Dimension(1.0),m_Name(EntityName),m_Position(0.0)
+Entity1D::Entity1D(const char EntityName[]) : m_Dimension(1.0),m_Position(0.0),m_Name(EntityName)
 {
 	ResetPos();
 }
@@ -44,8 +44,9 @@ void Entity1D::TimeChange(double dTime_s)
  /*																	Entity2D														*/
 /***********************************************************************************************************************************/
 
-Entity2D::Entity2D(const char EntityName[]) : m_Dimensions(1.0,1.0),m_Name(EntityName),
-	m_PosAtt_Read(&m_PosAtt_Buffers[0]),m_PosAtt_Write(&m_PosAtt_Buffers[1])
+Entity2D::Entity2D(const char EntityName[]) : 
+	m_PosAtt_Read(&m_PosAtt_Buffers[0]),m_PosAtt_Write(&m_PosAtt_Buffers[1]),
+	m_Dimensions(1.0,1.0),m_Name(EntityName)
 {
 	ResetPos();
 }
@@ -83,7 +84,7 @@ void Entity2D::ResetPos()
 	m_Physics.ResetVectors();
 	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
 	//SetPosAtt(m_origPos, FromLW_Rot(m_origAtt[0], m_origAtt[1], m_origAtt[2]));
-	writePtr->m_pos_m=osg::Vec2d(0.0,0.0);
+	writePtr->m_pos_m=Vec2D(0.0,0.0);
 	writePtr->m_att_r=0.0;  //a.k.a heading
 	//GetEventMap()->Event_Map["ResetPos"].Fire();
 	UpdatePosAtt();
@@ -91,7 +92,7 @@ void Entity2D::ResetPos()
 
 void Entity2D::TimeChange(double dTime_s)
 {
-	osg::Vec2d PositionDisplacement;
+	Vec2D PositionDisplacement;
 	double RotationDisplacement;
 	//Either we apply displacement computations here or the derived class will handle it
 	if (!InjectDisplacement(dTime_s,PositionDisplacement,RotationDisplacement))
