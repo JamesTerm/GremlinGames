@@ -4,6 +4,7 @@
 class Robot_Control_Interface
 {
 	public:
+		//This is primarily used for updates to dashboard and driver station during a test build
 		virtual void TimeChange(double dTime_s)=0;
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
@@ -55,6 +56,7 @@ class FRC_2011_Robot : public Robot_Tank
 				static double HeightToAngle_r(double Height_m);
 				static double Arm_AngleToHeight_m(double Angle_r);
 				static double AngleToHeight_m(double Angle_r);
+				static double GetPosRest();
 				//given the raw potentiometer converts to the arm angle
 				static double PotentiometerRaw_To_Arm_r(double raw);
 				void CloseElbow(bool Close);
@@ -69,6 +71,7 @@ class FRC_2011_Robot : public Robot_Tank
 				//typedef Ship_1D __super;
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetPotentiometerSafety(double Value);
+				void SetPosRest();
 				void SetPos0feet();
 				void SetPos3feet();
 				void SetPos6feet();
@@ -100,6 +103,7 @@ class FRC_2011_Robot : public Robot_Tank
 		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
 		bool m_UsingEncoders;
 		bool m_VoltageOverride;  //when true will kill voltage
+		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
 };
