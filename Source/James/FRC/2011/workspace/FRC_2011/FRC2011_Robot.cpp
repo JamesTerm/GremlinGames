@@ -52,6 +52,77 @@ const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
 
   /***********************************************************************************************************************************/
+ /*													FRC_2011_Robot::Robot_Claw														*/
+/***********************************************************************************************************************************/
+
+FRC_2011_Robot::Robot_Claw::Robot_Claw(const char EntityName[],Robot_Control_Interface *robot_control) :
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_Grip(false),m_Squirt(false)
+{
+}
+
+void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
+{
+	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
+	if (m_Grip ^ m_Squirt)
+		SetCurrentLinearAcceleration(m_Grip?ACCEL:-BRAKE);
+
+	__super::TimeChange(dTime_s);
+	//send out the voltage
+	double CurrentVelocity=m_Physics.GetVelocity();
+	double Voltage=CurrentVelocity/MAX_SPEED;
+
+	//Clamp range
+	if (Voltage>0.0)
+	{
+		if (Voltage>1.0)
+			Voltage=1.0;
+	}
+	else if (Voltage<0.0)
+	{
+		if (Voltage<-1.0)
+			Voltage=-1.0;
+	}
+	else
+		Voltage=0.0;  //is nan case
+
+	m_RobotControl->UpdateVoltage(eRollers,Voltage);
+}
+
+void FRC_2011_Robot::Robot_Claw::CloseClaw(bool Close)
+{
+	m_RobotControl->CloseSolenoid(eClaw,Close);
+}
+
+void FRC_2011_Robot::Robot_Claw::Grip(bool on)
+{
+	m_Grip=on;
+}
+
+void FRC_2011_Robot::Robot_Claw::Squirt(bool on)
+{
+	m_Squirt=on;
+}
+
+void FRC_2011_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
+{
+	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["Claw_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Claw_Close"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Grip"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Grip);
+		em->EventOnOff_Map["Claw_Squirt"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Squirt);
+	}
+	else
+	{
+		em->EventValue_Map["Claw_SetCurrentVelocity"].Remove(*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Claw_Close"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Grip"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Grip);
+		em->EventOnOff_Map["Claw_Squirt"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Squirt);
+	}
+}
+
+  /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
 
@@ -156,8 +227,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
 		if (Voltage>0.0)
 		{
-			 if (Voltage>1.0)
-						Voltage=1.0;
+			if (Voltage>1.0)
+				Voltage=1.0;
 		}
 		else if (Voltage<0.0)
 		{
@@ -174,10 +245,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 
 	#if 0
-		Voltage*=Voltage;  //square them for more give
-		//restore the sign
-		if (CurrentVelocity<0)
-			Voltage=-Voltage;
+	Voltage*=Voltage;  //square them for more give
+	//restore the sign
+	if (CurrentVelocity<0)
+		Voltage=-Voltage;
 	#endif
 
 	#if 0
@@ -191,12 +262,15 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 	#endif
 
-	m_RobotControl->UpdateArmVoltage(Voltage);
+	m_RobotControl->UpdateVoltage(eArm,Voltage);
 	//Show current height (only in AI Tester)
 	#if 0
 	double Pos_m=GetPos_m();
 	double height=AngleToHeight_m(Pos_m);
-	DOUT4("Arm=%f Angle=%f %fft %fin",CurrentVelocity,RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
+	if (!m_VoltageOverride)
+		DOUT4("Arm=%f Angle=%f %fft %fin",CurrentVelocity,RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
+	else
+		DOUT4("VO Arm=%f Angle=%f %fft %fin",CurrentVelocity,RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
 	#endif
 }
 
@@ -206,18 +280,6 @@ void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m
 	//note 0.02 is fine for arm without claw
 	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.1))
 		m_VoltageOverride=true;
-}
-
-void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Velocity)
-{
-	//we must have flood control so that other controls may work (the joystick will call this on every time slice!)
-	if (Velocity!=m_LastNormalizedVelocity)
-	{
-		//scale the velocity to the max speed's magnitude
-		double VelocityScaled=Velocity*GetMaxSpeed();
-		SetRequestedVelocity(VelocityScaled);
-		m_LastNormalizedVelocity=Velocity;
-	}
 }
 
 void FRC_2011_Robot::Robot_Arm::ResetPos()
@@ -300,20 +362,16 @@ void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 	//SetIntendedPosition( HeightToAngle_r(1.8288) );  //actual
 	//SetIntendedPosition( HeightToAngle_r(1.7018) );  //67 inches
 	//SetIntendedPosition( HeightToAngle_r(1.08712) );  //42.8 inches
-	SetIntendedPosition( HeightToAngle_r(0.71000) );  //72 inches with elbow up
+	SetIntendedPosition( HeightToAngle_r(0.71000) );  //72 inches with rist up
 }
 void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
 	//SetIntendedPosition( HeightToAngle_r(2.7432) );  //actual
 	SetIntendedPosition( HeightToAngle_r(2.6543) ); //104.5 inches
 }
-void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
+void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 {
-	m_RobotControl->CloseSolenoid(eClaw,Close);
-}
-void FRC_2011_Robot::Robot_Arm::CloseElbow(bool Close)
-{
-	m_RobotControl->CloseSolenoid(eElbow,Close);
+	m_RobotControl->CloseSolenoid(eRist,Close);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -329,8 +387,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos3feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
-		em->EventOnOff_Map["Arm_Claw"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
-		em->EventOnOff_Map["Arm_Elbow"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
+		em->EventOnOff_Map["Arm_Rist"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseRist);
 	}
 	else
 	{
@@ -342,8 +399,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos3feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
-		em->EventOnOff_Map["Arm_Claw"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
-		em->EventOnOff_Map["Arm_Elbow"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
+		em->EventOnOff_Map["Arm_Rist"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseRist);
 	}
 }
 
@@ -351,7 +407,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
 	m_PIDController_Left(1.0,1.0,0.0),	m_PIDController_Right(1.0,1.0,0.0),
 	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
@@ -368,8 +424,9 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	m_RobotControl->Initialize(props);
 
 	const FRC_2011_Robot_Properties *RobotProps=static_cast<const FRC_2011_Robot_Properties *>(props);
-	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
-	m_Arm.Initialize(em,ArmProps);
+	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
+	m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
+
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
 	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
@@ -384,15 +441,18 @@ void FRC_2011_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Arm.ResetPos();
+	m_Claw.ResetPos();
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
-	 //ensure teleop has these set properly
+	//ensure teleop has these set properly
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
-	m_UseDeadZoneSkip=true; 
+	m_UseDeadZoneSkip=true;
 }
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
+	//For the simulated code this must be first so the simulators can have the correct times
+	m_RobotControl->TimeChange(dTime_s);
 	if (m_UsingEncoders)
 	{
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
@@ -453,6 +513,7 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
 		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
+		m_EncoderHeading=AngularVelocity;
 		//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 		#endif
@@ -466,6 +527,8 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
+	Entity1D &claw_entity=m_Claw;  //This gets around keeping time change protected in derived classes
+	claw_entity.TimeChange(dTime_s);
 }
 
 bool FRC_2011_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
@@ -474,10 +537,13 @@ bool FRC_2011_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDispla
 	if (m_UsingEncoders)
 	{
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
+		//double computedAngularVelocity=m_Physics.GetAngularVelocity();
 		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
+		//m_Physics.SetAngularVelocity(m_EncoderHeading);
 		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 		//We must set this back so that the PID can compute the entire error
 		m_Physics.SetLinearVelocity(computedVelocity);
+		//m_Physics.SetAngularVelocity(computedAngularVelocity);
 		ret=true;
 	}
 	return ret;
@@ -579,6 +645,8 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 
 	Ship_1D &ArmShip_Access=m_Arm;
 	ArmShip_Access.BindAdditionalEventControls(Bind);
+	Ship_1D &ClawShip_Access=m_Claw;
+	ClawShip_Access.BindAdditionalEventControls(Bind);
 }
 
 
@@ -596,6 +664,18 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	Ship_1D_Properties::eRobotArm,
 	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
+	),
+	m_ClawProps(
+	"Claw",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
+	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
+	28,   //Max Speed (rounded as we need not have precision)
+	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Properties::eRobotClaw,
+	false	//No limit ever!
 	)
 {
 }
@@ -622,10 +702,10 @@ Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
 	switch (m_SolenoidDevice)
 	{
 		case FRC_2011_Robot::eClaw:
-			m_Robot.GetArm().CloseClaw(m_IsClosed);
+			m_Robot.GetClaw().CloseClaw(m_IsClosed);
 			break;
-		case FRC_2011_Robot::eElbow:
-			m_Robot.GetArm().CloseElbow(m_IsClosed);
+		case FRC_2011_Robot::eRist:
+			m_Robot.GetArm().CloseRist(m_IsClosed);
 			break;
 		case FRC_2011_Robot::eDeployment:
 			m_Robot.CloseDeploymentDoor(m_IsClosed);

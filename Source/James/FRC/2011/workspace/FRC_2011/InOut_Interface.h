@@ -17,13 +17,14 @@ class Robot_Control : public Robot_Control_Interface
 		virtual void Reset_Encoders();
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
-		virtual void UpdateArmVoltage(double Voltage);
+		//This is moved to robot specific class
+		//virtual void UpdateVoltage(size_t index, double Voltage);
 		virtual double GetArmCurrentPosition();
 		
 		RobotDrive m_RobotDrive;
-		RobotDrive m_ArmMotor;
+		Victor m_ArmMotor,m_RollerMotor;
 		Compressor m_Compress;
-		Solenoid m_OnElbow,m_OffElbow;
+		Solenoid m_OnRist,m_OffRist;
 		Solenoid m_OnClaw,m_OffClaw;
 		Solenoid m_OnDeploy,m_OffDeploy;
 		Encoder m_LeftEncoder,m_RightEncoder;
@@ -41,7 +42,8 @@ class Robot_Control_2011 : public Robot_Control
 {
 	public:
 		Robot_Control_2011(bool UseSafety) : Robot_Control(UseSafety) {}
-		//See FRC_2011_Robot for enumeration
+		//See FRC_2011_Robot for enumerations
+		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual void CloseSolenoid(size_t index,bool Close);
 };
 

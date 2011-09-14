@@ -119,8 +119,8 @@ void Robot_Control::ResetPos()
 	}
 }
 
-Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5,6),m_Compress(5,2),
-	m_OnElbow(6),m_OffElbow(5),m_OnClaw(4),m_OffClaw(3),m_OnDeploy(2),m_OffDeploy(1),
+Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
+	m_OnRist(6),m_OffRist(5),m_OnClaw(4),m_OffClaw(3),m_OnDeploy(2),m_OffDeploy(1),
 	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_Potentiometer(1),m_Camera(NULL)
 {
 	ResetPos();
@@ -210,31 +210,6 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 const double c_Arm_DeadZone=0.085;  //This has better results
 const double c_Arm_Range=1.0-c_Arm_DeadZone;
 
-void Robot_Control::UpdateArmVoltage(double Voltage)
-{
-	#if 0
-	float ToUse=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
-	m_ArmMotor.SetLeftRightMotorOutputs(ToUse,ToUse);
-	return;
-	#endif
-
-	//TODO determine why the deadzone code has adverse results
-	//Eliminate the deadzone
-	//Voltage=(Voltage * c_Arm_Range) + ((Voltage>0.0) ? c_Arm_DeadZone : -c_Arm_DeadZone);
-	
-	//This prevents the motor from over heating when it is close enough to its destination
-	//if (fabs(Voltage)<=c_Arm_DeadZone)
-	//	Voltage=0.0;
-	
-	//DOUT4("Arm=%f",Velocity/m_ArmMaxSpeed);
-	//Note: client code needs to check the levels are correct!
-	m_ArmMotor.SetLeftRightMotorOutputs(Voltage,Voltage);  //always the same velocity for both!
-	#ifdef __ShowPotentiometerReadings__
-	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "ArmVolt=%f ", Voltage);
-	#endif
-}
-
 double Robot_Control::GetArmCurrentPosition()
 {	
 	double raw_value = (double)m_Potentiometer.GetAverageValue();
@@ -259,6 +234,32 @@ double Robot_Control::GetArmCurrentPosition()
  /*														Robot_Control_2011															*/
 /***********************************************************************************************************************************/
 
+void Robot_Control_2011::UpdateVoltage(size_t index,double Voltage)
+{
+	switch (index)
+	{
+		case FRC_2011_Robot::eArm:
+		{
+			#if 0
+			float ToUse=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
+			m_ArmMotor.Set(ToUse);
+			return;
+			#endif
+			
+			//Note: client code needs to check the levels are correct!
+			m_ArmMotor.Set(Voltage);  //always the same velocity for both!
+			#ifdef __ShowPotentiometerReadings__
+			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+			lcd->PrintfLine(DriverStationLCD::kUser_Line4, "ArmVolt=%f ", Voltage);
+			#endif
+		}
+			break;
+		case FRC_2011_Robot::eRollers:
+			m_RollerMotor.Set(Voltage);
+			break;
+	}
+}
+
 
 void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
 {
@@ -275,9 +276,9 @@ void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
 			printf("CloseClaw=%d\n",Close);
 			m_OnClaw.Set(Close),m_OffClaw.Set(!Close);
 			break;
-		case FRC_2011_Robot::eElbow:
-			printf("CloseElbow=%d\n",Close);
-			m_OnElbow.Set(Close),m_OffElbow.Set(!Close);
+		case FRC_2011_Robot::eRist:
+			printf("CloseRist=%d\n",Close);
+			m_OnRist.Set(Close),m_OffRist.Set(!Close);
 			break;
 	}
 }

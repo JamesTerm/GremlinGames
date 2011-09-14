@@ -76,7 +76,8 @@ class SetUp_Manager
 			if (dTime_s==0.0) return; //avoid division by zero errors
 			m_JoyBinder.UpdateJoyStick(dTime_s);
 			m_Control.TimeChange(dTime_s);
-			m_pRobot->TimeChange(dTime_s);
+			//This is called implicitly within the robot (for ease of compatability with AI)
+			//m_pRobot->TimeChange(dTime_s);
 		}
 
 		~SetUp_Manager()
