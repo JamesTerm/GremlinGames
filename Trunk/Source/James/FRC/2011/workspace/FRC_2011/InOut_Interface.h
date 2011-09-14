@@ -21,6 +21,7 @@ class Robot_Control : public Robot_Control_Interface
 		//virtual void UpdateVoltage(size_t index, double Voltage);
 		virtual double GetArmCurrentPosition();
 		
+		Victor m_1,m_2,m_3,m_4;  //explicitly specify victor speed controllers for the robot drive
 		RobotDrive m_RobotDrive;
 		Victor m_ArmMotor,m_RollerMotor;
 		Compressor m_Compress;
