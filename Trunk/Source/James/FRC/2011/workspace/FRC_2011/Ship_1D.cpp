@@ -44,6 +44,7 @@ void Ship_1D::ResetPos()
 	m_Last_RequestedVelocity=-1.0;
 	m_IntendedPosition=0.0;
 	m_IntendedPositionPhysics.ResetVectors();
+	m_LastNormalizedVelocity=0.0;
 	//m_Physics.ResetVectors(); called from entity 1D's reset
 	SetSimFlightMode(true);  //This one is a tough call... probably should do it on reset
 }
@@ -75,6 +76,17 @@ void Ship_1D::SetRequestedVelocity(double Velocity)
 		m_RequestedVelocity=MAX(Velocity,-GetMaxSpeed());
 }
 
+void Ship_1D::SetRequestedVelocity_FromNormalized(double Velocity)
+{
+	//we must have flood control so that other controls may work (the joystick will call this on every time slice!)
+	if (Velocity!=m_LastNormalizedVelocity)
+	{
+		//scale the velocity to the max speed's magnitude
+		double VelocityScaled=Velocity*GetMaxSpeed();
+		SetRequestedVelocity(VelocityScaled);
+		m_LastNormalizedVelocity=Velocity;
+	}
+}
 
 void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 {

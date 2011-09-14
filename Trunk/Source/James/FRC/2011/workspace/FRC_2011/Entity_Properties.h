@@ -21,10 +21,12 @@ class Ship_1D_Properties : public Entity1D_Properties
 	public:
 		Ship_1D_Properties();
 		//Allow to construct props in constructor instead of using script
+		//TODO these are somewhat specific, we may want to move subclass them or have more generic meaning
 		enum Ship_Type
 		{
 			eDefault,
 			eRobotArm,
+			eRobotClaw
 		};
 		Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	

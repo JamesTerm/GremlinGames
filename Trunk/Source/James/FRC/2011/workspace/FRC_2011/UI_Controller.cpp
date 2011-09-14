@@ -16,6 +16,7 @@
 #include "UI_Controller.h"
 
 #define __WindRiverJoysticks__
+#undef __AirFlo__
 #undef __UsingXTerminator__
 #undef __UsingWPTH_UI__ //The WPLib Testing Harness UI (where the second joystick is on the UI itself)
 #undef __EnableTestKeys__
@@ -67,17 +68,38 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Button_Default(3,"Arm_SetPos0feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default(4,"Arm_SetPos9feet",false,false,"Joystick_2");
 	#endif
+	#ifdef __AirFlo__
+	//For the Y Axis 3rd paramter false = down for up like flying a plane
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_1");
+	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
+	//This is no longer needed as the zero and the rest are the same
+	//joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 0,"Arm_SetPos0feet",false,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 2,"Arm_SetPos3feet",false,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 1,"Arm_SetPos6feet",false,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 3,"Arm_SetPos9feet",false,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 4,"Claw_Grip",true,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 5,"Claw_Squirt",true,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 7,"Claw_Close",false,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 6,"Arm_Rist",false,false,"Joystick_1");
+	
+	joy.AddJoy_Button_Default( 8,"Robot_CloseDoor",true,false,"Joystick_1");
+	#endif
 	#ifdef __WindRiverJoysticks__
 	//For the Y Axis 3rd paramter false = down for up like flying a plane
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
+	//This is no longer needed as the zero and the rest are the same
+	//joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 5,"Arm_SetPos0feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 6,"Arm_SetPos3feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default(10,"Arm_SetPos6feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 9,"Arm_SetPos9feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 0,"Arm_Claw",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 8,"Arm_Elbow",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 0,"Claw_Grip",true,false,"Joystick_2");
+	//TODO find the squirt button number
+	joy.AddJoy_Button_Default( 11,"Claw_Squirt",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 8,"Claw_Close",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 7,"Arm_Rist",false,false,"Joystick_2");
 
 	joy.AddJoy_Button_Default( 7,"Robot_CloseDoor",true,false,"Joystick_1");
 	#endif

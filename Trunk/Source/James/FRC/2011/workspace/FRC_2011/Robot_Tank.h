@@ -29,7 +29,7 @@ class Robot_Tank : public Ship_Tester
 class Robot_Control_Interface
 {
 	public:
-		//This is primarily used for updates to dashboard and driverstation during a test build
+		//This is primarily used for updates to dashboard and driver station during a test build
 		virtual void TimeChange(double dTime_s)=0;
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
@@ -40,9 +40,12 @@ class Robot_Control_Interface
 		//Encoders populate this with current velocity of motors
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
-		virtual void UpdateArmVoltage(double Voltage)=0;
+		/// \param The index is ordinal enumerated to specific robot's interpretation
+		/// \see subclass for enumeration specifics
+		virtual void UpdateVoltage(size_t index,double Voltage)=0;
 		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
 		///This is in radians of the arm's gear ratio
+		///TODO break this apart to reading pure analog values and have the potentiometer conversion happen within the robot
 		virtual double GetArmCurrentPosition()=0;
 		/// \param The index is ordinal enumerated to specific robot's interpretation
 		/// \see subclass for enumeration specifics
