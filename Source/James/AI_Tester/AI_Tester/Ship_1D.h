@@ -11,6 +11,8 @@ class Ship_1D : public Entity1D
 		///This implicitly will place back in auto mode with a speed of zero
 		void Stop(){SetRequestedVelocity(0.0);}
 		void SetRequestedVelocity(double Velocity);
+		//This will scale the velocity by max speed and also handle flood control
+		void SetRequestedVelocity_FromNormalized(double Normalized_Velocity);
 		double GetRequestedVelocity(){return m_RequestedVelocity;}
 
 		/// \param LockShipHeadingToPosition for this given time slice if this is true the intended orientation is restrained
@@ -85,6 +87,9 @@ class Ship_1D : public Entity1D
 		bool m_UsingRange; 
 
 	private:
+		//Only used with SetRequestedVelocity_FromNormalized()
+		//this is managed direct from being set to avoid need for precision tolerance
+		double m_LastNormalizedVelocity;  
 		//typedef Entity1D __super;
 		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
 };
