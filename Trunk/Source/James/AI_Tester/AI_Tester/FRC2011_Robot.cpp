@@ -29,6 +29,77 @@ const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
 
   /***********************************************************************************************************************************/
+ /*													FRC_2011_Robot::Robot_Claw														*/
+/***********************************************************************************************************************************/
+
+FRC_2011_Robot::Robot_Claw::Robot_Claw(const char EntityName[],Robot_Control_Interface *robot_control) :
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_Grip(false),m_Squirt(false)
+{
+}
+
+void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
+{
+	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
+	if (m_Grip ^ m_Squirt)
+		SetCurrentLinearAcceleration(m_Grip?ACCEL:-BRAKE);
+
+	__super::TimeChange(dTime_s);
+	//send out the voltage
+	double CurrentVelocity=m_Physics.GetVelocity();
+	double Voltage=CurrentVelocity/MAX_SPEED;
+
+	//Clamp range
+	if (Voltage>0.0)
+	{
+		if (Voltage>1.0)
+			Voltage=1.0;
+	}
+	else if (Voltage<0.0)
+	{
+		if (Voltage<-1.0)
+			Voltage=-1.0;
+	}
+	else
+		Voltage=0.0;  //is nan case
+
+	m_RobotControl->UpdateVoltage(eRollers,Voltage);
+}
+
+void FRC_2011_Robot::Robot_Claw::CloseClaw(bool Close)
+{
+	m_RobotControl->CloseSolenoid(eClaw,Close);
+}
+
+void FRC_2011_Robot::Robot_Claw::Grip(bool on)
+{
+	m_Grip=on;
+}
+
+void FRC_2011_Robot::Robot_Claw::Squirt(bool on)
+{
+	m_Squirt=on;
+}
+
+void FRC_2011_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
+{
+	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["Claw_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Claw_Close"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Grip"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Grip);
+		em->EventOnOff_Map["Claw_Squirt"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Squirt);
+	}
+	else
+	{
+		em->EventValue_Map["Claw_SetCurrentVelocity"].Remove(*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Claw_Close"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Grip"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Grip);
+		em->EventOnOff_Map["Claw_Squirt"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Squirt);
+	}
+}
+
+  /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
 
@@ -170,7 +241,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 	#endif
 
-	m_RobotControl->UpdateArmVoltage(Voltage);
+	m_RobotControl->UpdateVoltage(eArm,Voltage);
 	//Show current height (only in AI Tester)
 	#if 1
 	double Pos_m=GetPos_m();
@@ -188,18 +259,6 @@ void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m
 	//note 0.02 is fine for arm without claw
 	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.1))
 		m_VoltageOverride=true;
-}
-
-void FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized(double Velocity)
-{
-	//we must have flood control so that other controls may work (the joystick will call this on every time slice!)
-	if (Velocity!=m_LastNormalizedVelocity)
-	{
-		//scale the velocity to the max speed's magnitude
-		double VelocityScaled=Velocity*GetMaxSpeed();
-		SetRequestedVelocity(VelocityScaled);
-		m_LastNormalizedVelocity=Velocity;
-	}
 }
 
 void FRC_2011_Robot::Robot_Arm::ResetPos()
@@ -283,13 +342,9 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
 	SetIntendedPosition( HeightToAngle_r(2.7432) );
 }
-void FRC_2011_Robot::Robot_Arm::CloseClaw(bool Close)
+void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 {
-	m_RobotControl->CloseSolenoid(eClaw,Close);
-}
-void FRC_2011_Robot::Robot_Arm::CloseElbow(bool Close)
-{
-	m_RobotControl->CloseSolenoid(eElbow,Close);
+	m_RobotControl->CloseSolenoid(eRist,Close);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -305,8 +360,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos3feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
-		em->EventOnOff_Map["Arm_Claw"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
-		em->EventOnOff_Map["Arm_Elbow"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
+		em->EventOnOff_Map["Arm_Rist"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseRist);
 	}
 	else
 	{
@@ -318,8 +372,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos3feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
-		em->EventOnOff_Map["Arm_Claw"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseClaw);
-		em->EventOnOff_Map["Arm_Elbow"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseElbow);
+		em->EventOnOff_Map["Arm_Rist"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseRist);
 	}
 }
 
@@ -327,13 +380,13 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control),
+	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
 	m_PIDController_Left(1.0,1.0,0.0),	m_PIDController_Right(1.0,1.0,0.0),
 	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
-	m_UsingEncoders=true; //testing
+	//m_UsingEncoders=true; //testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
 }
 
@@ -344,8 +397,9 @@ void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	m_RobotControl->Initialize(props);
 
 	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
-	const Ship_1D_Properties *ArmProps=RobotProps?&RobotProps->GetArmProps():NULL;
-	m_Arm.Initialize(em,ArmProps);
+	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
+	m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
+
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
 	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
@@ -360,6 +414,7 @@ void FRC_2011_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Arm.ResetPos();
+	m_Claw.ResetPos();
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
@@ -445,6 +500,8 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
+	Entity1D &claw_entity=m_Claw;  //This gets around keeping time change protected in derived classes
+	claw_entity.TimeChange(dTime_s);
 }
 
 bool FRC_2011_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
@@ -497,7 +554,7 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 	else
 	{
 		{
-			#if 1
+			#if 0
 			double Encoder_LeftVelocity,Encoder_RightVelocity;
 			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
@@ -561,26 +618,51 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 
 	Ship_1D &ArmShip_Access=m_Arm;
 	ArmShip_Access.BindAdditionalEventControls(Bind);
+	Ship_1D &ClawShip_Access=m_Claw;
+	ClawShip_Access.BindAdditionalEventControls(Bind);
 }
 
   /***********************************************************************************************************************************/
  /*														Robot_Control_2011															*/
 /***********************************************************************************************************************************/
 
-
+void Robot_Control_2011::UpdateVoltage(size_t index,double Voltage)
+{
+	switch (index)
+	{
+		case FRC_2011_Robot::eArm:
+		{
+			//	printf("Arm=%f\n",Voltage);
+			//DOUT3("Arm Voltage=%f",Voltage);
+			m_ArmVoltage=Voltage;
+			//Note: I have to reverse the voltage again since the wires are currently crossed on the robot
+			m_Potentiometer.UpdatePotentiometerVoltage(-Voltage);
+			m_Potentiometer.TimeChange();  //have this velocity immediately take effect
+		}
+			break;
+		case FRC_2011_Robot::eRollers:
+			m_RollerVoltage=Voltage;
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+	}
+}
 void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
 {
 	switch (index)
 	{
 		case FRC_2011_Robot::eDeployment:
 			DebugOutput("CloseDeploymentDoor=%d\n",Close);
+			m_Deployment=Close;
 			break;
 		case FRC_2011_Robot::eClaw:
 			DebugOutput("CloseClaw=%d\n",Close);
-			m_Potentiometer.SetBypass(Close);  //hmmm why did I do this?
+			m_Claw=Close;
+			//This was used to test error with the potentiometer
+			//m_Potentiometer.SetBypass(Close);
 			break;
-		case FRC_2011_Robot::eElbow:
-			DebugOutput("CloseElbow=%d\n",Close);
+		case FRC_2011_Robot::eRist:
+			DebugOutput("CloseRist=%d\n",Close);
+			m_Rist=Close;
 			break;
 	}
 }
@@ -588,6 +670,11 @@ void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
   /***********************************************************************************************************************************/
  /*															Robot_Control															*/
 /***********************************************************************************************************************************/
+
+Robot_Control::Robot_Control(FRC_2011_Robot *Robot) : m_Robot(Robot),
+	m_LeftVoltage(0.0),m_RightVoltage(0.0),m_ArmVoltage(0.0),m_RollerVoltage(0.0),m_Deployment(false),m_Claw(false),m_Rist(false)
+{
+}
 
 void Robot_Control::Reset_Arm()
 {
@@ -611,6 +698,10 @@ void Robot_Control::TimeChange(double dTime_s)
 {
 	m_Potentiometer.SetTimeDelta(dTime_s);
 	m_Encoders.SetTimeDelta(dTime_s);
+	//display voltages
+	DOUT2("l=%f r=%f a=%f r=%f D%dC%dR%d\n",m_LeftVoltage,m_RightVoltage,m_ArmVoltage,m_RollerVoltage,
+		m_Deployment,m_Claw,m_Rist
+		);
 }
 
 void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
@@ -622,8 +713,8 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 {
 	double LeftVoltageToUse=min(LeftVoltage,1.0);
 	double RightVoltageToUse=min(RightVoltage,1.0);
-	//DOUT2("left=%f right=%f \n",LeftVelocity,RightVelocity);
-	DOUT2("left=%f right=%f \n",LeftVoltageToUse,RightVoltageToUse);
+	m_LeftVoltage=LeftVoltageToUse;
+	m_RightVoltage=RightVoltageToUse;
 	m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse,RightVoltageToUse);
 	m_Encoders.TimeChange();   //have this velocity immediately take effect
 }
@@ -632,14 +723,9 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 const double c_Arm_DeadZone=0.085;   //This has better results
 const double c_Arm_Range=1.0-c_Arm_DeadZone;
 
-void Robot_Control::UpdateArmVoltage(double Voltage)
-{
-	//	printf("Arm=%f\n",Voltage);
-	//DOUT3("Arm Voltage=%f",Voltage);
-	//Note: I have to reverse the voltage again since the wires are currently crossed on the robot
-	m_Potentiometer.UpdatePotentiometerVoltage(-Voltage);
-	m_Potentiometer.TimeChange();  //have this velocity immediately take effect
-}
+//void Robot_Control::UpdateVoltage(size_t index,double Voltage)
+//{
+//}
 
 double Robot_Control::GetArmCurrentPosition()
 {
@@ -662,6 +748,18 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	Ship_1D_Properties::eRobotArm,
 	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
+	),
+	m_ClawProps(
+	"Claw",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
+	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
+	28,   //Max Speed (rounded as we need not have precision)
+	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Properties::eRobotClaw,
+	false	//No limit ever!
 	)
 {
 }
@@ -688,10 +786,10 @@ Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
 	switch (m_SolenoidDevice)
 	{
 		case FRC_2011_Robot::eClaw:
-			m_Robot.GetArm().CloseClaw(m_IsClosed);
+			m_Robot.GetClaw().CloseClaw(m_IsClosed);
 			break;
-		case FRC_2011_Robot::eElbow:
-			m_Robot.GetArm().CloseElbow(m_IsClosed);
+		case FRC_2011_Robot::eRist:
+			m_Robot.GetArm().CloseRist(m_IsClosed);
 			break;
 		case FRC_2011_Robot::eDeployment:
 			m_Robot.CloseDeploymentDoor(m_IsClosed);
