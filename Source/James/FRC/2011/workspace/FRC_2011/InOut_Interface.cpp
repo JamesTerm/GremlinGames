@@ -119,7 +119,11 @@ void Robot_Control::ResetPos()
 	}
 }
 
-Robot_Control::Robot_Control(bool UseSafety) : m_RobotDrive(1,2,3,4),m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
+Robot_Control::Robot_Control(bool UseSafety) :
+	m_1(1),m_2(2),m_3(3),m_4(4),
+	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
+	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
+	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
 	m_OnRist(6),m_OffRist(5),m_OnClaw(4),m_OffClaw(3),m_OnDeploy(2),m_OffDeploy(1),
 	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_Potentiometer(1),m_Camera(NULL)
 {
