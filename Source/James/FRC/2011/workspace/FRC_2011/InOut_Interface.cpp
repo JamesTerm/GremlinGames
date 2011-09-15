@@ -1,8 +1,9 @@
 #define __EncoderHack__
 #undef  __ShowPotentiometerReadings__
 #undef  __ShowEncoderReadings__
+#undef  __ShowRollerReadings__
 
-#if defined(__ShowEncoderReadings__) || defined(__ShowPotentiometerReadings__) 
+#if defined(__ShowEncoderReadings__) || defined(__ShowPotentiometerReadings__) || defined(__ShowRollerReadings__)
 #define __ShowLCD__
 #endif
 
@@ -260,6 +261,10 @@ void Robot_Control_2011::UpdateVoltage(size_t index,double Voltage)
 			break;
 		case FRC_2011_Robot::eRollers:
 			m_RollerMotor.Set(Voltage);
+			#ifdef __ShowRollerReadings__
+			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+			lcd->PrintfLine(DriverStationLCD::kUser_Line4, "RollerVolt=%f ", Voltage);
+			#endif
 			break;
 	}
 }
