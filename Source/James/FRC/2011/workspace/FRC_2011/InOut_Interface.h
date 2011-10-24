@@ -28,7 +28,11 @@ class Robot_Control : public Robot_Control_Interface
 		Solenoid m_OnRist,m_OffRist;
 		Solenoid m_OnClaw,m_OffClaw;
 		Solenoid m_OnDeploy,m_OffDeploy;
-		Encoder m_LeftEncoder,m_RightEncoder;
+		
+//		Encoder m_LeftEncoder,m_RightEncoder;
+		//TODO once we move over to beta remove this work-around to see if issue is fixed
+		Encoder m_DummyEncoderL,m_LeftEncoder,m_DummyEncoderR,m_RightEncoder;
+		
 		//Servo m_DeployDoor,m_LazySusan;
 		AnalogChannel m_Potentiometer;
 		AxisCamera *m_Camera;  //This is a singleton, but treated as a member that is optional

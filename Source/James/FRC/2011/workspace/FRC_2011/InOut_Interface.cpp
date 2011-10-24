@@ -126,7 +126,11 @@ Robot_Control::Robot_Control(bool UseSafety) :
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
 	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
 	m_OnRist(6),m_OffRist(5),m_OnClaw(4),m_OffClaw(3),m_OnDeploy(2),m_OffDeploy(1),
-	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_Potentiometer(1),m_Camera(NULL)
+	
+	//m_LeftEncoder(3,4),m_RightEncoder(1,2),
+	m_DummyEncoderL(6,3,6,4,true),m_LeftEncoder(3,4,true),m_DummyEncoderR(6,1,6,2),m_RightEncoder(1,2),
+	
+	m_Potentiometer(1),m_Camera(NULL)
 {
 	ResetPos();
 	SetSafety(UseSafety);
