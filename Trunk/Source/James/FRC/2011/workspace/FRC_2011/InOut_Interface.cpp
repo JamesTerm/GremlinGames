@@ -1,4 +1,4 @@
-#define __EncoderHack__
+#undef  __EncoderHack__
 #undef  __ShowPotentiometerReadings__
 #undef  __ShowEncoderReadings__
 #undef  __ShowRollerReadings__
@@ -131,7 +131,7 @@ Robot_Control::Robot_Control(bool UseSafety) :
 	m_LeftEncoder(3,4),m_RightEncoder(1,2),
 	#else
 	m_DummyInput(6,1),
-	m_DummyEncoderL(m_DummyInput,m_DummyInput,true),m_LeftEncoder(3,4,true),m_DummyEncoderR(m_DummyInput,m_DummyInput),m_RightEncoder(1,2),
+	m_DummyEncoderL(m_DummyInput,m_DummyInput,true),m_LeftEncoder(3,4),m_DummyEncoderR(m_DummyInput,m_DummyInput),m_RightEncoder(1,2),
 	#endif
 	
 	m_Potentiometer(1),m_Camera(NULL)
