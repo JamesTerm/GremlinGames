@@ -571,10 +571,12 @@ void FRC_2011_Robot::RequestedVelocityCallback(double VelocityToUse,double Delta
 			m_VoltageOverride=true;
 }
 
-const double c_rMotorDriveForward_DeadZone=0.110;
-const double c_rMotorDriveReverse_DeadZone=0.04;
+//TODO recalibrate the dead zones
+//It prior to cow town these were 0.110, 0.04, 0.02, and 0.115  (keep these as a reference)
+const double c_rMotorDriveForward_DeadZone=0.02;
+const double c_rMotorDriveReverse_DeadZone=0.02;
 const double c_lMotorDriveForward_DeadZone=0.02;
-const double c_lMotorDriveReverse_DeadZone=0.115;
+const double c_lMotorDriveReverse_DeadZone=0.02;
 
 const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
 const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
