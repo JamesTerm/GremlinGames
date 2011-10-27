@@ -216,10 +216,13 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
+	
+	//TODO this should be fixed omit this code once confirmed
 	//Unfortunately something happened when the wires got crossed during the texas round up, now needing to reverse the voltage
 	//This was also reversed for the testing kit.  We apply reverse on current velocity for squaring operation to work properly, and
 	//must not do this in the interface, since that will support next year's robot.
-	CurrentVelocity*=-1.0; 
+	//CurrentVelocity*=-1.0; 
+	
 	double Voltage=CurrentVelocity/m_CalibratedScaler;
 
 	if (!m_VoltageOverride)
@@ -487,10 +490,17 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 		if (RightVelocity!=0.0)
 		{
 			double PosY=GetPos_m()[1];
+			
+			//if (!m_VoltageOverride)
+			//	printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+			//else
+			//	printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+			
 			if (!m_VoltageOverride)
-				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+				printf("y=%f el=%f er=%f dl=%f dr=%f cs=%f\n",PosY,Encoder_LeftVelocity,Encoder_RightVelocity,fabs(LeftVelocity)-fabs(Encoder_LeftVelocity),fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
 			else
-				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+				printf("y=%f VO el=%f er=%f dl=%f dr=%f cs=%f\n",PosY,Encoder_LeftVelocity,Encoder_RightVelocity,fabs(LeftVelocity)-fabs(Encoder_LeftVelocity),fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+
 		}
 		#endif
 
