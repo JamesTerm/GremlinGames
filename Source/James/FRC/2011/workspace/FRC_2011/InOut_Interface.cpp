@@ -1,5 +1,5 @@
 #undef  __EncoderHack__
-#undef  __ShowPotentiometerReadings__
+#define  __ShowPotentiometerReadings__
 #undef  __ShowEncoderReadings__
 #undef  __ShowRollerReadings__
 
@@ -125,7 +125,7 @@ Robot_Control::Robot_Control(bool UseSafety) :
 	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
 	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
-	m_OnRist(6),m_OffRist(5),m_OnClaw(4),m_OffClaw(3),m_OnDeploy(2),m_OffDeploy(1),
+	m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
 	
 	#ifndef __UseEncoderWorkaround__
 	m_LeftEncoder(3,4),m_RightEncoder(1,2),
