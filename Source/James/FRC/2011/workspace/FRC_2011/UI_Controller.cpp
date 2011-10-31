@@ -80,8 +80,8 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Button_Default( 3,"Arm_SetPos9feet",false,false,"Joystick_1");
 	joy.AddJoy_Button_Default( 4,"Claw_Grip",true,false,"Joystick_1");
 	joy.AddJoy_Button_Default( 5,"Claw_Squirt",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 7,"Claw_Close",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 6,"Arm_Rist",false,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 7,"Claw_Close",true,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 6,"Arm_Rist",true,false,"Joystick_1");
 	
 	joy.AddJoy_Button_Default( 8,"Robot_CloseDoor",true,false,"Joystick_1");
 	#endif
@@ -97,8 +97,8 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	joy.AddJoy_Button_Default( 9,"Arm_SetPos9feet",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 0,"Claw_Grip",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 2,"Claw_Squirt",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 8,"Claw_Close",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 7,"Arm_Rist",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 8,"Claw_Close",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 7,"Arm_Rist",true,false,"Joystick_2");
 
 	joy.AddJoy_Button_Default( 7,"Robot_CloseDoor",true,false,"Joystick_1");
 	#endif
