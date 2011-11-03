@@ -350,7 +350,8 @@ void FRC_2011_Robot::Robot_Arm::SetPosRest()
 }
 void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 {
-	SetIntendedPosition( HeightToAngle_r(0.02) );
+	//SetIntendedPosition( HeightToAngle_r(0.02) );
+	SetIntendedPosition( HeightToAngle_r(-0.4) ); //about 31 - 39 inches with raptor claw
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
@@ -358,19 +359,22 @@ void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 	//SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
 	//SetIntendedPosition(HeightToAngle_r(0.9144));  //actual
 	//SetIntendedPosition(HeightToAngle_r(0.80001));  //31.5 inches
-	SetIntendedPosition(HeightToAngle_r(0.94800));  //36 inches
+	//SetIntendedPosition(HeightToAngle_r(0.94800));  //36 inches
+	SetIntendedPosition(HeightToAngle_r(0.812842));  //67 inches with raptor claw
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
 	//SetIntendedPosition( HeightToAngle_r(1.8288) );  //actual
 	//SetIntendedPosition( HeightToAngle_r(1.7018) );  //67 inches
 	//SetIntendedPosition( HeightToAngle_r(1.08712) );  //42.8 inches
-	SetIntendedPosition( HeightToAngle_r(0.71000) );  //72 inches with rist up
+	//SetIntendedPosition( HeightToAngle_r(0.71000) );  //72 inches with wrist up
+	SetIntendedPosition( HeightToAngle_r(2.193113) );  //104.5 inches 9 side raptor claw
 }
 void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
 	//SetIntendedPosition( HeightToAngle_r(2.7432) );  //actual
-	SetIntendedPosition( HeightToAngle_r(2.6543) ); //104.5 inches
+	//SetIntendedPosition( HeightToAngle_r(2.6543) ); //104.5 inches
+	SetIntendedPosition( HeightToAngle_r(2.715686) ); //112 inches middle raptor claw
 }
 void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 {
