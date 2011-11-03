@@ -1,3 +1,4 @@
+2.039 * 2.0 = 4.078
 Please press Ctrl+Break to close the console.
 task 0x1ecd4e8 (wtxC6304tmp) deleted: errno=196709 (0x30065) status=45106 (0xb032)
 
