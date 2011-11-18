@@ -281,7 +281,7 @@ void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m
 {
 	m_VoltageOverride=false;
 	//note 0.02 is fine for arm without claw
-	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.1))
+	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.20))
 		m_VoltageOverride=true;
 }
 
