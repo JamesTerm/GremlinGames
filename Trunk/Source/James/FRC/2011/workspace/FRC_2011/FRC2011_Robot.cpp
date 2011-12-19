@@ -88,9 +88,9 @@ void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
 	m_RobotControl->UpdateVoltage(eRollers,Voltage);
 }
 
-void FRC_2011_Robot::Robot_Claw::CloseClaw(bool Close)
+void FRC_2011_Robot::Robot_Claw::OpenClaw(bool Open)
 {
-	m_RobotControl->CloseSolenoid(eClaw,Close);
+	m_RobotControl->CloseSolenoid(eClaw,!Open);
 }
 
 void FRC_2011_Robot::Robot_Claw::Grip(bool on)
@@ -109,14 +109,14 @@ void FRC_2011_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["Claw_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Claw_Close"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Close"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::OpenClaw);
 		em->EventOnOff_Map["Claw_Grip"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Grip);
 		em->EventOnOff_Map["Claw_Squirt"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Squirt);
 	}
 	else
 	{
 		em->EventValue_Map["Claw_SetCurrentVelocity"].Remove(*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Claw_Close"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Close"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::OpenClaw);
 		em->EventOnOff_Map["Claw_Grip"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Grip);
 		em->EventOnOff_Map["Claw_Squirt"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Squirt);
 	}
@@ -378,7 +378,8 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 }
 void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 {
-	m_RobotControl->CloseSolenoid(eRist,Close);
+	//TODO verify that this is now reverse and then change to OpenRist
+	m_RobotControl->CloseSolenoid(eRist,!Close);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -648,7 +649,8 @@ void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
-	m_RobotControl->CloseSolenoid(eDeployment,Close);
+	//TODO verify this is reversed and then rename to DeployMinibot
+	m_RobotControl->CloseSolenoid(eDeployment,!Close);
 }
 
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
@@ -718,7 +720,7 @@ Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
 	switch (m_SolenoidDevice)
 	{
 		case FRC_2011_Robot::eClaw:
-			m_Robot.GetClaw().CloseClaw(m_IsClosed);
+			m_Robot.GetClaw().OpenClaw(!m_IsClosed);
 			break;
 		case FRC_2011_Robot::eRist:
 			m_Robot.GetArm().CloseRist(m_IsClosed);
