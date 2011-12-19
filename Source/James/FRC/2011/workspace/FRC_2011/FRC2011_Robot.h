@@ -37,7 +37,7 @@ class FRC_2011_Robot : public Robot_Tank
 				Robot_Claw(const char EntityName[],Robot_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				//public access needed for goals
-				void CloseClaw(bool Close);
+				void OpenClaw(bool Open);
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on);
 				void Squirt(bool on);

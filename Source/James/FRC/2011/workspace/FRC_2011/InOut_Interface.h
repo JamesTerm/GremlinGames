@@ -1,7 +1,7 @@
 #ifndef INOUT_INTERFACE_H_
 #define INOUT_INTERFACE_H_
 
-#define __UseEncoderWorkaround__
+#undef __UseEncoderWorkaround__
 
 class Robot_Control : public Robot_Control_Interface
 {
