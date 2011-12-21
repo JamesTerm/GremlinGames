@@ -29,7 +29,7 @@ class Robot_Control_Interface
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class FRC_2011_Robot : public Robot_Tank
+class FRC_2011_Robot : public Tank_Drive
 {
 	public:
 		enum SolenoidDevices
@@ -129,7 +129,7 @@ class FRC_2011_Robot : public Robot_Tank
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 	private:
-		//typedef  Robot_Tank __super;
+		//typedef  Tank_Drive __super;
 		Robot_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		Robot_Claw m_Claw;
