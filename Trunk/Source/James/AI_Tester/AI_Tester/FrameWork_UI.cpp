@@ -313,7 +313,7 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 				NewShip=new Ship_Tester(EntityName);
 				break;
 			case Ship_Properties::eRobotTank:
-				NewShip=new Robot_Tank(EntityName);
+				NewShip=new Tank_Drive(EntityName);
 				break;
 			case Ship_Properties::eFRC2011_Robot:
 				NewShip=new FRC_2011_Robot_tester(EntityName);
