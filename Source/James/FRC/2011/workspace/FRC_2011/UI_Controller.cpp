@@ -15,10 +15,6 @@
 #include "Base/JoystickBinder.h"
 #include "UI_Controller.h"
 
-#define __WindRiverJoysticks__
-#undef __AirFlo__
-#undef __UsingXTerminator__
-#undef __UsingWPTH_UI__ //The WPLib Testing Harness UI (where the second joystick is on the UI itself)
 #undef __EnableTestKeys__
 
 using namespace Framework::Base;
@@ -44,64 +40,12 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
 	m_LastSliderTime[0]=m_LastSliderTime[1]=0.0;
 
-	//TODO hard code the events to the correct mappings
-	//I'll need to add parm for instance name to support multiple joysticks
+	//Note: Only generic default keys assigned for windriver builds.  Others are moved to the specific robot
+	//We may wish to move these as well, but for now assert this is generic enough for all robots, which will come in
+	//handy if we want to change the driving style (e.g. arcade, tank steering, etc)
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.1,false,"Joystick_1");
-	//These are not assigned by default but can configured to use via xml preferences
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.1,true,"Joystick_1");
-	//joy.AddJoy_Button_Default(6,"Slide",false);
-	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
 
-	#ifdef __UsingXTerminator__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Rot,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_1");
-	joy.AddJoy_Button_Default(6,"Arm_SetPos0feet",false);
-	joy.AddJoy_Button_Default(5,"Arm_SetPos3feet",false);
-	joy.AddJoy_Button_Default(4,"Arm_SetPos6feet",false);
-	joy.AddJoy_Button_Default(8,"Arm_SetPos9feet",false);
-	#endif
-	#ifdef __UsingWPTH_UI__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_2");
-	//joy.AddJoy_Button_Default(0,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default(0,"Arm_Claw",true,false,"Joystick_2");
-	//Not sure why the simulator skipped 1
-	joy.AddJoy_Button_Default(2,"Robot_OpenDoor",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default(3,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default(4,"Arm_SetPos9feet",false,false,"Joystick_2");
-	#endif
-	#ifdef __AirFlo__
-	//For the Y Axis 3rd paramter false = down for up like flying a plane
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_1");
-	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
-	//This is no longer needed as the zero and the rest are the same
-	//joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 0,"Arm_SetPos0feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 2,"Arm_SetPos3feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 1,"Arm_SetPos6feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 3,"Arm_SetPos9feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 4,"Claw_Grip",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 5,"Claw_Squirt",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 7,"Claw_Close",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 6,"Arm_Rist",true,false,"Joystick_1");
-	
-	joy.AddJoy_Button_Default( 8,"Robot_CloseDoor",true,false,"Joystick_1");
-	#endif
-	#ifdef __WindRiverJoysticks__
-	//For the Y Axis 3rd paramter false = down for up like flying a plane
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
-	//This is no longer needed as the zero and the rest are the same
-	//joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 5,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 6,"Arm_SetPos3feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default(10,"Arm_SetPos6feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 9,"Arm_SetPos9feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 0,"Claw_Grip",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 2,"Claw_Squirt",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 8,"Claw_Close",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 7,"Arm_Rist",true,false,"Joystick_2");
-
-	joy.AddJoy_Button_Default( 7,"Robot_CloseDoor",true,false,"Joystick_1");
-	#endif
 	Init_AutoPilotControls();
 }
 

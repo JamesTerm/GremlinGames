@@ -37,7 +37,7 @@ class SetUp_Manager
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
 		Framework::Base::EventMap m_EventMap;
 		IEvent::HandlerList ehl;
-		UI_Controller *m_pUI;
+		FRC_2011_UI_Controller *m_pUI;
 	public:
 		
 		void GoalComplete()
@@ -57,7 +57,7 @@ class SetUp_Manager
 			//To to bind the UI controller to the robot
 			AI_Base_Controller *controller=m_pRobot->GetController();
 			assert(controller);
-			m_pUI=new UI_Controller(m_JoyBinder,controller); 
+			m_pUI=new FRC_2011_UI_Controller(m_JoyBinder,controller); 
 			if (controller->Try_SetUIController(m_pUI))
 			{
 				//Success... now to let the entity set things up
