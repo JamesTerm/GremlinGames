@@ -1,11 +1,11 @@
-#include "Base/Base_Includes.h"
+#include "../Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
-#include "Base/Vec2d.h"
-#include "Base/Misc.h"
-#include "Base/Event.h"
+#include "../Base/Vec2d.h"
+#include "../Base/Misc.h"
+#include "../Base/Event.h"
 #include "Entity_Properties.h"
-#include "Base/EventMap.h"
+#include "../Base/EventMap.h"
 #include "Physics_1D.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"

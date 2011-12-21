@@ -16,21 +16,21 @@
 #include "Base/Misc.h"
 #include "Base/Event.h"
 #include "Base/EventMap.h"
-#include "Entity_Properties.h"
-#include "Physics_1D.h"
-#include "Physics_2D.h"
-#include "Entity2D.h"
-#include "Goal.h"
-#include "Ship_1D.h"
-#include "Ship.h"
-#include "Robot_Tank.h"
-#include "AI_Base_Controller.h"
+#include "Common/Entity_Properties.h"
+#include "Common/Physics_1D.h"
+#include "Common/Physics_2D.h"
+#include "Common/Entity2D.h"
+#include "Common/Goal.h"
+#include "Common/Ship_1D.h"
+#include "Common/Ship.h"
+#include "Common/Robot_Tank.h"
+#include "Common/AI_Base_Controller.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
-#include "UI_Controller.h"
-#include "PIDController.h"
-#include "InOut_Interface.h"
+#include "Common/UI_Controller.h"
+#include "Common/PIDController.h"
 #include "FRC2011_Robot.h"
+#include "InOut_Interface.h"
 
 using namespace Framework::Base;
 
@@ -126,14 +126,7 @@ Robot_Control::Robot_Control(bool UseSafety) :
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
 	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
 	m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
-	
-	#ifndef __UseEncoderWorkaround__
 	m_LeftEncoder(3,4),m_RightEncoder(1,2),
-	#else
-	m_DummyInput(6,1),
-	m_DummyEncoderL(m_DummyInput,m_DummyInput,true),m_LeftEncoder(3,4),m_DummyEncoderR(m_DummyInput,m_DummyInput),m_RightEncoder(1,2),
-	#endif
-	
 	m_Potentiometer(1),m_Camera(NULL)
 {
 	ResetPos();
