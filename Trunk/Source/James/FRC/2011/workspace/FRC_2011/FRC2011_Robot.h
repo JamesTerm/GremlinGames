@@ -128,6 +128,13 @@ class FRC_2011_Robot_Properties : public Ship_Properties
 		Ship_1D_Properties m_ArmProps,m_ClawProps;
 };
 
+/// This prunes all UI controls specific to this years robot.  Since we do not use files the primary use of this is specific keys assigned
+class FRC_2011_UI_Controller : public UI_Controller
+{
+	public:
+		FRC_2011_UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
+};
+
 class Goal_OperateSolenoid : public AtomicGoal
 {
 	private:
