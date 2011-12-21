@@ -1,5 +1,32 @@
 #pragma once
 
+///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
+class Robot_Control_Interface
+{
+	public:
+		//This is primarily used for updates to dashboard and driver station during a test build
+		virtual void TimeChange(double dTime_s)=0;
+		//We need to pass the properties to the Robot Control to be able to make proper conversions.
+		//The client code may cast the properties to obtain the specific data 
+		virtual void Initialize(const Entity_Properties *props)=0;
+		virtual void Reset_Arm()=0; 
+		virtual void Reset_Encoders()=0;
+
+		//Encoders populate this with current velocity of motors
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
+		/// \param The index is ordinal enumerated to specific robot's interpretation
+		/// \see subclass for enumeration specifics
+		virtual void UpdateVoltage(size_t index,double Voltage)=0;
+		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
+		///This is in radians of the arm's gear ratio
+		///TODO break this apart to reading pure analog values and have the potentiometer conversion happen within the robot
+		virtual double GetArmCurrentPosition()=0;
+		/// \param The index is ordinal enumerated to specific robot's interpretation
+		/// \see subclass for enumeration specifics
+		virtual void CloseSolenoid(size_t index,bool Close)=0;  //true=close false=open
+};
+
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
 class FRC_2011_Robot : public Robot_Tank

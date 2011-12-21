@@ -1,7 +1,7 @@
 #include <math.h>
 #include <assert.h>
-#include "Base/Vec2d.h"
-#include "Base/Misc.h"
+#include "../Base/Vec2d.h"
+#include "../Base/Misc.h"
 #include "Physics_2D.h"
 
 using namespace Framework;

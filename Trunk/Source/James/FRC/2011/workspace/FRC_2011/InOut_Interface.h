@@ -1,8 +1,6 @@
 #ifndef INOUT_INTERFACE_H_
 #define INOUT_INTERFACE_H_
 
-#undef __UseEncoderWorkaround__
-
 class Robot_Control : public Robot_Control_Interface
 {
 	public:
@@ -30,14 +28,7 @@ class Robot_Control : public Robot_Control_Interface
 		Solenoid m_OnRist,m_OffRist;
 		Solenoid m_OnClaw,m_OffClaw;
 		Solenoid m_OnDeploy,m_OffDeploy;
-		
-		#ifndef __UseEncoderWorkaround__
 		Encoder m_LeftEncoder,m_RightEncoder;
-		#else
-		//TODO once we move over to beta remove this work-around to see if issue is fixed
-		DigitalInput m_DummyInput; //use only one dummy channel for the busted encoders (as recommended by Joe H)
-		Encoder m_DummyEncoderL,m_LeftEncoder,m_DummyEncoderR,m_RightEncoder;
-		#endif
 		
 		//Servo m_DeployDoor,m_LazySusan;
 		AnalogChannel m_Potentiometer;

@@ -1,6 +1,6 @@
 #include <math.h>
 #include <assert.h>
-#include "Base/Misc.h"
+#include "../Base/Misc.h"
 #include "Physics_1D.h"
 
 using namespace Framework;
