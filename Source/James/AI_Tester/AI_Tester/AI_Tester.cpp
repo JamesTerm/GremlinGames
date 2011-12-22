@@ -433,12 +433,12 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				Goal_Ship_FollowPath *goal=new Goal_Ship_FollowPath(ship->GetController(),points,true);
 				ship->SetGoal(goal);
 			}
-			void ShipFollowShip(Ship_Tester *ship,Ship_Tester *Followship,double x=-40,double y=-40)
+			void ShipFollowShip(Ship_Tester *ship,Ship_Tester *Followship,double x=-40,double y=-40,double TrajectoryOffset=100.0)
 			{
 				osg::Vec2d RelPosition(x,y);
 				assert(ship && Followship);
 				//Now to setup the goal
-				Goal_Ship_FollowShip *goal=new Goal_Ship_FollowShip(ship->GetController(),*Followship,RelPosition);
+				Goal_Ship_FollowShip *goal=new Goal_Ship_FollowShip(ship->GetController(),*Followship,RelPosition,TrajectoryOffset);
 				ship->SetGoal(goal);
 			}
 		private:
@@ -468,7 +468,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"FollowGod",
 		"GodShip",
 		"bomber",
-		"FollowTest"
+		"FollowTest",
 		"FollowPathTest",
 		"PhysicsTest",
 		"ActorUpdateTest",
@@ -551,7 +551,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				_command.LoadShip("TestShip.lua","TestShip");
 				Followship=dynamic_cast<Ship_Tester *>(_command.AddShip("GodShip","TestShip",str_3,str_4,str_5));
 			}
-			_.ShipFollowShip(ship,Followship,0,-1.0);
+			_.ShipFollowShip(ship,Followship,0,-1.0,0.5);
 			game.SetControlledEntity(Followship);
 		}
 		break;

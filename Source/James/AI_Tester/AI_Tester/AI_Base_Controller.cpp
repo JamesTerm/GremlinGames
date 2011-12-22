@@ -228,7 +228,7 @@ bool Goal_Ship_MoveToPosition::HitWayPoint()
 	// Base a tolerance2 for how close we want to get to the way point based on the current velocity,
 	// within a second of reaching the way point, just move to the next one
 	//Note for FRC... moving at 2mps it will come within an inch of its point with this tolerance
-	double tolerance2 = m_UseSafeStop ? m_SafeStopTolerance : (m_ship.GetPhysics().GetLinearVelocity().length2() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
+	double tolerance2 = m_UseSafeStop ? m_SafeStopTolerance : (m_ship.GetPhysics().GetLinearVelocity().length() * 1.0) + 0.1; // (will keep it within one meter even if not moving)
 	Vec2d currPos = m_ship.GetPos_m();
 	double position_delta=(m_Point.Position-currPos).length();
 	bool ret=position_delta<tolerance2;
@@ -325,11 +325,12 @@ void Goal_Ship_FollowShip::SetRelPosition(const Vec2d &RelPosition)
 {
 	m_RelPosition=RelPosition;
 	m_TrajectoryPosition=RelPosition;
-	m_TrajectoryPosition[1] += 100.0;	// Just point forward
+	m_TrajectoryPosition[1] += m_TrajectoryPosition_ForwardOffset;	// Just point forward
 }
 
-Goal_Ship_FollowShip::Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2d &RelPosition) : m_Controller(controller),
-	m_Followship(Followship),m_ship(controller->GetShip()),m_Terminate(false)
+Goal_Ship_FollowShip::Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2d &RelPosition,double Trajectory_ForwardOffset) : 
+	m_Controller(controller),m_TrajectoryPosition_ForwardOffset(Trajectory_ForwardOffset),m_Followship(Followship),
+	m_ship(controller->GetShip()),m_Terminate(false)
 {
 	SetRelPosition(RelPosition);
 	m_Status=eInactive;

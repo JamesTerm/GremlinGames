@@ -122,7 +122,9 @@ class Goal_Ship_FollowShip : public AtomicGoal
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition);
+		/// \param Trajectory_ForwardOffset This control where the orientation of the following ship will look.  This can vary depending on the size
+		/// of the ship.  This should be virtually 0 if the ship has no strafe
+		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition,double Trajectory_ForwardOffset=100.0);
 		~Goal_Ship_FollowShip();
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
@@ -132,6 +134,7 @@ class Goal_Ship_FollowShip : public AtomicGoal
 	private:
 		AI_Base_Controller * const m_Controller;
 		Vec2D m_RelPosition,m_TrajectoryPosition;
+		double m_TrajectoryPosition_ForwardOffset; //The amount forward to extend the trajectory point
 		const Ship_2D &m_Followship;
 		Ship_2D &m_ship;
 		bool m_Terminate;
