@@ -451,6 +451,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	enum
 	{
 		eCurrent,
+		eRobot2011,
 		eTestGoals,
 		eTestFollowGod,
 		eTestLUAShip,
@@ -463,6 +464,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	};
 	const char * const TestName[]=
 	{
+		"current",
 		"Robot2011",
 		"Goals2011",
 		"FollowGod",
@@ -500,6 +502,18 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	switch(Test)
 	{
 	case eCurrent:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot");
+			Entity2D *TestEntity=_command.AddRobot("Robot2011","TestSwerveRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity);
+		}
+		break;
+	case eRobot2011:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);

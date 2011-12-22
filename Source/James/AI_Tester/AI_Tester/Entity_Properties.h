@@ -84,7 +84,8 @@ class Ship_Properties : public Entity_Properties
 		{
 			eDefault,
 			eRobotTank,
-			eFRC2011_Robot
+			eFRC2011_Robot,
+			eSwerve_Robot
 		};
 		Ship_Type GetShipType() const {return m_ShipType;}
 		double GetEngagedMaxSpeed() const {return m_ENGAGED_MAX_SPEED;}
