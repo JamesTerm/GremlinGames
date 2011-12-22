@@ -227,9 +227,9 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
 
 	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))/4;
-
-	const double omega = ((_.sFR*cos(atan2(W,L)+PI/2-_.aFR)+_.sFL*cos(atan2(-W,L)+PI/2-_.aFL)
-		+_.sRL*cos(atan2(-W,-L)+PI/2-_.aRL)+_.sRR*cos(atan2(W,-L)+PI/2-_.aRR))/4)/
+	const double HP=PI/2;
+	const double omega = ((_.sFR*cos(atan2(W,L)+HP-_.aFR)+_.sFL*cos(atan2(-W,L)+HP-_.aFL)
+		+_.sRL*cos(atan2(-W,-L)+HP-_.aRL)+_.sRR*cos(atan2(W,-L)+HP-_.aRR))/4)/
 		(sqrt((L*L)+(W*W))/2);
 
 	LocalVelocity[0]=STR;
