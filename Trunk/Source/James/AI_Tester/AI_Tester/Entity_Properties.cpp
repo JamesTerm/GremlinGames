@@ -223,6 +223,16 @@ void Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& scr
 			m_ShipType=eFRC2011_Robot;
 			m_EntityName="RobotTank";
 		}
+		else
+		{
+			err = script.GetGlobalTable("RobotSwerve");
+			if (!err)
+			{
+				//m_ShipType=eRobotTank;	//keep around for less stress
+				m_ShipType=eSwerve_Robot;
+				m_EntityName="RobotSwerve";
+			}
+		}
 	}
 	ASSERT_MSG(!err, err);
 	{
@@ -332,7 +342,11 @@ void UI_Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& 
 	const char* err;
 	err = script.GetGlobalTable("Ship");
 	if (err)
+	{
 		err = script.GetGlobalTable("RobotTank");
+		if (err)
+			err = script.GetGlobalTable("RobotSwerve");
+	}
 	ASSERT_MSG(!err, err);
 	{
 		//Get the ships UI

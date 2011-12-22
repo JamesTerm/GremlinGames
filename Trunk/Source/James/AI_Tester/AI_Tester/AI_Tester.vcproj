@@ -248,6 +248,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Swerve_Robot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TestText.cpp"
 				>
 			</File>
@@ -327,6 +331,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Swerve_Robot.h"
 				>
 			</File>
 			<File

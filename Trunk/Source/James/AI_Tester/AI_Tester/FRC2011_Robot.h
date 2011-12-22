@@ -147,7 +147,7 @@ class FRC_2011_Robot : public Tank_Drive
 class Robot_Control : public Robot_Control_Interface
 {
 	public:
-		Robot_Control(FRC_2011_Robot *Robot);
+		Robot_Control();
 		//This is only needed for simulation
 		virtual void TimeChange(double dTime_s);
 	protected: //from Robot_Control_Interface
@@ -161,7 +161,6 @@ class Robot_Control : public Robot_Control_Interface
 		//pacify this by returning its current value
 		virtual double GetArmCurrentPosition();
 	protected:
-		FRC_2011_Robot * const m_Robot;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
 		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
@@ -175,7 +174,7 @@ class Robot_Control : public Robot_Control_Interface
 class Robot_Control_2011 : public Robot_Control
 {
 	public:
-		Robot_Control_2011(FRC_2011_Robot *Robot) : Robot_Control(Robot) {}
+		Robot_Control_2011()  {}
 		//See FRC_2011_Robot for enumerations
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual void CloseSolenoid(size_t index,bool Close);
@@ -185,7 +184,7 @@ class Robot_Control_2011 : public Robot_Control
 class FRC_2011_Robot_tester : public FRC_2011_Robot, public Robot_Control_2011
 {
 	public:
-		FRC_2011_Robot_tester(const char EntityName[]) : FRC_2011_Robot(EntityName,this),Robot_Control_2011(this) {}
+		FRC_2011_Robot_tester(const char EntityName[]) : FRC_2011_Robot(EntityName,this),Robot_Control_2011() {}
 };
 
 class FRC_2011_Robot_Properties : public UI_Ship_Properties

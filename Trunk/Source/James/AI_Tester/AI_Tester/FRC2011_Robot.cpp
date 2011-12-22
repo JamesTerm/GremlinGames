@@ -811,8 +811,8 @@ void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
  /*															Robot_Control															*/
 /***********************************************************************************************************************************/
 
-Robot_Control::Robot_Control(FRC_2011_Robot *Robot) : m_Robot(Robot),
-	m_LeftVoltage(0.0),m_RightVoltage(0.0),m_ArmVoltage(0.0),m_RollerVoltage(0.0),m_Deployment(false),m_Claw(false),m_Rist(false)
+Robot_Control::Robot_Control() : m_LeftVoltage(0.0),m_RightVoltage(0.0),m_ArmVoltage(0.0),m_RollerVoltage(0.0),
+	m_Deployment(false),m_Claw(false),m_Rist(false)
 {
 }
 
