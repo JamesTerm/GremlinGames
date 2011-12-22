@@ -214,3 +214,6 @@ class Goal_OperateSolenoid : public AtomicGoal
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate() {m_Terminate=true;}
 };
+
+Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot);
+Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot);

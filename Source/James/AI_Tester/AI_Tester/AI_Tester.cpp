@@ -269,145 +269,314 @@ void SetUpUI(GUIThread *&UI_thread,Viewer_Callback_Interface *ViewerCallback)
 		throw "Unable to start UI";
 }
 
-Goal *Get_TestLengthGoal_OLD(Ship_Tester *ship)
+class Commands
 {
-	//Construct a way point
-	WayPoint wp;
-	wp.Position[0]=0.0;
-	wp.Position[1]=1.0;
-	wp.Power=1.0;
-	//Now to setup the goal
-	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp,true,true);
-	return goal;
-}
+private:	
+	typedef map<string ,UI_Ship_Properties,greater<string>> ShipMap;
+	ShipMap Character_Database;
+	typedef map<string ,FRC_2011_Robot_Properties,greater<string>> RobotMap;
+	RobotMap Robot_Database;
 
-Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot)
-{
-	//float position=DriverStation::GetInstance()->GetAnalogIn(1);
-	float position=1.0;
-	//Construct a way point
-	WayPoint wp;
-	wp.Position[0]=0.0;
-	wp.Position[1]=position;
-	wp.Power=1.0;
-	//Now to setup the goal
-	Goal_Ship_MoveToPosition *goal_move1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	Goal_Wait *goal_wait=new Goal_Wait(2.0); //wait
-	wp.Position[1]=0;
-	Goal_Ship_MoveToPosition *goal_move2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	UI_Controller_GameClient &game;
 
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+public:
+	Commands(UI_Controller_GameClient &_game) : game(_game) {}
 
-	MainGoal->AddSubgoal(goal_move2);
-	MainGoal->AddSubgoal(goal_wait);
-	MainGoal->AddSubgoal(goal_move1);
-	return MainGoal;
-}
+	void LoadShip(const char *FileName,const char *ShipName)
+	{
+		ShipMap::iterator iter=Character_Database.find(ShipName);
+		if (iter==Character_Database.end())
+		{
+			//New entry
+			Character_Database[ShipName]=UI_Ship_Properties();
+			UI_Ship_Properties &new_entry=Character_Database[ShipName];  //reference to avoid copy
+			GG_Framework::Logic::Scripting::Script script;
+			script.LoadScript(FileName,true);
+			script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 
-Goal *Get_UberTubeGoal_OLD(FRC_2011_Robot *Robot)
-{
-	Ship_1D &Arm=Robot->GetArm();
-	//Now to setup the goal
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);
-	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+			new_entry.LoadFromScript(script);
+		}
+		else
+			printf("%s already loaded\n",ShipName);
+	}
+	Entity2D *AddShip(const char *str_1,const char *str_2,const char *str_3,const char *str_4,const char *str_5)
+	{
+		Entity2D *ret=NULL;
+		ShipMap::iterator iter=Character_Database.find(str_2);
+		if (iter!=Character_Database.end())
+		{
+			double x=atof(str_3);
+			double y=atof(str_4);
+			double heading=atof(str_5);
+			Entity2D *TestEntity=NULL;
+			TestEntity=game.AddEntity(str_1,(*iter).second);
+			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
+			if (ship)
+			{
+				ship->SetPosition(x,y);
+				ship->SetAttitude(heading * (PI/180.0));
+				ret=ship;
+			}
+		}
+		else
+			printf("%s Ship not found, try loading it\n",str_2);
+		return ret;
+	}
+	void LoadRobot(const char *FileName,const char *RobotName)
+	{
+		RobotMap::iterator iter=Robot_Database.find(RobotName);
+		if (iter==Robot_Database.end())
+		{
+			//New entry
+			Robot_Database[RobotName]=FRC_2011_Robot_Properties();
+			FRC_2011_Robot_Properties &new_entry=Robot_Database[RobotName];  //reference to avoid copy
+			GG_Framework::Logic::Scripting::Script script;
+			script.LoadScript(FileName,true);
+			script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 
-	//Construct a way point
-	WayPoint wp;
-	wp.Position[0]=0;
-	wp.Position[1]=8.5;
-	wp.Power=1.0;
-	//Now to setup the goal
-	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+			new_entry.LoadFromScript(script);
+		}
+		else
+			printf("%s already loaded\n",RobotName);
+	}
+	Entity2D *AddRobot(const char *str_1,const char *str_2,const char *str_3,const char *str_4,const char *str_5)
+	{
+		Entity2D *ret=NULL;
+		RobotMap::iterator iter=Robot_Database.find(str_2);
+		if (iter!=Robot_Database.end())
+		{
+			double x=atof(str_3);
+			double y=atof(str_4);
+			double heading=atof(str_5);
+			Entity2D *TestEntity=NULL;
+			TestEntity=game.AddEntity(str_1,(*iter).second);
+			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
+			if (ship)
+			{
+				ship->SetPosition(x,y);
+				ship->SetAttitude(heading * (PI/180.0));
+				ret=ship;
+			}
+		}
+		else
+			printf("%s Robot not found, try loading it\n",str_2);
+		return ret;
+	}
 
-	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
-	Initial_Start_Goal->AddGoal(goal_arm);
-	Initial_Start_Goal->AddGoal(goal_drive);
-
-	wp.Position[1]=9;
-	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	wp.Position[1]=8.5;
-	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
-	wp.Position[1]=0;
-	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
-	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
-
-	MultitaskGoal *End_Goal=new MultitaskGoal;
-	End_Goal->AddGoal(goal_arm2);
-	End_Goal->AddGoal(goal_drive4);
-
-	//wrap the goal in a notify goal
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete"); //will fire Complete once it is done
-	//Inserted in reverse since this is LIFO stack list
-	MainGoal->AddSubgoal(End_Goal);
-	MainGoal->AddSubgoal(goal_drive3);
-	MainGoal->AddSubgoal(goal_waitfordrop);
-	//TODO drop claw here
-	MainGoal->AddSubgoal(goal_drive2);
-	MainGoal->AddSubgoal(Initial_Start_Goal);
-	MainGoal->Activate(); //now with the goal(s) loaded activate it
-	//Now to subscribe to this event... it will call Stop Loop when the goal is finished
-	//Robot->GetEventMap()->Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Autonomous::StopLoop);
-	return MainGoal;
-}
-
-Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
-{
-	Ship_1D &Arm=Robot->GetArm();
-	//Now to setup the goal
-	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
-	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
-	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
-
-	//Construct a way point
-	//Note: full length is 232 inches or 5.89 meters
-	const double starting_line=5.49656;  //18.03333
-	//const double starting_line=2.3; //hack not calibrated
-	WayPoint wp;
-	wp.Position[0]=0;
-	wp.Position[1]=starting_line;
-	wp.Power=1.0;
-	//Now to setup the goal
-	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-
-	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
-	Initial_Start_Goal->AddGoal(goal_arm);
-	Initial_Start_Goal->AddGoal(goal_drive);
-
-	wp.Position[1]=starting_line+0.1;
-	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.83312);  //32.8 TODO find how much to lower
-	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
-
-	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
-
-	wp.Position[1]=starting_line;
-	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-
-	wp.Position[1]=0;
-	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
-	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
-
-	MultitaskGoal *End_Goal=new MultitaskGoal;
-	End_Goal->AddGoal(goal_arm3);
-	End_Goal->AddGoal(goal_drive4);
-
-	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
-	//Inserted in reverse since this is LIFO stack list
-	MainGoal->AddSubgoal(End_Goal);
-	MainGoal->AddSubgoal(goal_drive3);
-	MainGoal->AddSubgoal(goal_waitfordrop);
-	MainGoal->AddSubgoal(goal_arm2);
-	MainGoal->AddSubgoal(goal_drive2);
-	MainGoal->AddSubgoal(Initial_Start_Goal);
-	return MainGoal;
 };
 
+void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command, const char * const Args[])
+{
+	const char * const str_1=Args[0];
+	const char * const str_2=Args[1];
+	const char * const str_3=Args[2];
+	const char * const str_4=Args[3];
+	const char * const str_5=Args[4];
+
+	class commonStuff
+	{
+		public:
+			commonStuff(GUIThread *_UI_thread,UI_Controller_GameClient &_game) : UI_thread(_UI_thread),game(_game)		{}
+			Ship_Tester *Control_A_Bomber()
+			{
+				SetUpUI(UI_thread,&game);
+				Entity2D *TestEntity=NULL;
+				TestEntity=game.AddEntity("test",e_Bomber);
+				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
+				assert(ship);
+				ship->GetGameAttributes().GetTeamName()="blue";
+				game.SetControlledEntity(TestEntity);
+				return ship;
+			}
+			Ship_Tester *Create_A_Fighter(const char *Name)
+			{
+				SetUpUI(UI_thread,&game);
+				Entity2D *TestEntity=NULL;
+				TestEntity=game.AddEntity(Name,e_Fighter);
+				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
+				assert(ship);
+				ship->GetGameAttributes().GetTeamName()="blue";
+				return ship;
+			}
+			Ship_Tester *Create_A_Sniper(const char *Name)
+			{
+				SetUpUI(UI_thread,&game);
+				Entity2D *TestEntity=NULL;
+				TestEntity=game.AddEntity(Name,e_Sniper);
+				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
+				assert(ship);
+				ship->GetGameAttributes().GetTeamName()="red";
+				return ship;
+			}
+			void GiveSquareWayPointGoal(Ship_Tester *ship)
+			{
+				std::list <WayPoint> points;
+				struct Locations
+				{
+					double x,y;
+				} test[]=
+				{
+					{100.0,100.0},
+					{100.0,-100.0},
+					{-100.0,-100.0},
+					{-100.0,100.0}
+				};
+				for (size_t i=0;i<_countof(test);i++)
+				{
+					WayPoint wp;
+					wp.Position[0]=test[i].x;
+					wp.Position[1]=test[i].y;
+					wp.Power=0.5;
+					points.push_back(wp);
+				}
+				//Now to setup the goal
+				Goal_Ship_FollowPath *goal=new Goal_Ship_FollowPath(ship->GetController(),points,true);
+				ship->SetGoal(goal);
+			}
+			void ShipFollowShip(Ship_Tester *ship,Ship_Tester *Followship,double x=-40,double y=-40)
+			{
+				osg::Vec2d RelPosition(x,y);
+				assert(ship && Followship);
+				//Now to setup the goal
+				Goal_Ship_FollowShip *goal=new Goal_Ship_FollowShip(ship->GetController(),*Followship,RelPosition);
+				ship->SetGoal(goal);
+			}
+		private:
+			GUIThread *UI_thread;
+			UI_Controller_GameClient &game;
+	} _(UI_thread,game);
+
+	int Test=atoi(str_1);
+	enum
+	{
+		eCurrent,
+		eTestGoals,
+		eTestLUAShip,
+		eControlABomber,
+		eFollowShipTest,
+		eFollowPathTest,
+		ePhysicsTest,
+		eActorUpdateTest,
+		eTextTest
+	};
+	switch(Test)
+	{
+	case eCurrent:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("TestRobot.lua","TestRobot");
+			Entity2D *TestEntity=_command.AddRobot("testrobot1","TestRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity);
+		}
+		break;
+	case eTestGoals:
+		{
+			FRC_2011_Robot *Robot=dynamic_cast<FRC_2011_Robot *>(game.GetEntity("testrobot1"));
+			if (Robot)
+			{
+				Goal *oldgoal=Robot->ClearGoal();
+				if (oldgoal)
+					delete oldgoal;
+
+				Goal *goal=NULL;
+				const int AutonomousValue=2;
+				switch (AutonomousValue)
+				{
+					//case 1:		goal=Test_Arm(Robot);			break;
+				case 2:		goal=Get_TestLengthGoal(Robot);					break;
+					//case 3:		goal=Get_TestRotationGoal(ship);				break;
+				case 4:		goal=Get_UberTubeGoal(Robot);	break;
+				}
+				if (goal)
+					goal->Activate(); //now with the goal(s) loaded activate it
+				Robot->SetGoal(goal);
+			}
+			else
+				printf("Robot not found\n");
+			break;
+		}
+	case eTestLUAShip:
+		{
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadShip("TestShip.lua","TestShip");
+			Entity2D *TestEntity=_command.AddShip("testship1","TestShip",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity);
+		}
+		break;
+	case eControlABomber:
+		{
+			Ship_Tester *ship=_.Control_A_Bomber();
+			//UI_thread->GetUI()->SetCallbackInterface(&game);
+			double ForceTorque=1.0*ship->GetPhysics().GetMass();
+			//TestEntity->GetPhysics().ApplyFractionalTorque(ForceTorque,1.0);
+			//TestEntity->GetPhysics().ApplyFractionalForce(osg::Vec2d(ForceTorque,ForceTorque),1.0);
+
+		}
+		break;
+	case eFollowShipTest:
+		{
+			Ship_Tester *ship=_.Control_A_Bomber();
+			_.GiveSquareWayPointGoal(ship);
+			Ship_Tester *F1=_.Create_A_Fighter("F1");
+			_.ShipFollowShip(F1,ship);
+			Ship_Tester *F2=_.Create_A_Fighter("F2");
+			_.ShipFollowShip(F2,ship,40);
+			Ship_Tester *F3=_.Create_A_Fighter("F3");
+			_.ShipFollowShip(F3,F1);
+			Ship_Tester *F4=_.Create_A_Fighter("F4");
+			_.ShipFollowShip(F4,F2,40);
+			Ship_Tester *Snip=_.Create_A_Sniper("Sn1");
+			_.ShipFollowShip(Snip,F4,0);
+		}
+		break;
+	case eFollowPathTest:
+		{
+			Ship_Tester *ship=_.Control_A_Bomber();
+			_.GiveSquareWayPointGoal(ship);
+		}
+		break;
+	case ePhysicsTest:
+		{
+			SetUpUI(UI_thread,&game);
+			Entity2D *TestEntity=NULL;
+			g_TestPhysics=true;
+			TestEntity=game.AddEntity("test",e_Bomber);
+			g_TestPhysics=false;
+			double ForceTorque=1.0*TestEntity->GetPhysics().GetMass();
+			//TestEntity->GetPhysics().ApplyFractionalTorque(ForceTorque,1.0);
+			TestEntity->GetPhysics().ApplyFractionalForce(osg::Vec2d(ForceTorque,ForceTorque),1.0);
+		}
+		break;
+	case eActorUpdateTest:
+		{
+			TestCallback_2 test;
+			SetUpUI(UI_thread,&test);
+			assert (UI_thread);
+			size_t TimeOut=0;
+			while(!test.GetIsSetup()&&TimeOut++<100)
+				ThreadSleep(200);
+			UI_thread->GetUI()->SetCallbackInterface(NULL);
+		}
+		break;
+
+	case eTextTest:
+		{
+			TestCallback test;
+			SetUpUI(UI_thread,&test);
+			assert (UI_thread);
+			size_t TimeOut=0;
+			while(!test.GetIsSetup()&&TimeOut++<100)
+				ThreadSleep(200);
+			UI_thread->GetUI()->SetCallbackInterface(NULL);
+		}
+		break;
+	}
+}
 
 #define MAX_PATH          260
 #pragma warning(disable : 4996)
@@ -415,101 +584,7 @@ void CommandLineInterface()
 {
 	UI_Controller_GameClient game;
 
-	class Commands
-	{
-		private:	
-			typedef map<string ,UI_Ship_Properties,greater<string>> ShipMap;
-			ShipMap Character_Database;
-			typedef map<string ,FRC_2011_Robot_Properties,greater<string>> RobotMap;
-			RobotMap Robot_Database;
-
-			UI_Controller_GameClient &game;
-
-		public:
-		Commands(UI_Controller_GameClient &_game) : game(_game) {}
-
-		void LoadShip(const char *FileName,const char *ShipName)
-		{
-			ShipMap::iterator iter=Character_Database.find(ShipName);
-			if (iter==Character_Database.end())
-			{
-				//New entry
-				Character_Database[ShipName]=UI_Ship_Properties();
-				UI_Ship_Properties &new_entry=Character_Database[ShipName];  //reference to avoid copy
-				GG_Framework::Logic::Scripting::Script script;
-				script.LoadScript(FileName,true);
-				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
-
-				new_entry.LoadFromScript(script);
-			}
-			else
-				printf("%s already loaded\n",ShipName);
-		}
-		Entity2D *AddShip(const char *str_1,const char *str_2,const char *str_3,const char *str_4,const char *str_5)
-		{
-			Entity2D *ret=NULL;
-			ShipMap::iterator iter=Character_Database.find(str_2);
-			if (iter!=Character_Database.end())
-			{
-				double x=atof(str_3);
-				double y=atof(str_4);
-				double heading=atof(str_5);
-				Entity2D *TestEntity=NULL;
-				TestEntity=game.AddEntity(str_1,(*iter).second);
-				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-				if (ship)
-				{
-					ship->SetPosition(x,y);
-					ship->SetAttitude(heading * (PI/180.0));
-					ret=ship;
-				}
-			}
-			else
-				printf("%s Ship not found, try loading it\n",str_2);
-			return ret;
-		}
-		void LoadRobot(const char *FileName,const char *RobotName)
-		{
-			RobotMap::iterator iter=Robot_Database.find(RobotName);
-			if (iter==Robot_Database.end())
-			{
-				//New entry
-				Robot_Database[RobotName]=FRC_2011_Robot_Properties();
-				FRC_2011_Robot_Properties &new_entry=Robot_Database[RobotName];  //reference to avoid copy
-				GG_Framework::Logic::Scripting::Script script;
-				script.LoadScript(FileName,true);
-				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
-
-				new_entry.LoadFromScript(script);
-			}
-			else
-				printf("%s already loaded\n",RobotName);
-		}
-		Entity2D *AddRobot(const char *str_1,const char *str_2,const char *str_3,const char *str_4,const char *str_5)
-		{
-			Entity2D *ret=NULL;
-			RobotMap::iterator iter=Robot_Database.find(str_2);
-			if (iter!=Robot_Database.end())
-			{
-				double x=atof(str_3);
-				double y=atof(str_4);
-				double heading=atof(str_5);
-				Entity2D *TestEntity=NULL;
-				TestEntity=game.AddEntity(str_1,(*iter).second);
-				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-				if (ship)
-				{
-					ship->SetPosition(x,y);
-					ship->SetAttitude(heading * (PI/180.0));
-					ret=ship;
-				}
-			}
-			else
-				printf("%s Robot not found, try loading it\n",str_2);
-			return ret;
-		}
-
-	} _command(game);
+	Commands _command(game);
 
 	#if 0
 	GUIThread *UI_thread=NULL;
@@ -521,15 +596,21 @@ void CommandLineInterface()
 	cout << "Ready." << endl;
 
    	char input_line[128];
+
+	char		command[32];
+	char		str_1[MAX_PATH];
+	char		str_2[MAX_PATH];
+	char		str_3[MAX_PATH];
+	char		str_4[MAX_PATH];
+	char		str_5[MAX_PATH];
+
+	const char * const Args[]=
+	{
+		str_1,str_2,str_3,str_4,str_5
+	};
+
     while (cout << ">",cin.getline(input_line,128))
     {
-		char		command[32];
-		char		str_1[MAX_PATH];
-		char		str_2[MAX_PATH];
-		char		str_3[MAX_PATH];
-		char		str_4[MAX_PATH];
-		char		str_5[MAX_PATH];
-
 		command[0]=0;
 		str_1[0]=0;
 		str_2[0]=0;
@@ -697,208 +778,7 @@ void CommandLineInterface()
 			}
 			else if (!_strnicmp( input_line, "Test", 4))
 			{
-				class commonStuff
-				{
-					public:
-						commonStuff(GUIThread *_UI_thread,UI_Controller_GameClient &_game) : UI_thread(_UI_thread),game(_game)		{}
-						Ship_Tester *Control_A_Bomber()
-						{
-							SetUpUI(UI_thread,&game);
-							Entity2D *TestEntity=NULL;
-							TestEntity=game.AddEntity("test",e_Bomber);
-							Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-							assert(ship);
-							ship->GetGameAttributes().GetTeamName()="blue";
-							game.SetControlledEntity(TestEntity);
-							return ship;
-						}
-						Ship_Tester *Create_A_Fighter(const char *Name)
-						{
-							SetUpUI(UI_thread,&game);
-							Entity2D *TestEntity=NULL;
-							TestEntity=game.AddEntity(Name,e_Fighter);
-							Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-							assert(ship);
-							ship->GetGameAttributes().GetTeamName()="blue";
-							return ship;
-						}
-						Ship_Tester *Create_A_Sniper(const char *Name)
-						{
-							SetUpUI(UI_thread,&game);
-							Entity2D *TestEntity=NULL;
-							TestEntity=game.AddEntity(Name,e_Sniper);
-							Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-							assert(ship);
-							ship->GetGameAttributes().GetTeamName()="red";
-							return ship;
-						}
-						void GiveSquareWayPointGoal(Ship_Tester *ship)
-						{
-							std::list <WayPoint> points;
-							struct Locations
-							{
-								double x,y;
-							} test[]=
-							{
-								{100.0,100.0},
-								{100.0,-100.0},
-								{-100.0,-100.0},
-								{-100.0,100.0}
-							};
-							for (size_t i=0;i<_countof(test);i++)
-							{
-								WayPoint wp;
-								wp.Position[0]=test[i].x;
-								wp.Position[1]=test[i].y;
-								wp.Power=0.5;
-								points.push_back(wp);
-							}
-							//Now to setup the goal
-							Goal_Ship_FollowPath *goal=new Goal_Ship_FollowPath(ship->GetController(),points,true);
-							ship->SetGoal(goal);
-						}
-						void ShipFollowShip(Ship_Tester *ship,Ship_Tester *Followship,double x=-40,double y=-40)
-						{
-							osg::Vec2d RelPosition(x,y);
-							assert(ship && Followship);
-							//Now to setup the goal
-							Goal_Ship_FollowShip *goal=new Goal_Ship_FollowShip(ship->GetController(),*Followship,RelPosition);
-							ship->SetGoal(goal);
-						}
-					private:
-						GUIThread *UI_thread;
-						UI_Controller_GameClient &game;
-				} _(UI_thread,game);
-				int Test=atoi(str_1);
-				enum
-				{
-					eCurrent,
-					eTestGoals,
-					eTestLUAShip,
-					eControlABomber,
-					eFollowShipTest,
-					eFollowPathTest,
-					ePhysicsTest,
-					eActorUpdateTest,
-					eTextTest
-				};
-				switch(Test)
-				{
-					case eCurrent:
-						{
-							#ifdef _DEBUG
-							UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
-							#endif
-							g_WorldScaleFactor=100.0;
-							game.SetDisableEngineRampUp2(true);
-							_command.LoadRobot("TestRobot.lua","TestRobot");
-							Entity2D *TestEntity=_command.AddRobot("testrobot1","TestRobot",str_3,str_4,str_5);
-							game.SetControlledEntity(TestEntity);
-						}
-						break;
-					case eTestGoals:
-						{
-							FRC_2011_Robot *Robot=dynamic_cast<FRC_2011_Robot *>(game.GetEntity("testrobot1"));
-							if (Robot)
-							{
-								Goal *oldgoal=Robot->ClearGoal();
-								if (oldgoal)
-									delete oldgoal;
-
-								Goal *goal=NULL;
-								const int AutonomousValue=2;
-								switch (AutonomousValue)
-								{
-									//case 1:		goal=Test_Arm(Robot);			break;
-									case 2:		goal=Get_TestLengthGoal(Robot);					break;
-									//case 3:		goal=Get_TestRotationGoal(ship);				break;
-									case 4:		goal=Get_UberTubeGoal(Robot);	break;
-								}
-								if (goal)
-									goal->Activate(); //now with the goal(s) loaded activate it
-								Robot->SetGoal(goal);
-							}
-							else
-								printf("Robot not found\n");
-							break;
-						}
-					case eTestLUAShip:
-						{
-							g_WorldScaleFactor=100.0;
-							game.SetDisableEngineRampUp2(true);
-							_command.LoadShip("TestShip.lua","TestShip");
-							Entity2D *TestEntity=_command.AddShip("testship1","TestShip",str_3,str_4,str_5);
-							game.SetControlledEntity(TestEntity);
-						}
-						break;
-					case eControlABomber:
-					{
-						Ship_Tester *ship=_.Control_A_Bomber();
-						//UI_thread->GetUI()->SetCallbackInterface(&game);
-						double ForceTorque=1.0*ship->GetPhysics().GetMass();
-						//TestEntity->GetPhysics().ApplyFractionalTorque(ForceTorque,1.0);
-						//TestEntity->GetPhysics().ApplyFractionalForce(osg::Vec2d(ForceTorque,ForceTorque),1.0);
-
-					}
-						break;
-					case eFollowShipTest:
-						{
-							Ship_Tester *ship=_.Control_A_Bomber();
-							_.GiveSquareWayPointGoal(ship);
-							Ship_Tester *F1=_.Create_A_Fighter("F1");
-							_.ShipFollowShip(F1,ship);
-							Ship_Tester *F2=_.Create_A_Fighter("F2");
-							_.ShipFollowShip(F2,ship,40);
-							Ship_Tester *F3=_.Create_A_Fighter("F3");
-							_.ShipFollowShip(F3,F1);
-							Ship_Tester *F4=_.Create_A_Fighter("F4");
-							_.ShipFollowShip(F4,F2,40);
-							Ship_Tester *Snip=_.Create_A_Sniper("Sn1");
-							_.ShipFollowShip(Snip,F4,0);
-						}
-						break;
-					case eFollowPathTest:
-						{
-							Ship_Tester *ship=_.Control_A_Bomber();
-							_.GiveSquareWayPointGoal(ship);
-						}
-						break;
-					case ePhysicsTest:
-						{
-							SetUpUI(UI_thread,&game);
-							Entity2D *TestEntity=NULL;
-							g_TestPhysics=true;
-							TestEntity=game.AddEntity("test",e_Bomber);
-							g_TestPhysics=false;
-							double ForceTorque=1.0*TestEntity->GetPhysics().GetMass();
-							//TestEntity->GetPhysics().ApplyFractionalTorque(ForceTorque,1.0);
-							TestEntity->GetPhysics().ApplyFractionalForce(osg::Vec2d(ForceTorque,ForceTorque),1.0);
-						}
-						break;
-					case eActorUpdateTest:
-					{
-						TestCallback_2 test;
-						SetUpUI(UI_thread,&test);
-						assert (UI_thread);
-						size_t TimeOut=0;
-						while(!test.GetIsSetup()&&TimeOut++<100)
-							ThreadSleep(200);
-						UI_thread->GetUI()->SetCallbackInterface(NULL);
-					}
-						break;
-
-					case eTextTest:
-						{
-							TestCallback test;
-							SetUpUI(UI_thread,&test);
-							assert (UI_thread);
-							size_t TimeOut=0;
-							while(!test.GetIsSetup()&&TimeOut++<100)
-								ThreadSleep(200);
-							UI_thread->GetUI()->SetCallbackInterface(NULL);
-						}
-						break;
-				}
+				Test(UI_thread,game,_command,Args);
 			}
 			else if (!_strnicmp( input_line, "RampEngine", 5))
 			{
