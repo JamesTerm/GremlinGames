@@ -16,7 +16,7 @@ namespace AI_Tester
 	#include "Goal.h"
 	#include "Ship_1D.h"
 	#include "Ship.h"
-	#include "Robot_Tank.h"
+	#include "Vehicle_Drive.h"
 	#include "AI_Base_Controller.h"
 	#include "UI_Controller.h"
 }

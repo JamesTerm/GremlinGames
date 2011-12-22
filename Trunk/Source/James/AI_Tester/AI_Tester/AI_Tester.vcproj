@@ -220,10 +220,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Robot_Tank.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Ship.cpp"
 				>
 			</File>
@@ -257,6 +253,10 @@
 			</File>
 			<File
 				RelativePath=".\UI_Controller.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Vehicle_Drive.cpp"
 				>
 			</File>
 			<File
@@ -318,10 +318,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Robot_Tank.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Ship.h"
 				>
 			</File>
@@ -339,6 +335,10 @@
 			</File>
 			<File
 				RelativePath=".\UI_Controller.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Vehicle_Drive.h"
 				>
 			</File>
 			<File
