@@ -452,7 +452,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	{
 		eCurrent,
 		eTestGoals,
-		eTest2011Follow,
+		eTestFollowGod,
 		eTestLUAShip,
 		eControlABomber,
 		eFollowShipTest,
@@ -465,7 +465,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	{
 		"Robot2011",
 		"Goals2011",
-		"FollowGod2011",
+		"FollowGod",
 		"GodShip",
 		"bomber",
 		"FollowTest"
@@ -521,7 +521,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 					delete oldgoal;
 
 				Goal *goal=NULL;
-				const int AutonomousValue=2;
+				const int AutonomousValue=str_2[0]?atoi(str_2):2;
 				switch (AutonomousValue)
 				{
 					//case 1:		goal=Test_Arm(Robot);			break;
@@ -537,7 +537,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 			break;
 		}
-	case eTest2011Follow:
+	case eTestFollowGod:
 		{
 			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("Robot2011"));
 			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
