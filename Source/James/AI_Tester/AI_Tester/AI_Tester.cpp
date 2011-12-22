@@ -447,10 +447,12 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	} _(UI_thread,game);
 
 	int Test=atoi(str_1);
+
 	enum
 	{
 		eCurrent,
 		eTestGoals,
+		eTest2011Follow,
 		eTestLUAShip,
 		eControlABomber,
 		eFollowShipTest,
@@ -459,6 +461,42 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eActorUpdateTest,
 		eTextTest
 	};
+	const char * const TestName[]=
+	{
+		"Robot2011",
+		"Goals2011",
+		"FollowGod2011",
+		"GodShip",
+		"bomber",
+		"FollowTest"
+		"FollowPathTest",
+		"PhysicsTest",
+		"ActorUpdateTest",
+		"TextTest"
+	};
+
+	//if the first character is not a number then translate the string
+	if (((str_1[0]<'0')||(str_1[0]>'9'))&&(str_1[0]!=0))
+	{
+		Test=-1;
+		for (size_t i=0;i<_countof(TestName);i++)
+		{
+			if (stricmp(TestName[i],str_1)==0)
+			{
+				Test=i;
+				break;
+			}
+		}
+		if (Test==-1)
+		{
+			printf("No match found.  Try:\n");
+			for (size_t i=0;i<_countof(TestName);i++)
+				printf("%s, ",TestName[i]);
+			printf("\n");
+			return;
+		}
+	}
+
 	switch(Test)
 	{
 	case eCurrent:
@@ -469,13 +507,13 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestRobot.lua","TestRobot");
-			Entity2D *TestEntity=_command.AddRobot("testrobot1","TestRobot",str_3,str_4,str_5);
+			Entity2D *TestEntity=_command.AddRobot("Robot2011","TestRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
 	case eTestGoals:
 		{
-			FRC_2011_Robot *Robot=dynamic_cast<FRC_2011_Robot *>(game.GetEntity("testrobot1"));
+			FRC_2011_Robot *Robot=dynamic_cast<FRC_2011_Robot *>(game.GetEntity("Robot2011"));
 			if (Robot)
 			{
 				Goal *oldgoal=Robot->ClearGoal();
@@ -499,12 +537,30 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 			break;
 		}
+	case eTest2011Follow:
+		{
+			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("Robot2011"));
+			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
+			if (!ship)
+			{
+				_command.LoadRobot("TestRobot.lua","TestRobot");
+				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("Robot2011","TestRobot",str_3,str_4,str_5));
+			}
+			if (!Followship)
+			{
+				_command.LoadShip("TestShip.lua","TestShip");
+				Followship=dynamic_cast<Ship_Tester *>(_command.AddShip("GodShip","TestShip",str_3,str_4,str_5));
+			}
+			_.ShipFollowShip(ship,Followship,0,-1.0);
+			game.SetControlledEntity(Followship);
+		}
+		break;
 	case eTestLUAShip:
 		{
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadShip("TestShip.lua","TestShip");
-			Entity2D *TestEntity=_command.AddShip("testship1","TestShip",str_3,str_4,str_5);
+			Entity2D *TestEntity=_command.AddShip("GodShip","TestShip",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
