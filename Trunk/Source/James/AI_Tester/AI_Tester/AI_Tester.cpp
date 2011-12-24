@@ -433,6 +433,32 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				Goal_Ship_FollowPath *goal=new Goal_Ship_FollowPath(ship->GetController(),points,true);
 				ship->SetGoal(goal);
 			}
+			void GiveRobotSquareWayPointGoal(Ship_Tester *ship)
+			{
+				std::list <WayPoint> points;
+				struct Locations
+				{
+					double x,y;
+				} test[]=
+				{
+					{4.0,4.0},
+					{4.0,-4.0},
+					{-4.0,-4.0},
+					{-4.0,4.0}
+				};
+				for (size_t i=0;i<_countof(test);i++)
+				{
+					WayPoint wp;
+					wp.Position[0]=test[i].x;
+					wp.Position[1]=test[i].y;
+					wp.Power=0.5;
+					points.push_back(wp);
+				}
+				//Now to setup the goal
+				Goal_Ship_FollowPath *goal=new Goal_Ship_FollowPath(ship->GetController(),points,true);
+				ship->SetGoal(goal);
+			}
+
 			void ShipFollowShip(Ship_Tester *ship,Ship_Tester *Followship,double x=-40,double y=-40,double TrajectoryOffset=100.0)
 			{
 				osg::Vec2d RelPosition(x,y);
@@ -509,7 +535,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot");
-			Entity2D *TestEntity=_command.AddRobot("Robot2011","TestSwerveRobot",str_3,str_4,str_5);
+			Entity2D *TestEntity=_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
@@ -553,19 +579,34 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 	case eTestFollowGod:
 		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+
 			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("Robot2011"));
+			Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("SwerveRobot"));
 			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
 			if (!ship)
 			{
 				_command.LoadRobot("TestRobot.lua","TestRobot");
 				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("Robot2011","TestRobot",str_3,str_4,str_5));
 			}
+			if (!SwerveShip)
+			{
+				_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot");
+				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
+			}
+
 			if (!Followship)
 			{
 				_command.LoadShip("TestShip.lua","TestShip");
 				Followship=dynamic_cast<Ship_Tester *>(_command.AddShip("GodShip","TestShip",str_3,str_4,str_5));
 			}
-			_.ShipFollowShip(ship,Followship,0,-1.0,0.5);
+			_.ShipFollowShip(ship,Followship,0.5,-1.0,0.5);
+			_.ShipFollowShip(SwerveShip,Followship,-0.5,-1.0,5.0);
+			_.GiveRobotSquareWayPointGoal(Followship);
 			game.SetControlledEntity(Followship);
 		}
 		break;
