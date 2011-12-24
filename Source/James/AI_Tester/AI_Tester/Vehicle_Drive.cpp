@@ -199,11 +199,18 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	const double L=GetDimensions()[1];
 	//W is the vehicle’s track width
 	const double W=GetDimensions()[0];
-	const double R = sqrt((L*L)+(W*W));
 
-	const double STR=(LocalForce[0]/Mass)*dTime_s;
-	const double FWD=(LocalForce[1]/Mass)*dTime_s;
-	const double RCW=(TorqueRestrained/Mass)*dTime_s;
+	//const double R = sqrt((L*L)+(W*W));
+	const double R = GetDimensions().length();
+
+	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+	const double STR=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
+	//STR=IsZero(STR)?0.0:STR;
+	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
+	//FWD=IsZero(FWD)?0.0:FWD;
+	const double RCW=(TorqueRestrained/Mass)*dTime_s+m_Physics.GetAngularVelocity();
+	//RCW=IsZero(RCW)?0.0:RCW;
+
 	const double A = STR - RCW*(L/R);
 	const double B = STR + RCW*(L/R);
 	const double C = FWD - RCW*(W/R);
@@ -214,6 +221,12 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	_.sFR = sqrt((B*B)+(C*C)); _.aFR = atan2(B,C);
 	_.sRL = sqrt((A*A)+(D*D)); _.aRL = atan2(A,D);
 	_.sRR = sqrt((A*A)+(C*C)); _.aRR = atan2(A,C);
+
+	#if 0
+	DOUT2("%f %f %f",FWD,STR,RCW);
+	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
+	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
+	#endif
 }
 
 void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
@@ -227,14 +240,30 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
 
 	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))/4;
-	const double HP=PI/2;
+	//const double HP=PI/2;
+	const double HP=GetDimensions().length()/2;
+	const double HalfDimLength=HP;
 	const double omega = ((_.sFR*cos(atan2(W,L)+HP-_.aFR)+_.sFL*cos(atan2(-W,L)+HP-_.aFL)
-		+_.sRL*cos(atan2(-W,-L)+HP-_.aRL)+_.sRR*cos(atan2(W,-L)+HP-_.aRR))/4)/
-		(sqrt((L*L)+(W*W))/2);
+		+_.sRL*cos(atan2(-W,-L)+HP-_.aRL)+_.sRR*cos(atan2(W,-L)+HP-_.aRR))/4)/HalfDimLength;
 
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
+
 	AngularVelocity=omega;
+	//This is a safety to avoid instability
+	#if 0
+	AngularVelocity=IsZero(omega)?0.0:omega;
+	if (AngularVelocity>20.0)
+		AngularVelocity=20.0;
+	else if (AngularVelocity<-20.0)
+		AngularVelocity=-20.0;
+	#endif
+
+	#if 1
+	DOUT2("%f %f %f",FWD,STR,omega);
+	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
+	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
+	#endif
 }
 
 void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)

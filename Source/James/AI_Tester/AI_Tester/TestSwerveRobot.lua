@@ -1,6 +1,6 @@
 TestShip = {
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
+	MaxAccelLeft = 20, MaxAccelRight = 20, MaxAccelForward = 5, MaxAccelReverse = 5, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = 2.916, -- Maximum Speed (m/s)
@@ -17,7 +17,7 @@ TestShip = {
 	UI =
 	{
 		Length=5, Width=5,
-		TextImage="(   )\n|   |\n(-+-)\n|   |\n(   )"
+		TextImage="-   -\n,   ,\n(-+-)\n'   '\n-   -"
 	}
 }
 
