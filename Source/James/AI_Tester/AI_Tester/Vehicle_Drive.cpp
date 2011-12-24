@@ -227,6 +227,8 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
 	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
 	#endif
+	//DOUT4("%f %f %f",FWD,STR,RCW);  //Test accuracy
+
 }
 
 void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
@@ -240,11 +242,16 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
 
 	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))/4;
-	//const double HP=PI/2;
-	const double HP=GetDimensions().length()/2;
-	const double HalfDimLength=HP;
-	const double omega = ((_.sFR*cos(atan2(W,L)+HP-_.aFR)+_.sFL*cos(atan2(-W,L)+HP-_.aFL)
-		+_.sRL*cos(atan2(-W,-L)+HP-_.aRL)+_.sRR*cos(atan2(W,-L)+HP-_.aRR))/4)/HalfDimLength;
+	const double HP=PI/2;
+	//const double HalfDimLength=GetDimensions().length()/2;
+
+	//This one was close but not quite correct
+	//const double HP=HalfDimLength;
+	//const double omega = ((_.sFR*cos(atan2(W,L)+(HP-_.aFR))+_.sFL*cos(atan2(-W,L)+(HP-_.aFL))
+	//	+_.sRL*cos(atan2(-W,-L)+(HP-_.aRL))+_.sRR*cos(atan2(W,-L)+(HP-_.aRR)))/4)/HalfDimLength;
+
+	const double omega = (((_.sFR*cos(atan2(W,L)+(HP-_.aFR))/4)+(_.sFL*cos(atan2(-W,L)+(HP-_.aFL))/4)
+		+(_.sRL*cos(atan2(-W,-L)+(HP-_.aRL))/4)+(_.sRR*cos(atan2(W,-L)+(HP-_.aRR))/4)));
 
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
@@ -264,6 +271,7 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
 	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
 	#endif
+	//DOUT5("%f %f %f",FWD,STR,omega);  //Test accuracy
 }
 
 void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
