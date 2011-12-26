@@ -618,6 +618,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadShip("TestShip.lua","TestShip");
 			Entity2D *TestEntity=_command.AddShip("GodShip","TestShip",str_3,str_4,str_5);
+			_.GiveRobotSquareWayPointGoal(dynamic_cast<Ship_Tester *>(TestEntity));
 			game.SetControlledEntity(TestEntity);
 		}
 		break;

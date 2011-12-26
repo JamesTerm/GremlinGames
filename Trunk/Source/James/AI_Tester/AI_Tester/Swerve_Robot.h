@@ -124,6 +124,7 @@ class Wheel_UI
 		void SetSwivel(double SwivelAngle){m_Swivel=-SwivelAngle;}
 		//This will add to the existing rotation and normalize
 		void AddRotation(double RadiansToAdd);
+		double GetFontSize() const {return m_UIParent->GetFontSize();}
 	private:
 		Actor_Text *m_UIParent;
 		Wheel_Properties m_props;
