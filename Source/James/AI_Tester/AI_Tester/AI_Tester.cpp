@@ -604,6 +604,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				_command.LoadShip("TestShip.lua","TestShip");
 				Followship=dynamic_cast<Ship_Tester *>(_command.AddShip("GodShip","TestShip",str_3,str_4,str_5));
 			}
+			ship->GetGameAttributes().GetTeamName()="blue";
+			SwerveShip->GetGameAttributes().GetTeamName()="red";
 			_.ShipFollowShip(ship,Followship,0.5,-1.0,0.5);
 			_.ShipFollowShip(SwerveShip,Followship,-0.5,-1.0,5.0);
 			_.GiveRobotSquareWayPointGoal(Followship);
