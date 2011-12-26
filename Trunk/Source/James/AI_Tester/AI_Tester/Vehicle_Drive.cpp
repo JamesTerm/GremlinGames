@@ -203,13 +203,16 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	//const double R = sqrt((L*L)+(W*W));
 	const double R = GetDimensions().length();
 
+	//Allow around 2-3 degrees of freedom and about the safe for strafe.  While manual control worked fine without it, it is needed for
+	//targeting goals (e.g. follow ship)
+
 	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
-	const double STR=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
-	//STR=IsZero(STR)?0.0:STR;
-	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
-	//FWD=IsZero(FWD)?0.0:FWD;
-	const double RCW=(TorqueRestrained/Mass)*dTime_s+m_Physics.GetAngularVelocity();
-	//RCW=IsZero(RCW)?0.0:RCW;
+	double STR=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
+	STR=fabs(STR)<0.3?0.0:STR;
+	double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
+	FWD=IsZero(FWD)?0.0:FWD;
+	double RCW=(TorqueRestrained/Mass)*dTime_s+m_Physics.GetAngularVelocity();
+	RCW=fabs(RCW)<0.3?0.0:RCW;
 
 	const double A = STR - RCW*(L/R);
 	const double B = STR + RCW*(L/R);
