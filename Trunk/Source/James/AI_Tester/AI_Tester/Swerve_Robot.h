@@ -97,14 +97,50 @@ class Robot_Control : public Robot_Control_Interface
 };
 #endif
 
-///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Swerve_Robot_tester : public Swerve_Robot, public Robot_Control
+//TODO move
+class Wheel_UI
 {
 	public:
-		Swerve_Robot_tester(const char EntityName[]) : Swerve_Robot(EntityName,this),Robot_Control() {}
+		typedef osg::Vec2d Vec2D;
+
+		struct Wheel_Properties
+		{
+			Vec2D m_Offset;  //Placement of the wheel in reference to the parent object (default 0,0)
+			double m_Wheel_Diameter; //in meters default 0.1524  (6 inches)
+		};
+
+		void UI_Init(Actor_Text *parent);
+
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		//Keep virtual for special kind of wheels
+		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
+		virtual void Text_SizeToUse(double SizeToUse);
+
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+	private:
+		Actor_Text *m_UIParent;
+		Wheel_Properties m_props;
+		osg::ref_ptr<osgText::Text> m_Front,m_Back,m_Tread; //Tread is really a line that helps show speed
+};
+
+///This is only for the simulation where we need not have client code instantiate a Robot_Control
+class Swerve_Robot_UI : public Swerve_Robot, public Robot_Control
+{
+	public:
+		Swerve_Robot_UI(const char EntityName[]) : Swerve_Robot(EntityName,this),Robot_Control() {}
 	protected:
 		virtual void UpdateVoltage(size_t index,double Voltage) {}
 		virtual void CloseSolenoid(size_t index,bool Close) {}
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+
+		virtual void UI_Init(Actor_Text *parent);
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos);
+		virtual void Text_SizeToUse(double SizeToUse);
+
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+	private:
+		Wheel_UI m_Wheel[4];
 };
 
 #if 0

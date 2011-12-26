@@ -8,6 +8,7 @@ const double c_Scene_XRes_InPixels=1600.0;
 const double c_Scene_YRes_InPixels=1200.0;
 #endif
 
+class Actor_Text;
 class EntityPropertiesInterface
 {
 	public:
@@ -18,13 +19,20 @@ class EntityPropertiesInterface
 		virtual const double &GetIntendedOrientation() const=0;
 		//I'm not sure if this would be needed in the real game, I use it so the actor knows what color to paint itself
 		virtual const char *GetTeamName() const {return "";}
+		//perform an optional custom update on the ship
+		virtual void UI_Init(Actor_Text *parent) {}
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) {}
+		//This is called when it is detected the size has changed
+		virtual void Text_SizeToUse(double SizeToUse) {}
+		//AddOrRemove if true it is add false is remove
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {}
 };
 
 class Actor
 {
 	public:
 		Actor(); //osg::Node &node <--may not need this
-		void SetEntityProperties_Interface(EntityPropertiesInterface *entity) {m_EntityProperties_Interface=entity;}
+		virtual void SetEntityProperties_Interface(EntityPropertiesInterface *entity) {m_EntityProperties_Interface=entity;}
 		EntityPropertiesInterface *GetEntityProperties_Interface() const {return m_EntityProperties_Interface;}
 	protected:
 		//Gives life to this shell dynamically
@@ -45,6 +53,9 @@ class Actor_Text : public Actor, public osg::Drawable::UpdateCallback
 		std::string &GetTextImage() {return m_TextImage;}
 		//For now just have the client code write these
 		osg::Vec2d &GetCharacterDimensions() {return m_CharacterDimensions;}
+		double GetFontSize() const {return m_FontSize;}
+		virtual void SetEntityProperties_Interface(EntityPropertiesInterface *entity);
+		virtual void UpdateScene_Additional (osg::Geode *geode, bool AddOrRemove);
 	protected:
 		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw);
 	private:
