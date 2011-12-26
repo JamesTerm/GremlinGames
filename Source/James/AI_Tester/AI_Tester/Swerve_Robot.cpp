@@ -17,6 +17,7 @@ const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);  //We may limit swerve
 const double c_GearHeightOffset=1.397;  //55 inches
 const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
+const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
  /*															Swerve_Robot															*/
@@ -145,6 +146,16 @@ void Wheel_UI::UI_Init(Actor_Text *parent)
 	m_Back->setAlignment(osgText::Text::CENTER_CENTER);
 	m_Back->setText(L"U");
 	m_Back->setUpdateCallback(m_UIParent);
+
+	m_Tread= new osgText::Text;
+	m_Tread->setColor(osg::Vec4(1.0,1.0,1.0,1.0));
+	m_Tread->setCharacterSize(m_UIParent->GetFontSize());
+	m_Tread->setFontResolution(10,10);
+	m_Tread->setPosition(position);
+	m_Tread->setAlignment(osgText::Text::CENTER_CENTER);
+	m_Tread->setText(L"\"");
+	m_Tread->setUpdateCallback(m_UIParent);
+
 }
 
 void Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
@@ -153,11 +164,13 @@ void Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 	{
 		if (m_Front.valid()) geode->addDrawable(m_Front);
 		if (m_Back.valid()) geode->addDrawable(m_Back);
+		if (m_Tread.valid()) geode->addDrawable(m_Tread);
 	}
 	else
 	{
 		if (m_Front.valid()) geode->removeDrawable(m_Front);
 		if (m_Back.valid()) geode->removeDrawable(m_Back);
+		if (m_Tread.valid()) geode->removeDrawable(m_Tread);
 	}
 }
 
@@ -166,16 +179,24 @@ void Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 
 	const double FS=m_UIParent->GetFontSize();
 	Vec2d FrontSwivel(0.0,0.5);
 	Vec2d BackSwivel(0.0,-0.5);
+	Vec2d TreadRotPos(0.0,cos(m_Rotation)-0.3);
 	FrontSwivel=GlobalToLocal(m_Swivel,FrontSwivel);
 	BackSwivel=GlobalToLocal(m_Swivel,BackSwivel);
+	TreadRotPos=GlobalToLocal(m_Swivel,TreadRotPos);
 
 	const Vec2d frontOffset(m_props.m_Offset[0]+FrontSwivel[0],m_props.m_Offset[1]+FrontSwivel[1]);
 	const Vec2d backOffset(m_props.m_Offset[0]+BackSwivel[0],m_props.m_Offset[1]+BackSwivel[1]);
+	const Vec2d TreadOffset(m_props.m_Offset[0]+TreadRotPos[0],m_props.m_Offset[1]+TreadRotPos[1]);
 
 	const Vec2d FrontLocalOffset=GlobalToLocal(Heading,frontOffset);
 	const Vec2d BackLocalOffset=GlobalToLocal(Heading,backOffset);
+	const Vec2d TreadLocalOffset=GlobalToLocal(Heading,TreadOffset);
 	const osg::Vec3 frontPos(parent_pos[0]+(FrontLocalOffset[0]*FS),parent_pos[1]+(FrontLocalOffset[1]*FS),parent_pos[2]);
 	const osg::Vec3 backPos (parent_pos[0]+( BackLocalOffset[0]*FS),parent_pos[1]+( BackLocalOffset[1]*FS),parent_pos[2]);
+	const osg::Vec3 TreadPos (parent_pos[0]+( TreadLocalOffset[0]*FS),parent_pos[1]+( TreadLocalOffset[1]*FS),parent_pos[2]);
+
+	const double TreadColor=((sin(-m_Rotation) + 1.0)/2.0) * 0.8 + 0.2;
+	m_Tread->setColor(osg::Vec4(TreadColor,TreadColor,TreadColor,1.0));
 
 	if (m_Front.valid())
 	{
@@ -187,13 +208,27 @@ void Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 
 		m_Back->setPosition(backPos);
 		m_Back->setRotation(FromLW_Rot_Radians(Heading+m_Swivel,0.0,0.0));
 	}
-
+	if (m_Tread.valid())
+	{
+		m_Tread->setPosition(TreadPos);
+		m_Tread->setRotation(FromLW_Rot_Radians(Heading+m_Swivel,0.0,0.0));
+	}
 }
 
 void Wheel_UI::Text_SizeToUse(double SizeToUse)
 {
 	if (m_Front.valid())	m_Front->setCharacterSize(SizeToUse);
-	if (m_Back.valid()) m_Back->setCharacterSize(SizeToUse); 
+	if (m_Back.valid()) m_Back->setCharacterSize(SizeToUse);
+	if (m_Tread.valid()) m_Tread->setCharacterSize(SizeToUse);
+}
+
+void Wheel_UI::AddRotation(double RadiansToAdd)
+{
+	m_Rotation+=RadiansToAdd;
+	if (m_Rotation>Pi2)
+		m_Rotation-=Pi2;
+	else if (m_Rotation<-Pi2)
+		m_Rotation+=Pi2;
 }
 
   /***************************************************************************************************************/
@@ -246,5 +281,13 @@ void Swerve_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 void Swerve_Robot_UI::UI_TimeChange(double dTime_s)
 {
 	for (size_t i=0;i<4;i++)
+	{
 		m_Wheel[i].SetSwivel(GetVelocities(i));
+		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
+		const double LinearVelocity=GetVelocities(i+4);
+		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
+		const double RPS=LinearVelocity /  (PI * c_WheelDiameter * PixelHackScale);
+		const double AngularVelocity=RPS * Pi2;
+		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
+	}
 }
