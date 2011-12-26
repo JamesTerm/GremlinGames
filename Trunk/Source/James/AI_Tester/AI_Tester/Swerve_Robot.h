@@ -42,6 +42,8 @@ class Swerve_Robot : public Swerve_Drive
 		virtual void ResetPos();
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
+		//This is a work-around (since robot control also has TimeChange)
+		virtual void UI_TimeChange(double dTime_s) {}
 		static double RPS_To_LinearVelocity(double RPS);
 
 		//Accessors needed for setting goals
@@ -118,10 +120,15 @@ class Wheel_UI
 		virtual void Text_SizeToUse(double SizeToUse);
 
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+		//Where 0 is up and 1.57 is right and -1.57 is left
+		void SetSwivel(double SwivelAngle){m_Swivel=-SwivelAngle;}
+		//This will add to the existing rotation and normalize
+		void AddRotation(double RadiansToAdd);
 	private:
 		Actor_Text *m_UIParent;
 		Wheel_Properties m_props;
 		osg::ref_ptr<osgText::Text> m_Front,m_Back,m_Tread; //Tread is really a line that helps show speed
+		double m_Rotation,m_Swivel;
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
@@ -139,6 +146,8 @@ class Swerve_Robot_UI : public Swerve_Robot, public Robot_Control
 		virtual void Text_SizeToUse(double SizeToUse);
 
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+
+		virtual void UI_TimeChange(double dTime_s);
 	private:
 		Wheel_UI m_Wheel[4];
 };

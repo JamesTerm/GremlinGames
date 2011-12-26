@@ -298,3 +298,20 @@ void Swerve_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	//No torque restraint... restraints are applied during the update of velocities
 	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
 }
+
+double Swerve_Drive::GetVelocities(size_t index) const
+{
+	double ret;
+	switch(index)
+	{
+	case 0: ret=m_Velocities.aFL; break;
+	case 1: ret=m_Velocities.aFR; break;
+	case 2: ret=m_Velocities.aRL; break;
+	case 3: ret=m_Velocities.aRR; break;
+	case 4: ret=m_Velocities.sFL; break;
+	case 5: ret=m_Velocities.sFR; break;
+	case 6: ret=m_Velocities.sRL; break;
+	case 7: ret=m_Velocities.sRR; break;
+	}
+	return ret;
+}

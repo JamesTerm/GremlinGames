@@ -65,6 +65,7 @@ void Swerve_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->TimeChange(dTime_s);
+	UI_TimeChange(dTime_s);
 	//TODO add encoder support here
 	//{
 	//	//Display encoders without applying calibration
@@ -118,6 +119,8 @@ void Swerve_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 void Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
 {
 	m_props=*props;
+	m_Swivel=0.0;
+	m_Rotation=0.0;
 }
 
 void Wheel_UI::UI_Init(Actor_Text *parent) 
@@ -161,8 +164,13 @@ void Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 void Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
 {
 	const double FS=m_UIParent->GetFontSize();
-	const Vec2d frontOffset(m_props.m_Offset[0],m_props.m_Offset[1]+0.5);
-	const Vec2d backOffset(m_props.m_Offset[0],m_props.m_Offset[1]-0.5);
+	Vec2d FrontSwivel(0.0,0.5);
+	Vec2d BackSwivel(0.0,-0.5);
+	FrontSwivel=GlobalToLocal(m_Swivel,FrontSwivel);
+	BackSwivel=GlobalToLocal(m_Swivel,BackSwivel);
+
+	const Vec2d frontOffset(m_props.m_Offset[0]+FrontSwivel[0],m_props.m_Offset[1]+FrontSwivel[1]);
+	const Vec2d backOffset(m_props.m_Offset[0]+BackSwivel[0],m_props.m_Offset[1]+BackSwivel[1]);
 
 	const Vec2d FrontLocalOffset=GlobalToLocal(Heading,frontOffset);
 	const Vec2d BackLocalOffset=GlobalToLocal(Heading,backOffset);
@@ -172,12 +180,12 @@ void Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 
 	if (m_Front.valid())
 	{
 		m_Front->setPosition(frontPos);
-		m_Front->setRotation(FromLW_Rot_Radians(PI+Heading,0.0,0.0));
+		m_Front->setRotation(FromLW_Rot_Radians(PI+Heading+m_Swivel,0.0,0.0));
 	}
 	if (m_Back.valid())
 	{
 		m_Back->setPosition(backPos);
-		m_Back->setRotation(FromLW_Rot_Radians(Heading,0.0,0.0));
+		m_Back->setRotation(FromLW_Rot_Radians(Heading+m_Swivel,0.0,0.0));
 	}
 
 }
@@ -233,4 +241,10 @@ void Swerve_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 {
 	for (size_t i=0;i<4;i++)
 		m_Wheel[i].UpdateScene(geode,AddOrRemove);
+}
+
+void Swerve_Robot_UI::UI_TimeChange(double dTime_s)
+{
+	for (size_t i=0;i<4;i++)
+		m_Wheel[i].SetSwivel(GetVelocities(i));
 }
