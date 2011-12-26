@@ -104,6 +104,19 @@ void Actor_Text::Init_IntendedOrientation()
 	m_IntendedOrientation->setUpdateCallback(this);
 }
 
+void Actor_Text::UpdateScene_Additional (osg::Geode *geode, bool AddOrRemove)
+{
+	if (m_EntityProperties_Interface)
+		m_EntityProperties_Interface->UpdateScene(geode,AddOrRemove);
+}
+
+void Actor_Text::SetEntityProperties_Interface(EntityPropertiesInterface *entity)
+{
+	__super::SetEntityProperties_Interface(entity);
+	assert(m_EntityProperties_Interface);
+	m_EntityProperties_Interface->UI_Init(this);
+}
+
 void Actor_Text::update(osg::NodeVisitor *nv, osg::Drawable *draw)
 {
 	if (m_EntityProperties_Interface)
@@ -139,18 +152,22 @@ void Actor_Text::update(osg::NodeVisitor *nv, osg::Drawable *draw)
 				m_IntendedOrientation->setPosition(pos);
 				m_IntendedOrientation->setRotation(FromLW_Rot_Radians(-IntendedOrientation,0.0,0.0));
 			}
+			m_EntityProperties_Interface->custom_update(nv,draw,pos);
 
 			{//Now to determine the size the setCharacterSize is roughly one pixel per meter with the default font
 				double XSize=m_EntityProperties_Interface->GetDimensions()[0] / m_CharacterDimensions[0] * g_WorldScaleFactor;
 				double YSize=m_EntityProperties_Interface->GetDimensions()[1] / m_CharacterDimensions[1] * g_WorldScaleFactor;
 				double SizeToUse=max(XSize,YSize); //we want bigger always so it is easier to see
 				SizeToUse=max(SizeToUse,5.0);  //Anything smaller than 5 is not visible
+
+
 				if (SizeToUse!=m_FontSize)
 				{
 					//TODO this should be working... it did once... need to figure out clean way to alter it
 					Text->setCharacterSize(SizeToUse);
 					if (m_IntendedOrientation.valid())
 						m_IntendedOrientation->setCharacterSize(SizeToUse);
+					m_EntityProperties_Interface->Text_SizeToUse(SizeToUse);
 					m_FontSize=SizeToUse;
 				}
 			}
@@ -320,8 +337,8 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 				NewShip=new FRC_2011_Robot_tester(EntityName);
 				break;
 			case Ship_Properties::eSwerve_Robot:
-				NewShip=new Swerve_Drive(EntityName); //less stress
-				//NewShip=new Swerve_Robot_tester(EntityName);
+				//NewShip=new Swerve_Drive(EntityName); //less stress
+				NewShip=new Swerve_Robot_UI(EntityName);
 				break;
 		}
 		assert(NewShip);
@@ -528,6 +545,7 @@ void UI_GameClient::UpdateScene(osg::Group *rootNode,osg::Geode *geode)
 			if (m_OldActors[i]->GetIntendedOrientation().valid())
 				geode->removeDrawable(m_OldActors[i]->GetIntendedOrientation());
 			__super::RemoveEntity(dynamic_cast<Entity2D *>(m_OldActors[i]->GetEntityProperties_Interface()));  //remove from super's list
+			m_NewActors[i]->UpdateScene_Additional(geode,false); //remove any additional nodes
 		}
 		m_OldActors.clear();
 	}
@@ -539,6 +557,7 @@ void UI_GameClient::UpdateScene(osg::Group *rootNode,osg::Geode *geode)
 			geode->addDrawable(m_NewActors[i]->GetText());
 			if (m_NewActors[i]->GetIntendedOrientation().valid())
 				geode->addDrawable(m_NewActors[i]->GetIntendedOrientation());
+			m_NewActors[i]->UpdateScene_Additional(geode,true); //Add any additional nodes
 			m_Actors.push_back(m_NewActors[i]); //Now this is in the list of active actors
 		}
 		m_NewActors.clear();

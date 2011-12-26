@@ -19,7 +19,7 @@ const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
 
   /***********************************************************************************************************************************/
- /*															FRC_2011_Robot															*/
+ /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
 Swerve_Robot::Swerve_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Swerve_Drive(EntityName), m_RobotControl(robot_control), 
@@ -111,3 +111,126 @@ void Swerve_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	//m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
 }
 
+  /***************************************************************************************************************/
+ /*													Wheel_UI													*/
+/***************************************************************************************************************/
+
+void Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	m_props=*props;
+}
+
+void Wheel_UI::UI_Init(Actor_Text *parent) 
+{
+	m_UIParent=parent;
+
+	osg::Vec3 position(0.5*c_Scene_XRes_InPixels,0.5*c_Scene_YRes_InPixels,0.0f);
+	m_Front= new osgText::Text;
+	m_Front->setColor(osg::Vec4(0.0,1.0,0.0,1.0));
+	m_Front->setCharacterSize(m_UIParent->GetFontSize());
+	m_Front->setFontResolution(10,10);
+	m_Front->setPosition(position);
+	m_Front->setAlignment(osgText::Text::CENTER_CENTER);
+	m_Front->setText(L"U");
+	m_Front->setUpdateCallback(m_UIParent);
+
+	m_Back= new osgText::Text;
+	m_Back->setColor(osg::Vec4(1.0,0.0,0.0,1.0));
+	m_Back->setCharacterSize(m_UIParent->GetFontSize());
+	m_Back->setFontResolution(10,10);
+	m_Back->setPosition(position);
+	m_Back->setAlignment(osgText::Text::CENTER_CENTER);
+	m_Back->setText(L"U");
+	m_Back->setUpdateCallback(m_UIParent);
+}
+
+void Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
+{
+	if (AddOrRemove)
+	{
+		if (m_Front.valid()) geode->addDrawable(m_Front);
+		if (m_Back.valid()) geode->addDrawable(m_Back);
+	}
+	else
+	{
+		if (m_Front.valid()) geode->removeDrawable(m_Front);
+		if (m_Back.valid()) geode->removeDrawable(m_Back);
+	}
+}
+
+void Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
+{
+	const double FS=m_UIParent->GetFontSize();
+	const Vec2d frontOffset(m_props.m_Offset[0],m_props.m_Offset[1]+0.5);
+	const Vec2d backOffset(m_props.m_Offset[0],m_props.m_Offset[1]-0.5);
+
+	const Vec2d FrontLocalOffset=GlobalToLocal(Heading,frontOffset);
+	const Vec2d BackLocalOffset=GlobalToLocal(Heading,backOffset);
+	const osg::Vec3 frontPos(parent_pos[0]+(FrontLocalOffset[0]*FS),parent_pos[1]+(FrontLocalOffset[1]*FS),parent_pos[2]);
+	const osg::Vec3 backPos (parent_pos[0]+( BackLocalOffset[0]*FS),parent_pos[1]+( BackLocalOffset[1]*FS),parent_pos[2]);
+
+	if (m_Front.valid())
+	{
+		m_Front->setPosition(frontPos);
+		m_Front->setRotation(FromLW_Rot_Radians(PI+Heading,0.0,0.0));
+	}
+	if (m_Back.valid())
+	{
+		m_Back->setPosition(backPos);
+		m_Back->setRotation(FromLW_Rot_Radians(Heading,0.0,0.0));
+	}
+
+}
+
+void Wheel_UI::Text_SizeToUse(double SizeToUse)
+{
+	if (m_Front.valid())	m_Front->setCharacterSize(SizeToUse);
+	if (m_Back.valid()) m_Back->setCharacterSize(SizeToUse); 
+}
+
+  /***************************************************************************************************************/
+ /*												Swerve_Robot_UI													*/
+/***************************************************************************************************************/
+void Swerve_Robot_UI::UI_Init(Actor_Text *parent)
+{
+	for (size_t i=0;i<4;i++)
+		m_Wheel[i].UI_Init(parent);
+}
+
+void Swerve_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+{
+	Vec2D Offsets[4]=
+	{
+		Vec2D(-1.6, 2.0),
+		Vec2D( 1.6, 2.0),
+		Vec2D(-1.6,-2.0),
+		Vec2D( 1.6,-2.0),
+	};
+	for (size_t i=0;i<4;i++)
+	{
+		Wheel_UI::Wheel_Properties props;
+		props.m_Offset=Offsets[i];
+		props.m_Wheel_Diameter=c_WheelDiameter;
+		m_Wheel[i].Initialize(em,&props);
+	}
+	__super::Initialize(em,props);
+}
+
+void Swerve_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos)
+{
+	//just dispatch the update to the wheels (for now)
+	for (size_t i=0;i<4;i++)
+		m_Wheel[i].update(nv,draw,parent_pos,-GetAtt_r());
+}
+
+void Swerve_Robot_UI::Text_SizeToUse(double SizeToUse)
+{
+	for (size_t i=0;i<4;i++)
+		m_Wheel[i].Text_SizeToUse(SizeToUse);
+}
+
+void Swerve_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
+{
+	for (size_t i=0;i<4;i++)
+		m_Wheel[i].UpdateScene(geode,AddOrRemove);
+}
