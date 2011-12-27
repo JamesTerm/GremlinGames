@@ -5,7 +5,7 @@ class Robot_Control_Interface
 {
 	public:
 		//This is primarily used for updates to dashboard and driver station during a test build
-		virtual void TimeChange(double dTime_s)=0;
+		virtual void Robot_Control_TimeChange(double dTime_s)=0;
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
 		virtual void Initialize(const Entity_Properties *props)=0;
@@ -149,7 +149,7 @@ class Robot_Control : public Robot_Control_Interface
 	public:
 		Robot_Control();
 		//This is only needed for simulation
-		virtual void TimeChange(double dTime_s);
+		virtual void Robot_Control_TimeChange(double dTime_s);
 	protected: //from Robot_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Reset_Arm(); 

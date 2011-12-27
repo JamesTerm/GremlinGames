@@ -565,7 +565,7 @@ void FRC_2011_Robot::ResetPos()
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
-	m_RobotControl->TimeChange(dTime_s);
+	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	if (m_UsingEncoders)
 	{
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
@@ -834,7 +834,7 @@ void Robot_Control::Initialize(const Entity_Properties *props)
 	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 }
 
-void Robot_Control::TimeChange(double dTime_s)
+void Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Potentiometer.SetTimeDelta(dTime_s);
 	m_Encoders.SetTimeDelta(dTime_s);
