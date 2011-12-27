@@ -43,6 +43,8 @@ class Ship_1D : public Entity1D
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		bool GetLockShipToPosition();
+		const double GetMinRange() const {return m_MinRange;}
+		const double GetMaxRange() const {return m_MaxRange;}
 	protected:
 		///This will apply turn pitch and roll to the intended orientation
 		void UpdateIntendedPosition(double dTime_s);

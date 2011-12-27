@@ -218,7 +218,7 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	const double B = STR + RCW*(L/R);
 	const double C = FWD - RCW*(W/R);
 	const double D = FWD + RCW*(W/R);
-	SwerveVelocities &_=m_Velocities;
+	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
 
 	_.sFL = sqrt((B*B)+(D*D)); _.aFL = atan2(B,D);
 	_.sFR = sqrt((B*B)+(C*C)); _.aFR = atan2(B,C);
@@ -236,7 +236,7 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 
 void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
 {
-	SwerveVelocities &_=Velocities;
+	SwerveVelocities::uVelocity::Explicit &_=Velocities.Velocity.Named;
 	//L is the vehicle’s wheelbase
 	const double L=GetWheelDimensions()[1];
 	//W is the vehicle’s track width
@@ -282,7 +282,7 @@ void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,d
 	Vec2d OldLocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	Vec2d LocalVelocity;
 	double AngularVelocity;
-	InterpolateVelocities(m_Velocities,LocalVelocity,AngularVelocity,dTime_s);
+	InterpolateVelocities(GetSwerveVelocities(),LocalVelocity,AngularVelocity,dTime_s);
 
 	Vec2d LinearAcceleration=LocalVelocity-OldLocalVelocity;
 	LocalForce=(LinearAcceleration * Mass) / dTime_s;
@@ -302,19 +302,12 @@ void Swerve_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
 }
 
-double Swerve_Drive::GetVelocities(size_t index) const
+double Swerve_Drive::GetIntendedVelocitiesFromIndex(size_t index) const
 {
-	double ret;
-	switch(index)
-	{
-	case 0: ret=m_Velocities.aFL; break;
-	case 1: ret=m_Velocities.aFR; break;
-	case 2: ret=m_Velocities.aRL; break;
-	case 3: ret=m_Velocities.aRR; break;
-	case 4: ret=m_Velocities.sFL; break;
-	case 5: ret=m_Velocities.sFR; break;
-	case 6: ret=m_Velocities.sRL; break;
-	case 7: ret=m_Velocities.sRR; break;
-	}
-	return ret;
+	return m_Velocities.Velocity.AsArray[index];
+}
+
+double Swerve_Drive::GetSwerveVelocitiesFromIndex(size_t index) const
+{
+	return GetSwerveVelocities().Velocity.AsArray[index];
 }
