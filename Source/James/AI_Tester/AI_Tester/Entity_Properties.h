@@ -27,7 +27,8 @@ class Ship_1D_Properties : public Entity1D_Properties
 		{
 			eDefault,
 			eRobotArm,
-			eRobotClaw
+			eSimpleMotor,
+			eSwivel,
 		};
 		Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	

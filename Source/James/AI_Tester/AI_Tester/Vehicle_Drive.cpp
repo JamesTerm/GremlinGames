@@ -196,12 +196,12 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
 
 	//L is the vehicle’s wheelbase
-	const double L=GetDimensions()[1];
+	const double L=GetWheelDimensions()[1];
 	//W is the vehicle’s track width
-	const double W=GetDimensions()[0];
+	const double W=GetWheelDimensions()[0];
 
 	//const double R = sqrt((L*L)+(W*W));
-	const double R = GetDimensions().length();
+	const double R = GetWheelDimensions().length();
 
 	//Allow around 2-3 degrees of freedom for rotation.  While manual control worked fine without it, it is needed for
 	//targeting goals (e.g. follow ship)
@@ -238,9 +238,9 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 {
 	SwerveVelocities &_=Velocities;
 	//L is the vehicle’s wheelbase
-	const double L=GetDimensions()[1];
+	const double L=GetWheelDimensions()[1];
 	//W is the vehicle’s track width
-	const double W=GetDimensions()[0];
+	const double W=GetWheelDimensions()[0];
 
 	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
 
@@ -269,7 +269,7 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 		AngularVelocity=-20.0;
 	#endif
 
-	#if 1
+	#if 0
 	DOUT2("%f %f %f",FWD,STR,omega);
 	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
 	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);

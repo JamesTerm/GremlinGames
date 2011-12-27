@@ -36,7 +36,10 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
 
-	//const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+	const Swerve_Robot_Properties *RobotProps=dynamic_cast<const Swerve_Robot_Properties *>(props);
+
+	m_WheelDimensions=RobotProps->GetWheelDimensions();
+
 	//m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
 	//m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
 
@@ -110,6 +113,36 @@ void Swerve_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	//double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
 	//m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
+}
+
+  /***********************************************************************************************************************************/
+ /*													FRC_2011_Robot_Properties														*/
+/***********************************************************************************************************************************/
+
+Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
+	"Swivel",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	18.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	18.0,18.0, //Max Acceleration Forward/Reverse (try to tune to the average turning speed to minimize error on PID)
+	Ship_1D_Properties::eSwivel,
+	true,	//Using the range:  for now assuming a 1:1 using a potentiometer with 270 degrees and 10 degrees of padding = 130 degrees each way
+	-DEG_2_RAD(130.0),DEG_2_RAD(130.0)
+	),
+	m_DriveProps(
+	"Drive",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//These should match the settings in the script
+	2.916,   //Max Speed (This is linear movement speed)
+	10.0,10.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0, //Max Acceleration Forward/Reverse (make these as fast as possible without damaging chain or motor)
+	Ship_1D_Properties::eSimpleMotor,
+	false	//No limit ever!
+	),
+	m_WheelDimensions(0.6477,0.9525)
+{
 }
 
   /***************************************************************************************************************/

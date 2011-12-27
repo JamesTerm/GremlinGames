@@ -829,9 +829,14 @@ void Robot_Control::Reset_Encoders()
 void Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const FRC_2011_Robot_Properties *robot_props=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
-	assert(robot_props);
-	m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
-	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+
+	//For now robot_props can be NULL since the swerve robot is borrowing it
+	if (robot_props)
+	{
+		assert(robot_props);
+		m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
+		m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+	}
 }
 
 void Robot_Control::Robot_Control_TimeChange(double dTime_s)
@@ -898,7 +903,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	28,   //Max Speed (rounded as we need not have precision)
 	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eRobotClaw,
+	Ship_1D_Properties::eSimpleMotor,
 	false	//No limit ever!
 	)
 {
