@@ -20,49 +20,131 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
+ /*													Swerve_Robot::DrivingModule														*/
+/***********************************************************************************************************************************/
+
+Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Robot_Control_Interface *robot_control) : m_ModuleName(EntityName),
+	m_SwivelName("Swivel"),m_DriveName("Drive"),m_Swivel(m_SwivelName.c_str()),m_Drive(m_DriveName.c_str()),
+	m_IntendedSwivelDirection(0.0),m_IntendedDriveVelocity(0.0),
+	m_RobotControl(robot_control)
+{
+}
+
+void Swerve_Robot::DrivingModule::Initialize(GG_Framework::Base::EventMap& em,const DrivingModule_Props *props)
+{
+	m_Swivel.Initialize(em,props->Swivel_Props);
+	m_Drive.Initialize(em,props->Drive_Props);
+}
+
+void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
+{
+	//manage the swivel angle and drive velocity
+	m_Swivel.SetIntendedPosition(m_IntendedSwivelDirection);
+	m_Drive.SetIntendedPosition(m_IntendedDriveVelocity);
+	//TODO manage voltage
+	//Update the swivel and drive times
+	Entity1D &swivel_entity=m_Swivel;  //This gets around keeping time change protected in derived classes
+	swivel_entity.TimeChange(dTime_s);
+	Entity1D &drive_entity=m_Drive;  //This gets around keeping time change protected in derived classes
+	drive_entity.TimeChange(dTime_s);
+}
+
+  /***********************************************************************************************************************************/
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
 Swerve_Robot::Swerve_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
 	Swerve_Drive(EntityName), m_RobotControl(robot_control), 
 	m_UsingEncoders(UseEncoders) //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
+	const char * const ModuleName[]=
+	{
+		"ModuleLF","ModuleRF","ModuleLR","ModuleRR"
+	};
+	for (size_t i=0;i<4;i++)
+		m_DrivingModule[i]=new DrivingModule(ModuleName[i],m_RobotControl);
+
 	//m_UsingEncoders=true; //testing
-	//m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
+}
+
+Swerve_Robot::~Swerve_Robot()
+{
+	for (size_t i=0;i<4;i++)
+	{
+		delete m_DrivingModule[i];
+		m_DrivingModule[i]=NULL;
+	}
 }
 
 void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
-	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
 
 	const Swerve_Robot_Properties *RobotProps=dynamic_cast<const Swerve_Robot_Properties *>(props);
 
 	m_WheelDimensions=RobotProps->GetWheelDimensions();
-
-	//m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
-	//m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
-
-	//const double OutputRange=MAX_SPEED*0.875;  //create a small range
-	//const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
-	//m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	//m_PIDController_Left.SetOutputRange(-InputRange,OutputRange);
-	//m_PIDController_Left.Enable();
-	//m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	//m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
-	//m_PIDController_Right.Enable();
-	//m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
+	for (size_t i=0;i<4;i++)
+	{
+		DrivingModule::DrivingModule_Props props;
+		props.Swivel_Props=&RobotProps->GetSwivelProps();
+		props.Drive_Props=&RobotProps->GetDriveProps();
+		m_DrivingModule[i]->Initialize(em,&props);
+	}
 }
 void Swerve_Robot::ResetPos()
 {
 	__super::ResetPos();
-	//m_Arm.ResetPos();
-	//m_Claw.ResetPos();
 	m_RobotControl->Reset_Encoders();
-	//m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
-	//ensure teleop has these set properly
-	//m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
-	//m_UseDeadZoneSkip=true;
+	for (size_t i=0;i<4;i++)
+	{
+		m_DrivingModule[i]->ResetPos();
+		m_Swerve_Robot_Velocities.Velocity.AsArray[i+4]=0.0;
+		m_Swerve_Robot_Velocities.Velocity.AsArray[i]=0.0;
+
+	}
+}
+
+void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
+{
+	//Now the new UpdateVelocities was just called... work with these intended velocities
+	for (size_t i=0;i<4;i++)
+	{
+		double SwivelDirection=GetIntendedVelocitiesFromIndex(i+4);  //this is either the intended direction or the reverse of it
+		const Ship_1D &Swivel=m_DrivingModule[i]->GetSwivel();
+		const double CurrentSwivelDirection=Swivel.GetPos_m();
+		double DistanceToIntendedSwivel=fabs(CurrentSwivelDirection-SwivelDirection);
+		bool IsReverse=false;
+		if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
+		{
+			SwivelDirection+=PI;
+			NormalizeRotation(SwivelDirection);
+			IsReverse=true;
+			//recalculate with the reversed value
+			DistanceToIntendedSwivel=CurrentSwivelDirection-SwivelDirection;
+		}
+
+		m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
+		const double IntendedSpeed=GetIntendedVelocitiesFromIndex(i);
+		double VelocityToUse=IsReverse?-IntendedSpeed:IntendedSpeed;
+
+		//To minimize error only apply the Y component amount to the velocity
+		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
+		VelocityToUse=cos(DistanceToIntendedSwivel)*VelocityToUse;
+
+		m_DrivingModule[i]->SetIntendedDriveVelocity(VelocityToUse);
+		m_DrivingModule[i]->TimeChange(dTime_s);
+
+		//Now to grab and update the actual swerve velocities
+		//Note: using GetIntendedVelocities() is a lesser stress for debug purposes
+		#if 0
+		m_Swerve_Robot_Velocities.Velocity.AsArray[i+4]=CurrentSwivelDirection;
+		m_Swerve_Robot_Velocities.Velocity.AsArray[i]=m_DrivingModule[i]->GetDrive().GetPos_m();
+		#else
+		m_Swerve_Robot_Velocities=GetIntendedVelocities();
+		#endif
+	}
+
+	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 void Swerve_Robot::TimeChange(double dTime_s)
@@ -76,6 +158,7 @@ void Swerve_Robot::TimeChange(double dTime_s)
 	//	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 	//}
 	__super::TimeChange(dTime_s);
+
 }
 
 bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
@@ -125,7 +208,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	18.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	18.0,18.0, //Max Acceleration Forward/Reverse (try to tune to the average turning speed to minimize error on PID)
+	60.0,60.0, //Max Acceleration Forward/Reverse (try to tune to the average turning speed to minimize error on PID)
 	Ship_1D_Properties::eSwivel,
 	true,	//Using the range:  for now assuming a 1:1 using a potentiometer with 270 degrees and 10 degrees of padding = 130 degrees each way
 	-DEG_2_RAD(130.0),DEG_2_RAD(130.0)
@@ -137,7 +220,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	//These should match the settings in the script
 	2.916,   //Max Speed (This is linear movement speed)
 	10.0,10.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse (make these as fast as possible without damaging chain or motor)
+	300.0,300.0, //Max Acceleration Forward/Reverse (make these as fast as possible without damaging chain or motor)
 	Ship_1D_Properties::eSimpleMotor,
 	false	//No limit ever!
 	),
@@ -315,9 +398,10 @@ void Swerve_Robot_UI::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	for (size_t i=0;i<4;i++)
 	{
-		m_Wheel[i].SetSwivel(GetVelocities(i));
+		//TODO GetIntendedVelocities for intended UI
+		m_Wheel[i].SetSwivel(GetSwerveVelocitiesFromIndex(i+4));
 		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
-		const double LinearVelocity=GetVelocities(i+4);
+		const double LinearVelocity=GetSwerveVelocitiesFromIndex(i);
 		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
 		const double RPS=LinearVelocity /  (PI * c_WheelDiameter * PixelHackScale);
 		const double AngularVelocity=RPS * Pi2;
