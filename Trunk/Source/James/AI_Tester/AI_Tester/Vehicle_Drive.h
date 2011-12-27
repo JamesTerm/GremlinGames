@@ -46,6 +46,8 @@ class Swerve_Drive : public Ship_Tester
 		//This method converts the given left right velocities into a form local linear velocity and angular velocity
 		void InterpolateVelocities(SwerveVelocities Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 		double GetVelocities(size_t index) const;
+		//override the wheel dimensions, which by default are the entities dimensions (a good approximation)
+		virtual const Vec2D &GetWheelDimensions() const {return GetDimensions();}
 	private:
 		//typedef Ship_2D __super;
 		void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);

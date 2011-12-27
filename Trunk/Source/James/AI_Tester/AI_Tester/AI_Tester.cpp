@@ -9,6 +9,7 @@ namespace AI_Tester
 	#include "Calibration_Testing.h"
 	#include "PIDController.h"
 	#include "FRC2011_Robot.h"
+	#include "Swerve_Robot.h"
 }
 
 void cls(void *hConsole=NULL);
@@ -276,6 +277,8 @@ private:
 	ShipMap Character_Database;
 	typedef map<string ,FRC_2011_Robot_Properties,greater<string>> RobotMap;
 	RobotMap Robot_Database;
+	typedef map<string ,Swerve_Robot_Properties,greater<string>> SwerveRobotMap;
+	SwerveRobotMap SwerveRobot_Database;
 
 	UI_Controller_GameClient &game;
 
@@ -339,17 +342,45 @@ public:
 		else
 			printf("%s already loaded\n",RobotName);
 	}
+	void LoadSwerveRobot(const char *FileName,const char *RobotName)
+	{
+		SwerveRobotMap::iterator iter=SwerveRobot_Database.find(RobotName);
+		if (iter==SwerveRobot_Database.end())
+		{
+			//New entry
+			SwerveRobot_Database[RobotName]=Swerve_Robot_Properties();
+			Swerve_Robot_Properties &new_entry=SwerveRobot_Database[RobotName];  //reference to avoid copy
+			GG_Framework::Logic::Scripting::Script script;
+			script.LoadScript(FileName,true);
+			script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
+
+			new_entry.LoadFromScript(script);
+		}
+		else
+			printf("%s already loaded\n",RobotName);
+	}
+
 	Entity2D *AddRobot(const char *str_1,const char *str_2,const char *str_3,const char *str_4,const char *str_5)
 	{
 		Entity2D *ret=NULL;
 		RobotMap::iterator iter=Robot_Database.find(str_2);
+		Entity_Properties *props=NULL;
 		if (iter!=Robot_Database.end())
+			props=&((*iter).second);
+		else
+		{
+			SwerveRobotMap::iterator iter=SwerveRobot_Database.find(str_2);
+			if (iter!=SwerveRobot_Database.end())
+				props=&((*iter).second);
+		}
+
+		if (props)
 		{
 			double x=atof(str_3);
 			double y=atof(str_4);
 			double heading=atof(str_5);
 			Entity2D *TestEntity=NULL;
-			TestEntity=game.AddEntity(str_1,(*iter).second);
+			TestEntity=game.AddEntity(str_1,*props);
 			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
 			if (ship)
 			{
@@ -534,7 +565,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			#endif
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot");
+			_command.LoadSwerveRobot("TestSwerveRobot.lua","TestSwerveRobot");
 			Entity2D *TestEntity=_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
@@ -595,7 +626,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			}
 			if (!SwerveShip)
 			{
-				_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot");
+				_command.LoadSwerveRobot("TestSwerveRobot.lua","TestSwerveRobot");
 				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
 			}
 

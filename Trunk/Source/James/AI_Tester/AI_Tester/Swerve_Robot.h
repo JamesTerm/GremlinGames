@@ -51,18 +51,52 @@ class Swerve_Robot : public Swerve_Drive
 		//virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		//virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
+		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 	private:
 		//typedef  Tank_Drive __super;
 		Robot_Control_Interface * const m_RobotControl;
+
+		//The driving module consists of a swivel motor and the driving motor for a wheel.  It manages / converts the intended direction and speed to 
+		//actual direction and velocity (i.e. works in reverse) as well as working with sensor feedback (e.g. potentiometer, encoder) for error
+		//correction of voltage computation.
+		//class DrivingModule
+		//{
+		//	public:
+		//		DrivingModule(const char EntityName[],Robot_Control_Interface *robot_control);
+		//		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		//		virtual void TimeChange(double dTime_s);
+		//	private:
+		//		Ship_1D m_Swivel;  //apply control to swivel mechanism
+		//		Ship_1D m_Drive;  //apply control to drive motor
+		//} m_DrivingModule[4]; //FL, FR, RL, RR  The four modules used  (We could put 6 here if we want)
 
 		//PIDController2 m_PIDController_Left,m_PIDController_Right;
 		//double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
 
 		bool m_UsingEncoders;
+		Vec2D m_WheelDimensions; //cached from the Swerve_Robot_Properties
 		//bool m_VoltageOverride;  //when true will kill voltage
 		//bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		//Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		//double m_EncoderHeading;
+};
+
+class Swerve_Robot_Properties : public UI_Ship_Properties
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		Swerve_Robot_Properties();
+		const Ship_1D_Properties &GetSwivelProps() const {return m_SwivelProps;}
+		const Ship_1D_Properties &GetClawProps() const {return m_DriveProps;}
+		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
+		//the width is a measurement of the the center of the wheel width to the other wheel
+		const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
+	private:
+		//Note the drive properties is a measurement of linear movement (not angular velocity)
+		Ship_1D_Properties m_SwivelProps,m_DriveProps;
+		Vec2D m_WheelDimensions;
 };
 
 #if 0
@@ -151,18 +185,3 @@ class Swerve_Robot_UI : public Swerve_Robot, public Robot_Control
 	private:
 		Wheel_UI m_Wheel[4];
 };
-
-#if 0
-class Swerve_Robot_Properties : public UI_Ship_Properties
-{
-	public:
-		Swerve_Robot_Properties();
-		//I'm not going to implement script support mainly due to lack of time, but also this is a specific object that
-		//most likely is not going to be sub-classed (i.e. sealed)... if this turns out different later we can implement
-		//virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
-		const Ship_1D_Properties &GetClawProps() const {return m_ClawProps;}
-	private:
-		Ship_1D_Properties m_ArmProps,m_ClawProps;
-};
-#endif
