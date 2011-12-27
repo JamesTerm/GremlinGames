@@ -42,8 +42,6 @@ class Swerve_Robot : public Swerve_Drive
 		virtual void ResetPos();
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
-		//This is a work-around (since robot control also has TimeChange)
-		virtual void UI_TimeChange(double dTime_s) {}
 		static double RPS_To_LinearVelocity(double RPS);
 
 		//Accessors needed for setting goals
@@ -149,7 +147,7 @@ class Swerve_Robot_UI : public Swerve_Robot, public Robot_Control
 
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
 
-		virtual void UI_TimeChange(double dTime_s);
+		virtual void TimeChange(double dTime_s);
 	private:
 		Wheel_UI m_Wheel[4];
 };

@@ -65,8 +65,7 @@ void Swerve_Robot::ResetPos()
 void Swerve_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
-	m_RobotControl->TimeChange(dTime_s);
-	UI_TimeChange(dTime_s);
+	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	//TODO add encoder support here
 	//{
 	//	//Display encoders without applying calibration
@@ -278,8 +277,9 @@ void Swerve_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		m_Wheel[i].UpdateScene(geode,AddOrRemove);
 }
 
-void Swerve_Robot_UI::UI_TimeChange(double dTime_s)
+void Swerve_Robot_UI::TimeChange(double dTime_s)
 {
+	__super::TimeChange(dTime_s);
 	for (size_t i=0;i<4;i++)
 	{
 		m_Wheel[i].SetSwivel(GetVelocities(i));
