@@ -537,6 +537,7 @@ void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	m_RobotControl->Initialize(props);
 
 	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+	m_WheelDimensions=RobotProps->GetWheelDimensions();
 	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
 	m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
 
@@ -905,7 +906,8 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Properties::eSimpleMotor,
 	false	//No limit ever!
-	)
+	),
+	m_WheelDimensions(0.4953,0.6985) //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
 {
 }
 

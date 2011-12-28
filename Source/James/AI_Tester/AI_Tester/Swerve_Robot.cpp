@@ -238,12 +238,14 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	2.916,   //Max Speed (This is linear movement speed)
 	//10, //TODO find out why I need 8 for turns
 	10.0,10.0, //ACCEL, BRAKE  (These can be ignored)
-	300.0,300.0, //Max Acceleration Forward/Reverse (make these as fast as possible without damaging chain or motor)
+	//Make these as fast as possible without damaging chain or motor
+	//These must be fast enough to handle rotation angular acceleration
+	60.0,60.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Properties::eSimpleMotor,
 	false	//No limit ever!
 	),
-	//m_WheelDimensions(0.4953,0.6985) //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
-	m_WheelDimensions(0.3758,0.53)  //This is trimmed down to turn 514 degrees a second with a 2.914 speed
+	m_WheelDimensions(0.4953,0.6985) //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side (can only go 390 degrees a second)
+	//m_WheelDimensions(0.3758,0.53)  //This is trimmed down to turn 514 degrees a second with a 2.914 speed
 {
 }
 
