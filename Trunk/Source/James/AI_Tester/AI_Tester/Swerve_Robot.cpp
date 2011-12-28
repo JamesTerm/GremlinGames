@@ -122,12 +122,16 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		NormalizeRotation(DistanceToIntendedSwivel);
 		DistanceToIntendedSwivel=fabs(DistanceToIntendedSwivel);
 
-		if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
+		if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()) )
 		{
 			SwivelDirection+=PI;
 			NormalizeRotation(SwivelDirection);
+			double TestIntendedFlipped=IntendedDirection+PI;
+			NormalizeRotation(TestIntendedFlipped);
+
 			//If we flipped because of a huge delta check that the reverse position is in range... and flip it back if it exceed the range
-			if ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
+			if ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()) ||
+				(TestIntendedFlipped>Swivel.GetMaxRange()) || (TestIntendedFlipped<Swivel.GetMinRange()))
 			{
 				SwivelDirection+=PI;
 				NormalizeRotation(SwivelDirection);
