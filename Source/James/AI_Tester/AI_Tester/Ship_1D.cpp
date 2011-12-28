@@ -222,6 +222,7 @@ void Ship_1D::TimeChange(double dTime_s)
 
 		{
 			double DistanceToUse=posDisplacement_m;
+			double MatchVelocity=GetMatchVelocity();
 			//Most likely these should never get triggered unless there is some kind of control like the mouse that can go beyond the limit
 			if (m_UsingRange)
 			{
@@ -231,29 +232,21 @@ void Ship_1D::TimeChange(double dTime_s)
 					DistanceToUse=m_MinRange-GetPos_m();
 			}
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
-			double MatchVel=0.0;
-			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVel);
+			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVelocity);
 		}
 
 		#ifndef __DisableSpeedControl__
 		{
-			if (m_currAccel<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
+			if ((Vel) < -MAX_SPEED)
 			{
-				if ((Vel) < -MAX_SPEED)
-				{
-					Vel = -MAX_SPEED;
-					m_currAccel=0.0;
-				}
+				Vel = -MAX_SPEED;
+				m_currAccel=0.0;
 			}
-			else 
+			else if ((Vel) > MAX_SPEED) 
 			{
-				double MaxSpeed=MAX_SPEED;
-				if ((Vel) > MaxSpeed)
-				{
-					Vel=MaxSpeed;
-					m_RequestedVelocity=MaxSpeed;
-					m_currAccel=0.0;
-				}
+				Vel=MAX_SPEED;
+				m_RequestedVelocity=MAX_SPEED;
+				m_currAccel=0.0;
 			}
 		}
 		#endif

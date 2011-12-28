@@ -77,14 +77,25 @@ class Swerve_Robot : public Swerve_Drive
 				virtual void TimeChange(double dTime_s);
 				void SetIntendedSwivelDirection(double direction) {m_IntendedSwivelDirection=direction;}
 				void SetIntendedDriveVelocity(double Velocity) {m_IntendedDriveVelocity=Velocity;}
+				class ControlWithLockedVelocity : public Ship_1D
+				{
+					public:
+						ControlWithLockedVelocity(const char EntityName[]) : Ship_1D(EntityName),m_MatchVelocity(0.0) {}
+						void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
+					protected:
+						virtual double GetMatchVelocity() const {return m_MatchVelocity;}
+					private:
+						double m_MatchVelocity;
+				};
 				//I have no problem exposing read-only access to these :)
-				const Ship_1D &GetSwivel() {return m_Swivel;}
-				const Ship_1D &GetDrive() {return m_Drive;}
+				const ControlWithLockedVelocity &GetSwivel() {return m_Swivel;}
+				const ControlWithLockedVelocity &GetDrive() {return m_Drive;}
 				void ResetPos() {m_Drive.ResetPos(),m_Swivel.ResetPos();}
+				
 			private:
 				std::string m_ModuleName,m_SwivelName,m_DriveName;
-				Ship_1D m_Swivel;  //apply control to swivel mechanism
-				Ship_1D m_Drive;  //apply control to drive motor
+				ControlWithLockedVelocity m_Swivel;  //apply control to swivel mechanism
+				ControlWithLockedVelocity m_Drive;  //apply control to drive motor
 				//Pass along the intended swivel direction and drive velocity
 				double m_IntendedSwivelDirection,m_IntendedDriveVelocity;
 
