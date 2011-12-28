@@ -40,7 +40,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
 {
 	//manage the swivel angle and drive velocity
 	m_Swivel.SetIntendedPosition(m_IntendedSwivelDirection);
-	m_Drive.SetIntendedPosition(m_IntendedDriveVelocity);
+	m_Drive.SetRequestedVelocity(m_IntendedDriveVelocity);
 
 	//TODO determine why this sticks past 1.5
 	//m_Swivel.SetMatchVelocity(m_IntendedSwivelDirection);
@@ -114,14 +114,15 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	//Now the new UpdateVelocities was just called... work with these intended velocities
 	for (size_t i=0;i<4;i++)
 	{
-		double SwivelDirection=GetIntendedVelocitiesFromIndex(i+4);  //this is either the intended direction or the reverse of it
+		const double IntendedDirection=GetIntendedVelocitiesFromIndex(i+4);
+		double SwivelDirection=IntendedDirection;  //this is either the intended direction or the reverse of it
 		const Ship_1D &Swivel=m_DrivingModule[i]->GetSwivel();
 		const double LastSwivelDirection=Swivel.GetPos_m();
 		double DistanceToIntendedSwivel=LastSwivelDirection-SwivelDirection;
 		NormalizeRotation(DistanceToIntendedSwivel);
 		DistanceToIntendedSwivel=fabs(DistanceToIntendedSwivel);
 
-		bool IsReverse=false;
+		//bool IsReverse=false;
 		//TODO see if I can get range to work
 		//if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
 		if (DistanceToIntendedSwivel>PI_2)
@@ -129,30 +130,31 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		{
 			SwivelDirection+=PI;
 			NormalizeRotation(SwivelDirection);
-			IsReverse=true;
+			//IsReverse=true;
 			//recalculate with the reversed value
-			DistanceToIntendedSwivel=LastSwivelDirection-SwivelDirection;
+			//DistanceToIntendedSwivel=LastSwivelDirection-SwivelDirection;
 		}
 		m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
 		const double IntendedSpeed=GetIntendedVelocitiesFromIndex(i);
-		double VelocityToUse=IsReverse?-IntendedSpeed:IntendedSpeed;
+		//double VelocityToUse=IsReverse?-IntendedSpeed:IntendedSpeed;
 
 		//To minimize error only apply the Y component amount to the velocity
 		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
 		//restrict to half pi to avoid negative feedback
-		VelocityToUse=DistanceToIntendedSwivel<PI_2?cos(DistanceToIntendedSwivel)*VelocityToUse:0.0;
+		//VelocityToUse=DistanceToIntendedSwivel<PI_2?cos(DistanceToIntendedSwivel)*VelocityToUse:0.0;
+		double VelocityToUse=cos(DistanceToIntendedSwivel)*IntendedSpeed;
 
 		m_DrivingModule[i]->SetIntendedDriveVelocity(VelocityToUse);
 		m_DrivingModule[i]->TimeChange(dTime_s);
 
-		const double CurrentVelocity=m_DrivingModule[i]->GetDrive().GetPos_m();
+		const double CurrentVelocity=m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity();
 		const double CurrentSwivelDirection=Swivel.GetPos_m();
 		if (i==0)
 			DOUT4("S= %f %f V= %f %f",CurrentSwivelDirection,SwivelDirection,CurrentVelocity,VelocityToUse);
 
 		//Now to grab and update the actual swerve velocities
 		//Note: using GetIntendedVelocities() is a lesser stress for debug purposes
-		#if 0
+		#if 1
 		m_Swerve_Robot_Velocities.Velocity.AsArray[i+4]=CurrentSwivelDirection;
 		m_Swerve_Robot_Velocities.Velocity.AsArray[i]=CurrentVelocity;
 		#else
@@ -236,6 +238,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	//These should match the settings in the script
 	2.916,   //Max Speed (This is linear movement speed)
+	//10, //TODO find out why I need 8 for turns
 	10.0,10.0, //ACCEL, BRAKE  (These can be ignored)
 	300.0,300.0, //Max Acceleration Forward/Reverse (make these as fast as possible without damaging chain or motor)
 	Ship_1D_Properties::eSimpleMotor,
