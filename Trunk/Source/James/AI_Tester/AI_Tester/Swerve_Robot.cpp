@@ -134,8 +134,8 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 			}
 		}
 		//Note the velocity is checked once before the time change here, and once after for the current
-		//Only apply swivel adjustments if we have signifcant movement (this matters in targeting tests)
-		if (fabs(m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity()) > 0.05)
+		//Only apply swivel adjustments if we have significant movement (this matters in targeting tests)
+		if ((fabs(LocalForce[0])>1.5)||(fabs(LocalForce[1])>1.5)||(fabs(m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity()) > 0.05))
 			m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
 		const double IntendedSpeed=GetIntendedVelocitiesFromIndex(i);
 
