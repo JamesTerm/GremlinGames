@@ -157,7 +157,6 @@ class Robot_Control : public Robot_Control_Interface
 };
 #endif
 
-//TODO move
 class Wheel_UI
 {
 	public:
