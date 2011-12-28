@@ -128,6 +128,7 @@ class FRC_2011_Robot : public Tank_Drive
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
+		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 	private:
 		//typedef  Tank_Drive __super;
 		Robot_Control_Interface * const m_RobotControl;
@@ -140,6 +141,7 @@ class FRC_2011_Robot : public Tank_Drive
 		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
+		Vec2D m_WheelDimensions; //cached from the FRC_2011_Robot_Properties
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
@@ -190,14 +192,22 @@ class FRC_2011_Robot_tester : public FRC_2011_Robot, public Robot_Control_2011
 class FRC_2011_Robot_Properties : public UI_Ship_Properties
 {
 	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
 		FRC_2011_Robot_Properties();
 		//I'm not going to implement script support mainly due to lack of time, but also this is a specific object that
 		//most likely is not going to be sub-classed (i.e. sealed)... if this turns out different later we can implement
 		//virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
 		const Ship_1D_Properties &GetClawProps() const {return m_ClawProps;}
+
+		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
+		//the width is a measurement of the the center of the wheel width to the other wheel
+		const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 	private:
 		Ship_1D_Properties m_ArmProps,m_ClawProps;
+		Vec2D m_WheelDimensions;
 };
 
 class Goal_OperateSolenoid : public AtomicGoal

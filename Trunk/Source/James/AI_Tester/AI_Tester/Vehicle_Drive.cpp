@@ -48,7 +48,7 @@ void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	double LeftDelta,RightDelta;
 	//Now to blend the torque into the velocities
 	{
-		double Width=GetDimensions()[0];
+		double Width=GetWheelDimensions()[0];
 		//first convert to angular acceleration
 		double AccelerationDelta=TorqueRestrained/Mass;
 		double AngularVelocityDelta=AccelerationDelta*dTime_s;
@@ -115,7 +115,7 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	double RightAngularDelta;
 	double LeftAngularDelta;
 	//We do not care about x, but we may want to keep an eye for intense x forces
-	double Width=GetDimensions()[0];
+	double Width=GetWheelDimensions()[0];
 	double NewVelocityY;
 	//See if velocities are going in the same direction
 	if (LeftLinearVelocity * RightLinearVelocity >= 0)
