@@ -122,10 +122,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		NormalizeRotation(DistanceToIntendedSwivel);
 		DistanceToIntendedSwivel=fabs(DistanceToIntendedSwivel);
 
-		//TODO see if I can get range to work
 		if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
-		//if (DistanceToIntendedSwivel> PI_2)
-		//if (false)
 		{
 			SwivelDirection+=PI;
 			NormalizeRotation(SwivelDirection);
@@ -136,7 +133,10 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 				NormalizeRotation(SwivelDirection);
 			}
 		}
-		m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
+		//Note the velocity is checked once before the time change here, and once after for the current
+		//Only apply swivel adjustments if we have signifcant movement (this matters in targeting tests)
+		if (fabs(m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity()) > 0.05)
+			m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
 		const double IntendedSpeed=GetIntendedVelocitiesFromIndex(i);
 
 		//To minimize error only apply the Y component amount to the velocity
