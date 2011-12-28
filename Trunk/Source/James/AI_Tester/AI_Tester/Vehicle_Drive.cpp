@@ -211,8 +211,10 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	//STR=IsZero(STR)?0.0:STR;
 	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
 	//FWD=IsZero(FWD)?0.0:FWD;
-	const double RCW=(TorqueRestrained/Mass)*dTime_s+m_Physics.GetAngularVelocity();
+	double RCW=(TorqueRestrained/Mass)*dTime_s+m_Physics.GetAngularVelocity();
 	//RCW=fabs(RCW)<0.3?0.0:RCW;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (PI * R);  //R is really diameter
 
 	const double A = STR - RCW*(L/R);
 	const double B = STR + RCW*(L/R);
@@ -241,12 +243,13 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	const double L=GetWheelDimensions()[1];
 	//W is the vehicle’s track width
 	const double W=GetWheelDimensions()[0];
+	const double D = GetWheelDimensions().length();
 
 	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
 
 	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))/4;
 	const double HP=PI/2;
-	//const double HalfDimLength=GetDimensions().length()/2;
+	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
 	//This one was close but not quite correct
 	//const double HP=HalfDimLength;
@@ -259,7 +262,7 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
 
-	AngularVelocity=omega;
+	AngularVelocity=(omega / (PI * D)) * Pi2;
 	//This is a safety to avoid instability
 	#if 0
 	AngularVelocity=IsZero(omega)?0.0:omega;
@@ -270,7 +273,7 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	#endif
 
 	#if 0
-	DOUT2("%f %f %f",FWD,STR,omega);
+	DOUT2("%f %f %f",FWD,STR,AngularVelocity);
 	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
 	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
 	#endif
@@ -299,6 +302,7 @@ void Swerve_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	double NewTorque=Torque;
 	InterpolateThrusterChanges(NewLocalForce,NewTorque,dTime_s);
 	//No torque restraint... restraints are applied during the update of velocities
+	//__super::ApplyThrusters(PhysicsToUse,LocalForce,Torque,-1,dTime_s);
 	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
 }
 

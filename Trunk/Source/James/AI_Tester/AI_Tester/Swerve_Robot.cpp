@@ -122,26 +122,25 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		NormalizeRotation(DistanceToIntendedSwivel);
 		DistanceToIntendedSwivel=fabs(DistanceToIntendedSwivel);
 
-		//bool IsReverse=false;
 		//TODO see if I can get range to work
-		//if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
-		if (DistanceToIntendedSwivel>PI_2)
+		if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
+		//if (DistanceToIntendedSwivel> PI_2)
 		//if (false)
 		{
 			SwivelDirection+=PI;
 			NormalizeRotation(SwivelDirection);
-			//IsReverse=true;
-			//recalculate with the reversed value
-			//DistanceToIntendedSwivel=LastSwivelDirection-SwivelDirection;
+			//If we flipped because of a huge delta check that the reverse position is in range... and flip it back if it exceed the range
+			if ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))
+			{
+				SwivelDirection+=PI;
+				NormalizeRotation(SwivelDirection);
+			}
 		}
 		m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
 		const double IntendedSpeed=GetIntendedVelocitiesFromIndex(i);
-		//double VelocityToUse=IsReverse?-IntendedSpeed:IntendedSpeed;
 
 		//To minimize error only apply the Y component amount to the velocity
 		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
-		//restrict to half pi to avoid negative feedback
-		//VelocityToUse=DistanceToIntendedSwivel<PI_2?cos(DistanceToIntendedSwivel)*VelocityToUse:0.0;
 		double VelocityToUse=cos(DistanceToIntendedSwivel)*IntendedSpeed;
 
 		m_DrivingModule[i]->SetIntendedDriveVelocity(VelocityToUse);
@@ -149,8 +148,8 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 
 		const double CurrentVelocity=m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity();
 		const double CurrentSwivelDirection=Swivel.GetPos_m();
-		if (i==0)
-			DOUT4("S= %f %f V= %f %f",CurrentSwivelDirection,SwivelDirection,CurrentVelocity,VelocityToUse);
+		//if (i==0)
+		//	DOUT4("S= %f %f V= %f %f",CurrentSwivelDirection,SwivelDirection,CurrentVelocity,VelocityToUse);
 
 		//Now to grab and update the actual swerve velocities
 		//Note: using GetIntendedVelocities() is a lesser stress for debug purposes
@@ -228,8 +227,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	60.0,60.0, //Max Acceleration Forward/Reverse (try to tune to the average turning speed to minimize error on PID)
 	Ship_1D_Properties::eSwivel,
-	//true,	//Using the range:  for now assuming a 1:1 using a potentiometer with 270 degrees and 10 degrees of padding = 130 degrees each way
-	false, //Seems I cannot get the range to work properly
+	true,	//Using the range:  for now assuming a 1:1 using a potentiometer with 270 degrees and 10 degrees of padding = 130 degrees each way
 	-DEG_2_RAD(130.0),DEG_2_RAD(130.0)
 	),
 	m_DriveProps(
@@ -244,7 +242,8 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	Ship_1D_Properties::eSimpleMotor,
 	false	//No limit ever!
 	),
-	m_WheelDimensions(0.6477,0.9525)
+	//m_WheelDimensions(0.4953,0.6985) //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+	m_WheelDimensions(0.3758,0.53)  //This is trimmed down to turn 514 degrees a second with a 2.914 speed
 {
 }
 
