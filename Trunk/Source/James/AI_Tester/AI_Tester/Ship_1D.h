@@ -46,6 +46,8 @@ class Ship_1D : public Entity1D
 		const double GetMinRange() const {return m_MinRange;}
 		const double GetMaxRange() const {return m_MaxRange;}
 	protected:
+		///override if the intended position has a known velocity to match (this is great for locking)
+		virtual double GetMatchVelocity() const {return 0.0;}
 		///This will apply turn pitch and roll to the intended orientation
 		void UpdateIntendedPosition(double dTime_s);
 
