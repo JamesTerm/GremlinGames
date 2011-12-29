@@ -13,8 +13,8 @@ class Vehicle_Drive_Common
 		//This way when swerve is unable to deliver due to error and limitations, the actual control will not be compromised
 		void Vehicle_Drive_Common_ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		bool Vehicle_Drive_Common_InjectDisplacement(PhysicsEntity_2D &PhysicsToUse,double DeltaTime_s,double Att_r,Vec2D &PositionDisplacement,double &RotationDisplacement);
-		//This is needed for tank drive as it cannot use a persitent direction
-		double GetCachedTorque() const {return m_CachedTorque;}
+		//This is needed for tank drive as it must remove any strafe abilities... as long as the direction is not compromised this should be fine
+		const Vec2D &GetCachedLocalForce() {return m_CachedLocalForce;}
 	protected:
 	private:
 		Vec2D m_CachedLocalForce,m_CachedLinearVelocity;
@@ -28,8 +28,8 @@ class Vehicle_Drive_Common
 ///This kind of ship will convert the torque and force into a two fixed point force/thrust system like that of a tank.  It also interpolates the left
 ///right velocities back into the torque and force.  Unlike a ship, it will always absorb any lateral forces as it is assumed that the entity will not
 ///skid in those directions.  This means it cannot strafe, and will behave much like a vehicle on land rather than a ship in space.
-class Tank_Drive :	public Ship_Tester 
-					//public Vehicle_Drive_Common
+class Tank_Drive :	public Ship_Tester,
+					public Vehicle_Drive_Common
 {
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -42,7 +42,7 @@ class Tank_Drive :	public Ship_Tester
 	protected:
 		//This will convert the force into both motor velocities and interpolate the final torque and force to apply
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
-		//virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
+		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		//This method converts the given left right velocities into a form local linear velocity and angular velocity

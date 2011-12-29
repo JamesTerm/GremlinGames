@@ -179,6 +179,13 @@ void Entity_Properties::Initialize(Entity2D *NewEntity) const
   /***********************************************************************************************************************************/
  /*															Ship_Properties															*/
 /***********************************************************************************************************************************/
+//These must be in the same order as they are in Ship_Properties::Ship_Type
+const char * const csz_RobotNames[] =
+{
+	"RobotTank",
+	"Robot2011",
+	"RobotSwerve"
+};
 
 Ship_Properties::Ship_Properties()
 {
@@ -216,21 +223,14 @@ void Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& scr
 	err = script.GetGlobalTable("Ship");
 	if (err)
 	{
-		err = script.GetGlobalTable("RobotTank");
-		if (!err)
+		for (size_t i=0;i<_countof(csz_RobotNames);i++)
 		{
-			//m_ShipType=eRobotTank;	//keep around for less stress
-			m_ShipType=eFRC2011_Robot;
-			m_EntityName="RobotTank";
-		}
-		else
-		{
-			err = script.GetGlobalTable("RobotSwerve");
+			err = script.GetGlobalTable(csz_RobotNames[i]);
 			if (!err)
 			{
-				//m_ShipType=eRobotTank;	//keep around for less stress
-				m_ShipType=eSwerve_Robot;
-				m_EntityName="RobotSwerve";
+				m_ShipType=(Ship_Type)(i+1);
+				m_EntityName=csz_RobotNames[i];
+				break;
 			}
 		}
 	}
@@ -343,9 +343,12 @@ void UI_Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& 
 	err = script.GetGlobalTable("Ship");
 	if (err)
 	{
-		err = script.GetGlobalTable("RobotTank");
-		if (err)
-			err = script.GetGlobalTable("RobotSwerve");
+		for (size_t i=0;i<_countof(csz_RobotNames);i++)
+		{
+			err = script.GetGlobalTable(csz_RobotNames[i]);
+			if (!err)
+				break;
+		}
 	}
 	ASSERT_MSG(!err, err);
 	{

@@ -949,6 +949,7 @@ Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
 	return m_Status;
 }
 
+#if 0
   /***************************************************************************************************************/
  /*												Tank_Wheel_UI													*/
 /***************************************************************************************************************/
@@ -1019,6 +1020,7 @@ void Tank_Wheel_UI::AddRotation(double RadiansToAdd)
   /***************************************************************************************************************/
  /*												FRC_2011_Robot_UI												*/
 /***************************************************************************************************************/
+
 void FRC_2011_Robot_UI::UI_Init(Actor_Text *parent)
 {
 	for (size_t i=0;i<6;i++)
@@ -1078,3 +1080,4 @@ void FRC_2011_Robot_UI::TimeChange(double dTime_s)
 		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
 	}
 }
+#endif
