@@ -1,8 +1,13 @@
 #pragma once
 
 #if 1
+#if 1
 const double c_Scene_XRes_InPixels=1280.0;
 const double c_Scene_YRes_InPixels=1024.0;
+#else
+const double c_Scene_XRes_InPixels=1680.0;
+const double c_Scene_YRes_InPixels=1050.0;
+#endif
 #else
 const double c_Scene_XRes_InPixels=1600.0;
 const double c_Scene_YRes_InPixels=1200.0;
