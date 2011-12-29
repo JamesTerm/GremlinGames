@@ -63,10 +63,8 @@ void Tank_Robot::ResetPos()
 	m_UseDeadZoneSkip=true;
 }
 
-void Tank_Robot::TimeChange(double dTime_s)
+void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
 {
-	//For the simulated code this must be first so the simulators can have the correct times
-	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	if (m_UsingEncoders)
 	{
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
@@ -138,6 +136,12 @@ void Tank_Robot::TimeChange(double dTime_s)
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
 		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 	}
+}
+
+void Tank_Robot::TimeChange(double dTime_s)
+{
+	//For the simulated code this must be first so the simulators can have the correct times
+	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 }
 
@@ -237,9 +241,14 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 				RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
 		}
 	}
+
+	//TODO ensure the 2011 robot keeps these reversed when I inherit from here
+
 	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
 	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
-	m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
+	//m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
+
+	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
   /***********************************************************************************************************************************/
  /*													Tank_Robot_Properties															*/
