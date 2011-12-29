@@ -661,6 +661,8 @@ bool FRC_2011_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDispla
 		//m_Physics.SetAngularVelocity(computedAngularVelocity);
 		ret=true;
 	}
+	if (!ret)
+		ret=__super::InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	return ret;
 }
 
