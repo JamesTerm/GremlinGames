@@ -13,17 +13,13 @@ class Vehicle_Drive_Common
 		//This way when swerve is unable to deliver due to error and limitations, the actual control will not be compromised
 		void Vehicle_Drive_Common_ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		bool Vehicle_Drive_Common_InjectDisplacement(PhysicsEntity_2D &PhysicsToUse,double DeltaTime_s,double Att_r,Vec2D &PositionDisplacement,double &RotationDisplacement);
-		//This is needed for tank drive as it must remove any strafe abilities... as long as the direction is not compromised this should be fine
-		const Vec2D &GetCachedLocalForce() {return m_CachedLocalForce;}
+		//TODO verify this is not needed
+		//const Vec2D &GetCachedLocalForce() {return m_CachedLocalForce;}
 	protected:
 	private:
 		Vec2D m_CachedLocalForce,m_CachedLinearVelocity;
 		double m_CachedTorque,m_CachedAngularVelocity;
 };
-
-//TODO Look at why Tank_Drive cannot work with the Vehicle_Drive_Common.  I believe the answer deals with either the equations being out of balance due to
-//no relieve in strafe needs, or possibly a bug.  This is no hurry to do this, but it could help fix using encoders for angle rotation measurements.
-//  [12/28/2011 Terminator]
 
 ///This kind of ship will convert the torque and force into a two fixed point force/thrust system like that of a tank.  It also interpolates the left
 ///right velocities back into the torque and force.  Unlike a ship, it will always absorb any lateral forces as it is assumed that the entity will not

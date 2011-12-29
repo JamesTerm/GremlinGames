@@ -61,6 +61,7 @@ void Tank_Drive::ResetPos()
 	__super::ResetPos();
 }
 
+#if 0
 void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
@@ -187,6 +188,73 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 
 	AngularVelocity=((LeftAngularDelta+RightAngularDelta)*Pi2);
 }
+#else
+void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+{
+	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
+
+	//L is the vehicle’s wheelbase
+	//const double L=GetWheelDimensions()[1];
+	//W is the vehicle’s track width
+	const double W=GetWheelDimensions()[0];
+
+	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
+	//FWD=IsZero(FWD)?0.0:FWD;
+	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
+	//RCW=fabs(RCW)<0.3?0.0:RCW;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (PI * W);  //W is really diameter
+
+	m_LeftLinearVelocity = FWD + RCW;
+	m_RightLinearVelocity = FWD - RCW;
+
+	#if 0
+	DOUT2("%f %f",FWD,RCW);
+	DOUT4("%f %f ",m_LeftLinearVelocity,m_RightLinearVelocity);
+	#endif
+	//DOUT4("%f %f",FWD,RCW);  //Test accuracy
+}
+
+void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+{
+	//L is the vehicle’s wheelbase
+	//const double L=GetWheelDimensions()[1];
+	//W is the vehicle’s track width
+	const double W=GetWheelDimensions()[0];
+
+	//const double FWD = (LeftLinearVelocity*cos(1.0)+RightLinearVelocity*cos(1.0))/2.0;
+	const double FWD = (LeftLinearVelocity + RightLinearVelocity) / 2.0;
+	//const double STR = (LeftLinearVelocity*sin(0.0)+ RightLinearVelocity*sin(0.0))/2.0;
+	const double STR = 0.0;
+
+	const double HP=PI/2;
+	//const double HalfDimLength=GetWheelDimensions().length()/2;
+
+	//Here we go it is finally working I just needed to take out the last division
+	const double omega = ((LeftLinearVelocity) + (RightLinearVelocity*-1))/2.0;
+
+	LocalVelocity[0]=STR;
+	LocalVelocity[1]=FWD;
+
+	AngularVelocity=(omega / (PI * W)) * Pi2;
+	//This is a safety to avoid instability
+	#if 0
+	AngularVelocity=IsZero(omega)?0.0:omega;
+	if (AngularVelocity>20.0)
+		AngularVelocity=20.0;
+	else if (AngularVelocity<-20.0)
+		AngularVelocity=-20.0;
+	#endif
+
+	#if 0
+	DOUT2("%f %f",FWD,omega);
+	DOUT4("%f %f ",m_LeftLinearVelocity,m_RightLinearVelocity);
+	#endif
+	//DOUT5("%f %f",FWD,omega);
+}
+
+#endif
 
 void Tank_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
 {
@@ -203,7 +271,7 @@ void Tank_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,dou
 	Torque = (AngularAcceleration * Mass) / dTime_s;
 }
 
-#if 1
+#if 0
 void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
@@ -217,14 +285,15 @@ void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Loca
 void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
-	__super::ApplyThrusters(PhysicsToUse,GetCachedLocalForce(),LocalTorque,-1,dTime_s);
+	//__super::ApplyThrusters(PhysicsToUse,GetCachedLocalForce(),LocalTorque,-1,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,-1,dTime_s);
 }
 #endif
 
 bool Tank_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
 {
-	//Disabled until I can get it to work properly
-	return false;
+	//For test purposes
+	//return false;
 	return Vehicle_Drive_Common_InjectDisplacement(m_Physics,DeltaTime_s,GetAtt_r(),PositionDisplacement,RotationDisplacement);
 }
 
@@ -259,12 +328,12 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	//Allow around 2-3 degrees of freedom for rotation.  While manual control worked fine without it, it is needed for
 	//targeting goals (e.g. follow ship)
 
-	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),PhysicsToUse.GetLinearVelocity());
 	const double STR=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
 	//STR=IsZero(STR)?0.0:STR;
 	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
 	//FWD=IsZero(FWD)?0.0:FWD;
-	double RCW=(TorqueRestrained/Mass)*dTime_s+m_Physics.GetAngularVelocity();
+	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
 	//RCW=fabs(RCW)<0.3?0.0:RCW;
 	double RPS=RCW / Pi2;
 	RCW=RPS * (PI * R);  //R is really diameter

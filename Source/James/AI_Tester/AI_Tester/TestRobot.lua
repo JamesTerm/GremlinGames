@@ -9,7 +9,9 @@ TestShip = {
 	AFTERBURNER_ACCEL = 2, -- Take this to the limit
 	BRAKE = 10,     -- Brake Deceleration m/s2 (1g = 9.8)
 	-- Turn Rates (deg/sec)
-	dHeading = 514,
+	-- Turn rates with the 0.6477 was 514; however with the real wheel base... this can be smaller to 674
+	-- However I don't need to go that fast and it cost more to move and turn so I'll trim it back some
+	dHeading = 600,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
