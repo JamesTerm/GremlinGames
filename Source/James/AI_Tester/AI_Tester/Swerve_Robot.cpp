@@ -184,7 +184,10 @@ void Swerve_Robot::TimeChange(double dTime_s)
 
 bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
-	bool ret=false;
+	//TODO we'll want to get the measured velocities which should work (or possibly use) like the Swerve_Drive code
+	return __super::InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+
+	//bool ret=false;
 	//if (m_UsingEncoders)
 	//{
 	//	Vec2d computedVelocity=m_Physics.GetLinearVelocity();
@@ -197,7 +200,7 @@ bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplace
 	//	//m_Physics.SetAngularVelocity(computedAngularVelocity);
 	//	ret=true;
 	//}
-	return ret;
+	//return ret;
 }
 
 double Swerve_Robot::RPS_To_LinearVelocity(double RPS)

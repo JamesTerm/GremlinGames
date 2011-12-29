@@ -62,10 +62,14 @@ class Swerve_Drive : public Ship_Tester
 		double GetIntendedVelocitiesFromIndex(size_t index) const; //This is sealed always using m_Velocities
 		double GetSwerveVelocitiesFromIndex(size_t index) const; //This is sealed always using m_Velocities
 	protected:
-		//Overload this for optimal time between the update and position to avoid oscillaion
+		//Overload this for optimal time between the update and position to avoid oscillation
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		//This will convert the force into both motor velocities and interpolate the final torque and force to apply
+		//Unlike in robot tank We'll only cache the values to work with in the Apply Thrusters, and apply them only to the inject displacement
+		//This way when swerve is unable to deliver due to error and limitations, the actual control will not be compromised
 		void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
+		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
+
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		//This method converts the given left right velocities into a form local linear velocity and angular velocity
 		void InterpolateVelocities(SwerveVelocities Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
@@ -77,4 +81,6 @@ class Swerve_Drive : public Ship_Tester
 	private:
 		//typedef Ship_2D __super;
 		SwerveVelocities m_Velocities;
+		Vec2D m_CachedLocalForce,m_CachedLinearVelocity;
+		double m_CachedTorque,m_CachedAngularVelocity;
 };
