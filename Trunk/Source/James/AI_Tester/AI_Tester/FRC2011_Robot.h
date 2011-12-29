@@ -182,6 +182,7 @@ class Robot_Control_2011 : public Robot_Control
 		virtual void CloseSolenoid(size_t index,bool Close);
 };
 
+#if 0
 //This is a simplified version of the wheel UI without the swivel or the graphics to show direction (only the tread)
 class Tank_Wheel_UI
 {
@@ -213,12 +214,14 @@ class Tank_Wheel_UI
 		osg::ref_ptr<osgText::Text> m_Tread; //Tread is really a line that helps show speed
 		double m_Rotation;
 };
+#endif
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
 class FRC_2011_Robot_UI : public FRC_2011_Robot, public Robot_Control_2011
 {
 	public:
 		FRC_2011_Robot_UI(const char EntityName[]) : FRC_2011_Robot(EntityName,this),Robot_Control_2011() {}
+#if 0
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 
 		virtual void UI_Init(Actor_Text *parent);
@@ -230,6 +233,7 @@ class FRC_2011_Robot_UI : public FRC_2011_Robot, public Robot_Control_2011
 		virtual void TimeChange(double dTime_s);
 	private:
 		Tank_Wheel_UI m_Wheel[6];
+#endif
 };
 
 class FRC_2011_Robot_Properties : public UI_Ship_Properties

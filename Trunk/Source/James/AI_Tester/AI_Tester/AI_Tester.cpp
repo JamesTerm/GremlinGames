@@ -8,6 +8,7 @@ namespace AI_Tester
 	#include "Viewer.h"
 	#include "Calibration_Testing.h"
 	#include "PIDController.h"
+	#include "Tank_Robot.h"
 	#include "FRC2011_Robot.h"
 	#include "Swerve_Robot.h"
 }
@@ -275,8 +276,10 @@ class Commands
 private:	
 	typedef map<string ,UI_Ship_Properties,greater<string>> ShipMap;
 	ShipMap Character_Database;
-	typedef map<string ,FRC_2011_Robot_Properties,greater<string>> RobotMap;
+	typedef map<string ,Tank_Robot_Properties,greater<string>> RobotMap;
 	RobotMap Robot_Database;
+	typedef map<string ,FRC_2011_Robot_Properties,greater<string>> Robot2011Map;
+	Robot2011Map Robot2011_Database;
 	typedef map<string ,Swerve_Robot_Properties,greater<string>> SwerveRobotMap;
 	SwerveRobotMap SwerveRobot_Database;
 
@@ -325,36 +328,58 @@ public:
 			printf("%s Ship not found, try loading it\n",str_2);
 		return ret;
 	}
-	void LoadRobot(const char *FileName,const char *RobotName)
+	enum RobotType
 	{
-		RobotMap::iterator iter=Robot_Database.find(RobotName);
-		if (iter==Robot_Database.end())
+		eTank,
+		eSwerve,
+		e2011
+	};
+	void LoadRobot(const char *FileName,const char *RobotName,RobotType type)
+	{
+		UI_Ship_Properties *new_entry=NULL;
+		switch (type)
 		{
-			//New entry
-			Robot_Database[RobotName]=FRC_2011_Robot_Properties();
-			FRC_2011_Robot_Properties &new_entry=Robot_Database[RobotName];  //reference to avoid copy
-			GG_Framework::Logic::Scripting::Script script;
-			script.LoadScript(FileName,true);
-			script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
-
-			new_entry.LoadFromScript(script);
+			case eTank:
+				{
+					RobotMap::iterator iter=Robot_Database.find(RobotName);
+					if (iter==Robot_Database.end())
+					{
+						//New entry
+						Robot_Database[RobotName]=Tank_Robot_Properties();
+						new_entry=&Robot_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
+			case eSwerve:
+				{
+					SwerveRobotMap::iterator iter=SwerveRobot_Database.find(RobotName);
+					if (iter==SwerveRobot_Database.end())
+					{
+						//New entry
+						SwerveRobot_Database[RobotName]=Swerve_Robot_Properties();
+						new_entry=&SwerveRobot_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
+			case e2011:
+				{
+					Robot2011Map::iterator iter=Robot2011_Database.find(RobotName);
+					if (iter==Robot2011_Database.end())
+					{
+						//New entry
+						Robot2011_Database[RobotName]=FRC_2011_Robot_Properties();
+						new_entry=&Robot2011_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
 		}
-		else
-			printf("%s already loaded\n",RobotName);
-	}
-	void LoadSwerveRobot(const char *FileName,const char *RobotName)
-	{
-		SwerveRobotMap::iterator iter=SwerveRobot_Database.find(RobotName);
-		if (iter==SwerveRobot_Database.end())
+		if (new_entry)
 		{
-			//New entry
-			SwerveRobot_Database[RobotName]=Swerve_Robot_Properties();
-			Swerve_Robot_Properties &new_entry=SwerveRobot_Database[RobotName];  //reference to avoid copy
 			GG_Framework::Logic::Scripting::Script script;
 			script.LoadScript(FileName,true);
 			script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 
-			new_entry.LoadFromScript(script);
+			new_entry->LoadFromScript(script);
 		}
 		else
 			printf("%s already loaded\n",RobotName);
@@ -367,7 +392,15 @@ public:
 		Entity_Properties *props=NULL;
 		if (iter!=Robot_Database.end())
 			props=&((*iter).second);
-		else
+
+		if (props==NULL)
+		{
+			Robot2011Map::iterator iter=Robot2011_Database.find(str_2);
+			if (iter!=Robot2011_Database.end())
+				props=&((*iter).second);
+		}
+
+		if (props==NULL)
 		{
 			SwerveRobotMap::iterator iter=SwerveRobot_Database.find(str_2);
 			if (iter!=SwerveRobot_Database.end())
@@ -508,6 +541,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	enum
 	{
 		eCurrent,
+		eTankRobot,
+		eSwerveRobot,
 		eRobot2011,
 		eTestGoals,
 		eTestFollowGod,
@@ -522,6 +557,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	const char * const TestName[]=
 	{
 		"current",
+		"TankRobot",
+		"SwerveRobot",
 		"Robot2011",
 		"Goals2011",
 		"FollowGod",
@@ -559,13 +596,27 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	switch(Test)
 	{
 	case eCurrent:
+	case eTankRobot:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadSwerveRobot("TestSwerveRobot.lua","TestSwerveRobot");
+			_command.LoadRobot("TestRobot.lua","TestRobot",Commands::eTank);
+			Entity2D *TestEntity=_command.AddRobot("TankRobot","TestRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity);
+		}
+		break;
+
+	case eSwerveRobot:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
 			Entity2D *TestEntity=_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
@@ -577,8 +628,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			#endif
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("TestRobot.lua","TestRobot");
-			Entity2D *TestEntity=_command.AddRobot("Robot2011","TestRobot",str_3,str_4,str_5);
+			_command.LoadRobot("Test2011Robot.lua","Test2011Robot",Commands::e2011);
+			Entity2D *TestEntity=_command.AddRobot("Robot2011","Test2011Robot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
@@ -616,17 +667,17 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
 
-			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("Robot2011"));
+			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("TankRobot"));
 			Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("SwerveRobot"));
 			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
 			if (!ship)
 			{
-				_command.LoadRobot("TestRobot.lua","TestRobot");
-				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("Robot2011","TestRobot",str_3,str_4,str_5));
+				_command.LoadRobot("TestRobot.lua","TestRobot",Commands::eTank);
+				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("TankRobot","TestRobot",str_3,str_4,str_5));
 			}
 			if (!SwerveShip)
 			{
-				_command.LoadSwerveRobot("TestSwerveRobot.lua","TestSwerveRobot");
+				_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
 				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
 			}
 
@@ -814,7 +865,7 @@ void CommandLineInterface()
 			}
 			else if (!_strnicmp( input_line, "LoadRobot", 5))
 			{
-				_command.LoadRobot(str_1,str_2);
+				_command.LoadRobot(str_1,str_2,(Commands::RobotType)atoi(str_3));
 			}
 			else if (!_strnicmp( input_line, "AddRobot", 4))
 			{

@@ -217,14 +217,16 @@ void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Loca
 void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
-	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,-1,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,GetCachedLocalForce(),LocalTorque,-1,dTime_s);
 }
 #endif
 
-//bool Tank_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
-//{
-//	return Vehicle_Drive_Common_InjectDisplacement(m_Physics,DeltaTime_s,GetAtt_r(),PositionDisplacement,RotationDisplacement);
-//}
+bool Tank_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
+{
+	//Disabled until I can get it to work properly
+	return false;
+	return Vehicle_Drive_Common_InjectDisplacement(m_Physics,DeltaTime_s,GetAtt_r(),PositionDisplacement,RotationDisplacement);
+}
 
 
   /***********************************************************************************************************************************/

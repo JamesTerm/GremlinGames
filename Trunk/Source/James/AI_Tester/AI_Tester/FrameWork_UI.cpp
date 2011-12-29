@@ -4,6 +4,7 @@ namespace AI_Tester
 {
 	#include "Calibration_Testing.h"
 	#include "PIDController.h"
+	#include "Tank_Robot.h"
 	#include "FRC2011_Robot.h"
 	#include "Swerve_Robot.h"
 }
@@ -331,7 +332,7 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 				NewShip=new Ship_Tester(EntityName);
 				break;
 			case Ship_Properties::eRobotTank:
-				NewShip=new Tank_Drive(EntityName);
+				NewShip=new Tank_Robot_UI(EntityName);
 				break;
 			case Ship_Properties::eFRC2011_Robot:
 				NewShip=new FRC_2011_Robot_UI(EntityName);

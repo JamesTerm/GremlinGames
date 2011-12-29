@@ -252,6 +252,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Tank_Robot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TestText.cpp"
 				>
 			</File>
@@ -335,6 +339,10 @@
 			</File>
 			<File
 				RelativePath=".\Swerve_Robot.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Tank_Robot.h"
 				>
 			</File>
 			<File
