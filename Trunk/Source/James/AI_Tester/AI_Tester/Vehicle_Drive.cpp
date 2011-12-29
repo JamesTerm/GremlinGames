@@ -297,12 +297,41 @@ void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,d
 void Swerve_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	Vec2d NewLocalForce(LocalForce);
-	double NewTorque=Torque;
-	InterpolateThrusterChanges(NewLocalForce,NewTorque,dTime_s);
+	//Just cache these here to not pollute the control
+	m_CachedLocalForce=LocalForce;
+	m_CachedTorque=Torque;
+	m_CachedLinearVelocity=m_Physics.GetLinearVelocity();
+	m_CachedAngularVelocity=m_Physics.GetAngularVelocity();
+
+	InterpolateThrusterChanges(m_CachedLocalForce,m_CachedTorque,dTime_s);
 	//No torque restraint... restraints are applied during the update of velocities
-	//__super::ApplyThrusters(PhysicsToUse,LocalForce,Torque,-1,dTime_s);
-	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
+
+	//We could go either way on this...I've kept the old technique for testing purposes
+	#if 1
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,Torque,-1,dTime_s);
+	#else
+	__super::ApplyThrusters(PhysicsToUse,m_CachedLocalForce,m_CachedTorque,-1,dTime_s);
+	#endif
+}
+
+bool Swerve_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
+{
+	const bool _InjectedDisplacement=true;
+	if (_InjectedDisplacement)
+	{
+		Vec2d computedLinearVelocity=m_Physics.GetLinearVelocity();
+		double computedAngularVelocity=m_Physics.GetAngularVelocity();
+		m_Physics.SetLinearVelocity(m_CachedLinearVelocity);
+		m_Physics.SetAngularVelocity(m_CachedAngularVelocity);
+		m_Physics.ApplyFractionalForce(LocalToGlobal(GetAtt_r(),m_CachedLocalForce),DeltaTime_s);
+		m_Physics.ApplyFractionalTorque(m_CachedTorque,DeltaTime_s);
+		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+
+		//We must set this back so that the PID can compute the entire error
+		m_Physics.SetLinearVelocity(computedLinearVelocity);
+		m_Physics.SetAngularVelocity(computedAngularVelocity);
+	}
+	return _InjectedDisplacement;
 }
 
 double Swerve_Drive::GetIntendedVelocitiesFromIndex(size_t index) const
