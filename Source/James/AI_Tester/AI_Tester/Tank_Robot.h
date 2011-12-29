@@ -29,6 +29,8 @@ class Tank_Robot : public Tank_Drive
 		virtual void ResetPos();
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
+		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
+
 		static double RPS_To_LinearVelocity(double RPS);
 
 	protected:
