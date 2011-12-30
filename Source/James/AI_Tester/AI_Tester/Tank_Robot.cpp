@@ -136,6 +136,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		double Encoder_LeftVelocity,Encoder_RightVelocity;
 		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 	}
+	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 void Tank_Robot::TimeChange(double dTime_s)

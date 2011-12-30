@@ -36,6 +36,9 @@ class Tank_Drive :	public Ship_Tester,
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
 	protected:
+		//Overload this for optimal time between the update and position to avoid oscillation
+		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
+
 		//This will convert the force into both motor velocities and interpolate the final torque and force to apply
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
@@ -47,7 +50,6 @@ class Tank_Drive :	public Ship_Tester,
 		virtual const Vec2D &GetWheelDimensions() const {return GetDimensions();}
 	private:
 		//typedef Ship_2D __super;
-		void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		double m_LeftLinearVelocity,m_RightLinearVelocity;
 };
 
