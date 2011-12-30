@@ -152,13 +152,13 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	if (m_UsingEncoders)
 	{
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
-		//double computedAngularVelocity=m_Physics.GetAngularVelocity();
+		double computedAngularVelocity=m_Physics.GetAngularVelocity();
 		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
-		//m_Physics.SetAngularVelocity(m_EncoderHeading);
+		m_Physics.SetAngularVelocity(m_EncoderHeading);
 		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 		//We must set this back so that the PID can compute the entire error
 		m_Physics.SetLinearVelocity(computedVelocity);
-		//m_Physics.SetAngularVelocity(computedAngularVelocity);
+		m_Physics.SetAngularVelocity(computedAngularVelocity);
 		ret=true;
 	}
 	if (!ret)
