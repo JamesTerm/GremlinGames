@@ -96,6 +96,7 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 		MaxAccelReverse=1.0;
 		m_UsingRange=false;
 		m_MinRange=m_MaxRange=0;
+		m_IsAngular=false;
 	}
 	Mass  = m_Physics.GetMass();
 
@@ -231,8 +232,13 @@ void Ship_1D::TimeChange(double dTime_s)
 				else if(m_IntendedPosition<m_MinRange)
 					DistanceToUse=m_MinRange-GetPos_m();
 			}
-			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
-			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVelocity);
+			if (!m_IsAngular)
+			{
+				//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
+				Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVelocity);
+			}
+			else
+				Vel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,AccRestraintPositive*Mass,dTime_s,MatchVelocity);
 		}
 
 		#ifndef __DisableSpeedControl__

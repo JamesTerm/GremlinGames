@@ -37,6 +37,8 @@ void Entity1D::TimeChange(double dTime_s)
 	double PositionDisplacement;
 	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement);
 	m_Position+=PositionDisplacement;
+	if (m_IsAngular)
+		NormalizeRotation(m_Position);
 }
 
 

@@ -117,24 +117,26 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		const double IntendedDirection=GetIntendedVelocitiesFromIndex(i+4);
 		double SwivelDirection=IntendedDirection;  //this is either the intended direction or the reverse of it
 		const Ship_1D &Swivel=m_DrivingModule[i]->GetSwivel();
+		//This is normalized implicitly
 		const double LastSwivelDirection=Swivel.GetPos_m();
-		double DistanceToIntendedSwivel=LastSwivelDirection-SwivelDirection;
-		NormalizeRotation(DistanceToIntendedSwivel);
-		DistanceToIntendedSwivel=fabs(DistanceToIntendedSwivel);
+		double DistanceToIntendedSwivel=fabs(NormalizeRotation2(LastSwivelDirection-SwivelDirection));
 
-		if ((DistanceToIntendedSwivel>PI_2) || (SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()) )
+		if ((DistanceToIntendedSwivel>PI_2) || 
+			(Swivel.GetUsingRange() &&
+			 ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))) 
+			)
 		{
-			SwivelDirection+=PI;
-			NormalizeRotation(SwivelDirection);
-			double TestIntendedFlipped=IntendedDirection+PI;
-			NormalizeRotation(TestIntendedFlipped);
-
-			//If we flipped because of a huge delta check that the reverse position is in range... and flip it back if it exceed the range
-			if ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()) ||
-				(TestIntendedFlipped>Swivel.GetMaxRange()) || (TestIntendedFlipped<Swivel.GetMinRange()))
+			SwivelDirection=NormalizeRotation2(SwivelDirection+PI);
+			if (Swivel.GetUsingRange())
 			{
-				SwivelDirection+=PI;
-				NormalizeRotation(SwivelDirection);
+				double TestIntendedFlipped=NormalizeRotation2(IntendedDirection+PI);
+				//If we flipped because of a huge delta check that the reverse position is in range... and flip it back if it exceed the range
+				if ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()) ||
+					(TestIntendedFlipped>Swivel.GetMaxRange()) || (TestIntendedFlipped<Swivel.GetMinRange()))
+				{
+					SwivelDirection+=PI;
+					NormalizeRotation(SwivelDirection);
+				}
 			}
 		}
 		//Note the velocity is checked once before the time change here, and once after for the current
@@ -234,8 +236,10 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	60.0,60.0, //Max Acceleration Forward/Reverse (try to tune to the average turning speed to minimize error on PID)
 	Ship_1D_Properties::eSwivel,
-	true,	//Using the range:  for now assuming a 1:1 using a potentiometer with 270 degrees and 10 degrees of padding = 130 degrees each way
-	-DEG_2_RAD(130.0),DEG_2_RAD(130.0)
+	//true,	//Using the range:  for now assuming a 1:1 using a potentiometer with 270 degrees and 10 degrees of padding = 130 degrees each way
+	false,  //Or not use the range... it appears it is possible to have unlimited range using the Vishear encoders
+	-DEG_2_RAD(130.0),DEG_2_RAD(130.0),
+	true  //this is definitely angular
 	),
 	m_DriveProps(
 	"Drive",

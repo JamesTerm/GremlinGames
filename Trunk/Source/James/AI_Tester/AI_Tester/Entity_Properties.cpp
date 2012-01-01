@@ -12,13 +12,15 @@ Entity1D_Properties::Entity1D_Properties()
 	m_EntityName="Entity1D";
 	m_Mass=10000.0;
 	m_Dimension=12.0;
+	m_IsAngular=false;
 };
 
-Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,double Dimension)
+Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,double Dimension,bool IsAngular)
 {
 	m_EntityName=EntityName;
 	m_Mass=Mass;
 	m_Dimension=Dimension;
+	m_IsAngular=IsAngular;
 }
 
 void Entity1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
@@ -51,6 +53,7 @@ void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
 {
 	NewEntity->m_Dimension=m_Dimension;
 	NewEntity->GetPhysics().SetMass(m_Mass);
+	NewEntity->m_IsAngular=m_IsAngular;
 }
 
   /***********************************************************************************************************************************/
@@ -75,8 +78,8 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 				   double ACCEL,double BRAKE,
 				   double MaxAccelForward, double MaxAccelReverse,
 				   Ship_Type ShipType,bool UsingRange,
-				   double MinRange, double MaxRange
-				   ) : Entity1D_Properties(EntityName,Mass,Dimension)
+				   double MinRange, double MaxRange,bool IsAngular
+				   ) : Entity1D_Properties(EntityName,Mass,Dimension,IsAngular)
 {
 	m_MAX_SPEED = MAX_SPEED;
 	m_ACCEL = ACCEL;
@@ -87,7 +90,6 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 	m_MinRange=MinRange;
 	m_MaxRange=MaxRange;
 	m_UsingRange=UsingRange;
-
 }
 
 void Ship_1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
