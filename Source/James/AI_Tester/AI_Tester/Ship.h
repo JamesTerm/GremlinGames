@@ -15,6 +15,17 @@ inline void NormalizeRotation(double &Rotation)
 		Rotation+=Pi2;
 }
 
+inline double NormalizeRotation2(double Rotation)
+{
+	const double Pi2=M_PI*2.0;
+	//Normalize the rotation
+	if (Rotation>M_PI)
+		Rotation-=Pi2;
+	else if (Rotation<-M_PI)
+		Rotation+=Pi2;
+	return Rotation;
+}
+
 class Ship_2D : public Ship
 {
 	public:

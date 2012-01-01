@@ -43,8 +43,10 @@ class Ship_1D : public Entity1D
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		bool GetLockShipToPosition();
-		const double GetMinRange() const {return m_MinRange;}
-		const double GetMaxRange() const {return m_MaxRange;}
+		double GetMinRange() const {return m_MinRange;}
+		double GetMaxRange() const {return m_MaxRange;}
+		bool GetUsingRange() const {return m_UsingRange;}
+
 	protected:
 		///override if the intended position has a known velocity to match (this is great for locking)
 		virtual double GetMatchVelocity() const {return 0.0;}
@@ -89,7 +91,6 @@ class Ship_1D : public Entity1D
 		double m_MinRange,m_MaxRange;
 		bool m_SimFlightMode;  ///< If true auto strafing will occur to keep ship in line with its position
 		bool m_UsingRange; 
-
 	private:
 		//Only used with SetRequestedVelocity_FromNormalized()
 		//this is managed direct from being set to avoid need for precision tolerance

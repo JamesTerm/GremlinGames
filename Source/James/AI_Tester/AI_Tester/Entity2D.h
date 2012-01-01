@@ -31,6 +31,7 @@ class Entity1D
 		void SetPos_m(double value) {m_Position=value;}
 	protected: 
 		PhysicsEntity_1D m_Physics;
+		bool m_IsAngular;
 };
 
 

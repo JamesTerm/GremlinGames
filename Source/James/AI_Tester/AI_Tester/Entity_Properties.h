@@ -5,7 +5,7 @@ class Entity1D_Properties
 {
 	public:
 		Entity1D_Properties();
-		Entity1D_Properties(const char EntityName[],double Mass,double Dimension);
+		Entity1D_Properties(const char EntityName[],double Mass,double Dimension,bool IsAngular=false);
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Entity1D *NewEntity) const;
 	protected:
@@ -14,6 +14,7 @@ class Entity1D_Properties
 		//Stuff needed for physics
 		double m_Mass;
 		double m_Dimension; //Dimension- Length
+		bool m_IsAngular;
 };
 
 class Ship_1D;
@@ -32,7 +33,8 @@ class Ship_1D_Properties : public Entity1D_Properties
 		};
 		Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
-			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0);
+			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
+			bool IsAngular=false);
 
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Ship_1D *NewShip) const;
