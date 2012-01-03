@@ -300,8 +300,8 @@ void Wheel_UI::UI_Init(Actor_Text *parent)
 	m_Tread->setFontResolution(10,10);
 	m_Tread->setPosition(position);
 	m_Tread->setAlignment(osgText::Text::CENTER_CENTER);
-	m_Tread->setText(L"\"");
-	//m_Tread->setText(L"__");
+	//m_Tread->setText(L"\"");
+	m_Tread->setText(L"__");
 	m_Tread->setUpdateCallback(m_UIParent);
 
 }
@@ -327,8 +327,8 @@ void Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 
 	const double FS=m_UIParent->GetFontSize();
 	Vec2d FrontSwivel(0.0,0.5);
 	Vec2d BackSwivel(0.0,-0.5);
-	Vec2d TreadRotPos(0.0,cos(m_Rotation)-0.3);
-	//Vec2d TreadRotPos(sin(m_Rotation)*((fabs(m_Swivel)>PI_2)?0.5:-0.5),(cos(m_Rotation)*.8)+0.5);
+	//Vec2d TreadRotPos(0.0,cos(m_Rotation)-0.3);
+	Vec2d TreadRotPos(sin(m_Rotation)*((fabs(m_Swivel)>PI_2)?0.5:-0.5),(cos(m_Rotation)*.8)+0.5);
 	FrontSwivel=GlobalToLocal(m_Swivel,FrontSwivel);
 	BackSwivel=GlobalToLocal(m_Swivel,BackSwivel);
 	TreadRotPos=GlobalToLocal(m_Swivel,TreadRotPos);
