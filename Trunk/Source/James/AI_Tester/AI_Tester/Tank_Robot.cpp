@@ -23,7 +23,7 @@ const double Pi2=M_PI*2.0;
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/
 /***********************************************************************************************************************************/
-Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Robot_Control_Interface *robot_control,bool UseEncoders) : 
+Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Drive(EntityName), m_RobotControl(robot_control),
 	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
 	m_PIDController_Left(1.0,1.0,0.0),	m_PIDController_Right(1.0,1.0,0.0),
@@ -330,7 +330,7 @@ void Tank_Wheel_UI::UI_Init(Actor_Text *parent)
 	m_Tread->setFontResolution(10,10);
 	m_Tread->setPosition(position);
 	m_Tread->setAlignment(osgText::Text::CENTER_CENTER);
-	m_Tread->setText(L"\"");
+	m_Tread->setText(L"_");
 	m_Tread->setUpdateCallback(m_UIParent);
 }
 
@@ -346,13 +346,13 @@ void Tank_Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::
 {
 	const double FS=m_UIParent->GetFontSize();
 	//Vec2d TreadRotPos(0.0,cos(m_Rotation)-0.3);  //good for " font
-	Vec2d TreadRotPos(0.0,(cos(m_Rotation)*.5)-0.4);
+	Vec2d TreadRotPos(sin(m_Rotation)*-0.25,(cos(m_Rotation)*.5)+0.4);
 	const Vec2d TreadOffset(m_props.m_Offset[0]+TreadRotPos[0],m_props.m_Offset[1]+TreadRotPos[1]);
 	const Vec2d TreadLocalOffset=GlobalToLocal(Heading,TreadOffset);
 	const osg::Vec3 TreadPos (parent_pos[0]+( TreadLocalOffset[0]*FS),parent_pos[1]+( TreadLocalOffset[1]*FS),parent_pos[2]);
 
 	const double TreadColor=((sin(-m_Rotation) + 1.0)/2.0) * 0.8 + 0.2;
-	m_Tread->setColor(osg::Vec4(0.0,TreadColor,TreadColor,1.0));
+	m_Tread->setColor(osg::Vec4(TreadColor,TreadColor,TreadColor,1.0));
 
 	if (m_Tread.valid())
 	{
