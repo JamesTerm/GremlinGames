@@ -4,6 +4,8 @@ namespace AI_Tester
 {
 	#include "Calibration_Testing.h"
 	#include "PIDController.h"
+	//Note we can remove the tank drive train includes once we have a swerve robot control
+	#include "Tank_Robot.h"
 	#include "FRC2011_Robot.h"
 	#include "Swerve_Robot.h"
 }
@@ -23,7 +25,7 @@ const double Pi2=M_PI*2.0;
  /*													Swerve_Robot::DrivingModule														*/
 /***********************************************************************************************************************************/
 
-Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Robot_Control_Interface *robot_control) : m_ModuleName(EntityName),
+Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Tank_Drive_Control_Interface *robot_control) : m_ModuleName(EntityName),
 	m_SwivelName("Swivel"),m_DriveName("Drive"),m_Swivel(m_SwivelName.c_str()),m_Drive(m_DriveName.c_str()),
 	m_IntendedSwivelDirection(0.0),m_IntendedDriveVelocity(0.0),
 	m_RobotControl(robot_control)
@@ -57,7 +59,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
   /***********************************************************************************************************************************/
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
-Swerve_Robot::Swerve_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
+Swerve_Robot::Swerve_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders) : 
 	Swerve_Drive(EntityName), m_RobotControl(robot_control), 
 	m_UsingEncoders(UseEncoders) //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
@@ -173,7 +175,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 void Swerve_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
-	m_RobotControl->Robot_Control_TimeChange(dTime_s);
+	m_RobotControl->Tank_Drive_Control_TimeChange(dTime_s);
 	//TODO add encoder support here
 	//{
 	//	//Display encoders without applying calibration

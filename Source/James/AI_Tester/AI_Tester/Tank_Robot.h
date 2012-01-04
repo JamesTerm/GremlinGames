@@ -5,7 +5,7 @@ class Tank_Drive_Control_Interface
 {
 	public:
 		//This is primarily used for updates to dashboard and driver station during a test build
-		virtual void Robot_Control_TimeChange(double dTime_s)=0;
+		virtual void Tank_Drive_Control_TimeChange(double dTime_s)=0;
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
 		virtual void Initialize(const Entity_Properties *props)=0;
@@ -59,7 +59,10 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 	public:
 		Tank_Robot_Control();
 		//This is only needed for simulation
-		virtual void Robot_Control_TimeChange(double dTime_s);
+		virtual void Tank_Drive_Control_TimeChange(double dTime_s);
+		double GetLeftVoltage() const {return m_LeftVoltage;}
+		double GetRightVoltage() const {return m_RightVoltage;}
+		void SetDisplayVoltage(bool display) {m_DisplayVoltage=display;}
 	protected: //from Robot_Control_Interface
 		virtual void Reset_Encoders();
 		virtual void Initialize(const Entity_Properties *props);
@@ -71,6 +74,7 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 		//cache voltage values for display
 		double m_LeftVoltage,m_RightVoltage;
+		bool m_DisplayVoltage;
 };
 
 class Tank_Robot_Properties : public UI_Ship_Properties
@@ -84,7 +88,7 @@ class Tank_Robot_Properties : public UI_Ship_Properties
 		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
 		//the width is a measurement of the the center of the wheel width to the other wheel
 		const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
-	private:
+	protected:
 		Vec2D m_WheelDimensions;
 };
 
@@ -120,11 +124,10 @@ class Tank_Wheel_UI
 		double m_Rotation;
 };
 
-///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Tank_Robot_UI : public Tank_Robot, public Tank_Robot_Control
+class Tank_Robot_UI : public Tank_Robot
 {
 	public:
-		Tank_Robot_UI(const char EntityName[]) : Tank_Robot(EntityName,this),Tank_Robot_Control() {}
+		Tank_Robot_UI(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders=false) : Tank_Robot(EntityName,robot_control,UseEncoders) {}
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 
 		virtual void UI_Init(Actor_Text *parent);
@@ -136,4 +139,11 @@ class Tank_Robot_UI : public Tank_Robot, public Tank_Robot_Control
 		virtual void TimeChange(double dTime_s);
 	private:
 		Tank_Wheel_UI m_Wheel[6];
+};
+
+///This is only for the simulation where we need not have client code instantiate a Robot_Control
+class Tank_Robot_UI_Control : public Tank_Robot_UI, public Tank_Robot_Control
+{
+	public:
+		Tank_Robot_UI_Control(const char EntityName[]) : Tank_Robot_UI(EntityName,this),Tank_Robot_Control() {}
 };
