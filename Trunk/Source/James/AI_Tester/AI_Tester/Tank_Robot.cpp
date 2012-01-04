@@ -42,6 +42,7 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 
 	const Tank_Robot_Properties *RobotProps=dynamic_cast<const Tank_Robot_Properties *>(props);
 	m_WheelDimensions=RobotProps->GetWheelDimensions();
+	m_ReverseMotorAssignments=RobotProps->GetReverseMotorAssignments();
 
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
@@ -178,6 +179,7 @@ void Tank_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime
 			m_VoltageOverride=true;
 }
 
+//TODO assign to properties
 const double c_rMotorDriveForward_DeadZone=0.110;
 const double c_rMotorDriveReverse_DeadZone=0.04;
 const double c_lMotorDriveForward_DeadZone=0.02;
@@ -243,20 +245,20 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 		}
 	}
 
-	//TODO ensure the 2011 robot keeps these reversed when I inherit from here
-
 	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
-	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
-	//m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
-
-	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+	if (m_ReverseMotorAssignments)
+		m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
+	else
+		m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
+
   /***********************************************************************************************************************************/
  /*													Tank_Robot_Properties															*/
 /***********************************************************************************************************************************/
 
 Tank_Robot_Properties::Tank_Robot_Properties() : 
-	m_WheelDimensions(0.4953,0.6985) //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+	m_WheelDimensions(0.4953,0.6985), //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+	m_ReverseMotorAssignments(false)
 {
 }
 
