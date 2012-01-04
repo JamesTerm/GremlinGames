@@ -1444,6 +1444,8 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 {
 	//Late assign this to override the initial default
 	m_WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
+	m_ReverseMotorAssignments=true;
 }
 
 #endif

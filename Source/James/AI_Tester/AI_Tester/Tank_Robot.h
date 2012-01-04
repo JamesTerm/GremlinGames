@@ -50,6 +50,7 @@ class Tank_Robot : public Tank_Drive
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
 		Vec2D m_WheelDimensions; //cached from the FRC_2011_Robot_Properties
+		bool m_ReverseMotorAssignments;
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
@@ -88,8 +89,10 @@ class Tank_Robot_Properties : public UI_Ship_Properties
 		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
 		//the width is a measurement of the the center of the wheel width to the other wheel
 		const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
+		bool GetReverseMotorAssignments() const {return m_ReverseMotorAssignments;}
 	protected:
 		Vec2D m_WheelDimensions;
+		bool m_ReverseMotorAssignments;  //It is possible that interface is reverse (depends on how the robot is built)
 };
 
 //This is a simplified version of the wheel UI without the swivel or the graphics to show direction (only the tread)
