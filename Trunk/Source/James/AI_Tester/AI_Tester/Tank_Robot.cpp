@@ -142,7 +142,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 void Tank_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
-	m_RobotControl->Robot_Control_TimeChange(dTime_s);
+	m_RobotControl->Tank_Drive_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 }
 
@@ -264,7 +264,7 @@ Tank_Robot_Properties::Tank_Robot_Properties() :
  /*														Tank_Robot_Control															*/
 /***********************************************************************************************************************************/
 
-Tank_Robot_Control::Tank_Robot_Control() : m_LeftVoltage(0.0),m_RightVoltage(0.0)
+Tank_Robot_Control::Tank_Robot_Control() : m_LeftVoltage(0.0),m_RightVoltage(0.0),m_DisplayVoltage(true)
 {
 }
 
@@ -285,11 +285,14 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 	}
 }
 
-void Tank_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
 {
 	m_Encoders.SetTimeDelta(dTime_s);
-	//display voltages
-	DOUT2("l=%f r=%f\n",m_LeftVoltage,m_RightVoltage);
+	if (m_DisplayVoltage)
+	{
+		//display voltages
+		DOUT2("l=%f r=%f\n",m_LeftVoltage,m_RightVoltage);
+	}
 }
 
 void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)

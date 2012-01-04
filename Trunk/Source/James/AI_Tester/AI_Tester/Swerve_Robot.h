@@ -36,7 +36,7 @@ class Swerve_Robot : public Swerve_Drive
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Swerve_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders=false);
+		Swerve_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders=false);
 		~Swerve_Robot();
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
@@ -59,7 +59,7 @@ class Swerve_Robot : public Swerve_Drive
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 	private:
 		//typedef  Tank_Drive __super;
-		Robot_Control_Interface * const m_RobotControl;
+		Tank_Drive_Control_Interface * const m_RobotControl;
 
 		//The driving module consists of a swivel motor and the driving motor for a wheel.  It manages / converts the intended direction and speed to 
 		//actual direction and velocity (i.e. works in reverse) as well as working with sensor feedback (e.g. potentiometer, encoder) for error
@@ -67,7 +67,7 @@ class Swerve_Robot : public Swerve_Drive
 		class DrivingModule
 		{
 			public:
-				DrivingModule(const char EntityName[],Robot_Control_Interface *robot_control);
+				DrivingModule(const char EntityName[],Tank_Drive_Control_Interface *robot_control);
 				struct DrivingModule_Props
 				{
 					const Ship_1D_Properties *Swivel_Props;
@@ -99,7 +99,7 @@ class Swerve_Robot : public Swerve_Drive
 				//Pass along the intended swivel direction and drive velocity
 				double m_IntendedSwivelDirection,m_IntendedDriveVelocity;
 
-				Robot_Control_Interface * const m_RobotControl;
+				Tank_Drive_Control_Interface * const m_RobotControl;
 		} *m_DrivingModule[4]; //FL, FR, RL, RR  The four modules used  (We could put 6 here if we want)
 
 		bool m_UsingEncoders;
@@ -191,10 +191,10 @@ class Wheel_UI
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Swerve_Robot_UI : public Swerve_Robot, public Robot_Control
+class Swerve_Robot_UI : public Swerve_Robot, public Tank_Robot_Control
 {
 	public:
-		Swerve_Robot_UI(const char EntityName[]) : Swerve_Robot(EntityName,this),Robot_Control() {}
+		Swerve_Robot_UI(const char EntityName[]) : Swerve_Robot(EntityName,this),Tank_Robot_Control() {}
 	protected:
 		virtual void UpdateVoltage(size_t index,double Voltage) {}
 		virtual void CloseSolenoid(size_t index,bool Close) {}
