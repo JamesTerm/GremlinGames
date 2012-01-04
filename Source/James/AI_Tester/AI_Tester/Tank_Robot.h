@@ -1,7 +1,7 @@
 #pragma once
 
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
-class Tank_Drive_Robot_Control_Interface
+class Tank_Drive_Control_Interface
 {
 	public:
 		//This is primarily used for updates to dashboard and driver station during a test build
@@ -23,7 +23,7 @@ class Tank_Robot : public Tank_Drive
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Tank_Robot(const char EntityName[],Tank_Drive_Robot_Control_Interface *robot_control,bool UseEncoders=false);
+		Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
@@ -41,7 +41,7 @@ class Tank_Robot : public Tank_Drive
 		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 	private:
 		//typedef  Tank_Drive __super;
-		Tank_Drive_Robot_Control_Interface * const m_RobotControl;
+		Tank_Drive_Control_Interface * const m_RobotControl;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
 		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
 		bool m_UsingEncoders;
@@ -54,7 +54,7 @@ class Tank_Robot : public Tank_Drive
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
 ///are correct
-class Tank_Robot_Control : public Tank_Drive_Robot_Control_Interface
+class Tank_Robot_Control : public Tank_Drive_Control_Interface
 {
 	public:
 		Tank_Robot_Control();
