@@ -16,6 +16,19 @@ class Tank_Drive_Control_Interface
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
 };
 
+struct Tank_Robot_Props
+{
+	//typedef Framework::Base::Vec2d Vec2D;
+	typedef osg::Vec2d Vec2D;
+
+	//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
+	//the width is a measurement of the the center of the wheel width to the other wheel
+	Vec2D WheelDimensions;
+	double WheelDiameter;
+
+	bool ReverseMotorAssignments;  //It is possible that interface is reverse (depends on how the robot is built)
+};
+
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
 class Tank_Robot : public Tank_Drive
@@ -30,15 +43,14 @@ class Tank_Robot : public Tank_Drive
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
-
-		static double RPS_To_LinearVelocity(double RPS);
-
 	protected:
+		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
-		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
+		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
+		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 	private:
 		//typedef  Tank_Drive __super;
 		Tank_Drive_Control_Interface * const m_RobotControl;
@@ -49,8 +61,7 @@ class Tank_Robot : public Tank_Drive
 		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
-		Vec2D m_WheelDimensions; //cached from the FRC_2011_Robot_Properties
-		bool m_ReverseMotorAssignments;
+		Tank_Robot_Props m_TankRobotProps; //cached from the FRC_2011_Robot_Properties
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
@@ -86,13 +97,9 @@ class Tank_Robot_Properties : public UI_Ship_Properties
 
 		Tank_Robot_Properties();
 
-		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
-		//the width is a measurement of the the center of the wheel width to the other wheel
-		const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
-		bool GetReverseMotorAssignments() const {return m_ReverseMotorAssignments;}
+		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 	protected:
-		Vec2D m_WheelDimensions;
-		bool m_ReverseMotorAssignments;  //It is possible that interface is reverse (depends on how the robot is built)
+		Tank_Robot_Props m_TankRobotProps;
 };
 
 //This is a simplified version of the wheel UI without the swivel or the graphics to show direction (only the tread)

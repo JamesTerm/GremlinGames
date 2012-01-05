@@ -1301,6 +1301,30 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	claw_entity.TimeChange(dTime_s);
 }
 
+const double c_rMotorDriveForward_DeadZone=0.110;
+const double c_rMotorDriveReverse_DeadZone=0.04;
+const double c_lMotorDriveForward_DeadZone=0.02;
+const double c_lMotorDriveReverse_DeadZone=0.115;
+
+const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
+const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
+const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
+const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
+
+void FRC_2011_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
+{
+	//Eliminate the deadzone
+	if (LeftVoltage>0.0)
+		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
+	else if (LeftVoltage < 0.0)
+		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
+
+	if (RightVoltage>0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+	else if (RightVoltage < 0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
+}
+
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
 	m_RobotControl->CloseSolenoid(eDeployment,Close);
@@ -1442,10 +1466,14 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	false	//No limit ever!
 	)
 {
+	Tank_Robot_Props props;
+
 	//Late assign this to override the initial default
-	m_WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+	props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
 	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
-	m_ReverseMotorAssignments=true;
+	props.ReverseMotorAssignments=true;
+	props.WheelDiameter=c_WheelDiameter;
+	m_TankRobotProps=props;
 }
 
 #endif

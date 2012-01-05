@@ -339,6 +339,7 @@ class FRC_2011_Robot : public Tank_Robot_UI
 		Robot_Arm &GetArm() {return m_Arm;}
 		Robot_Claw &GetClaw() {return m_Claw;}
 	protected:
+		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
 		//typedef  Tank_Drive __super;

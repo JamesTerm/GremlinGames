@@ -13,10 +13,6 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-//TODO add these to properties
-const double c_WheelDiameter=0.1524;  //6 inches
-const double c_MotorToWheelGearRatio=12.0/36.0;
-
 const double Pi2=M_PI*2.0;
 
 
@@ -41,8 +37,8 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	m_RobotControl->Initialize(props);
 
 	const Tank_Robot_Properties *RobotProps=dynamic_cast<const Tank_Robot_Properties *>(props);
-	m_WheelDimensions=RobotProps->GetWheelDimensions();
-	m_ReverseMotorAssignments=RobotProps->GetReverseMotorAssignments();
+	//This will copy all the props
+	m_TankRobotProps=RobotProps->GetTankRobotProps();
 
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
@@ -167,11 +163,6 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	return ret;
 }
 
-double Tank_Robot::RPS_To_LinearVelocity(double RPS)
-{
-	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
-}
-
 void Tank_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
@@ -179,16 +170,30 @@ void Tank_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime
 			m_VoltageOverride=true;
 }
 
-//TODO assign to properties
-const double c_rMotorDriveForward_DeadZone=0.110;
-const double c_rMotorDriveReverse_DeadZone=0.04;
-const double c_lMotorDriveForward_DeadZone=0.02;
-const double c_lMotorDriveReverse_DeadZone=0.115;
+//I'm leaving this as a template for derived classes... doing it this way is efficient in that it can use all constants
+const double c_rMotorDriveForward_DeadZone=0.0;
+const double c_rMotorDriveReverse_DeadZone=0.0;
+const double c_lMotorDriveForward_DeadZone=0.0;
+const double c_lMotorDriveReverse_DeadZone=0.0;
 
 const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
 const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
 const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
 const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
+
+void Tank_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
+{
+	//Eliminate the deadzone
+	if (LeftVoltage>0.0)
+		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
+	else if (LeftVoltage < 0.0)
+		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
+
+	if (RightVoltage>0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+	else if (RightVoltage < 0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
+}
 
 void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
@@ -231,22 +236,11 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 		// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
 		// linear distribution of voltage will help avoid over-compensation, especially as it gets closer to stopping
 		if (m_UseDeadZoneSkip)
-		{
-			//Eliminate the deadzone
-			if (LeftVoltage>0.0)
-				LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
-			else if (LeftVoltage < 0.0)
-				LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
-		
-			if (RightVoltage>0.0)
-				RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
-			else if (RightVoltage < 0.0)
-				RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
-		}
+			ComputeDeadZone(LeftVoltage,RightVoltage);
 	}
 
 	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
-	if (m_ReverseMotorAssignments)
+	if (m_TankRobotProps.ReverseMotorAssignments)
 		m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
 	else
 		m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
@@ -256,10 +250,19 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
  /*													Tank_Robot_Properties															*/
 /***********************************************************************************************************************************/
 
-Tank_Robot_Properties::Tank_Robot_Properties() : 
-	m_WheelDimensions(0.4953,0.6985), //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
-	m_ReverseMotorAssignments(false)
+Tank_Robot_Properties::Tank_Robot_Properties()
 {
+	Tank_Robot_Props props;
+	memset(&props,0,sizeof(Tank_Robot_Props));
+
+	//Late assign this to override the initial default
+	props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
+	props.ReverseMotorAssignments=false;
+	const double c_WheelDiameter=0.1524;  //6 inches
+	props.WheelDiameter=c_WheelDiameter;
+	m_TankRobotProps=props;
+
 }
 
   /***********************************************************************************************************************************/
@@ -404,7 +407,7 @@ void Tank_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *
 	{
 		Tank_Wheel_UI::Wheel_Properties props;
 		props.m_Offset=Offsets[i];
-		props.m_Wheel_Diameter=c_WheelDiameter;
+		props.m_Wheel_Diameter=GetTankRobotProps().WheelDiameter;
 		m_Wheel[i].Initialize(em,&props);
 	}
 	__super::Initialize(em,props);
@@ -437,7 +440,7 @@ void Tank_Robot_UI::TimeChange(double dTime_s)
 		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
 		const double LinearVelocity=(i&1)?GetRightVelocity():GetLeftVelocity();
 		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
-		const double RPS=LinearVelocity /  (PI * c_WheelDiameter * PixelHackScale);
+		const double RPS=LinearVelocity /  (PI * GetTankRobotProps().WheelDiameter * PixelHackScale);
 		const double AngularVelocity=RPS * Pi2;
 		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
 	}
