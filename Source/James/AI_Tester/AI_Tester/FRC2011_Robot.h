@@ -363,7 +363,8 @@ class FRC_2011_Robot_Control : public FRC_2011_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
+		//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);}
 		//virtual void UpdateVoltage(size_t index,double Voltage); this is overridden
 		//pacify this by returning its current value
 		virtual double GetArmCurrentPosition();
