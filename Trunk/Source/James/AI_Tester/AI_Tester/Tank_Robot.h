@@ -25,8 +25,9 @@ struct Tank_Robot_Props
 	//the width is a measurement of the the center of the wheel width to the other wheel
 	Vec2D WheelDimensions;
 	double WheelDiameter;
-
-	bool ReverseMotorAssignments;  //It is possible that interface is reverse (depends on how the robot is built)
+	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
+	double LeftPID[3]; //p,i,d
+	double RightPID[3]; //p,i,d
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -42,6 +43,7 @@ class Tank_Robot : public Tank_Drive
 		virtual void ResetPos();
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
+		double RPS_To_LinearVelocity(double RPS);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);

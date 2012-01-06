@@ -21,9 +21,7 @@ const double Pi2=M_PI*2.0;
 /***********************************************************************************************************************************/
 Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Drive(EntityName), m_RobotControl(robot_control),
-	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	m_PIDController_Left(1.0,1.0,0.0),	m_PIDController_Right(1.0,1.0,0.0),
-	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
+	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
 	m_UsingEncoders(UseEncoders),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
 	//m_UsingEncoders=true; //testing
@@ -39,6 +37,8 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	const Tank_Robot_Properties *RobotProps=dynamic_cast<const Tank_Robot_Properties *>(props);
 	//This will copy all the props
 	m_TankRobotProps=RobotProps->GetTankRobotProps();
+	m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
+	m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
 
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
@@ -163,6 +163,11 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	return ret;
 }
 
+double Tank_Robot::RPS_To_LinearVelocity(double RPS)
+{
+	return RPS * m_TankRobotProps.MotorToWheelGearRatio * M_PI * m_TankRobotProps.WheelDiameter; 
+}
+
 void Tank_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
@@ -240,10 +245,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	}
 
 	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
-	if (m_TankRobotProps.ReverseMotorAssignments)
-		m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
-	else
-		m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 
   /***********************************************************************************************************************************/
@@ -257,12 +259,11 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 
 	//Late assign this to override the initial default
 	props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
-	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
-	props.ReverseMotorAssignments=false;
 	const double c_WheelDiameter=0.1524;  //6 inches
 	props.WheelDiameter=c_WheelDiameter;
+	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
+	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
 	m_TankRobotProps=props;
-
 }
 
   /***********************************************************************************************************************************/
