@@ -992,8 +992,8 @@ void FRC_2011_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
 
-FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],FRC_2011_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),
+FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex) : 
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
 	m_PIDController(1.0,1.0/8.0,0.0),
@@ -1007,7 +1007,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],FRC_2011_Control_In
 
 void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
 {
-	m_LastPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+	m_LastPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 	__super::Initialize(em,props);
 	const Ship_1D_Properties *ship=dynamic_cast<const Ship_1D_Properties *>(props);
 	assert(ship);
@@ -1054,7 +1054,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		if (m_LastTime!=0.0)
 		{
 			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
-			double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+			double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
@@ -1076,7 +1076,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	else
 	{
 		//Test potentiometer readings without applying to current position (disabled by default)
-		m_RobotControl->GetArmCurrentPosition();
+		m_RobotControl->GetArmCurrentPosition(m_InstanceIndex);
 		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
 		//MAX_SPEED=m_CalibratedScaler=1.0;
 	}
@@ -1130,7 +1130,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 	#endif
 
-	m_RobotControl->UpdateVoltage(eArm,Voltage);
+	m_RobotControl->UpdateArmVoltage(m_InstanceIndex,Voltage);
 	//Show current height (only in AI Tester)
 	#if 1
 	double Pos_m=GetPos_m();
@@ -1156,8 +1156,8 @@ void FRC_2011_Robot::Robot_Arm::ResetPos()
 	if (m_UsingPotentiometer)
 	{
 		m_PIDController.Reset();
-		m_RobotControl->Reset_Arm();
-		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		m_RobotControl->Reset_Arm(m_InstanceIndex);
+		double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 		Stop();
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
@@ -1233,7 +1233,7 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 }
 void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 {
-	m_RobotControl->CloseSolenoid(eRist,Close);
+	m_RobotControl->CloseRist(Close);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -1396,7 +1396,7 @@ FRC_2011_Robot_Control::FRC_2011_Robot_Control() : m_pTankRobotControl(&m_TankRo
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 }
 
-void FRC_2011_Robot_Control::Reset_Arm()
+void FRC_2011_Robot_Control::Reset_Arm(size_t index)
 {
 	m_KalFilter_Arm.Reset();
 }
@@ -1432,7 +1432,7 @@ const double c_Arm_Range=1.0-c_Arm_DeadZone;
 //{
 //}
 
-double FRC_2011_Robot_Control::GetArmCurrentPosition()
+double FRC_2011_Robot_Control::GetArmCurrentPosition(size_t index)
 {
 	double result=m_Potentiometer.GetPotentiometerCurrentPosition()*c_PotentiometerToArmRatio;
 	//result = m_KalFilter_Arm(result);  //apply the Kalman filter

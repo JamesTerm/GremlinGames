@@ -226,10 +226,27 @@ class Robot_Control_Interface
 		/// \param The index is ordinal enumerated to specific robot's interpretation
 		/// \see subclass for enumeration specifics
 		virtual void CloseSolenoid(size_t index,bool Close)=0;
+		virtual void OpenSolenoid(size_t index,bool Close)=0;
 };
 
-class FRC_2011_Control_Interface : public Tank_Drive_Control_Interface,
-									public Robot_Control_Interface
+//TODO move to Arm file
+class Arm_Control_Interface
+{
+	public:
+		virtual void Reset_Arm(size_t index=0)=0; 
+
+		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
+		///This is in radians of the arm's gear ratio
+		///TODO break this apart to reading pure analog values and have the potentiometer conversion happen within the robot
+		virtual double GetArmCurrentPosition(size_t index=0)=0;
+		virtual void UpdateArmVoltage(size_t index,double Voltage)=0;
+		virtual void CloseRist(bool Close)=0;
+		virtual void OpenRist(bool Close)=0;
+};
+
+class FRC_2011_Control_Interface :	public Tank_Drive_Control_Interface,
+									public Robot_Control_Interface,
+									public Arm_Control_Interface
 {
 public:
 	//This is primarily used for updates to dashboard and driver station during a test build
@@ -237,12 +254,6 @@ public:
 	//We need to pass the properties to the Robot Control to be able to make proper conversions.
 	//The client code may cast the properties to obtain the specific data 
 	virtual void Initialize(const Entity_Properties *props)=0;
-	virtual void Reset_Arm()=0; 
-
-	///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
-	///This is in radians of the arm's gear ratio
-	///TODO break this apart to reading pure analog values and have the potentiometer conversion happen within the robot
-	virtual double GetArmCurrentPosition()=0;
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -298,7 +309,7 @@ class FRC_2011_Robot : public Tank_Robot_UI
 		class Robot_Arm : public Ship_1D
 		{
 			public:
-				Robot_Arm(const char EntityName[],FRC_2011_Control_Interface *robot_control);
+				Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex=0);
 				IEvent::HandlerList ehl;
 				//The parent needs to call initialize
 				virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
@@ -325,7 +336,8 @@ class FRC_2011_Robot : public Tank_Robot_UI
 				void SetPos3feet();
 				void SetPos6feet();
 				void SetPos9feet();
-				FRC_2011_Control_Interface * const m_RobotControl;
+				Arm_Control_Interface * const m_RobotControl;
+				const size_t m_InstanceIndex;
 				PIDController2 m_PIDController;
 				double m_LastPosition;  //used for calibration
 				double m_CalibratedScaler; //used for calibration
@@ -356,22 +368,28 @@ class FRC_2011_Robot_Control : public FRC_2011_Control_Interface
 	public:
 		FRC_2011_Robot_Control();
 		//This is only needed for simulation
-		virtual void Robot_Control_TimeChange(double dTime_s);
 	protected: //from Robot_Control_Interface
-		//Will reset various members as needed (e.g. Kalman filters)
-		virtual void Reset_Arm(); 
+		virtual void UpdateVoltage(size_t index,double Voltage);
+		virtual void CloseSolenoid(size_t index,bool Close);
+		virtual void OpenSolenoid(size_t index,bool Close) {CloseSolenoid(index,!Close);}
+	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
-		virtual void Initialize(const Entity_Properties *props);
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
 		//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);}
-		//virtual void UpdateVoltage(size_t index,double Voltage); this is overridden
-		//pacify this by returning its current value
-		virtual double GetArmCurrentPosition();
-
-		virtual void UpdateVoltage(size_t index,double Voltage);
-		virtual void CloseSolenoid(size_t index,bool Close);
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
+	protected: //from Arm Interface
+		virtual void Reset_Arm(size_t index=0); 
+		virtual void UpdateArmVoltage(size_t index,double Voltage) {UpdateVoltage(FRC_2011_Robot::eArm,Voltage);}
+		//pacify this by returning its current value
+		virtual double GetArmCurrentPosition(size_t index);
+		virtual void CloseRist(bool Close) {CloseSolenoid(FRC_2011_Robot::eRist,Close);}
+		virtual void OpenRist(bool Close) {CloseSolenoid(FRC_2011_Robot::eRist,!Close);}
+	protected: //from FRC_2011_Control_Interface
+		//Will reset various members as needed (e.g. Kalman filters)
+		virtual void Robot_Control_TimeChange(double dTime_s);
+		virtual void Initialize(const Entity_Properties *props);
+
 	protected:
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
