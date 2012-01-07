@@ -1411,7 +1411,8 @@ void FRC_2011_Robot_Control::Initialize(const Entity_Properties *props)
 		assert(robot_props);
 		m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 	}
-	//Note the drive train props are called from their Initialize so we need not call from here
+	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
+	tank_interface->Initialize(props);
 }
 
 void FRC_2011_Robot_Control::Robot_Control_TimeChange(double dTime_s)
