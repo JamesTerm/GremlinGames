@@ -163,11 +163,6 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	return ret;
 }
 
-double Tank_Robot::RPS_To_LinearVelocity(double RPS)
-{
-	return RPS * m_TankRobotProps.MotorToWheelGearRatio * M_PI * m_TankRobotProps.WheelDiameter; 
-}
-
 void Tank_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
@@ -288,6 +283,9 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 	{
 		assert(robot_props);
 		m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
+
+		//This will copy all the props
+		m_TankRobotProps=robot_props->GetTankRobotProps();
 	}
 }
 
@@ -299,6 +297,11 @@ void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
 		//display voltages
 		DOUT2("l=%f r=%f\n",m_LeftVoltage,m_RightVoltage);
 	}
+}
+
+double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
+{
+	return RPS * m_TankRobotProps.MotorToWheelGearRatio * M_PI * m_TankRobotProps.WheelDiameter; 
 }
 
 void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
