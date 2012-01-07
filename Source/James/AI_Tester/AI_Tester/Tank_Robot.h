@@ -43,7 +43,6 @@ class Tank_Robot : public Tank_Drive
 		virtual void ResetPos();
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
-		double RPS_To_LinearVelocity(double RPS);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
@@ -63,7 +62,7 @@ class Tank_Robot : public Tank_Drive
 		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
-		Tank_Robot_Props m_TankRobotProps; //cached from the FRC_2011_Robot_Properties
+		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
@@ -82,6 +81,7 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
+		double RPS_To_LinearVelocity(double RPS);
 	protected:
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		Encoder_Tester m_Encoders;
@@ -89,6 +89,7 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		//cache voltage values for display
 		double m_LeftVoltage,m_RightVoltage;
 		bool m_DisplayVoltage;
+		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 };
 
 class Tank_Robot_Properties : public UI_Ship_Properties
