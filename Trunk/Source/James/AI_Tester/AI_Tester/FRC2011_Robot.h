@@ -1,34 +1,5 @@
 #pragma once
 
-class Robot_Control_Interface
-{
-	public:
-		//See FRC_2011_Robot for enumerations
-
-		/// \param The index is ordinal enumerated to specific robot's interpretation
-		/// \see subclass for enumeration specifics
-		virtual void UpdateVoltage(size_t index,double Voltage)=0;
-		/// \param The index is ordinal enumerated to specific robot's interpretation
-		/// \see subclass for enumeration specifics
-		virtual void CloseSolenoid(size_t index,bool Close)=0;
-		virtual void OpenSolenoid(size_t index,bool Close)=0;
-};
-
-//TODO move to Arm file
-class Arm_Control_Interface
-{
-	public:
-		virtual void Reset_Arm(size_t index=0)=0; 
-
-		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
-		///This is in radians of the arm's gear ratio
-		///TODO break this apart to reading pure analog values and have the potentiometer conversion happen within the robot
-		virtual double GetArmCurrentPosition(size_t index=0)=0;
-		virtual void UpdateArmVoltage(size_t index,double Voltage)=0;
-		virtual void CloseRist(bool Close)=0;
-		virtual void OpenRist(bool Close)=0;
-};
-
 class FRC_2011_Control_Interface :	public Tank_Drive_Control_Interface,
 									public Robot_Control_Interface,
 									public Arm_Control_Interface
@@ -67,9 +38,7 @@ class FRC_2011_Robot : public Tank_Robot_UI
 		virtual void TimeChange(double dTime_s);
 		void CloseDeploymentDoor(bool Close);
 
-		//TODO for now it it does not matter, but the ship 1d does not normalize to 2pi yet, this class would take advantage of this
-		//but fortunately there currently is no use for keep track of the rotation, this however will matter if we have things which
-		//rotate within the game
+		//TODO test roller using is angular to be true
 		class Robot_Claw : public Ship_1D
 		{
 			public:

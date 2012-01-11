@@ -6,6 +6,7 @@ namespace AI_Tester
 	#include "PIDController.h"
 	//Note we can remove the tank drive train includes once we have a swerve robot control
 	#include "Tank_Robot.h"
+	#include "Robot_Control_Interface.h"
 	#include "FRC2011_Robot.h"
 	#include "Swerve_Robot.h"
 }

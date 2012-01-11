@@ -204,6 +204,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FRC2012_Robot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Goal.cpp"
 				>
 			</File>
@@ -310,6 +314,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FRC2012_Robot.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Goal.h"
 				>
 			</File>
@@ -323,6 +331,10 @@
 			</File>
 			<File
 				RelativePath=".\PIDController.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Robot_Control_Interface.h"
 				>
 			</File>
 			<File
