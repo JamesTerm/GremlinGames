@@ -5,7 +5,9 @@ namespace AI_Tester
 	#include "Calibration_Testing.h"
 	#include "PIDController.h"
 	#include "Tank_Robot.h"
+	#include "Robot_Control_Interface.h"
 	#include "FRC2011_Robot.h"
+	#include "FRC2012_Robot.h"
 	#include "Swerve_Robot.h"
 }
 
