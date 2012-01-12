@@ -411,17 +411,16 @@ void Tank_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *
 	{
 		Tank_Wheel_UI::Wheel_Properties props;
 		props.m_Offset=Offsets[i];
-		props.m_Wheel_Diameter=GetTankRobotProps().WheelDiameter;
+		props.m_Wheel_Diameter=m_TankRobot->GetTankRobotProps().WheelDiameter;
 		m_Wheel[i].Initialize(em,&props);
 	}
-	__super::Initialize(em,props);
 }
 
 void Tank_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos)
 {
 	//just dispatch the update to the wheels (for now)
 	for (size_t i=0;i<6;i++)
-		m_Wheel[i].update(nv,draw,parent_pos,-GetAtt_r());
+		m_Wheel[i].update(nv,draw,parent_pos,-m_TankRobot->GetAtt_r());
 }
 
 void Tank_Robot_UI::Text_SizeToUse(double SizeToUse)
@@ -438,13 +437,13 @@ void Tank_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 
 void Tank_Robot_UI::TimeChange(double dTime_s)
 {
-	__super::TimeChange(dTime_s);
+	Tank_Robot &_=*m_TankRobot;
 	for (size_t i=0;i<6;i++)
 	{
 		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
-		const double LinearVelocity=(i&1)?GetRightVelocity():GetLeftVelocity();
+		const double LinearVelocity=(i&1)?_.GetRightVelocity():_.GetLeftVelocity();
 		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
-		const double RPS=LinearVelocity /  (PI * GetTankRobotProps().WheelDiameter * PixelHackScale);
+		const double RPS=LinearVelocity /  (PI * _.GetTankRobotProps().WheelDiameter * PixelHackScale);
 		const double AngularVelocity=RPS * Pi2;
 		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
 	}

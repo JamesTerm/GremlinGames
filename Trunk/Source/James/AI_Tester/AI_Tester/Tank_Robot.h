@@ -30,6 +30,8 @@ struct Tank_Robot_Props
 	double RightPID[3]; //p,i,d
 };
 
+class Tank_Robot_UI;
+
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
 class Tank_Robot : public Tank_Drive
@@ -45,6 +47,8 @@ class Tank_Robot : public Tank_Drive
 		virtual void TimeChange(double dTime_s);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 	protected:
+		friend Tank_Robot_UI;
+
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
@@ -137,10 +141,12 @@ class Tank_Wheel_UI
 		double m_Rotation;
 };
 
-class Tank_Robot_UI : public Tank_Robot
+class Tank_Robot_UI
 {
 	public:
-		Tank_Robot_UI(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders=false) : Tank_Robot(EntityName,robot_control,UseEncoders) {}
+		typedef osg::Vec2d Vec2D;
+
+		Tank_Robot_UI(Tank_Robot *tank_robot) : m_TankRobot(tank_robot) {}
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 
 		virtual void UI_Init(Actor_Text *parent);
@@ -151,12 +157,35 @@ class Tank_Robot_UI : public Tank_Robot
 
 		virtual void TimeChange(double dTime_s);
 	private:
+		Tank_Robot * const m_TankRobot;
 		Tank_Wheel_UI m_Wheel[6];
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Tank_Robot_UI_Control : public Tank_Robot_UI, public Tank_Robot_Control
+class Tank_Robot_UI_Control : public Tank_Robot, public Tank_Robot_Control
 {
 	public:
-		Tank_Robot_UI_Control(const char EntityName[]) : Tank_Robot_UI(EntityName,this),Tank_Robot_Control() {}
+		Tank_Robot_UI_Control(const char EntityName[]) : Tank_Robot(EntityName,this),Tank_Robot_Control(),
+		m_TankUI(this) {}
+	protected:
+		virtual void TimeChange(double dTime_s) 
+		{
+			__super::TimeChange(dTime_s);
+			m_TankUI.TimeChange(dTime_s);
+		}
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
+		{
+			__super::Initialize(em,props);
+			m_TankUI.Initialize(em,props);
+		}
+
+	protected:   //from EntityPropertiesInterface
+		virtual void UI_Init(Actor_Text *parent) {m_TankUI.UI_Init(parent);}
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
+		{m_TankUI.custom_update(nv,draw,parent_pos);}
+		virtual void Text_SizeToUse(double SizeToUse) {m_TankUI.Text_SizeToUse(SizeToUse);}
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_TankUI.UpdateScene(geode,AddOrRemove);}
+
+	private:
+		Tank_Robot_UI m_TankUI;
 };
