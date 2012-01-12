@@ -19,7 +19,7 @@ using namespace std;
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot_UI(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control)
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control)
 {
 }
 

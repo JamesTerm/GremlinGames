@@ -408,14 +408,13 @@ void Swerve_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties
 		props.m_Wheel_Diameter=c_WheelDiameter;
 		m_Wheel[i].Initialize(em,&props);
 	}
-	__super::Initialize(em,props);
 }
 
 void Swerve_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos)
 {
 	//just dispatch the update to the wheels (for now)
 	for (size_t i=0;i<4;i++)
-		m_Wheel[i].update(nv,draw,parent_pos,-GetAtt_r());
+		m_Wheel[i].update(nv,draw,parent_pos,-(m_SwerveRobot->GetAtt_r()));
 }
 
 void Swerve_Robot_UI::Text_SizeToUse(double SizeToUse)
@@ -432,13 +431,13 @@ void Swerve_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 
 void Swerve_Robot_UI::TimeChange(double dTime_s)
 {
-	__super::TimeChange(dTime_s);
+	Swerve_Robot &_=*m_SwerveRobot;
 	for (size_t i=0;i<4;i++)
 	{
 		//TODO GetIntendedVelocities for intended UI
-		m_Wheel[i].SetSwivel(GetSwerveVelocitiesFromIndex(i+4));
+		m_Wheel[i].SetSwivel(_.GetSwerveVelocitiesFromIndex(i+4));
 		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
-		const double LinearVelocity=GetSwerveVelocitiesFromIndex(i);
+		const double LinearVelocity=_.GetSwerveVelocitiesFromIndex(i);
 		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
 		const double RPS=LinearVelocity /  (PI * c_WheelDiameter * PixelHackScale);
 		const double AngularVelocity=RPS * Pi2;

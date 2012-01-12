@@ -13,7 +13,7 @@ public:
 	virtual void Initialize(const Entity_Properties *props)=0;
 };
 
-class FRC_2012_Robot : public Tank_Robot_UI
+class FRC_2012_Robot : public Tank_Robot
 {
 	public:
 		enum SpeedControllerDevices
@@ -81,7 +81,30 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
 {
 	public:
-		FRC_2012_Robot_UI(const char EntityName[]) : FRC_2012_Robot(EntityName,this),FRC_2012_Robot_Control() {}
+		FRC_2012_Robot_UI(const char EntityName[]) : FRC_2012_Robot(EntityName,this),FRC_2012_Robot_Control(),
+			m_TankUI(this) {}
+
+	protected:
+		virtual void TimeChange(double dTime_s) 
+		{
+			__super::TimeChange(dTime_s);
+			m_TankUI.TimeChange(dTime_s);
+		}
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
+		{
+			__super::Initialize(em,props);
+			m_TankUI.Initialize(em,props);
+		}
+
+	protected:   //from EntityPropertiesInterface
+		virtual void UI_Init(Actor_Text *parent) {m_TankUI.UI_Init(parent);}
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
+			{m_TankUI.custom_update(nv,draw,parent_pos);}
+		virtual void Text_SizeToUse(double SizeToUse) {m_TankUI.Text_SizeToUse(SizeToUse);}
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_TankUI.UpdateScene(geode,AddOrRemove);}
+
+	private:
+		Tank_Robot_UI m_TankUI;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties

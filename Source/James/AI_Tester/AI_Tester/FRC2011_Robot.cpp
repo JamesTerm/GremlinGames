@@ -523,7 +523,7 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],FRC_2011_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot_UI(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control)
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control)
 {
 }
 
