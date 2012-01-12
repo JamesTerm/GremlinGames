@@ -336,12 +336,15 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 			case Ship_Properties::eRobotTank:
 				NewShip=new Tank_Robot_UI_Control(EntityName);
 				break;
-			case Ship_Properties::eFRC2011_Robot:
-				NewShip=new FRC_2011_Robot_UI(EntityName);
-				break;
 			case Ship_Properties::eSwerve_Robot:
 				//NewShip=new Swerve_Drive(EntityName); //less stress
 				NewShip=new Swerve_Robot_UI(EntityName);
+				break;
+			case Ship_Properties::eFRC2011_Robot:
+				NewShip=new FRC_2011_Robot_UI(EntityName);
+				break;
+			case Ship_Properties::eFRC2012_Robot:
+				NewShip=new FRC_2012_Robot_UI(EntityName);
 				break;
 		}
 		assert(NewShip);

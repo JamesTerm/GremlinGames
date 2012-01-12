@@ -280,10 +280,13 @@ private:
 	ShipMap Character_Database;
 	typedef map<string ,Tank_Robot_Properties,greater<string>> RobotMap;
 	RobotMap Robot_Database;
-	typedef map<string ,FRC_2011_Robot_Properties,greater<string>> Robot2011Map;
-	Robot2011Map Robot2011_Database;
 	typedef map<string ,Swerve_Robot_Properties,greater<string>> SwerveRobotMap;
 	SwerveRobotMap SwerveRobot_Database;
+
+	typedef map<string ,FRC_2011_Robot_Properties,greater<string>> Robot2011Map;
+	Robot2011Map Robot2011_Database;
+	typedef map<string ,FRC_2012_Robot_Properties,greater<string>> Robot2012Map;
+	Robot2012Map Robot2012_Database;
 
 	UI_Controller_GameClient &game;
 
@@ -334,7 +337,8 @@ public:
 	{
 		eTank,
 		eSwerve,
-		e2011
+		e2011,
+		e2012
 	};
 	void LoadRobot(const char *FileName,const char *RobotName,RobotType type)
 	{
@@ -374,6 +378,17 @@ public:
 					}
 				}
 				break;
+			case e2012:
+				{
+					Robot2012Map::iterator iter=Robot2012_Database.find(RobotName);
+					if (iter==Robot2012_Database.end())
+					{
+						//New entry
+						Robot2012_Database[RobotName]=FRC_2012_Robot_Properties();
+						new_entry=&Robot2012_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
 		}
 		if (new_entry)
 		{
@@ -397,6 +412,13 @@ public:
 
 		if (props==NULL)
 		{
+			SwerveRobotMap::iterator iter=SwerveRobot_Database.find(str_2);
+			if (iter!=SwerveRobot_Database.end())
+				props=&((*iter).second);
+		}
+
+		if (props==NULL)
+		{
 			Robot2011Map::iterator iter=Robot2011_Database.find(str_2);
 			if (iter!=Robot2011_Database.end())
 				props=&((*iter).second);
@@ -404,10 +426,11 @@ public:
 
 		if (props==NULL)
 		{
-			SwerveRobotMap::iterator iter=SwerveRobot_Database.find(str_2);
-			if (iter!=SwerveRobot_Database.end())
+			Robot2012Map::iterator iter=Robot2012_Database.find(str_2);
+			if (iter!=Robot2012_Database.end())
 				props=&((*iter).second);
 		}
+
 
 		if (props)
 		{
@@ -545,6 +568,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eCurrent,
 		eTankRobot,
 		eSwerveRobot,
+		eRobot2012,
 		eRobot2011,
 		eTestGoals,
 		eTestFollowGod,
@@ -561,6 +585,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"current",
 		"TankRobot",
 		"SwerveRobot",
+		"Robot2012",
 		"Robot2011",
 		"Goals2011",
 		"FollowGod",
@@ -620,6 +645,18 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
 			Entity2D *TestEntity=_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity);
+		}
+		break;
+	case eRobot2012:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("Test2012Robot.lua","Test2012Robot",Commands::e2012);
+			Entity2D *TestEntity=_command.AddRobot("Robot2012","Test2012Robot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;

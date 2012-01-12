@@ -185,8 +185,9 @@ void Entity_Properties::Initialize(Entity2D *NewEntity) const
 const char * const csz_RobotNames[] =
 {
 	"RobotTank",
+	"RobotSwerve",
 	"Robot2011",
-	"RobotSwerve"
+	"Robot2012",
 };
 
 Ship_Properties::Ship_Properties()
