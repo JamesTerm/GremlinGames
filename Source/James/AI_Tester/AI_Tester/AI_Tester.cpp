@@ -953,6 +953,14 @@ void CommandLineInterface()
 					ship->SetGoal(goal);
 				}
 			}
+			else if (!_strnicmp( input_line, "UseEncoders", 6))
+			{
+				Tank_Robot *robot=dynamic_cast<Tank_Robot *>(game.GetEntity(str_1));
+				if (robot)
+					robot->SetUseEncoders(atoi(str_2)==0?false:true);
+				else
+					printf("%s is not loaded as a tank robot",str_1);
+			}
 			else if (!_strnicmp( input_line, "Follow", 6))
 			{
 				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity(str_1));

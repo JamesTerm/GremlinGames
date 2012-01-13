@@ -323,7 +323,7 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 }
 #endif 
 
-double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s,double matchVel)
+double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s,double matchVel,bool normalize)
 {
 	double ret;
 
@@ -340,20 +340,27 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 			return ret;
 		}
 
-		//Unlike in the 3D physics, we'll need while loops to ensure all of the accumulated turns are normalized, in the 3D physics the
-		//Quat is auto normalized to only require one if check here
-		while (DistanceDirection>M_PI)
-			DistanceDirection-=Pi2;
-		while (DistanceDirection<-M_PI)
-			DistanceDirection+=Pi2;
+		if (normalize)
+		{
+			//Unlike in the 3D physics, we'll need while loops to ensure all of the accumulated turns are normalized, in the 3D physics the
+			//Quat is auto normalized to only require one if check here
+			while (DistanceDirection>M_PI)
+				DistanceDirection-=Pi2;
+			while (DistanceDirection<-M_PI)
+				DistanceDirection+=Pi2;
+		}
+
 		double DistanceLength=fabs(DistanceDirection);
 
 		//Ideal speed needs to also be normalized
 		double IDS=Distance;
-		if (IDS>M_PI)
-			IDS-=Pi2;
-		else if (IDS<-M_PI)
-			IDS+=Pi2;
+		if (normalize)
+		{
+			if (IDS>M_PI)
+				IDS-=Pi2;
+			else if (IDS<-M_PI)
+				IDS+=Pi2;
+		}
 
 		double IdealSpeed=fabs(IDS/DeltaTime_s);
 

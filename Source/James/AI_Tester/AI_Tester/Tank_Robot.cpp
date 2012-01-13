@@ -140,7 +140,7 @@ void Tank_Robot::TimeChange(double dTime_s)
 bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	bool ret=false;
-	const bool UpdateDisplacement=false;
+	const bool UpdateDisplacement=true;
 	if (UpdateDisplacement)
 	{
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
