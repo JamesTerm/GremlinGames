@@ -112,8 +112,8 @@ void Potentiometer_Tester::TimeChange()
 /***************************************************************************************************************/
 #define ENCODER_TEST_RATE 1
 #if ENCODER_TEST_RATE==0
-const double c_Encoder_TestRate=4.0;
-const double c_Encoder_MaxAccel=10.0;
+const double c_Encoder_TestRate=16.0;
+const double c_Encoder_MaxAccel=120.0;
 #endif
 
 #if ENCODER_TEST_RATE==1

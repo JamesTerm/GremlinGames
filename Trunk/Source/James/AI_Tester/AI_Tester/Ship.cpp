@@ -301,7 +301,7 @@ void Ship_2D::SetIntendedOrientation(double IntendedOrientation)
 
 //////////////////////////////////////////////////////////////////////////
 
-#define _TestNoIndendedDirction_properties__
+#undef _TestIndendedDirction_properties__
 
 void Ship_2D::TimeChange(double dTime_s)
 {
@@ -337,7 +337,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		//slave the intended orientation to the ship
 		//  [1/12/2012 Terminator]
 
-		#ifndef _TestNoIndendedDirction_properties__
+		#ifdef _TestIndendedDirction_properties__
 		UpdateIntendedOrientaton(dTime_s);
 
 		//Determine the angular distance from the intended orientation
@@ -551,7 +551,7 @@ void Ship_2D::TimeChange(double dTime_s)
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel);
+			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
 		//testing stuff  (eventually nuke this)
 		//Vec3d rotVel=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,Vec3d(0,0,0));
