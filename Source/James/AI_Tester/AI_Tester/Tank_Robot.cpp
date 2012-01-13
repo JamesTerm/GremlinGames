@@ -62,14 +62,15 @@ void Tank_Robot::ResetPos()
 
 void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
 {
+	double Encoder_LeftVelocity,Encoder_RightVelocity;
+	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+	//Display encoders without applying calibration
+
+	double LeftVelocity=GetLeftVelocity();
+	double RightVelocity=GetRightVelocity();
+
 	if (m_UsingEncoders)
 	{
-		double Encoder_LeftVelocity,Encoder_RightVelocity;
-		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-
-		double LeftVelocity=GetLeftVelocity();
-		double RightVelocity=GetRightVelocity();
-
 		double control_left=0.0,control_right=0.0;
 		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
 		//allow the scaler to normalize if it need to start up again.
@@ -113,26 +114,19 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 			//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
 			m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
 		}
-		
-		#if 1
-		//Update the physics with the actual velocity
-		Vec2d LocalVelocity;
-		double AngularVelocity;
-		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
-		//TODO add gyro's yaw readings for Angular velocity here
-		//Store the value here to be picked up in GetOldVelocity()
-		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
-		m_EncoderHeading=AngularVelocity;
-		//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
-		//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
-		#endif
-	}
-	else
-	{
-		//Display encoders without applying calibration
-		double Encoder_LeftVelocity,Encoder_RightVelocity;
-		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-	}
+	}	
+
+	//Update the physics with the actual velocity
+	Vec2d LocalVelocity;
+	double AngularVelocity;
+	InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+	//TODO add gyro's yaw readings for Angular velocity here
+	//Store the value here to be picked up in GetOldVelocity()
+	m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
+	m_EncoderHeading=AngularVelocity;
+	//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
+	//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
+
 	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
@@ -146,7 +140,8 @@ void Tank_Robot::TimeChange(double dTime_s)
 bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	bool ret=false;
-	if (m_UsingEncoders)
+	const bool UpdateDisplacement=false;
+	if (UpdateDisplacement)
 	{
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
 		double computedAngularVelocity=m_Physics.GetAngularVelocity();

@@ -301,6 +301,8 @@ void Ship_2D::SetIntendedOrientation(double IntendedOrientation)
 
 //////////////////////////////////////////////////////////////////////////
 
+#define _TestNoIndendedDirction_properties__
+
 void Ship_2D::TimeChange(double dTime_s)
 {
 	// Update my controller
@@ -329,9 +331,29 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	if (m_StabilizeRotation)
 	{
+
+		//Note: I use to have the intended orientation lead and apply physics on it to result in the desired lock on effect, but this proved to be problematic
+		//if the ship was unable to keep up with the intended rate.  That is actually a good error test to keep around here, but true locking to ship will
+		//slave the intended orientation to the ship
+		//  [1/12/2012 Terminator]
+
+		#ifndef _TestNoIndendedDirction_properties__
 		UpdateIntendedOrientaton(dTime_s);
+
 		//Determine the angular distance from the intended orientation
 		m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
+		#else
+		if (m_LockShipHeadingToOrientation)
+		{
+			m_rotDisplacement_rad=m_rotAccel_rad_s;
+			m_IntendedOrientation=GetAtt_r();
+		}
+		else
+		{
+			UpdateIntendedOrientaton(dTime_s);
+			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
+		}
+		#endif
 	}
 	else
 	{
@@ -583,6 +605,11 @@ void Ship_2D::TimeChange(double dTime_s)
 	Ship::TimeChange(dTime_s);
 
 	m_controller->UpdateUI(dTime_s);
+
+	#ifdef _TestNoIndendedDirction_properties__
+	if (m_LockShipHeadingToOrientation)
+		m_IntendedOrientation=GetAtt_r();
+	#endif
 
 	//Reset my controller vars
 	m_rotAccel_rad_s=0.0;
