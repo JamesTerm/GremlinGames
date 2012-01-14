@@ -199,6 +199,8 @@ void Ship_1D::TimeChange(double dTime_s)
 			ForceToApply=m_Physics.GetForceFromVelocity(VelocityToUse,dTime_s);
 			if (!UsingRequestedVelocity)
 				ForceToApply+=m_currAccel * Mass;
+			//Allow subclass to evaluate the requested velocity in use;
+			RequestedVelocityCallback(VelocityToUse,dTime_s);
 		}
 		else   //Manual mode
 		{

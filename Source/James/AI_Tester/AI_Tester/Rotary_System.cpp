@@ -213,10 +213,10 @@ void Rotary_Angular::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_
 	m_Rotary_Props=Props->GetRoteryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 
-	m_MaxSpeedReference=Props->GetMaxSpeed();
-	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
-	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
-	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
+	const double OutputRange=MAX_SPEED*0.875;  //create a small range
+	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
+	m_PIDController.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController.Enable();
 	m_CalibratedScaler=MAX_SPEED;
 }
@@ -243,9 +243,9 @@ void Rotary_Angular::TimeChange(double dTime_s)
 		{
 			double PosY=GetPos_m();
 			if (!m_VoltageOverride)
-				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
 			else
-				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
 		}
 		#endif
 
@@ -339,25 +339,25 @@ bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDispl
 	return ret;
 }
 
-void Rotary_Angular::PosDisplacementCallback(double posDisplacement_m)
+void Rotary_Angular::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
-	if ((m_UsingEncoder)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<m_Rotary_Props.PrecisionTolerance))
+	if ((m_UsingEncoder)&&(VelocityToUse==0.0)&&(!GetLockShipToPosition()))
 		m_VoltageOverride=true;
 }
 
 void Rotary_Angular::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
-	if (m_UsingEncoder)
-	{
-		m_PIDController.Reset();
-		m_RobotControl->Reset_Rotary(m_InstanceIndex);
-		double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
-		Stop();
-		SetPos_m(NewPosition);
-		m_EncoderVelocity=NewPosition;
-	}
+
+	m_PIDController.Reset();
+	//We may need this if we use Kalman filters
+	m_RobotControl->Reset_Rotary(m_InstanceIndex);
+	m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+
+	//ensure teleop has these set properly
+	m_CalibratedScaler=MAX_SPEED;
+	//m_UseDeadZoneSkip=true;
 }
 
 void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
