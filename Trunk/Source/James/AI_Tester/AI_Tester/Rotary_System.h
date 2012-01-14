@@ -20,6 +20,7 @@ class Rotary_Linear : public Ship_1D
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
 		virtual void PosDisplacementCallback(double posDisplacement_m);
+		virtual void SetPotentiometerSafety(bool DisableFeedback);
 	private:
 		//typedef Ship_1D __super;
 
@@ -28,7 +29,6 @@ class Rotary_Linear : public Ship_1D
 		//void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 
 		/// \param DisableFeedback this allows ability to bypass feedback
-		void SetPotentiometerSafety(bool DisableFeedback);
 		Rotary_Control_Interface * const m_RobotControl;
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
@@ -47,9 +47,18 @@ class Rotary_Properties : public Ship_1D_Properties
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 
-		Rotary_Properties();
+		void Init();
+		Rotary_Properties(const char EntityName[], double Mass,double Dimension,
+			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
+			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
+			bool IsAngular=false) : Ship_1D_Properties(EntityName,Mass,Dimension,MAX_SPEED,ACCEL,BRAKE,MaxAccelForward,
+			MaxAccelReverse,ShipType,UsingRange,MinRange,MaxRange) {Init();}
+
+		Rotary_Properties() {Init();}
 
 		const Rotary_Props &GetRoteryProps() const {return m_RoteryProps;}
+		//Get and Set the properties
+		Rotary_Props &RoteryProps() {return m_RoteryProps;}
 	protected:
 		Rotary_Props m_RoteryProps;
 };

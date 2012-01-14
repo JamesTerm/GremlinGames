@@ -194,7 +194,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
  /*														Rotary_Properties															*/
 /***********************************************************************************************************************************/
 
-Rotary_Properties::Rotary_Properties()
+void Rotary_Properties::Init()
 {
 	Rotary_Props props;
 	memset(&props,0,sizeof(Rotary_Props));

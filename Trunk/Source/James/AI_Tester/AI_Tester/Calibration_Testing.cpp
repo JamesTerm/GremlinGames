@@ -6,6 +6,7 @@ namespace AI_Tester
 	#include "PIDController.h"
 	#include "Tank_Robot.h"
 	#include "Robot_Control_Interface.h"
+	#include "Rotary_System.h"
 	#include "FRC2011_Robot.h"
 	#include "FRC2012_Robot.h"
 }
@@ -103,6 +104,47 @@ double Potentiometer_Tester::GetPotentiometerCurrentPosition()
 }
 
 void Potentiometer_Tester::TimeChange()
+{
+	__super::TimeChange(m_Time_s);
+}
+
+  /***************************************************************************************************************/
+ /*											Potentiometer_Tester2												*/
+/***************************************************************************************************************/
+
+Potentiometer_Tester2::Potentiometer_Tester2() : m_PotentiometerProps(
+	"Potentiometer2",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	M_PI,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0,
+	Ship_1D_Properties::eSwivel,
+	true,	//Using the range
+	DEG_2_RAD(-180.0),DEG_2_RAD(180.0)
+	),Ship_1D("Potentiometer2")
+
+{
+	m_Bypass=false;
+	Initialize(m_DummyMap,&m_PotentiometerProps);
+}
+
+void Potentiometer_Tester2::UpdatePotentiometerVoltage(double Voltage)
+{
+	if (!m_Bypass)
+		SetRequestedVelocity(Voltage*m_PotentiometerProps.GetMaxSpeed());
+	else
+		SetRequestedVelocity(0.0);
+}
+
+double Potentiometer_Tester2::GetPotentiometerCurrentPosition()
+{
+	//Note this is in native potentiometer ratios
+	double Pos_m=GetPos_m();
+	return Pos_m;
+}
+
+void Potentiometer_Tester2::TimeChange()
 {
 	__super::TimeChange(m_Time_s);
 }
