@@ -129,8 +129,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			//	printf("Arm=%f\n",Voltage);
 			//DOUT3("Arm Voltage=%f",Voltage);
 			m_TurretVoltage=Voltage;
-			//Note: I have to reverse the voltage again since the wires are currently crossed on the robot
-			m_Potentiometer.UpdatePotentiometerVoltage(-Voltage);
+			m_Potentiometer.UpdatePotentiometerVoltage(Voltage);
 			m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 		}
 			break;
