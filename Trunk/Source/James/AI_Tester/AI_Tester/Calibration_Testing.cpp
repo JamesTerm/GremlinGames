@@ -190,14 +190,23 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 	false	//Not using the range
 	),Ship_1D(EntityName)
 {
-	Initialize(m_DummyMap,&m_EncoderProps);
+}
+
+void Encoder_Simulator::Initialize(const Ship_1D_Properties *props)
+{
+	if (props)
+		m_EncoderProps=*props;
+	__super::Initialize(m_DummyMap,&m_EncoderProps);
 }
 
 void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 {
+	//Here is some stress to emulate a bad curved victor
+	#if 0
+	//This is how it would be if the motor was set to non-coast
 	double VoltageMag=pow(fabs(Voltage),0.5);
 	Voltage= (Voltage>0.0)?	VoltageMag:-VoltageMag;
-	//This is how it would be if the motor was set to non-coast
+	#endif
 	SetRequestedVelocity(Voltage*m_EncoderProps.GetMaxSpeed());
 	#if 0
 	//For coast it is more like applying force
@@ -228,7 +237,8 @@ void Encoder_Simulator::TimeChange()
 
 Encoder_Tester::Encoder_Tester() : m_LeftEncoder("LeftEncoder"),m_RightEncoder("RightEncoder")
 {
-
+	m_LeftEncoder.Initialize(NULL);
+	m_RightEncoder.Initialize(NULL);
 }
 
 void Encoder_Tester::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
