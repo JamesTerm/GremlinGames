@@ -169,7 +169,7 @@ void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 }
 
 
-double FRC_2012_Robot_Control::GetRotaryCurrentPosition(size_t index)
+double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 {
 	double result=0.0;
 
@@ -254,7 +254,7 @@ void FRC_2012_Turret_UI::UI_Init(Actor_Text *parent)
 void FRC_2012_Turret_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
 {
 	FRC_2012_Control_Interface *turret_access=m_RobotControl;
-	double HeadingToUse=Heading+(-turret_access->GetRotaryCurrentPosition(FRC_2012_Robot::eTurret));
+	double HeadingToUse=Heading+(-turret_access->GetRotaryCurrentPorV(FRC_2012_Robot::eTurret));
 	const double FS=m_UIParent->GetFontSize();
 	const Vec2d TurretOffset(0,m_props.YOffset);
 	const Vec2d TurretLocalOffset=GlobalToLocal(HeadingToUse ,TurretOffset);

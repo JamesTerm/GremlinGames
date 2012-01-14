@@ -41,6 +41,40 @@ class Rotary_Linear : public Ship_1D
 		bool m_VoltageOverride;  //when true will kill voltage
 };
 
+///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
+///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate
+class Rotary_Angular : public Ship_1D
+{
+	public:
+		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
+		IEvent::HandlerList ehl;
+		//The parent needs to call initialize
+		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		virtual void ResetPos();
+	protected:
+		//Intercept the time change to obtain current height as well as sending out the desired velocity
+		virtual void TimeChange(double dTime_s);
+		virtual void PosDisplacementCallback(double posDisplacement_m);
+		virtual void SetEncoderSafety(bool DisableFeedback);
+	private:
+		//typedef Ship_1D __super;
+
+		//Copy these lines to the subclass that binds the events
+		//events are a bit picky on what to subscribe so we'll just wrap from here
+		//void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+
+		/// \param DisableFeedback this allows ability to bypass feedback
+		Rotary_Control_Interface * const m_RobotControl;
+		const size_t m_InstanceIndex;
+		PIDController2 m_PIDController;
+		Rotary_Props m_Rotary_Props;
+		double m_CalibratedScaler; //used for calibration
+		double m_MaxSpeedReference; //used for calibration
+		bool m_UsingEncoder; //dynamically able to turn off (e.g. panic button)
+		bool m_VoltageOverride;  //when true will kill voltage
+		double m_EncoderVelocity;  //cache for later use
+};
+
 class Rotary_Properties : public Ship_1D_Properties
 {
 	public:

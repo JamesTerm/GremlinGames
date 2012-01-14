@@ -34,8 +34,13 @@ class Rotary_Control_Interface
 public:
 	virtual void Reset_Rotary(size_t index=0)=0; 
 
-	///This is a implemented by reading the potentiometer and converting its value to correspond to the current angle
-	///This is in radians of the arm's gear ratio
-	virtual double GetRotaryCurrentPosition(size_t index=0)=0;
+	/// This is really called get rotary current position or velocity (depending on if we are linear or angular)
+	/// current position:  (linear)
+	///This is a implemented by reading the potentiometer and converting its value to correspond to the current angle in radians
+	/// current velocity (angular)
+	/// This is implemented by reading an encoder and converting its value to angular velocity also in radians
+	/// \note: Any gearing must be settled within the robot control where the ratio satisfies the rotary system's ratio.  Therefore all conversion
+	/// happens at the same place
+	virtual double GetRotaryCurrentPorV(size_t index=0)=0;
 	virtual void UpdateRotaryVoltage(size_t index,double Voltage)=0;
 };

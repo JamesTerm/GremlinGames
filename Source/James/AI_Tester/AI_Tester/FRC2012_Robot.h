@@ -72,7 +72,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
 	protected: //from Rotary Interface
 		virtual void Reset_Rotary(size_t index=0); 
-		virtual double GetRotaryCurrentPosition(size_t index=0);
+		virtual double GetRotaryCurrentPorV(size_t index=0);
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(FRC_2012_Robot::eTurret,Voltage);}
 
 	protected: //from FRC_2011_Control_Interface

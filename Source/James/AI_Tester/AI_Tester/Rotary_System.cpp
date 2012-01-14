@@ -31,7 +31,7 @@ Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *r
 
 void Rotary_Linear::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
 {
-	m_LastPosition=m_RobotControl->GetRotaryCurrentPosition(m_InstanceIndex);
+	m_LastPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	__super::Initialize(em,props);
 	const Rotary_Properties *Props=dynamic_cast<const Rotary_Properties *>(props);
 	assert(Props);
@@ -59,7 +59,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		if (m_LastTime!=0.0)
 		{
 			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
-			double NewPosition=m_RobotControl->GetRotaryCurrentPosition(m_InstanceIndex);
+			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
@@ -81,7 +81,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	else
 	{
 		//Test potentiometer readings without applying to current position (disabled by default)
-		m_RobotControl->GetRotaryCurrentPosition(m_InstanceIndex);
+		m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
 		//MAX_SPEED=m_CalibratedScaler=1.0;
 	}
@@ -148,7 +148,7 @@ void Rotary_Linear::ResetPos()
 	{
 		m_PIDController.Reset();
 		m_RobotControl->Reset_Rotary(m_InstanceIndex);
-		double NewPosition=m_RobotControl->GetRotaryCurrentPosition(m_InstanceIndex);
+		double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 		Stop();
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;

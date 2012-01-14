@@ -35,7 +35,10 @@ void Entity1D::ResetPos()
 void Entity1D::TimeChange(double dTime_s)
 {
 	double PositionDisplacement;
-	m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement);
+	//Either we apply displacement computations here or the derived class will handle it
+	if (!InjectDisplacement(dTime_s,PositionDisplacement))
+		m_Physics.TimeChangeUpdate(dTime_s,PositionDisplacement);
+
 	m_Position+=PositionDisplacement;
 	if (m_IsAngular)
 		NormalizeRotation(m_Position);
