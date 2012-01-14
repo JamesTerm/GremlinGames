@@ -159,6 +159,7 @@ void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
+	m_Potentiometer.Initialize(&robot_props->GetTurretProps());
 }
 
 void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
@@ -198,7 +199,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	"Arm",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	Pi2,   //Max Speed
+	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Properties::eSwivel,
@@ -222,4 +223,65 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PrecisionTolerance=0.001; //we need high precision
 		m_TurretProps.RoteryProps()=props;
 	}
+}
+
+
+  /***********************************************************************************************************************************/
+ /*														FRC_2012_Turret_UI															*/
+/***********************************************************************************************************************************/
+
+void FRC_2012_Turret_UI::Initialize(Entity2D::EventMap& em, const Turret_Properties *props)
+{
+	if (props)
+		m_props=*props;
+	else
+		m_props.YOffset=2.0;
+}
+void FRC_2012_Turret_UI::UI_Init(Actor_Text *parent)
+{
+	m_UIParent=parent;
+
+	osg::Vec3 position(0.5*c_Scene_XRes_InPixels,0.5*c_Scene_YRes_InPixels,0.0f);
+
+	m_Turret= new osgText::Text;
+	m_Turret->setColor(osg::Vec4(0.0,1.0,0.0,1.0));
+	m_Turret->setCharacterSize(m_UIParent->GetFontSize());
+	m_Turret->setFontResolution(10,10);
+	m_Turret->setPosition(position);
+	m_Turret->setAlignment(osgText::Text::CENTER_CENTER);
+	m_Turret->setText(L"\\/\n|\n||\n||\n( )");
+	m_Turret->setUpdateCallback(m_UIParent);
+}
+void FRC_2012_Turret_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
+{
+	FRC_2012_Control_Interface *turret_access=m_RobotControl;
+	double HeadingToUse=Heading+(-turret_access->GetRotaryCurrentPosition(FRC_2012_Robot::eTurret));
+	const double FS=m_UIParent->GetFontSize();
+	const Vec2d TurretOffset(0,m_props.YOffset);
+	const Vec2d TurretLocalOffset=GlobalToLocal(HeadingToUse ,TurretOffset);
+	const osg::Vec3 TurretPos (parent_pos[0]+( TurretLocalOffset[0]*FS),parent_pos[1]+( TurretLocalOffset[1]*FS),parent_pos[2]);
+
+	//const char *TeamName=m_UIParent->GetEntityProperties_Interface()->GetTeamName();
+	//if (strcmp(TeamName,"red")==0)
+	//	m_Turret->setColor(osg::Vec4(1.0f,0.0f,0.5f,1.0f));  //This is almost magenta (easier to see)
+	//else if (strcmp(TeamName,"blue")==0)
+	//	m_Turret->setColor(osg::Vec4(0.0f,0.5f,1.0f,1.0f));  //This is almost cyan (easier to see too)
+
+	if (m_Turret.valid())
+	{
+		m_Turret->setPosition(TurretPos);
+		m_Turret->setRotation(FromLW_Rot_Radians(HeadingToUse,0.0,0.0));
+	}
+
+}
+void FRC_2012_Turret_UI::Text_SizeToUse(double SizeToUse)
+{
+	if (m_Turret.valid()) m_Turret->setCharacterSize(SizeToUse);
+}
+void FRC_2012_Turret_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
+{
+	if (AddOrRemove)
+		if (m_Turret.valid()) geode->addDrawable(m_Turret);
+	else
+		if (m_Turret.valid()) geode->removeDrawable(m_Turret);
 }

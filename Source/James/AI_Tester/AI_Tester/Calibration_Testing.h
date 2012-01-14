@@ -22,6 +22,8 @@ class Potentiometer_Tester2 : public Ship_1D
 {
 	public:
 		Potentiometer_Tester2();
+		virtual void Initialize(const Ship_1D_Properties *props=NULL);
+
 		void UpdatePotentiometerVoltage(double Voltage);
 		virtual double GetPotentiometerCurrentPosition();
 		//This is broken up so that the real interface does not have to pass time

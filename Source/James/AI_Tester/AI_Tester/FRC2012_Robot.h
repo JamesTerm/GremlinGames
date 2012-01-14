@@ -89,12 +89,37 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		double m_TurretVoltage,m_RollerVoltage;
 };
 
+class FRC_2012_Turret_UI
+{
+	public:
+		typedef osg::Vec2d Vec2D;
+
+		struct Turret_Properties
+		{
+			double YOffset;
+		};
+
+		FRC_2012_Turret_UI(FRC_2012_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		virtual void Initialize(Entity2D::EventMap& em, const Turret_Properties *props=NULL);
+
+		virtual void UI_Init(Actor_Text *parent);
+		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
+		virtual void Text_SizeToUse(double SizeToUse);
+
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+	private:
+		FRC_2012_Robot_Control * const m_RobotControl;
+		Actor_Text *m_UIParent;
+		Turret_Properties m_props;
+		osg::ref_ptr<osgText::Text> m_Turret; 
+};
+
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
 class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
 {
 	public:
 		FRC_2012_Robot_UI(const char EntityName[]) : FRC_2012_Robot(EntityName,this),FRC_2012_Robot_Control(),
-			m_TankUI(this) {}
+			m_TankUI(this),m_TurretUI(this) {}
 
 	protected:
 		virtual void TimeChange(double dTime_s) 
@@ -106,17 +131,19 @@ class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
 		{
 			__super::Initialize(em,props);
 			m_TankUI.Initialize(em,props);
+			m_TurretUI.Initialize(em);
 		}
 
 	protected:   //from EntityPropertiesInterface
-		virtual void UI_Init(Actor_Text *parent) {m_TankUI.UI_Init(parent);}
+		virtual void UI_Init(Actor_Text *parent) {m_TankUI.UI_Init(parent),m_TurretUI.UI_Init(parent);}
 		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
-			{m_TankUI.custom_update(nv,draw,parent_pos);}
-		virtual void Text_SizeToUse(double SizeToUse) {m_TankUI.Text_SizeToUse(SizeToUse);}
-		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_TankUI.UpdateScene(geode,AddOrRemove);}
+			{m_TankUI.custom_update(nv,draw,parent_pos),m_TurretUI.update(nv,draw,parent_pos,-GetAtt_r());}
+		virtual void Text_SizeToUse(double SizeToUse) {m_TankUI.Text_SizeToUse(SizeToUse),m_TurretUI.Text_SizeToUse(SizeToUse);}
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_TankUI.UpdateScene(geode,AddOrRemove),m_TurretUI.UpdateScene(geode,AddOrRemove);}
 
 	private:
 		Tank_Robot_UI m_TankUI;
+		FRC_2012_Turret_UI m_TurretUI;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
