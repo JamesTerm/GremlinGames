@@ -54,7 +54,7 @@ class Rotary_Angular : public Ship_1D
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
-		virtual void PosDisplacementCallback(double posDisplacement_m);
+		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		virtual void SetEncoderSafety(bool DisableFeedback);
 
 		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);

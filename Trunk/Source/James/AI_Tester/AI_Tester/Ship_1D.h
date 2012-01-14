@@ -27,6 +27,9 @@ class Ship_1D : public Entity1D
 		{ m_LockShipToPosition=false,m_IntendedPosition=Position;
 		}
 
+		///This allows subclass to evaluate the requested velocity when it is in use
+		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s) {}
+
 		// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedPosition() const {return m_IntendedPosition;}
 		void SetSimFlightMode(bool SimFlightMode);
