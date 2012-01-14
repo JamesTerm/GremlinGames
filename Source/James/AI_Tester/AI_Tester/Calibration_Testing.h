@@ -41,7 +41,9 @@ class Potentiometer_Tester2 : public Ship_1D
 class Encoder_Simulator : public Ship_1D
 {
 	public:
-		Encoder_Simulator(const char EntityName[]);
+		Encoder_Simulator(const char *EntityName="EncSimulator");
+		virtual void Initialize(const Ship_1D_Properties *props=NULL);
+
 		void UpdateEncoderVoltage(double Voltage);
 		virtual double GetEncoderVelocity();
 		//This is broken up so that the real interface does not have to pass time

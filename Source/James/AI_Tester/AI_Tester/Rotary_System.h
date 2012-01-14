@@ -88,7 +88,7 @@ class Rotary_Properties : public Ship_1D_Properties
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
 			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
 			bool IsAngular=false) : Ship_1D_Properties(EntityName,Mass,Dimension,MAX_SPEED,ACCEL,BRAKE,MaxAccelForward,
-			MaxAccelReverse,ShipType,UsingRange,MinRange,MaxRange) {Init();}
+			MaxAccelReverse,ShipType,UsingRange,MinRange,MaxRange,IsAngular) {Init();}
 
 		Rotary_Properties() {Init();}
 
