@@ -116,7 +116,7 @@ Potentiometer_Tester2::Potentiometer_Tester2() : m_PotentiometerProps(
 	"Potentiometer2",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	M_PI,   //Max Speed
+	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0,
 	Ship_1D_Properties::eSwivel,
@@ -126,7 +126,13 @@ Potentiometer_Tester2::Potentiometer_Tester2() : m_PotentiometerProps(
 
 {
 	m_Bypass=false;
-	Initialize(m_DummyMap,&m_PotentiometerProps);
+}
+
+void Potentiometer_Tester2::Initialize(const Ship_1D_Properties *props)
+{
+	if (props)
+		m_PotentiometerProps=*props;
+	__super::Initialize(m_DummyMap,&m_PotentiometerProps);
 }
 
 void Potentiometer_Tester2::UpdatePotentiometerVoltage(double Voltage)
