@@ -32,13 +32,25 @@ class FRC_2012_Robot : public Tank_Robot
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 
+		class Turret : public Rotary_Linear
+		{
+			public:
+				Turret(Rotary_Control_Interface *robot_control);
+				IEvent::HandlerList ehl;
+			protected:
+				virtual void BindAdditionalEventControls(bool Bind);
+				//typedef Rotary_Linear __super;
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+		};
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
-		//typedef  Tank_Drive __super;
+		//typedef  Tank_Robot __super;
 		FRC_2012_Control_Interface * const m_RobotControl;
-		bool m_VoltageOverride;  //when true will kill voltage
+		Turret m_Turret;
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
@@ -61,7 +73,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 	protected: //from Rotary Interface
 		virtual void Reset_Rotary(size_t index=0); 
 		virtual double GetRotaryCurrentPosition(size_t index=0);
-		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {}
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(FRC_2012_Robot::eTurret,Voltage);}
 
 	protected: //from FRC_2011_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
@@ -71,9 +83,10 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 	protected:
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
+		Potentiometer_Tester2 m_Potentiometer; //simulate a real potentiometer for calibration testing
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
+		double m_TurretVoltage,m_RollerVoltage;
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
@@ -113,5 +126,9 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		typedef osg::Vec2d Vec2D;
 
 		FRC_2012_Robot_Properties();
+
+		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
+
 	private:
+		Rotary_Properties m_TurretProps;
 };

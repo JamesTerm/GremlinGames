@@ -18,6 +18,24 @@ class Potentiometer_Tester : public Ship_1D
 		bool m_Bypass;  //used for stress test
 };
 
+class Potentiometer_Tester2 : public Ship_1D
+{
+	public:
+		Potentiometer_Tester2();
+		void UpdatePotentiometerVoltage(double Voltage);
+		virtual double GetPotentiometerCurrentPosition();
+		//This is broken up so that the real interface does not have to pass time
+		void SetTimeDelta(double dTime_s) {m_Time_s=dTime_s;}
+		void TimeChange();
+		void SetBypass(bool bypass) {m_Bypass=bypass;}
+	protected:
+	private:
+		double m_Time_s;
+		Ship_1D_Properties m_PotentiometerProps;
+		GG_Framework::Base::EventMap m_DummyMap;
+		bool m_Bypass;  //used for stress test
+};
+
 class Encoder_Simulator : public Ship_1D
 {
 	public:
