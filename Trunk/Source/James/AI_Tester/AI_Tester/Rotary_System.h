@@ -56,6 +56,8 @@ class Rotary_Angular : public Ship_1D
 		virtual void TimeChange(double dTime_s);
 		virtual void PosDisplacementCallback(double posDisplacement_m);
 		virtual void SetEncoderSafety(bool DisableFeedback);
+
+		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);
 	private:
 		//typedef Ship_1D __super;
 
@@ -70,9 +72,9 @@ class Rotary_Angular : public Ship_1D
 		Rotary_Props m_Rotary_Props;
 		double m_CalibratedScaler; //used for calibration
 		double m_MaxSpeedReference; //used for calibration
+		double m_EncoderVelocity;  //cache for later use
 		bool m_UsingEncoder; //dynamically able to turn off (e.g. panic button)
 		bool m_VoltageOverride;  //when true will kill voltage
-		double m_EncoderVelocity;  //cache for later use
 };
 
 class Rotary_Properties : public Ship_1D_Properties
