@@ -30,6 +30,7 @@
 		<Arm_SetPos6feet type="keyboard" key="e" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
 		<Brake type="keyboard" key="s" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
 		<ESC type="keyboard" key="ESCAPE" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<PowerWheels_IsRunning type="keyboard" key="p" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
 		<RecordFrames type="keyboard" key="m" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
 		<RequestAfterburner type="keyboard" key="w" alt="0" ctrl="0" shift="0" dbl="1" onOff="1"/>
 		<ResetTB type="keyboard" key=" " alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
