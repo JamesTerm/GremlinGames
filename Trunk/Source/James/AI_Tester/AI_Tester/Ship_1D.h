@@ -45,7 +45,7 @@ class Ship_1D : public Entity1D
 		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
-		bool GetLockShipToPosition();
+		bool GetLockShipToPosition() const;
 		double GetMinRange() const {return m_MinRange;}
 		double GetMaxRange() const {return m_MaxRange;}
 		bool GetUsingRange() const {return m_UsingRange;}

@@ -328,7 +328,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	10.0,10.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
-	DEG_2_RAD(45),DEG_2_RAD(65)
+	DEG_2_RAD(45-3),DEG_2_RAD(65+3) //add padding for quick response time (as close to limits will slow it down)
 	),
 	m_PowerWheelProps(
 	"PowerWheels",
