@@ -56,6 +56,9 @@ class FRC_2012_Robot : public Tank_Robot
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
+				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
+			private:
+				bool m_IsRunning;
 		};
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
@@ -129,36 +132,57 @@ class FRC_2012_Turret_UI
 		osg::ref_ptr<osgText::Text> m_Turret; 
 };
 
+class FRC_2012_Power_Wheel_UI
+{
+public:
+	FRC_2012_Power_Wheel_UI(FRC_2012_Robot_Control *robot_control) : m_RobotControl(robot_control),m_UIParent(NULL),m_Rotation(0.0) {}
+	typedef osg::Vec2d Vec2D;
+
+	struct Wheel_Properties
+	{
+		Vec2D m_Offset;  //Placement of the wheel in reference to the parent object (default 0,0)
+	};
+
+	void UI_Init(Actor_Text *parent);
+
+	//Client code can manage the properties
+	virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+	//Keep virtual for special kind of wheels
+	virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
+	virtual void Text_SizeToUse(double SizeToUse);
+
+	virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+	//This will add to the existing rotation and normalize
+	void AddRotation(double RadiansToAdd);
+	double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
+	virtual void TimeChange(double dTime_s);
+private:
+	FRC_2012_Robot_Control * const m_RobotControl;
+	Actor_Text *m_UIParent;
+	Wheel_Properties m_props;
+	osg::ref_ptr<osgText::Text> m_Wheel; 
+	double m_Rotation;
+};
+
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
 class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
 {
 	public:
-		FRC_2012_Robot_UI(const char EntityName[]) : FRC_2012_Robot(EntityName,this),FRC_2012_Robot_Control(),
-			m_TankUI(this),m_TurretUI(this) {}
-
+		FRC_2012_Robot_UI(const char EntityName[]);
 	protected:
-		virtual void TimeChange(double dTime_s) 
-		{
-			__super::TimeChange(dTime_s);
-			m_TankUI.TimeChange(dTime_s);
-		}
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
-		{
-			__super::Initialize(em,props);
-			m_TankUI.Initialize(em,props);
-			m_TurretUI.Initialize(em);
-		}
+		virtual void TimeChange(double dTime_s);
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 
 	protected:   //from EntityPropertiesInterface
-		virtual void UI_Init(Actor_Text *parent) {m_TankUI.UI_Init(parent),m_TurretUI.UI_Init(parent);}
-		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
-			{m_TankUI.custom_update(nv,draw,parent_pos),m_TurretUI.update(nv,draw,parent_pos,-GetAtt_r());}
-		virtual void Text_SizeToUse(double SizeToUse) {m_TankUI.Text_SizeToUse(SizeToUse),m_TurretUI.Text_SizeToUse(SizeToUse);}
-		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_TankUI.UpdateScene(geode,AddOrRemove),m_TurretUI.UpdateScene(geode,AddOrRemove);}
+		virtual void UI_Init(Actor_Text *parent);
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos); 
+		virtual void Text_SizeToUse(double SizeToUse);
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
 
 	private:
 		Tank_Robot_UI m_TankUI;
 		FRC_2012_Turret_UI m_TurretUI;
+		FRC_2012_Power_Wheel_UI m_PowerWheelUI;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties

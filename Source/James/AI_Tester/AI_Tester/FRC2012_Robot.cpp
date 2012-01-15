@@ -44,7 +44,8 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
  /*													FRC_2012_Robot::PowerWheels														*/
 /***********************************************************************************************************************************/
 
-FRC_2012_Robot::PowerWheels::PowerWheels(Rotary_Control_Interface *robot_control) : Rotary_Angular("PowerWheels",robot_control,ePowerWheels)
+FRC_2012_Robot::PowerWheels::PowerWheels(Rotary_Control_Interface *robot_control) : Rotary_Angular("PowerWheels",robot_control,ePowerWheels),
+	m_IsRunning(false)
 {
 }
 
@@ -55,28 +56,35 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetEncoderSafety);
+		em->EventOnOff_Map["PowerWheels_IsRunning"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetIsRunning);
 	}
 	else
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Remove(*this, &FRC_2012_Robot::PowerWheels::SetEncoderSafety);
+		em->EventOnOff_Map["PowerWheels_IsRunning"].Remove(*this, &FRC_2012_Robot::PowerWheels::SetIsRunning);
 	}
 }
 
 void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
 {
-	//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-	//first get the range from 0 - 1
-	double positive_range = (Velocity * 0.5) + 0.5;
-	positive_range=positive_range>0.01?positive_range:0.0;
-	const double minRange=17.0;
-	const double maxRange=35.0;
-	const double Scale=(maxRange-minRange) / MAX_SPEED;
-	const double Offset=minRange/MAX_SPEED;
-	Velocity=(positive_range * Scale) + Offset;
-	//DOUT5("%f",Velocity);
-	//TODO add is aiming to override
-	__super::SetRequestedVelocity_FromNormalized(Velocity);
+	if (m_IsRunning)
+	{
+		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+		//first get the range from 0 - 1
+		double positive_range = (Velocity * 0.5) + 0.5;
+		positive_range=positive_range>0.01?positive_range:0.0;
+		const double minRange=10.0 * Pi;
+		const double maxRange=20.0 * Pi;
+		const double Scale=(maxRange-minRange) / MAX_SPEED;
+		const double Offset=minRange/MAX_SPEED;
+		Velocity=(positive_range * Scale) + Offset;
+		//DOUT5("%f",Velocity);
+		//TODO add is aiming to override
+		__super::SetRequestedVelocity_FromNormalized(Velocity);
+	}
+	else
+		__super::SetRequestedVelocity_FromNormalized(0.0);
 }
 
   /***********************************************************************************************************************************/
@@ -224,7 +232,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
-			DOUT4 ("vel=%f",result);
+			//DOUT4 ("vel=%f",result);
 			break;
 	}
 	return result;
@@ -249,15 +257,15 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	-Pi,Pi
 	),
 	m_PowerWheelProps(
-		"PowerWheels",
-		2.0,    //Mass
-		0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-		35,   //Max Speed (rounded as we need not have precision)
-		60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
-		60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-		Ship_1D_Properties::eSimpleMotor,
-		false,0.0,0.0,	//No limit ever!
-		true //This is angular
+	"PowerWheels",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	20 * PI,   //Max Speed (rounded as we need not have precision)
+	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Properties::eSimpleMotor,
+	false,0.0,0.0,	//No limit ever!
+	true //This is angular
 	)
 {
 	{
@@ -343,4 +351,128 @@ void FRC_2012_Turret_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		if (m_Turret.valid()) geode->addDrawable(m_Turret);
 	else
 		if (m_Turret.valid()) geode->removeDrawable(m_Turret);
+}
+  /***************************************************************************************************************/
+ /*											FRC_2012_Power_Wheel_UI												*/
+/***************************************************************************************************************/
+
+void FRC_2012_Power_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	if (props)
+		m_props=*props;
+	else
+		m_props.m_Offset=Vec2d(0,0);
+}
+
+void FRC_2012_Power_Wheel_UI::UI_Init(Actor_Text *parent) 
+{
+	m_UIParent=parent;
+
+	osg::Vec3 position(0.5*c_Scene_XRes_InPixels,0.5*c_Scene_YRes_InPixels,0.0f);
+
+	m_Wheel= new osgText::Text;
+	m_Wheel->setColor(osg::Vec4(1.0,0.0,0.5,1.0));
+	m_Wheel->setCharacterSize(m_UIParent->GetFontSize());
+	m_Wheel->setFontResolution(10,10);
+	m_Wheel->setPosition(position);
+	m_Wheel->setAlignment(osgText::Text::CENTER_CENTER);
+	m_Wheel->setText(L"|");
+	m_Wheel->setUpdateCallback(m_UIParent);
+}
+
+void FRC_2012_Power_Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
+{
+	if (AddOrRemove)
+		if (m_Wheel.valid()) geode->addDrawable(m_Wheel);
+	else
+		if (m_Wheel.valid()) geode->removeDrawable(m_Wheel);
+}
+
+void FRC_2012_Power_Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
+{
+	double HeadingToUse=Heading+m_Rotation;
+	const double FS=m_UIParent->GetFontSize();
+	const Vec2d WheelOffset(m_props.m_Offset[0],m_props.m_Offset[1]);
+	const Vec2d WheelLocalOffset=GlobalToLocal(Heading,WheelOffset);
+	const osg::Vec3 WheelPos (parent_pos[0]+( WheelLocalOffset[0]*FS),parent_pos[1]+( WheelLocalOffset[1]*FS),parent_pos[2]);
+
+	if (m_Wheel.valid())
+	{
+		m_Wheel->setPosition(WheelPos);
+		m_Wheel->setRotation(FromLW_Rot_Radians(HeadingToUse,0.0,0.0));
+	}
+}
+
+void FRC_2012_Power_Wheel_UI::Text_SizeToUse(double SizeToUse)
+{
+	if (m_Wheel.valid()) m_Wheel->setCharacterSize(SizeToUse);
+}
+
+void FRC_2012_Power_Wheel_UI::AddRotation(double RadiansToAdd)
+{
+	m_Rotation+=RadiansToAdd;
+	if (m_Rotation>Pi2)
+		m_Rotation-=Pi2;
+	else if (m_Rotation<-Pi2)
+		m_Rotation+=Pi2;
+}
+
+void FRC_2012_Power_Wheel_UI::TimeChange(double dTime_s)
+{
+	FRC_2012_Control_Interface *pw_access=m_RobotControl;
+	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2012_Robot::ePowerWheels) / (20.0 * Pi);
+	NormalizedVelocity-=0.2;
+	if (NormalizedVelocity<0.0)
+		NormalizedVelocity=0.0;
+
+	//Scale down the rotation to something easy to gauge in UI
+	AddRotation((NormalizedVelocity * 18) * dTime_s);
+}
+
+  /***************************************************************************************************************/
+ /*												FRC_2012_Robot_UI												*/
+/***************************************************************************************************************/
+
+FRC_2012_Robot_UI::FRC_2012_Robot_UI(const char EntityName[]) : FRC_2012_Robot(EntityName,this),FRC_2012_Robot_Control(),
+		m_TankUI(this),m_TurretUI(this),m_PowerWheelUI(this)
+{
+}
+
+void FRC_2012_Robot_UI::TimeChange(double dTime_s) 
+{
+	__super::TimeChange(dTime_s);
+	m_TankUI.TimeChange(dTime_s);
+	m_PowerWheelUI.TimeChange(dTime_s);
+}
+void FRC_2012_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+{
+	__super::Initialize(em,props);
+	m_TankUI.Initialize(em,props);
+	m_TurretUI.Initialize(em);
+	m_PowerWheelUI.Initialize(em);
+}
+
+void FRC_2012_Robot_UI::UI_Init(Actor_Text *parent) 
+{
+	m_TankUI.UI_Init(parent);
+	m_TurretUI.UI_Init(parent);
+	m_PowerWheelUI.UI_Init(parent);
+}
+void FRC_2012_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
+{
+	m_TankUI.custom_update(nv,draw,parent_pos);
+	m_TurretUI.update(nv,draw,parent_pos,-GetAtt_r());
+	m_PowerWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
+}
+void FRC_2012_Robot_UI::Text_SizeToUse(double SizeToUse) 
+{
+	m_TankUI.Text_SizeToUse(SizeToUse);
+	m_TurretUI.Text_SizeToUse(SizeToUse);
+	m_PowerWheelUI.Text_SizeToUse(SizeToUse);
+}
+void FRC_2012_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
+{
+	m_TankUI.UpdateScene(geode,AddOrRemove);
+	m_TurretUI.UpdateScene(geode,AddOrRemove);
+	m_PowerWheelUI.UpdateScene(geode,AddOrRemove);
 }
