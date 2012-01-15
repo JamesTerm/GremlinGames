@@ -39,7 +39,7 @@ void Ship_1D::ResetPos()
 	SetSimFlightMode(true);  //This one is a tough call... probably should do it on reset
 }
 
-bool Ship_1D::GetLockShipToPosition()
+bool Ship_1D::GetLockShipToPosition() const
 {
 	return m_LockShipToPosition;
 }

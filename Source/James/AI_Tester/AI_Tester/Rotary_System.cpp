@@ -54,7 +54,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	double PotentiometerVelocity; //increased scope for debugging dump
 	
 	//Update the position to where the potentiometer says where it actually is
-	if (m_UsingPotentiometer)
+	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition()))
 	{
 		if (m_LastTime!=0.0)
 		{
@@ -80,10 +80,21 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	}
 	else
 	{
-		//Test potentiometer readings without applying to current position (disabled by default)
-		m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
-		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
-		//MAX_SPEED=m_CalibratedScaler=1.0;
+		//If we are manually controlling, we should still update displacement to properly work with limits and maintain where the position really
+		//is to seamlessly transfer between manual and auto
+		if (m_UsingPotentiometer)
+		{
+			m_CalibratedScaler=MAX_SPEED;
+			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
+			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+
+			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
+			double Displacement=NewPosition-m_LastPosition;
+			PotentiometerVelocity=Displacement/m_LastTime;
+			m_PIDController.ResetI();
+			SetPos_m(NewPosition);
+			m_LastPosition=NewPosition;
+		}
 	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
@@ -227,7 +238,7 @@ void Rotary_Angular::TimeChange(double dTime_s)
 	//Display encoders without applying calibration
 	double CurrentVelocity=m_Physics.GetVelocity();
 
-	if (m_UsingEncoder)
+	if ((m_UsingEncoder)&&(!GetLockShipToPosition()))
 	{
 		double control=0.0;
 		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
@@ -260,13 +271,6 @@ void Rotary_Angular::TimeChange(double dTime_s)
 		//	m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
 		//}
 	}	
-	else
-	{
-		//Test potentiometer readings without applying to current position (disabled by default)
-		m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
-		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
-		//MAX_SPEED=m_CalibratedScaler=1.0;
-	}
 
 	m_EncoderVelocity=Encoder_Velocity;
 
