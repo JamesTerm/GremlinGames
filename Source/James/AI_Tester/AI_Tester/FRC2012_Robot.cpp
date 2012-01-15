@@ -41,6 +41,28 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 }
 
   /***********************************************************************************************************************************/
+ /*													FRC_2012_Robot::PitchRamp														*/
+/***********************************************************************************************************************************/
+FRC_2012_Robot::PitchRamp::PitchRamp(Rotary_Control_Interface *robot_control) : Rotary_Linear("PitchRamp",robot_control,ePitchRamp)
+{
+}
+
+void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
+{
+	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
+	}
+	else
+	{
+		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
+	}
+}
+
+  /***********************************************************************************************************************************/
  /*													FRC_2012_Robot::PowerWheels														*/
 /***********************************************************************************************************************************/
 
@@ -91,7 +113,8 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(robot_control),m_PowerWheels(robot_control)
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(robot_control),m_PitchRamp(robot_control),
+		m_PowerWheels(robot_control)
 {
 }
 
@@ -102,12 +125,14 @@ void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 
 	const FRC_2012_Robot_Properties *RobotProps=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
 	m_Turret.Initialize(em,RobotProps?&RobotProps->GetTurretProps():NULL);
+	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 }
 void FRC_2012_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Turret.ResetPos();
+	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
 }
 
@@ -118,6 +143,8 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	Entity1D &turret_entity=m_Turret;  //This gets around keeping time change protected in derived classes
 	turret_entity.TimeChange(dTime_s);
+	Entity1D &pitch_entity=m_PitchRamp;
+	pitch_entity.TimeChange(dTime_s);
 	Entity1D &pw_entity=m_PowerWheels;
 	pw_entity.TimeChange(dTime_s);
 }
@@ -157,6 +184,8 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 
 	Ship_1D &TurretEntity_Access=m_Turret;
 	TurretEntity_Access.BindAdditionalEventControls(Bind);
+	Ship_1D &PitchEntity_Access=m_PitchRamp;
+	PitchEntity_Access.BindAdditionalEventControls(Bind);
 	Ship_1D &pw_Access=m_PowerWheels;
 	pw_Access.BindAdditionalEventControls(Bind);
 }
@@ -170,13 +199,22 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
-		{
-			//	printf("Arm=%f\n",Voltage);
-			//DOUT3("Arm Voltage=%f",Voltage);
-			m_TurretVoltage=Voltage;
-			m_Turret_Pot.UpdatePotentiometerVoltage(Voltage);
-			m_Turret_Pot.TimeChange();  //have this velocity immediately take effect
-		}
+			{
+				//	printf("Arm=%f\n",Voltage);
+				//DOUT3("Arm Voltage=%f",Voltage);
+				m_TurretVoltage=Voltage;
+				m_Turret_Pot.UpdatePotentiometerVoltage(Voltage);
+				m_Turret_Pot.TimeChange();  //have this velocity immediately take effect
+			}
+			break;
+		case FRC_2012_Robot::ePitchRamp:
+			{
+				//	printf("Arm=%f\n",Voltage);
+				//DOUT3("Arm Voltage=%f",Voltage);
+				m_PitchRampVoltage=Voltage;
+				m_Pitch_Pot.UpdatePotentiometerVoltage(Voltage);
+				m_Pitch_Pot.TimeChange();  //have this velocity immediately take effect
+			}
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			m_PowerWheelVoltage=Voltage;
@@ -206,15 +244,18 @@ void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
 	m_Turret_Pot.Initialize(&robot_props->GetTurretProps());
+	m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
 	m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
 }
 
 void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Turret_Pot.SetTimeDelta(dTime_s);
+	m_Pitch_Pot.SetTimeDelta(dTime_s);
 	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
 	//display voltages
-	DOUT2("l=%f r=%f t=%f pw=%f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),m_TurretVoltage,m_PowerWheelVoltage);
+	DOUT2("l=%f r=%f t=%f pi=%f pw=%f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
+		m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage);
 }
 
 
@@ -229,6 +270,12 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result=m_Turret_Pot.GetPotentiometerCurrentPosition();
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 			//DOUT4 ("pot=%f",result);
+			break;
+		case FRC_2012_Robot::ePitchRamp:
+
+			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
+			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
+			DOUT4 ("pot=%f",result);
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
@@ -246,7 +293,7 @@ const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
 
 FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
-	"Arm",
+	"Turret",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	10.0,   //Max Speed
@@ -255,6 +302,17 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	Ship_1D_Properties::eSwivel,
 	true,	//Using the range
 	-Pi,Pi
+	),
+	m_PitchRampProps(
+	"Pitch",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	10.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0, //Max Acceleration Forward/Reverse 
+	Ship_1D_Properties::eRobotArm,
+	true,	//Using the range
+	DEG_2_RAD(45),DEG_2_RAD(65)
 	),
 	m_PowerWheelProps(
 	"PowerWheels",
@@ -283,6 +341,12 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.001; //we need high precision
 		m_TurretProps.RoteryProps()=props;
+	}
+	{
+		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
+		props.PID[0]=1.0;
+		props.PrecisionTolerance=0.001; //we need high precision
+		m_PitchRampProps.RoteryProps()=props;
 	}
 	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings

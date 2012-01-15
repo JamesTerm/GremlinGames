@@ -45,6 +45,19 @@ class FRC_2012_Robot : public Tank_Robot
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 		};
 
+		class PitchRamp : public Rotary_Linear
+		{
+			public:
+				PitchRamp(Rotary_Control_Interface *robot_control);
+				IEvent::HandlerList ehl;
+			protected:
+				virtual void BindAdditionalEventControls(bool Bind);
+				//typedef Rotary_Linear __super;
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+		};
+
 		class PowerWheels : public Rotary_Angular
 		{
 			public:
@@ -67,6 +80,7 @@ class FRC_2012_Robot : public Tank_Robot
 		//typedef  Tank_Robot __super;
 		FRC_2012_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
+		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
 };
 
@@ -100,11 +114,11 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 	protected:
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester2 m_Turret_Pot; //simulate the potentiometer and motor
+		Potentiometer_Tester2 m_Turret_Pot,m_Pitch_Pot; //simulate the potentiometer and motor
 		Encoder_Simulator m_PowerWheel_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
-		double m_TurretVoltage,m_PowerWheelVoltage;
+		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage;
 };
 
 class FRC_2012_Turret_UI
@@ -194,8 +208,9 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		FRC_2012_Robot_Properties();
 
 		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
+		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 
 	private:
-		Rotary_Properties m_TurretProps,m_PowerWheelProps;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps;
 };
