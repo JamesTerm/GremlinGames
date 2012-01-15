@@ -383,12 +383,16 @@ IJoystick &GetJoystick()
 	return JoyStick;
 }
 
-void main()
+void main(int argc,char *argv[])
 {
+	size_t JoyNum=0;
+	if (argc==2)
+		JoyNum=atoi(argv[1]);
 	IJoystick &JoyStick=GetJoystick();
 	size_t NoJoySticks=JoyStick.GetNoJoysticksFound();
 	if (NoJoySticks)
 	{
+		printf("Buttons: 1=next joystick, 2=exit, 3=enum axis\n");
 		for(size_t i=0;i<NoJoySticks;i++)
 		{
 			IJoystick::JoystickInfo info=JoyStick.GetJoyInfo(i);
@@ -411,19 +415,27 @@ void main()
 			printf("\n----------------------------------------\n");
 		}
 		IJoystick::JoyState joyinfo;
+		memset(&joyinfo,0,sizeof(IJoystick::JoyState));
 		bool done=false;
-		size_t JoyNum=0;
 		size_t Display=0;
 		while(!done)
 		{
 			if (JoyStick.read_joystick (JoyNum,joyinfo))
 			{
-				if (Display==0)
-					printf("\r xaxis=%f yaxis=%f  button=0x%x             ",joyinfo.lX,joyinfo.lY,joyinfo.ButtonBank[0]);
-				else if (Display==1)
-					printf("\r zPos=%f zRot=%f POV=%f               ",joyinfo.lZ,joyinfo.lRz,joyinfo.rgPOV[0]);
-				else if (Display==2)
-					printf("\r slider0=%f slider1=%f               ",joyinfo.rgSlider[0],joyinfo.rgSlider[1]);
+				switch(Display)
+				{
+				case 0:
+					printf("\r xaxis=%f yaxis=%f zaxis=%f button=0x%x             ",joyinfo.lX,joyinfo.lY,joyinfo.lZ,joyinfo.ButtonBank[0]);
+					break;
+				case 1:
+					printf("\r xRot=%f yRot=%f zRot=%f POV=%f               ",joyinfo.lRx,joyinfo.lRy,joyinfo.lRz,joyinfo.rgPOV[0]);
+					break;
+				case 2:
+					printf("\r slider0=%f slider1=%f                              ",joyinfo.rgSlider[0],joyinfo.rgSlider[1]);
+					break;
+				case 3:
+					break;
+				}
 
 				if (joyinfo.ButtonBank[0]==1)
 				{
