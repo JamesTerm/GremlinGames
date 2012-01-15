@@ -32,10 +32,11 @@ class FRC_2012_Robot : public Tank_Robot
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 
+	protected:
 		class Turret : public Rotary_Linear
 		{
 			public:
-				Turret(Rotary_Control_Interface *robot_control);
+				Turret(Rotary_Control_Interface *robot_control,FRC_2012_Robot *parent);
 				IEvent::HandlerList ehl;
 			protected:
 				virtual void BindAdditionalEventControls(bool Bind);
@@ -43,6 +44,9 @@ class FRC_2012_Robot : public Tank_Robot
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				virtual void TimeChange(double dTime_s);
+			private:
+				FRC_2012_Robot * const m_pParent;
 		};
 
 		class PitchRamp : public Rotary_Linear
@@ -84,6 +88,12 @@ class FRC_2012_Robot : public Tank_Robot
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
+		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
+		//middle of the game playing field
+		Vec2D m_TargetOffset;  
+		//This is adjusted depending on doing a bank shot or swishing 
+		double m_TargetHeight;
+		bool m_IsTargeting;
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values

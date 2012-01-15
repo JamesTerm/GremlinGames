@@ -21,7 +21,8 @@ const double Pi2=M_PI*2.0;
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
-FRC_2012_Robot::Turret::Turret(Rotary_Control_Interface *robot_control) : Rotary_Linear("Turret",robot_control,eTurret)
+FRC_2012_Robot::Turret::Turret(Rotary_Control_Interface *robot_control,FRC_2012_Robot *parent) : 
+	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent)
 {
 }
 
@@ -38,6 +39,21 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
+}
+
+void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
+{
+	if ((m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())))
+	{
+		Vec2D Target=m_pParent->m_TargetOffset;
+		Target-=m_pParent->GetPos_m();
+		const double Angle=atan2(Target[1],Target[0]);
+		double AngleToUse=-(Angle-PI_2);
+		AngleToUse-=m_pParent->GetAtt_r();
+		SetIntendedPosition(NormalizeRotation2(AngleToUse));
+		//TODO factor in velocity once we have our ball velocity (to solve for time)
+	}
+	__super::TimeChange(dTime_s);
 }
 
   /***********************************************************************************************************************************/
@@ -128,10 +144,16 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
   /***********************************************************************************************************************************/
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
+
+//TODO get the physical measurements of the game for this
+const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,3.0);
+const double c_TargetBaseHeight=2.0;
+
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(robot_control),m_PitchRamp(robot_control),
-		m_PowerWheels(robot_control)
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(robot_control,this),m_PitchRamp(robot_control),
+		m_PowerWheels(robot_control),m_IsTargeting(false)
 {
+	m_IsTargeting=true;  //testing
 }
 
 void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -154,6 +176,7 @@ void FRC_2012_Robot::ResetPos()
 
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
+	m_TargetOffset=c_TargetBasePosition;
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
