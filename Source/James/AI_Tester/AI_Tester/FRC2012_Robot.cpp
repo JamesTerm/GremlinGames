@@ -47,17 +47,34 @@ FRC_2012_Robot::PitchRamp::PitchRamp(Rotary_Control_Interface *robot_control) : 
 {
 }
 
+void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
+{
+	//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+	//first get the range from 0 - 1
+	double positive_range = (Position * 0.5) + 0.5;
+	//positive_range=positive_range>0.01?positive_range:0.0;
+	const double minRange=DEG_2_RAD(45);
+	const double maxRange=DEG_2_RAD(65);
+	const double Scale=(maxRange-minRange) / maxRange;
+	Position=(positive_range * Scale) + minRange;
+
+	//DOUT5("Test=%f",RAD_2_DEG(Position));
+	__super::SetIntendedPosition(Position);
+}
+
 void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 {
 	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 	else
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 }
@@ -102,7 +119,6 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 		const double Offset=minRange/MAX_SPEED;
 		Velocity=(positive_range * Scale) + Offset;
 		//DOUT5("%f",Velocity);
-		//TODO add is aiming to override
 		__super::SetRequestedVelocity_FromNormalized(Velocity);
 	}
 	else
@@ -275,7 +291,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			DOUT4 ("pot=%f",result);
+			DOUT4 ("pitch=%f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
