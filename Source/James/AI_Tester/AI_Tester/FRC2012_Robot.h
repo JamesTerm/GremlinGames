@@ -96,13 +96,31 @@ class FRC_2012_Robot : public Tank_Robot
 		bool m_IsTargeting;
 };
 
-///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
-///are correct
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+///These classes below are for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
+///are correct and provides some idea to work needed in WindRiver
+
+class FRC_2012_Robot_Properties : public Tank_Robot_Properties
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		FRC_2012_Robot_Properties();
+
+		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
+		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
+
+	private:
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps;
+};
+
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 {
 	public:
 		FRC_2012_Robot_Control();
-		//This is only needed for simulation
+		const FRC_2012_Robot_Properties &GetRobotProps() {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		//Solenoid not used
@@ -124,6 +142,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		virtual void Initialize(const Entity_Properties *props);
 
 	protected:
+		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		Potentiometer_Tester2 m_Turret_Pot,m_Pitch_Pot; //simulate the potentiometer and motor
@@ -188,6 +207,7 @@ private:
 	Wheel_Properties m_props;
 	osg::ref_ptr<osgText::Text> m_Wheel; 
 	double m_Rotation;
+	double m_PowerWheelMaxSpeed;  //cache to avoid all the hoops of getting it (its constant)
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
@@ -209,20 +229,4 @@ class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
 		Tank_Robot_UI m_TankUI;
 		FRC_2012_Turret_UI m_TurretUI;
 		FRC_2012_Power_Wheel_UI m_PowerWheelUI;
-};
-
-class FRC_2012_Robot_Properties : public Tank_Robot_Properties
-{
-	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
-		FRC_2012_Robot_Properties();
-
-		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
-		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-
-	private:
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps;
 };
