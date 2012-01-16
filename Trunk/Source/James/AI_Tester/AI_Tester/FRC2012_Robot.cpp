@@ -129,8 +129,8 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 		//first get the range from 0 - 1
 		double positive_range = (Velocity * 0.5) + 0.5;
 		positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=10.0 * Pi;
-		const double maxRange=20.0 * Pi;
+		const double minRange=20.0 * Pi;
+		const double maxRange=40.0 * Pi;
 		const double Scale=(maxRange-minRange) / MAX_SPEED;
 		const double Offset=minRange/MAX_SPEED;
 		Velocity=(positive_range * Scale) + Offset;
@@ -277,8 +277,9 @@ void FRC_2012_Robot_Control::Reset_Rotary(size_t index)
 void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const FRC_2012_Robot_Properties *robot_props=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
-
 	assert(robot_props);
+
+	m_RobotProps=*robot_props;  //save a copy
 
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
@@ -357,7 +358,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	"PowerWheels",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	20 * PI,   //Max Speed (rounded as we need not have precision)
+	40 * PI,   //Max Speed (rounded as we need not have precision)
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Properties::eSimpleMotor,
@@ -465,6 +466,8 @@ void FRC_2012_Power_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Pro
 		m_props=*props;
 	else
 		m_props.m_Offset=Vec2d(0,0);
+
+	m_PowerWheelMaxSpeed=m_RobotControl->GetRobotProps().GetPowerWheelProps().GetMaxSpeed();
 }
 
 void FRC_2012_Power_Wheel_UI::UI_Init(Actor_Text *parent) 
@@ -523,7 +526,7 @@ void FRC_2012_Power_Wheel_UI::AddRotation(double RadiansToAdd)
 void FRC_2012_Power_Wheel_UI::TimeChange(double dTime_s)
 {
 	FRC_2012_Control_Interface *pw_access=m_RobotControl;
-	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2012_Robot::ePowerWheels) / (20.0 * Pi);
+	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2012_Robot::ePowerWheels) / m_PowerWheelMaxSpeed;
 	NormalizedVelocity-=0.2;
 	if (NormalizedVelocity<0.0)
 		NormalizedVelocity=0.0;
