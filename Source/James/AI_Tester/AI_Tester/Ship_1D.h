@@ -36,7 +36,9 @@ class Ship_1D : public Entity1D
 
 		// virtual void ResetPos();
 		bool GetAlterTrajectory() const { return m_SimFlightMode;}
-		double GetMaxSpeed() const		    {return MAX_SPEED;}
+		double GetMaxSpeed() const		{return MAX_SPEED;}
+		double GetACCEL() const			{return ACCEL;}
+		double GetBRAKE() const			{return BRAKE;}
 
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
@@ -49,6 +51,8 @@ class Ship_1D : public Entity1D
 		double GetMinRange() const {return m_MinRange;}
 		double GetMaxRange() const {return m_MaxRange;}
 		bool GetUsingRange() const {return m_UsingRange;}
+
+		Entity1D &AsEntity1D() {return *this;}
 
 	protected:
 		///override if the intended position has a known velocity to match (this is great for locking)
