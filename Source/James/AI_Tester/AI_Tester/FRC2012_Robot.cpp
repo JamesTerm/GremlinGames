@@ -99,8 +99,8 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
  /*													FRC_2012_Robot::PowerWheels														*/
 /***********************************************************************************************************************************/
 
-FRC_2012_Robot::PowerWheels::PowerWheels(Rotary_Control_Interface *robot_control) : Rotary_Angular("PowerWheels",robot_control,ePowerWheels),
-	m_IsRunning(false)
+FRC_2012_Robot::PowerWheels::PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
+	Rotary_Angular("PowerWheels",robot_control,ePowerWheels),m_pParent(pParent),m_IsRunning(false)
 {
 }
 
@@ -123,7 +123,7 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
 {
-	if (m_IsRunning)
+	if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
 	{
 		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
 		//first get the range from 0 - 1
@@ -145,7 +145,7 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
  /*												FRC_2012_Robot::BallConveyorSystem													*/
 /***********************************************************************************************************************************/
 
-FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(Rotary_Control_Interface *robot_control) :
+FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
 	m_MainConveyor("MainConveyor",robot_control,eMainConveyor),m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
 		m_Grip(false),m_Squirt(false),m_Fire(false)
 {
@@ -166,9 +166,14 @@ double FRC_2012_Robot::BallConveyorSystem::GetFireDirection() const
 
 void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 {
+	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
+	const bool PowerWheelReachedTolerance=fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance;
+	//Only fire when the wheel has reached its aiming speed
+	bool Fire=m_Fire && PowerWheelReachedTolerance;
+
 	double FireScaler=GetFireDirection();
 	//This assumes the motors are in the same orientation: 
-	double ConveyorVelocity=((m_Grip ^ m_Squirt) | m_Fire)?((m_Grip|m_Fire)?m_MainConveyor.GetACCEL():-m_MainConveyor.GetBRAKE()):0.0;
+	double ConveyorVelocity=((m_Grip ^ m_Squirt) | Fire)?((m_Grip|Fire)?m_MainConveyor.GetACCEL():-m_MainConveyor.GetBRAKE()):0.0;
 	if (fabs(m_MainConveyor.GetPhysics().GetVelocity())< m_MainConveyor.GetMaxSpeed() * 0.80)
 		m_MainConveyor.SetCurrentLinearAcceleration(ConveyorVelocity);
 	m_FireConveyor.SetCurrentLinearAcceleration(ConveyorVelocity * FireScaler);
@@ -211,7 +216,7 @@ const double c_TargetBaseHeight=2.0;
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(robot_control,this),m_PitchRamp(robot_control),
-		m_PowerWheels(robot_control),m_BallConveyorSystem(robot_control),m_IsTargeting(false)
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(false)
 {
 	m_IsTargeting=true;  //testing
 }
