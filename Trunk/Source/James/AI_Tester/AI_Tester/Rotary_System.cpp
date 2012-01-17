@@ -207,7 +207,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
 	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
-	m_CalibratedScaler(1.0),m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),
+	m_CalibratedScaler(1.0),m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
 	m_UsingEncoder(false),  //to be safe
 	m_VoltageOverride(false)
 {
@@ -345,6 +345,7 @@ bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDispl
 
 void Rotary_Angular::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
+	m_RequestedVelocity_Difference=VelocityToUse-m_Physics.GetVelocity();
 	m_VoltageOverride=false;
 	if ((m_UsingEncoder)&&(VelocityToUse==0.0)&&(!GetLockShipToPosition()))
 		m_VoltageOverride=true;

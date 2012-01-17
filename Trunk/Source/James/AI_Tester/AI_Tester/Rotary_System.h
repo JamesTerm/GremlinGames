@@ -10,17 +10,6 @@ struct Rotary_Props
 ///It currently has a single PID (Dual PID may either be integrated or a new class)... to manage voltage error
 class Rotary_Linear : public Ship_1D
 {
-	public:
-		Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
-		IEvent::HandlerList ehl;
-		//The parent needs to call initialize
-		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
-		virtual void ResetPos();
-	protected:
-		//Intercept the time change to obtain current height as well as sending out the desired velocity
-		virtual void TimeChange(double dTime_s);
-		virtual void PosDisplacementCallback(double posDisplacement_m);
-		virtual void SetPotentiometerSafety(bool DisableFeedback);
 	private:
 		//typedef Ship_1D __super;
 
@@ -39,25 +28,24 @@ class Rotary_Linear : public Ship_1D
 		double m_MaxSpeedReference; //used for calibration
 		bool m_UsingPotentiometer; //dynamically able to turn off (e.g. panic button)
 		bool m_VoltageOverride;  //when true will kill voltage
+	public:
+		Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
+		IEvent::HandlerList ehl;
+		//The parent needs to call initialize
+		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		virtual void ResetPos();
+		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
+	protected:
+		//Intercept the time change to obtain current height as well as sending out the desired velocity
+		virtual void TimeChange(double dTime_s);
+		virtual void PosDisplacementCallback(double posDisplacement_m);
+		virtual void SetPotentiometerSafety(bool DisableFeedback);
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
 ///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate
 class Rotary_Angular : public Ship_1D
 {
-	public:
-		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
-		IEvent::HandlerList ehl;
-		//The parent needs to call initialize
-		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
-		virtual void ResetPos();
-	protected:
-		//Intercept the time change to obtain current height as well as sending out the desired velocity
-		virtual void TimeChange(double dTime_s);
-		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
-		virtual void SetEncoderSafety(bool DisableFeedback);
-
-		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);
 	private:
 		//typedef Ship_1D __super;
 
@@ -73,8 +61,24 @@ class Rotary_Angular : public Ship_1D
 		double m_CalibratedScaler; //used for calibration
 		double m_MaxSpeedReference; //used for calibration
 		double m_EncoderVelocity;  //cache for later use
+		double m_RequestedVelocity_Difference;
 		bool m_UsingEncoder; //dynamically able to turn off (e.g. panic button)
 		bool m_VoltageOverride;  //when true will kill voltage
+	public:
+		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
+		IEvent::HandlerList ehl;
+		//The parent needs to call initialize
+		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		virtual void ResetPos();
+		double GetRequestedVelocity_Difference() const {return m_RequestedVelocity_Difference;}
+		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
+	protected:
+		//Intercept the time change to obtain current height as well as sending out the desired velocity
+		virtual void TimeChange(double dTime_s);
+		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
+		virtual void SetEncoderSafety(bool DisableFeedback);
+
+		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);
 };
 
 class Rotary_Properties : public Ship_1D_Properties

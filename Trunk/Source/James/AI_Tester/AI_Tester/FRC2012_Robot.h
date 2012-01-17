@@ -69,7 +69,7 @@ class FRC_2012_Robot : public Tank_Robot
 		class PowerWheels : public Rotary_Angular
 		{
 			public:
-				PowerWheels(Rotary_Control_Interface *robot_control);
+				PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
@@ -79,19 +79,22 @@ class FRC_2012_Robot : public Tank_Robot
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
 				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
 			private:
+				FRC_2012_Robot * const m_pParent;
 				bool m_IsRunning;
 		};
 
 		class BallConveyorSystem
 		{
 			private:
+				FRC_2012_Robot * const m_pParent;
 				double GetFireDirection() const;
 				//typedef Ship_1D __super;
 				Rotary_Angular m_MainConveyor,m_FireConveyor;
 				bool m_Grip,m_Squirt,m_Fire;
 			public:
-				BallConveyorSystem(Rotary_Control_Interface *robot_control);
+				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+				bool GetIsFireRequested() const {return m_Fire;}
 
 				IEvent::HandlerList ehl;
 				//public access needed for goals
