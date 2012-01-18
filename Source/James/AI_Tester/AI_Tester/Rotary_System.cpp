@@ -345,7 +345,7 @@ bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDispl
 
 void Rotary_Angular::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
-	m_RequestedVelocity_Difference=VelocityToUse-m_Physics.GetVelocity();
+	m_RequestedVelocity_Difference=VelocityToUse-m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	m_VoltageOverride=false;
 	if ((m_UsingEncoder)&&(VelocityToUse==0.0)&&(!GetLockShipToPosition()))
 		m_VoltageOverride=true;
