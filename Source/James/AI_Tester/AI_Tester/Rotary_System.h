@@ -46,6 +46,13 @@ class Rotary_Linear : public Ship_1D
 ///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate
 class Rotary_Angular : public Ship_1D
 {
+	public:
+		enum EncoderUsage
+		{
+			eNoEncoder, //Will never read them (ideal for systems that do not have any encoders)
+			ePassive,  //Will read them but never alter velocities
+			eActive, //Will attempt to match predicted velocity to actual velocity
+		};
 	private:
 		//typedef Ship_1D __super;
 
@@ -62,10 +69,11 @@ class Rotary_Angular : public Ship_1D
 		double m_MaxSpeedReference; //used for calibration
 		double m_EncoderVelocity;  //cache for later use
 		double m_RequestedVelocity_Difference;
-		bool m_UsingEncoder; //dynamically able to turn off (e.g. panic button)
+		EncoderUsage m_EncoderState; //dynamically able to change state
+		const EncoderUsage m_EncoderCachedState; //This is a fall-back state upon recovery of the safety state
 		bool m_VoltageOverride;  //when true will kill voltage
 	public:
-		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
+		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
 		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);

@@ -100,7 +100,7 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2012_Robot::PowerWheels::PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Angular("PowerWheels",robot_control,ePowerWheels),m_pParent(pParent),m_IsRunning(false)
+	Rotary_Angular("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_IsRunning(false)
 {
 }
 

@@ -204,14 +204,13 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
  /*															Rotary_Angular															*/
 /***********************************************************************************************************************************/
 
-Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
+Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
 	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_CalibratedScaler(1.0),m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
-	m_UsingEncoder(false),  //to be safe
+	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState),
 	m_VoltageOverride(false)
 {
-	m_UsingEncoder=true;  //for testing on AI simulator (unless I make a control for this)
 }
 
 void Rotary_Angular::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
@@ -234,46 +233,47 @@ void Rotary_Angular::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_
 
 void Rotary_Angular::TimeChange(double dTime_s)
 {
-	double Encoder_Velocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
-	//Display encoders without applying calibration
 	double CurrentVelocity=m_Physics.GetVelocity();
-
-	if ((m_UsingEncoder)&&(!GetLockShipToPosition()))
+	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 	{
-		double control=0.0;
-		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
-		//allow the scaler to normalize if it need to start up again.
-		if (((CurrentVelocity * Encoder_Velocity) > 0.0) || IsZero(Encoder_Velocity) )
+		double Encoder_Velocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+
+		if ((m_EncoderState==eActive)&&(!GetLockShipToPosition()))
 		{
-			control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_Velocity),dTime_s);
-			m_CalibratedScaler=MAX_SPEED+control;
-		}
-		
-		#if 0
-		if (CurrentVelocity!=0.0)
-		{
-			double PosY=GetPos_m();
-			if (!m_VoltageOverride)
-				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
-			else
-				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
-		}
-		#endif
+			double control=0.0;
+			//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
+			//allow the scaler to normalize if it need to start up again.
+			if (((CurrentVelocity * Encoder_Velocity) > 0.0) || IsZero(Encoder_Velocity) )
+			{
+				control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_Velocity),dTime_s);
+				m_CalibratedScaler=MAX_SPEED+control;
+			}
+			
+			#if 0
+			if (CurrentVelocity!=0.0)
+			{
+				double PosY=GetPos_m();
+				if (!m_VoltageOverride)
+					printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
+				else
+					printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
+			}
+			#endif
 
-		//For most cases we do not need the dead zone skip
-		//m_UseDeadZoneSkip=false;
-		
-		//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
-		//also only apply for lower speeds to avoid choppyness during the cruising phase
-		//if ((CurrentVelocity > 0.0) && (fabs(Encoder_Velocity)<0.5))
-		//{
-		//	//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
-		//	m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
-		//}
-	}	
+			//For most cases we do not need the dead zone skip
+			//m_UseDeadZoneSkip=false;
+			
+			//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
+			//also only apply for lower speeds to avoid choppyness during the cruising phase
+			//if ((CurrentVelocity > 0.0) && (fabs(Encoder_Velocity)<0.5))
+			//{
+			//	//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
+			//	m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
+			//}
+		}	
 
-	m_EncoderVelocity=Encoder_Velocity;
-
+		m_EncoderVelocity=Encoder_Velocity;
+	}
 	__super::TimeChange(dTime_s);
 
 	CurrentVelocity=m_Physics.GetVelocity();
@@ -328,7 +328,7 @@ void Rotary_Angular::TimeChange(double dTime_s)
 bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDisplacement)
 {
 	bool ret=false;
-	const bool UpdateDisplacement=true;
+	const bool UpdateDisplacement=((m_EncoderState==eActive)||(m_EncoderState==ePassive));
 	if (UpdateDisplacement)
 	{
 		double computedVelocity=m_Physics.GetVelocity();
@@ -347,7 +347,7 @@ void Rotary_Angular::RequestedVelocityCallback(double VelocityToUse,double Delta
 {
 	m_RequestedVelocity_Difference=VelocityToUse-m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	m_VoltageOverride=false;
-	if ((m_UsingEncoder)&&(VelocityToUse==0.0)&&(!GetLockShipToPosition()))
+	if ((m_EncoderState==eActive)&&(VelocityToUse==0.0)&&(!GetLockShipToPosition()))
 		m_VoltageOverride=true;
 }
 
@@ -370,10 +370,10 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 	//printf("\r%f       ",Value);
 	if (DisableFeedback)
 	{
-		if (m_UsingEncoder)
+		if (m_EncoderState!=eNoEncoder)
 		{
 			//first disable it
-			m_UsingEncoder=false;
+			m_EncoderState=eNoEncoder;
 			//Now to reset stuff
 			printf("Disabling potentiometer\n");
 			//m_PIDController.Reset();
@@ -387,9 +387,9 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 	}
 	else
 	{
-		if (!m_UsingEncoder)
+		if (m_EncoderState==eNoEncoder)
 		{
-			m_UsingEncoder=true;
+			m_EncoderState=m_EncoderCachedState;
 			//setup the initial value with the potentiometers value
 			printf("Enabling potentiometer\n");
 			ResetPos();
