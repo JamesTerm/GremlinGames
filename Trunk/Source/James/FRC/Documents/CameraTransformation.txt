@@ -1,0 +1,5 @@
+Camera transformation
+dx=cos(thy)*( sin(thz)*(ay-cy) + cos (thz)*(ax - cx) ) - sin(thy)*(az-cz)
+dy=sin(thx)*( cos(thy)*(az-cz) + sin (thy)*(sin(thz)*(ay-cy) + cos(thz)*(ax-cx))) + cos(thx)*(cos(thz)*(ay-cy) - sin(thz)*(ax - cx) )
+dz=cos(thx)*( cos(thy)*(az-cz) + sin (thy)*(sin(thz)*(ay-cy) + cos(thz)*(ax-cx))) - sin(thx)*(cos(thz)*(ay-cy) - sin(thz)*(ax - cx) )
+
