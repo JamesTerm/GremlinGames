@@ -45,6 +45,10 @@ double KalmanFilter::operator()(double input)
     m_last = P;
     m_x_est_last = x_est;
     
+	//Test for NAN
+	if ((!(m_x_est_last>0.0)) || (!(m_x_est_last<0.0)))
+		m_x_est_last=0;
+
     return x_est;
 }
 
