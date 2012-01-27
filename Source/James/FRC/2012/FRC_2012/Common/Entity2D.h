@@ -39,7 +39,12 @@ class Entity1D
 		//This is used when a sensor need to correct for the actual position
 		void SetPos_m(double value) {m_Position=value;}
 	protected: 
+		///This gives derived class the ability to manipulate the displacement
+		/// \ret true if this is to be used and manipulated, false uses the default displacement
+		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement) {return false;}
+
 		PhysicsEntity_1D m_Physics;
+		bool m_IsAngular;
 };
 
 

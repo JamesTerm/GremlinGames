@@ -7,6 +7,7 @@ using namespace Framework;
 using namespace std;
 using namespace Framework::Base;
 
+const double Pi2=M_PI*2.0;
 //The actual force between two objects are f=(G m1 m2)/ r^2
 //For example g = ( G * (Me->5.98E+24)) / (Re->6.38E+6)^2 = 9.8 m/s^2
 //G is ideal to compute forces on ships from various planets
@@ -136,6 +137,64 @@ double PhysicsEntity_1D::GetVelocityFromDistance_Linear(double Distance,double F
 	double scale=SpeedToUse/Distance_Length;
 	ret=DistToUse*scale;
 	ret+=matchVel;
+	return ret;
+}
+
+double PhysicsEntity_1D::GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s,double matchVel)
+{
+	double ret;
+
+	//This is how many radians the ship is capable to turn for this given time frame
+	double Acceleration=(Restraint/m_EntityMass); //obtain acceleration
+
+	{
+		//first compute which direction to go
+		double DistanceDirection=Distance;
+		DistanceDirection-=matchVel*DeltaTime_s;
+		if (IsZero(DistanceDirection))
+		{
+			ret=matchVel;
+			return ret;
+		}
+
+		//Unlike in the 3D physics, we'll need while loops to ensure all of the accumulated turns are normalized, in the 3D physics the
+		//Quat is auto normalized to only require one if check here
+		while (DistanceDirection>M_PI)
+			DistanceDirection-=Pi2;
+		while (DistanceDirection<-M_PI)
+			DistanceDirection+=Pi2;
+		double DistanceLength=fabs(DistanceDirection);
+
+		//Ideal speed needs to also be normalized
+		double IDS=Distance;
+		if (IDS>M_PI)
+			IDS-=Pi2;
+		else if (IDS<-M_PI)
+			IDS+=Pi2;
+
+		double IdealSpeed=fabs(IDS/DeltaTime_s);
+
+		if (Restraint!=-1)
+		{
+			//Given the distance compute the time needed
+			//Place the division first keeps the multiply small
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
+
+			//Now compute maximum speed for this time
+			double MaxSpeed=DistanceLength/Time;
+			ret=min(IdealSpeed,MaxSpeed);
+
+			if (DistanceDirection<0)
+				ret=-ret;
+			ret+=matchVel;
+		}
+		else
+		{
+			ret=IdealSpeed;  //i.e. god speed
+			if (IDS<0)
+				ret=-ret;
+		}
+	}
 	return ret;
 }
 

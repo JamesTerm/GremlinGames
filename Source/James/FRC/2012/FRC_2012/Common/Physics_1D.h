@@ -18,9 +18,13 @@ class PhysicsEntity_1D
 		virtual void TimeChangeUpdate(double DeltaTime_s,double &PositionDisplacement);
 
 		inline double GetVelocityFromCollision(double ThisVelocityToUse,double otherEntityMass,double otherEntityVelocity);
-		///This simply returns a min operation of speed/time and the maximum speed available to stop within the given distance
+
+		///These distance methods simply returns a min operation of speed/time and the maximum speed available to stop within the given distance
+		/// For 1D, client code needs to determine if the dimension is linear or angular which is identified in Entity 1D via boolean value
+
 		///This can either work with local or global orientation that all depends on the orientation of the restraints typically this works in local
 		virtual double GetVelocityFromDistance_Linear(double Distance,double ForceRestraintPositive,double ForceRestraintNegative,double DeltaTime_s,double matchVel);
+		virtual double GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s, double matchVel);
 
 		///These are coefficients to use when dealing with a force of friction typically 0.8 and 0.2 respectively
 		void SetFriction(double StaticFriction, ///<The amount of friction to be applied when object is not moving
