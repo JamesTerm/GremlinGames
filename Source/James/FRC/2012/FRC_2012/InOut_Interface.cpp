@@ -188,6 +188,10 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVoltage),(float)(RightVoltage));
 }
 
+void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
+{
+}
+
   /***********************************************************************************************************************************/
  /*														FRC_2011_Robot_Control														*/
 /***********************************************************************************************************************************/
@@ -213,7 +217,7 @@ FRC_2011_Robot_Control::FRC_2011_Robot_Control(bool UseSafety) :
 	//Seems like it doesn't matter how long I wait I'll get the exception, this is probably that fix they were talking about
 	//fortunately it doesn't effect any functionality
 	//Wait(10.000);
-	m_Camera=&AxisCamera::GetInstance();
+	//m_Camera=&AxisCamera::GetInstance("192.168.0.90");
 }
 
 FRC_2011_Robot_Control::~FRC_2011_Robot_Control() 
