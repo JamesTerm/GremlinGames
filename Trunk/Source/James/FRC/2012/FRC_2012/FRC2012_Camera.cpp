@@ -36,6 +36,18 @@ FRC_2012_CameraProcessing::FRC_2012_CameraProcessing() : m_Camera(NULL),m_LastTi
 {
 	//Default will use the team ip 10.34.81.11  with 11
 	m_Camera=&AxisCamera::GetInstance();
+	//m_Camera->WriteResolution(AxisCamera::kResolution_320x240);
+	m_Camera->WriteResolution(AxisCamera::kResolution_640x480);
+	//m_Camera->WriteCompression(20);
+	//m_Camera->WriteBrightness(0);
+	
+	switch(m_Camera->GetResolution())
+	{
+	case AxisCamera::kResolution_640x480:	m_Xres=640,m_Yres=480;	break;
+	case AxisCamera::kResolution_640x360:	m_Xres=640,m_Yres=360;	break;
+	case AxisCamera::kResolution_320x240:	m_Xres=320,m_Yres=240;	break;
+	case AxisCamera::kResolution_160x120:	m_Xres=160,m_Yres=120;	break;
+	}
 }
 
 FRC_2012_CameraProcessing::~FRC_2012_CameraProcessing()

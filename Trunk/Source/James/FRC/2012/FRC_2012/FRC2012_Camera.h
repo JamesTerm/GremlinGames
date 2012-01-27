@@ -12,4 +12,5 @@ class FRC_2012_CameraProcessing
 	private:
 		AxisCamera *m_Camera;  //This is a singleton, but treated as a member that is optional
 		double m_LastTime;  //Keep track of frame rate
+		int m_Xres,m_Yres;
 };
