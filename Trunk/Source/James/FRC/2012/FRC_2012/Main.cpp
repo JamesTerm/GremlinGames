@@ -14,13 +14,16 @@
 #include "Common/Goal.h"
 #include "Common/Ship_1D.h"
 #include "Common/Ship.h"
-#include "Common/Robot_Tank.h"
+#include "Common/Vehicle_Drive.h"
+#include "Common/PIDController.h"
+#include "Common/Tank_Robot.h"
 #include "Common/AI_Base_Controller.h"
+#include "Common/Robot_Control_Interface.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
-#include "FRC2011_Robot.h"
+#include "FRC2012_Robot.h"
 #include "InOut_Interface.h"
 
 const bool c_UseDefaultControls=false;
@@ -33,7 +36,7 @@ class SetUp_Manager
 		Driver_Station_Joystick m_Joystick;  
 		Framework::UI::JoyStick_Binder m_JoyBinder;
 		FRC_2011_Robot_Properties m_RobotProps;
-		Robot_Control_2011 m_Control; // robot drive system
+		FRC_2011_Robot_Control m_Control; // robot drive system
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
 		Framework::Base::EventMap m_EventMap;
 		IEvent::HandlerList ehl;
@@ -48,7 +51,7 @@ class SetUp_Manager
 		SetUp_Manager(bool UseSafety,bool UseEncoders=false) : m_Joystick(2,0), //2 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
-			m_Control.Initialize(&m_RobotProps);
+			m_Control.AsControlInterface().Initialize(&m_RobotProps);
 			m_pRobot = new FRC_2011_Robot("FRC2011_Robot",&m_Control,UseEncoders);
 			m_pRobot->Initialize(m_EventMap,&m_RobotProps);
 			//Bind the ship's eventmap to the joystick
