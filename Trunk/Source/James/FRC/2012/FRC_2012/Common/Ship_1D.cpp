@@ -49,7 +49,7 @@ void Ship_1D::ResetPos()
 	SetSimFlightMode(true);  //This one is a tough call... probably should do it on reset
 }
 
-bool Ship_1D::GetLockShipToPosition()
+bool Ship_1D::GetLockShipToPosition() const
 {
 	return m_LockShipToPosition;
 }
@@ -106,6 +106,7 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 		MaxAccelReverse=1.0;
 		m_UsingRange=false;
 		m_MinRange=m_MaxRange=0;
+		m_IsAngular=false;
 	}
 	Mass  = m_Physics.GetMass();
 
@@ -208,6 +209,8 @@ void Ship_1D::TimeChange(double dTime_s)
 			ForceToApply=m_Physics.GetForceFromVelocity(VelocityToUse,dTime_s);
 			if (!UsingRequestedVelocity)
 				ForceToApply+=m_currAccel * Mass;
+			//Allow subclass to evaluate the requested velocity in use;
+			RequestedVelocityCallback(VelocityToUse,dTime_s);
 		}
 		else   //Manual mode
 		{
@@ -232,6 +235,7 @@ void Ship_1D::TimeChange(double dTime_s)
 
 		{
 			double DistanceToUse=posDisplacement_m;
+			double MatchVelocity=GetMatchVelocity();
 			//Most likely these should never get triggered unless there is some kind of control like the mouse that can go beyond the limit
 			if (m_UsingRange)
 			{
@@ -240,30 +244,27 @@ void Ship_1D::TimeChange(double dTime_s)
 				else if(m_IntendedPosition<m_MinRange)
 					DistanceToUse=m_MinRange-GetPos_m();
 			}
-			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
-			double MatchVel=0.0;
-			Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVel);
+			if (!m_IsAngular)
+			{
+				//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
+				Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVelocity);
+			}
+			else
+				Vel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,AccRestraintPositive*Mass,dTime_s,MatchVelocity);
 		}
 
 		#ifndef __DisableSpeedControl__
 		{
-			if (m_currAccel<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
+			if ((Vel) < -MAX_SPEED)
 			{
-				if ((Vel) < -MAX_SPEED)
-				{
-					Vel = -MAX_SPEED;
-					m_currAccel=0.0;
-				}
+				Vel = -MAX_SPEED;
+				m_currAccel=0.0;
 			}
-			else 
+			else if ((Vel) > MAX_SPEED) 
 			{
-				double MaxSpeed=MAX_SPEED;
-				if ((Vel) > MaxSpeed)
-				{
-					Vel=MaxSpeed;
-					m_RequestedVelocity=MaxSpeed;
-					m_currAccel=0.0;
-				}
+				Vel=MAX_SPEED;
+				m_RequestedVelocity=MAX_SPEED;
+				m_currAccel=0.0;
 			}
 		}
 		#endif
