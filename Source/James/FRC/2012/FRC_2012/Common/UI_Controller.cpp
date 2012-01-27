@@ -270,6 +270,9 @@ void UI_Controller::UserResetPos()
 {
 	if (AreControlsDisabled())
 		return;
+	//TODO see if this call is safe... it was put here as m_Ship_JoyMouse_rotAcc_rad_s would get stuck causing additional movement
+	//(when testing swerve robot)... if this causes problems the UI Ship may call it
+	ResetPos();
 	m_ship->ResetPos();
 }
 

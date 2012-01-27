@@ -11,7 +11,7 @@
 #include "Goal.h"
 #include "Ship.h"
 #include "AI_Base_Controller.h"
-#include "Robot_Tank.h"
+#include "Vehicle_Drive.h"
 
 using namespace Framework::Base;
 using namespace std;
@@ -20,147 +20,123 @@ const double PI=M_PI;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
- /*															Robot_Tank																*/
+ /*													Vehicle_Drive_Common															*/
 /***********************************************************************************************************************************/
 
-Robot_Tank::Robot_Tank(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
+void Vehicle_Drive_Common::Vehicle_Drive_Common_ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+{
+	UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	//Just cache these here to not pollute the control
+	m_CachedLocalForce=LocalForce;
+	m_CachedTorque=Torque;
+	m_CachedLinearVelocity=PhysicsToUse.GetLinearVelocity();
+	m_CachedAngularVelocity=PhysicsToUse.GetAngularVelocity();
+
+	InterpolateThrusterChanges(m_CachedLocalForce,m_CachedTorque,dTime_s);
+	//No torque restraint... restraints are applied during the update of velocities
+}
+
+bool Vehicle_Drive_Common::Vehicle_Drive_Common_InjectDisplacement(PhysicsEntity_2D &PhysicsToUse,double DeltaTime_s,double Att_r,Vec2D &PositionDisplacement,double &RotationDisplacement)
+{
+	const bool _InjectedDisplacement=true;
+	if (_InjectedDisplacement)
+	{
+		Vec2d computedLinearVelocity=PhysicsToUse.GetLinearVelocity();
+		double computedAngularVelocity=PhysicsToUse.GetAngularVelocity();
+		PhysicsToUse.SetLinearVelocity(m_CachedLinearVelocity);
+		PhysicsToUse.SetAngularVelocity(m_CachedAngularVelocity);
+		PhysicsToUse.ApplyFractionalForce(LocalToGlobal(Att_r,m_CachedLocalForce),DeltaTime_s);
+		PhysicsToUse.ApplyFractionalTorque(m_CachedTorque,DeltaTime_s);
+		PhysicsToUse.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+
+		//We must set this back so that the PID can compute the entire error
+		PhysicsToUse.SetLinearVelocity(computedLinearVelocity);
+		PhysicsToUse.SetAngularVelocity(computedAngularVelocity);
+	}
+	return _InjectedDisplacement;
+}
+
+
+  /***********************************************************************************************************************************/
+ /*															Tank_Drive																*/
+/***********************************************************************************************************************************/
+
+Tank_Drive::Tank_Drive(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
 }
 
-void Robot_Tank::ResetPos()
+void Tank_Drive::ResetPos()
 {
 	m_LeftLinearVelocity=m_RightLinearVelocity=0.0;
 	__super::ResetPos();
 }
 
-void Robot_Tank::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
-	double LinearVelocityDelta;
 
-	//First we compute the Y component force to the velocities in the direction that it currently is facing
-	//I'm writing this out so I can easily debug
-	{
-		double AccelerationDelta=LocalForce[1]/Mass;
-		LinearVelocityDelta=AccelerationDelta*dTime_s;
-	}
+	//L is the vehicle’s wheelbase
+	//const double L=GetWheelDimensions()[1];
+	//W is the vehicle’s track width
+	const double W=GetWheelDimensions()[0];
+
+	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
+	//FWD=IsZero(FWD)?0.0:FWD;
+	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
+	//RCW=fabs(RCW)<0.3?0.0:RCW;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (PI * W);  //W is really diameter
+
+	m_LeftLinearVelocity = FWD + RCW;
+	m_RightLinearVelocity = FWD - RCW;
 
 	#if 0
-	//determine direction
-	double ForceHeading;
-	{
-		Vec2d LocalForce_norm(LocalForce);
-		LocalForce_norm.normalize();
-		ForceHeading=atan2(LocalForce_norm[0],LocalForce_norm[1]);
-		//DOUT2("x=%f y=%f h=%f\n",LocalForce[0],LocalForce[1],RAD_2_DEG(ForceHeading));
-	}
+	DOUT2("%f %f",FWD,RCW);
+	DOUT4("%f %f ",m_LeftLinearVelocity,m_RightLinearVelocity);
 	#endif
-	double LeftDelta,RightDelta;
-	//Now to blend the torque into the velocities
-	{
-		double Width=GetDimensions()[0];
-		//first convert to angular acceleration
-		double AccelerationDelta=TorqueRestrained/Mass;
-		double AngularVelocityDelta=AccelerationDelta*dTime_s;
-		//Convert the angular velocity into linear velocity
-		double AngularVelocityDelta_linear=AngularVelocityDelta * Width;
-		//I'm keeping this first attempt, I like it because it is simple and reliable however, when going forward in fast speeds the torque will clobber the
-		//linear force with abrupt stopping 
-		Vec2d CurrentVelocity(m_LeftLinearVelocity,m_RightLinearVelocity);
-		{
-			//Scale down the amount of torque based on current speed... this helps not slow down the linear force when turning
-			double FilterScaler=1.0 - (CurrentVelocity.length() / (ENGAGED_MAX_SPEED*2.0));
-			AngularVelocityDelta_linear*=FilterScaler;
-		}
-
-		LeftDelta=(AngularVelocityDelta_linear/2)+LinearVelocityDelta;
-		RightDelta=(-AngularVelocityDelta_linear/2)+LinearVelocityDelta;
-
-		#if 1
-		Vec2d NewDelta(LeftDelta,RightDelta);
-		for (size_t i=0;i<2;i++)
-		{
-			if (CurrentVelocity[i] * AngularVelocityDelta_linear >0.0)
-			{
-				//The left velocity is about to increase see if the linear velocity is going in the same direction
-				if ((CurrentVelocity[i] * LinearVelocityDelta)>0.0)
-					NewDelta[i]/=2;  //average out the linear and the angular
-			}
-			//Now to apply the final force restraint
-			double Restraint=(CurrentVelocity[i]>0.0)?MaxAccelForward:MaxAccelReverse;
-			if (Restraint>0.0)  //test for -1
-			{
-				Restraint=min(fabs(NewDelta[i]),Restraint);
-				if (NewDelta[i]<0.0)
-					Restraint*=-1.0;  //restore the negative sign
-				NewDelta[i]=Restraint;
-			}
-		}
-		LeftDelta=NewDelta[0];
-		RightDelta=NewDelta[1];
-
-		#endif
-
-
-	}
-	//Now to apply to the velocities with speed control  
-	double NewVelocity=m_LeftLinearVelocity+LeftDelta;
-	if (fabs(NewVelocity)>ENGAGED_MAX_SPEED)
-		NewVelocity=(NewVelocity>0)?ENGAGED_MAX_SPEED:-ENGAGED_MAX_SPEED;
-	m_LeftLinearVelocity=NewVelocity;
-
-	NewVelocity=m_RightLinearVelocity+RightDelta;
-	if (fabs(NewVelocity)>ENGAGED_MAX_SPEED)
-		NewVelocity=(NewVelocity>0)?ENGAGED_MAX_SPEED:-ENGAGED_MAX_SPEED;
-	m_RightLinearVelocity=NewVelocity;	
-
-	//DOUT2("left=%f right=%f Ang=%f\n",m_LeftLinearVelocity,m_RightLinearVelocity,RAD_2_DEG(m_Physics.GetAngularVelocity()));
+	//DOUT4("%f %f",FWD,RCW);  //Test accuracy
 }
 
-void Robot_Tank::InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
 {
-	double LeftMagnitude=fabs(LeftLinearVelocity);
-	double RightMagnitude=fabs(RightLinearVelocity);
-	double CommonMagnitude=min(LeftMagnitude,RightMagnitude);
-	double RightAngularDelta;
-	double LeftAngularDelta;
-	//We do not care about x, but we may want to keep an eye for intense x forces
-	double Width=GetDimensions()[0];
-	double NewVelocityY;
-	//See if velocities are going in the same direction
-	if (LeftLinearVelocity * RightLinearVelocity >= 0)
-	{
-		//First lets simplify the the overall velocity by transferring the common speed to local force
-		double CommonVelocity=LeftLinearVelocity>0?CommonMagnitude:-CommonMagnitude; //put back in the correct direction
-		LeftLinearVelocity-=CommonVelocity;
-		RightLinearVelocity-=CommonVelocity;
-		NewVelocityY=CommonVelocity;
-	}
-	else
-	{
-		//going in different direction
-		NewVelocityY=0;  //nothing to do... the common code will cancel them out
-	}
+	//L is the vehicle’s wheelbase
+	//const double L=GetWheelDimensions()[1];
+	//W is the vehicle’s track width
+	const double W=GetWheelDimensions()[0];
 
-	RightAngularDelta=LeftLinearVelocity / (Pi2 * Width);
-	LeftAngularDelta=-(RightLinearVelocity / (Pi2 * Width));
+	//const double FWD = (LeftLinearVelocity*cos(1.0)+RightLinearVelocity*cos(1.0))/2.0;
+	const double FWD = (LeftLinearVelocity + RightLinearVelocity) / 2.0;
+	//const double STR = (LeftLinearVelocity*sin(0.0)+ RightLinearVelocity*sin(0.0))/2.0;
+	const double STR = 0.0;
 
-	//We also need to add displacement of the left over turn..
-	{
-		double RAD_Slice=RightAngularDelta *Pi2 * dTime_s;
-		double LAD_Slice=LeftAngularDelta * Pi2 * dTime_s;
-		double Radius=Width/2.0;
-		double Height=(sin(RAD_Slice) * Radius) + (sin(-LAD_Slice) * Radius);
-		double Width=((1.0-cos(RAD_Slice))*Radius) + (-(1.0-cos(LAD_Slice))*Radius);
-		LocalVelocity[0]=Width;
-		NewVelocityY+=(Height / dTime_s);
-	}
-	LocalVelocity[1]=NewVelocityY;
+	const double HP=PI/2;
+	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
-	AngularVelocity=((LeftAngularDelta+RightAngularDelta)*Pi2);
+	//Here we go it is finally working I just needed to take out the last division
+	const double omega = ((LeftLinearVelocity) + (RightLinearVelocity*-1))/2.0;
+
+	LocalVelocity[0]=STR;
+	LocalVelocity[1]=FWD;
+
+	AngularVelocity=(omega / (PI * W)) * Pi2;
+	//This is a safety to avoid instability
+	#if 0
+	AngularVelocity=IsZero(omega)?0.0:omega;
+	if (AngularVelocity>20.0)
+		AngularVelocity=20.0;
+	else if (AngularVelocity<-20.0)
+		AngularVelocity=-20.0;
+	#endif
+
+	#if 0
+	DOUT2("%f %f",FWD,omega);
+	DOUT4("%f %f ",m_LeftLinearVelocity,m_RightLinearVelocity);
+	#endif
+	//DOUT5("%f %f",FWD,omega);
 }
 
-void Robot_Tank::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
+void Tank_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
 {
 	Vec2d OldLocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	Vec2d LocalVelocity;
@@ -175,7 +151,8 @@ void Robot_Tank::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,dou
 	Torque = (AngularAcceleration * Mass) / dTime_s;
 }
 
-void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+#if 0
+void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	Vec2d NewLocalForce(LocalForce);
@@ -184,4 +161,158 @@ void Robot_Tank::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Loca
 	//No torque restraint... restraints are applied during the update of velocities
 	__super::ApplyThrusters(PhysicsToUse,NewLocalForce,NewTorque,-1,dTime_s);
 }
+#else
+void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+{
+	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
+	//__super::ApplyThrusters(PhysicsToUse,GetCachedLocalForce(),LocalTorque,-1,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,-1,dTime_s);
+}
+#endif
 
+bool Tank_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
+{
+	//For test purposes
+	//return false;
+	return Vehicle_Drive_Common_InjectDisplacement(m_Physics,DeltaTime_s,GetAtt_r(),PositionDisplacement,RotationDisplacement);
+}
+
+
+  /***********************************************************************************************************************************/
+ /*														Swerve_Drive																*/
+/***********************************************************************************************************************************/
+
+Swerve_Drive::Swerve_Drive(const char EntityName[]) : Ship_Tester(EntityName)
+{
+	memset(&m_Velocities,0,sizeof(SwerveVelocities));
+}
+
+void Swerve_Drive::ResetPos()
+{
+	memset(&m_Velocities,0,sizeof(SwerveVelocities));
+	__super::ResetPos();
+}
+
+void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+{
+	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
+
+	//L is the vehicle’s wheelbase
+	const double L=GetWheelDimensions()[1];
+	//W is the vehicle’s track width
+	const double W=GetWheelDimensions()[0];
+
+	//const double R = sqrt((L*L)+(W*W));
+	const double R = GetWheelDimensions().length();
+
+	//Allow around 2-3 degrees of freedom for rotation.  While manual control worked fine without it, it is needed for
+	//targeting goals (e.g. follow ship)
+
+	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	const double STR=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
+	//STR=IsZero(STR)?0.0:STR;
+	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
+	//FWD=IsZero(FWD)?0.0:FWD;
+	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
+	//RCW=fabs(RCW)<0.3?0.0:RCW;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (PI * R);  //R is really diameter
+
+	const double A = STR - RCW*(L/R);
+	const double B = STR + RCW*(L/R);
+	const double C = FWD - RCW*(W/R);
+	const double D = FWD + RCW*(W/R);
+	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
+
+	_.sFL = sqrt((B*B)+(D*D)); _.aFL = atan2(B,D);
+	_.sFR = sqrt((B*B)+(C*C)); _.aFR = atan2(B,C);
+	_.sRL = sqrt((A*A)+(D*D)); _.aRL = atan2(A,D);
+	_.sRR = sqrt((A*A)+(C*C)); _.aRR = atan2(A,C);
+
+	#if 0
+	DOUT2("%f %f %f",FWD,STR,RCW);
+	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
+	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
+	#endif
+	//DOUT4("%f %f %f",FWD,STR,RCW);  //Test accuracy
+
+}
+
+void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+{
+	SwerveVelocities::uVelocity::Explicit &_=Velocities.Velocity.Named;
+	//L is the vehicle’s wheelbase
+	const double L=GetWheelDimensions()[1];
+	//W is the vehicle’s track width
+	const double W=GetWheelDimensions()[0];
+	const double D = GetWheelDimensions().length();
+
+	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
+
+	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))/4;
+	const double HP=PI/2;
+	//const double HalfDimLength=GetWheelDimensions().length()/2;
+
+	//Here we go it is finally working I just needed to take out the last division
+	const double omega = ((_.sFR*cos(atan2(W,L)+(HP-_.aFR))+_.sFL*cos(atan2(-W,L)+(HP-_.aFL))
+		+_.sRL*cos(atan2(-W,-L)+(HP-_.aRL))+_.sRR*cos(atan2(W,-L)+(HP-_.aRR)))/4);
+
+	//const double omega = (((_.sFR*cos(atan2(W,L)+(HP-_.aFR))/4)+(_.sFL*cos(atan2(-W,L)+(HP-_.aFL))/4)
+	//	+(_.sRL*cos(atan2(-W,-L)+(HP-_.aRL))/4)+(_.sRR*cos(atan2(W,-L)+(HP-_.aRR))/4)));
+
+	LocalVelocity[0]=STR;
+	LocalVelocity[1]=FWD;
+
+	AngularVelocity=(omega / (PI * D)) * Pi2;
+	//This is a safety to avoid instability
+	#if 0
+	AngularVelocity=IsZero(omega)?0.0:omega;
+	if (AngularVelocity>20.0)
+		AngularVelocity=20.0;
+	else if (AngularVelocity<-20.0)
+		AngularVelocity=-20.0;
+	#endif
+
+	#if 0
+	DOUT2("%f %f %f",FWD,STR,AngularVelocity);
+	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
+	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
+	#endif
+	//DOUT5("%f %f %f",FWD,STR,omega);  //Test accuracy
+}
+
+void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
+{
+	Vec2d OldLocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+	Vec2d LocalVelocity;
+	double AngularVelocity;
+	InterpolateVelocities(GetSwerveVelocities(),LocalVelocity,AngularVelocity,dTime_s);
+
+	Vec2d LinearAcceleration=LocalVelocity-OldLocalVelocity;
+	LocalForce=(LinearAcceleration * Mass) / dTime_s;
+
+	//Now then we'll compute the torque
+	double AngularAcceleration=AngularVelocity - m_Physics.GetAngularVelocity();
+	Torque = (AngularAcceleration * Mass) / dTime_s;
+}
+
+void Swerve_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+{
+	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,-1,dTime_s);
+}
+
+bool Swerve_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
+{
+	return Vehicle_Drive_Common_InjectDisplacement(m_Physics,DeltaTime_s,GetAtt_r(),PositionDisplacement,RotationDisplacement);
+}
+
+double Swerve_Drive::GetIntendedVelocitiesFromIndex(size_t index) const
+{
+	return m_Velocities.Velocity.AsArray[index];
+}
+
+double Swerve_Drive::GetSwerveVelocitiesFromIndex(size_t index) const
+{
+	return GetSwerveVelocities().Velocity.AsArray[index];
+}

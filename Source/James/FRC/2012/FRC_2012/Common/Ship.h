@@ -5,6 +5,37 @@ class AI_Base_Controller;
 
 inline Framework::Base::Vec2d GlobalToLocal(double Heading,const Framework::Base::Vec2d &GlobalVector);
 inline Framework::Base::Vec2d LocalToGlobal(double Heading,const Framework::Base::Vec2d &LocalVector);
+inline void NormalizeRotation(double &Rotation)
+{
+	const double Pi2=M_PI*2.0;
+	//Normalize the rotation
+	if (Rotation>M_PI)
+		Rotation-=Pi2;
+	else if (Rotation<-M_PI)
+		Rotation+=Pi2;
+}
+
+inline double NormalizeRotation2(double Rotation)
+{
+	const double Pi2=M_PI*2.0;
+	//Normalize the rotation
+	if (Rotation>M_PI)
+		Rotation-=Pi2;
+	else if (Rotation<-M_PI)
+		Rotation+=Pi2;
+	return Rotation;
+}
+
+inline double SaturateRotation(double Rotation)
+{
+	const double Pi2=M_PI*2.0;
+	//Normalize the rotation
+	if (Rotation>M_PI)
+		Rotation=M_PI;
+	else if (Rotation<-M_PI)
+		Rotation=-M_PI;
+	return Rotation;
+}
 
 class Ship_2D : public Entity2D
 {

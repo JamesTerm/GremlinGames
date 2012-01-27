@@ -304,6 +304,8 @@ void Ship_2D::SetIntendedOrientation(double IntendedOrientation)
 
 //////////////////////////////////////////////////////////////////////////
 
+#undef _TestIndendedDirction_properties__
+
 void Ship_2D::TimeChange(double dTime_s)
 {
 	// Update my controller
@@ -332,9 +334,29 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	if (m_StabilizeRotation)
 	{
+
+		//Note: I use to have the intended orientation lead and apply physics on it to result in the desired lock on effect, but this proved to be problematic
+		//if the ship was unable to keep up with the intended rate.  That is actually a good error test to keep around here, but true locking to ship will
+		//slave the intended orientation to the ship
+		//  [1/12/2012 Terminator]
+
+		#ifdef _TestIndendedDirction_properties__
 		UpdateIntendedOrientaton(dTime_s);
+
 		//Determine the angular distance from the intended orientation
 		m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
+		#else
+		if (m_LockShipHeadingToOrientation)
+		{
+			m_rotDisplacement_rad=m_rotAccel_rad_s;
+			m_IntendedOrientation=GetAtt_r();
+		}
+		else
+		{
+			UpdateIntendedOrientaton(dTime_s);
+			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
+		}
+		#endif
 	}
 	else
 	{
@@ -532,7 +554,7 @@ void Ship_2D::TimeChange(double dTime_s)
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel);
+			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
 		//testing stuff  (eventually nuke this)
 		//Vec3d rotVel=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,Vec3d(0,0,0));
@@ -586,6 +608,11 @@ void Ship_2D::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 
 	m_controller->UpdateUI(dTime_s);
+
+	#ifdef _TestNoIndendedDirction_properties__
+	if (m_LockShipHeadingToOrientation)
+		m_IntendedOrientation=GetAtt_r();
+	#endif
 
 	//Reset my controller vars
 	m_rotAccel_rad_s=0.0;

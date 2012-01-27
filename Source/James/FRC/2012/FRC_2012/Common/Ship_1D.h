@@ -27,13 +27,18 @@ class Ship_1D : public Entity1D
 		{ m_LockShipToPosition=false,m_IntendedPosition=Position;
 		}
 
+		///This allows subclass to evaluate the requested velocity when it is in use
+		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s) {}
+
 		// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedPosition() const {return m_IntendedPosition;}
 		void SetSimFlightMode(bool SimFlightMode);
 
 		// virtual void ResetPos();
 		bool GetAlterTrajectory() const { return m_SimFlightMode;}
-		double GetMaxSpeed() const		    {return MAX_SPEED;}
+		double GetMaxSpeed() const		{return MAX_SPEED;}
+		double GetACCEL() const			{return ACCEL;}
+		double GetBRAKE() const			{return BRAKE;}
 
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
@@ -42,8 +47,16 @@ class Ship_1D : public Entity1D
 		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
-		bool GetLockShipToPosition();
+		bool GetLockShipToPosition() const;
+		double GetMinRange() const {return m_MinRange;}
+		double GetMaxRange() const {return m_MaxRange;}
+		bool GetUsingRange() const {return m_UsingRange;}
+
+		Entity1D &AsEntity1D() {return *this;}
+
 	protected:
+		///override if the intended position has a known velocity to match (this is great for locking)
+		virtual double GetMatchVelocity() const {return 0.0;}
 		///This will apply turn pitch and roll to the intended orientation
 		void UpdateIntendedPosition(double dTime_s);
 
@@ -85,7 +98,6 @@ class Ship_1D : public Entity1D
 		double m_MinRange,m_MaxRange;
 		bool m_SimFlightMode;  ///< If true auto strafing will occur to keep ship in line with its position
 		bool m_UsingRange; 
-
 	private:
 		//Only used with SetRequestedVelocity_FromNormalized()
 		//this is managed direct from being set to avoid need for precision tolerance
@@ -99,7 +111,7 @@ class Ship_1D : public Entity1D
 class Goal_Ship1D_MoveToPosition : public AtomicGoal
 {
 	public:
-		Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position,double tolerance=0.20);
+		Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position,double tolerance=0.10);
 		~Goal_Ship1D_MoveToPosition();
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
