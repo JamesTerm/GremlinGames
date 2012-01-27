@@ -217,7 +217,7 @@ FRC_2011_Robot_Control::FRC_2011_Robot_Control(bool UseSafety) :
 	//Seems like it doesn't matter how long I wait I'll get the exception, this is probably that fix they were talking about
 	//fortunately it doesn't effect any functionality
 	//Wait(10.000);
-	//m_Camera=&AxisCamera::GetInstance("192.168.0.90");
+	m_Camera=&AxisCamera::GetInstance();
 }
 
 FRC_2011_Robot_Control::~FRC_2011_Robot_Control() 
