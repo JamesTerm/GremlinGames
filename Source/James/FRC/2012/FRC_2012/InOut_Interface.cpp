@@ -33,6 +33,7 @@
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
 #include "FRC2012_Robot.h"
+#include "FRC2012_Camera.h"
 #include "InOut_Interface.h"
 
 using namespace Framework::Base;
@@ -211,19 +212,25 @@ FRC_2011_Robot_Control::FRC_2011_Robot_Control(bool UseSafety) :
 	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
 	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
 	m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
-	m_Potentiometer(1),m_Camera(NULL)
+	m_Potentiometer(1)
+	#ifndef __2011_TestCamera__
+	,m_Camera(NULL)
+	#endif
 {
 	ResetPos();
-	//Seems like it doesn't matter how long I wait I'll get the exception, this is probably that fix they were talking about
-	//fortunately it doesn't effect any functionality
+	#ifndef __2011_TestCamera__
+	//Should not need to wait, fixed in 2012
 	//Wait(10.000);
 	m_Camera=&AxisCamera::GetInstance();
+	#endif
 }
 
 FRC_2011_Robot_Control::~FRC_2011_Robot_Control() 
 {
 	m_Compress.Stop();
+	#ifndef __2011_TestCamera__
 	m_Camera=NULL;  //We don't own this, but I do wish to treat it like we do
+	#endif
 }
 
 void FRC_2011_Robot_Control::Reset_Arm(size_t index)
@@ -237,6 +244,9 @@ void FRC_2011_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifdef __ShowLCD__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->UpdateLCD();
+	#endif
+	#ifdef __2011_TestCamera__
+	m_Camera.CameraProcessing_TimeChange(dTime_s);
 	#endif
 }
 
