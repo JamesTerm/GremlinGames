@@ -47,8 +47,12 @@ class FRC_2011_Robot_Control : public FRC_2011_Control_Interface
 		
 		//Servo m_DeployDoor,m_LazySusan;
 		AnalogChannel m_Potentiometer;
-		AxisCamera *m_Camera;  //This is a singleton, but treated as a member that is optional
-	
+		#ifdef  __2011_TestCamera__
+		FRC_2012_CameraProcessing m_Camera;
+		#else
+		AxisCamera *m_Camera;
+		#endif
+		
 		double m_ArmMaxSpeed;
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
