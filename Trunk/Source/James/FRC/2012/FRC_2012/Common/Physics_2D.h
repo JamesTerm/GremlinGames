@@ -23,7 +23,8 @@ class PhysicsEntity_2D
 
 		///This simply returns a min operation of speed/time and the maximum speed available to stop within the given distance
 		///This is ideal to be used with GetTorqueFromVelocity
-		double GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s, double matchVel);
+		/// \param normalize will normalize the distance between -pi - pi
+		double GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s, double matchVel,bool normalize=true);
 
 		inline Vec2D GetVelocityFromCollision(Vec2D ThisVelocityToUse,double otherEntityMass,Vec2D otherEntityVelocity);
 		///This simply returns a min operation of speed/time and the maximum speed available to stop within the given distance
