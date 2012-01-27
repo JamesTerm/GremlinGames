@@ -1,35 +1,20 @@
 #pragma once
 
-///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
-class Robot_Control_Interface
+class FRC_2011_Control_Interface :	public Tank_Drive_Control_Interface,
+									public Robot_Control_Interface,
+									public Arm_Control_Interface
 {
-	public:
-		//This is primarily used for updates to dashboard and driver station during a test build
-		virtual void TimeChange(double dTime_s)=0;
-		//We need to pass the properties to the Robot Control to be able to make proper conversions.
-		//The client code may cast the properties to obtain the specific data 
-		virtual void Initialize(const Entity_Properties *props)=0;
-		virtual void Reset_Arm()=0; 
-		virtual void Reset_Encoders()=0;
-
-		//Encoders populate this with current velocity of motors
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
-		/// \param The index is ordinal enumerated to specific robot's interpretation
-		/// \see subclass for enumeration specifics
-		virtual void UpdateVoltage(size_t index,double Voltage)=0;
-		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
-		///This is in radians of the arm's gear ratio
-		///TODO break this apart to reading pure analog values and have the potentiometer conversion happen within the robot
-		virtual double GetArmCurrentPosition()=0;
-		/// \param The index is ordinal enumerated to specific robot's interpretation
-		/// \see subclass for enumeration specifics
-		virtual void CloseSolenoid(size_t index,bool Close)=0;  //true=close false=open
+public:
+	//This is primarily used for updates to dashboard and driver station during a test build
+	virtual void Robot_Control_TimeChange(double dTime_s)=0;
+	//We need to pass the properties to the Robot Control to be able to make proper conversions.
+	//The client code may cast the properties to obtain the specific data 
+	virtual void Initialize(const Entity_Properties *props)=0;
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class FRC_2011_Robot : public Robot_Tank
+class FRC_2011_Robot : public Tank_Robot
 {
 	public:
 		enum SolenoidDevices
@@ -46,18 +31,14 @@ class FRC_2011_Robot : public Robot_Tank
 
 		typedef Framework::Base::Vec2d Vec2D;
 		//typedef osg::Vec2d Vec2D;
-		FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders=false);
+		FRC_2011_Robot(const char EntityName[],FRC_2011_Control_Interface *robot_control,bool UseEncoders=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
-		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
-		static double RPS_To_LinearVelocity(double RPS);
 		void CloseDeploymentDoor(bool Close);
 
-		//TODO for now it it does not matter, but the ship 1d does not normalize to 2pi yet, this class would take advantage of this
-		//but fortunately there currently is no use for keep track of the rotation, this however will matter if we have things which
-		//rotate within the game
+		//TODO test roller using is angular to be true
 		class Robot_Claw : public Ship_1D
 		{
 			public:
@@ -82,7 +63,7 @@ class FRC_2011_Robot : public Robot_Tank
 		class Robot_Arm : public Ship_1D
 		{
 			public:
-				Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control);
+				Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex=0);
 				IEvent::HandlerList ehl;
 				//The parent needs to call initialize
 				virtual void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
@@ -109,7 +90,8 @@ class FRC_2011_Robot : public Robot_Tank
 				void SetPos3feet();
 				void SetPos6feet();
 				void SetPos9feet();
-				Robot_Control_Interface * const m_RobotControl;
+				Arm_Control_Interface * const m_RobotControl;
+				const size_t m_InstanceIndex;
 				PIDController2 m_PIDController;
 				double m_LastPosition;  //used for calibration
 				double m_CalibratedScaler; //used for calibration
@@ -123,26 +105,17 @@ class FRC_2011_Robot : public Robot_Tank
 		Robot_Arm &GetArm() {return m_Arm;}
 		Robot_Claw &GetClaw() {return m_Claw;}
 	protected:
-		//This method is the perfect moment to obtain the new velocities and apply to the interface
-		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
-		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
+		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 	private:
-		typedef  Robot_Tank __super;
-		Robot_Control_Interface * const m_RobotControl;
+		typedef  Tank_Robot __super;
+		FRC_2011_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		Robot_Claw m_Claw;
-		PIDController2 m_PIDController_Left,m_PIDController_Right;
-		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
-		bool m_UsingEncoders;
 		bool m_VoltageOverride;  //when true will kill voltage
-		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
-		Vec2D m_EncoderGlobalVelocity;  //cache for later use
-		double m_EncoderHeading;
 };
 
-class FRC_2011_Robot_Properties : public Ship_Properties
+class FRC_2011_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
 		FRC_2011_Robot_Properties();

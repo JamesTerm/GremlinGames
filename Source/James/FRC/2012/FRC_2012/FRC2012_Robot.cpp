@@ -13,12 +13,15 @@
 #include "Common/Ship_1D.h"
 #include "Common/Ship.h"
 #include "Common/AI_Base_Controller.h"
-#include "Common/Robot_Tank.h"
+#include "Common/Vehicle_Drive.h"
+#include "Common/PIDController.h"
+#include "Common/Tank_Robot.h"
+#include "Common/Robot_Control_Interface.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
-#include "FRC2011_Robot.h"
+#include "FRC2012_Robot.h"
 
 #undef __UseTestKitArmRatios__
 const bool c_UsingArmLimits=true;
@@ -129,8 +132,8 @@ void FRC_2011_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
  /*													FRC_2011_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
 
-FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Interface *robot_control) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),
+FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex) : 
+	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
 	m_PIDController(1.0,1.0/8.0,0.0),
@@ -144,7 +147,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Robot_Control_Inter
 
 void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
 {
-	m_LastPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+	m_LastPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 	__super::Initialize(em,props);
 	const Ship_1D_Properties *ship=static_cast<const Ship_1D_Properties *>(props);
 	assert(ship);
@@ -191,7 +194,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		if (m_LastTime!=0.0)
 		{
 			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
-			double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+			double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
@@ -213,7 +216,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	else
 	{
 		//Test potentiometer readings without applying to current position (disabled by default)
-		m_RobotControl->GetArmCurrentPosition();
+		m_RobotControl->GetArmCurrentPosition(m_InstanceIndex);
 		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
 		//MAX_SPEED=m_CalibratedScaler=1.0;
 	}
@@ -268,7 +271,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	}
 	#endif
 
-	m_RobotControl->UpdateVoltage(eArm,Voltage);
+	m_RobotControl->UpdateArmVoltage(m_InstanceIndex,Voltage);
 	//Show current height (only in AI Tester)
 	#if 0
 	double Pos_m=GetPos_m();
@@ -294,8 +297,8 @@ void FRC_2011_Robot::Robot_Arm::ResetPos()
 	if (m_UsingPotentiometer)
 	{
 		m_PIDController.Reset();
-		m_RobotControl->Reset_Arm();
-		double NewPosition=m_RobotControl->GetArmCurrentPosition()*c_ArmToGearRatio;
+		m_RobotControl->Reset_Arm(m_InstanceIndex);
+		double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 		Stop();
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
@@ -381,7 +384,7 @@ void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 }
 void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 {
-	m_RobotControl->CloseSolenoid(eRist,Close);
+	m_RobotControl->CloseRist(Close);
 }
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -416,15 +419,9 @@ void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
   /***********************************************************************************************************************************/
  /*															FRC_2011_Robot															*/
 /***********************************************************************************************************************************/
-FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],Robot_Control_Interface *robot_control,bool UseEncoders) : 
-	Robot_Tank(EntityName), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control),
-	//m_PIDController_Left(1.0,1.0,0.25),	m_PIDController_Right(1.0,1.0,0.25),
-	m_PIDController_Left(1.0,1.0,0.0),	m_PIDController_Right(1.0,1.0,0.0),
-	//m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),
-	m_UsingEncoders(UseEncoders),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
+FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],FRC_2011_Control_Interface *robot_control,bool UseEncoders) : 
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control)
 {
-	//m_UsingEncoders=true; //testing
-	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
 }
 
 void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
@@ -436,146 +433,23 @@ void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Prop
 	const FRC_2011_Robot_Properties *RobotProps=static_cast<const FRC_2011_Robot_Properties *>(props);
 	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
 	m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
-
-	const double OutputRange=MAX_SPEED*0.875;  //create a small range
-	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
-	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Left.SetOutputRange(-InputRange,OutputRange);
-	m_PIDController_Left.Enable();
-	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
-	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
-	m_PIDController_Right.Enable();
-	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 }
 void FRC_2011_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Arm.ResetPos();
 	m_Claw.ResetPos();
-	m_RobotControl->Reset_Encoders();
-	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
-	//ensure teleop has these set properly
-	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
-	m_UseDeadZoneSkip=true;
 }
 
 void FRC_2011_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
-	m_RobotControl->TimeChange(dTime_s);
-	if (m_UsingEncoders)
-	{
-		double Encoder_LeftVelocity,Encoder_RightVelocity;
-		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-
-		double LeftVelocity=GetLeftVelocity();
-		double RightVelocity=GetRightVelocity();
-
-		double control_left=0.0,control_right=0.0;
-		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
-		//allow the scaler to normalize if it need to start up again.
-		if (((LeftVelocity * Encoder_LeftVelocity) > 0.0) || IsZero(Encoder_LeftVelocity) )
-		{
-			control_left=-m_PIDController_Left(fabs(LeftVelocity),fabs(Encoder_LeftVelocity),dTime_s);
-			m_CalibratedScaler_Left=MAX_SPEED+control_left;
-		}
-		if (((RightVelocity * Encoder_RightVelocity) > 0.0) || IsZero(Encoder_RightVelocity) )
-		{
-			control_right=-m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
-			m_CalibratedScaler_Right=MAX_SPEED+control_right;
-		}
-
-		//Adjust the engaged max speed to avoid the PID from overflow lockup
-		//ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
-		//DOUT5("p=%f e=%f d=%f cs=%f",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
-		//printf("\rcl=%f cr=%f, csl=%f csr=%f                ",control_left,control_right,m_CalibratedScaler_Left,m_CalibratedScaler_Right);
-		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,Encoder_LeftVelocity,RightVelocity,Encoder_RightVelocity);
-		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
-		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
-		
-		#if 0
-		if (RightVelocity!=0.0)
-		{
-			double PosY=GetPos_m()[1];
-			
-			//if (!m_VoltageOverride)
-			//	printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
-			//else
-			//	printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
-			
-			if (!m_VoltageOverride)
-				printf("y=%f el=%f er=%f dl=%f dr=%f cs=%f\n",PosY,Encoder_LeftVelocity,Encoder_RightVelocity,fabs(LeftVelocity)-fabs(Encoder_LeftVelocity),fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
-			else
-				printf("y=%f VO el=%f er=%f dl=%f dr=%f cs=%f\n",PosY,Encoder_LeftVelocity,Encoder_RightVelocity,fabs(LeftVelocity)-fabs(Encoder_LeftVelocity),fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
-
-		}
-		#endif
-
-		//For most cases we do not need the dead zone skip
-		m_UseDeadZoneSkip=false;
-		
-		//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
-		//also only apply for lower speeds to avoid choppyness during the cruising phase
-		if ((RightVelocity*LeftVelocity > 0.0) && (fabs(Encoder_RightVelocity)<0.5))
-		{
-			//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
-			m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
-		}
-		
-		#if 1
-		//Update the physics with the actual velocity
-		Vec2d LocalVelocity;
-		double AngularVelocity;
-		InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
-		//TODO add gyro's yaw readings for Angular velocity here
-		//Store the value here to be picked up in GetOldVelocity()
-		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
-		m_EncoderHeading=AngularVelocity;
-		//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
-		//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
-		#endif
-	}
-	else
-	{
-		//Display encoders without applying calibration
-		double Encoder_LeftVelocity,Encoder_RightVelocity;
-		m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-	}
+	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 	Entity1D &arm_entity=m_Arm;  //This gets around keeping time change protected in derived classes
 	arm_entity.TimeChange(dTime_s);
 	Entity1D &claw_entity=m_Claw;  //This gets around keeping time change protected in derived classes
 	claw_entity.TimeChange(dTime_s);
-}
-
-bool FRC_2011_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
-{
-	bool ret=false;
-	if (m_UsingEncoders)
-	{
-		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
-		//double computedAngularVelocity=m_Physics.GetAngularVelocity();
-		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
-		//m_Physics.SetAngularVelocity(m_EncoderHeading);
-		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
-		//We must set this back so that the PID can compute the entire error
-		m_Physics.SetLinearVelocity(computedVelocity);
-		//m_Physics.SetAngularVelocity(computedAngularVelocity);
-		ret=true;
-	}
-	return ret;
-}
-
-double FRC_2011_Robot::RPS_To_LinearVelocity(double RPS)
-{
-	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
-}
-
-void FRC_2011_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
-{
-	m_VoltageOverride=false;
-	if ((m_UsingEncoders)&&(VelocityToUse==0.0)&&(m_rotDisplacement_rad==0.0))
-			m_VoltageOverride=true;
 }
 
 //TODO recalibrate the dead zones
@@ -590,63 +464,18 @@ const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
 const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
 const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
 
-void FRC_2011_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+void FRC_2011_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 {
-	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
-	double LeftVoltage,RightVoltage;
-	if (m_VoltageOverride)
-		LeftVoltage=RightVoltage=0;
-	else
-	{
-		{
-			#if 0
-			double Encoder_LeftVelocity,Encoder_RightVelocity;
-			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
-			#endif
-			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
-			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
+	//Eliminate the deadzone
+	if (LeftVoltage>0.0)
+		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
+	else if (LeftVoltage < 0.0)
+		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
 
-			//In teleop always square as it feels right and gives more control to the user
-			//for autonomous (i.e. using encoders) the natural distribution on acceleration will give the best results
-			//we can use the m_UseDeadZoneSkip to determine if we are accelerating, more important we must square on
-			//deceleration to improve our chance to not overshoot!
-			if ((!m_UsingEncoders) || (!m_UseDeadZoneSkip))
-			{
-				LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
-				//Clip the voltage as it can become really high values when squaring
-				if (LeftVoltage>1.0)
-					LeftVoltage=1.0;
-				if (RightVoltage>1.0)
-					RightVoltage=1.0;
-				//restore the sign
-				if (LeftVelocity<0)
-					LeftVoltage=-LeftVoltage;
-				if (RightVelocity<0)
-					RightVoltage=-RightVoltage;
-			}
-		}
-		// m_UseDeadZoneSkip,  When true this is ideal for telop, and for acceleration in autonomous as it always starts movement
-		// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
-		// linear distribution of voltage will help avoid over-compensation, especially as it gets closer to stopping
-		if (m_UseDeadZoneSkip)
-		{
-			//Eliminate the deadzone
-			if (LeftVoltage>0.0)
-				LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
-			else if (LeftVoltage < 0.0)
-				LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
-		
-			if (RightVoltage>0.0)
-				RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
-			else if (RightVoltage < 0.0)
-				RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
-		}
-	}
-	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
-	//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
-	m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
+	if (RightVoltage>0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
+	else if (RightVoltage < 0.0)
+		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
 }
 
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
@@ -693,10 +522,18 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	28,   //Max Speed (rounded as we need not have precision)
 	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eRobotClaw,
+	Ship_1D_Properties::eSimpleMotor,
 	false	//No limit ever!
 	)
 {
+	Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
+
+	//Late assign this to override the initial default
+	props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+	props.WheelDiameter=c_WheelDiameter;
+	props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
+	props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
+	m_TankRobotProps=props;
 }
   /***********************************************************************************************************************************/
  /*														FRC_2011_UI_Controller														*/

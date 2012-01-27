@@ -23,13 +23,16 @@
 #include "Common/Goal.h"
 #include "Common/Ship_1D.h"
 #include "Common/Ship.h"
-#include "Common/Robot_Tank.h"
+#include "Common/Vehicle_Drive.h"
+#include "Common/PIDController.h"
+#include "Common/Tank_Robot.h"
 #include "Common/AI_Base_Controller.h"
+#include "Common/Robot_Control_Interface.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
-#include "FRC2011_Robot.h"
+#include "FRC2012_Robot.h"
 #include "InOut_Interface.h"
 
 using namespace Framework::Base;
@@ -93,10 +96,11 @@ Driver_Station_Joystick::~Driver_Station_Joystick()
 }
 
   /***********************************************************************************************************************************/
- /*															Robot_Control															*/
+ /*														Tank_Robot_Control															*/
 /***********************************************************************************************************************************/
 
-void Robot_Control::SetSafety(bool UseSafety)
+
+void Tank_Robot_Control::SetSafety(bool UseSafety)
 {
 	if (UseSafety)
 	{
@@ -108,81 +112,53 @@ void Robot_Control::SetSafety(bool UseSafety)
 		m_RobotDrive.SetSafetyEnabled(false);
 }
 
-
-void Robot_Control::ResetPos()
-{
-	m_Compress.Stop();
-	//Allow driver station to control if they want to run the compressor
-	if (DriverStation::GetInstance()->GetDigitalIn(7))
-	{
-		printf("RobotControl reset compressor\n");
-		m_Compress.Start();
-	}
-}
-
-Robot_Control::Robot_Control(bool UseSafety) :
+Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) :
 	m_1(1),m_2(2),m_3(3),m_4(4),
 	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
-	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
-	m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
-	m_LeftEncoder(3,4),m_RightEncoder(1,2),
-	m_Potentiometer(1),m_Camera(NULL)
+	m_LeftEncoder(3,4),m_RightEncoder(1,2)
 {
-	ResetPos();
+	//ResetPos();  may need this later
 	SetSafety(UseSafety);
 	const double EncoderPulseRate=(1.0/360.0);
 	m_LeftEncoder.SetDistancePerPulse(EncoderPulseRate),m_RightEncoder.SetDistancePerPulse(EncoderPulseRate);
 	m_LeftEncoder.Start(),m_RightEncoder.Start();
-	//Seems like it doesn't matter how long I wait I'll get the exception, this is probably that fix they were talking about
-	//fortunately it doesn't effect any functionality
-	//Wait(10.000);
-	m_Camera=&AxisCamera::GetInstance();
 }
 
-Robot_Control::~Robot_Control() 
+Tank_Robot_Control::~Tank_Robot_Control() 
 {
 	m_LeftEncoder.Stop(),m_RightEncoder.Stop();  //TODO Move for autonomous mode only
 	m_RobotDrive.SetSafetyEnabled(false);
-	m_Compress.Stop();
-	m_Camera=NULL;  //We don't own this, but I do wish to treat it like we do
 }
 
-void Robot_Control::Reset_Arm()
-{
-	m_KalFilter_Arm.Reset();
-}
-
-void Robot_Control::Reset_Encoders()
+void Tank_Robot_Control::Reset_Encoders()
 {
 	m_KalFilter_EncodeLeft.Reset(),m_KalFilter_EncodeRight.Reset();	
 }
 
-void Robot_Control::TimeChange(double dTime_s)
+void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 {
-	#ifdef __ShowLCD__
-	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	lcd->UpdateLCD();
-	#endif
-}
-
-void Robot_Control::Initialize(const Entity_Properties *props)
-{
-	const FRC_2011_Robot_Properties *robot_props=static_cast<const FRC_2011_Robot_Properties *>(props);
+	const Tank_Robot_Properties *robot_props=static_cast<const Tank_Robot_Properties *>(props);
 	assert(robot_props);
 	m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
-	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+	//This will copy all the props
+	m_TankRobotProps=robot_props->GetTankRobotProps();
 }
 
-void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
+double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
+{
+	return RPS * m_TankRobotProps.MotorToWheelGearRatio * M_PI * m_TankRobotProps.WheelDiameter; 
+}
+
+void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
 	double LeftRate=m_LeftEncoder.GetRate();
 	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
 	double RightRate=m_RightEncoder.GetRate();
 	//RightRate=m_KalFilter_EncodeRight(RightRate);
-	LeftVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(LeftRate);
-	RightVelocity=FRC_2011_Robot::RPS_To_LinearVelocity(RightRate);
+	LeftVelocity=RPS_To_LinearVelocity(LeftRate);
+	RightVelocity=RPS_To_LinearVelocity(RightRate);
 	#ifdef __EncoderHack__
 	LeftVelocity=RightVelocity;  //Unfortunately the left encoder is not working remove once 
 	#endif
@@ -194,7 +170,7 @@ void Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVeloc
 }
 
 //This is kept simple and straight forward, as it should be generic enough to work with multiple robots
-void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
+void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
 {
 	#if 0
 	float right=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
@@ -212,11 +188,67 @@ void Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltag
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVoltage),(float)(RightVoltage));
 }
 
+  /***********************************************************************************************************************************/
+ /*														FRC_2011_Robot_Control														*/
+/***********************************************************************************************************************************/
+
+void FRC_2011_Robot_Control::ResetPos()
+{
+	m_Compress.Stop();
+	//Allow driver station to control if they want to run the compressor
+	if (DriverStation::GetInstance()->GetDigitalIn(7))
+	{
+		printf("RobotControl reset compressor\n");
+		m_Compress.Start();
+	}
+}
+
+FRC_2011_Robot_Control::FRC_2011_Robot_Control(bool UseSafety) :
+	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
+	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
+	m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
+	m_Potentiometer(1),m_Camera(NULL)
+{
+	ResetPos();
+	//Seems like it doesn't matter how long I wait I'll get the exception, this is probably that fix they were talking about
+	//fortunately it doesn't effect any functionality
+	//Wait(10.000);
+	m_Camera=&AxisCamera::GetInstance();
+}
+
+FRC_2011_Robot_Control::~FRC_2011_Robot_Control() 
+{
+	m_Compress.Stop();
+	m_Camera=NULL;  //We don't own this, but I do wish to treat it like we do
+}
+
+void FRC_2011_Robot_Control::Reset_Arm(size_t index)
+{
+	m_KalFilter_Arm.Reset();
+}
+
+
+void FRC_2011_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+{
+	#ifdef __ShowLCD__
+	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+	lcd->UpdateLCD();
+	#endif
+}
+
+void FRC_2011_Robot_Control::Initialize(const Entity_Properties *props)
+{
+	const FRC_2011_Robot_Properties *robot_props=static_cast<const FRC_2011_Robot_Properties *>(props);
+	assert(robot_props);
+	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+}
+
+
 //const double c_Arm_DeadZone=0.150;  //was 0.085 for cut off
 const double c_Arm_DeadZone=0.085;  //This has better results
 const double c_Arm_Range=1.0-c_Arm_DeadZone;
 
-double Robot_Control::GetArmCurrentPosition()
+double FRC_2011_Robot_Control::GetArmCurrentPosition(size_t index)
 {	
 	double raw_value = (double)m_Potentiometer.GetAverageValue();
 	//raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
@@ -234,13 +266,7 @@ double Robot_Control::GetArmCurrentPosition()
 }
 
 
-
-
-  /***********************************************************************************************************************************/
- /*														Robot_Control_2011															*/
-/***********************************************************************************************************************************/
-
-void Robot_Control_2011::UpdateVoltage(size_t index,double Voltage)
+void FRC_2011_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
@@ -271,7 +297,7 @@ void Robot_Control_2011::UpdateVoltage(size_t index,double Voltage)
 }
 
 
-void Robot_Control_2011::CloseSolenoid(size_t index,bool Close)
+void FRC_2011_Robot_Control::CloseSolenoid(size_t index,bool Close)
 {
 	//virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
 	//virtual void ReleaseLazySusan(bool Release) {m_LazySusan.SetAngle(Release?Servo::GetMaxAngle():Servo::GetMinAngle());}
