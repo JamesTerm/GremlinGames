@@ -2,8 +2,8 @@
 class Vehicle_Drive_Common
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
+		typedef Framework::Base::Vec2d Vec2D;
+		//typedef osg::Vec2d Vec2D;
 
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)=0;
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s)=0;
@@ -57,8 +57,8 @@ class Swerve_Drive :	public Ship_Tester,
 						public Vehicle_Drive_Common
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
+		typedef Framework::Base::Vec2d Vec2D;
+		//typedef osg::Vec2d Vec2D;
 		Swerve_Drive(const char EntityName[]);
 		struct SwerveVelocities
 		{

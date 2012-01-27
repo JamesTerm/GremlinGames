@@ -110,7 +110,7 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	//const double STR = (LeftLinearVelocity*sin(0.0)+ RightLinearVelocity*sin(0.0))/2.0;
 	const double STR = 0.0;
 
-	const double HP=PI/2;
+	//const double HP=PI/2;
 	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
 	//Here we go it is finally working I just needed to take out the last division
