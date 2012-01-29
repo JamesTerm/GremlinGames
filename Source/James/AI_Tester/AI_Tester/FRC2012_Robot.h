@@ -89,7 +89,7 @@ class FRC_2012_Robot : public Tank_Robot
 				FRC_2012_Robot * const m_pParent;
 				double GetFireDirection() const;
 				//typedef Ship_1D __super;
-				Rotary_Angular m_MainConveyor,m_FireConveyor;
+				Rotary_Angular m_MiddleConveyor,m_FireConveyor;
 				bool m_Grip,m_Squirt,m_Fire;
 			public:
 				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
@@ -103,7 +103,7 @@ class FRC_2012_Robot : public Tank_Robot
 				void Grip(bool on) {m_Grip=on;}
 				void Squirt(bool on) {m_Squirt=on;}
 
-				void ResetPos() {m_MainConveyor.ResetPos(),m_FireConveyor.ResetPos();}
+				void ResetPos() {m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();}
 				//Intercept the time change to send out voltage
 				void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
@@ -180,10 +180,10 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		Potentiometer_Tester2 m_Turret_Pot,m_Pitch_Pot; //simulate the potentiometer and motor
-		Encoder_Simulator m_PowerWheel_Enc,m_MainConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
+		Encoder_Simulator m_PowerWheel_Enc,m_MiddleConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
-		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_MainConveyorVoltage,m_FireConveyorVoltage;
+		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 };
 
 class FRC_2012_Turret_UI
@@ -300,6 +300,6 @@ class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
 		Tank_Robot_UI m_TankUI;
 		FRC_2012_Turret_UI m_TurretUI;
 		FRC_2012_Power_Wheel_UI m_PowerWheelUI;
-		FRC_2012_Main_Conveyor_UI m_MainConveyor;
+		FRC_2012_Main_Conveyor_UI m_MiddleConveyor;
 		FRC_2012_Fire_Conveyor_UI m_FireConveyor;
 };

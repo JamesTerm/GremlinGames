@@ -13,7 +13,7 @@ class Entity1D_Properties
 	private:
 		//Stuff needed for physics
 		double m_Mass;
-		double m_Dimension; //Dimension- Length
+		double m_Dimension; //Dimension- Length for linear and diameter for angular
 		bool m_IsAngular;
 };
 

@@ -146,7 +146,7 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 /***********************************************************************************************************************************/
 
 FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
-	m_MainConveyor("MainConveyor",robot_control,eMainConveyor),m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
+	m_MiddleConveyor("MainConveyor",robot_control,eMainConveyor),m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
 		m_Grip(false),m_Squirt(false),m_Fire(false)
 {
 }
@@ -154,13 +154,14 @@ FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,R
 void FRC_2012_Robot::BallConveyorSystem::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
 {
 	//These share the same props and fire is scaled from this level
-	m_MainConveyor.Initialize(em,props);
+	m_MiddleConveyor.Initialize(em,props);
 	m_FireConveyor.Initialize(em,props);
 }
 
 double FRC_2012_Robot::BallConveyorSystem::GetFireDirection() const
 {
-	double FireScaler=m_Fire|m_Squirt?-1.0:1.0;  
+	//Basically never go in the opposite direction of grip and squirt, unless the user is firing while ejecting balls (not sure why he'd want to)
+	double FireScaler=(m_Fire&m_Squirt)?-1.0:1.0;  
 	return FireScaler;
 }
 
@@ -173,23 +174,25 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 
 	double FireScaler=GetFireDirection();
 	//This assumes the motors are in the same orientation: 
-	double ConveyorVelocity=((m_Grip ^ m_Squirt) | Fire)?((m_Grip|Fire)?m_MainConveyor.GetACCEL():-m_MainConveyor.GetBRAKE()):0.0;
-	if (fabs(m_MainConveyor.GetPhysics().GetVelocity())< m_MainConveyor.GetMaxSpeed() * 0.80)
-		m_MainConveyor.SetCurrentLinearAcceleration(ConveyorVelocity);
+	double ConveyorVelocity=((m_Grip ^ m_Squirt) | Fire)?
+		((m_Squirt)?m_MiddleConveyor.GetACCEL():
+				  -m_MiddleConveyor.GetBRAKE()):0.0;
+	if (fabs(m_MiddleConveyor.GetPhysics().GetVelocity())< m_MiddleConveyor.GetMaxSpeed() * 0.80)
+		m_MiddleConveyor.SetCurrentLinearAcceleration(ConveyorVelocity);
 	m_FireConveyor.SetCurrentLinearAcceleration(ConveyorVelocity * FireScaler);
-	m_MainConveyor.AsEntity1D().TimeChange(dTime_s);
+	m_MiddleConveyor.AsEntity1D().TimeChange(dTime_s);
 	m_FireConveyor.AsEntity1D().TimeChange(dTime_s);
 }
 
 void FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized(double Velocity)
 {
-	m_MainConveyor.SetRequestedVelocity_FromNormalized(Velocity);
+	m_MiddleConveyor.SetRequestedVelocity_FromNormalized(Velocity);
 	m_FireConveyor.SetRequestedVelocity_FromNormalized(Velocity*GetFireDirection());
 }
 
 void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 {
-	GG_Framework::Base::EventMap *em=m_MainConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
+	GG_Framework::Base::EventMap *em=m_MiddleConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
@@ -325,9 +328,9 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			//DOUT3("Arm Voltage=%f",Voltage);
 			break;
 		case FRC_2012_Robot::eMainConveyor:
-			m_MainConveyorVoltage=Voltage;
-			m_MainConveyor_Enc.UpdateEncoderVoltage(Voltage);
-			m_MainConveyor_Enc.TimeChange();
+			m_MiddleConveyorVoltage=Voltage;
+			m_MiddleConveyor_Enc.UpdateEncoderVoltage(Voltage);
+			m_MiddleConveyor_Enc.TimeChange();
 			break;
 		case FRC_2012_Robot::eFireConveyor:
 			m_FireConveyorVoltage=Voltage;
@@ -359,7 +362,7 @@ void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 	m_Turret_Pot.Initialize(&robot_props->GetTurretProps());
 	m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
 	m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
-	m_MainConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
+	m_MiddleConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
 	m_FireConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
 }
 
@@ -368,11 +371,11 @@ void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	m_Turret_Pot.SetTimeDelta(dTime_s);
 	m_Pitch_Pot.SetTimeDelta(dTime_s);
 	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
-	m_MainConveyor_Enc.SetTimeDelta(dTime_s);
+	m_MiddleConveyor_Enc.SetTimeDelta(dTime_s);
 	m_FireConveyor_Enc.SetTimeDelta(dTime_s);
 	//display voltages
 	DOUT2("l=%.2f r=%.2f t=%.2f pi=%.2f pw=%.2f mc=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
-		m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_MainConveyorVoltage,m_FireConveyorVoltage);
+		m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage);
 }
 
 
@@ -399,7 +402,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//DOUT4 ("vel=%f",result);
 			break;
 		case FRC_2012_Robot::eMainConveyor:
-			result=m_MainConveyor_Enc.GetEncoderVelocity();
+			result=m_MiddleConveyor_Enc.GetEncoderVelocity();
 			//DOUT4 ("vel=%f",result);
 			break;
 		case FRC_2012_Robot::eFireConveyor:
@@ -511,7 +514,7 @@ void FRC_2012_Turret_UI::Initialize(Entity2D::EventMap& em, const Turret_Propert
 	if (props)
 		m_props=*props;
 	else
-		m_props.YOffset=2.0;
+		m_props.YOffset=3.0;
 }
 void FRC_2012_Turret_UI::UI_Init(Actor_Text *parent)
 {
@@ -525,16 +528,22 @@ void FRC_2012_Turret_UI::UI_Init(Actor_Text *parent)
 	m_Turret->setFontResolution(10,10);
 	m_Turret->setPosition(position);
 	m_Turret->setAlignment(osgText::Text::CENTER_CENTER);
-	m_Turret->setText(L"\\/\n|\n||\n||\n( )");
+	m_Turret->setText(L"\\/\n|\n( )");
 	m_Turret->setUpdateCallback(m_UIParent);
 }
 void FRC_2012_Turret_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
 {
 	FRC_2012_Control_Interface *turret_access=m_RobotControl;
-	double HeadingToUse=Heading+(-turret_access->GetRotaryCurrentPorV(FRC_2012_Robot::eTurret));
+	double Swivel=(-turret_access->GetRotaryCurrentPorV(FRC_2012_Robot::eTurret));
+	double HeadingToUse=Heading+Swivel;
 	const double FS=m_UIParent->GetFontSize();
-	const Vec2d TurretOffset(0,m_props.YOffset);
-	const Vec2d TurretLocalOffset=GlobalToLocal(HeadingToUse ,TurretOffset);
+
+	const double TurretLength=1.0;
+	Vec2d TurretOffset(0,TurretLength);
+	TurretOffset=GlobalToLocal(Swivel ,TurretOffset);
+	TurretOffset[1]+=(m_props.YOffset-TurretLength);
+
+	const Vec2d TurretLocalOffset=GlobalToLocal(Heading ,TurretOffset);
 	const osg::Vec3 TurretPos (parent_pos[0]+( TurretLocalOffset[0]*FS),parent_pos[1]+( TurretLocalOffset[1]*FS),parent_pos[2]);
 
 	//const char *TeamName=m_UIParent->GetEntityProperties_Interface()->GetTeamName();
@@ -636,7 +645,12 @@ void Side_Wheel_UI::AddRotation(double RadiansToAdd)
 
 void FRC_2012_Power_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
 {
-	__super::Initialize(em,props);
+	Wheel_Properties Myprops;
+	Myprops.m_Offset=Vec2d(0.0,2.0);
+	Myprops.m_Color=osg::Vec4(1.0,0.0,0.5,1.0);
+	Myprops.m_TextDisplay=L"|";
+
+	__super::Initialize(em,&Myprops);
 	m_PowerWheelMaxSpeed=m_RobotControl->GetRobotProps().GetPowerWheelProps().GetMaxSpeed();
 }
 
@@ -659,9 +673,9 @@ void FRC_2012_Power_Wheel_UI::TimeChange(double dTime_s)
 void FRC_2012_Main_Conveyor_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
 {
 	Wheel_Properties Myprops;
-	Myprops.m_Offset=Vec2d(-0.75,-1.25);
+	Myprops.m_Offset=Vec2d(0.75,0.0);
 	Myprops.m_Color=osg::Vec4(1.0,1.0,0.5,1.0);
-	Myprops.m_TextDisplay=L"|";
+	Myprops.m_TextDisplay=L"-";
 
 	__super::Initialize(em,&Myprops);
 }
@@ -680,7 +694,7 @@ void FRC_2012_Main_Conveyor_UI::TimeChange(double dTime_s)
 void FRC_2012_Fire_Conveyor_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
 {
 	Wheel_Properties Myprops;
-	Myprops.m_Offset=Vec2d(0.75,-1.35);
+	Myprops.m_Offset=Vec2d(0.75,1.0);
 	Myprops.m_Color=osg::Vec4(0.0,1.0,0.5,1.0);
 	Myprops.m_TextDisplay=L"-";
 
@@ -699,7 +713,7 @@ void FRC_2012_Fire_Conveyor_UI::TimeChange(double dTime_s)
 /***************************************************************************************************************/
 
 FRC_2012_Robot_UI::FRC_2012_Robot_UI(const char EntityName[]) : FRC_2012_Robot(EntityName,this),FRC_2012_Robot_Control(),
-		m_TankUI(this),m_TurretUI(this),m_PowerWheelUI(this),m_MainConveyor(this),m_FireConveyor(this)
+		m_TankUI(this),m_TurretUI(this),m_PowerWheelUI(this),m_MiddleConveyor(this),m_FireConveyor(this)
 {
 }
 
@@ -708,7 +722,7 @@ void FRC_2012_Robot_UI::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_TankUI.TimeChange(dTime_s);
 	m_PowerWheelUI.TimeChange(dTime_s);
-	m_MainConveyor.TimeChange(dTime_s);
+	m_MiddleConveyor.TimeChange(dTime_s);
 	m_FireConveyor.TimeChange(dTime_s);
 }
 void FRC_2012_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -717,7 +731,7 @@ void FRC_2012_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properti
 	m_TankUI.Initialize(em,props);
 	m_TurretUI.Initialize(em);
 	m_PowerWheelUI.Initialize(em);
-	m_MainConveyor.Initialize(em);
+	m_MiddleConveyor.Initialize(em);
 	m_FireConveyor.Initialize(em);
 }
 
@@ -726,7 +740,7 @@ void FRC_2012_Robot_UI::UI_Init(Actor_Text *parent)
 	m_TankUI.UI_Init(parent);
 	m_TurretUI.UI_Init(parent);
 	m_PowerWheelUI.UI_Init(parent);
-	m_MainConveyor.UI_Init(parent);
+	m_MiddleConveyor.UI_Init(parent);
 	m_FireConveyor.UI_Init(parent);
 }
 void FRC_2012_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
@@ -734,7 +748,7 @@ void FRC_2012_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,
 	m_TankUI.custom_update(nv,draw,parent_pos);
 	m_TurretUI.update(nv,draw,parent_pos,-GetAtt_r());
 	m_PowerWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
-	m_MainConveyor.update(nv,draw,parent_pos,-GetAtt_r());
+	m_MiddleConveyor.update(nv,draw,parent_pos,-GetAtt_r());
 	m_FireConveyor.update(nv,draw,parent_pos,-GetAtt_r());
 }
 void FRC_2012_Robot_UI::Text_SizeToUse(double SizeToUse) 
@@ -742,7 +756,7 @@ void FRC_2012_Robot_UI::Text_SizeToUse(double SizeToUse)
 	m_TankUI.Text_SizeToUse(SizeToUse);
 	m_TurretUI.Text_SizeToUse(SizeToUse);
 	m_PowerWheelUI.Text_SizeToUse(SizeToUse);
-	m_MainConveyor.Text_SizeToUse(SizeToUse);
+	m_MiddleConveyor.Text_SizeToUse(SizeToUse);
 	m_FireConveyor.Text_SizeToUse(SizeToUse);
 }
 void FRC_2012_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
@@ -750,6 +764,6 @@ void FRC_2012_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 	m_TankUI.UpdateScene(geode,AddOrRemove);
 	m_TurretUI.UpdateScene(geode,AddOrRemove);
 	m_PowerWheelUI.UpdateScene(geode,AddOrRemove);
-	m_MainConveyor.UpdateScene(geode,AddOrRemove);
+	m_MiddleConveyor.UpdateScene(geode,AddOrRemove);
 	m_FireConveyor.UpdateScene(geode,AddOrRemove);
 }
