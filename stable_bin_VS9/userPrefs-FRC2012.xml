@@ -28,9 +28,12 @@
 		<Arm_Claw type="keyboard" key="r" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
 		<Arm_SetPos0feet type="keyboard" key="q" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
 		<Arm_SetPos6feet type="keyboard" key="e" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Ball_Fire type="keyboard" key=";" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<Ball_Grip type="keyboard" key="k" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<Ball_Squirt type="keyboard" key="l" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
 		<Brake type="keyboard" key="s" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
 		<ESC type="keyboard" key="ESCAPE" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
-		<PowerWheels_IsRunning type="keyboard" key="p" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<PowerWheels_IsRunning type="keyboard" key="j" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
 		<RecordFrames type="keyboard" key="m" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
 		<RequestAfterburner type="keyboard" key="w" alt="0" ctrl="0" shift="0" dbl="1" onOff="1"/>
 		<ResetTB type="keyboard" key=" " alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
