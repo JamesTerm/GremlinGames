@@ -125,7 +125,7 @@ class FRC_2011_Robot_Control : public FRC_2011_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual void CloseSolenoid(size_t index,bool Close);
-		virtual void OpenSolenoid(size_t index,bool Close) {CloseSolenoid(index,!Close);}
+		virtual void OpenSolenoid(size_t index,bool Open) {CloseSolenoid(index,!Open);}
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}

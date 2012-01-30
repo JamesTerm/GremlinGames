@@ -160,38 +160,40 @@ void FRC_2012_Robot::BallConveyorSystem::Initialize(GG_Framework::Base::EventMap
 	m_FireConveyor.Initialize(em,props);
 }
 
-double FRC_2012_Robot::BallConveyorSystem::GetFireDirection() const
-{
-	//Basically never go in the opposite direction of grip and squirt, unless the user is firing while ejecting balls (not sure why he'd want to)
-	double FireScaler=(m_Fire&m_Squirt)?-1.0:1.0;  
-	return FireScaler;
-}
-
 void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 {
+	const bool LowerSensor=m_pParent->m_RobotControl->GetBoolSensorState(eLowerConveyor_Sensor);
+	const bool MiddleSensor=m_pParent->m_RobotControl->GetBoolSensorState(eMiddleConveyor_Sensor);
+	const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
 	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
 	const bool PowerWheelReachedTolerance=fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance;
 	//Only fire when the wheel has reached its aiming speed
 	bool Fire=m_Fire && PowerWheelReachedTolerance;
 
-	double FireScaler=GetFireDirection();
 	//This assumes the motors are in the same orientation: 
-	double ConveyorVelocity=((m_Grip ^ m_Squirt) | Fire)?
-		((m_Squirt)?m_MiddleConveyor.GetACCEL():
-				  -m_MiddleConveyor.GetBRAKE()):0.0;
-	m_LowerConveyor.SetCurrentLinearAcceleration(ConveyorVelocity);
-	m_MiddleConveyor.SetCurrentLinearAcceleration(ConveyorVelocity);
-	m_FireConveyor.SetCurrentLinearAcceleration(ConveyorVelocity * FireScaler);
+	double LowerAcceleration=((m_Grip | (LowerSensor & (!MiddleSensor)))^ m_Squirt) | Fire ?
+		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	m_LowerConveyor.SetCurrentLinearAcceleration(LowerAcceleration);
+
+	double MiddleAcceleration= (((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) ^ m_Squirt) | Fire  ?
+		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	m_MiddleConveyor.SetCurrentLinearAcceleration(MiddleAcceleration);
+
+	double FireAcceleration= ((MiddleSensor & (!FireSensor)) ^ m_Squirt) | Fire  ?
+		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
+
 	m_LowerConveyor.AsEntity1D().TimeChange(dTime_s);
 	m_MiddleConveyor.AsEntity1D().TimeChange(dTime_s);
 	m_FireConveyor.AsEntity1D().TimeChange(dTime_s);
 }
 
+//This is the manual override, but probably not used if we use spike as it would be wasteful to have a analog control for this
 void FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized(double Velocity)
 {
 	m_LowerConveyor.SetRequestedVelocity_FromNormalized(Velocity);
 	m_MiddleConveyor.SetRequestedVelocity_FromNormalized(Velocity);
-	m_FireConveyor.SetRequestedVelocity_FromNormalized(Velocity*GetFireDirection());
+	m_FireConveyor.SetRequestedVelocity_FromNormalized(Velocity);
 }
 
 void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
@@ -199,6 +201,7 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 	GG_Framework::Base::EventMap *em=m_MiddleConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
+		//Ball_SetCurrentVelocity is the manual override
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Ball_Fire"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Fire);
 		em->EventOnOff_Map["Ball_Grip"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Grip);
