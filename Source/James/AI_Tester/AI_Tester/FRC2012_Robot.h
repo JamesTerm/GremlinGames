@@ -26,6 +26,13 @@ class FRC_2012_Robot : public Tank_Robot
 			eFireConveyor
 		};
 
+		enum BoolSensorDevices
+		{
+			eLowerConveyor_Sensor,
+			eMiddleConveyor_Sensor,
+			eFireConveyor_Sensor
+		};
+
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 		//TODO change UseEncoders to be passive
@@ -88,7 +95,6 @@ class FRC_2012_Robot : public Tank_Robot
 		{
 			private:
 				FRC_2012_Robot * const m_pParent;
-				double GetFireDirection() const;
 				//typedef Ship_1D __super;
 				Rotary_Angular m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
 				bool m_Grip,m_Squirt,m_Fire;
@@ -158,9 +164,6 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		const FRC_2012_Robot_Properties &GetRobotProps() {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
-		//Solenoid not used
-		virtual void CloseSolenoid(size_t index,bool Close) {}
-		virtual void OpenSolenoid(size_t index,bool Close) {}
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
