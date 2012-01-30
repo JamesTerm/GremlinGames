@@ -171,15 +171,15 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	bool Fire=m_Fire && PowerWheelReachedTolerance;
 
 	//This assumes the motors are in the same orientation: 
-	double LowerAcceleration=((m_Grip | (LowerSensor & (!MiddleSensor)))^ m_Squirt) | Fire ?
+	double LowerAcceleration=((m_Grip & (!LowerSensor)) || (LowerSensor & (!MiddleSensor))) | m_Squirt | Fire ?
 		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_LowerConveyor.SetCurrentLinearAcceleration(LowerAcceleration);
 
-	double MiddleAcceleration= (((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) ^ m_Squirt) | Fire  ?
+	double MiddleAcceleration= ((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) |  m_Squirt | Fire  ?
 		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_MiddleConveyor.SetCurrentLinearAcceleration(MiddleAcceleration);
 
-	double FireAcceleration= ((MiddleSensor & (!FireSensor)) ^ m_Squirt) | Fire  ?
+	double FireAcceleration= (MiddleSensor & (!FireSensor)) | m_Squirt | Fire  ?
 		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
 
@@ -300,6 +300,8 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_PitchRamp.BindAdditionalEventControls(Bind);
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_BallConveyorSystem.BindAdditionalEventControls(Bind);
+	//Note: This is only for AITester
+	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 }
 
   /***********************************************************************************************************************************/
@@ -352,7 +354,28 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
-FRC_2012_Robot_Control::FRC_2012_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_TurretVoltage(0.0),m_PowerWheelVoltage(0.0)
+bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
+{
+	bool ret;
+	switch (index)
+	{
+	case FRC_2012_Robot::eLowerConveyor_Sensor:
+		ret=m_LowerSensor;
+		break;
+	case FRC_2012_Robot::eMiddleConveyor_Sensor:
+		ret=m_MiddleSensor;
+		break;
+	case FRC_2012_Robot::eFireConveyor_Sensor:
+		ret=m_FireSensor;
+		break;
+	default:
+		assert (false);
+	}
+	return ret;
+}
+
+FRC_2012_Robot_Control::FRC_2012_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_TurretVoltage(0.0),m_PowerWheelVoltage(0.0),
+	m_LowerSensor(false),m_MiddleSensor(false),m_FireSensor(false)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 }
@@ -360,6 +383,23 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control() : m_pTankRobotControl(&m_TankRo
 void FRC_2012_Robot_Control::Reset_Rotary(size_t index)
 {
 	m_KalFilter_Arm.Reset();
+}
+
+//This is only for AI Tester
+void FRC_2012_Robot_Control::BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)
+{
+	if (Bind)
+	{
+		em->EventOnOff_Map["Ball_LowerSensor"].Subscribe(ehl, *this, &FRC_2012_Robot_Control::TriggerLower);
+		em->EventOnOff_Map["Ball_MiddleSensor"].Subscribe(ehl, *this, &FRC_2012_Robot_Control::TriggerMiddle);
+		em->EventOnOff_Map["Ball_FireSensor"].Subscribe(ehl, *this, &FRC_2012_Robot_Control::TriggerFire);
+	}
+	else
+	{
+		em->EventOnOff_Map["Ball_LowerSensor"]  .Remove(*this, &FRC_2012_Robot_Control::TriggerLower);
+		em->EventOnOff_Map["Ball_MiddleSensor"]  .Remove(*this, &FRC_2012_Robot_Control::TriggerMiddle);
+		em->EventOnOff_Map["Ball_FireSensor"]  .Remove(*this, &FRC_2012_Robot_Control::TriggerFire);
+	}
 }
 
 void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)

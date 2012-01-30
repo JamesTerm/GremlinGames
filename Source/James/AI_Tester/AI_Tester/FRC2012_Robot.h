@@ -11,6 +11,8 @@ public:
 	//We need to pass the properties to the Robot Control to be able to make proper conversions.
 	//The client code may cast the properties to obtain the specific data 
 	virtual void Initialize(const Entity_Properties *props)=0;
+	//Note: This is only for AI Tester
+	virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)=0;
 };
 
 class FRC_2012_Robot : public Tank_Robot
@@ -164,6 +166,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		const FRC_2012_Robot_Properties &GetRobotProps() {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
+		virtual bool GetBoolSensorState(size_t index);
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
@@ -174,10 +177,16 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		virtual double GetRotaryCurrentPorV(size_t index=0);
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
 
-	protected: //from FRC_2011_Control_Interface
+	protected: //from FRC_2012_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
+		//Note: This is only for AI Tester
+		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+
+		void TriggerLower(bool on) {m_LowerSensor=on;}
+		void TriggerMiddle(bool on) {m_MiddleSensor=on;}
+		void TriggerFire(bool on) {m_FireSensor=on;}
 
 	protected:
 		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
@@ -188,6 +197,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
 		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
+		bool m_LowerSensor,m_MiddleSensor,m_FireSensor;
 };
 
 class FRC_2012_Turret_UI
