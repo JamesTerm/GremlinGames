@@ -375,7 +375,7 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 			//first disable it
 			m_EncoderState=eNoEncoder;
 			//Now to reset stuff
-			printf("Disabling potentiometer\n");
+			printf("Disabling encoder\n");
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
@@ -391,7 +391,7 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 		{
 			m_EncoderState=m_EncoderCachedState;
 			//setup the initial value with the potentiometers value
-			printf("Enabling potentiometer\n");
+			printf("Enabling encoder\n");
 			ResetPos();
 			m_UsingRange=true;
 			m_CalibratedScaler=MAX_SPEED;
