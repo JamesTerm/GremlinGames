@@ -31,6 +31,8 @@ const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 const double PI_2 = 1.57079632679489661923;
 
+namespace Base=Framework::Base;
+
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
@@ -41,7 +43,7 @@ FRC_2012_Robot::Turret::Turret(Rotary_Control_Interface *robot_control,FRC_2012_
 
 void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
@@ -93,7 +95,7 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
 
 void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
@@ -119,7 +121,7 @@ FRC_2012_Robot::PowerWheels::PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_
 
 void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=GetEventMap(); 
+	Base::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
@@ -165,7 +167,7 @@ FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,R
 {
 }
 
-void FRC_2012_Robot::BallConveyorSystem::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void FRC_2012_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	//These share the same props and fire is scaled from this level
 	m_LowerConveyor.Initialize(em,props);
@@ -211,7 +213,7 @@ void FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized(dou
 
 void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=m_MiddleConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=m_MiddleConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		//Ball_SetCurrentVelocity is the manual override
@@ -244,7 +246,7 @@ FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interfac
 	m_IsTargeting=true;  //testing
 }
 
-void FRC_2012_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
+void FRC_2012_Robot::Initialize(Base::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	m_RobotControl->Initialize(props);
@@ -407,10 +409,11 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	}
 }
 
+
   /***********************************************************************************************************************************/
  /*														FRC_2012_UI_Controller														*/
 /***********************************************************************************************************************************/
-#define __WindRiverJoysticks__
+#define __2011Joysticks__
 #undef __AirFlo__
 #undef __UsingXTerminator__
 
@@ -422,7 +425,7 @@ FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &j
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.1,true,"Joystick_1");
 	#endif
 
-	#ifdef __WindRiverJoysticks__
+	#ifdef __2011Joysticks__
 	//For the Y Axis 3rd paramter false = down for up like flying a plane
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
