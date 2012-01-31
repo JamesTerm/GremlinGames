@@ -21,10 +21,12 @@
 #include "Common/Tank_Robot.h"
 #include "Common/AI_Base_Controller.h"
 #include "Common/Robot_Control_Interface.h"
+#include "Common/Rotary_System.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
+#include "FRC2012_Camera.h"
 #ifdef __Test2011Robot__
 #include "FRC2011_Robot.h"
 #include "InOut_Interface.h"
@@ -32,6 +34,7 @@
 #else
 #include "FRC2012_Robot.h"
 #include "InOut_Interface.h"
+#include "FRC2012_InOut_Interface.h"
 #endif
 #include "FRC2012_Goals.h"
 
@@ -44,12 +47,19 @@ class SetUp_Manager
 		//Note: The order of the members are critical, as they are instantiated in the constructor
 		Driver_Station_Joystick m_Joystick;  
 		Framework::UI::JoyStick_Binder m_JoyBinder;
+#ifdef __Test2011Robot__
 		FRC_2011_Robot_Properties m_RobotProps;
 		FRC_2011_Robot_Control m_Control; // robot drive system
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
+		FRC_2011_UI_Controller *m_pUI;
+#else
+		FRC_2012_Robot_Properties m_RobotProps;
+		FRC_2012_Robot_Control m_Control; // robot drive system
+		FRC_2012_Robot *m_pRobot; //This is a scoped pointer with late binding
+		FRC_2012_UI_Controller *m_pUI;
+#endif
 		Framework::Base::EventMap m_EventMap;
 		IEvent::HandlerList ehl;
-		FRC_2011_UI_Controller *m_pUI;
 	public:
 		
 		void GoalComplete()
@@ -61,7 +71,11 @@ class SetUp_Manager
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
 			m_Control.AsControlInterface().Initialize(&m_RobotProps);
+#ifdef  __Test2011Robot__
 			m_pRobot = new FRC_2011_Robot("FRC2011_Robot",&m_Control,UseEncoders);
+#else
+			m_pRobot = new FRC_2012_Robot("FRC2012_Robot",&m_Control,UseEncoders);
+#endif
 			m_pRobot->Initialize(m_EventMap,&m_RobotProps);
 			//Bind the ship's eventmap to the joystick
 			m_JoyBinder.SetControlledEventMap(m_pRobot->GetEventMap());
@@ -69,7 +83,11 @@ class SetUp_Manager
 			//To to bind the UI controller to the robot
 			AI_Base_Controller *controller=m_pRobot->GetController();
 			assert(controller);
-			m_pUI=new FRC_2011_UI_Controller(m_JoyBinder,controller); 
+#ifdef  __Test2011Robot__
+			m_pUI=new FRC_2011_UI_Controller(m_JoyBinder,controller);
+#else
+			m_pUI=new FRC_2012_UI_Controller(m_JoyBinder,controller);
+#endif
 			if (controller->Try_SetUIController(m_pUI))
 			{
 				//Success... now to let the entity set things up
@@ -110,7 +128,11 @@ class SetUp_Manager
 		}
 
 		void SetAutoPilot(bool autoPilot) {m_pUI->SetAutoPilot(autoPilot);}
+#ifdef __Test2011Robot__
 		FRC_2011_Robot *GetRobot() const {return m_pRobot;}
+#else
+		FRC_2012_Robot *GetRobot() const {return m_pRobot;}
+#endif
 		void SetSafety(bool UseSafety) {m_Control.SetSafety(UseSafety);}
 		void ResetPos() 
 		{	
@@ -158,6 +180,7 @@ public:
 
 		if (DoAutonomous)
 		{
+#ifdef  __Test2011Robot__
 			using namespace FRC_2011_Goals;
 			Goal *goal=NULL;
 			switch (AutonomousValue)
@@ -171,6 +194,7 @@ public:
 			if (goal)
 				goal->Activate(); //now with the goal(s) loaded activate it
 			ship->SetGoal(goal);
+#endif
 		}
 		
 		double tm = GetTime();
@@ -191,7 +215,6 @@ public:
 		if (oldgoal)
 			delete oldgoal;
 		ship->SetGoal(NULL);
-
 	}
 	
 	void OperatorControl(void)
