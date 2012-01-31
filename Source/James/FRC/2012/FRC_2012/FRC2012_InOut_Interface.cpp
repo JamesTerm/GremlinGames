@@ -256,7 +256,8 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2012_Robot::eLowerConveyor:
 		case FRC_2012_Robot::eMiddleConveyor:
 		case FRC_2012_Robot::eFireConveyor:
-			assert(false);  //These should be disabled as there is no encoder for them
+			//TODO determine what is calling here
+			//assert(false);  //These should be disabled as there is no encoder for them
 			break;
 	}
 	return result;
