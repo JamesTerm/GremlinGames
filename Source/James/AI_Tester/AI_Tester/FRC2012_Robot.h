@@ -83,7 +83,7 @@ class FRC_2012_Robot : public Tank_Robot
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
-				//typedef Rotary_Linear __super;
+				//typedef Rotary_Angular __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
@@ -97,12 +97,11 @@ class FRC_2012_Robot : public Tank_Robot
 		{
 			private:
 				FRC_2012_Robot * const m_pParent;
-				//typedef Ship_1D __super;
 				Rotary_Angular m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
 				bool m_Grip,m_Squirt,m_Fire;
 			public:
 				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
-				virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 				bool GetIsFireRequested() const {return m_Fire;}
 
 				IEvent::HandlerList ehl;
@@ -115,7 +114,7 @@ class FRC_2012_Robot : public Tank_Robot
 				void ResetPos() {m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();}
 				//Intercept the time change to send out voltage
 				void TimeChange(double dTime_s);
-				virtual void BindAdditionalEventControls(bool Bind);
+				void BindAdditionalEventControls(bool Bind);
 			protected:
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
@@ -137,10 +136,6 @@ class FRC_2012_Robot : public Tank_Robot
 		double m_TargetHeight;
 		bool m_IsTargeting;
 };
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-///These classes below are for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
-///are correct and provides some idea to work needed in WindRiver
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 {
