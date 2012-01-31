@@ -21,7 +21,7 @@
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
-#include "FRC2012_Robot.h"
+#include "FRC2011_Robot.h"
 
 #undef __UseTestKitArmRatios__
 const bool c_UsingArmLimits=true;

@@ -1,5 +1,7 @@
 #include "WPILib.h"
 
+#define __Test2011Robot__
+
 #include "Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
@@ -23,8 +25,14 @@
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
+#ifdef __Test2011Robot__
+#include "FRC2011_Robot.h"
+#include "InOut_Interface.h"
+#include "FRC2011_InOut_Interface.h"
+#else
 #include "FRC2012_Robot.h"
 #include "InOut_Interface.h"
+#endif
 #include "FRC2012_Goals.h"
 
 const bool c_UseDefaultControls=false;
