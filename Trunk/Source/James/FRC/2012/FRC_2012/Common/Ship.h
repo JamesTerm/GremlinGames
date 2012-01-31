@@ -6,7 +6,7 @@ class AI_Base_Controller;
 inline Framework::Base::Vec2d GlobalToLocal(double Heading,const Framework::Base::Vec2d &GlobalVector);
 inline Framework::Base::Vec2d LocalToGlobal(double Heading,const Framework::Base::Vec2d &LocalVector);
 
-//TODO determine why these are redefined in windriver and not in the Ai Simulator code
+//TODO AI should probably move this to Entity2D as well
 #if 0
 inline void NormalizeRotation(double &Rotation)
 {
@@ -17,6 +17,7 @@ inline void NormalizeRotation(double &Rotation)
 	else if (Rotation<-M_PI)
 		Rotation+=Pi2;
 }
+#endif
 
 inline double NormalizeRotation2(double Rotation)
 {
@@ -31,7 +32,6 @@ inline double NormalizeRotation2(double Rotation)
 
 inline double SaturateRotation(double Rotation)
 {
-	const double Pi2=M_PI*2.0;
 	//Normalize the rotation
 	if (Rotation>M_PI)
 		Rotation=M_PI;
@@ -39,7 +39,6 @@ inline double SaturateRotation(double Rotation)
 		Rotation=-M_PI;
 	return Rotation;
 }
-#endif
 
 class Ship_2D : public Entity2D
 {
