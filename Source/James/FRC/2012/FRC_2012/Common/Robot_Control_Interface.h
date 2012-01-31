@@ -12,6 +12,8 @@ public:
 	/// \see subclass for enumeration specifics
 	virtual void CloseSolenoid(size_t index,bool Close)=0;
 	virtual void OpenSolenoid(size_t index,bool Close)=0;
+	/// \ret true if contact is made 
+	virtual bool GetBoolSensorState(size_t index) {return false;}
 };
 
 ///TODO this one is still tunes to 2011 needs... I'll need to work out a way to make it more generic
