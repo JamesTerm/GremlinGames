@@ -14,6 +14,7 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
+namespace Base=GG_Framework::Base;
 
   /***********************************************************************************************************************************/
  /*															Rotary_Linear															*/
@@ -29,7 +30,7 @@ Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *r
 	m_UsingPotentiometer=true;  //for testing on AI simulator (unless I make a control for this)
 }
 
-void Rotary_Linear::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	m_LastPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	__super::Initialize(em,props);
@@ -85,7 +86,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		if (m_UsingPotentiometer)
 		{
 			m_CalibratedScaler=MAX_SPEED;
-			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
+			//double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
 			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
@@ -215,7 +216,7 @@ Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface 
 {
 }
 
-void Rotary_Angular::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 		m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
