@@ -433,12 +433,12 @@ FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &j
 	#endif
 
 	#ifdef __2011Joysticks__
-	//For the Y Axis 3rd paramter false = down for up like flying a plane
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
-	//This is no longer needed as the zero and the rest are the same
-	//joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 5,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 6,"Arm_SetPos3feet",false,false,"Joystick_2");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Turret_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"PowerWheels_SetCurrentVelocity",false,1.0,0.04,false,"Joystick_2");
+	
+	joy.AddJoy_Button_Default( 0,"Ball_Fire",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 5,"Ball_Grip",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 6,"Ball_Squirt",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 10,"PowerWheels_IsRunning",true,false,"Joystick_2");
 	#endif
 }

@@ -150,12 +150,27 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 
 		case FRC_2012_Robot::eTurret:
 			//m_Turret.Set(Voltage);
+			if (m_TurretVoltage!=Voltage)
+			{
+				printf("TurretVoltage=%f\n",Voltage);
+				m_TurretVoltage=Voltage;
+			}
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			//m_PitchRamp.Set(Voltage);   Not sure what this will be... might not be a victor!  could be i2c
+			if (m_PitchRampVoltage!=Voltage)
+			{
+				printf("PitchRamp=%f\n",Voltage);
+				m_PitchRampVoltage=Voltage;
+			}
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			//m_PowerWheels.Set(Voltage);
+			if (m_PowerWheelVoltage!=Voltage)
+			{
+				printf("PowerWheels=%f\n",Voltage);
+				m_PowerWheelVoltage=Voltage;
+			}
 
 			//Example 2... another way to display readings
 			//#ifdef __ShowRollerReadings__
@@ -166,10 +181,25 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			break;
 		case FRC_2012_Robot::eLowerConveyor:
 			//m_LowerConveyor.Set(TranslateToRelay(Voltage));  //will be easy to switch to victor
+			if (m_LowerConveyorVoltage!=Voltage)
+			{
+				printf("Lower=%f\n",Voltage);
+				m_LowerConveyorVoltage=Voltage;
+			}
 			break;
 		case FRC_2012_Robot::eMiddleConveyor:
+			if (m_MiddleConveyorVoltage!=Voltage)
+			{
+				printf("Middle=%f\n",Voltage);
+				m_MiddleConveyorVoltage=Voltage;
+			}
 			break;
 		case FRC_2012_Robot::eFireConveyor:
+			if (m_FireConveyorVoltage=Voltage)
+			{
+				printf("FireConveyor=%f\n",Voltage);
+				m_FireConveyorVoltage=Voltage;
+			}
 			break;
 	}
 }
