@@ -18,6 +18,8 @@ using namespace std;
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
+namespace Base=GG_Framework::Base;
+
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
@@ -28,7 +30,7 @@ FRC_2012_Robot::Turret::Turret(Rotary_Control_Interface *robot_control,FRC_2012_
 
 void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 {
-	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
@@ -80,7 +82,7 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
 
 void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 {
-	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
@@ -106,7 +108,7 @@ FRC_2012_Robot::PowerWheels::PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_
 
 void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 {
-	GG_Framework::Base::EventMap *em=GetEventMap(); 
+	Base::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
@@ -152,7 +154,7 @@ FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,R
 {
 }
 
-void FRC_2012_Robot::BallConveyorSystem::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void FRC_2012_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	//These share the same props and fire is scaled from this level
 	m_LowerConveyor.Initialize(em,props);
@@ -198,7 +200,7 @@ void FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized(dou
 
 void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 {
-	GG_Framework::Base::EventMap *em=m_MiddleConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=m_MiddleConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		//Ball_SetCurrentVelocity is the manual override
@@ -304,6 +306,99 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 }
 
+
+  /***********************************************************************************************************************************/
+ /*													FRC_2012_Robot_Properties														*/
+/***********************************************************************************************************************************/
+
+const double c_WheelDiameter=0.1524;  //6 inches
+const double c_MotorToWheelGearRatio=12.0/36.0;
+
+FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
+	"Turret",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	10.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0, //Max Acceleration Forward/Reverse 
+	Ship_1D_Properties::eSwivel,
+	true,	//Using the range
+	-Pi,Pi
+	),
+	m_PitchRampProps(
+	"Pitch",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	10.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0, //Max Acceleration Forward/Reverse 
+	Ship_1D_Properties::eRobotArm,
+	true,	//Using the range
+	DEG_2_RAD(45-3),DEG_2_RAD(65+3) //add padding for quick response time (as close to limits will slow it down)
+	),
+	m_PowerWheelProps(
+	"PowerWheels",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	40 * Pi,   //Max Speed (rounded as we need not have precision)
+	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Properties::eSimpleMotor,
+	false,0.0,0.0,	//No limit ever!
+	true //This is angular
+	),
+	m_ConveyorProps(
+	"Conveyor",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
+	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
+	28,   //Max Speed (rounded as we need not have precision)
+	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Properties::eSimpleMotor,
+	false,0.0,0.0,	//No limit ever!
+	true //This is angular
+	)
+
+{
+	{
+		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
+
+		//Late assign this to override the initial default
+		props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+		props.WheelDiameter=c_WheelDiameter;
+		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
+		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
+		m_TankRobotProps=props;
+	}
+	{
+		Rotary_Props props=m_TurretProps.RoteryProps(); //start with super class settings
+		props.PID[0]=1.0;
+		props.PrecisionTolerance=0.001; //we need high precision
+		m_TurretProps.RoteryProps()=props;
+	}
+	{
+		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
+		props.PID[0]=1.0;
+		props.PrecisionTolerance=0.001; //we need high precision
+		m_PitchRampProps.RoteryProps()=props;
+	}
+	{
+		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
+		props.PID[0]=1.0;
+		props.PrecisionTolerance=0.01; //we need good precision
+		m_PowerWheelProps.RoteryProps()=props;
+	}
+	{
+		Rotary_Props props=m_ConveyorProps.RoteryProps(); //start with super class settings
+		props.PID[0]=1.0;
+		props.PrecisionTolerance=0.01; //we need good precision
+		m_ConveyorProps.RoteryProps()=props;
+	}
+}
+
+
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
 /***********************************************************************************************************************************/
@@ -386,7 +481,7 @@ void FRC_2012_Robot_Control::Reset_Rotary(size_t index)
 }
 
 //This is only for AI Tester
-void FRC_2012_Robot_Control::BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)
+void FRC_2012_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
 {
 	if (Bind)
 	{
@@ -468,97 +563,6 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 	}
 	return result;
-}
-
-  /***********************************************************************************************************************************/
- /*													FRC_2012_Robot_Properties														*/
-/***********************************************************************************************************************************/
-
-const double c_WheelDiameter=0.1524;  //6 inches
-const double c_MotorToWheelGearRatio=12.0/36.0;
-
-FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
-	"Turret",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	10.0,   //Max Speed
-	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eSwivel,
-	true,	//Using the range
-	-Pi,Pi
-	),
-	m_PitchRampProps(
-	"Pitch",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	10.0,   //Max Speed
-	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eRobotArm,
-	true,	//Using the range
-	DEG_2_RAD(45-3),DEG_2_RAD(65+3) //add padding for quick response time (as close to limits will slow it down)
-	),
-	m_PowerWheelProps(
-	"PowerWheels",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	40 * PI,   //Max Speed (rounded as we need not have precision)
-	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
-	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eSimpleMotor,
-	false,0.0,0.0,	//No limit ever!
-	true //This is angular
-	),
-	m_ConveyorProps(
-	"Conveyor",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
-	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
-	28,   //Max Speed (rounded as we need not have precision)
-	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
-	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eSimpleMotor,
-	false,0.0,0.0,	//No limit ever!
-	true //This is angular
-	)
-
-{
-	{
-		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
-
-		//Late assign this to override the initial default
-		props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
-		props.WheelDiameter=c_WheelDiameter;
-		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
-		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
-		m_TankRobotProps=props;
-	}
-	{
-		Rotary_Props props=m_TurretProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.001; //we need high precision
-		m_TurretProps.RoteryProps()=props;
-	}
-	{
-		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.001; //we need high precision
-		m_PitchRampProps.RoteryProps()=props;
-	}
-	{
-		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.01; //we need good precision
-		m_PowerWheelProps.RoteryProps()=props;
-	}
-	{
-		Rotary_Props props=m_ConveyorProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.01; //we need good precision
-		m_ConveyorProps.RoteryProps()=props;
-	}
 }
 
 
