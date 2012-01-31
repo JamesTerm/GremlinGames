@@ -434,7 +434,7 @@ FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &j
 
 	#ifdef __2011Joysticks__
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Turret_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"PowerWheels_SetCurrentVelocity",false,1.0,0.04,false,"Joystick_2");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"PowerWheels_SetCurrentVelocity",false,1.0,0.1,false,"Joystick_2");
 	
 	joy.AddJoy_Button_Default( 0,"Ball_Fire",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 5,"Ball_Grip",true,false,"Joystick_2");
