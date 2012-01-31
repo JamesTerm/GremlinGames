@@ -22,6 +22,8 @@
 using namespace Framework::Base;
 using namespace std;
 
+namespace Base=Framework::Base;
+
   /***********************************************************************************************************************************/
  /*															Rotary_Linear															*/
 /***********************************************************************************************************************************/
@@ -36,7 +38,7 @@ Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *r
 	m_UsingPotentiometer=true;  //for testing on AI simulator (unless I make a control for this)
 }
 
-void Rotary_Linear::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	m_LastPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	__super::Initialize(em,props);
@@ -102,6 +104,8 @@ void Rotary_Linear::TimeChange(double dTime_s)
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
 		}
+		else
+			m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);  //For ease of debugging the controls (no harm to read)
 	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
@@ -220,9 +224,10 @@ Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface 
 {
 }
 
-void Rotary_Angular::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
-	m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
+		m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	__super::Initialize(em,props);
 	const Rotary_Properties *Props=static_cast<const Rotary_Properties *>(props);
 	assert(Props);
@@ -277,7 +282,10 @@ void Rotary_Angular::TimeChange(double dTime_s)
 			//	//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
 			//	m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
 			//}
-		}	
+		}
+		else
+			m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);  //For ease of debugging the controls (no harm to read)
+
 
 		m_EncoderVelocity=Encoder_Velocity;
 	}
@@ -352,7 +360,8 @@ bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDispl
 
 void Rotary_Angular::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
-	m_RequestedVelocity_Difference=VelocityToUse-m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
+		m_RequestedVelocity_Difference=VelocityToUse-m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	m_VoltageOverride=false;
 	if ((m_EncoderState==eActive)&&(VelocityToUse==0.0)&&(!GetLockShipToPosition()))
 		m_VoltageOverride=true;
@@ -370,6 +379,7 @@ void Rotary_Angular::ResetPos()
 	//ensure teleop has these set properly
 	m_CalibratedScaler=MAX_SPEED;
 	//m_UseDeadZoneSkip=true;
+	m_RequestedVelocity_Difference=0.0;
 }
 
 void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
@@ -382,7 +392,7 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 			//first disable it
 			m_EncoderState=eNoEncoder;
 			//Now to reset stuff
-			printf("Disabling potentiometer\n");
+			printf("Disabling encoder\n");
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
@@ -398,7 +408,7 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 		{
 			m_EncoderState=m_EncoderCachedState;
 			//setup the initial value with the potentiometers value
-			printf("Enabling potentiometer\n");
+			printf("Enabling encoder\n");
 			ResetPos();
 			m_UsingRange=true;
 			m_CalibratedScaler=MAX_SPEED;

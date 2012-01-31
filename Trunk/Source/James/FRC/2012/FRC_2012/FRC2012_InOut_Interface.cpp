@@ -107,7 +107,9 @@ void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->UpdateLCD();
 	#endif
+	#ifndef __DisableCamera__
 	m_Camera.CameraProcessing_TimeChange(dTime_s);
+	#endif
 }
 
 void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)

@@ -46,6 +46,8 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
+		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
+		SetPotentiometerSafety(true);  //enable for auto open loop
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
@@ -98,6 +100,8 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
+		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
+		SetPotentiometerSafety(true);  //enable for auto open loop
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
@@ -124,6 +128,8 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
+		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
+		SetEncoderSafety(true);  //enable for auto open loop
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetIsRunning);
@@ -165,6 +171,7 @@ FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,R
 	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
 		m_Grip(false),m_Squirt(false),m_Fire(false)
 {
+	//This are always open loop as there is no encoder and this is specified by default
 }
 
 void FRC_2012_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Entity1D_Properties *props)

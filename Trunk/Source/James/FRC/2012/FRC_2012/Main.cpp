@@ -1,6 +1,6 @@
 #include "WPILib.h"
 
-#define __Test2011Robot__
+#undef __Test2011Robot__
 
 #include "Base/Base_Includes.h"
 #include <math.h>

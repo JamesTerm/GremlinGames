@@ -1,4 +1,5 @@
 #pragma once
+#define __DisableCamera__
 
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 {
@@ -16,7 +17,9 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		//Cached from properties
 		//double m_ArmMaxSpeed;
 
+		#ifndef __DisableCamera__
 		FRC_2012_CameraProcessing m_Camera;
+		#endif
 		
 	private:
 		//probably will not need these
