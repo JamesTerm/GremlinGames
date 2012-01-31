@@ -7,11 +7,11 @@ public:
 
 	/// \param The index is ordinal enumerated to specific robot's interpretation
 	/// \see subclass for enumeration specifics
-	virtual void UpdateVoltage(size_t index,double Voltage)=0;
+	virtual void UpdateVoltage(size_t index,double Voltage) {}
 	/// \param The index is ordinal enumerated to specific robot's interpretation
 	/// \see subclass for enumeration specifics
-	virtual void CloseSolenoid(size_t index,bool Close)=0;
-	virtual void OpenSolenoid(size_t index,bool Close)=0;
+	virtual void CloseSolenoid(size_t index,bool Close)  {}
+	virtual void OpenSolenoid(size_t index,bool Close)  {}
 	/// \ret true if contact is made 
 	virtual bool GetBoolSensorState(size_t index) {return false;}
 };

@@ -152,4 +152,10 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
 };
 
+/// This contains all UI controls specific to this years robot.  Since we do not use files the primary use of this is specific keys assigned
+class FRC_2012_UI_Controller : public UI_Controller
+{
+	public:
+		FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
+};
 

@@ -19,13 +19,14 @@
 #include "Common/Tank_Robot.h"
 #include "Common/AI_Base_Controller.h"
 #include "Common/Robot_Control_Interface.h"
+#include "Common/Rotary_System.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
 //For now we'll combine both years goals into one file separated by namespaces
 #include "FRC2011_Robot.h"
-//#include "FRC2012_Robot.h"
+#include "FRC2012_Robot.h"
 #include "InOut_Interface.h"
 
 namespace FRC_2011_Goals
