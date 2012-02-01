@@ -40,7 +40,8 @@ Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *r
 
 void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
-	m_LastPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	if (m_UsingPotentiometer)
+		m_LastPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 	__super::Initialize(em,props);
 	const Rotary_Properties *Props=static_cast<const Rotary_Properties *>(props);
 	assert(Props);
@@ -374,7 +375,10 @@ void Rotary_Angular::ResetPos()
 	m_PIDController.Reset();
 	//We may need this if we use Kalman filters
 	m_RobotControl->Reset_Rotary(m_InstanceIndex);
-	m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
+		m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	else
+		m_EncoderVelocity=0.0;
 
 	//ensure teleop has these set properly
 	m_CalibratedScaler=MAX_SPEED;
