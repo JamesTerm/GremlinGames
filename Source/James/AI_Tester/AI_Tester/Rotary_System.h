@@ -40,6 +40,7 @@ class Rotary_Linear : public Ship_1D
 		virtual void TimeChange(double dTime_s);
 		virtual void PosDisplacementCallback(double posDisplacement_m);
 		virtual void SetPotentiometerSafety(bool DisableFeedback);
+		bool GetIsUsingPotentiometer() const {return m_UsingPotentiometer;}
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback

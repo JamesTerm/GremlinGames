@@ -51,7 +51,7 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 {
-	if ((m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())))
+	if ((m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
 	{
 		Vec2D Target=m_pParent->m_TargetOffset;
 		Target-=m_pParent->GetPos_m();
