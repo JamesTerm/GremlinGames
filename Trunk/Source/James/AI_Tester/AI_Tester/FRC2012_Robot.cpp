@@ -381,7 +381,9 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
 
 		//Late assign this to override the initial default
-		props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+		//Was originally 0.4953 19.5 width for 2011
+		//Now is 0.517652 20.38 according to Parker  (not too worried about the length)
+		props.WheelDimensions=Vec2D(0.517652,0.6985); //27.5 x 20.38
 		props.WheelDiameter=c_WheelDiameter;
 		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
 		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
