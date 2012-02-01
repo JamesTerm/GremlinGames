@@ -360,19 +360,23 @@ void Ship_2D::TimeChange(double dTime_s)
 		m_IntendedOrientation=GetAtt_r(); //If we can't stabilize the rotation then the intended orientation is slaved to the ship!
 	}
 
+	const double Ships_TorqueRestraint=MaxTorqueYaw;
+
+	//All of this disabling torque restraint only worked when the lock to orientation applied the restraint there... now that this is gone
+	//there is no reason to ever change the restraint
+
 	//Note: We use -1 for roll here to get a great effect on being in perfect sync to the intended orientation 
 	//(provided the user doesn't exceed the turning speed of the roll)
-	double Ships_TorqueRestraint=MaxTorqueYaw;
-	{
-		//This will increase the ships speed if it starts to lag further behind
-		#ifndef __DisableShipSpeedBoost__
-		//For joystick and keyboard we can use -1 to lock to the intended quat
-		if (m_LockShipHeadingToOrientation)
-		{
-			Ships_TorqueRestraint=-1.0;  //we are locked to the orientation!
-		}
-		#endif
-	}
+	//{
+	//	//This will increase the ships speed if it starts to lag further behind
+	//	#ifndef __DisableShipSpeedBoost__
+	//	//For joystick and keyboard we can use -1 to lock to the intended quat
+	//	if (m_LockShipHeadingToOrientation)
+	//	{
+	//		Ships_TorqueRestraint=-1.0;  //we are locked to the orientation!
+	//	}
+	//	#endif
+	//}
 
 	//Apply the restraints now... I need this to compute my roll offset
 	Vec2d AccRestraintPositive(MaxAccelRight,MaxAccelForward);
@@ -547,12 +551,15 @@ void Ship_2D::TimeChange(double dTime_s)
 		//When this is locked to orientation (e.g. joystick keyboard) this will be ignored since the restraint is -1
 		double rotVel;
 
+		if (!m_LockShipHeadingToOrientation)
 		{
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
 			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
+		else
+			rotVel=m_rotDisplacement_rad;
 		//testing stuff  (eventually nuke this)
 		//Vec3d rotVel=m_Physics.GetVelocityFromDistance_Angular_v2(m_rotDisplacement_rad,Ships_TorqueRestraint,dTime_s,Vec3d(0,0,0));
 		#if 0
@@ -588,7 +595,7 @@ void Ship_2D::TimeChange(double dTime_s)
 			rotVel*=SmallestRatio;
 		}
 		#endif
-		//printf("\r%f %f %f mouse             ",m_rotDisplacement_rad[0],m_rotDisplacement_rad[1],m_rotDisplacement_rad[2]);
+		//printf("\r%f %f            ",m_rotDisplacement_rad,rotVel);
 		TorqueToApply=m_Physics.GetTorqueFromVelocity(rotVel,dTime_s);
 	}
 	else
