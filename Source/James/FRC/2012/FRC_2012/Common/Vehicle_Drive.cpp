@@ -16,7 +16,7 @@
 using namespace Framework::Base;
 using namespace std;
 
-const double PI=M_PI;
+const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
@@ -86,7 +86,7 @@ void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
 	//RCW=fabs(RCW)<0.3?0.0:RCW;
 	double RPS=RCW / Pi2;
-	RCW=RPS * (PI * W);  //W is really diameter
+	RCW=RPS * (Pi * W);  //W is really diameter
 
 	m_LeftLinearVelocity = FWD + RCW;
 	m_RightLinearVelocity = FWD - RCW;
@@ -110,7 +110,7 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	//const double STR = (LeftLinearVelocity*sin(0.0)+ RightLinearVelocity*sin(0.0))/2.0;
 	const double STR = 0.0;
 
-	//const double HP=PI/2;
+	//const double HP=Pi/2;
 	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
 	//Here we go it is finally working I just needed to take out the last division
@@ -119,7 +119,7 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
 
-	AngularVelocity=(omega / (PI * W)) * Pi2;
+	AngularVelocity=(omega / (Pi * W)) * Pi2;
 	//This is a safety to avoid instability
 	#if 0
 	AngularVelocity=IsZero(omega)?0.0:omega;
@@ -165,8 +165,8 @@ void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Loca
 void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
-	//__super::ApplyThrusters(PhysicsToUse,GetCachedLocalForce(),LocalTorque,-1,dTime_s);
-	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,-1,dTime_s);
+	//__super::ApplyThrusters(PhysicsToUse,GetCachedLocalForce(),LocalTorque,TorqueRestraint,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 #endif
 
@@ -216,7 +216,7 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
 	//RCW=fabs(RCW)<0.3?0.0:RCW;
 	double RPS=RCW / Pi2;
-	RCW=RPS * (PI * R);  //R is really diameter
+	RCW=RPS * (Pi * R);  //R is really diameter
 
 	const double A = STR - RCW*(L/R);
 	const double B = STR + RCW*(L/R);
@@ -250,7 +250,7 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
 
 	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))/4;
-	const double HP=PI/2;
+	const double HP=Pi/2;
 	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
 	//Here we go it is finally working I just needed to take out the last division
@@ -263,7 +263,7 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
 
-	AngularVelocity=(omega / (PI * D)) * Pi2;
+	AngularVelocity=(omega / (Pi * D)) * Pi2;
 	//This is a safety to avoid instability
 	#if 0
 	AngularVelocity=IsZero(omega)?0.0:omega;
