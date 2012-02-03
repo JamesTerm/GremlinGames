@@ -54,11 +54,11 @@ static bool FailCheck(int Returned, char* Description)
 {/* Error report logic */
 	if(!Returned)
 	{
-		int errCode = GetLastVisionError();
-		DPRINTF(LOG_INFO, Description);
-		DPRINTF(LOG_INFO, "Error code: ", errCode);
-		char *errString = GetVisionErrorText(errCode);
-		DPRINTF(LOG_INFO, "errString= %s", errString);
+		//int errCode = GetLastVisionError();
+		//DPRINTF( Description);
+		//DPRINTF( "Error code: ", errCode);
+		//char *errString = GetVisionErrorText(errCode);
+		//DPRINTF( "errString= %s", errString);
 		return true;
 	}
 	else
@@ -196,7 +196,7 @@ int ProcessImage(Image* CameraInput, int DV, float* HeightOfTarget, float* Width
 	/* Take measurements, return */
 	*HeightOfTarget= ((TargetRect->corner[0].y + TargetRect->corner[1].y)/2);
 	*WidthOfTarget= TargetRect->corner[0].x - TargetRect->corner[1].x;
-	TPRINTF(LOG_INFO, "TargetRect:\n\t1: %f, %f\n\t2: %f, %f\n\t3: %f, %f\n\t4: %f, %f", 
+	printf( "TargetRect:\n\t1: %f, %f\n\t2: %f, %f\n\t3: %f, %f\n\t4: %f, %f", 
 			(double) TargetRect->corner[0].x,
 			(double) TargetRect->corner[0].y,
 			(double) TargetRect->corner[1].x,
@@ -265,8 +265,8 @@ FRC_2012_CameraProcessing::FRC_2012_CameraProcessing() : m_Camera(NULL),m_LastTi
 {
 	//Default will use the team ip 10.34.81.11  with 11
 	m_Camera=&AxisCamera::GetInstance();
-	//m_Camera->WriteResolution(AxisCamera::kResolution_320x240);
-	m_Camera->WriteResolution(AxisCamera::kResolution_640x480);
+	m_Camera->WriteResolution(AxisCamera::kResolution_320x240);
+	//m_Camera->WriteResolution(AxisCamera::kResolution_640x480);
 	//m_Camera->WriteCompression(20);
 	//m_Camera->WriteBrightness(0);
 	
@@ -295,8 +295,14 @@ void FRC_2012_CameraProcessing::CameraProcessing_TimeChange(double dTime_s)
 			m_LastTime=GetTime();
 			printf("\rCamera Time %f           ",time);
 			
-			HSLImage *image=m_Camera->GetImage(); 
+			HSLImage *image=m_Camera->GetImage();
+			#if 1
 			m_FrameProcessor(*image);
+			#else
+			 float HeightOfTarget, WidthOfTarget;
+			int NoRect=ProcessImage(image->GetImaqImage(),TOP_MOST,&HeightOfTarget,&WidthOfTarget);
+			printf("NoRect=%d time=%f",NoRect,GetTime()-m_LastTime);
+			#endif
 			delete image;
 		}
 	}
