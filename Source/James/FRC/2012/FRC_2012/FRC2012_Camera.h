@@ -18,7 +18,7 @@ class FrameProcessing
 			bool IsError;  //true if error detected
 		};
 	
-		void operator()(HSLImage &image,TestChorminance color=eTestPr,double AspectRatio=4.0/3.0);
+		void operator()(HSLImage &hsl_image,TestChorminance color=eTestPr,double AspectRatio=4.0/3.0);
 	protected:
 		void TestMinMax(MonoImage &image,BYTE &TestMin,BYTE &TestMax);
 
