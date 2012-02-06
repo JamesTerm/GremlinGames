@@ -26,7 +26,7 @@
 #include "Common/PIDController.h"
 #include "FRC2012_Camera.h"
 #include "FRC2012_Robot.h"
-#include "InOut_Interface.h"
+#include "Common/InOut_Interface.h"
 #include "FRC2012_InOut_Interface.h"
 #include "FRC2012_Goals.h"
 
