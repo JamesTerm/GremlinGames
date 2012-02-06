@@ -25,7 +25,7 @@
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
 #include "FRC2012_Robot.h"
-#include "InOut_Interface.h"
+#include "Common/InOut_Interface.h"
 
 //Added 2011 goals as a reference
 
