@@ -15,7 +15,7 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-#define __OpenLoopAll__
+#undef __OpenLoopAll__
 
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
@@ -25,7 +25,7 @@ namespace Base=GG_Framework::Base;
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
-FRC_2012_Robot::Turret::Turret(Rotary_Control_Interface *robot_control,FRC_2012_Robot *parent) : 
+FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
 	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent)
 {
 }
@@ -67,23 +67,38 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
-FRC_2012_Robot::PitchRamp::PitchRamp(Rotary_Control_Interface *robot_control) : Rotary_Linear("PitchRamp",robot_control,ePitchRamp)
+FRC_2012_Robot::PitchRamp::PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
+	Rotary_Linear("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
 {
 }
 
 void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
 {
-	//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-	//first get the range from 0 - 1
-	double positive_range = (Position * 0.5) + 0.5;
-	//positive_range=positive_range>0.01?positive_range:0.0;
-	const double minRange=DEG_2_RAD(45);
-	const double maxRange=DEG_2_RAD(65);
-	const double Scale=(maxRange-minRange) / maxRange;
-	Position=(positive_range * Scale) + minRange;
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetIsUsingPotentiometer());
+	if (!IsTargeting)
+	{
+		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+		//first get the range from 0 - 1
+		double positive_range = (Position * 0.5) + 0.5;
+		//positive_range=positive_range>0.01?positive_range:0.0;
+		const double minRange=DEG_2_RAD(45);
+		const double maxRange=DEG_2_RAD(65);
+		const double Scale=(maxRange-minRange) / maxRange;
+		Position=(positive_range * Scale) + minRange;
+	}
 
 	//DOUT5("Test=%f",RAD_2_DEG(Position));
 	__super::SetIntendedPosition(Position);
+}
+
+void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
+{
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetIsUsingPotentiometer());
+	if (IsTargeting)
+	{
+		__super::SetIntendedPosition(m_pParent->m_PitchAngle);
+	}
+	__super::TimeChange(dTime_s);
 }
 
 void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
@@ -139,22 +154,45 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
 {
-	if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	if (!IsTargeting)
 	{
-		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-		//first get the range from 0 - 1
-		double positive_range = (Velocity * 0.5) + 0.5;
-		positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=20.0 * Pi;
-		const double maxRange=40.0 * Pi;
-		const double Scale=(maxRange-minRange) / MAX_SPEED;
-		const double Offset=minRange/MAX_SPEED;
-		Velocity=(positive_range * Scale) + Offset;
-		//DOUT5("%f",Velocity);
-		__super::SetRequestedVelocity_FromNormalized(Velocity);
+		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
+		{
+			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+			//first get the range from 0 - 1
+			double positive_range = (Velocity * 0.5) + 0.5;
+			positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=20.0 * Pi;
+			const double maxRange=40.0 * Pi;
+			const double Scale=(maxRange-minRange) / MAX_SPEED;
+			const double Offset=minRange/MAX_SPEED;
+			Velocity=(positive_range * Scale) + Offset;
+			//DOUT5("%f",Velocity);
+			__super::SetRequestedVelocity_FromNormalized(Velocity);
+		}
+		else
+			__super::SetRequestedVelocity_FromNormalized(0.0);
 	}
-	else
-		__super::SetRequestedVelocity_FromNormalized(0.0);
+}
+
+void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
+{
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	if (  IsTargeting )
+	{
+		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested())) 
+		{
+			//convert linear velocity to angular velocity
+			double RPS=m_pParent->m_LinearVelocity / (Pi * GetDimension());
+			RPS*=2.0;  //For hooded shoot we'll have to move twice as fast
+			SetRequestedVelocity(RPS * Pi2);
+			//DOUT5("v=%f rps=%f rad=%f",m_pParent->m_LinearVelocity * 3.2808399,RPS,RPS*Pi2);
+		}
+		else
+			SetRequestedVelocity(0);
+	}
+	__super::TimeChange(dTime_s);
 }
 
   /***********************************************************************************************************************************/
@@ -239,10 +277,10 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 
 //TODO get the physical measurements of the game for this
 const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,3.0);
-const double c_TargetBaseHeight=2.0;
+const double c_TargetBaseHeight=0.9144; //TODO fix... this is 3 feet which is close and useful to test 7 feet on table to verify equations
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(robot_control,this),m_PitchRamp(robot_control),
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(false)
 {
 	m_IsTargeting=true;  //testing
@@ -271,6 +309,38 @@ void FRC_2012_Robot::ResetPos()
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
 	m_TargetOffset=c_TargetBasePosition;
+	m_TargetHeight=c_TargetBaseHeight;
+	//TODO tweak adjustments based off my position in the field here
+	//
+	//Now to compute my pitch, power, and hang time
+	{
+		//TODO factor in rotation if it is significant
+		const double x=Vec2D(GetPos_m()-m_TargetOffset).length();
+		const double y=m_TargetHeight;
+		const double y2=y*y;
+		const double x2=x*x;
+		const double g=9.80665;
+		//These equations come from here http://www.lightingsciences.ca/pdf/BNEWSEM2.PDF
+
+		//Where y = height displacement (or goal - player)
+		//	[theta=atan(sqrt(y^2+x^2)/x+y/x)]
+		//This is equation 8 solving theta
+		m_PitchAngle=atan(sqrt(y2+x2)/x+y/x);
+
+		//Be sure G is in the same units as x and y!  (all in meters in code)
+		//	V=sqrt(G(sqrt(y^2+x^2)+y))
+		//	This is equation 7 solving v
+		m_LinearVelocity=sqrt(g*(sqrt(y2+x2)+y));
+
+		//ta=(sin(theta)*v)/g   //This is equation 2 solving for t1
+		//tb=(x-ta*cos(theta)*v)/(cos(theta)*v)   //this is equation 3 solving for t2
+		//	hang time= ta+tb 
+		double ta,tb;
+		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
+		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
+		m_HangTime = ta+tb;
+		DOUT5("x=%f p=%f v=%f ht=%f",x * 3.2808399,RAD_2_DEG(m_PitchAngle),m_LinearVelocity * 3.2808399,m_HangTime);
+	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
@@ -354,8 +424,8 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	m_PowerWheelProps(
 	"PowerWheels",
 	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	40 * Pi,   //Max Speed (rounded as we need not have precision)
+	0.1524,   //Dimension  (needed to convert linear to angular velocity)
+	60 * Pi2,   //Max Speed (TODO get gear ratio and motor speed from Parker) 
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Properties::eSimpleMotor,
@@ -404,7 +474,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
 		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.01; //we need good precision
+		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
 		m_PowerWheelProps.RoteryProps()=props;
 	}
 	{

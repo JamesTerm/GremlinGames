@@ -48,7 +48,7 @@ class FRC_2012_Robot : public Tank_Robot
 		class Turret : public Rotary_Linear
 		{
 			public:
-				Turret(Rotary_Control_Interface *robot_control,FRC_2012_Robot *parent);
+				Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
@@ -64,7 +64,7 @@ class FRC_2012_Robot : public Tank_Robot
 		class PitchRamp : public Rotary_Linear
 		{
 			public:
-				PitchRamp(Rotary_Control_Interface *robot_control);
+				PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
@@ -74,6 +74,9 @@ class FRC_2012_Robot : public Tank_Robot
 				void SetIntendedPosition(double Position);
 
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				virtual void TimeChange(double dTime_s);
+			private:
+				FRC_2012_Robot * const m_pParent;
 		};
 
 		class PowerWheels : public Rotary_Angular
@@ -88,6 +91,7 @@ class FRC_2012_Robot : public Tank_Robot
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
 				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
+				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2012_Robot * const m_pParent;
 				bool m_IsRunning;
@@ -134,6 +138,8 @@ class FRC_2012_Robot : public Tank_Robot
 		Vec2D m_TargetOffset;  
 		//This is adjusted depending on doing a bank shot or swishing 
 		double m_TargetHeight;
+		//cached during robot time change and applied to other systems when targeting is true
+		double m_PitchAngle,m_LinearVelocity,m_HangTime;
 		bool m_IsTargeting;
 };
 
