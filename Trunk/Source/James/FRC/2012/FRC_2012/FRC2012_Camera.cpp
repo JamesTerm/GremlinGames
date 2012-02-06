@@ -25,7 +25,6 @@
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
-#include "FRC2011_Robot.h"
 #include "FRC2012_Robot.h"
 #include "FRC2012_Camera.h"
 #include "InOut_Interface.h"
@@ -68,7 +67,7 @@ void FrameProcessing::operator()(HSLImage &hsl_image,TestChorminance color,doubl
 		ColorPlane = image.GetBluePlane();
 	#endif
 	
-	#if 1
+	#if 0
 	{
 		BYTE TestMin,TestMax;
 		TestMinMax(*ColorPlane,TestMin,TestMax);

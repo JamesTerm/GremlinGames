@@ -24,11 +24,12 @@
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
-//For now we'll combine both years goals into one file separated by namespaces
-#include "FRC2011_Robot.h"
 #include "FRC2012_Robot.h"
 #include "InOut_Interface.h"
 
+//Added 2011 goals as a reference
+
+#if 0
 namespace FRC_2011_Goals
 {
 
@@ -290,5 +291,6 @@ Goal *Get_TestArmElbowClaw(FRC_2011_Robot *Robot)
 	MainGoal->AddSubgoal(goal_CloseClaw);
 	return MainGoal;
 };
-
 }
+#endif
+
