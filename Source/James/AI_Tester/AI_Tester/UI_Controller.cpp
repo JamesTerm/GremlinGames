@@ -670,7 +670,12 @@ void UI_Controller::UpdateUI(double dTime_s)
 	{
 		#if 1
 		osg::Vec2d pos=m_ship->GetPos_m();
-		DOUT1("x=%f y=%f r=%f",pos[0],pos[1],m_ship->GetAtt_r()*180.0/M_PI);
+		DOUT1("x=%f y=%f r=%f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
+		DOUT3("Speed=%f mode=%s",Meters2Feet(m_ship->GetPhysics().GetLinearVelocity().length()),m_ship->GetAlterTrajectory()?"Sim":"Slide");
+		#endif
+		#if 0
+		osg::Vec2d pos=m_ship->GetPos_m();
+		DOUT1("x=%f y=%f r=%f",pos[0],pos[1],RAD_2_DEG(m_ship->GetAtt_r()));
 		DOUT3("Speed=%f mode=%s",m_ship->GetPhysics().GetLinearVelocity().length(),m_ship->GetAlterTrajectory()?"Sim":"Slide");
 		#endif
 		#if 0
