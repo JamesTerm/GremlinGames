@@ -275,9 +275,8 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
 
-//TODO get the physical measurements of the game for this
-const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,3.0);
-const double c_TargetBaseHeight=0.9144; //TODO fix... this is 3 feet which is close and useful to test 7 feet on table to verify equations
+const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,Feet2Meters(27));
+const double c_TargetBaseHeight= Inches2Meters(98.0 - (12.0*4.6)); //TODO get correct height of robot
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
@@ -339,7 +338,7 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
-		DOUT5("x=%f p=%f v=%f ht=%f",x * 3.2808399,RAD_2_DEG(m_PitchAngle),m_LinearVelocity * 3.2808399,m_HangTime);
+		DOUT5("x=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -396,7 +395,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
  /*													FRC_2012_Robot_Properties														*/
 /***********************************************************************************************************************************/
 
-const double c_WheelDiameter=0.1524;  //6 inches
+const double c_WheelDiameter=Inches2Meters(6);
 const double c_MotorToWheelGearRatio=12.0/36.0;
 
 FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
@@ -419,13 +418,13 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	10.0,10.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
-	DEG_2_RAD(45-3),DEG_2_RAD(65+3) //add padding for quick response time (as close to limits will slow it down)
+	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
 	),
 	m_PowerWheelProps(
 	"PowerWheels",
 	2.0,    //Mass
-	0.1524,   //Dimension  (needed to convert linear to angular velocity)
-	60 * Pi2,   //Max Speed (TODO get gear ratio and motor speed from Parker) 
+	Inches2Meters(6),   //Dimension  (needed to convert linear to angular velocity)
+	50 * Pi2,   //Max Speed (TODO get gear ratio and motor speed from Parker) 
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Properties::eSimpleMotor,
