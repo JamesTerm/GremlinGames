@@ -276,7 +276,8 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,Feet2Meters(27));
-const double c_TargetBaseHeight= Inches2Meters(98.0 - (12.0*4.6)); //TODO get correct height of robot
+const double c_BallShootHeight_inches=55.0;
+const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
@@ -424,7 +425,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	"PowerWheels",
 	2.0,    //Mass
 	Inches2Meters(6),   //Dimension  (needed to convert linear to angular velocity)
-	50 * Pi2,   //Max Speed (TODO get gear ratio and motor speed from Parker) 
+	(5000.0/60.0) * Pi2,   //Max Speed (This is clocked at 5000 rpm) 
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Properties::eSimpleMotor,
