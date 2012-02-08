@@ -163,8 +163,8 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 			//first get the range from 0 - 1
 			double positive_range = (Velocity * 0.5) + 0.5;
 			positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=20.0 * Pi;
-			const double maxRange=40.0 * Pi;
+			const double minRange=5.0 * Pi2;  //TODO determine slowest speed to use
+			const double maxRange=40.0 * Pi2;
 			const double Scale=(maxRange-minRange) / MAX_SPEED;
 			const double Offset=minRange/MAX_SPEED;
 			Velocity=(positive_range * Scale) + Offset;
@@ -283,7 +283,7 @@ FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interfac
 	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(false)
 {
-	m_IsTargeting=true;  //testing
+	m_IsTargeting=true;  //defaults to true
 }
 
 void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -377,11 +377,19 @@ void FRC_2012_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
-	//Entity2D::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
-	//if (Bind)
-	//	em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2012_Robot::CloseDeploymentDoor);
-	//else
-	//	em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &FRC_2012_Robot::CloseDeploymentDoor);
+	Entity2D::EventMap *em=GetEventMap(); 
+	if (Bind)
+	{
+		em->EventOnOff_Map["Robot_IsTargeting"].Subscribe(ehl, *this, &FRC_2012_Robot::IsTargeting);
+		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOn);
+		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOff);
+	}
+	else
+	{
+		em->EventOnOff_Map["Robot_IsTargeting"]  .Remove(*this, &FRC_2012_Robot::IsTargeting);
+		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOn);
+		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOff);
+	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
@@ -827,9 +835,9 @@ void FRC_2012_Power_Wheel_UI::TimeChange(double dTime_s)
 {
 	FRC_2012_Control_Interface *pw_access=m_RobotControl;
 	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2012_Robot::ePowerWheels) / m_PowerWheelMaxSpeed;
-	NormalizedVelocity-=0.2;
-	if (NormalizedVelocity<0.0)
-		NormalizedVelocity=0.0;
+	//NormalizedVelocity-=0.2;
+	//if (NormalizedVelocity<0.0)
+	//	NormalizedVelocity=0.0;
 
 	//Scale down the rotation to something easy to gauge in UI
 	AddRotation((NormalizedVelocity * 18) * dTime_s);

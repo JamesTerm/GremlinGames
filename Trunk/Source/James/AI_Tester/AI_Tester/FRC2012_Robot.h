@@ -141,6 +141,10 @@ class FRC_2012_Robot : public Tank_Robot
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
 		bool m_IsTargeting;
+
+		void IsTargeting(bool on) {m_IsTargeting=on;}
+		void SetTargetingOn() {IsTargeting(true);}
+		void SetTargetingOff() {IsTargeting(false);}
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
