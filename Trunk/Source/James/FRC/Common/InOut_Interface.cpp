@@ -16,6 +16,8 @@
 #include "../Base/Misc.h"
 #include "../Base/Event.h"
 #include "../Base/EventMap.h"
+#include "../Base/Script.h"
+#include "../Base/Script.h"
 #include "Entity_Properties.h"
 #include "Physics_1D.h"
 #include "Physics_2D.h"

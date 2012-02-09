@@ -5,6 +5,7 @@
 #include "../Base/Misc.h"
 #include "../Base/Event.h"
 #include "../Base/EventMap.h"
+#include "../Base/Script.h"
 #include "Entity_Properties.h"
 #include "Physics_1D.h"
 #include "Physics_2D.h"
@@ -14,6 +15,8 @@
 #include "Ship.h"
 
 using namespace Framework::Base;
+#define ASSERT(cond) assert(cond);
+#define ASSERT_MSG(cond, msg) if (!(cond)){printf((msg)); assert(cond);}
 
   /***********************************************************************************************************************************/
  /*															Entity1D_Properties														*/
@@ -34,6 +37,34 @@ Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,dou
 	m_Dimension=Dimension;
 	m_IsAngular=IsAngular;
 }
+
+#if 0
+void Entity1D_Properties::LoadFromScript(Framework::Scripting::Script& script)
+{
+	const char* err;
+
+	err = script.GetGlobalTable(m_EntityName.c_str());
+	ASSERT_MSG(!err, err);
+	{
+		err = script.GetField("Mass", NULL, NULL, &m_Mass);
+		ASSERT_MSG(!err, err);
+
+		//Get the ship dimensions
+		err = script.GetFieldTable("Dimensions");
+		if (!err)
+		{
+			//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
+			err = script.GetField("Length", NULL, NULL,&m_Dimension);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+		else
+			m_Dimension=2.0;
+
+	}
+	script.Pop();
+}
+#endif
 
 void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
 {

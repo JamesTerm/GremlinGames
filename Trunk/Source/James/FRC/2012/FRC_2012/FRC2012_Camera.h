@@ -1,6 +1,6 @@
 #pragma once
 
-#define __2011_TestCamera__
+#undef __2011_TestCamera__
 
 class FrameProcessing
 {
