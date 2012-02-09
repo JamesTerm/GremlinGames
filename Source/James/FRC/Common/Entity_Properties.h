@@ -6,6 +6,8 @@ class Entity1D_Properties
 	public:
 		Entity1D_Properties();
 		Entity1D_Properties(const char EntityName[],double Mass,double Dimension,bool IsAngular=false);
+		virtual ~Entity1D_Properties() {}
+		//virtual void LoadFromScript(Framework::Scripting::Script& script);
 		void Initialize(Entity1D *NewEntity) const;
 	protected:
 		std::string m_EntityName;  //derived classes can let base class know what type to read

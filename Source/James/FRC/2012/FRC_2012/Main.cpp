@@ -3,10 +3,12 @@
 #include "Base/Base_Includes.h"
 #include <math.h>
 #include <assert.h>
+#include <stdio.h>
 #include "Base/Vec2d.h"
 #include "Base/Misc.h"
 #include "Base/Event.h"
 #include "Base/EventMap.h"
+#include "Base/Script.h"
 #include "Common/Entity_Properties.h"
 #include "Common/Physics_1D.h"
 #include "Common/Physics_2D.h"
@@ -208,7 +210,19 @@ public:
 		}
 		else
 		{
+			#if 0
 			printf("Starting TeleOp Session\n");
+			FILE *test=fopen("/FRC2012Robot.lua","r");
+			if (test)
+			{
+				char buffer[80];
+				size_t count=fread(buffer,sizeof(char),80,test);
+				printf("Bytes Read=%d\nContents:\n%s\n",count,buffer);
+				fclose(test);
+			}
+			else
+				printf("failes to open\n");
+			#endif
 			m_Manager.ResetPos();  //This should avoid errors like the arm swinging backwards
 			m_Manager.GetRobot()->SetUseEncoders(false);
 			m_Manager.SetAutoPilot(false);  //we are driving the robot

@@ -4,6 +4,7 @@
 #include "../Base/Vec2d.h"
 #include "../Base/Misc.h"
 #include "../Base/Event.h"
+#include "../Base/Script.h"
 #include "Entity_Properties.h"
 #include "../Base/EventMap.h"
 #include "Physics_1D.h"
