@@ -2,6 +2,11 @@
 #include "stdafx.h"
 #include "GG_Framework.Logic.Scripting.h"
 
+#ifdef __UseStandAloneVersion__
+#include "LUA.h"
+#include "Register_C_Functions.h"
+#endif
+
 using namespace GG_Framework::Logic::Scripting;
 
 std::vector<Register_C_Function*> Register_C_Function::C_funcs;

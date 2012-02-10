@@ -1,6 +1,8 @@
 // GG_Framework.Logic.Scripting Script.h
 #pragma once
 
+struct lua_State;
+
 namespace GG_Framework
 {
 	namespace Logic

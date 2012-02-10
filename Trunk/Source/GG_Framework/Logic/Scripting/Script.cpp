@@ -2,6 +2,11 @@
 #include "StdAfx.h"
 #include "GG_Framework.Logic.Scripting.h"
 
+#ifdef __UseStandAloneVersion__
+#include "LUA.h"
+#include "Register_C_Functions.h"
+#endif
+
 using namespace GG_Framework::Logic::Scripting;
 
 Script::Script() : m_lua_state(NULL), m_filename("UN-INITIALIZED") {}
@@ -36,7 +41,7 @@ const char* Script::LoadScript(const char* fileName_or_buff, bool file)
 	const char* ret = NULL;
 	m_lua_state = lua_open();
 	luaL_openlibs(m_lua_state);
-	Register_C_Function::RegisterAllFunctions(m_lua_state);
+	//Register_C_Function::RegisterAllFunctions(m_lua_state);
 
 	// Load the script file and execute the globals
 	int errLoading = file ? luaL_loadfile(m_lua_state, fileName_or_buff) : 
