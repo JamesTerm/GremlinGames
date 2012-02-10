@@ -7,7 +7,7 @@ class Entity1D_Properties
 		Entity1D_Properties();
 		Entity1D_Properties(const char EntityName[],double Mass,double Dimension,bool IsAngular=false);
 		virtual ~Entity1D_Properties() {}
-		//virtual void LoadFromScript(Framework::Scripting::Script& script);
+		virtual void LoadFromScript(Framework::Scripting::Script& script);
 		void Initialize(Entity1D *NewEntity) const;
 	protected:
 		std::string m_EntityName;  //derived classes can let base class know what type to read
@@ -37,10 +37,12 @@ class Ship_1D_Properties : public Entity1D_Properties
 			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
 			bool IsAngular=false);
 
+		virtual void LoadFromScript(Framework::Scripting::Script& script);
 		void Initialize(Ship_1D *NewShip) const;
 		Ship_Type GetShipType() const {return m_ShipType;}
 		double GetMaxSpeed() const {return m_MAX_SPEED;}
 	private:
+		typedef Entity1D_Properties __super;
 		//! We can break this up even more if needed
 		//double m_EngineRampForward,m_EngineRampReverse,m_EngineRampAfterBurner;
 		//double m_EngineDeceleration;
@@ -61,6 +63,8 @@ class Entity_Properties
 {
 	public:
 		Entity_Properties();
+		virtual ~Entity_Properties() {}
+		virtual void LoadFromScript(Framework::Scripting::Script& script);
 		void Initialize(Entity2D *NewEntity) const;
 	protected:
 		std::string m_EntityName;  //derived classes can let base class know what type to read
@@ -80,9 +84,12 @@ class Ship_Properties : public Entity_Properties
 {
 	public:
 		Ship_Properties();
+		virtual ~Ship_Properties() {}
+		virtual void LoadFromScript(Framework::Scripting::Script& script);
 		void Initialize(Ship_2D *NewShip) const;
 		double GetEngagedMaxSpeed() const {return m_ENGAGED_MAX_SPEED;}
 	private:
+		typedef Entity_Properties __super;
 		// This is the rate used by the keyboard
 		double m_dHeading;
 

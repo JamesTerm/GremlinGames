@@ -111,6 +111,16 @@ class SetUp_Manager
 		void SetSafety(bool UseSafety) {m_Control.SetSafety(UseSafety);}
 		void ResetPos() 
 		{	
+			//TODO scope this within __DebugLUA__
+			#if 1
+			{
+				Framework::Scripting::Script script;
+				script.LoadScript("/FRC2012Robot.lua",true);
+				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
+
+				m_RobotProps.LoadFromScript(script);
+			}
+			#endif
 			m_pRobot->ResetPos();
 			m_Control.ResetPos();
 		}
