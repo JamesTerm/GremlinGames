@@ -3,6 +3,9 @@
 
 using namespace AI_Tester;
 
+namespace Scripting=GG_Framework::Logic::Scripting;
+//namespace Scripting=Framework::Scripting;
+
   /***********************************************************************************************************************************/
  /*															Entity1D_Properties														*/
 /***********************************************************************************************************************************/
@@ -23,7 +26,7 @@ Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,dou
 	m_IsAngular=IsAngular;
 }
 
-void Entity1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+void Entity1D_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err;
 
@@ -92,7 +95,7 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 	m_UsingRange=UsingRange;
 }
 
-void Ship_1D_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err;
 	m_ShipType=eDefault;
@@ -143,7 +146,7 @@ Entity_Properties::Entity_Properties()
 	m_Dimensions[1]=12.0;
 };
 
-void Entity_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+void Entity_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err;
 
@@ -203,6 +206,12 @@ Ship_Properties::Ship_Properties()
 	m_AFTERBURNER_ACCEL = 107.0 * Scale;
 	m_AFTERBURNER_BRAKE = m_BRAKE;
 
+	m_MaxAccelLeft=40.0 * Scale;
+	m_MaxAccelRight=40.0 * Scale;
+	m_MaxAccelForward=87.0 * Scale;
+	m_MaxAccelReverse=70.0 * Scale;
+	m_MaxTorqueYaw=2.5;
+
 	double RAMP_UP_DUR = 1.0;
 	double RAMP_DOWN_DUR = 1.0;
 	m_EngineRampAfterBurner= m_AFTERBURNER_ACCEL/RAMP_UP_DUR;
@@ -210,15 +219,9 @@ Ship_Properties::Ship_Properties()
 	m_EngineRampReverse= m_BRAKE/RAMP_UP_DUR;
 	m_EngineRampStrafe= m_STRAFE/RAMP_UP_DUR;
 	m_EngineDeceleration= m_ACCEL/RAMP_DOWN_DUR;
-
-	m_MaxAccelLeft=40.0 * Scale;
-	m_MaxAccelRight=40.0 * Scale;
-	m_MaxAccelForward=87.0 * Scale;
-	m_MaxAccelReverse=70.0 * Scale;
-	m_MaxTorqueYaw=2.5;
 };
 
-void Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+void Ship_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err;
 	m_ShipType=eDefault;
@@ -340,7 +343,7 @@ void UI_Ship_Properties::Initialize(const char **TextImage,osg::Vec2d &Dimension
 	Dimension[1]=m_UI_Dimensions[1];
 }
 
-void UI_Ship_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+void UI_Ship_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err;
 	err = script.GetGlobalTable("Ship");
