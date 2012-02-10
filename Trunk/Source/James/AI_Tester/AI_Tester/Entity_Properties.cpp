@@ -28,28 +28,29 @@ Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,dou
 
 void Entity1D_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err;
+	const char* err=NULL;
 
-	err = script.GetGlobalTable(m_EntityName.c_str());
-	ASSERT_MSG(!err, err);
+	//err = script.GetGlobalTable(m_EntityName.c_str());
+	//ASSERT_MSG(!err, err);
 	{
-		err = script.GetField("Mass", NULL, NULL, &m_Mass);
-		ASSERT_MSG(!err, err);
-
-		//Get the ship dimensions
-		err = script.GetFieldTable("Dimensions");
-		if (!err)
+		script.GetField("mass_kg", NULL, NULL, &m_Mass);
+		//At this level I do not know if I am dealing with a ship or robot, so I offer all units of measurement
+		err=script.GetField("length_m", NULL, NULL,&m_Dimension);
+		if (err)
 		{
-			//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
-			err = script.GetField("Length", NULL, NULL,&m_Dimension);
-			ASSERT_MSG(!err, err);
-			script.Pop();
+			double dimension;
+			err=script.GetField("length_in", NULL, NULL,&dimension);
+			if (!err)
+				m_Dimension=Inches2Meters(dimension);
+			else
+			{
+				err=script.GetField("length_ft", NULL, NULL,&dimension);
+				if (!err)
+					m_Dimension=Feet2Meters(dimension);
+			}
 		}
-		else
-			m_Dimension=2.0;
-
+	
 	}
-	script.Pop();
 }
 
 void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
@@ -97,26 +98,33 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 
 void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err;
+	const char* err=NULL;
 	m_ShipType=eDefault;
-	m_EntityName="Ship1D";
-	err = script.GetGlobalTable("Ship1D");
-	ASSERT_MSG(!err, err);
+
+	//I shouldn't need this
+	//m_EntityName="Ship1D";
+	//err = script.GetGlobalTable("Ship1D");
+	//ASSERT_MSG(!err, err);
+
 	{
-		err = script.GetField("ACCEL", NULL, NULL, &m_ACCEL);
-		ASSERT_MSG(!err, err);
-		err = script.GetField("BRAKE", NULL, NULL, &m_BRAKE);
+		//double m_MAX_SPEED;
+		//double m_ACCEL, m_BRAKE;
+		//double m_MaxAccelForward,m_MaxAccelReverse;
+		//double m_MinRange,m_MaxRange;
+		//bool m_UsingRange;
 
-		script.GetField("MaxAccelForward", NULL, NULL, &m_MaxAccelForward);
-		script.GetField("MaxAccelReverse", NULL, NULL, &m_MaxAccelReverse);
-
-		err = script.GetField("MAX_SPEED", NULL, NULL, &m_MAX_SPEED);
-		ASSERT_MSG(!err, err);
+		script.GetField("max_speed", NULL, NULL, &m_MAX_SPEED);
+		script.GetField("accel", NULL, NULL, &m_ACCEL);
+		script.GetField("brake", NULL, NULL, &m_BRAKE);
+		script.GetField("max_accel_forward", NULL, NULL, &m_MaxAccelForward);
+		script.GetField("max_accel_reverse", NULL, NULL, &m_MaxAccelReverse);
+		double range;
+		err=script.GetField("min_range_deg", NULL, NULL, &range);
+		if (!err) m_MinRange=DEG_2_RAD(range);
+		err=script.GetField("max_range_deg", NULL, NULL, &range);
+		if (!err) m_MaxRange=DEG_2_RAD(range);
+		script.GetField("using_range", NULL, &m_UsingRange, NULL);
 	}
-	script.Pop();
-
-	//TODO support range in script
-
 	// Let the base class finish things up
 	__super::LoadFromScript(script);
 }

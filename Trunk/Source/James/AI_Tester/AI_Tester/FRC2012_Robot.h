@@ -155,6 +155,7 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		typedef osg::Vec2d Vec2D;
 
 		FRC_2012_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 
 		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}

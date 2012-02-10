@@ -21,6 +21,7 @@ const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
 namespace Base=GG_Framework::Base;
+namespace Scripting=GG_Framework::Logic::Scripting;
 
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
@@ -516,6 +517,40 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	}
 }
 
+void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=SetUpGlobalTable(script);
+	ASSERT_MSG(!err, err);
+	err = script.GetFieldTable("robot_settings");
+	if (!err) 
+	{
+		err = script.GetFieldTable("turret");
+		if (!err)
+		{
+			m_TurretProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("pitch");
+		if (!err)
+		{
+			m_PitchRampProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("power");
+		if (!err)
+		{
+			m_PowerWheelProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("conveyor");
+		if (!err)
+		{
+			m_ConveyorProps.LoadFromScript(script);
+			script.Pop();
+		}
+	}
+	__super::LoadFromScript(script);
+}
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
