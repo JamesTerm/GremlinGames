@@ -81,6 +81,7 @@ class Ship_Properties : public Entity_Properties
 {
 	public:
 		Ship_Properties();
+		const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script);
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Ship_2D *NewShip) const;
 		enum Ship_Type
