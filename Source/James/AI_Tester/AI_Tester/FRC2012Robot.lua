@@ -1,3 +1,7 @@
+
+Pi=3.14159265358979323846
+Pi2=Pi*2
+
 TestShip = {
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
@@ -27,6 +31,62 @@ TestShip = {
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 	},
+	
+	robot_settings =
+	{
+		turret =
+		{
+			pid=
+			{p=1, i=0, d=0},
+			tolerance=0.001,				--we need high precision
+			
+			max_speed=10,
+			accel=1.0,						--These are only needed if we bind keys for turret
+			brake=1.0,
+			max_accel_forward=10,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=10,
+			min_range_deg=-180,				--These are probably good to go, but may need to be smaller
+			max_range_deg= 180
+		},
+		pitch =
+		{
+			pid=
+			{p=1, i=0, d=0},
+			tolerance=0.001,				--we need high precision
+
+			max_speed=10,
+			max_accel_forward=10,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=10,
+			min_range_deg=45-3,				--These should be good to go
+			max_range_deg=70+3
+		},
+		power =
+		{
+			pid=
+			{p=1, i=0, d=0},
+			tolerance=0.1,					--we need decent precision (this will depend on ramp up time too)
+
+			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
+			accel=60.0,						--These are only needed if we bind keys for power in meters per second
+			brake=60.0,
+			max_accel_forward=60,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=60			--The wheel may some time to ramp up
+		},
+		conveyor =
+		{
+			pid=
+			{p=1, i=0, d=0},
+			tolerance=0.01,					--we need good precision
+			
+			max_speed=28,
+			accel=112,						--These are needed and should be high enough to grip without slip
+			brake=112,
+			max_accel_forward=112,
+			max_accel_reverse=112
+		}
+	},
+	--This is only used in the AI tester, can be ignored
 	UI =
 	{
 		Length=5, Width=5,

@@ -15,6 +15,7 @@ using namespace osg;
 using namespace std;
 
 namespace Base=GG_Framework::Base;
+namespace Scripting=GG_Framework::Logic::Scripting;
 
   /***********************************************************************************************************************************/
  /*															Rotary_Linear															*/
@@ -425,4 +426,31 @@ void Rotary_Properties::Init()
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	m_RoteryProps=props;
+}
+
+void Rotary_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+
+	//I shouldn't need this nested field redundancy... just need to be sure all client cases like this
+	//err = script.GetFieldTable("rotary_settings");
+	//if (!err) 
+
+	{
+		//double PID[3]; //p,i,d
+		//double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+		err = script.GetFieldTable("pid");
+		if (!err)
+		{
+			err = script.GetField("p", NULL, NULL,&m_RoteryProps.PID[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("i", NULL, NULL,&m_RoteryProps.PID[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("d", NULL, NULL,&m_RoteryProps.PID[2]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+		script.GetField("tolerance", NULL, NULL, &m_RoteryProps.PrecisionTolerance);
+	}
+	__super::LoadFromScript(script);
 }

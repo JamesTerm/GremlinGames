@@ -105,7 +105,7 @@ class Rotary_Properties : public Ship_1D_Properties
 			MaxAccelReverse,ShipType,UsingRange,MinRange,MaxRange,IsAngular) {Init();}
 
 		Rotary_Properties() {Init();}
-
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		const Rotary_Props &GetRoteryProps() const {return m_RoteryProps;}
 		//Get and Set the properties
 		Rotary_Props &RoteryProps() {return m_RoteryProps;}
