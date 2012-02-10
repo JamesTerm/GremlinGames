@@ -656,8 +656,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			#endif
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("Test2012Robot.lua","Test2012Robot",Commands::e2012);
-			Entity2D *TestEntity=_command.AddRobot("Robot2012","Test2012Robot",str_3,str_4,str_5);
+			_command.LoadRobot("FRC2012Robot.lua","FRC2012Robot",Commands::e2012);
+			Entity2D *TestEntity=_command.AddRobot("Robot2012","FRC2012Robot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
@@ -668,8 +668,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			#endif
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("Test2011Robot.lua","Test2011Robot",Commands::e2011);
-			Entity2D *TestEntity=_command.AddRobot("Robot2011","Test2011Robot",str_3,str_4,str_5);
+			_command.LoadRobot("FRC2011Robot.lua","FRC2011Robot",Commands::e2011);
+			Entity2D *TestEntity=_command.AddRobot("Robot2011","FRC2011Robot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;

@@ -221,7 +221,7 @@ Ship_Properties::Ship_Properties()
 	m_EngineDeceleration= m_ACCEL/RAMP_DOWN_DUR;
 };
 
-void Ship_Properties::LoadFromScript(Scripting::Script& script)
+const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 {
 	const char* err;
 	m_ShipType=eDefault;
@@ -240,6 +240,12 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 			}
 		}
 	}
+	return err;
+}
+
+void Ship_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=SetUpGlobalTable(script);
 	ASSERT_MSG(!err, err);
 	{
 		double dHeading;
