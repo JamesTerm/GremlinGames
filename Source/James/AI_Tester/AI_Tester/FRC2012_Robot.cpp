@@ -81,8 +81,8 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
 		//first get the range from 0 - 1
 		double positive_range = (Position * 0.5) + 0.5;
 		//positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=DEG_2_RAD(45);
-		const double maxRange=DEG_2_RAD(65);
+		const double minRange=GetMinRange();
+		const double maxRange=GetMaxRange();
 		const double Scale=(maxRange-minRange) / maxRange;
 		Position=(positive_range * Scale) + minRange;
 	}
@@ -164,7 +164,7 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 			double positive_range = (Velocity * 0.5) + 0.5;
 			positive_range=positive_range>0.01?positive_range:0.0;
 			const double minRange=5.0 * Pi2;  //TODO determine slowest speed to use
-			const double maxRange=40.0 * Pi2;
+			const double maxRange=MAX_SPEED;
 			const double Scale=(maxRange-minRange) / MAX_SPEED;
 			const double Offset=minRange/MAX_SPEED;
 			Velocity=(positive_range * Scale) + Offset;
@@ -374,6 +374,27 @@ void FRC_2012_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
 }
 
+void FRC_2012_Robot::SetTargetingValue(double Value)
+{
+	//TODO determine final scaler factor for the pitch (may want to make this a property)
+	//printf("\r%f       ",Value);
+	if (Value > -0.98)
+	{
+		if (m_IsTargeting)
+		{
+			m_IsTargeting=false;
+			printf("Disabling Targeting\n");
+		}
+	}
+	else
+	{
+		if (!m_IsTargeting)
+		{
+			m_IsTargeting=true;
+			printf("Enabling Targeting\n");
+		}
+	}
+}
 
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
@@ -383,12 +404,14 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_IsTargeting"].Subscribe(ehl, *this, &FRC_2012_Robot::IsTargeting);
 		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOff);
+		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTargetingValue);
 	}
 	else
 	{
 		em->EventOnOff_Map["Robot_IsTargeting"]  .Remove(*this, &FRC_2012_Robot::IsTargeting);
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOff);
+		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2012_Robot::SetTargetingValue);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);

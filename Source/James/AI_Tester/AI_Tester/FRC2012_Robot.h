@@ -145,6 +145,7 @@ class FRC_2012_Robot : public Tank_Robot
 		void IsTargeting(bool on) {m_IsTargeting=on;}
 		void SetTargetingOn() {IsTargeting(true);}
 		void SetTargetingOff() {IsTargeting(false);}
+		void SetTargetingValue(double Value);
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
