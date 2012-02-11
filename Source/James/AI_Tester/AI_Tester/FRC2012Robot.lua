@@ -79,8 +79,6 @@ TestShip = {
 		conveyor =
 		{
 			--Note: there are no encoders here so is_closed is ignored
-			pid=
-			{p=1, i=0, d=0},
 			tolerance=0.01,					--we need good precision
 			
 			max_speed=28,
