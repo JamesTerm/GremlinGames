@@ -36,6 +36,7 @@ TestShip = {
 	{
 		turret =
 		{
+			is_closed='yes',
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
@@ -50,6 +51,7 @@ TestShip = {
 		},
 		pitch =
 		{
+			is_closed='yes',
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
@@ -62,6 +64,7 @@ TestShip = {
 		},
 		power =
 		{
+			is_closed='yes',
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.1,					--we need decent precision (this will depend on ramp up time too)
@@ -75,6 +78,7 @@ TestShip = {
 		},
 		conveyor =
 		{
+			--Note: there are no encoders here so is_closed is ignored
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.01,					--we need good precision
