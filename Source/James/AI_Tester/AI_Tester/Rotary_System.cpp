@@ -56,7 +56,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 {
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
-	double PotentiometerVelocity; //increased scope for debugging dump
+	double PotentiometerVelocity=0.0; //increased scope for debugging dump
 	
 	//Update the position to where the potentiometer says where it actually is
 	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition()))
@@ -138,14 +138,14 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		Voltage=-Voltage;
 	#endif
 
-	#if 0
-	if (Voltage!=0.0)
+	#ifdef __DebugLUA__
+	if ((m_Rotary_Props.PID_Console_Dump)&&(Voltage!=0.0))
 	{
 		double PosY=m_LastPosition;
 		if (!m_VoltageOverride)
-			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler);
+			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler-MAX_SPEED);
 		else
-			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler);
+			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler-MAX_SPEED);
 	}
 	#endif
 
@@ -243,13 +243,14 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 
 void Rotary_Angular::TimeChange(double dTime_s)
 {
-	double CurrentVelocity=m_Physics.GetVelocity();
+	const double CurrentVelocity=m_Physics.GetVelocity();
 	double Encoder_Velocity=0.0;
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 	{
 		Encoder_Velocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 
-		if ((m_EncoderState==eActive)&&(!GetLockShipToPosition()))
+		//Unlike linear there is no displacement measurement therefore no need to check GetLockShipToPosition()
+		if (m_EncoderState==eActive)
 		{
 			double control=0.0;
 			//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
@@ -279,8 +280,8 @@ void Rotary_Angular::TimeChange(double dTime_s)
 	}
 	__super::TimeChange(dTime_s);
 
-	CurrentVelocity=m_Physics.GetVelocity();
-	double Voltage=CurrentVelocity/m_CalibratedScaler;
+	//Note: CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
+	double Voltage=m_Physics.GetVelocity()/m_CalibratedScaler;
 
 	//Keep voltage override disabled for simulation to test precision stability
 	//if (!m_VoltageOverride)
@@ -313,14 +314,14 @@ void Rotary_Angular::TimeChange(double dTime_s)
 		Voltage=-Voltage;
 	#endif
 
-	#if 0
-	if (Voltage!=0.0)
+	#ifdef __DebugLUA__
+	if (m_Rotary_Props.PID_Console_Dump && (Voltage!=0.0))
 	{
 		double PosY=m_EncoderVelocity;
 		if (!m_VoltageOverride)
-			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
+			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler-MAX_SPEED);
 		else
-			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
+			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler-MAX_SPEED);
 	}
 	#endif
 
@@ -419,7 +420,9 @@ void Rotary_Properties::Init()
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.Feedback_DiplayRow=-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=false;  //Always false when control is fully functional
+	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	m_RoteryProps=props;
 }
 
@@ -434,7 +437,9 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 	{
 		//double PID[3]; //p,i,d
 		//double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+		//int Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 		//bool IsOpen;  //This should always be false once control is fully functional
+		//bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 		err = script.GetFieldTable("pid");
 		if (!err)
 		{
@@ -447,6 +452,10 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		script.GetField("tolerance", NULL, NULL, &m_RoteryProps.PrecisionTolerance);
+		double fDisplayRow;
+		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_RoteryProps.Feedback_DiplayRow=(size_t)fDisplayRow;
 
 		string sTest;
 		//I've made it closed so that typing no or NO stands out, but you can use bool as well
@@ -456,6 +465,12 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
 				m_RoteryProps.IsOpen=true;
+		}
+		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_RoteryProps.PID_Console_Dump=true;
 		}
 	}
 	__super::LoadFromScript(script);

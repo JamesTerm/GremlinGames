@@ -4,7 +4,9 @@ struct Rotary_Props
 {
 	double PID[3]; //p,i,d
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen;  //This should always be false once control is fully functional
+	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
