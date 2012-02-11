@@ -4,6 +4,7 @@ struct Rotary_Props
 {
 	double PID[3]; //p,i,d
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+	bool IsOpen;  //This should always be false once control is fully functional
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback

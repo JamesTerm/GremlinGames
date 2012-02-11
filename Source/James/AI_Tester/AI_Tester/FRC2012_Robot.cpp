@@ -15,8 +15,6 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-#undef __OpenLoopAll__
-
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
@@ -36,10 +34,6 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
-		#ifdef __OpenLoopAll__
-		SetPotentiometerSafety(true);  //enable for auto open loop
-		#endif
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
@@ -107,10 +101,6 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
-		#ifdef __OpenLoopAll__
-		SetPotentiometerSafety(true);  //enable for auto open loop
-		#endif
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
@@ -137,10 +127,6 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
-		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
-		#ifdef __OpenLoopAll__
-		SetEncoderSafety(true);  //enable for auto open loop
-		#endif
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetIsRunning);

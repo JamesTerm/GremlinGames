@@ -48,6 +48,8 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
 	m_CalibratedScaler=MAX_SPEED;
+	if (m_Rotary_Props.IsOpen==true)
+		SetPotentiometerSafety(true);
 }
 
 void Rotary_Linear::TimeChange(double dTime_s)
@@ -181,7 +183,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 			//first disable it
 			m_UsingPotentiometer=false;
 			//Now to reset stuff
-			printf("Disabling potentiometer\n");
+			printf("Disabling potentiometer for %s\n",GetName().c_str());
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
@@ -235,6 +237,8 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 	m_PIDController.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController.Enable();
 	m_CalibratedScaler=MAX_SPEED;
+	if (m_Rotary_Props.IsOpen==true)
+		SetEncoderSafety(true);
 }
 
 void Rotary_Angular::TimeChange(double dTime_s)
@@ -389,7 +393,7 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 			//first disable it
 			m_EncoderState=eNoEncoder;
 			//Now to reset stuff
-			printf("Disabling encoder\n");
+			printf("Disabling encoder for %s\n",GetName().c_str());
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
@@ -425,6 +429,7 @@ void Rotary_Properties::Init()
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.IsOpen=false;  //Always false when control is fully functional
 	m_RoteryProps=props;
 }
 
@@ -439,6 +444,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 	{
 		//double PID[3]; //p,i,d
 		//double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+		//bool IsOpen;  //This should always be false once control is fully functional
 		err = script.GetFieldTable("pid");
 		if (!err)
 		{
@@ -451,6 +457,16 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		script.GetField("tolerance", NULL, NULL, &m_RoteryProps.PrecisionTolerance);
+
+		string sTest;
+		//I've made it closed so that typing no or NO stands out, but you can use bool as well
+		//err = script.GetField("is_closed",&sTest,&bTest,NULL);
+		err = script.GetField("is_closed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+				m_RoteryProps.IsOpen=true;
+		}
 	}
 	__super::LoadFromScript(script);
 }
