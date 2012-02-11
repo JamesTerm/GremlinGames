@@ -1,5 +1,8 @@
 #pragma once
 
+//I wanted to put this at a low enough level for common code to use... this is code that should be disabled during release
+#define __DebugLUA__
+
 class Entity1D;
 class Entity1D_Properties
 {

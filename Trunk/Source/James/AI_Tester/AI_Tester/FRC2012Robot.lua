@@ -36,7 +36,9 @@ TestShip = {
 	{
 		turret =
 		{
-			is_closed='yes',
+			is_closed='yes',				--It is closed loop when feedback has been properly calibrated
+			show_pid_dump='no',				--Only turn on if you want to analyze the PID dump (only one at a time, and it must be closed loop)
+			ds_display_row=-1,				--Assign to a row (e.g. 0-4) when trying to calibrate the potentiometer
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
@@ -52,6 +54,8 @@ TestShip = {
 		pitch =
 		{
 			is_closed='yes',
+			show_pid_dump='no',
+			ds_display_row=-1,
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
@@ -65,6 +69,8 @@ TestShip = {
 		power =
 		{
 			is_closed='yes',
+			show_pid_dump='no',
+			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.1,					--we need decent precision (this will depend on ramp up time too)
