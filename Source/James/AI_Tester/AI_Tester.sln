@@ -37,6 +37,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG_Framework.Logic.Scriptin
 		{1FA55F58-2528-463F-BB30-F905A10FC310} = {1FA55F58-2528-463F-BB30-F905A10FC310}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{3B7862CC-C73B-43F0-A2F6-07028E90C670}"
+	ProjectSection(SolutionItems) = preProject
+		AI_Tester\FRC2011Robot.lua = AI_Tester\FRC2011Robot.lua
+		AI_Tester\FRC2012Robot.lua = AI_Tester\FRC2012Robot.lua
+		AI_Tester\TestRobot.lua = AI_Tester\TestRobot.lua
+		AI_Tester\TestSwerveRobot.lua = AI_Tester\TestSwerveRobot.lua
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
