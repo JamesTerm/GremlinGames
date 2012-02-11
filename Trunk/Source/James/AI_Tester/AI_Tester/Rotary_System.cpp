@@ -244,9 +244,10 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 void Rotary_Angular::TimeChange(double dTime_s)
 {
 	double CurrentVelocity=m_Physics.GetVelocity();
+	double Encoder_Velocity=0.0;
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 	{
-		double Encoder_Velocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+		Encoder_Velocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 
 		if ((m_EncoderState==eActive)&&(!GetLockShipToPosition()))
 		{
@@ -258,17 +259,6 @@ void Rotary_Angular::TimeChange(double dTime_s)
 				control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_Velocity),dTime_s);
 				m_CalibratedScaler=MAX_SPEED+control;
 			}
-			
-			#if 0
-			if (CurrentVelocity!=0.0)
-			{
-				double PosY=GetPos_m();
-				if (!m_VoltageOverride)
-					printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
-				else
-					printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
-			}
-			#endif
 
 			//For most cases we do not need the dead zone skip
 			//m_UseDeadZoneSkip=false;
@@ -328,9 +318,9 @@ void Rotary_Angular::TimeChange(double dTime_s)
 	{
 		double PosY=m_EncoderVelocity;
 		if (!m_VoltageOverride)
-			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler);
+			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
 		else
-			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler);
+			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,Encoder_Velocity,fabs(CurrentVelocity)-fabs(Encoder_Velocity),m_CalibratedScaler);
 	}
 	#endif
 
