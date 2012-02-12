@@ -73,8 +73,13 @@ void Rotary_Linear::TimeChange(double dTime_s)
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
 
 			double control=0.0;
-			control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			m_CalibratedScaler=MAX_SPEED+control;
+			//only adjust calibration when both velocities are in the same direction, or in the case where the potentiometer is stopped which will
+			//allow the scaler to normalize if it need to start up again.
+			if (((CurrentVelocity * PotentiometerVelocity) > 0.0) || IsZero(PotentiometerSpeed) )
+			{
+				control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
+				m_CalibratedScaler=MAX_SPEED+control;
+			}
 
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
