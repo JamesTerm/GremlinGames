@@ -54,6 +54,7 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 
 void Rotary_Linear::TimeChange(double dTime_s)
 {
+	const double CurrentVelocity=m_Physics.GetVelocity();
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 	double PotentiometerVelocity=0.0; //increased scope for debugging dump
@@ -63,7 +64,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	{
 		if (m_LastTime!=0.0)
 		{
-			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
+			double LastSpeed=fabs(CurrentVelocity);  //This is last because the time change has not happened yet
 			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
@@ -104,8 +105,8 @@ void Rotary_Linear::TimeChange(double dTime_s)
 			m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);  //For ease of debugging the controls (no harm to read)
 	}
 	__super::TimeChange(dTime_s);
-	double CurrentVelocity=m_Physics.GetVelocity();
-	double Voltage=CurrentVelocity/m_CalibratedScaler;
+	//Note: CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
+	double Voltage=m_Physics.GetVelocity()/m_CalibratedScaler;
 
 	//Keep voltage override disabled for simulation to test precision stability
 	//if (!m_VoltageOverride)
