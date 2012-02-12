@@ -623,6 +623,8 @@ void FRC_2012_Robot_Control::Reset_Rotary(size_t index)
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			m_Pitch_Pot.ResetPos();
+			//We may want this for more accurate simulation
+			//m_Pitch_Pot.SetPos_m((m_Pitch_Pot.GetMinRange()+m_Pitch_Pot.GetMaxRange()) / 2.0);
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			m_PowerWheel_Enc.ResetPos();
