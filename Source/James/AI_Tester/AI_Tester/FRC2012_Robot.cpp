@@ -268,9 +268,8 @@ const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(false)
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(true),m_IsLowGear(false)
 {
-	m_IsTargeting=true;  //defaults to true
 }
 
 void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -383,6 +382,27 @@ void FRC_2012_Robot::SetTargetingValue(double Value)
 	}
 }
 
+void FRC_2012_Robot::SetLowGearValue(double Value)
+{
+	//printf("\r%f       ",Value);
+	if (Value > 0.0)
+	{
+		if (m_IsLowGear)
+		{
+			m_IsLowGear=false;
+			printf("Now in HighGear\n");
+		}
+	}
+	else
+	{
+		if (!m_IsLowGear)
+		{
+			m_IsLowGear=true;
+			printf("Now in LowGear\n");
+		}
+	}
+}
+
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D::EventMap *em=GetEventMap(); 
@@ -392,6 +412,11 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_IsLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::IsLowGear);
+		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
+		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOff);
+		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetLowGearValue);
 	}
 	else
 	{
@@ -399,6 +424,11 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2012_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_IsLowGear"]  .Remove(*this, &FRC_2012_Robot::IsLowGear);
+		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);
+		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOff);
+		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2012_Robot::SetLowGearValue);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
