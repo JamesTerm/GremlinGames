@@ -1,19 +1,26 @@
 
 Pi=3.14159265358979323846
 Pi2=Pi*2
+Inches2Meters=0.0254
+Feet2Meters=0.3048
+Meters2Feet=3.2808399
+Meters2Inches=39.3700787
+
+FRC2012_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
+WheelBase_Width_In=20.38	  --The wheel base will determine the turn rate, must be as accurate as possible!
+HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters  --RPM's from Parker
+LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
 
 TestShip = {
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
 	MaxTorqueYaw = 25, 
 	
-	MAX_SPEED = 2.916, -- Maximum Speed (m/s)
-	ENGAGED_MAX_SPEED = 2.916, -- Engagement Speed
+	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
-	AFTERBURNER_ACCEL = 2, -- Take this to the limit
-	BRAKE = 10,     -- Brake Deceleration m/s2 (1g = 9.8)
-	-- Turn Rates (deg/sec)
-	dHeading = 514,
+	BRAKE = ACCEL,
+	-- Turn Rates (radians/sec) This is always correct do not change
+	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
@@ -21,8 +28,10 @@ TestShip = {
 	tank_drive =
 	{
 		wheel_base_dimensions =
-		{length_in=27.5, width_in=20.38},	--The wheel base will determine the turn rate, must be as accurate as possible!
-		wheel_diameter_in = 6,				--This will determine the correct distance try to make accurate too
+		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
+		
+		--This encoders/PID will only be used in autonomous if we decide to go steal balls
+		wheel_diameter_in = FRC2012_wheel_diameter_in,
 		left_pid=
 		{p=1, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
 		right_pid=
@@ -92,6 +101,33 @@ TestShip = {
 			brake=112,
 			max_accel_forward=112,
 			max_accel_reverse=112
+		},
+		low_gear = 
+		{
+			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
+			--cause slipping if driver "high sticks" to start or stop quickly.
+			MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5 * 2, MaxAccelReverse = 5 * 2, 
+			MaxTorqueYaw = 25 * 2, 
+			
+			MAX_SPEED = LowGearSpeed,
+			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
+			BRAKE = ACCEL, 
+			-- Turn Rates (deg/sec) This is always correct do not change
+			heading_rad = (LowGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
+			
+			tank_drive =
+			{
+				--We must NOT use I or D for low gear, we must keep it very responsive
+				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
+				left_pid=
+				{p=1, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+				right_pid=
+				{p=1, i=0, d=0},					--These should always match, but able to be made different
+				
+				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
+				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
+				encoder_to_wheel_ratio=0.4			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+			}
 		}
 	},
 	--This is only used in the AI tester, can be ignored
