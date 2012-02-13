@@ -305,7 +305,8 @@ public:
 			GG_Framework::Logic::Scripting::Script script;
 			script.LoadScript(FileName,true);
 			script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
-
+			const char *test=new_entry.SetUpGlobalTable(script);
+			assert(test==NULL);
 			new_entry.LoadFromScript(script);
 		}
 		else
@@ -396,7 +397,8 @@ public:
 			GG_Framework::Logic::Scripting::Script script;
 			script.LoadScript(FileName,true);
 			script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
-
+			const char *test=new_entry->SetUpGlobalTable(script);
+			assert(test==NULL);
 			new_entry->LoadFromScript(script);
 		}
 		else

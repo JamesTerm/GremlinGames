@@ -261,8 +261,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 
 void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err=SetUpGlobalTable(script);
-	ASSERT_MSG(!err, err);
+	const char* err=NULL;
 	err = script.GetFieldTable("tank_drive");
 	if (!err) 
 	{

@@ -64,6 +64,9 @@ class Entity_Properties
 {
 	public:
 		Entity_Properties();
+		//The prep script takes care of the outer layer global table setup
+		//override to search the appropriate global table
+		virtual const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script) {return script.GetGlobalTable(m_EntityName.c_str());}
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Entity2D *NewEntity) const;
 	protected:

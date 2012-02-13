@@ -156,10 +156,7 @@ Entity_Properties::Entity_Properties()
 
 void Entity_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err;
-
-	err = script.GetGlobalTable(m_EntityName.c_str());
-	ASSERT_MSG(!err, err);
+	const char* err=NULL;
 	{
 		err = script.GetField("Mass", NULL, NULL, &m_Mass);
 		ASSERT_MSG(!err, err);
@@ -179,7 +176,6 @@ void Entity_Properties::LoadFromScript(Scripting::Script& script)
 			m_Dimensions[0]=m_Dimensions[1]=2.0; //using 2.0 here means 1.0 radius default which is a great default for torque radius of mass
 
 	}
-	script.Pop();
 }
 
 void Entity_Properties::Initialize(Entity2D *NewEntity) const
@@ -253,8 +249,7 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 
 void Ship_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err=SetUpGlobalTable(script);
-	ASSERT_MSG(!err, err);
+	const char* err=NULL;
 	{
 		double dHeading;
 		err = script.GetField("dHeading", NULL, NULL, &dHeading);
@@ -310,7 +305,6 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 			m_ENGAGED_MAX_SPEED=m_MAX_SPEED;
 
 	}
-	script.Pop();
 
 	// Let the base class finish things up
 	__super::LoadFromScript(script);
@@ -359,18 +353,7 @@ void UI_Ship_Properties::Initialize(const char **TextImage,osg::Vec2d &Dimension
 
 void UI_Ship_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err;
-	err = script.GetGlobalTable("Ship");
-	if (err)
-	{
-		for (size_t i=0;i<_countof(csz_RobotNames);i++)
-		{
-			err = script.GetGlobalTable(csz_RobotNames[i]);
-			if (!err)
-				break;
-		}
-	}
-	ASSERT_MSG(!err, err);
+	const char* err=NULL;
 	{
 		//Get the ships UI
 		err = script.GetFieldTable("UI");
@@ -386,7 +369,5 @@ void UI_Ship_Properties::LoadFromScript(Scripting::Script& script)
 		}
 
 	}
-	script.Pop();
-
 	__super::LoadFromScript(script);
 }
