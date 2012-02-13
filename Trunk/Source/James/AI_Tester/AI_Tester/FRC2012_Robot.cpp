@@ -505,8 +505,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err=SetUpGlobalTable(script);
-	ASSERT_MSG(!err, err);
+	const char* err=NULL;
 	err = script.GetFieldTable("robot_settings");
 	if (!err) 
 	{
@@ -534,6 +533,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_ConveyorProps.LoadFromScript(script);
 			script.Pop();
 		}
+		script.Pop();
 	}
 	__super::LoadFromScript(script);
 }
