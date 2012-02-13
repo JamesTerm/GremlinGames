@@ -161,9 +161,10 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
-
+		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 	private:
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		Tank_Robot_Properties m_LowGearProps;
 };
 
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface

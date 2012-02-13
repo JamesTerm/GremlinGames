@@ -506,6 +506,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err=NULL;
+	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
 	if (!err) 
 	{
@@ -533,9 +534,14 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_ConveyorProps.LoadFromScript(script);
 			script.Pop();
 		}
+
+		m_LowGearProps=*this;  //copy redundant data first
+		err = script.GetFieldTable("low_gear");
+		if (!err)
+			m_LowGearProps.LoadFromScript(script);
+
 		script.Pop();
 	}
-	__super::LoadFromScript(script);
 }
 
   /***********************************************************************************************************************************/
