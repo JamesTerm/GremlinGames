@@ -168,9 +168,9 @@ Entity_Properties::Entity_Properties()
 {
 	m_EntityName="Entity";
 	//m_NAME="default";
-	m_Mass=10000.0;
-	m_Dimensions[0]=12.0;
-	m_Dimensions[1]=12.0;
+	m_Mass=25.0;
+	m_Dimensions[0]=0.6477;
+	m_Dimensions[1]=0.9525;
 };
 
 void Entity_Properties::LoadFromScript(Scripting::Script& script)
@@ -222,23 +222,24 @@ const char * const csz_RobotNames[] =
 
 Ship_Properties::Ship_Properties()
 {
-	m_dHeading = DEG_2_RAD(270.0);
+	m_dHeading = DEG_2_RAD(514.0);
 
-	double Scale=0.2;  //we must scale everything down to see on the view
-	m_MAX_SPEED = 2000.0 * Scale;
-	m_ENGAGED_MAX_SPEED = 400.0 * Scale;
-	m_ACCEL = 60.0 * Scale;
-	m_BRAKE = 50.0 * Scale;
-	m_STRAFE = m_BRAKE; //could not find this one
-	m_AFTERBURNER_ACCEL = 107.0 * Scale;
+	m_MAX_SPEED = 2.916;
+	m_ENGAGED_MAX_SPEED = 2.916;
+	m_ACCEL = m_ENGAGED_MAX_SPEED;
+	m_BRAKE = m_ENGAGED_MAX_SPEED;
+	m_STRAFE = m_BRAKE;
+	m_AFTERBURNER_ACCEL = 60.0;    //we could use these, but I don't think it is necessary 
 	m_AFTERBURNER_BRAKE = m_BRAKE;
 
-	m_MaxAccelLeft=40.0 * Scale;
-	m_MaxAccelRight=40.0 * Scale;
-	m_MaxAccelForward=87.0 * Scale;
-	m_MaxAccelReverse=70.0 * Scale;
-	m_MaxTorqueYaw=2.5;
+	//These are the most important that setup the force restraints
+	m_MaxAccelLeft=5.0;		//The left and right apply to strafe (are ignored for 2011 robot)
+	m_MaxAccelRight=5.0;
+	m_MaxAccelForward=5.0;
+	m_MaxAccelReverse=5.0;
+	m_MaxTorqueYaw=25.0;
 
+	//I'm leaving these in event though they are not going to be used
 	double RAMP_UP_DUR = 1.0;
 	double RAMP_DOWN_DUR = 1.0;
 	m_EngineRampAfterBurner= m_AFTERBURNER_ACCEL/RAMP_UP_DUR;
@@ -251,7 +252,7 @@ Ship_Properties::Ship_Properties()
 const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 {
 	const char* err;
-	m_ShipType=eDefault;
+	//m_ShipType=eDefault;
 	m_EntityName="Ship";
 	err = script.GetGlobalTable("Ship");
 	if (err)
@@ -261,7 +262,7 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 			err = script.GetGlobalTable(csz_RobotNames[i]);
 			if (!err)
 			{
-				m_ShipType=(Ship_Type)(i+1);
+				//m_ShipType=(Ship_Type)(i+1);
 				m_EntityName=csz_RobotNames[i];
 				break;
 			}
@@ -357,55 +358,4 @@ void Ship_Properties::Initialize(Ship_2D *NewShip) const
 	NewShip->MaxAccelForward=m_MaxAccelForward;
 	NewShip->MaxAccelReverse=m_MaxAccelReverse;
 	NewShip->MaxTorqueYaw=m_MaxTorqueYaw;
-}
-
-  /***********************************************************************************************************************************/
- /*														UI_Ship_Properties															*/
-/***********************************************************************************************************************************/
-
-UI_Ship_Properties::UI_Ship_Properties()
-{
-	m_TextImage="*";
-	m_UI_Dimensions[0]=1,m_UI_Dimensions[1]=1;
-};
-
-void UI_Ship_Properties::Initialize(const char **TextImage,osg::Vec2d &Dimension) const
-{
-	*TextImage=m_TextImage.c_str();
-	Dimension[0]=m_UI_Dimensions[0];
-	Dimension[1]=m_UI_Dimensions[1];
-}
-
-void UI_Ship_Properties::LoadFromScript(Scripting::Script& script)
-{
-	const char* err;
-	err = script.GetGlobalTable("Ship");
-	if (err)
-	{
-		for (size_t i=0;i<_countof(csz_RobotNames);i++)
-		{
-			err = script.GetGlobalTable(csz_RobotNames[i]);
-			if (!err)
-				break;
-		}
-	}
-	ASSERT_MSG(!err, err);
-	{
-		//Get the ships UI
-		err = script.GetFieldTable("UI");
-		if (!err)
-		{
-			err = script.GetField("Length", NULL, NULL,&m_UI_Dimensions[1]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("Width", NULL, NULL,&m_UI_Dimensions[0]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("TextImage",&m_TextImage,NULL,NULL);
-			ASSERT_MSG(!err, err);
-			script.Pop();
-		}
-
-	}
-	script.Pop();
-
-	__super::LoadFromScript(script);
 }
