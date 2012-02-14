@@ -118,6 +118,7 @@ class SetUp_Manager
 				script.LoadScript("/FRC2012Robot.lua",true);
 				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 
+				m_RobotProps.SetUpGlobalTable(script);
 				m_RobotProps.LoadFromScript(script);
 			}
 			#endif
