@@ -17,21 +17,21 @@ public:
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 {
-public:
-	//typedef Framework::Base::Vec2d Vec2D;
-	typedef osg::Vec2d Vec2D;
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
 
-	FRC_2012_Robot_Properties();
-	virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		FRC_2012_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 
-	const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
-	const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-	const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-	const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
-	const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
-private:
-	Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
-	Tank_Robot_Properties m_LowGearProps;
+		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
+		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
+		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
+	private:
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		Tank_Robot_Properties m_LowGearProps;
 };
 
 class FRC_2012_Robot : public Tank_Robot
