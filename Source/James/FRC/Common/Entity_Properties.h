@@ -14,7 +14,7 @@ class Entity1D_Properties
 	private:
 		//Stuff needed for physics
 		double m_Mass;
-		double m_Dimension; //Dimension- Length
+		double m_Dimension; //Dimension- Length for linear and diameter for angular
 		bool m_IsAngular;
 };
 
@@ -64,6 +64,9 @@ class Entity_Properties
 	public:
 		Entity_Properties();
 		virtual ~Entity_Properties() {}
+		//The prep script takes care of the outer layer global table setup
+		//override to search the appropriate global table
+		virtual const char *SetUpGlobalTable(Framework::Scripting::Script& script) {return script.GetGlobalTable(m_EntityName.c_str());}
 		virtual void LoadFromScript(Framework::Scripting::Script& script);
 		void Initialize(Entity2D *NewEntity) const;
 	protected:
@@ -85,9 +88,12 @@ class Ship_Properties : public Entity_Properties
 	public:
 		Ship_Properties();
 		virtual ~Ship_Properties() {}
+		const char *SetUpGlobalTable(Framework::Scripting::Script& script);
 		virtual void LoadFromScript(Framework::Scripting::Script& script);
 		void Initialize(Ship_2D *NewShip) const;
 		double GetEngagedMaxSpeed() const {return m_ENGAGED_MAX_SPEED;}
+		double GetMaxAccelForward() const {return m_MaxAccelForward;}
+		double GetMaxAccelReverse() const {return m_MaxAccelReverse;}
 	private:
 		typedef Entity_Properties __super;
 		// This is the rate used by the keyboard
