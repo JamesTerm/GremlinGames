@@ -22,10 +22,10 @@ const double Pi2=M_PI*2.0;
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/
 /***********************************************************************************************************************************/
-Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders) : 
+Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Drive(EntityName), m_RobotControl(robot_control),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
-	m_UsingEncoders(UseEncoders),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
+	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
 	//m_UsingEncoders=true; //testing
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
@@ -52,6 +52,8 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
+	//This can be dynamically called so we always call it
+	SetUseEncoders(!m_TankRobotProps.IsOpen);
 }
 void Tank_Robot::ResetPos()
 {
@@ -61,6 +63,32 @@ void Tank_Robot::ResetPos()
 	//ensure teleop has these set properly
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	m_UseDeadZoneSkip=true;
+}
+
+void Tank_Robot::SetUseEncoders(bool UseEncoders) 
+{
+	if (!UseEncoders)
+	{
+		if (m_UsingEncoders)
+		{
+			//first disable it
+			m_UsingEncoders=false;
+			//Now to reset stuff
+			printf("Disabling encoders for %s\n",GetName().c_str());
+			ResetPos();
+			m_EncoderGlobalVelocity=Vec2d(0.0,0.0);
+		}
+	}
+	else
+	{
+		if (!m_UsingEncoders)
+		{
+			m_UsingEncoders=true;
+			//setup the initial value with the potentiometers value
+			printf("Enabling encoders for %s\n",GetName().c_str());
+			ResetPos();
+		}
+	}
 }
 
 void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
@@ -96,14 +124,14 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
-		#if 0
-		if (RightVelocity!=0.0)
+		#ifdef __DebugLUA__
+		if (m_TankRobotProps.PID_Console_Dump && (RightVelocity!=0.0))
 		{
 			double PosY=GetPos_m()[1];
 			if (!m_VoltageOverride)
-				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+				printf("y=%f p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right-MAX_SPEED);
 			else
-				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right);
+				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right-MAX_SPEED);
 		}
 		#endif
 
@@ -256,6 +284,9 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.WheelDiameter=c_WheelDiameter;
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
+	props.Feedback_DiplayRow=-1;  //Only assigned to a row during calibration of feedback sensor
+	props.IsOpen=false;  //Always false when control is fully functional
+	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	m_TankRobotProps=props;
 }
 
@@ -311,6 +342,27 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			err = script.GetField("d", NULL, NULL,&m_TankRobotProps.RightPID[2]);
 			ASSERT_MSG(!err, err);
 			script.Pop();
+		}
+
+		double fDisplayRow;
+		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_TankRobotProps.Feedback_DiplayRow=(size_t)fDisplayRow;
+
+		string sTest;
+		err = script.GetField("is_closed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+				m_TankRobotProps.IsOpen=true;
+			else
+				m_TankRobotProps.IsOpen=false;
+		}
+		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.PID_Console_Dump=true;
 		}
 
 		script.Pop(); 

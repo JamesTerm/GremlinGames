@@ -56,8 +56,7 @@ class FRC_2012_Robot : public Tank_Robot
 
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		//TODO change UseEncoders to be passive
-		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders=false);
+		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();

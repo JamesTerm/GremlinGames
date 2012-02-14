@@ -22,7 +22,7 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 /***********************************************************************************************************************************/
 
 Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
+	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),m_MaxSpeedReference(0.0),
 	m_UsingPotentiometer(false),  //to be safe
@@ -206,9 +206,9 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 		{
 			m_UsingPotentiometer=true;
 			//setup the initial value with the potentiometers value
-			printf("Enabling potentiometer\n");
+			printf("Enabling potentiometer for %s\n"),GetName().c_str();
 			ResetPos();
-			m_UsingRange=true;
+			m_UsingRange=GetUsingRange_Props();
 			m_CalibratedScaler=MAX_SPEED;
 		}
 	}
@@ -218,7 +218,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 /***********************************************************************************************************************************/
 
 Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
+	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_CalibratedScaler(1.0),m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
 	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState),
@@ -406,9 +406,9 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 		{
 			m_EncoderState=m_EncoderCachedState;
 			//setup the initial value with the potentiometers value
-			printf("Enabling encoder\n");
+			printf("Enabling encoder for %s\n",GetName().c_str());
 			ResetPos();
-			m_UsingRange=true;
+			m_UsingRange=GetUsingRange_Props();
 			m_CalibratedScaler=MAX_SPEED;
 		}
 	}

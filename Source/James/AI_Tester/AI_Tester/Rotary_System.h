@@ -9,9 +9,24 @@ struct Rotary_Props
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 };
 
+class Rotary_System : public Ship_1D
+{
+	public:
+		Rotary_System(const char EntityName[]) : Ship_1D(EntityName),m_UsingRange_props(false) {}
+		//Cache the m_UsingRange props so that we can know what to set back to
+		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL) 
+		{
+			__super::Initialize(em,props);  //must call predecessor first!
+			m_UsingRange_props=m_UsingRange;
+		}
+		bool GetUsingRange_Props() const {return m_UsingRange_props;}
+	private:
+		bool m_UsingRange_props;
+};
+
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
 ///It currently has a single PID (Dual PID may either be integrated or a new class)... to manage voltage error
-class Rotary_Linear : public Ship_1D
+class Rotary_Linear : public Rotary_System
 {
 	private:
 		//typedef Ship_1D __super;
@@ -48,7 +63,7 @@ class Rotary_Linear : public Ship_1D
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
 ///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate
-class Rotary_Angular : public Ship_1D
+class Rotary_Angular : public Rotary_System
 {
 	public:
 		enum EncoderUsage
