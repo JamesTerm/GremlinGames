@@ -1,16 +1,27 @@
-#include "stdafx.h"
-#include "AI_Tester.h"
+#include "../Base/Base_Includes.h"
+#include <math.h>
+#include <assert.h>
+#include "../Base/Vec2d.h"
+#include "../Base/Misc.h"
+#include "../Base/Event.h"
+#include "../Base/EventMap.h"
+#include "../Base/Script.h"
+#include "Entity_Properties.h"
+#include "Physics_1D.h"
+#include "Physics_2D.h"
+#include "Entity2D.h"
+#include "Goal.h"
+#include "Ship.h"
+#include "AI_Base_Controller.h"
 
-using namespace AI_Tester;
-using namespace GG_Framework::Base;
-using namespace osg;
+using namespace Framework::Base;
 
 #undef __EnableOrientationResistance__  //This one can probably be removed
 #undef __DisableShipSpeedBoost__
 #undef __DisableSpeedControl__  //This one is great for test purposes
 #undef DEBUG_AFTERBURNER
 
-bool g_DisableEngineRampUp2=false;
+bool g_DisableEngineRampUp2=true;  //we need not use engine ramping for the robot
 
   /***************************************************************************************************************/
  /*													Ship_2D														*/
@@ -19,8 +30,6 @@ const double PI=M_PI;
 const double Pi2=M_PI*2.0;
 const double Half_Pi=M_PI/2.0;
 
-namespace AI_Tester
-{
 
 inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
 {
@@ -44,12 +53,11 @@ inline Vec2d GetDirection(double Heading,double Intensity)
 	return Vec2d(sin(Heading)*Intensity,cos(Heading)*Intensity);
 }
 
-}
 
 //Quat FromLW_Rot_Radians(double H, double P, double R);
 
-Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
-	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation),m_TorqueReported_Averager(0.0625)
+Ship_2D::Ship_2D(const char EntityName[]) : Entity2D(EntityName),
+	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation)
 {
 	SetSimFlightMode(true);  //this sets up the initial speed as well
 	SetStabilizeRotation(true); //This should always be true unless there is some ship failure
@@ -101,7 +109,7 @@ void Ship_2D::SetSimFlightMode(bool SimFlightMode)
 		//but that would not be something desirable
 		m_RequestedVelocity=m_Physics.GetLinearVelocity().length(); 
 		m_SimFlightMode=SimFlightMode;	
-		DebugOutput("SimFlightMode=%d\n",SimFlightMode);
+		//DebugOutput("SimFlightMode=%d\n",SimFlightMode);
 	}
 }
 
@@ -190,7 +198,7 @@ AI_Base_Controller *Ship_2D::Create_Controller()
 	return new AI_Base_Controller(*this);
 }
 
-void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
+void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *props)
 {
 	m_controller = Create_Controller();
 	__super::Initialize(em,props);
@@ -232,10 +240,6 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
-	m_Physics.GetPilotInfo().GLimit = 8.0;
-	m_Physics.GetPilotInfo().PassOutTime_s = 10.0;
-	m_Physics.GetPilotInfo().PassOutRecoveryTime_s = 1.0;
-	m_Physics.GetPilotInfo().MaxRecoveryTime_s = 10.0;
 
 	double RadiusOfConcentratedMass=m_Physics.GetRadiusOfConcentratedMass();
 	m_IntendedOrientationPhysics.SetRadiusOfConcentratedMass(RadiusOfConcentratedMass);
@@ -609,7 +613,7 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	// Now to run the time updates (displacement plus application of it)
 	GetPhysics().G_Dampener = G_Dampener;
-	Ship::TimeChange(dTime_s);
+	__super::TimeChange(dTime_s);
 
 	m_controller->UpdateUI(dTime_s);
 
@@ -623,28 +627,59 @@ void Ship_2D::TimeChange(double dTime_s)
 	m_currAccel=Vec2d(0,0);
 }
 
-//////////////////////////////////////////////////////////////////////////
 
 void Ship_2D::CancelAllControls()
 {
 	//__super::CancelAllControls();
+	//if (m_controller )
 	//	m_controller->CancelAllControls();
 }
 
-//////////////////////////////////////////////////////////////////////////
-#if 0
-void Ship_2D::DestroyEntity(bool shotDown, Vec3d collisionPt)
+  /***********************************************************************************************************************************/
+ /*													Ship_Tester																		*/
+/***********************************************************************************************************************************/
+
+
+Ship_Tester::~Ship_Tester()
 {
-	__super::DestroyEntity(shotDown, collisionPt);
-
-	//Reset all of the intended vectors and thrusters.
-	// Anything that would keep the ship from flying with its current velocities. (linear and angular)
-	if (IsLocallyControlled())
-	{
-		SetSimFlightMode(false);
-		SetStabilizeRotation(false);
-	}
+	//not perfect but in a test environment will do
+	delete GetController()->m_Goal;
+	GetController()->m_Goal=NULL;
+	//assert(!GetController()->m_Goal);
 }
-#endif
-//////////////////////////////////////////////////////////////////////////
 
+void Ship_Tester::SetPosition(double x,double y) 
+{
+
+	PosAtt *writePtr=m_PosAtt_Write;
+	PosAtt *readPtr=m_PosAtt_Read;
+	writePtr->m_pos_m.set(x,y);
+	writePtr->m_att_r=readPtr->m_att_r;  //make sure the entire structure is updated!
+	UpdatePosAtt();
+}
+
+void Ship_Tester::SetAttitude(double radians)
+{
+
+	PosAtt *writePtr=m_PosAtt_Write;
+	PosAtt *readPtr=m_PosAtt_Read;
+	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
+	writePtr->m_att_r=radians;
+	UpdatePosAtt();
+}
+
+Goal *Ship_Tester::ClearGoal()
+{
+	//Ensure there the current goal is clear
+	if (GetController()->m_Goal)
+	{
+		GetController()->m_Goal->Terminate();
+		//TODO determine how to ensure the update thread is finished with the process
+	}
+	return GetController()->m_Goal;
+}
+
+void Ship_Tester::SetGoal(Goal *goal) 
+{
+	GetController()->m_Goal=goal;
+}
