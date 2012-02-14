@@ -60,6 +60,7 @@ class Encoder_Tester
 {
 	public:
 		Encoder_Tester();
+		virtual void Initialize(const Ship_1D_Properties *props=NULL);
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		void SetTimeDelta(double dTime_s);

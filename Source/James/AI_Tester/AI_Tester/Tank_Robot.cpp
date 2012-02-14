@@ -343,6 +343,9 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 
 		//This will copy all the props
 		m_TankRobotProps=robot_props->GetTankRobotProps();
+		//We'll try to construct the props to match our properties
+		Ship_1D_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward(),robot_props->GetMaxAccelReverse());
+		m_Encoders.Initialize(&props);
 	}
 }
 

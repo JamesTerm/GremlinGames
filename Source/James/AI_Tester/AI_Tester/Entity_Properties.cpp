@@ -169,9 +169,6 @@ void Entity_Properties::LoadFromScript(Scripting::Script& script)
 			err = script.GetField("Width", NULL, NULL,&m_Dimensions[0]);
 			script.Pop();
 		}
-		else
-			m_Dimensions[0]=m_Dimensions[1]=2.0; //using 2.0 here means 1.0 radius default which is a great default for torque radius of mass
-
 	}
 }
 
