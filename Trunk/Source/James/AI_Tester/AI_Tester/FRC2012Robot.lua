@@ -27,6 +27,9 @@ TestShip = {
 	
 	tank_drive =
 	{
+		is_closed=0,						--This should always be false for high gear
+		show_pid_dump='no',
+		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
 		
@@ -117,10 +120,13 @@ TestShip = {
 			
 			tank_drive =
 			{
+				is_closed=1,						--True should help low gear, but disable if there are problems
+				show_pid_dump='no',
+				ds_display_row=-1,
 				--We must NOT use I or D for low gear, we must keep it very responsive
 				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
 				left_pid=
-				{p=1, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+				{p=1, i=0, d=0},
 				right_pid=
 				{p=1, i=0, d=0},					--These should always match, but able to be made different
 				

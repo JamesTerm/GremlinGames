@@ -28,6 +28,9 @@ struct Tank_Robot_Props
 	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
 	double LeftPID[3]; //p,i,d
 	double RightPID[3]; //p,i,d
+	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
+	bool IsOpen;  //This property only applies in teleop
+	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 };
 
 class Tank_Robot_UI;
@@ -39,11 +42,11 @@ class Tank_Robot : public Tank_Drive
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders=false);
+		Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
-		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
+		void SetUseEncoders(bool UseEncoders);
 		virtual void TimeChange(double dTime_s);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 	protected:
@@ -61,7 +64,7 @@ class Tank_Robot : public Tank_Drive
 		Tank_Drive_Control_Interface * const m_RobotControl;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
 		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
-		bool m_UsingEncoders;
+		bool m_UsingEncoders,m_IsAutonomous;
 		bool m_VoltageOverride;  //when true will kill voltage
 		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
