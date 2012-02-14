@@ -388,7 +388,10 @@ void FRC_2012_Robot::SetLowGear(bool on)
 	m_SetLowGear=on;
 	//Now for some real magic with the properties!
 	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
+
+	m_RobotControl->OpenSolenoid(eUseLowGear,on);
 }
+
 void FRC_2012_Robot::SetLowGearValue(double Value)
 {
 	//printf("\r%f       ",Value);
@@ -772,7 +775,20 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	return result;
 }
 
-
+void FRC_2012_Robot_Control::OpenSolenoid(size_t index,bool Open)
+{
+	switch (index)
+	{
+	case FRC_2012_Robot::eUseLowGear:
+		printf("UseLowGear=%d\n",Open);
+		//m_UseLowGear=Open;
+		break;
+	case FRC_2012_Robot::eRampDeployment:
+		printf("RampDeployment=%d\n",Open);
+		//m_RampDeployment=Open;
+		break;
+	}
+}
   /***********************************************************************************************************************************/
  /*														FRC_2012_Turret_UI															*/
 /***********************************************************************************************************************************/
