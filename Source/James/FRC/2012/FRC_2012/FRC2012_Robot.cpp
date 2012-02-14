@@ -28,18 +28,17 @@
 using namespace Framework::Base;
 using namespace std;
 
-#define __OpenLoopAll__
-
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 const double PI_2 = 1.57079632679489661923;
 
 namespace Base=Framework::Base;
+namespace Scripting=Framework::Scripting;
 
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
-FRC_2012_Robot::Turret::Turret(Rotary_Control_Interface *robot_control,FRC_2012_Robot *parent) : 
+FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
 	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent)
 {
 }
@@ -49,10 +48,6 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
-		#ifdef __OpenLoopAll__
-		SetPotentiometerSafety(true);  //enable for auto open loop
-		#endif
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
@@ -81,23 +76,38 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
-FRC_2012_Robot::PitchRamp::PitchRamp(Rotary_Control_Interface *robot_control) : Rotary_Linear("PitchRamp",robot_control,ePitchRamp)
+FRC_2012_Robot::PitchRamp::PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
+	Rotary_Linear("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
 {
 }
 
 void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
 {
-	//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-	//first get the range from 0 - 1
-	double positive_range = (Position * 0.5) + 0.5;
-	//positive_range=positive_range>0.01?positive_range:0.0;
-	const double minRange=DEG_2_RAD(45);
-	const double maxRange=DEG_2_RAD(65);
-	const double Scale=(maxRange-minRange) / maxRange;
-	Position=(positive_range * Scale) + minRange;
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetIsUsingPotentiometer());
+	if (!IsTargeting)
+	{
+		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+		//first get the range from 0 - 1
+		double positive_range = (Position * 0.5) + 0.5;
+		//positive_range=positive_range>0.01?positive_range:0.0;
+		const double minRange=GetMinRange();
+		const double maxRange=GetMaxRange();
+		const double Scale=(maxRange-minRange) / maxRange;
+		Position=(positive_range * Scale) + minRange;
+	}
 
 	//DOUT5("Test=%f",RAD_2_DEG(Position));
 	__super::SetIntendedPosition(Position);
+}
+
+void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
+{
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetIsUsingPotentiometer());
+	if (IsTargeting)
+	{
+		__super::SetIntendedPosition(m_pParent->m_PitchAngle);
+	}
+	__super::TimeChange(dTime_s);
 }
 
 void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
@@ -105,10 +115,6 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
-		#ifdef __OpenLoopAll__
-		SetPotentiometerSafety(true);  //enable for auto open loop
-		#endif
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
@@ -135,10 +141,6 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
-		//These should be disabled for closed loop... placed here for late binding (mostly for AI tester environment)
-		#ifdef __OpenLoopAll__
-		SetEncoderSafety(true);  //enable for auto open loop
-		#endif
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Subscribe(ehl,*this, &FRC_2012_Robot::PowerWheels::SetIsRunning);
@@ -153,22 +155,45 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
 {
-	if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	if (!IsTargeting)
 	{
-		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-		//first get the range from 0 - 1
-		double positive_range = (Velocity * 0.5) + 0.5;
-		positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=20.0 * Pi;
-		const double maxRange=40.0 * Pi;
-		const double Scale=(maxRange-minRange) / MAX_SPEED;
-		const double Offset=minRange/MAX_SPEED;
-		Velocity=(positive_range * Scale) + Offset;
-		//DOUT5("%f",Velocity);
-		__super::SetRequestedVelocity_FromNormalized(Velocity);
+		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
+		{
+			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+			//first get the range from 0 - 1
+			double positive_range = (Velocity * 0.5) + 0.5;
+			positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=5.0 * Pi2;  //TODO determine slowest speed to use
+			const double maxRange=MAX_SPEED;
+			const double Scale=(maxRange-minRange) / MAX_SPEED;
+			const double Offset=minRange/MAX_SPEED;
+			Velocity=(positive_range * Scale) + Offset;
+			//DOUT5("%f",Velocity);
+			__super::SetRequestedVelocity_FromNormalized(Velocity);
+		}
+		else
+			__super::SetRequestedVelocity_FromNormalized(0.0);
 	}
-	else
-		__super::SetRequestedVelocity_FromNormalized(0.0);
+}
+
+void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
+{
+	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	if (  IsTargeting )
+	{
+		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested())) 
+		{
+			//convert linear velocity to angular velocity
+			double RPS=m_pParent->m_LinearVelocity / (Pi * GetDimension());
+			RPS*=2.0;  //For hooded shoot we'll have to move twice as fast
+			SetRequestedVelocity(RPS * Pi2);
+			//DOUT5("v=%f rps=%f rad=%f",m_pParent->m_LinearVelocity * 3.2808399,RPS,RPS*Pi2);
+		}
+		else
+			SetRequestedVelocity(0);
+	}
+	__super::TimeChange(dTime_s);
 }
 
   /***********************************************************************************************************************************/
@@ -251,15 +276,14 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
 
-//TODO get the physical measurements of the game for this
-const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,3.0);
-const double c_TargetBaseHeight=2.0;
+const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,Feet2Meters(27));
+const double c_BallShootHeight_inches=55.0;
+const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
-FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(robot_control,this),m_PitchRamp(robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(false)
+FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous) : 
+	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(true),m_SetLowGear(false)
 {
-	m_IsTargeting=true;  //testing
 }
 
 void FRC_2012_Robot::Initialize(Base::EventMap& em, const Entity_Properties *props)
@@ -267,7 +291,8 @@ void FRC_2012_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 	__super::Initialize(em,props);
 	m_RobotControl->Initialize(props);
 
-	const FRC_2012_Robot_Properties *RobotProps=static_cast<const FRC_2012_Robot_Properties *>(props);
+	const FRC_2012_Robot_Properties *RobotProps=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
+	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 	m_Turret.Initialize(em,RobotProps?&RobotProps->GetTurretProps():NULL);
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
@@ -285,6 +310,38 @@ void FRC_2012_Robot::ResetPos()
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
 	m_TargetOffset=c_TargetBasePosition;
+	m_TargetHeight=c_TargetBaseHeight;
+	//TODO tweak adjustments based off my position in the field here
+	//
+	//Now to compute my pitch, power, and hang time
+	{
+		//TODO factor in rotation if it is significant
+		const double x=Vec2D(GetPos_m()-m_TargetOffset).length();
+		const double y=m_TargetHeight;
+		const double y2=y*y;
+		const double x2=x*x;
+		const double g=9.80665;
+		//These equations come from here http://www.lightingsciences.ca/pdf/BNEWSEM2.PDF
+
+		//Where y = height displacement (or goal - player)
+		//	[theta=atan(sqrt(y^2+x^2)/x+y/x)]
+		//This is equation 8 solving theta
+		m_PitchAngle=atan(sqrt(y2+x2)/x+y/x);
+
+		//Be sure G is in the same units as x and y!  (all in meters in code)
+		//	V=sqrt(G(sqrt(y^2+x^2)+y))
+		//	This is equation 7 solving v
+		m_LinearVelocity=sqrt(g*(sqrt(y2+x2)+y));
+
+		//ta=(sin(theta)*v)/g   //This is equation 2 solving for t1
+		//tb=(x-ta*cos(theta)*v)/(cos(theta)*v)   //this is equation 3 solving for t2
+		//	hang time= ta+tb 
+		double ta,tb;
+		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
+		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
+		m_HangTime = ta+tb;
+		//DOUT5("x=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
@@ -318,14 +375,85 @@ void FRC_2012_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
 }
 
+void FRC_2012_Robot::SetTargetingValue(double Value)
+{
+	//TODO determine final scaler factor for the pitch (may want to make this a property)
+	//printf("\r%f       ",Value);
+	if (Value > -0.98)
+	{
+		if (m_IsTargeting)
+		{
+			m_IsTargeting=false;
+			printf("Disabling Targeting\n");
+		}
+	}
+	else
+	{
+		if (!m_IsTargeting)
+		{
+			m_IsTargeting=true;
+			printf("Enabling Targeting\n");
+		}
+	}
+}
+
+void FRC_2012_Robot::SetLowGear(bool on) 
+{
+	m_SetLowGear=on;
+	//Now for some real magic with the properties!
+	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
+
+	m_RobotControl->OpenSolenoid(eUseLowGear,on);
+}
+
+void FRC_2012_Robot::SetLowGearValue(double Value)
+{
+	//printf("\r%f       ",Value);
+	if (Value > 0.0)
+	{
+		if (m_SetLowGear)
+		{
+			SetLowGear(false);
+			printf("Now in HighGear\n");
+		}
+	}
+	else
+	{
+		if (!m_SetLowGear)
+		{
+			SetLowGear(true);
+			printf("Now in LowGear\n");
+		}
+	}
+}
 
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
-	//Entity2D::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
-	//if (Bind)
-	//	em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2012_Robot::CloseDeploymentDoor);
-	//else
-	//	em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &FRC_2012_Robot::CloseDeploymentDoor);
+	Framework::Base::EventMap *em=GetEventMap(); 
+	if (Bind)
+	{
+		em->EventOnOff_Map["Robot_IsTargeting"].Subscribe(ehl, *this, &FRC_2012_Robot::IsTargeting);
+		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOn);
+		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOff);
+		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGear);
+		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
+		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOff);
+		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetLowGearValue);
+	}
+	else
+	{
+		em->EventOnOff_Map["Robot_IsTargeting"]  .Remove(*this, &FRC_2012_Robot::IsTargeting);
+		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOn);
+		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOff);
+		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2012_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &FRC_2012_Robot::SetLowGear);
+		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);
+		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOff);
+		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2012_Robot::SetLowGearValue);
+	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
@@ -338,7 +466,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
  /*													FRC_2012_Robot_Properties														*/
 /***********************************************************************************************************************************/
 
-const double c_WheelDiameter=0.1524;  //6 inches
+const double c_WheelDiameter=Inches2Meters(6);
 const double c_MotorToWheelGearRatio=12.0/36.0;
 
 FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
@@ -361,13 +489,13 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	10.0,10.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
-	DEG_2_RAD(45-3),DEG_2_RAD(65+3) //add padding for quick response time (as close to limits will slow it down)
+	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
 	),
 	m_PowerWheelProps(
 	"PowerWheels",
 	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	40 * Pi,   //Max Speed (rounded as we need not have precision)
+	Inches2Meters(6),   //Dimension  (needed to convert linear to angular velocity)
+	(5000.0/60.0) * Pi2,   //Max Speed (This is clocked at 5000 rpm) 
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Properties::eSimpleMotor,
@@ -416,7 +544,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
 		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.01; //we need good precision
+		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
 		m_PowerWheelProps.RoteryProps()=props;
 	}
 	{
@@ -427,6 +555,46 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	}
 }
 
+void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	__super::LoadFromScript(script);
+	err = script.GetFieldTable("robot_settings");
+	if (!err) 
+	{
+		err = script.GetFieldTable("turret");
+		if (!err)
+		{
+			m_TurretProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("pitch");
+		if (!err)
+		{
+			m_PitchRampProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("power");
+		if (!err)
+		{
+			m_PowerWheelProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("conveyor");
+		if (!err)
+		{
+			m_ConveyorProps.LoadFromScript(script);
+			script.Pop();
+		}
+
+		m_LowGearProps=*this;  //copy redundant data first
+		err = script.GetFieldTable("low_gear");
+		if (!err)
+			m_LowGearProps.LoadFromScript(script);
+
+		script.Pop();
+	}
+}
 
   /***********************************************************************************************************************************/
  /*														FRC_2012_UI_Controller														*/

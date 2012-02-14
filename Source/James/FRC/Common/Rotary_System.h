@@ -107,6 +107,7 @@ class Rotary_Angular : public Rotary_System
 		virtual void SetEncoderSafety(bool DisableFeedback);
 
 		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);
+		EncoderUsage GetEncoderUsage() const {return m_EncoderCachedState;}
 };
 
 class Rotary_Properties : public Ship_1D_Properties
