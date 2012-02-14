@@ -175,8 +175,10 @@ private:
 #define RAD_2_DEG(x)		((x)*180.0/M_PI)
 #define ARRAY_SIZE(things)	((sizeof(things)/sizeof(*(things))))
 
-#define inches2Meters(x)	((x)*0.0254)
-#define Meters2Feet(x)		((x)*3.2808)
+#define Inches2Meters(x)	((x)*0.0254)
+#define Feet2Meters(x)		((x)*0.3048)
+#define Meters2Feet(x)		((x)*3.2808399)
+#define Meters2Inches(x)	((x)*39.3700787)
 #define MIN(a,b)			((a)<(b)?(a):(b))
 #define MAX(a,b)			((a)>(b)?(a):(b))
 

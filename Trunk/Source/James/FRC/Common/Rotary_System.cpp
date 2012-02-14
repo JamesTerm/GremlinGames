@@ -21,16 +21,20 @@
 #include "Rotary_System.h"
 
 using namespace Framework::Base;
+#define ASSERT(cond) assert(cond);
+#define ASSERT_MSG(cond, msg) if (!(cond)){printf((msg)); assert(cond);}
+
 using namespace std;
 
 namespace Base=Framework::Base;
+namespace Scripting=Framework::Scripting;
 
   /***********************************************************************************************************************************/
  /*															Rotary_Linear															*/
 /***********************************************************************************************************************************/
 
 Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
+	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_LastPosition(0.0),m_CalibratedScaler(1.0),m_LastTime(0.0),m_MaxSpeedReference(0.0),
 	m_UsingPotentiometer(false),  //to be safe
@@ -214,9 +218,9 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 		{
 			m_UsingPotentiometer=true;
 			//setup the initial value with the potentiometers value
-			printf("Enabling potentiometer\n");
+			printf("Enabling potentiometer for %s\n",GetName().c_str());
 			ResetPos();
-			m_UsingRange=true;
+			m_UsingRange=GetUsingRange_Props();
 			m_CalibratedScaler=MAX_SPEED;
 		}
 	}
@@ -226,7 +230,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 /***********************************************************************************************************************************/
 
 Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
+	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_CalibratedScaler(1.0),m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
 	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState),
@@ -414,9 +418,9 @@ void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
 		{
 			m_EncoderState=m_EncoderCachedState;
 			//setup the initial value with the potentiometers value
-			printf("Enabling encoder\n");
+			printf("Enabling encoder for %s\n",GetName().c_str());
 			ResetPos();
-			m_UsingRange=true;
+			m_UsingRange=GetUsingRange_Props();
 			m_CalibratedScaler=MAX_SPEED;
 		}
 	}
@@ -434,7 +438,7 @@ void Rotary_Properties::Init()
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
-	props.Feedback_DiplayRow=-1;  //Only assigned to a row during calibration of feedback sensor
+	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	m_RoteryProps=props;

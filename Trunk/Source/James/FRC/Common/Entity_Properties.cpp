@@ -175,13 +175,9 @@ Entity_Properties::Entity_Properties()
 
 void Entity_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err;
-
-	err = script.GetGlobalTable(m_EntityName.c_str());
-	ASSERT_MSG(!err, err);
+	const char* err=NULL;
 	{
 		err = script.GetField("Mass", NULL, NULL, &m_Mass);
-		ASSERT_MSG(!err, err);
 
 		//Get the ship dimensions
 		err = script.GetFieldTable("Dimensions");
@@ -189,16 +185,10 @@ void Entity_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
 			err = script.GetField("Length", NULL, NULL,&m_Dimensions[1]);
-			ASSERT_MSG(!err, err);
 			err = script.GetField("Width", NULL, NULL,&m_Dimensions[0]);
-			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
-		else
-			m_Dimensions[0]=m_Dimensions[1]=2.0; //using 2.0 here means 1.0 radius default which is a great default for torque radius of mass
-
 	}
-	script.Pop();
 }
 
 void Entity_Properties::Initialize(Entity2D *NewEntity) const
@@ -273,18 +263,17 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 
 void Ship_Properties::LoadFromScript(Scripting::Script& script)
 {
-	const char* err=SetUpGlobalTable(script);
-	ASSERT_MSG(!err, err);
+	const char* err=NULL;
 	{
 		double dHeading;
 		err = script.GetField("dHeading", NULL, NULL, &dHeading);
-		m_dHeading=DEG_2_RAD(dHeading);
-		ASSERT_MSG(!err, err);
+		if (!err)
+			m_dHeading=DEG_2_RAD(dHeading);
+		else
+			script.GetField("heading_rad", NULL, NULL, &m_dHeading);
 
 		err = script.GetField("ACCEL", NULL, NULL, &m_ACCEL);
-		ASSERT_MSG(!err, err);
 		err = script.GetField("BRAKE", NULL, NULL, &m_BRAKE);
-		ASSERT_MSG(!err, err);
 		err = script.GetField("STRAFE", NULL, NULL, &m_STRAFE);
 		if (err)
 			m_STRAFE=m_BRAKE; 		//Give strafe the default of the brake
@@ -324,13 +313,11 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("MaxTorqueYaw", NULL, NULL, &m_MaxTorqueYaw);
 
 		err = script.GetField("MAX_SPEED", NULL, NULL, &m_MAX_SPEED);
-		ASSERT_MSG(!err, err);
 		err = script.GetField("ENGAGED_MAX_SPEED", NULL, NULL, &m_ENGAGED_MAX_SPEED);
 		if (err)
 			m_ENGAGED_MAX_SPEED=m_MAX_SPEED;
 
 	}
-	script.Pop();
 
 	// Let the base class finish things up
 	__super::LoadFromScript(script);
