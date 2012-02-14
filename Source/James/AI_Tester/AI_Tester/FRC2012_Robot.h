@@ -54,6 +54,12 @@ class FRC_2012_Robot : public Tank_Robot
 			eFireConveyor_Sensor
 		};
 
+		enum SolenoidDevices
+		{
+			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
+			eRampDeployment
+		};
+
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
@@ -181,6 +187,8 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual bool GetBoolSensorState(size_t index);
+		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
+		virtual void OpenSolenoid(size_t index,bool Open);
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
