@@ -13,6 +13,26 @@ public:
 	virtual void Initialize(const Entity_Properties *props)=0;
 };
 
+class FRC_2012_Robot_Properties : public Tank_Robot_Properties
+{
+	public:
+		typedef Framework::Base::Vec2d Vec2D;
+		//typedef osg::Vec2d Vec2D;
+
+		FRC_2012_Robot_Properties();
+		virtual void LoadFromScript(Framework::Scripting::Script& script);
+
+		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
+		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
+		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
+	private:
+		typedef Tank_Robot_Properties __super;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		Tank_Robot_Properties m_LowGearProps;
+};
+
 class FRC_2012_Robot : public Tank_Robot
 {
 	public:
@@ -33,10 +53,15 @@ class FRC_2012_Robot : public Tank_Robot
 			eFireConveyor_Sensor
 		};
 
+		enum SolenoidDevices
+		{
+			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
+			eRampDeployment
+		};
+
 		typedef Framework::Base::Vec2d Vec2D;
 		//typedef osg::Vec2d Vec2D;
-		//TODO change UseEncoders to be passive
-		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders=false);
+		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
@@ -46,7 +71,7 @@ class FRC_2012_Robot : public Tank_Robot
 		class Turret : public Rotary_Linear
 		{
 			public:
-				Turret(Rotary_Control_Interface *robot_control,FRC_2012_Robot *parent);
+				Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
@@ -62,7 +87,7 @@ class FRC_2012_Robot : public Tank_Robot
 		class PitchRamp : public Rotary_Linear
 		{
 			public:
-				PitchRamp(Rotary_Control_Interface *robot_control);
+				PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
@@ -72,6 +97,9 @@ class FRC_2012_Robot : public Tank_Robot
 				void SetIntendedPosition(double Position);
 
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				virtual void TimeChange(double dTime_s);
+			private:
+				FRC_2012_Robot * const m_pParent;
 		};
 
 		class PowerWheels : public Rotary_Angular
@@ -86,6 +114,7 @@ class FRC_2012_Robot : public Tank_Robot
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
 				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
+				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2012_Robot * const m_pParent;
 				bool m_IsRunning;
@@ -126,30 +155,27 @@ class FRC_2012_Robot : public Tank_Robot
 		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
 		BallConveyorSystem m_BallConveyorSystem;
+		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 
 		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
 		//middle of the game playing field
 		Vec2D m_TargetOffset;  
 		//This is adjusted depending on doing a bank shot or swishing 
 		double m_TargetHeight;
+		//cached during robot time change and applied to other systems when targeting is true
+		double m_PitchAngle,m_LinearVelocity,m_HangTime;
+
 		bool m_IsTargeting;
-};
+		void IsTargeting(bool on) {m_IsTargeting=on;}
+		void SetTargetingOn() {IsTargeting(true);}
+		void SetTargetingOff() {IsTargeting(false);}
+		void SetTargetingValue(double Value);
 
-class FRC_2012_Robot_Properties : public Tank_Robot_Properties
-{
-	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
-		FRC_2012_Robot_Properties();
-
-		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
-		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
-
-	private:
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		bool m_SetLowGear;
+		void SetLowGear(bool on);
+		void SetLowGearOn() {SetLowGear(true);}
+		void SetLowGearOff() {SetLowGear(false);}
+		void SetLowGearValue(double Value);
 };
 
 /// This contains all UI controls specific to this years robot.  Since we do not use files the primary use of this is specific keys assigned
