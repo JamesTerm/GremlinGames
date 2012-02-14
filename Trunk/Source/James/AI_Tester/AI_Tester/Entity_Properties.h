@@ -100,6 +100,8 @@ class Ship_Properties : public Entity_Properties
 		};
 		Ship_Type GetShipType() const {return m_ShipType;}
 		double GetEngagedMaxSpeed() const {return m_ENGAGED_MAX_SPEED;}
+		double GetMaxAccelForward() const {return m_MaxAccelForward;}
+		double GetMaxAccelReverse() const {return m_MaxAccelReverse;}
 	private:
 		// This is the rate used by the keyboard
 		double m_dHeading;

@@ -192,7 +192,8 @@ AI_Base_Controller *Ship_2D::Create_Controller()
 
 void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 {
-	m_controller = Create_Controller();
+	if (!m_controller)
+		m_controller = Create_Controller();
 	__super::Initialize(em,props);
 	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
 	if (ship_props)

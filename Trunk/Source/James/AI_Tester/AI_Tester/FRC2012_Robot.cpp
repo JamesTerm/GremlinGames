@@ -268,7 +268,7 @@ const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(true),m_IsLowGear(false)
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
 
@@ -278,6 +278,7 @@ void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	m_RobotControl->Initialize(props);
 
 	const FRC_2012_Robot_Properties *RobotProps=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
+	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 	m_Turret.Initialize(em,RobotProps?&RobotProps->GetTurretProps():NULL);
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
@@ -382,22 +383,28 @@ void FRC_2012_Robot::SetTargetingValue(double Value)
 	}
 }
 
+void FRC_2012_Robot::SetLowGear(bool on) 
+{
+	m_SetLowGear=on;
+	//Now for some real magic with the properties!
+	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
+}
 void FRC_2012_Robot::SetLowGearValue(double Value)
 {
 	//printf("\r%f       ",Value);
 	if (Value > 0.0)
 	{
-		if (m_IsLowGear)
+		if (m_SetLowGear)
 		{
-			m_IsLowGear=false;
+			SetLowGear(false);
 			printf("Now in HighGear\n");
 		}
 	}
 	else
 	{
-		if (!m_IsLowGear)
+		if (!m_SetLowGear)
 		{
-			m_IsLowGear=true;
+			SetLowGear(true);
 			printf("Now in LowGear\n");
 		}
 	}
@@ -413,7 +420,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTargetingValue);
 
-		em->EventOnOff_Map["Robot_IsLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::IsLowGear);
+		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetLowGearValue);
@@ -425,7 +432,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2012_Robot::SetTargetingValue);
 
-		em->EventOnOff_Map["Robot_IsLowGear"]  .Remove(*this, &FRC_2012_Robot::IsLowGear);
+		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2012_Robot::SetLowGearValue);
@@ -697,19 +704,21 @@ void FRC_2012_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMa
 
 void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 {
-	const FRC_2012_Robot_Properties *robot_props=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
-	assert(robot_props);
-
-	m_RobotProps=*robot_props;  //save a copy
-
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
-	m_Turret_Pot.Initialize(&robot_props->GetTurretProps());
-	m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
-	m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
-	m_LowerConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
-	m_MiddleConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
-	m_FireConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
+
+	const FRC_2012_Robot_Properties *robot_props=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
+	if (robot_props)
+	{
+		m_RobotProps=*robot_props;  //save a copy
+
+		m_Turret_Pot.Initialize(&robot_props->GetTurretProps());
+		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
+		m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
+		m_LowerConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
+		m_MiddleConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
+		m_FireConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
+	}
 }
 
 void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)

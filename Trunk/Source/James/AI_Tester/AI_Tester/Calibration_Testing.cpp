@@ -241,6 +241,12 @@ Encoder_Tester::Encoder_Tester() : m_LeftEncoder("LeftEncoder"),m_RightEncoder("
 	m_RightEncoder.Initialize(NULL);
 }
 
+void Encoder_Tester::Initialize(const Ship_1D_Properties *props)
+{
+	m_LeftEncoder.Initialize(props);
+	m_RightEncoder.Initialize(props);
+}
+
 void Encoder_Tester::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	LeftVelocity=m_LeftEncoder.GetEncoderVelocity();

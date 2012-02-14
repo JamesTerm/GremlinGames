@@ -15,6 +15,25 @@ public:
 	virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)=0;
 };
 
+class FRC_2012_Robot_Properties : public Tank_Robot_Properties
+{
+public:
+	//typedef Framework::Base::Vec2d Vec2D;
+	typedef osg::Vec2d Vec2D;
+
+	FRC_2012_Robot_Properties();
+	virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+
+	const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
+	const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+	const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
+	const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+	const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
+private:
+	Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+	Tank_Robot_Properties m_LowGearProps;
+};
+
 class FRC_2012_Robot : public Tank_Robot
 {
 	public:
@@ -132,6 +151,7 @@ class FRC_2012_Robot : public Tank_Robot
 		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
 		BallConveyorSystem m_BallConveyorSystem;
+		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 
 		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
 		//middle of the game playing field
@@ -147,30 +167,11 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetTargetingOff() {IsTargeting(false);}
 		void SetTargetingValue(double Value);
 
-		bool m_IsLowGear;
-		void IsLowGear(bool on) {m_IsLowGear=on;}
-		void SetLowGearOn() {IsLowGear(true);}
-		void SetLowGearOff() {IsLowGear(false);}
+		bool m_SetLowGear;
+		void SetLowGear(bool on);
+		void SetLowGearOn() {SetLowGear(true);}
+		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
-};
-
-class FRC_2012_Robot_Properties : public Tank_Robot_Properties
-{
-	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
-		FRC_2012_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-
-		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
-		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
-		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
-	private:
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
-		Tank_Robot_Properties m_LowGearProps;
 };
 
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
