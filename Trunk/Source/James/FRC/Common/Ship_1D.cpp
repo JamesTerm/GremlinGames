@@ -92,7 +92,7 @@ void Ship_1D::SetRequestedVelocity_FromNormalized(double Velocity)
 void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 {
 	__super::Initialize(em,props);
-	const Ship_1D_Properties *ship_props=static_cast<const Ship_1D_Properties *>(props);
+	const Ship_1D_Properties *ship_props=dynamic_cast<const Ship_1D_Properties *>(props);
 	if (ship_props)
 	{
 		ship_props->Initialize(this);
@@ -202,10 +202,16 @@ void Ship_1D::TimeChange(double dTime_s)
 			{
 				double Position=GetPos_m();
 				//check to see if we are going reach limit
-				if ((VelocityToUse + Position) > m_MaxRange)
-					VelocityToUse=m_MaxRange-Position;
-				else if ((VelocityToUse + Position) < m_MinRange)
-					VelocityToUse=m_MinRange-Position;
+				if (VelocityToUse>0.0)
+				{
+					if ((VelocityToUse*dTime_s + Position) > m_MaxRange)
+						VelocityToUse=(m_MaxRange-Position)*dTime_s;
+				}
+				else
+				{
+					if ((VelocityToUse*dTime_s + Position) < m_MinRange) 
+						VelocityToUse=(m_MinRange-Position)*dTime_s;
+				}
 			}
 			ForceToApply=m_Physics.GetForceFromVelocity(VelocityToUse,dTime_s);
 			if (!UsingRequestedVelocity)

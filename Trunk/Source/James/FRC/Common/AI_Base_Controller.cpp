@@ -59,8 +59,8 @@ bool AI_Base_Controller::Try_SetUIController(UI_Controller *controller)
 
 void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoint, double power, double dTime_s,Vec2d* matchVel,bool LockOrientation)
 {
-	//Supposedly _isnan should be available, but isn't defined in math.h... Oh well I don't need this overhead anyhow
-	#if 0
+	//Supposedly in some compilers _isnan should be available, but isn't defined in math.h... Oh well I don't need this overhead anyhow
+	#if 1
 	if (	_isnan(TrajectoryPoint[0]) ||
 			_isnan(TrajectoryPoint[1]) ||
 			_isnan(PositionPoint[0]) ||

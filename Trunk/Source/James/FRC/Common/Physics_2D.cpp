@@ -36,6 +36,11 @@ inline const Vec2d Vec2_min (const Vec2d &A,const Vec2d &B)
 }
 
 
+namespace Logic
+{
+	namespace Physics
+	{
+
 //Normalize it in the bound of Pi2
 inline void NormalizeToPi2(double &A)
 {
@@ -51,6 +56,9 @@ inline void NormalizeToPi2wDirection(double &A)
 		A+=Pi2;
 	else if (A>Pi2)
 		A-=Pi2;
+}
+
+	}
 }
 
 
@@ -565,12 +573,12 @@ void FlightDynamics_2D::init()
 	G_Dampener = 1.0;
 }
 
-FlightDynamics_2D::FlightDynamics_2D() : m_HeadingToUse(m_DefaultHeading)
+FlightDynamics_2D::FlightDynamics_2D() : m_HeadingToUse(m_DefaultHeading), m_Pilot(this)
 {
 	init();
 }
 
-FlightDynamics_2D::FlightDynamics_2D(const double &HeadingToUse) : m_HeadingToUse(HeadingToUse)
+FlightDynamics_2D::FlightDynamics_2D(const double &HeadingToUse) : m_HeadingToUse(HeadingToUse), m_Pilot(this)
 {
 	init();
 }
@@ -621,6 +629,7 @@ double FlightDynamics_2D::ComputeAngularDistance(double Orientation)
 void FlightDynamics_2D::TimeChangeUpdate(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	__super::TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+	m_Pilot.Update(DeltaTime_s, G_Dampener);
 	if (m_HeadingToUse==m_DefaultHeading)
 		m_DefaultHeading+=RotationDisplacement;
 }
@@ -794,4 +803,93 @@ Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,co
 	}
 	return ret;
 
+}
+
+void FlightDynamics_2D::Pilot::ResetVectors()
+{
+	m_Gs = INITIALIZE_Gs+2.0;
+	m_blackOUTredOUT = 0.0;
+}
+
+FlightDynamics_2D::Pilot::Pilot (FlightDynamics_2D *parent) : m_pParent(parent), GLimit(6.5),
+PassOutTime_s(5.0), // Time it takes to pass out
+PassOutRecoveryTime_s(1.0), // Time to get OUT of pass out and start recovery
+MaxRecoveryTime_s(20.0)	// So we do not pass out forever
+{
+	ResetVectors();
+}
+
+static const double EARTH_G = 9.80665;
+void FlightDynamics_2D::Pilot::Update(double dTime_s, double G_Dampener)
+{
+	//TODO I know this is not taking into account of local head position, but we have not supported this yet
+	//I think when we do we can derive this info from the rotation delta.  Also it is probably more "correct" to measure the
+	//velocity as this takes external forces into account, but given the issues with the time deltas, m_CurrentAcceleration
+	//will give the smoothest results.  I'd be tempted to use the velocity for gravitational cases when we have them, but then
+	//I'd like to address the time deltas being more consistent as well.
+	osg::Vec2d headAccel = m_pParent->m_CurrentAcceleration;  //This is local orientation
+
+	// We need to have passed a couple of frames before things have normalized
+	if (m_Gs >= INITIALIZE_Gs)
+		m_Gs -= 1.0;
+	else	
+	{
+		static const osg::Vec2d POS_G_VECTOR(0.0, 0.6);
+		// Use a dot product to find the component of the acceleration that lies along that vector, +/-, and divide it by 1G
+		m_Gs = (headAccel*POS_G_VECTOR*G_Dampener) / EARTH_G; //note I'm already in local orientation
+
+		// We want to REALLY buffer the g's (in case of collisions and such)
+		double GsToUse = m_G_Averager.GetAverage(m_Gs);
+
+		// Some limits used to determine if we have passed out
+		const double passOutLevel = 1.0 + (PassOutRecoveryTime_s/PassOutTime_s);
+		const double maxPassOutLevel = 1.0 + (MaxRecoveryTime_s/PassOutTime_s);
+
+		// Find the amount of blackout / red out
+		if ((GsToUse > GLimit) && (m_blackOUTredOUT >= 0.0))
+		{
+			m_blackOUTredOUT += (1.0+(GsToUse-GLimit))*dTime_s / PassOutTime_s;
+			if ((m_blackOUTredOUT > 1.0) && (m_blackOUTredOUT < passOutLevel))
+			{
+				// We Just Blacked Out
+				m_blackOUTredOUT = passOutLevel;
+			}
+		}
+		else if ((GsToUse < -GLimit) && (m_blackOUTredOUT <= 0.0))
+		{
+			m_blackOUTredOUT -= (1.0-(GsToUse+GLimit))*dTime_s / PassOutTime_s;
+			if ((m_blackOUTredOUT < -1.0) && (m_blackOUTredOUT > -passOutLevel))
+			{
+				// We just Red' Out
+				m_blackOUTredOUT = -passOutLevel;
+
+			}
+		}
+		else
+		{
+			// Recovery
+			double recovery = dTime_s / PassOutTime_s;
+			if (m_blackOUTredOUT < -recovery)
+				m_blackOUTredOUT += recovery;
+			else if (m_blackOUTredOUT > recovery)
+				m_blackOUTredOUT -= recovery;
+			else
+			{
+				// We are recovered, no longer passed out
+				m_blackOUTredOUT = 0.0;
+			}
+		}
+
+		// Watch for going WAY overboard on the black/red out
+		if (m_blackOUTredOUT > maxPassOutLevel)
+			m_blackOUTredOUT = maxPassOutLevel;
+		else if (m_blackOUTredOUT < -maxPassOutLevel)
+			m_blackOUTredOUT = -maxPassOutLevel;
+
+#ifdef DISABLE_BLACKOUT
+		m_Gs = 0.0;
+		m_blackOUTredOUT = 0.0;
+#endif
+		//printf("\r G's: (%6.1f), Blackout Line: %6.1f", GsToUse, m_blackOUTredOUT);
+	}
 }
