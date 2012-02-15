@@ -115,16 +115,17 @@ void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 
 void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 {
-	const FRC_2012_Robot_Properties *robot_props=static_cast<const FRC_2012_Robot_Properties *>(props);
-	assert(robot_props);
-
-	m_RobotProps=*robot_props;  //save a copy
-
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
-
-	//Not sure I need to this since I got the copy... we'll see
-	//m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+	
+	//Note: this will be NULL when Low Gear comes through here!
+	const FRC_2012_Robot_Properties *robot_props=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
+	if (robot_props)
+	{
+		m_RobotProps=*robot_props;  //save a copy
+		//Not sure I need to this since I got the copy... we'll see
+		//m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+	}
 }
 
 void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
