@@ -88,7 +88,7 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
 
 void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && GetIsUsingPotentiometer());
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer());
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle);
