@@ -620,12 +620,15 @@ FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &j
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Turret_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"PitchRamp_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"PowerWheels_SetCurrentVelocity",true,1.0,0.0,false,"Joystick_2");
-		
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetTargetingValue",true,1.000,0.0,false,"Joystick_2");
+	
 	joy.AddJoy_Button_Default( 0,"Ball_Fire",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 5,"Ball_Grip",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 6,"Ball_Squirt",true,false,"Joystick_2");
+	#if 0
 	joy.AddJoy_Button_Default( 7,"Robot_SetTargetingOn",false,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 8,"Robot_SetTargetingOff",false,false,"Joystick_2");
+	#endif
 	joy.AddJoy_Button_Default( 10,"PowerWheels_IsRunning",true,false,"Joystick_2");
 	#endif
 	
