@@ -287,6 +287,8 @@ void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 void FRC_2012_Robot::ResetPos()
 {
 	__super::ResetPos();
+	//This only matters if we do not have an axis assigned to targeting; otherwise it will be overridden
+	m_IsTargeting=true;
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
