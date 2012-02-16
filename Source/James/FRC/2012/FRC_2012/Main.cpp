@@ -59,7 +59,14 @@ class SetUp_Manager
 		{
 			m_Control.AsControlInterface().Initialize(&m_RobotProps);
 			m_pRobot = new FRC_2012_Robot("FRC2012_Robot",&m_Control,UseEncoders);
-			m_pRobot->Initialize(m_EventMap,&m_RobotProps);
+			{
+				Framework::Scripting::Script script;
+				script.LoadScript("/FRC2012Robot.lua",true);
+				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
+				m_RobotProps.SetUpGlobalTable(script);
+				m_RobotProps.LoadFromScript(script);
+				m_pRobot->Initialize(m_EventMap,&m_RobotProps);
+			}
 			//Bind the ship's eventmap to the joystick
 			m_JoyBinder.SetControlledEventMap(m_pRobot->GetEventMap());
 
@@ -112,7 +119,7 @@ class SetUp_Manager
 		void ResetPos() 
 		{	
 			//TODO scope this within __DebugLUA__
-			#if 1
+			#ifdef  __DebugLUA__
 			{
 				Framework::Scripting::Script script;
 				script.LoadScript("/FRC2012Robot.lua",true);
@@ -120,6 +127,7 @@ class SetUp_Manager
 
 				m_RobotProps.SetUpGlobalTable(script);
 				m_RobotProps.LoadFromScript(script);
+				m_pRobot->Initialize(m_EventMap,&m_RobotProps);
 			}
 			#endif
 			m_pRobot->ResetPos();

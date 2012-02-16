@@ -246,14 +246,18 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %f %.1fft ", RAD_2_DEG(ret),height,height*3.2808399);
 			////lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
 			//#endif
-
+			//This is temporary code to pacify using a closed loop, remove once we have real implementation
+			result= m_TurretVoltage*m_RobotProps.GetTurretProps().GetMaxSpeed();
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			//Not sure what kind of sensor this will be yet
+			//This is temporary code to pacify using a closed loop, remove once we have real implementation
+			result= m_PitchRampVoltage*m_RobotProps.GetPitchRampProps().GetMaxSpeed();
 			break;
 		case FRC_2012_Robot::ePowerWheels:
-			//This is like how the encoders work using the GetRate method
-			//result=m_Turret.GetRate();
+			//result=m_PowerWheel.GetRate();
+			//This is temporary code to pacify using a closed loop, remove once we have real implementation
+			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();
 			break;
 		case FRC_2012_Robot::eLowerConveyor:
 		case FRC_2012_Robot::eMiddleConveyor:
