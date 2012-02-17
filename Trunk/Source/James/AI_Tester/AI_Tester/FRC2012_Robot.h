@@ -15,6 +15,15 @@ public:
 	virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)=0;
 };
 
+struct FRC_2012_Robot_Props
+{
+public:
+	//typedef Framework::Base::Vec2d Vec2D;
+	typedef osg::Vec2d Vec2D;
+	
+	Vec2D PresetPositions[3];
+};
+
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
@@ -29,9 +38,11 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
+		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
 	private:
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
 		Tank_Robot_Properties m_LowGearProps;
+		FRC_2012_Robot_Props m_FRC2012RobotProps;
 };
 
 class FRC_2012_Robot : public Tank_Robot

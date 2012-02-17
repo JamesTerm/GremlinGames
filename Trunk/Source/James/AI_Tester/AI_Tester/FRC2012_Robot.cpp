@@ -262,7 +262,11 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
 
-const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,Feet2Meters(27));
+const double c_CourtLength=Feet2Meters(54);
+const double c_CourtWidth=Feet2Meters(27);
+const double c_HalfCourtLength=c_CourtLength/2.0;
+
+const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
@@ -508,6 +512,18 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 
 {
 	{
+		FRC_2012_Robot_Props props;
+		const double KeyDistance=Inches2Meters(144);
+		const double KeyWidth=Inches2Meters(101);
+		const double KeyDepth=Inches2Meters(48);
+		const double DefaultY=c_HalfCourtLength-KeyDistance;
+		const double HalfKeyWidth=KeyWidth/2.0;
+		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
+		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
+		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
+		m_FRC2012RobotProps=props;
+	}
+	{
 		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
 
 		//Late assign this to override the initial default
@@ -545,6 +561,46 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	}
 }
 
+const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,size_t index)
+{
+	const char *err;
+	typedef FRC_2012_Robot_Properties::Vec2D Vec2D;
+	double length, width;	
+	//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
+	err = script.GetField("y", NULL, NULL,&length);
+	if (err)
+	{
+		err = script.GetField("y_ft", NULL, NULL,&length);
+		if (!err)
+			length=Feet2Meters(length);
+		else
+		{
+			err = script.GetField("y_in", NULL, NULL,&length);
+			if (!err)
+				length=Inches2Meters(length);
+		}
+
+	}
+	ASSERT_MSG(!err, err);
+	err = script.GetField("x", NULL, NULL,&width);
+	if (err)
+	{
+		err = script.GetField("x_ft", NULL, NULL,&width);
+		if (!err)
+			width=Feet2Meters(width);
+		else
+		{
+			err = script.GetField("x_in", NULL, NULL,&width);
+			if (!err)
+				width=Inches2Meters(width);
+		}
+	}
+	ASSERT_MSG(!err, err);
+	m_FRC2012RobotProps.PresetPositions[index]=Vec2D(width,c_HalfCourtLength-length);  //x,y  where x=width
+	script.Pop();
+	return err;
+}
+
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err=NULL;
@@ -580,7 +636,20 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		m_LowGearProps=*this;  //copy redundant data first
 		err = script.GetFieldTable("low_gear");
 		if (!err)
+		{
 			m_LowGearProps.LoadFromScript(script);
+			script.Pop();
+		}
+
+		
+		err = script.GetFieldTable("key_1");
+		if (!err) ProcessKey(m_FRC2012RobotProps,script,0);
+
+		err = script.GetFieldTable("key_2");
+		if (!err) ProcessKey(m_FRC2012RobotProps,script,1);
+
+		err = script.GetFieldTable("key_3");
+		if (!err) ProcessKey(m_FRC2012RobotProps,script,2);
 
 		script.Pop();
 	}
