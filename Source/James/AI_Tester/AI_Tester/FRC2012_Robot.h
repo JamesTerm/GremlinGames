@@ -73,7 +73,9 @@ class FRC_2012_Robot : public Tank_Robot
 
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
+		/// \param DefaultPresetIndex is a key preset index used in autonomous to pick a spot to shoot from
+		/// 0=center 1=left 2=right
+		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex=0,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
@@ -176,6 +178,7 @@ class FRC_2012_Robot : public Tank_Robot
 		double m_TargetHeight;
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
+		size_t m_DefaultPresetIndex;
 
 		bool m_IsTargeting;
 		void IsTargeting(bool on) {m_IsTargeting=on;}
@@ -188,6 +191,11 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetLowGearOn() {SetLowGear(true);}
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
+
+		void SetPresetPosition(size_t index);
+		void SetPreset1() {SetPresetPosition(0);}
+		void SetPreset2() {SetPresetPosition(1);}
+		void SetPreset3() {SetPresetPosition(2);}
 };
 
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
