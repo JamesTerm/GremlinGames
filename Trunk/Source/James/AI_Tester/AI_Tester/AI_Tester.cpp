@@ -445,8 +445,11 @@ public:
 			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
 			if (ship)
 			{
-				ship->SetPosition(x,y);
-				ship->SetAttitude(heading * (PI/180.0));
+				if (str_3[0]!=0)
+					ship->SetDefaultPosition(osg::Vec2d(x,y));
+				if (str_4[0]!=0)
+					ship->SetDefaultAttitude(heading * (PI/180.0));
+				ship->ResetPos();
 				ret=ship;
 			}
 		}

@@ -270,9 +270,10 @@ const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_Hal
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
-FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous) : 
+FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(true),m_SetLowGear(false)
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_DefaultPresetIndex(DefaultPresetIndex),
+		m_IsTargeting(true),m_SetLowGear(false)
 {
 }
 
@@ -287,6 +288,10 @@ void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 	m_BallConveyorSystem.Initialize(em,RobotProps?&RobotProps->GetConveyorProps():NULL);
+
+	//set to the default key position
+	const FRC_2012_Robot_Props &robot2012props=RobotProps->GetFRC2012RobotProps();
+	SetDefaultPosition(robot2012props.PresetPositions[m_DefaultPresetIndex]);
 }
 void FRC_2012_Robot::ResetPos()
 {
@@ -332,7 +337,7 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
-		DOUT5("x=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+		DOUT5("d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -419,6 +424,14 @@ void FRC_2012_Robot::SetLowGearValue(double Value)
 	}
 }
 
+void FRC_2012_Robot::SetPresetPosition(size_t index)
+{
+	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
+	SetPosition(position[0],position[1]);
+	double TurretPos=m_Turret.GetPos_m();
+	SetAttitude(-TurretPos);
+}
+
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D::EventMap *em=GetEventMap(); 
@@ -433,6 +446,10 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetLowGearValue);
+
+		em->Event_Map["Robot_SetPreset1"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset1);
+		em->Event_Map["Robot_SetPreset2"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset2);
+		em->Event_Map["Robot_SetPreset3"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset3);
 	}
 	else
 	{
@@ -445,6 +462,10 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2012_Robot::SetLowGearValue);
+
+		em->Event_Map["Robot_SetPreset1"]  .Remove(*this, &FRC_2012_Robot::SetPreset1);
+		em->Event_Map["Robot_SetPreset2"]  .Remove(*this, &FRC_2012_Robot::SetPreset2);
+		em->Event_Map["Robot_SetPreset3"]  .Remove(*this, &FRC_2012_Robot::SetPreset3);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
