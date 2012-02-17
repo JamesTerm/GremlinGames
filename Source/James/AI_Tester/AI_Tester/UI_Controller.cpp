@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
+#include "InOut_Interface.h"
 
 #undef __EnableTestKeys__
 
@@ -670,8 +671,8 @@ void UI_Controller::UpdateUI(double dTime_s)
 	{
 		#if 1
 		osg::Vec2d pos=m_ship->GetPos_m();
-		DOUT1("x=%f y=%f r=%f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
-		DOUT3("Speed=%f mode=%s",Meters2Feet(m_ship->GetPhysics().GetLinearVelocity().length()),m_ship->GetAlterTrajectory()?"Sim":"Slide");
+		DOUT(1,"x=%f y=%f r=%f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
+		DOUT(3,"Speed=%f mode=%s",Meters2Feet(m_ship->GetPhysics().GetLinearVelocity().length()),m_ship->GetAlterTrajectory()?"Sim":"Slide");
 		#endif
 		#if 0
 		osg::Vec2d pos=m_ship->GetPos_m();

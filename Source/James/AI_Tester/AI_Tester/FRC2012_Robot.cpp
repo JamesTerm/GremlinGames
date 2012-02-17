@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
+#include "InOut_Interface.h"
 namespace AI_Tester
 {
 	#include "Calibration_Testing.h"
@@ -337,7 +338,7 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
-		DOUT5("d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+		DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -825,7 +826,7 @@ void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	m_MiddleConveyor_Enc.SetTimeDelta(dTime_s);
 	m_FireConveyor_Enc.SetTimeDelta(dTime_s);
 	//display voltages
-	DOUT2("l=%.2f r=%.2f t=%.2f pi=%.2f pw=%.2f lc=%.2f mc=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
+	DOUT(2,"l=%.2f r=%.2f t=%.2f pi=%.2f pw=%.2f lc=%.2f mc=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
 		m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage);
 }
 
@@ -846,7 +847,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			DOUT4 ("pitch=%f",RAD_2_DEG(result));
+			DOUT (4,"pitch=%f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
