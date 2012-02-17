@@ -33,10 +33,10 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		FRC_2012_Robot_Properties();
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 
-		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
-		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
+		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
+		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
 	private:
