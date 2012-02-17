@@ -7,6 +7,7 @@
 #include "Base/Misc.h"
 #include "Base/Event.h"
 #include "Base/EventMap.h"
+#include "Base/Script.h"
 #include "Common/Entity_Properties.h"
 #include "Common/Physics_1D.h"
 #include "Common/Physics_2D.h"
