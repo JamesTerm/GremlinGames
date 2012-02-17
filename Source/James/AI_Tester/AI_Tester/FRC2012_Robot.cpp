@@ -841,17 +841,14 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		
 			result=m_Turret_Pot.GetPotentiometerCurrentPosition();
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			//DOUT4 ("pot=%f",result);
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
-			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 			DOUT (4,"pitch=%f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
-			//DOUT4 ("vel=%f",result);
 			break;
 		case FRC_2012_Robot::eLowerConveyor:
 			result=m_LowerConveyor_Enc.GetEncoderVelocity();
@@ -865,6 +862,22 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//DOUT5 ("vel=%f",result);
 			break;
 	}
+
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+		case FRC_2012_Robot::eTurret:
+			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,"turret=%f",RAD_2_DEG(result));
+			break;
+		case FRC_2012_Robot::ePitchRamp:
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,"pitch=%f",RAD_2_DEG(result));
+			break;
+		case FRC_2012_Robot::ePowerWheels:
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,"power=%f",result);
+			break;
+	}
+	#endif
+
 	return result;
 }
 
