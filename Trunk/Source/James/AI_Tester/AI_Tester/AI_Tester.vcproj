@@ -212,6 +212,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InOut_Interface.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Physics_1D.cpp"
 				>
 			</File>
@@ -323,6 +327,10 @@
 			</File>
 			<File
 				RelativePath=".\Goal.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InOut_Interface.h"
 				>
 			</File>
 			<File
