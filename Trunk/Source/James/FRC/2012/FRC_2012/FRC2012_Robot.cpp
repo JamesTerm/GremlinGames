@@ -592,7 +592,10 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		m_LowGearProps=*this;  //copy redundant data first
 		err = script.GetFieldTable("low_gear");
 		if (!err)
+		{
 			m_LowGearProps.LoadFromScript(script);
+			script.Pop();
+		}
 
 		script.Pop();
 	}
