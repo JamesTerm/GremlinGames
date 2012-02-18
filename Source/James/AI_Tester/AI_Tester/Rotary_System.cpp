@@ -206,7 +206,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 		{
 			m_UsingPotentiometer=true;
 			//setup the initial value with the potentiometers value
-			printf("Enabling potentiometer for %s\n"),GetName().c_str();
+			printf("Enabling potentiometer for %s\n",GetName().c_str());
 			ResetPos();
 			m_UsingRange=GetUsingRange_Props();
 			m_CalibratedScaler=MAX_SPEED;
@@ -426,7 +426,7 @@ void Rotary_Properties::Init()
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
-	props.Feedback_DiplayRow=-1;  //Only assigned to a row during calibration of feedback sensor
+	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	m_RoteryProps=props;
