@@ -8,7 +8,7 @@ using namespace AI_Tester;
 //using namespace GG_Framework::Logic;
 using namespace GG_Framework::Base;
 using namespace GG_Framework::UI;
-
+using namespace osg;
 bool g_UseMouse=false;
 
 
@@ -352,8 +352,8 @@ void UI_Controller::Ship_AfterBurner_Thrust(bool on)
 	else
 	{
 		// Set the requested speed to our current speed or at the max engaged speed (Afterburner Brake)
-		//osg::Vec2d LocalVelocity(m_ship->GetAtt_quat().conj() * m_ship->GetPhysics().GetLinearVelocity());
-		osg::Vec2d LocalVelocity=GlobalToLocal(m_ship->GetAtt_r(),m_ship->GetPhysics().GetLinearVelocity());
+		//Vec2d LocalVelocity(m_ship->GetAtt_quat().conj() * m_ship->GetPhysics().GetLinearVelocity());
+		Vec2d LocalVelocity=GlobalToLocal(m_ship->GetAtt_r(),m_ship->GetPhysics().GetLinearVelocity());
 		double currSpeed = LocalVelocity[1];
 		m_ship->SetRequestedVelocity(MIN(currSpeed, m_ship->GetEngaged_Max_Speed()));
 	}
@@ -477,7 +477,7 @@ void UI_Controller::UserResetPos()
 void UI_Controller::ResetPos()
 {
 	m_Ship_Keyboard_rotAcc_rad_s =	m_Ship_JoyMouse_rotAcc_rad_s = 0.0;
-	m_Ship_Keyboard_currAccel = m_Ship_JoyMouse_currAccel =	osg::Vec2d(0,0);
+	m_Ship_Keyboard_currAccel = m_Ship_JoyMouse_currAccel =	Vec2d(0,0);
 
 	//m_HUD_UI->Reset();
 	//TODO see where ResetPos is called within the game, as m_Base does not have a check
@@ -616,13 +616,13 @@ void UI_Controller::UpdateController(double dTime_s)
 		if (!AreControlsDisabled())
 		{
 			// Normally we pass the the ship the addition of the keyboard and mouse accel
-			osg::Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
+			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
 
 			// apply various input sources to current acceleration
 			m_ship->SetCurrentLinearAcceleration(shipAccel); 
 			
 			//flush the JoyMouse current acceleration vec2 since it works on an additive nature
-			m_Ship_JoyMouse_currAccel=osg::Vec2d(0.0,0.0);
+			m_Ship_JoyMouse_currAccel=Vec2d(0.0,0.0);
 		
 		
 			//add all the various input types to the main rotation velocity
@@ -642,7 +642,7 @@ void UI_Controller::UpdateController(double dTime_s)
 
 			//flush the JoyMouse rotation acceleration since it works on an additive nature
 			m_Ship_JoyMouse_rotAcc_rad_s=0.0;
-			m_Ship_JoyMouse_currAccel=osg::Vec2d(0.0,0.0);
+			m_Ship_JoyMouse_currAccel=Vec2d(0.0,0.0);
 		}
 	}
 }
@@ -670,12 +670,12 @@ void UI_Controller::UpdateUI(double dTime_s)
 #endif
 	{
 		#if 1
-		osg::Vec2d pos=m_ship->GetPos_m();
+		Vec2d pos=m_ship->GetPos_m();
 		DOUT(1,"x=%f y=%f r=%f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
 		DOUT(3,"Speed=%f mode=%s",Meters2Feet(m_ship->GetPhysics().GetLinearVelocity().length()),m_ship->GetAlterTrajectory()?"Sim":"Slide");
 		#endif
 		#if 0
-		osg::Vec2d pos=m_ship->GetPos_m();
+		Vec2d pos=m_ship->GetPos_m();
 		DOUT1("x=%f y=%f r=%f",pos[0],pos[1],RAD_2_DEG(m_ship->GetAtt_r()));
 		DOUT3("Speed=%f mode=%s",m_ship->GetPhysics().GetLinearVelocity().length(),m_ship->GetAlterTrajectory()?"Sim":"Slide");
 		#endif
