@@ -873,7 +873,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,"pitch=%f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,"power=%f",result);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,"power=%f",result / Pi2);
 			break;
 	}
 	#endif
