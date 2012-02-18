@@ -537,7 +537,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		FRC_2012_Robot_Props props;
 		const double KeyDistance=Inches2Meters(144);
 		const double KeyWidth=Inches2Meters(101);
-		const double KeyDepth=Inches2Meters(48);
+		//const double KeyDepth=Inches2Meters(48);   //not used (yet)
 		const double DefaultY=c_HalfCourtLength-KeyDistance;
 		const double HalfKeyWidth=KeyWidth/2.0;
 		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
