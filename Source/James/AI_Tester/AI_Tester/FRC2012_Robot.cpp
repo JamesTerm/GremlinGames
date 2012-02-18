@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
-#include "InOut_Interface.h"
+#include "Debug.h"
 namespace AI_Tester
 {
 	#include "Calibration_Testing.h"

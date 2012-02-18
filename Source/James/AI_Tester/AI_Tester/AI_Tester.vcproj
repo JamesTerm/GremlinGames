@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Debug.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Entity2D.cpp"
 				>
 			</File>
@@ -209,10 +213,6 @@
 			</File>
 			<File
 				RelativePath=".\Goal.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\InOut_Interface.cpp"
 				>
 			</File>
 			<File
@@ -306,6 +306,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Debug.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Entity2D.h"
 				>
 			</File>
@@ -327,10 +331,6 @@
 			</File>
 			<File
 				RelativePath=".\Goal.h"
-				>
-			</File>
-			<File
-				RelativePath=".\InOut_Interface.h"
 				>
 			</File>
 			<File
