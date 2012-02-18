@@ -9,6 +9,7 @@ class Entity1D_Properties
 	public:
 		Entity1D_Properties();
 		Entity1D_Properties(const char EntityName[],double Mass,double Dimension,bool IsAngular=false);
+		virtual ~Entity1D_Properties() {}
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Entity1D *NewEntity) const;
 	protected:
@@ -44,6 +45,7 @@ class Ship_1D_Properties : public Entity1D_Properties
 		Ship_Type GetShipType() const {return m_ShipType;}
 		double GetMaxSpeed() const {return m_MAX_SPEED;}
 	private:
+		//typedef Entity1D_Properties __super;
 		//! We can break this up even more if needed
 		//double m_EngineRampForward,m_EngineRampReverse,m_EngineRampAfterBurner;
 		//double m_EngineDeceleration;
@@ -64,6 +66,7 @@ class Entity_Properties
 {
 	public:
 		Entity_Properties();
+		virtual ~Entity_Properties() {}
 		//The prep script takes care of the outer layer global table setup
 		//override to search the appropriate global table
 		virtual const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script) {return script.GetGlobalTable(m_EntityName.c_str());}
@@ -87,6 +90,7 @@ class Ship_Properties : public Entity_Properties
 {
 	public:
 		Ship_Properties();
+		virtual ~Ship_Properties() {}
 		const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script);
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Ship_2D *NewShip) const;
@@ -103,6 +107,7 @@ class Ship_Properties : public Entity_Properties
 		double GetMaxAccelForward() const {return m_MaxAccelForward;}
 		double GetMaxAccelReverse() const {return m_MaxAccelReverse;}
 	private:
+		//typedef Entity_Properties __super;
 		// This is the rate used by the keyboard
 		double m_dHeading;
 
