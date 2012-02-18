@@ -40,6 +40,7 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
 	private:
+		//typedef Tank_Robot_Properties __super;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
