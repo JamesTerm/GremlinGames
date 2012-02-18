@@ -37,11 +37,12 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+		const Rotary_Properties &GetFlipperProps() const {return m_FlipperProps;}
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
 	private:
 		//typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
 };
@@ -56,7 +57,8 @@ class FRC_2012_Robot : public Tank_Robot
 			ePowerWheels,
 			eLowerConveyor,
 			eMiddleConveyor,
-			eFireConveyor
+			eFireConveyor,
+			eFlippers
 		};
 
 		enum BoolSensorDevices
@@ -145,21 +147,45 @@ class FRC_2012_Robot : public Tank_Robot
 				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 				bool GetIsFireRequested() const {return m_Fire;}
-
 				IEvent::HandlerList ehl;
-				//public access needed for goals
-				void Fire(bool on) {m_Fire=on;}
-				//Using meaningful terms to assert the correct direction at this level
-				void Grip(bool on) {m_Grip=on;}
-				void Squirt(bool on) {m_Squirt=on;}
 
 				void ResetPos() {m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();}
 				//Intercept the time change to send out voltage
 				void TimeChange(double dTime_s);
 				void BindAdditionalEventControls(bool Bind);
 			protected:
+				//public access needed for goals
+				void Fire(bool on) {m_Fire=on;}
+				//Using meaningful terms to assert the correct direction at this level
+				void Grip(bool on) {m_Grip=on;}
+				void Squirt(bool on) {m_Squirt=on;}
+
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
+
+		class Flippers : public Rotary_Linear
+		{
+			private:
+				FRC_2012_Robot * const m_pParent;
+				bool m_Advance,m_Retract;
+			public:
+				Flippers(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
+				IEvent::HandlerList ehl;
+				virtual void BindAdditionalEventControls(bool Bind);
+			protected:
+
+				void Advance(bool on) {m_Advance=on;}
+				void Retract(bool on) {m_Retract=on;}
+
+				//typedef Rotary_Linear __super;
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				void SetIntendedPosition(double Position);
+
+				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				virtual void TimeChange(double dTime_s);
+		};
+
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -170,6 +196,7 @@ class FRC_2012_Robot : public Tank_Robot
 		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
 		BallConveyorSystem m_BallConveyorSystem;
+		Flippers m_Flippers;
 		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 
 		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
@@ -234,11 +261,12 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester2 m_Turret_Pot,m_Pitch_Pot; //simulate the potentiometer and motor
+		Potentiometer_Tester2 m_Turret_Pot,m_Pitch_Pot,m_Flippers_Pot; //simulate the potentiometer and motor
 		Encoder_Simulator m_PowerWheel_Enc,m_LowerConveyor_Enc,m_MiddleConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
-		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
+		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
+		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 		bool m_LowerSensor,m_MiddleSensor,m_FireSensor;
 };
 
