@@ -4,6 +4,8 @@
 #include <map>
 
 typedef std::map<std::string, std::string, std::greater<std::string> > StringMap;
+#define ASSERT(cond) assert(cond);
+#define ASSERT_MSG(cond, msg) if (!(cond)){printf((msg)); assert(cond);}
 
 namespace Framework
 {

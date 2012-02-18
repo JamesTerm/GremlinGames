@@ -21,9 +21,6 @@
 #include "Rotary_System.h"
 
 using namespace Framework::Base;
-#define ASSERT(cond) assert(cond);
-#define ASSERT_MSG(cond, msg) if (!(cond)){printf((msg)); assert(cond);}
-
 using namespace std;
 
 namespace Base=Framework::Base;
