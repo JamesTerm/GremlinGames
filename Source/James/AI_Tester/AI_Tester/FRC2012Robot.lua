@@ -103,6 +103,24 @@ TestShip = {
 			max_accel_forward=60,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=60			--The wheel may some time to ramp up
 		},
+		flippers =
+		{
+			is_closed=1,				--Not sure yet about this
+			show_pid_dump='no',
+			ds_display_row=-1,
+			pid=
+			{p=1, i=0, d=0},
+			tolerance=0.01,					--should not matter much
+			
+			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=10,			--These are in radians, just go with what feels right
+			max_accel_reverse=10,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			min_range_deg=-90,				--TODO find out what these are
+			max_range_deg= 90
+		},
 		conveyor =
 		{
 			--Note: there are no encoders here so is_closed is ignored

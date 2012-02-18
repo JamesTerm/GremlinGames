@@ -224,6 +224,20 @@ void Ship_1D::TimeChange(double dTime_s)
 			}
 			#endif
 			ForceToApply=m_currAccel*Mass;
+
+			if (m_UsingRange)
+			{
+				double Position=GetPos_m();
+				double Vel;
+				//check to see if we are going reach limit
+				if (ForceToApply>0.0)
+					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+				else
+					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+				double TestForce=m_Physics.GetForceFromVelocity(Vel,dTime_s);
+				if (fabs(ForceToApply)>fabs(TestForce)) 
+					ForceToApply=TestForce;
+			}
 		}
 		ForceToApply=m_Physics.ComputeRestrainedForce(ForceToApply,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 	}
