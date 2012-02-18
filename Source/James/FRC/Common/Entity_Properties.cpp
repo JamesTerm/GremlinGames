@@ -14,10 +14,6 @@
 #include "Ship_1D.h"
 #include "Ship.h"
 
-#ifndef _countof
-#define _countof(x) sizeof(x)/sizeof(*x)
-#endif
-
 using namespace Framework::Base;
 
 //namespace Scripting=GG_Framework::Logic::Scripting;

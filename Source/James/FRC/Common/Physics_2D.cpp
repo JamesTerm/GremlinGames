@@ -8,7 +8,6 @@ using namespace Framework;
 using namespace std;
 using namespace Framework::Base;
 
-const double Pi2=M_PI*2.0;
 //The actual force between two objects are f=(G m1 m2)/ r^2
 //For example g = ( G * (Me->5.98E+24)) / (Re->6.38E+6)^2 = 9.8 m/s^2
 //G is ideal to compute forces on ships from various planets

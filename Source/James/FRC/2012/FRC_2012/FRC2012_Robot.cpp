@@ -23,14 +23,11 @@
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
+#include "Common/Debug.h"
 #include "FRC2012_Robot.h"
 
 using namespace Framework::Base;
 using namespace std;
-
-const double Pi=M_PI;
-const double Pi2=M_PI*2.0;
-const double PI_2 = 1.57079632679489661923;
 
 namespace Base=Framework::Base;
 namespace Scripting=Framework::Scripting;
@@ -102,7 +99,7 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
 
 void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting)&& (IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer());
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer());
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle);
@@ -276,13 +273,18 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
 
-const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,Feet2Meters(27));
+const double c_CourtLength=Feet2Meters(54);
+const double c_CourtWidth=Feet2Meters(27);
+const double c_HalfCourtLength=c_CourtLength/2.0;
+
+const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
-FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous) : 
+FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_IsTargeting(true),m_SetLowGear(false)
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_DefaultPresetIndex(DefaultPresetIndex),
+		m_IsTargeting(true),m_SetLowGear(false)
 {
 }
 
@@ -297,12 +299,16 @@ void FRC_2012_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 	m_BallConveyorSystem.Initialize(em,RobotProps?&RobotProps->GetConveyorProps():NULL);
+
+	//set to the default key position
+	const FRC_2012_Robot_Props &robot2012props=RobotProps->GetFRC2012RobotProps();
+	SetDefaultPosition(robot2012props.PresetPositions[m_DefaultPresetIndex]);
 }
 void FRC_2012_Robot::ResetPos()
 {
 	__super::ResetPos();
 	//This only matters if we do not have an axis assigned to targeting; otherwise it will be overridden
-	m_IsTargeting=true;   
+	m_IsTargeting=true;
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
@@ -342,7 +348,7 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
-		//DOUT5("x=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+		DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -429,6 +435,14 @@ void FRC_2012_Robot::SetLowGearValue(double Value)
 	}
 }
 
+void FRC_2012_Robot::SetPresetPosition(size_t index)
+{
+	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
+	SetPosition(position[0],position[1]);
+	double TurretPos=m_Turret.GetPos_m();
+	SetAttitude(-TurretPos);
+}
+
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Framework::Base::EventMap *em=GetEventMap(); 
@@ -443,6 +457,10 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetLowGearValue);
+
+		em->Event_Map["Robot_SetPreset1"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset1);
+		em->Event_Map["Robot_SetPreset2"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset2);
+		em->Event_Map["Robot_SetPreset3"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset3);
 	}
 	else
 	{
@@ -455,6 +473,10 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2012_Robot::SetLowGearValue);
+
+		em->Event_Map["Robot_SetPreset1"]  .Remove(*this, &FRC_2012_Robot::SetPreset1);
+		em->Event_Map["Robot_SetPreset2"]  .Remove(*this, &FRC_2012_Robot::SetPreset2);
+		em->Event_Map["Robot_SetPreset3"]  .Remove(*this, &FRC_2012_Robot::SetPreset3);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
@@ -520,6 +542,18 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 
 {
 	{
+		FRC_2012_Robot_Props props;
+		const double KeyDistance=Inches2Meters(144);
+		const double KeyWidth=Inches2Meters(101);
+		//const double KeyDepth=Inches2Meters(48);   //not used (yet)
+		const double DefaultY=c_HalfCourtLength-KeyDistance;
+		const double HalfKeyWidth=KeyWidth/2.0;
+		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
+		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
+		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
+		m_FRC2012RobotProps=props;
+	}
+	{
 		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
 
 		//Late assign this to override the initial default
@@ -555,6 +589,46 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PrecisionTolerance=0.01; //we need good precision
 		m_ConveyorProps.RoteryProps()=props;
 	}
+}
+
+const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,size_t index)
+{
+	const char *err;
+	typedef FRC_2012_Robot_Properties::Vec2D Vec2D;
+	double length, width;	
+	//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
+	err = script.GetField("y", NULL, NULL,&length);
+	if (err)
+	{
+		err = script.GetField("y_ft", NULL, NULL,&length);
+		if (!err)
+			length=Feet2Meters(length);
+		else
+		{
+			err = script.GetField("y_in", NULL, NULL,&length);
+			if (!err)
+				length=Inches2Meters(length);
+		}
+
+	}
+	ASSERT_MSG(!err, err);
+	err = script.GetField("x", NULL, NULL,&width);
+	if (err)
+	{
+		err = script.GetField("x_ft", NULL, NULL,&width);
+		if (!err)
+			width=Feet2Meters(width);
+		else
+		{
+			err = script.GetField("x_in", NULL, NULL,&width);
+			if (!err)
+				width=Inches2Meters(width);
+		}
+	}
+	ASSERT_MSG(!err, err);
+	m_FRC2012RobotProps.PresetPositions[index]=Vec2D(width,c_HalfCourtLength-length);  //x,y  where x=width
+	script.Pop();
+	return err;
 }
 
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
@@ -596,6 +670,16 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_LowGearProps.LoadFromScript(script);
 			script.Pop();
 		}
+
+		
+		err = script.GetFieldTable("key_1");
+		if (!err) ProcessKey(m_FRC2012RobotProps,script,0);
+
+		err = script.GetFieldTable("key_2");
+		if (!err) ProcessKey(m_FRC2012RobotProps,script,1);
+
+		err = script.GetFieldTable("key_3");
+		if (!err) ProcessKey(m_FRC2012RobotProps,script,2);
 
 		script.Pop();
 	}

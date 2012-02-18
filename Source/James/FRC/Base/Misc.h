@@ -6,6 +6,9 @@
 typedef std::map<std::string, std::string, std::greater<std::string> > StringMap;
 #define ASSERT(cond) assert(cond);
 #define ASSERT_MSG(cond, msg) if (!(cond)){printf((msg)); assert(cond);}
+#ifndef _countof
+#define _countof(x) sizeof(x)/sizeof(*x)
+#endif
 
 namespace Framework
 {
@@ -167,6 +170,10 @@ private:
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+const double Pi=M_PI;
+const double Pi2=M_PI*2.0;
+const double PI_2 = 1.57079632679489661923;
 
 #ifndef M_PIF
 #define M_PIF 3.141592654f
