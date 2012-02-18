@@ -72,6 +72,21 @@ class Tank_Robot : public Tank_Drive
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 };
 
+class Tank_Robot_Properties : public UI_Ship_Properties
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		Tank_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
+	protected:
+		Tank_Robot_Props m_TankRobotProps;
+	private:
+		//typedef Ship_Properties __super;
+};
+
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
 ///are correct
 class Tank_Robot_Control : public Tank_Drive_Control_Interface
@@ -97,19 +112,6 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		double m_LeftVoltage,m_RightVoltage;
 		bool m_DisplayVoltage;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
-};
-
-class Tank_Robot_Properties : public UI_Ship_Properties
-{
-	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
-		Tank_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
-	protected:
-		Tank_Robot_Props m_TankRobotProps;
 };
 
 //This is a simplified version of the wheel UI without the swivel or the graphics to show direction (only the tread)
