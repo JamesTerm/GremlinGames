@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
-#include "InOut_Interface.h"
+#include "Debug.h"
 
 #undef __EnableTestKeys__
 
