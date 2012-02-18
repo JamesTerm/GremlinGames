@@ -11,6 +11,9 @@ struct Rotary_Props
 
 class Rotary_System : public Ship_1D
 {
+	private:
+		//typedef Ship_1D __super;
+		bool m_UsingRange_props;
 	public:
 		Rotary_System(const char EntityName[]) : Ship_1D(EntityName),m_UsingRange_props(false) {}
 		//Cache the m_UsingRange props so that we can know what to set back to
@@ -20,8 +23,6 @@ class Rotary_System : public Ship_1D
 			m_UsingRange_props=m_UsingRange;
 		}
 		bool GetUsingRange_Props() const {return m_UsingRange_props;}
-	private:
-		bool m_UsingRange_props;
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
@@ -29,7 +30,7 @@ class Rotary_System : public Ship_1D
 class Rotary_Linear : public Rotary_System
 {
 	private:
-		//typedef Ship_1D __super;
+		//typedef Rotary_System __super;
 
 		//Copy these lines to the subclass that binds the events
 		//events are a bit picky on what to subscribe so we'll just wrap from here
@@ -73,7 +74,7 @@ class Rotary_Angular : public Rotary_System
 			eActive, //Will attempt to match predicted velocity to actual velocity
 		};
 	private:
-		//typedef Ship_1D __super;
+		//typedef Rotary_System __super;
 
 		//Copy these lines to the subclass that binds the events
 		//events are a bit picky on what to subscribe so we'll just wrap from here
@@ -129,4 +130,6 @@ class Rotary_Properties : public Ship_1D_Properties
 		Rotary_Props &RoteryProps() {return m_RoteryProps;}
 	protected:
 		Rotary_Props m_RoteryProps;
+	private:
+		//typedef Ship_1D_Properties __super;
 };
