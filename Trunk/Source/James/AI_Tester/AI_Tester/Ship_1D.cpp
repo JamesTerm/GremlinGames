@@ -193,13 +193,15 @@ void Ship_1D::TimeChange(double dTime_s)
 				//check to see if we are going reach limit
 				if (VelocityToUse>0.0)
 				{
-					if ((VelocityToUse*dTime_s + Position) > m_MaxRange)
-						VelocityToUse=(m_MaxRange-Position)*dTime_s;
+					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+					if (Vel<VelocityToUse)
+						VelocityToUse=Vel;
 				}
 				else
 				{
-					if ((VelocityToUse*dTime_s + Position) < m_MinRange) 
-						VelocityToUse=(m_MinRange-Position)*dTime_s;
+					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+					if (fabs(Vel)<fabs(VelocityToUse))
+						VelocityToUse=Vel;
 				}
 			}
 			ForceToApply=m_Physics.GetForceFromVelocity(VelocityToUse,dTime_s);
