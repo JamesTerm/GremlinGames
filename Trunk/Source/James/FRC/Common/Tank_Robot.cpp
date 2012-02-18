@@ -291,5 +291,89 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.WheelDiameter=c_WheelDiameter;
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
+	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
+	props.IsOpen=false;  //Always false when control is fully functional
+	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	m_TankRobotProps=props;
 }
+
+void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	err = script.GetFieldTable("tank_drive");
+	if (!err) 
+	{
+		//Quick snap shot of all the properties
+		//Vec2D WheelDimensions;
+		//double WheelDiameter;
+		//double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
+		//double LeftPID[3]; //p,i,d
+		//double RightPID[3]; //p,i,d
+		//Get the ship dimensions
+		err = script.GetFieldTable("wheel_base_dimensions");
+		if (!err)
+		{
+			double length_in, width_in;	
+			//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
+			err = script.GetField("length_in", NULL, NULL,&length_in);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("width_in", NULL, NULL,&width_in);
+			ASSERT_MSG(!err, err);
+			m_TankRobotProps.WheelDimensions=Vec2D(Inches2Meters(width_in),Inches2Meters(length_in));  //x,y  where x=width
+			script.Pop();
+		}
+
+		double wheel_diameter;
+		err=script.GetField("wheel_diameter_in", NULL, NULL, &wheel_diameter);
+		if (!err)
+			m_TankRobotProps.WheelDiameter=Inches2Meters(wheel_diameter);
+		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_TankRobotProps.MotorToWheelGearRatio);
+		err = script.GetFieldTable("left_pid");
+		if (!err)
+		{
+			err = script.GetField("p", NULL, NULL,&m_TankRobotProps.LeftPID[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("i", NULL, NULL,&m_TankRobotProps.LeftPID[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("d", NULL, NULL,&m_TankRobotProps.LeftPID[2]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+		err = script.GetFieldTable("right_pid");
+		if (!err)
+		{
+			err = script.GetField("p", NULL, NULL,&m_TankRobotProps.RightPID[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("i", NULL, NULL,&m_TankRobotProps.RightPID[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("d", NULL, NULL,&m_TankRobotProps.RightPID[2]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+
+		double fDisplayRow;
+		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_TankRobotProps.Feedback_DiplayRow=(size_t)fDisplayRow;
+
+		string sTest;
+		err = script.GetField("is_closed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+				m_TankRobotProps.IsOpen=true;
+			else
+				m_TankRobotProps.IsOpen=false;
+		}
+		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.PID_Console_Dump=true;
+		}
+
+		script.Pop(); 
+	}
+	__super::LoadFromScript(script);
+}
+

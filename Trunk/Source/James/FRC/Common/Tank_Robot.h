@@ -79,8 +79,10 @@ class Tank_Robot_Properties : public Ship_Properties
 		//typedef osg::Vec2d Vec2D;
 
 		Tank_Robot_Properties();
-
+		virtual void LoadFromScript(Framework::Scripting::Script& script);
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 	protected:
 		Tank_Robot_Props m_TankRobotProps;
+	private:
+		typedef Ship_Properties __super;
 };
