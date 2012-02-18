@@ -78,7 +78,9 @@ class Entity2D
 		//All read cases use the read pointer, all write cases use the write pointer followed by an interlocked exchange of the pointers
 		PosAtt *m_PosAtt_Read,*m_PosAtt_Write; 
 		void UpdatePosAtt();
-	
+
+		Vec2D m_DefaultPos;
+		double m_DefaultAtt;
 		Framework::Base::EventMap* m_eventMap;
 	
 		Vec2D m_Dimensions;
@@ -103,6 +105,10 @@ class Entity2D
 		//from EntityPropertiesInterface
 		virtual const Vec2D &GetPos_m() const {return m_PosAtt_Read->m_pos_m;}
 		virtual double GetAtt_r() const {return m_PosAtt_Read->m_att_r;}
+
+		//This is the position used when ResetPos() is called
+		void SetDefaultPosition(const Vec2D &pos) {m_DefaultPos=pos;}
+		void SetDefaultAttitude(double att) {m_DefaultAtt=att;}
 	protected: 
 		FlightDynamics_2D m_Physics;
 		///This gives derived class the ability to manipulate the displacement

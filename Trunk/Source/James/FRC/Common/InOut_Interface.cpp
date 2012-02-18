@@ -1,11 +1,3 @@
-#undef  __EncoderHack__
-#undef  __ShowPotentiometerReadings__
-#undef  __ShowEncoderReadings__
-#undef  __ShowRollerReadings__
-
-#if defined(__ShowEncoderReadings__) || defined(__ShowPotentiometerReadings__) || defined(__ShowRollerReadings__)
-#define __ShowLCD__
-#endif
 
 #include "WPILib.h"
 
@@ -35,6 +27,7 @@
 #include "UI_Controller.h"
 #include "PIDController.h"
 #include "InOut_Interface.h"
+#include "Debug.h"
 
 using namespace Framework::Base;
 
@@ -160,14 +153,8 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 	//RightRate=m_KalFilter_EncodeRight(RightRate);
 	LeftVelocity=RPS_To_LinearVelocity(LeftRate);
 	RightVelocity=RPS_To_LinearVelocity(RightRate);
-	#ifdef __EncoderHack__
-	LeftVelocity=RightVelocity;  //Unfortunately the left encoder is not working remove once 
-	#endif
-	#ifdef __ShowEncoderReadings__
-	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", LeftVelocity,RightVelocity);
-	//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);	
-	#endif
+	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", LeftVelocity,RightVelocity);
+	//Dout(m_TankRobotProps.Feedback_DiplayRow, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);
 }
 
 //This is kept simple and straight forward, as it should be generic enough to work with multiple robots
@@ -180,11 +167,9 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	return;
 	#endif
 
-	#ifdef __ShowEncoderReadings__
-	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
+	//For now leave this disabled... should not need to script this
+	//Dout(3, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
 	//printf("l=%.1f r=%.1f\n", LeftVoltage,RightVoltage);
-	#endif
 
 	m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVoltage),(float)(RightVoltage));
 }

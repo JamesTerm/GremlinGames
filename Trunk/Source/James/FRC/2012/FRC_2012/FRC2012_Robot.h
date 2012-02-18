@@ -13,6 +13,15 @@ public:
 	virtual void Initialize(const Entity_Properties *props)=0;
 };
 
+struct FRC_2012_Robot_Props
+{
+public:
+	typedef Framework::Base::Vec2d Vec2D;
+	//typedef osg::Vec2d Vec2D;
+	
+	Vec2D PresetPositions[3];
+};
+
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
@@ -22,15 +31,17 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		FRC_2012_Robot_Properties();
 		virtual void LoadFromScript(Framework::Scripting::Script& script);
 
-		const Ship_1D_Properties &GetTurretProps() const {return m_TurretProps;}
-		const Ship_1D_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Ship_1D_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-		const Ship_1D_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
+		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
+		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
+		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
 	private:
 		typedef Tank_Robot_Properties __super;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
 		Tank_Robot_Properties m_LowGearProps;
+		FRC_2012_Robot_Props m_FRC2012RobotProps;
 };
 
 class FRC_2012_Robot : public Tank_Robot
@@ -61,7 +72,9 @@ class FRC_2012_Robot : public Tank_Robot
 
 		typedef Framework::Base::Vec2d Vec2D;
 		//typedef osg::Vec2d Vec2D;
-		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
+		/// \param DefaultPresetIndex is a key preset index used in autonomous to pick a spot to shoot from
+		/// 0=center 1=left 2=right
+		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex=0,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
@@ -164,6 +177,7 @@ class FRC_2012_Robot : public Tank_Robot
 		double m_TargetHeight;
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
+		size_t m_DefaultPresetIndex;
 
 		bool m_IsTargeting;
 		void IsTargeting(bool on) {m_IsTargeting=on;}
@@ -176,6 +190,11 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetLowGearOn() {SetLowGear(true);}
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
+
+		void SetPresetPosition(size_t index);
+		void SetPreset1() {SetPresetPosition(0);}
+		void SetPreset2() {SetPresetPosition(1);}
+		void SetPreset3() {SetPresetPosition(2);}
 };
 
 /// This contains all UI controls specific to this years robot.  Since we do not use files the primary use of this is specific keys assigned

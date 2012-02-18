@@ -16,8 +16,6 @@
 using namespace Framework::Base;
 using namespace std;
 
-const double Pi=M_PI;
-const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
  /*													Vehicle_Drive_Common															*/

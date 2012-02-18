@@ -11,6 +11,11 @@ WheelBase_Width_In=20.38	  --The wheel base will determine the turn rate, must b
 HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
 
+KeyDistance_in=144;
+KeyWidth_in=101;
+KeyDepth_in=48;
+HalfKeyWidth_in=KeyWidth_in/2.0;
+
 TestShip = {
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
@@ -46,6 +51,10 @@ TestShip = {
 	
 	robot_settings =
 	{
+		key_1 = { x_in=0				, y_in=KeyDistance_in },
+		key_2 = { x_in=-HalfKeyWidth_in	, y_in=KeyDistance_in },
+		key_3 = { x_in= HalfKeyWidth_in	, y_in=KeyDistance_in },
+		
 		turret =
 		{
 			is_closed='yes',				--It is closed loop when feedback has been properly calibrated

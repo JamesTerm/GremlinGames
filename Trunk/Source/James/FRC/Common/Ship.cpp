@@ -26,8 +26,6 @@ bool g_DisableEngineRampUp2=true;  //we need not use engine ramping for the robo
   /***************************************************************************************************************/
  /*													Ship_2D														*/
 /***************************************************************************************************************/
-const double PI=M_PI;
-const double Pi2=M_PI*2.0;
 const double Half_Pi=M_PI/2.0;
 
 

@@ -23,8 +23,6 @@ using namespace std;
 //namespace Scripting=GG_Framework::Logic::Scripting;
 namespace Scripting=Framework::Scripting;
 
-const double Pi2=M_PI*2.0;
-
 
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/

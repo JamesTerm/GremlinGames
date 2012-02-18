@@ -1,8 +1,4 @@
-#undef  __ShowPotentiometerReadings__
-#undef  __ShowEncoderReadings__
-#undef  __ShowRollerReadings__
-
-#if defined(__ShowEncoderReadings__) || defined(__ShowPotentiometerReadings__) || defined(__ShowRollerReadings__)
+#ifdef __DebugLUA__
 #define __ShowLCD__
 #endif
 
@@ -36,8 +32,8 @@
 #include "FRC2012_Robot.h"
 #include "FRC2012_Camera.h"
 #include "Common/InOut_Interface.h"
+#include "Common/Debug.h"
 #include "FRC2012_InOut_Interface.h"
-
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
@@ -265,5 +261,21 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			assert(false);  //These should be disabled as there is no encoder for them
 			break;
 	}
+	
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+		case FRC_2012_Robot::eTurret:
+			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,"turret=%f",RAD_2_DEG(result));
+			break;
+		case FRC_2012_Robot::ePitchRamp:
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,"pitch=%f",RAD_2_DEG(result));
+			break;
+		case FRC_2012_Robot::ePowerWheels:
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,"power=%f",result / Pi2);
+			break;
+	}
+	#endif
+
 	return result;
 }
