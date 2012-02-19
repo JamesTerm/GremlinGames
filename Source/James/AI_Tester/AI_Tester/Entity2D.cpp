@@ -51,7 +51,7 @@ void Entity1D::TimeChange(double dTime_s)
 
 Entity2D::Entity2D(const char EntityName[]) : 
 	m_PosAtt_Read(&m_PosAtt_Buffers[0]),m_PosAtt_Write(&m_PosAtt_Buffers[1]),m_DefaultPos(Vec2D(0,0)),m_DefaultAtt(0.0),m_eventMap(NULL),
-	m_Dimensions(1.0,1.0),m_Name(EntityName)
+	m_Dimensions(1.0,1.0),m_Name(EntityName),m_BypassPosAtt_Update(false)
 {
 	ResetPos();
 }
@@ -87,12 +87,15 @@ void Entity2D::ResetPos()
 {
 	//CancelAllControls();
 	m_Physics.ResetVectors();
-	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
-	//SetPosAtt(m_origPos, FromLW_Rot(m_origAtt[0], m_origAtt[1], m_origAtt[2]));
-	writePtr->m_pos_m=m_DefaultPos;
-	writePtr->m_att_r=m_DefaultAtt;  //a.k.a heading
-	//GetEventMap()->Event_Map["ResetPos"].Fire();
-	UpdatePosAtt();
+	if (!m_BypassPosAtt_Update)
+	{
+		PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+		//SetPosAtt(m_origPos, FromLW_Rot(m_origAtt[0], m_origAtt[1], m_origAtt[2]));
+		writePtr->m_pos_m=m_DefaultPos;
+		writePtr->m_att_r=m_DefaultAtt;  //a.k.a heading
+		//GetEventMap()->Event_Map["ResetPos"].Fire();
+		UpdatePosAtt();
+	}
 }
 
 void Entity2D::TimeChange(double dTime_s)
