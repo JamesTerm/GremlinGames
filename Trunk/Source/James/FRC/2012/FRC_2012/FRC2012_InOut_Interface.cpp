@@ -1,6 +1,3 @@
-#ifdef __DebugLUA__
-#define __ShowLCD__
-#endif
 
 #include "WPILib.h"
 
@@ -34,6 +31,10 @@
 #include "Common/InOut_Interface.h"
 #include "Common/Debug.h"
 #include "FRC2012_InOut_Interface.h"
+
+#ifdef __DebugLUA__
+#define __ShowLCD__
+#endif
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
@@ -242,13 +243,9 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %f %.1fft ", RAD_2_DEG(ret),height,height*3.2808399);
 			////lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
 			//#endif
-			//This is temporary code to pacify using a closed loop, remove once we have real implementation
-			result= m_TurretVoltage*m_RobotProps.GetTurretProps().GetMaxSpeed();
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			//Not sure what kind of sensor this will be yet
-			//This is temporary code to pacify using a closed loop, remove once we have real implementation
-			result= m_PitchRampVoltage*m_RobotProps.GetPitchRampProps().GetMaxSpeed();
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			//result=m_PowerWheel.GetRate();
