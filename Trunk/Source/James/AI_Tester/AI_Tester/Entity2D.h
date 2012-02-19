@@ -85,6 +85,7 @@ class Entity2D : public EntityPropertiesInterface
 	
 		Vec2D m_Dimensions;
 		std::string m_Name;
+		bool m_BypassPosAtt_Update;  //used to preserve pos att during a ResetPos() call
 
 	public:
 		Entity2D(const char EntityName[]);
@@ -109,6 +110,8 @@ class Entity2D : public EntityPropertiesInterface
 		//This is the position used when ResetPos() is called
 		void SetDefaultPosition(const Vec2D &pos) {m_DefaultPos=pos;}
 		void SetDefaultAttitude(double att) {m_DefaultAtt=att;}
+		//Be sure to always set this back to false!
+		void SetBypassPosAtt_Update(bool bypass) {m_BypassPosAtt_Update=bypass;}
 	protected: 
 		FlightDynamics_2D m_Physics;
 		///This gives derived class the ability to manipulate the displacement
