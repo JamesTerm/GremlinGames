@@ -136,7 +136,13 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err) m_MinRange=DEG_2_RAD(range);
 		err=script.GetField("max_range_deg", NULL, NULL, &range);
 		if (!err) m_MaxRange=DEG_2_RAD(range);
-		script.GetField("using_range", NULL, &m_UsingRange, NULL);
+		std::string sTest;
+		//TODO determine why the bool type fails
+		//script.GetField("using_range", NULL, &m_UsingRange, NULL);
+		err=script.GetField("using_range", &sTest, NULL, NULL);
+		if (!err)
+			m_UsingRange=!((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'));
+
 	}
 	// Let the base class finish things up
 	__super::LoadFromScript(script);
