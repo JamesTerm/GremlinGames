@@ -96,7 +96,6 @@ void Rotary_Linear::TimeChange(double dTime_s)
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
 		}
-		m_LastTime=dTime_s;
 	}
 	else
 	{
@@ -118,6 +117,9 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		else
 			m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);  //For ease of debugging the controls (no harm to read)
 	}
+
+	m_LastTime=dTime_s;
+
 	__super::TimeChange(dTime_s);
 	//Note: CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
 	double Voltage=m_Physics.GetVelocity()/m_CalibratedScaler;

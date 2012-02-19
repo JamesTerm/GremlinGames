@@ -270,6 +270,50 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 }
 
   /***********************************************************************************************************************************/
+ /*													FRC_2012_Robot::Flippers														*/
+/***********************************************************************************************************************************/
+FRC_2012_Robot::Flippers::Flippers(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
+Rotary_Linear("Flippers",robot_control,eFlippers),m_pParent(pParent),m_Advance(false),m_Retract(false)
+{
+}
+
+void FRC_2012_Robot::Flippers::SetIntendedPosition(double Position)
+{
+	//DOUT5("Test=%f",RAD_2_DEG(Position));
+	__super::SetIntendedPosition(Position);
+}
+
+void FRC_2012_Robot::Flippers::TimeChange(double dTime_s)
+{
+	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
+	if (m_Advance ^ m_Retract)
+		SetCurrentLinearAcceleration(m_Advance?ACCEL:-BRAKE);
+
+	__super::TimeChange(dTime_s);
+}
+
+void FRC_2012_Robot::Flippers::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["Flippers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Flippers::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Flippers_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::Flippers::SetIntendedPosition);
+		em->EventOnOff_Map["Flippers_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::Flippers::SetPotentiometerSafety);
+		em->EventOnOff_Map["Flippers_Advance"].Subscribe(ehl,*this, &FRC_2012_Robot::Flippers::Advance);
+		em->EventOnOff_Map["Flippers_Retract"].Subscribe(ehl,*this, &FRC_2012_Robot::Flippers::Retract);
+	}
+	else
+	{
+		em->EventValue_Map["Flippers_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::Flippers::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Flippers_SetIntendedPosition"].Remove(*this, &FRC_2012_Robot::Flippers::SetIntendedPosition);
+		em->EventOnOff_Map["Flippers_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::Flippers::SetPotentiometerSafety);
+		em->EventOnOff_Map["Flippers_Advance"].Remove(*this, &FRC_2012_Robot::Flippers::Advance);
+		em->EventOnOff_Map["Flippers_Retract"].Remove(*this, &FRC_2012_Robot::Flippers::Retract);
+	}
+}
+
+  /***********************************************************************************************************************************/
  /*															FRC_2012_Robot															*/
 /***********************************************************************************************************************************/
 
@@ -283,7 +327,7 @@ const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_DefaultPresetIndex(DefaultPresetIndex),
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),m_DefaultPresetIndex(DefaultPresetIndex),
 		m_IsTargeting(true),m_SetLowGear(false)
 {
 }
@@ -299,6 +343,7 @@ void FRC_2012_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 	m_BallConveyorSystem.Initialize(em,RobotProps?&RobotProps->GetConveyorProps():NULL);
+	m_Flippers.Initialize(em,RobotProps?&RobotProps->GetFlipperProps():NULL);
 
 	//set to the default key position
 	const FRC_2012_Robot_Props &robot2012props=RobotProps->GetFRC2012RobotProps();
@@ -313,6 +358,7 @@ void FRC_2012_Robot::ResetPos()
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_BallConveyorSystem.ResetPos();
+	m_Flippers.ResetPos();
 }
 
 void FRC_2012_Robot::TimeChange(double dTime_s)
@@ -357,6 +403,7 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 	m_PitchRamp.AsEntity1D().TimeChange(dTime_s);
 	m_PowerWheels.AsEntity1D().TimeChange(dTime_s);
 	m_BallConveyorSystem.TimeChange(dTime_s);
+	m_Flippers.AsEntity1D().TimeChange(dTime_s);
 }
 
 const double c_rMotorDriveForward_DeadZone=0.02;
@@ -408,8 +455,10 @@ void FRC_2012_Robot::SetTargetingValue(double Value)
 void FRC_2012_Robot::SetLowGear(bool on) 
 {
 	m_SetLowGear=on;
+	SetBypassPosAtt_Update(true);
 	//Now for some real magic with the properties!
 	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
+	SetBypassPosAtt_Update(false);
 
 	m_RobotControl->OpenSolenoid(eUseLowGear,on);
 }
@@ -483,6 +532,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_PitchRamp.BindAdditionalEventControls(Bind);
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_BallConveyorSystem.BindAdditionalEventControls(Bind);
+	m_Flippers.BindAdditionalEventControls(Bind);
 }
 
 
@@ -538,8 +588,18 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	Ship_1D_Properties::eSimpleMotor,
 	false,0.0,0.0,	//No limit ever!
 	true //This is angular
+	),
+	m_FlipperProps(
+	"Flippers",
+	2.0,    //Mass
+	Inches2Meters(12),   //Dimension  (this should be correct)
+	1.4 * Pi2,   //Max Speed  (Parker gave this one, should be good)
+	10.0,10.0, //ACCEL, BRAKE  (should be relatively quick)
+	10.0,10.0, //Max Acceleration Forward/Reverse 
+	Ship_1D_Properties::eRobotArm,
+	true,	//Using the range
+	-PI_2,PI_2 //TODO
 	)
-
 {
 	{
 		FRC_2012_Robot_Props props;
@@ -582,12 +642,6 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
 		m_PowerWheelProps.RoteryProps()=props;
-	}
-	{
-		Rotary_Props props=m_ConveyorProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.01; //we need good precision
-		m_ConveyorProps.RoteryProps()=props;
 	}
 }
 
@@ -660,6 +714,12 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_ConveyorProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("flippers");
+		if (!err)
+		{
+			m_FlipperProps.LoadFromScript(script);
 			script.Pop();
 		}
 
