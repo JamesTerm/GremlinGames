@@ -489,6 +489,7 @@ void FRC_2012_Robot::SetLowGearValue(double Value)
 
 void FRC_2012_Robot::SetPresetPosition(size_t index)
 {
+	printf("Using preset %d\n",index);
 	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
 	SetPosition(position[0],position[1]);
 
