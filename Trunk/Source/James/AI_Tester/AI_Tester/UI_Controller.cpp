@@ -249,7 +249,7 @@ void UI_Controller::Flush_AI_BaseResources()
 
 UI_Controller::~UI_Controller()
 {
-	Flush_AI_BaseResources();
+	Set_AI_Base_Controller(NULL); //this will unbind the events and flush the AI resources
 }
 
 void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
