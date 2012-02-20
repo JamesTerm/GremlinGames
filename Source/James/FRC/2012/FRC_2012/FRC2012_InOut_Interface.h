@@ -14,6 +14,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		//Compressor m_Compress;
 		Solenoid m_OnLowGear,m_OffLowGear;
 		Solenoid m_OnRampDeployment,m_OffRampDeployment;
+		Relay m_LowerConveyor_Relay,m_MiddleConveyor_Relay,m_FireConveyor_Relay;
 		
 		//AnalogChannel m_Potentiometer;
 		//Cached from properties
@@ -28,7 +29,8 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		//KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 
 		//Note these are temporary to avoid flooding, and should be removed once they are no longer needed
-		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
+		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
+		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 	public:
 		FRC_2012_Robot_Control(bool UseSafety);
 		virtual ~FRC_2012_Robot_Control();
