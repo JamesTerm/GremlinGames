@@ -837,17 +837,19 @@ FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &j
 	#endif
 	#ifdef __2012ActualControls__
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetLowGearValue",true,1.0,0.0,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 0,"Flippers_Retract",true,false,"Joystick_1");
+	joy.AddJoy_Button_Default( 3,"Flippers_Advance",true,false,"Joystick_1");
 	
 	//scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Turret_SetCurrentVelocity",true,0.5,0.1,false,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::ePOV_0,"Robot_SetPresetPOV",false,1.0,0.0,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 0,"Ball_Grip",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 2,"Ball_Squirt",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 3,"Ball_Fire",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 1,"PowerWheels_IsRunning",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 5,"Robot_TurretSetTargetingOff",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 6,"Flippers_Retract",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 7,"Flippers_Advance",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 4,"Robot_SetPreset1",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 6,"Robot_SetPreset2",false,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 7,"Robot_SetPreset3",false,false,"Joystick_2");
 	
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"PitchRamp_SetIntendedPosition",true,1.142000,0.0,false,"Joystick_3");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Robot_SetTargetingValue",true,1.142000,0.0,false,"Joystick_3");
