@@ -166,6 +166,7 @@ class FRC_2012_Robot : public Tank_Robot
 		class Flippers : public Rotary_Linear
 		{
 			private:
+				//typedef Rotary_Linear __super;
 				FRC_2012_Robot * const m_pParent;
 				bool m_Advance,m_Retract;
 			public:
