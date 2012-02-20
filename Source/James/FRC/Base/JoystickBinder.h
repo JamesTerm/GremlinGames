@@ -29,6 +29,7 @@ public:
 	};
 
 	JoyStick_Binder(Framework::Base::IJoystick &joystick);
+	~JoyStick_Binder();
 	///This binds all the axis, rotations, sliders to an event
 	/// \param IsFlipped this will simply multiply a -1.0 coefficient
 	void AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped=false,double Multiplier=1.0,double FilterRange=0.0,
