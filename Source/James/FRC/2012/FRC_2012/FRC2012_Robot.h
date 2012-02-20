@@ -206,11 +206,14 @@ class FRC_2012_Robot : public Tank_Robot
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
 		size_t m_DefaultPresetIndex;
+		bool m_DisableTurretTargetingValue;
+		bool m_POVSetValve;
 
 		bool m_IsTargeting;
 		void IsTargeting(bool on) {m_IsTargeting=on;}
 		void SetTargetingOn() {IsTargeting(true);}
 		void SetTargetingOff() {IsTargeting(false);}
+		void SetTurretTargetingOff(bool on) {m_DisableTurretTargetingValue=on;}
 		void SetTargetingValue(double Value);
 
 		bool m_SetLowGear;
@@ -223,6 +226,7 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetPreset1() {SetPresetPosition(0);}
 		void SetPreset2() {SetPresetPosition(1);}
 		void SetPreset3() {SetPresetPosition(2);}
+		void SetPresetPOV (double value);
 };
 
 /// This contains all UI controls specific to this years robot.  Since we do not use files the primary use of this is specific keys assigned

@@ -57,7 +57,7 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 {
-	if ((m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
+	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
 	{
 		Vec2D Target=m_pParent->m_TargetOffset;
 		Target-=m_pParent->GetPos_m();
@@ -328,7 +328,7 @@ const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),m_DefaultPresetIndex(DefaultPresetIndex),
-		m_IsTargeting(true),m_SetLowGear(false)
+		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
 
@@ -488,8 +488,44 @@ void FRC_2012_Robot::SetPresetPosition(size_t index)
 {
 	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
 	SetPosition(position[0],position[1]);
-	double TurretPos=m_Turret.GetPos_m();
-	SetAttitude(-TurretPos);
+
+	Vec2D Target=m_TargetOffset;
+	Target-=GetPos_m();
+	const double Angle=atan2(Target[1],Target[0]);
+	double AngleToUse=-(Angle-PI_2);
+
+	double TurretPos=NormalizeRotation2(AngleToUse)-m_Turret.GetPos_m();
+	SetAttitude(TurretPos);
+}
+
+void FRC_2012_Robot::SetPresetPOV (double value)
+{
+	//We put the typical case first (save the amount of branching)
+	if (value!=-1)
+	{
+		if (!m_POVSetValve)
+		{
+			m_POVSetValve=true;
+			//so breaking down the index
+			//0 = up
+			//1 = up right
+			//2 = right
+			//3 = down right
+			//4 = down
+			//5 = down left
+			//6 = left
+			//7 = left up
+			size_t index=(size_t)(value/45.0);
+			switch (index)
+			{
+				case 0:	SetPresetPosition(0);	break;
+				case 2: SetPresetPosition(2);	break;
+				case 6: SetPresetPosition(1);	break;
+			}
+		}
+	}
+	else 
+		m_POVSetValve=false;
 }
 
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
@@ -500,6 +536,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_IsTargeting"].Subscribe(ehl, *this, &FRC_2012_Robot::IsTargeting);
 		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOff);
+		em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTargetingValue);
 
 		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGear);
@@ -510,12 +547,14 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetPreset1"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset1);
 		em->Event_Map["Robot_SetPreset2"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset2);
 		em->Event_Map["Robot_SetPreset3"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset3);
+		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPresetPOV);
 	}
 	else
 	{
 		em->EventOnOff_Map["Robot_IsTargeting"]  .Remove(*this, &FRC_2012_Robot::IsTargeting);
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOff);
+		em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Remove(*this, &FRC_2012_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2012_Robot::SetTargetingValue);
 
 		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &FRC_2012_Robot::SetLowGear);
@@ -526,6 +565,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetPreset1"]  .Remove(*this, &FRC_2012_Robot::SetPreset1);
 		em->Event_Map["Robot_SetPreset2"]  .Remove(*this, &FRC_2012_Robot::SetPreset2);
 		em->Event_Map["Robot_SetPreset3"]  .Remove(*this, &FRC_2012_Robot::SetPreset3);
+		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2012_Robot::SetPresetPOV);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
