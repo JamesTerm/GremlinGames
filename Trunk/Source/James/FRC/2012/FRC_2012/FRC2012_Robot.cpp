@@ -36,7 +36,7 @@ namespace Scripting=Framework::Scripting;
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent)
+	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0)
 {
 }
 
@@ -45,18 +45,21 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::Turret_SetRequestedVelocity);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
 	else
 	{
-		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::Turret::Turret_SetRequestedVelocity);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
 }
 
 void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 {
+	SetRequestedVelocity_FromNormalized(m_Velocity);
+	m_Velocity=0.0;
+
 	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
 	{
 		Vec2D Target=m_pParent->m_TargetOffset;
@@ -789,7 +792,8 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
  /*														FRC_2012_UI_Controller														*/
 /***********************************************************************************************************************************/
 #undef __2011Joysticks__
-#define __2012Joysticks_2ControlConfig__
+#undef __2012Joystick_with_LogitechOperator__
+#define __2012ActualControls__
 
 #undef __AirFlo__
 #undef __UsingXTerminator__
@@ -819,7 +823,7 @@ FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &j
 	joy.AddJoy_Button_Default( 10,"PowerWheels_IsRunning",true,false,"Joystick_2");
 	#endif
 	
-	#ifdef __2012Joysticks_2ControlConfig__
+	#ifdef __2012Joystick_with_LogitechOperator__
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetLowGearValue",true,1.0,0.0,false,"Joystick_1");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Turret_SetCurrentVelocity",true,1.0,0.0,false,"Joystick_2");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"PowerWheels_SetCurrentVelocity",true,1.000,0.0,false,"Joystick_2");
@@ -830,5 +834,30 @@ FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &j
 	joy.AddJoy_Button_Default( 0,"Ball_Squirt",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 5,"Ball_Fire",true,false,"Joystick_2");
 	joy.AddJoy_Button_Default( 3,"PowerWheels_IsRunning",true,false,"Joystick_2");
+	#endif
+	#ifdef __2012ActualControls__
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetLowGearValue",true,1.0,0.0,false,"Joystick_1");
+	
+	//scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Turret_SetCurrentVelocity",true,0.5,0.1,false,"Joystick_2");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::ePOV_0,"Robot_SetPresetPOV",false,1.0,0.0,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 0,"Ball_Grip",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 2,"Ball_Squirt",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 3,"Ball_Fire",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 1,"PowerWheels_IsRunning",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 5,"Robot_TurretSetTargetingOff",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 6,"Flippers_Retract",true,false,"Joystick_2");
+	joy.AddJoy_Button_Default( 7,"Flippers_Advance",true,false,"Joystick_2");
+	
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"PitchRamp_SetIntendedPosition",true,1.142000,0.0,false,"Joystick_3");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Robot_SetTargetingValue",true,1.142000,0.0,false,"Joystick_3");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"PowerWheels_SetCurrentVelocity",true,1.000,0.0,false,"Joystick_3");
+	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Turret_SetCurrentVelocity",true,0.5,0.1,true,"Joystick_3");
+	
+	//TODO test to ensure up is even and down is odd
+	joy.AddJoy_Button_Default( 1,"Ball_Grip",true,false,"Joystick_3");
+	joy.AddJoy_Button_Default( 0,"Ball_Squirt",true,false,"Joystick_3");
+	joy.AddJoy_Button_Default( 5,"Ball_Fire",true,false,"Joystick_3");
+	joy.AddJoy_Button_Default( 3,"PowerWheels_IsRunning",true,false,"Joystick_3");
 	#endif
 }
