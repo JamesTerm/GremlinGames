@@ -26,7 +26,7 @@ namespace Scripting=GG_Framework::Logic::Scripting;
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent)
+	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0)
 {
 }
 
@@ -35,18 +35,21 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::Turret_SetRequestedVelocity);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
 	else
 	{
-		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::Turret::Turret_SetRequestedVelocity);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
 }
 
 void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 {
+	SetRequestedVelocity_FromNormalized(m_Velocity);
+	m_Velocity=0.0;
+
 	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
 	{
 		Vec2D Target=m_pParent->m_TargetOffset;
