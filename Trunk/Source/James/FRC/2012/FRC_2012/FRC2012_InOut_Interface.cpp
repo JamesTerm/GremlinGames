@@ -100,9 +100,10 @@ enum SolenoidSlotList
 FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
 	m_Turret_Victor(eVictor_Turret),m_PowerWheel_Victor(eVictor_PowerWheel),m_PitchRamp_Victor(eVictor_PitchWheel),m_Flipper_Victor(eVictor_Flipper),
-	m_OnLowGear(eSolenoid_UseLowGear_On),m_OffLowGear(eSolenoid_UseLowGear_Off),
-	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off) //,
 	//m_Compress(5,2),
+	m_OnLowGear(eSolenoid_UseLowGear_On),m_OffLowGear(eSolenoid_UseLowGear_Off),
+	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off),
+	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor) //,
 	//m_Potentiometer(1)
 {
 	ResetPos();
@@ -145,20 +146,31 @@ void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 	}
 }
 
+//NOTE: for now, never pulse the spike relays, there is too much debate on the damage that will cause
+Relay::Value TranslateToRelay(double Voltage)
+{
+	Relay::Value ret=Relay::kOff;  //*NEVER* want both on!
+	const double Threshold=0.08;  //This value is based on dead voltage for arm... feel free to adjust, but keep high enough to avoid noise
+	
+	if (Voltage>Threshold)
+		ret=Relay::kForward;
+	else if (Voltage<-Threshold)
+		ret=Relay::kReverse;
+	return ret;
+}
+
 void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	#ifndef __DisableMotorControls__
 	switch (index)
 	{
-	case FRC_2012_Robot::eTurret:		m_Turret_Victor.Set((float)Voltage);		break;
-	case FRC_2012_Robot::ePitchRamp:	m_PitchRamp_Victor.Set((float)Voltage);		break;
-	case FRC_2012_Robot::ePowerWheels:	m_PowerWheel_Victor.Set((float)Voltage);	break;
-	//case FRC_2012_Robot::eLowerConveyor:
-	//	break;
-	//case FRC_2012_Robot::eMiddleConveyor:
-	//	break;
-	//case FRC_2012_Robot::eFireConveyor:
-	//	break;
+	case FRC_2012_Robot::eTurret:			m_Turret_Victor.Set((float)Voltage);		break;
+	case FRC_2012_Robot::ePitchRamp:		m_PitchRamp_Victor.Set((float)Voltage);		break;
+	case FRC_2012_Robot::ePowerWheels:		m_PowerWheel_Victor.Set((float)Voltage);	break;
+	case FRC_2012_Robot::eFlippers:			m_Flipper_Victor.Set((float)Voltage);		break;
+	case FRC_2012_Robot::eLowerConveyor:	m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
+	case FRC_2012_Robot::eMiddleConveyor:	m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
+	case FRC_2012_Robot::eFireConveyor:		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
 	}
 	#endif
 
@@ -177,10 +189,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		//	
 		//	//Note: client code needs to check the levels are correct!
 		//	m_ArmMotor.Set(Voltage);  //always the same velocity for both!
-		//	#ifdef __ShowPotentiometerReadings__
-		//	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-		//	lcd->PrintfLine(DriverStationLCD::kUser_Line4, "ArmVolt=%f ", Voltage);
-		//	#endif
+		//	DOUT(4, "ArmVolt=%f ", Voltage);
 		//}
 
 		case FRC_2012_Robot::eTurret:
@@ -208,11 +217,14 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			}
 
 			//Example 2... another way to display readings
-			//#ifdef __ShowRollerReadings__
-			//DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-			//lcd->PrintfLine(DriverStationLCD::kUser_Line4, "RollerVolt=%f ", Voltage);
-			//#endif
-
+			//DOUT(4, "RollerVolt=%f ", Voltage);
+			break;
+		case FRC_2012_Robot::eFlippers:
+			if (m_FlipperVoltage!=Voltage)
+			{
+				printf("Flippers=%f\n",Voltage);
+				m_FlipperVoltage=Voltage;
+			}
 			break;
 		case FRC_2012_Robot::eLowerConveyor:
 			//m_LowerConveyor.Set(TranslateToRelay(Voltage));  //will be easy to switch to victor
@@ -307,6 +319,11 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,"power=%f",result / Pi2);
+			break;
+		//Note: This assumes we have a portentiometer mounted... we can leave here if we don't (no harm done)
+		//TODO we may want to have a common function for these where open loops call from voltage 
+		case FRC_2012_Robot::eFlippers:
+			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,"Flippers=%f",RAD_2_DEG(result));
 			break;
 	}
 	#endif
