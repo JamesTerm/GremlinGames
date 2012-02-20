@@ -20,6 +20,34 @@ JoyStick_Binder::JoyStick_Binder(IJoystick &joystick) :  m_Joystick(joystick),m_
 	memset(m_lastReleaseTime,0,sizeof(m_lastReleaseTime));
 }
 
+JoyStick_Binder::~JoyStick_Binder()
+{
+	for (JoyAnalogBindings::iterator iter=m_JoyAnalogBindings.begin();iter!=m_JoyAnalogBindings.end();iter++)
+	{
+		std::vector<std::string> *test=(*iter).second;
+		delete test;
+		(*iter).second=NULL;
+	}
+	for (AssignedJoyAnalogs::iterator iter=m_AssignedJoyAnalogs.begin();iter!=m_AssignedJoyAnalogs.end();iter++)
+	{
+		std::vector<Analog_EventEntry> *test=(*iter).second;
+		delete test;
+		(*iter).second=NULL;
+	}
+	for (JoyButtonBindings::iterator iter=m_JoyButtonBindings.begin();iter!=m_JoyButtonBindings.end();iter++)
+	{
+		std::vector<std::string> *test=(*iter).second;
+		delete test;
+		(*iter).second=NULL;
+	}
+	for (AssignedJoyButtons::iterator iter=m_AssignedJoyButtons.begin();iter!=m_AssignedJoyButtons.end();iter++)
+	{
+		std::vector<Button_EventEntry> *test=(*iter).second;
+		delete test;
+		(*iter).second=NULL;
+	}
+}
+
 void JoyStick_Binder::SetControlledEventMap(Framework::Base::EventMap* em)
 {
 	if (m_controlledEventMap != em)
