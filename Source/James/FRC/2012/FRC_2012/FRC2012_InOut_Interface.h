@@ -7,11 +7,13 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-	
-		//Victor m_ArmMotor,m_RollerMotor;
-		//TODO see if we are going to use Solenoid (Check with Parker)
+
+		Victor m_Turret_Victor,m_PowerWheel_Victor,m_PitchRamp_Victor,m_Flipper_Victor;
+
+		//TODO see if we are going to use a compressor
 		//Compressor m_Compress;
-		//Solenoid m_OnRist,m_OffRist;
+		Solenoid m_OnLowGear,m_OffLowGear;
+		Solenoid m_OnRampDeployment,m_OffRampDeployment;
 		
 		//AnalogChannel m_Potentiometer;
 		//Cached from properties
@@ -40,6 +42,8 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual bool GetBoolSensorState(size_t index);
+		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
+		virtual void OpenSolenoid(size_t index,bool Open);
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}

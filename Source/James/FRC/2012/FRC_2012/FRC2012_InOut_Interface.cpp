@@ -36,6 +36,9 @@
 #define __ShowLCD__
 #endif
 
+#undef __DisableMotorControls__
+#define  __EnablePrintfDumps__
+
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
 /***********************************************************************************************************************************/
@@ -58,12 +61,15 @@ void FRC_2012_Robot_Control::ResetPos()
 enum VictorSlotList
 {
 	eVictor_NoZeroUsed,
-	eVictor_LeftMotor1,
-	eVictor_LeftMotor2,
-	eVictor_RightMotor1,
-	eVictor_RightMotor2,
+	eVictor_RightMotor1,	//Used in InOut_Interface
+	eVictor_RightMotor2,	//Used in InOut_Interface
+	eVictor_LeftMotor1,		//Used in InOut_Interface
+	eVictor_LeftMotor2,		//Used in InOut_Interface
 	eVictor_Turret,
 	eVictor_PowerWheel,
+	eVictor_PitchWheel,
+	eVictor_Flipper
+	//Currently only two more victors available
 };
 enum RelaySlotList
 {
@@ -72,17 +78,31 @@ enum RelaySlotList
 	eRelay_MiddleConveyor,
 	eRelay_FireConveyor
 };
-enum Sensors
+enum SensorSlotList
 {
 	eSensor_LowerConveyor,
 	eSensor_MiddleConveyor,
 	eSensor_FireConveyor
 };
 
+//Note: If any of these are backwards simply switch the on/off order here only!
+enum SolenoidSlotList
+{
+	eSolenoid_NoZeroUsed,
+	eSolenoid_UseLowGear_On,
+	eSolenoid_UseLowGear_Off,
+	eSolenoid_RampDeployment_On,
+	eSolenoid_RampDeployment_Off,
+};
+
+//Note: the order of the initialization list must match the way they are in the class declaration, so if the slots need to change, simply
+//change them in the enumerations
 FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
-	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl) //,
-	//m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
-	//m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
+	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
+	m_Turret_Victor(eVictor_Turret),m_PowerWheel_Victor(eVictor_PowerWheel),m_PitchRamp_Victor(eVictor_PitchWheel),m_Flipper_Victor(eVictor_Flipper),
+	m_OnLowGear(eSolenoid_UseLowGear_On),m_OffLowGear(eSolenoid_UseLowGear_Off),
+	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off) //,
+	//m_Compress(5,2),
 	//m_Potentiometer(1)
 {
 	ResetPos();
@@ -127,6 +147,22 @@ void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 
 void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
+	#ifndef __DisableMotorControls__
+	switch (index)
+	{
+	case FRC_2012_Robot::eTurret:		m_Turret_Victor.Set((float)Voltage);		break;
+	case FRC_2012_Robot::ePitchRamp:	m_PitchRamp_Victor.Set((float)Voltage);		break;
+	case FRC_2012_Robot::ePowerWheels:	m_PowerWheel_Victor.Set((float)Voltage);	break;
+	//case FRC_2012_Robot::eLowerConveyor:
+	//	break;
+	//case FRC_2012_Robot::eMiddleConveyor:
+	//	break;
+	//case FRC_2012_Robot::eFireConveyor:
+	//	break;
+	}
+	#endif
+
+	#ifdef __EnablePrintfDumps__
 	switch (index)
 	{
 		//Example... if we want to show readings
@@ -201,6 +237,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			}
 			break;
 	}
+	#endif
 }
 
 bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
@@ -275,4 +312,19 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	#endif
 
 	return result;
+}
+
+void FRC_2012_Robot_Control::OpenSolenoid(size_t index,bool Open)
+{
+	switch (index)
+	{
+	case FRC_2012_Robot::eUseLowGear:
+		printf("UseLowGear=%d\n",Open);
+		m_OnLowGear.Set(Open),m_OffLowGear.Set(!Open);
+		break;
+	case FRC_2012_Robot::eRampDeployment:
+		printf("RampDeployment=%d\n",Open);
+		m_OnRampDeployment.Set(Open),m_OnRampDeployment.Set(!Open);
+		break;
+	}
 }
