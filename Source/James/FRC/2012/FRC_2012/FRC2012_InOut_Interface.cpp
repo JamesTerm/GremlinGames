@@ -36,7 +36,7 @@
 #define __ShowLCD__
 #endif
 
-#undef __DisableMotorControls__
+#define __DisableMotorControls__
 #define  __EnablePrintfDumps__
 
   /***********************************************************************************************************************************/
