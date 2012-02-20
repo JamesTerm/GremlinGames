@@ -85,18 +85,18 @@ class FRC_2012_Robot : public Tank_Robot
 	protected:
 		class Turret : public Rotary_Linear
 		{
+			private:
+				FRC_2012_Robot * const m_pParent;
+				double m_Velocity; //adds all axis velocities then assigns on the time change
 			public:
 				Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
 				typedef Rotary_Linear __super;
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
-			private:
-				FRC_2012_Robot * const m_pParent;
 		};
 
 		class PitchRamp : public Rotary_Linear
