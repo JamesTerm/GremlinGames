@@ -37,7 +37,7 @@
 #endif
 
 #define __DisableMotorControls__
-#define  __EnablePrintfDumps__
+#undef  __EnablePrintfDumps__
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
@@ -250,6 +250,23 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			break;
 	}
 	#endif
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+	case FRC_2012_Robot::eTurret:
+		Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,1,"tu_v=%.2f",Voltage);
+		break;
+	case FRC_2012_Robot::ePitchRamp:
+		Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"pi_v=%.2f",Voltage);
+		break;
+	case FRC_2012_Robot::ePowerWheels:
+		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
+		break;
+	case FRC_2012_Robot::eFlippers:
+		Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,1,"fl_v=%.2f",Voltage);
+		break;
+	}
+	#endif
 }
 
 bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
@@ -312,18 +329,16 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,"turret=%f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,"pitch=%f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,"power=%f",result / Pi2);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
 			break;
-		//Note: This assumes we have a portentiometer mounted... we can leave here if we don't (no harm done)
-		//TODO we may want to have a common function for these where open loops call from voltage 
 		case FRC_2012_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,"Flippers=%f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
 			break;
 	}
 	#endif

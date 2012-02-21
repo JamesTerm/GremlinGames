@@ -20,6 +20,7 @@ public:
 	//typedef osg::Vec2d Vec2D;
 	
 	Vec2D PresetPositions[3];
+	size_t Coordinates_DiplayRow;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
@@ -109,7 +110,7 @@ class FRC_2012_Robot : public Tank_Robot
 				typedef Rotary_Linear __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				void SetIntendedPosition(double Position);
+				void SetIntendedPosition_Plus(double Position);
 
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);

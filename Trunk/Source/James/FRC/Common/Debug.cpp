@@ -22,10 +22,25 @@ void Dout(size_t line, const char *writeFmt, va_list argptr)
 		lcd->PrintfLine((DriverStationLCD::Line)line, BuildString2(writeFmt,argptr).c_str());
 }
 
+void Dout(size_t line, size_t startingColumn, const char *writeFmt, va_list argptr)
+{
+	static DriverStationLCD *lcd = DriverStationLCD::GetInstance();
+	if (line!=(size_t)-1)
+		lcd->Printf((DriverStationLCD::Line)line,startingColumn, BuildString2(writeFmt,argptr).c_str());
+}
+
 void Dout(size_t line, const char *writeFmt, ...)
 {
 	// Get the arguments
 	va_list args;
 	va_start( args , writeFmt );
 	Dout(line,writeFmt,args);
+}
+
+void Dout(size_t line, size_t startingColumn, const char *writeFmt, ...)
+{
+	// Get the arguments
+	va_list args;
+	va_start( args , writeFmt );
+	Dout(line,startingColumn,writeFmt,args);
 }
