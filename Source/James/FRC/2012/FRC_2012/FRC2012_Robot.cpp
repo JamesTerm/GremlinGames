@@ -73,6 +73,23 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 }
 
+//This will make the scale to half with a 0.1 dead zone
+double PositionToVelocity_Tweak(double Value)
+{
+	const double FilterRange=0.1;
+	const double Multiplier=0.5;
+	const bool isSquared=true;
+	double Temp=fabs(Value); //take out the sign... put it back in the end
+	Temp=(Temp>=FilterRange) ? Temp-FilterRange:0.0; 
+
+	Temp=Multiplier*(Temp/(1.0-FilterRange)); //apply scale first then 
+	if (isSquared) Temp*=Temp;  //square it if it is squared
+
+	//Now to restore the sign
+	Value=(Value<0.0)?-Temp:Temp;
+	return Value;
+}
+
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
@@ -81,23 +98,28 @@ FRC_2012_Robot::PitchRamp::PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Inte
 {
 }
 
-void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
+void FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && GetIsUsingPotentiometer());
-	if (!IsTargeting)
+	if (GetIsUsingPotentiometer())
 	{
-		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-		//first get the range from 0 - 1
-		double positive_range = (Position * 0.5) + 0.5;
-		//positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=GetMinRange();
-		const double maxRange=GetMaxRange();
-		const double Scale=(maxRange-minRange) / maxRange;
-		Position=(positive_range * Scale) + minRange;
+		bool IsTargeting=(m_pParent->m_IsTargeting);
+		if (!IsTargeting)
+		{
+			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+			//first get the range from 0 - 1
+			double positive_range = (Position * 0.5) + 0.5;
+			//positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=GetMinRange();
+			const double maxRange=GetMaxRange();
+			const double Scale=(maxRange-minRange) / maxRange;
+			Position=(positive_range * Scale) + minRange;
+		}
+		//DOUT5("Test=%f",RAD_2_DEG(Position));
+		SetIntendedPosition(Position);
 	}
+	else
+		SetRequestedVelocity_FromNormalized(PositionToVelocity_Tweak(Position));   //allow manual use of same control
 
-	//DOUT5("Test=%f",RAD_2_DEG(Position));
-	__super::SetIntendedPosition(Position);
 }
 
 void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
@@ -116,13 +138,13 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
+		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 	else
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
+		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 }
@@ -368,12 +390,17 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 {
 	m_TargetOffset=c_TargetBasePosition;
 	m_TargetHeight=c_TargetBaseHeight;
+	Vec2d Pos_m=GetPos_m();
+	//Got to make this fit within 20 chars :(
+	Dout(m_RobotProps.GetFRC2012RobotProps().Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
+		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
+
 	//TODO tweak adjustments based off my position in the field here
 	//
 	//Now to compute my pitch, power, and hang time
 	{
 		//TODO factor in rotation if it is significant
-		const double x=Vec2D(GetPos_m()-m_TargetOffset).length();
+		const double x=Vec2D(Pos_m-m_TargetOffset).length();
 		const double y=m_TargetHeight;
 		const double y2=y*y;
 		const double x2=x*x;
@@ -489,7 +516,6 @@ void FRC_2012_Robot::SetLowGearValue(double Value)
 
 void FRC_2012_Robot::SetPresetPosition(size_t index)
 {
-	printf("Using preset %d\n",index);
 	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
 	SetPosition(position[0],position[1]);
 
@@ -655,6 +681,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
 		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
+		props.Coordinates_DiplayRow=(size_t)-1;
 		m_FRC2012RobotProps=props;
 	}
 	{
@@ -784,6 +811,11 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 
 		err = script.GetFieldTable("key_3");
 		if (!err) ProcessKey(m_FRC2012RobotProps,script,2);
+
+		double fDisplayRow;
+		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2012RobotProps.Coordinates_DiplayRow=(size_t)fDisplayRow;
 
 		script.Pop();
 	}
