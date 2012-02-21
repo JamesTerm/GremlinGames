@@ -7,7 +7,8 @@ Meters2Feet=3.2808399
 Meters2Inches=39.3700787
 
 FRC2012_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
-WheelBase_Width_In=20.38	  --The wheel base will determine the turn rate, must be as accurate as possible!
+--Parker claimed 20.38, but I've measured 22 5/16
+WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
 HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
 
