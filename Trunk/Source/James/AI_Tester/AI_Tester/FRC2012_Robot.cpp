@@ -380,12 +380,17 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 {
 	m_TargetOffset=c_TargetBasePosition;
 	m_TargetHeight=c_TargetBaseHeight;
+	Vec2d Pos_m=GetPos_m();
+	//Got to make this fit within 20 chars :(
+	Dout(m_RobotProps.GetFRC2012RobotProps().Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
+		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
+
 	//TODO tweak adjustments based off my position in the field here
 	//
 	//Now to compute my pitch, power, and hang time
 	{
 		//TODO factor in rotation if it is significant
-		const double x=Vec2D(GetPos_m()-m_TargetOffset).length();
+		const double x=Vec2D(Pos_m-m_TargetOffset).length();
 		const double y=m_TargetHeight;
 		const double y2=y*y;
 		const double x2=x*x;
@@ -668,6 +673,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
 		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
+		props.Coordinates_DiplayRow=-1;
 		m_FRC2012RobotProps=props;
 	}
 	{
@@ -798,6 +804,11 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err = script.GetFieldTable("key_3");
 		if (!err) ProcessKey(m_FRC2012RobotProps,script,2);
 
+		double fDisplayRow;
+		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2012RobotProps.Coordinates_DiplayRow=(size_t)fDisplayRow;
+
 		script.Pop();
 	}
 }
@@ -906,11 +917,13 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control() : m_pTankRobotControl(&m_TankRo
 	m_LowerSensor(false),m_MiddleSensor(false),m_FireSensor(false)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
+	#if 0
 	Dout(1,"");
 	Dout(2,"");
 	Dout(3,"");
 	Dout(4,"");
 	Dout(5,"");
+	#endif
 }
 
 void FRC_2012_Robot_Control::Reset_Rotary(size_t index)

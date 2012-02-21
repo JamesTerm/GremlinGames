@@ -22,6 +22,7 @@ public:
 	typedef osg::Vec2d Vec2D;
 	
 	Vec2D PresetPositions[3];
+	size_t Coordinates_DiplayRow;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
