@@ -63,6 +63,23 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 }
 
+//This will make the scale to half with a 0.1 dead zone
+double PositionToVelocity_Tweak(double Value)
+{
+	const double FilterRange=0.1;
+	const double Multiplier=0.5;
+	const bool isSquared=true;
+	double Temp=fabs(Value); //take out the sign... put it back in the end
+	Temp=(Temp>=FilterRange) ? Temp-FilterRange:0.0; 
+
+	Temp=Multiplier*(Temp/(1.0-FilterRange)); //apply scale first then 
+	if (isSquared) Temp*=Temp;  //square it if it is squared
+
+	//Now to restore the sign
+	Value=(Value<0.0)?-Temp:Temp;
+	return Value;
+}
+
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
@@ -71,23 +88,28 @@ FRC_2012_Robot::PitchRamp::PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Inte
 {
 }
 
-void FRC_2012_Robot::PitchRamp::SetIntendedPosition(double Position)
+void FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && GetIsUsingPotentiometer());
-	if (!IsTargeting)
+	if (GetIsUsingPotentiometer())
 	{
-		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-		//first get the range from 0 - 1
-		double positive_range = (Position * 0.5) + 0.5;
-		//positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=GetMinRange();
-		const double maxRange=GetMaxRange();
-		const double Scale=(maxRange-minRange) / maxRange;
-		Position=(positive_range * Scale) + minRange;
+		bool IsTargeting=(m_pParent->m_IsTargeting);
+		if (!IsTargeting)
+		{
+			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+			//first get the range from 0 - 1
+			double positive_range = (Position * 0.5) + 0.5;
+			//positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=GetMinRange();
+			const double maxRange=GetMaxRange();
+			const double Scale=(maxRange-minRange) / maxRange;
+			Position=(positive_range * Scale) + minRange;
+		}
+		//DOUT5("Test=%f",RAD_2_DEG(Position));
+		SetIntendedPosition(Position);
 	}
+	else
+		SetRequestedVelocity_FromNormalized(PositionToVelocity_Tweak(Position));   //allow manual use of same control
 
-	//DOUT5("Test=%f",RAD_2_DEG(Position));
-	__super::SetIntendedPosition(Position);
 }
 
 void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
@@ -106,13 +128,13 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
+		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 	else
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition);
+		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus);
 		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 }
@@ -786,6 +808,9 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 
 void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
+	//This will not be in the wind river... this adds stress to simulate stall on low values
+	if ((fabs(Voltage)<0.01) && (Voltage!=0)) return;
+
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
@@ -837,6 +862,24 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			m_FireConveyor_Enc.TimeChange();
 			break;
 	}
+
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+	case FRC_2012_Robot::eTurret:
+		Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,1,"tu_v=%.2f",Voltage);
+		break;
+	case FRC_2012_Robot::ePitchRamp:
+		Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"pi_v=%.2f",Voltage);
+		break;
+	case FRC_2012_Robot::ePowerWheels:
+		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
+		break;
+	case FRC_2012_Robot::eFlippers:
+		Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,1,"fl_v=%.2f",Voltage);
+		break;
+	}
+	#endif
 }
 
 bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
@@ -863,6 +906,11 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control() : m_pTankRobotControl(&m_TankRo
 	m_LowerSensor(false),m_MiddleSensor(false),m_FireSensor(false)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
+	Dout(1,"");
+	Dout(2,"");
+	Dout(3,"");
+	Dout(4,"");
+	Dout(5,"");
 }
 
 void FRC_2012_Robot_Control::Reset_Rotary(size_t index)
@@ -987,16 +1035,16 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,"turret=%f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,"pitch=%f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,"power=%f",result / Pi2);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
 			break;
 		case FRC_2012_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,"flippers=%f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
 			break;
 	}
 	#endif

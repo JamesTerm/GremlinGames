@@ -111,7 +111,7 @@ class FRC_2012_Robot : public Tank_Robot
 				//typedef Rotary_Linear __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				void SetIntendedPosition(double Position);
+				void SetIntendedPosition_Plus(double Position);
 
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
