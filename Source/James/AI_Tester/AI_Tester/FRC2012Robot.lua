@@ -54,6 +54,7 @@ TestShip = {
 		key_1 = { x_in=0				, y_in=KeyDistance_in },
 		key_2 = { x_in=-HalfKeyWidth_in	, y_in=KeyDistance_in },
 		key_3 = { x_in= HalfKeyWidth_in	, y_in=KeyDistance_in },
+		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		
 		turret =
 		{
