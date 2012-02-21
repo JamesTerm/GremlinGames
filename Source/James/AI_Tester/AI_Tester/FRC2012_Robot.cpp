@@ -673,7 +673,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
 		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
-		props.Coordinates_DiplayRow=-1;
+		props.Coordinates_DiplayRow=(size_t)-1;
 		m_FRC2012RobotProps=props;
 	}
 	{
