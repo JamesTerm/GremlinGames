@@ -36,8 +36,9 @@
 #define __ShowLCD__
 #endif
 
-#define __DisableMotorControls__
+#undef __DisableMotorControls__
 #undef  __EnablePrintfDumps__
+#define __DisableCompressor__
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
@@ -45,14 +46,17 @@
 
 void FRC_2012_Robot_Control::ResetPos()
 {
+	#ifndef __DisableCompressor__
 	//Enable this code if we have a compressor 
-	//m_Compress.Stop();
-	////Allow driver station to control if they want to run the compressor
-	//if (DriverStation::GetInstance()->GetDigitalIn(7))
-	//{
-	//	printf("RobotControl reset compressor\n");
-	//	m_Compress.Start();
-	//}
+	m_Compress.Stop();
+	//Allow driver station to control if they want to run the compressor
+	//TODO determine button to use for compressor
+	if (DriverStation::GetInstance()->GetDigitalIn(7))
+	{
+		printf("RobotControl reset compressor\n");
+		m_Compress.Start();
+	}
+	#endif
 }
 
 //TODO this year instead of hard coding numbers we may want to do an enum for each system for example
@@ -67,7 +71,6 @@ enum VictorSlotList
 	eVictor_LeftMotor2,		//Used in InOut_Interface
 	eVictor_Turret,
 	eVictor_PowerWheel,
-	eVictor_PitchWheel,
 	eVictor_Flipper
 	//Currently only two more victors available
 };
@@ -76,13 +79,28 @@ enum RelaySlotList
 	eRelay_NoZeroUsed,
 	eRelay_LowerConveyor,
 	eRelay_MiddleConveyor,
-	eRelay_FireConveyor
+	eRelay_FireConveyor,
+	eRelay_Compressor=8  //put at the end
 };
-enum SensorSlotList
+
+//No more than 14!
+enum DigitalIO_SlotList
 {
-	eSensor_LowerConveyor,
+	eDigitalIO_NoZeroUsed,
+	eEncoder_DriveRight_A,
+	eEncoder_DriveRight_B,
+	eEncoder_DriveLeft_A,
+	eEncoder_DriveLeft_B,
+	eEncoder_Turret_A,
+	eEncoder_Turret_B,
+	eEncoder_PowerWheel_A,
+	eEncoder_PowerWheel_B,
+	eSensor_IntakeConveyor,
 	eSensor_MiddleConveyor,
-	eSensor_FireConveyor
+	eSensor_FireConveyor,
+	eLimit_PitchLeft,  //I needed to make room for the compressor so pitch right is gone :(
+	eLimit_Turret,
+	eLimit_Compressor
 };
 
 //Note: If any of these are backwards simply switch the on/off order here only!
@@ -99,8 +117,8 @@ enum SolenoidSlotList
 //change them in the enumerations
 FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
-	m_Turret_Victor(eVictor_Turret),m_PowerWheel_Victor(eVictor_PowerWheel),m_PitchRamp_Victor(eVictor_PitchWheel),m_Flipper_Victor(eVictor_Flipper),
-	//m_Compress(5,2),
+	m_Turret_Victor(eVictor_Turret),m_PowerWheel_Victor(eVictor_PowerWheel),m_Flipper_Victor(eVictor_Flipper),
+	m_Compress(eLimit_Compressor,eRelay_Compressor),
 	m_OnLowGear(eSolenoid_UseLowGear_On),m_OffLowGear(eSolenoid_UseLowGear_Off),
 	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off),
 	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor) //,
@@ -165,12 +183,14 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	switch (index)
 	{
 	case FRC_2012_Robot::eTurret:			m_Turret_Victor.Set((float)Voltage);		break;
-	case FRC_2012_Robot::ePitchRamp:		m_PitchRamp_Victor.Set((float)Voltage);		break;
 	case FRC_2012_Robot::ePowerWheels:		m_PowerWheel_Victor.Set((float)Voltage);	break;
 	case FRC_2012_Robot::eFlippers:			m_Flipper_Victor.Set((float)Voltage);		break;
 	case FRC_2012_Robot::eLowerConveyor:	m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
 	case FRC_2012_Robot::eMiddleConveyor:	m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
 	case FRC_2012_Robot::eFireConveyor:		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
+	//TODO
+	case FRC_2012_Robot::ePitchRamp:		
+		break;
 	}
 	#endif
 
