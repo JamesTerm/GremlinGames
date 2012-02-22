@@ -8,10 +8,9 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 
-		Victor m_Turret_Victor,m_PowerWheel_Victor,m_PitchRamp_Victor,m_Flipper_Victor;
-
-		//TODO see if we are going to use a compressor
-		//Compressor m_Compress;
+		Victor m_Turret_Victor,m_PowerWheel_Victor,m_Flipper_Victor;
+		//pitch ramp is using i2c
+		Compressor m_Compress;
 		Solenoid m_OnLowGear,m_OffLowGear;
 		Solenoid m_OnRampDeployment,m_OffRampDeployment;
 		Relay m_LowerConveyor_Relay,m_MiddleConveyor_Relay,m_FireConveyor_Relay;
