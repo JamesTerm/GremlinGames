@@ -15,6 +15,10 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		Solenoid m_OnRampDeployment,m_OffRampDeployment;
 		Relay m_LowerConveyor_Relay,m_MiddleConveyor_Relay,m_FireConveyor_Relay;
 		
+		Encoder m_Turret_Encoder, m_PowerWheel_Encoder;
+		DigitalInput m_Intake_Limit,m_Middle_Limit,m_Fire_Limit;
+		//TODO see if we will need limit switches for the turret or pitch
+		//TODO see if we'll have pot for flippers
 		//AnalogChannel m_Potentiometer;
 		//Cached from properties
 		//double m_ArmMaxSpeed;
