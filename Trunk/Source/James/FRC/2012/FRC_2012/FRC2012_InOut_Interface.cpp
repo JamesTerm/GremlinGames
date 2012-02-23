@@ -36,7 +36,7 @@
 #define __ShowLCD__
 #endif
 
-#undef __DisableMotorControls__
+#define __DisableMotorControls__
 #undef  __EnablePrintfDumps__
 #define __DisableCompressor__
 
@@ -59,9 +59,6 @@ void FRC_2012_Robot_Control::ResetPos()
 	#endif
 }
 
-//TODO this year instead of hard coding numbers we may want to do an enum for each system for example
-//Note: We should not need to populate the secondary variable m_Compress(5,2)... this will work differently this year as that number
-//refers to an instance of the same module type, which we will not have.
 enum VictorSlotList
 {
 	eVictor_NoZeroUsed,
@@ -98,8 +95,8 @@ enum DigitalIO_SlotList
 	eSensor_IntakeConveyor,
 	eSensor_MiddleConveyor,
 	eSensor_FireConveyor,
-	eLimit_PitchLeft,  //I needed to make room for the compressor so pitch right is gone :(
-	eLimit_Turret,
+	eLimit_PitchLeft,  
+	eLimit_PitchRight,
 	eLimit_Compressor
 };
 
@@ -121,9 +118,15 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
 	m_OnLowGear(eSolenoid_UseLowGear_On),m_OffLowGear(eSolenoid_UseLowGear_Off),
 	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off),
-	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor) //,
+	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor),
+	//Sensors
+	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B),
+	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
+	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor)
+
 	//m_Potentiometer(1)
 {
+	//TODO set the SetDistancePerPulse() for turret
 	ResetPos();
 }
 
@@ -188,8 +191,8 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	case FRC_2012_Robot::eLowerConveyor:	m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
 	case FRC_2012_Robot::eMiddleConveyor:	m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
 	case FRC_2012_Robot::eFireConveyor:		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
-	//TODO
-	case FRC_2012_Robot::ePitchRamp:		
+	case FRC_2012_Robot::ePitchRamp:\
+		//TODO research i2c's
 		break;
 	}
 	#endif
@@ -296,10 +299,13 @@ bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
 	{
 	case FRC_2012_Robot::eLowerConveyor_Sensor:
 		//ret=GetDigitalIn();... TODO I believe its a digital in with a get that returns a value
+		ret = m_Intake_Limit.Get()!=0;
 		break;
 	case FRC_2012_Robot::eMiddleConveyor_Sensor:
+		ret= m_Middle_Limit.Get()!=0;
 		break;
 	case FRC_2012_Robot::eFireConveyor_Sensor:
+		ret= m_Fire_Limit.Get()!=0;
 		break;
 	default:
 		assert (false);
@@ -314,6 +320,20 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
+			result=m_Turret_Encoder.GetDistance();
+			break;
+		case FRC_2012_Robot::ePitchRamp:
+			//TODO research i2c's
+			break;
+		case FRC_2012_Robot::ePowerWheels:
+			#ifndef __DisableMotorControls__
+			result= m_PowerWheel_Encoder.GetRate();
+			#else
+			//This is temporary code to pacify using a closed loop, remove once we have real implementation
+			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();
+			#endif
+			break;
+		case FRC_2012_Robot::eFlippers:
 			//This is like a potentiometer analog in... I've included how I did it last year below, but it may not work the same way
 			//I never applied kalman filter, but we can if we need to... I found it to have some strange quirks
 
@@ -321,22 +341,6 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			////raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
 			////Note the value is inverted with the negative operator
 			//double ret=-FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
-			////I may keep these on as they should be useful feedback
-			//#ifdef __ShowPotentiometerReadings__
-			//DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-			//double height=FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(ret);
-			////lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);
-			//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %f %.1fft ", RAD_2_DEG(ret),height,height*3.2808399);
-			////lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
-			//#endif
-			break;
-		case FRC_2012_Robot::ePitchRamp:
-			//Not sure what kind of sensor this will be yet
-			break;
-		case FRC_2012_Robot::ePowerWheels:
-			//result=m_PowerWheel.GetRate();
-			//This is temporary code to pacify using a closed loop, remove once we have real implementation
-			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();
 			break;
 		case FRC_2012_Robot::eLowerConveyor:
 		case FRC_2012_Robot::eMiddleConveyor:
