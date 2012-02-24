@@ -393,10 +393,10 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 {
 	m_TargetOffset=c_TargetBasePosition;  //2d top view x,y of the target
 	m_TargetHeight=c_TargetBaseHeight;    //1d z height (front view) of the target
-
+	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
 	Vec2d Pos_m=GetPos_m();
 	//Got to make this fit within 20 chars :(
-	Dout(m_RobotProps.GetFRC2012RobotProps().Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
+	Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
 		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
 	const double x=Vec2D(Pos_m-m_TargetOffset).length();
 	{
@@ -452,7 +452,12 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
-		DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+		{
+			DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+			double RPS=m_LinearVelocity / (Pi * m_PowerWheels.GetDimension());
+			RPS*=2.0;  //For hooded shoot we'll have to move twice as fast
+			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.2f %.1f",RAD_2_DEG(m_Turret.GetPos_m()) ,RAD_2_DEG(m_PitchAngle),RPS);
+		}
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -712,6 +717,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
 		props.Coordinates_DiplayRow=(size_t)-1;
+		props.TargetVars_DisplayRow=(size_t)-1;
 		m_FRC2012RobotProps=props;
 	}
 	{
@@ -846,6 +852,9 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
 		if (!err)
 			m_FRC2012RobotProps.Coordinates_DiplayRow=(size_t)fDisplayRow;
+		err=script.GetField("ds_target_vars_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2012RobotProps.TargetVars_DisplayRow=(size_t)fDisplayRow;
 
 		script.Pop();
 	}
