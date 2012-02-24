@@ -335,10 +335,23 @@ void FRC_2012_Robot::Flippers::BindAdditionalEventControls(bool Bind)
 const double c_CourtLength=Feet2Meters(54);
 const double c_CourtWidth=Feet2Meters(27);
 const double c_HalfCourtLength=c_CourtLength/2.0;
+const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
+//http://www.sciencedaily.com/releases/2011/03/110310151224.htm
+//The results show the optimal aim points make a "V" shape near the top center of the backboard's "square," which is actually a 
+//24-inch by 18-inch rectangle which surrounds the rim
+const FRC_2012_Robot::Vec2D c_BankShot_Box=FRC_2012_Robot::Vec2D(Inches2Meters(24),Inches2Meters(18)); //width x length
+//http://esciencenews.com/articles/2011/03/10/the.physics.bank.shots
+const double c_BankShot_BackboardY_Offset=Inches2Meters(3.327);
+const double c_BankShot_V_Angle=0.64267086025537;
+const double c_BankShot_V_Distance=Inches2Meters(166164/8299); //about 20.02 inches
+const double c_BankShot_V_MiddlePointSaturationDistance=Inches2Meters(1066219/331960);  //about 3.211
+const double c_BankShot_V_Hieght_plus_SatPoint=Inches2Meters(12.86);
+const double c_BankShot_V_SatHieght=Inches2Meters(2.57111110379327);
+const double c_BankShot_Initial_V_Hieght=Inches2Meters(12.86)-c_BankShot_V_SatHieght; //about 10.288 inches to the point of the V
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
@@ -378,19 +391,44 @@ void FRC_2012_Robot::ResetPos()
 
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
-	m_TargetOffset=c_TargetBasePosition;
-	m_TargetHeight=c_TargetBaseHeight;
+	m_TargetOffset=c_TargetBasePosition;  //2d top view x,y of the target
+	m_TargetHeight=c_TargetBaseHeight;    //1d z height (front view) of the target
+
 	Vec2d Pos_m=GetPos_m();
 	//Got to make this fit within 20 chars :(
 	Dout(m_RobotProps.GetFRC2012RobotProps().Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
 		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
+	const double x=Vec2D(Pos_m-m_TargetOffset).length();
+	{
+		const bool DoBankShot= (x < Feet2Meters(16));  //if we are less than 16 feet away
+		if (DoBankShot)
+		{
+			m_TargetOffset[1]+=c_BankShot_BackboardY_Offset;  //The point extends beyond the backboard
+			const double XOffsetRatio=min (fabs(Pos_m[0]/c_HalfCourtWidth),1.0);  //restore sign in the end
+			//Use this ratio to travel along the V distance... linear distribution should be adequate
+			const double VOffset=XOffsetRatio*c_BankShot_V_Distance;
+			//generate x / y from our VOffset
+			double YawOffset=sin(c_BankShot_V_Angle) * VOffset;
+			double PitchOffset=cos(c_BankShot_V_Angle) * VOffset;
+			if (PitchOffset<c_BankShot_V_SatHieght)
+				PitchOffset=c_BankShot_V_SatHieght;
+			if (Pos_m[0]<0.0)
+				YawOffset=-YawOffset;
+			//DOUT(5,"v=%f x=%f y=%f",Meters2Inches(VOffset),Meters2Inches(YawOffset),Meters2Inches(PitchOffset) );
+			m_TargetOffset[0]+=YawOffset;
+			m_TargetHeight+=(c_BankShot_Initial_V_Hieght + PitchOffset);
+			//DOUT(5,"x=%f y=%f",Meters2Inches(m_TargetOffset[0]),Meters2Inches(m_TargetHeight) );
+		}
+		else
+			m_TargetOffset[1]-=Inches2Meters(9+6);  //hoop diameter 18... half that is 9 plus the 6 inch extension out
+
+	}
 
 	//TODO tweak adjustments based off my position in the field here
 	//
 	//Now to compute my pitch, power, and hang time
 	{
 		//TODO factor in rotation if it is significant
-		const double x=Vec2D(Pos_m-m_TargetOffset).length();
 		const double y=m_TargetHeight;
 		const double y2=y*y;
 		const double x2=x*x;
