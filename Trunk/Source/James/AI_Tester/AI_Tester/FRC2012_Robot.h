@@ -203,9 +203,9 @@ class FRC_2012_Robot : public Tank_Robot
 
 		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
 		//middle of the game playing field
-		Vec2D m_TargetOffset;  
+		Vec2D m_TargetOffset;  //2d top view x,y of the target
 		//This is adjusted depending on doing a bank shot or swishing 
-		double m_TargetHeight;
+		double m_TargetHeight;  //1d z height (front view) of the target
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
 		size_t m_DefaultPresetIndex;
