@@ -23,6 +23,7 @@ public:
 	
 	Vec2D PresetPositions[3];
 	size_t Coordinates_DiplayRow;
+	size_t TargetVars_DisplayRow;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
