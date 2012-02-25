@@ -22,9 +22,11 @@ const double Pi2=M_PI*2.0;
 namespace Base=GG_Framework::Base;
 namespace Scripting=GG_Framework::Logic::Scripting;
 
+
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
+
 FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
 	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0)
 {
@@ -597,18 +599,21 @@ void FRC_2012_Robot::SetLowGearValue(double Value)
 	}
 }
 
-void FRC_2012_Robot::SetPresetPosition(size_t index)
+void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 {
 	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
 	SetPosition(position[0],position[1]);
 
-	Vec2D Target=m_TargetOffset;
-	Target-=GetPos_m();
-	const double Angle=atan2(Target[1],Target[0]);
-	double AngleToUse=-(Angle-PI_2);
+	if (!IgnoreOrientation)
+	{	
+		Vec2D Target=m_TargetOffset;
+		Target-=GetPos_m();
+		const double Angle=atan2(Target[1],Target[0]);
+		double AngleToUse=-(Angle-PI_2);
 
-	double TurretPos=NormalizeRotation2(AngleToUse)-m_Turret.GetPos_m();
-	SetAttitude(TurretPos);
+		double TurretPos=NormalizeRotation2(AngleToUse)-m_Turret.GetPos_m();
+		SetAttitude(TurretPos);
+	}
 }
 
 void FRC_2012_Robot::SetPresetPOV (double value)
@@ -959,6 +964,55 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 
 		script.Pop();
 	}
+}
+
+
+  /***********************************************************************************************************************************/
+/*														FRC_2012_Goals::Fire														*/
+/***********************************************************************************************************************************/
+
+FRC_2012_Goals::Fire::Fire(FRC_2012_Robot &robot,bool On) : m_Robot(robot),m_Terminate(false),m_IsOn(On)
+{
+	m_Status=eInactive;
+}
+FRC_2012_Goals::Fire::Goal_Status FRC_2012_Goals::Fire::Process(double dTime_s)
+{
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	m_Robot.m_BallConveyorSystem.Fire(m_IsOn);
+	m_Status=eCompleted;
+	return m_Status;
+}
+
+
+  /***********************************************************************************************************************************/
+ /*															FRC_2012_Goals															*/
+/***********************************************************************************************************************************/
+
+Goal *FRC_2012_Goals::Get_ShootBalls(FRC_2012_Robot *Robot)
+{
+	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
+	Fire *FireOn=new Fire(*Robot,true);
+	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
+	Fire *FireOff=new Fire(*Robot,false);
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(FireOff);
+	MainGoal->AddSubgoal(goal_waitforballs);
+	MainGoal->AddSubgoal(FireOn);
+	MainGoal->AddSubgoal(goal_waitforturret);
+	return MainGoal;
+}
+
+Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex)
+{
+	Robot->SetPresetPosition(KeyIndex,true);
+	return Get_ShootBalls(Robot);
 }
 
   /***********************************************************************************************************************************/
