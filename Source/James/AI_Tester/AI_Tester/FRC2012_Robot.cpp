@@ -183,7 +183,14 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 			const double Offset=minRange/MAX_SPEED;
 			Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
-			__super::SetRequestedVelocity_FromNormalized(Velocity * m_pParent->m_PowerErrorCorrection);
+			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2012RobotProps().PowerVelocity_DisplayRow;
+			if (DisplayRow!=(size_t)-1)
+			{
+				const double rps=(Velocity * MAX_SPEED) / Pi2;
+				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
+			}
+
+			__super::SetRequestedVelocity_FromNormalized(Velocity);
 		}
 		else
 			__super::SetRequestedVelocity_FromNormalized(0.0);
@@ -499,9 +506,7 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		m_HangTime = ta+tb;
 		{
 			DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
-			double RPS=m_LinearVelocity / (Pi * m_PowerWheels.GetDimension());
-			RPS*=2.0;  //For hooded shoot we'll have to move twice as fast
-			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.2f %.1f",RAD_2_DEG(m_Turret.GetPos_m()) ,RAD_2_DEG(m_PitchAngle),RPS);
+			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.2f %.1f",RAD_2_DEG(m_Turret.GetPos_m()) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity));
 		}
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
@@ -763,6 +768,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
 		props.Coordinates_DiplayRow=(size_t)-1;
 		props.TargetVars_DisplayRow=(size_t)-1;
+		props.PowerVelocity_DisplayRow=(size_t)-1;
 
 		for (size_t row=0;row<3;row++)
 		{
@@ -932,6 +938,10 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("ds_target_vars_row", NULL, NULL, &fDisplayRow);
 		if (!err)
 			m_FRC2012RobotProps.TargetVars_DisplayRow=(size_t)fDisplayRow;
+
+		err=script.GetField("ds_power_velocity_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2012RobotProps.PowerVelocity_DisplayRow=(size_t)fDisplayRow;
 
 		err = script.GetFieldTable("grid_corrections");
 		if (!err)
