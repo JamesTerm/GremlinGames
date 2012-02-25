@@ -22,6 +22,13 @@ public:
 	typedef osg::Vec2d Vec2D;
 	
 	Vec2D PresetPositions[3];
+	Vec2D KeyGrid[3][3];
+	struct DeliveryCorrectionFields
+	{
+		double PowerCorrection;
+		double YawCorrection;
+	};
+	DeliveryCorrectionFields KeyCorrections[3][3];
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
 };

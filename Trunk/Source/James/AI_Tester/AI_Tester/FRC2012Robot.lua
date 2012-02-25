@@ -58,6 +58,13 @@ TestShip = {
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
 		
+		grid_corrections =
+		{
+			c11={p=1.0, x=1.0}, c12={p=1.0, x=1.0}, c13={p=1.0, x=1.0},
+			c21={p=1.0, x=1.0}, c22={p=1.0, x=1.0}, c23={p=1.0, x=1.0},
+			c31={p=1.0, x=1.0}, c32={p=1.0, x=1.0}, c33={p=1.0, x=1.0},
+		},
+		
 		turret =
 		{
 			is_closed='yes',				--It is closed loop when feedback has been properly calibrated

@@ -718,6 +718,20 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
 		props.Coordinates_DiplayRow=(size_t)-1;
 		props.TargetVars_DisplayRow=(size_t)-1;
+
+		for (size_t row=0;row<3;row++)
+		{
+			for (size_t column=0;column<3;column++)
+			{
+				Vec2D &cell=props.KeyGrid[row][column];
+				const double x=7.0 * ((double)column-1.0);
+				const double y=7.0 * ((double)row-1.0);
+				cell=Vec2D(Feet2Meters(x),Feet2Meters(y));
+				props.KeyCorrections[row][column].PowerCorrection=1.0;
+				props.KeyCorrections[row][column].YawCorrection=1.0;
+			}
+		}
+
 		m_FRC2012RobotProps=props;
 	}
 	{
@@ -792,6 +806,23 @@ const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Scri
 	return err;
 }
 
+const char *ProcessKeyCorrection(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,size_t row,size_t column)
+{
+	const char* err=NULL;
+	char CellName[4];
+	CellName[0]='c';
+	CellName[1]='1'+row;
+	CellName[2]='1'+column;
+	CellName[3]=0;
+	err = script.GetFieldTable(CellName);
+
+	err = script.GetField("p", NULL, NULL,&m_FRC2012RobotProps.KeyCorrections[row][column].PowerCorrection);
+	err = script.GetField("x", NULL, NULL,&m_FRC2012RobotProps.KeyCorrections[row][column].YawCorrection);
+
+	script.Pop();
+	return err;
+}
+
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err=NULL;
@@ -855,6 +886,20 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("ds_target_vars_row", NULL, NULL, &fDisplayRow);
 		if (!err)
 			m_FRC2012RobotProps.TargetVars_DisplayRow=(size_t)fDisplayRow;
+
+		err = script.GetFieldTable("grid_corrections");
+		if (!err)
+		{
+			for (size_t row=0;row<3;row++)
+			{
+				for (size_t column=0;column<3;column++)
+				{
+					err=ProcessKeyCorrection(m_FRC2012RobotProps,script,row,column);
+					assert(!err);
+				}
+			}
+			script.Pop();
+		}
 
 		script.Pop();
 	}
