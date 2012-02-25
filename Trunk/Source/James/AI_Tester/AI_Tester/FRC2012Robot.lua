@@ -108,10 +108,10 @@ TestShip = {
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
-			accel=60.0,						--These are only needed if we bind keys for power in meters per second
-			brake=60.0,
-			max_accel_forward=60,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=60			--The wheel may some time to ramp up
+			accel=1500.0,						--These are only needed if we bind keys for power in meters per second
+			brake=1500.0,
+			max_accel_forward=1500,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=1500			--The wheel may some time to ramp up
 		},
 		flippers =
 		{
