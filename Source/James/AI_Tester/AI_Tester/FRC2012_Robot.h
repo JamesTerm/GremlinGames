@@ -57,6 +57,8 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
 };
 
+class FRC_2012_Goals;
+
 class FRC_2012_Robot : public Tank_Robot
 {
 	public:
@@ -164,7 +166,7 @@ class FRC_2012_Robot : public Tank_Robot
 				void TimeChange(double dTime_s);
 				void BindAdditionalEventControls(bool Bind);
 			protected:
-				//public access needed for goals
+				friend class FRC_2012_Goals;  //I need global reach to achieve my goals :)
 				void Fire(bool on) {m_Fire=on;}
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on) {m_Grip=on;}
@@ -201,6 +203,8 @@ class FRC_2012_Robot : public Tank_Robot
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
+		friend class FRC_2012_Goals;  //I need global reach to achieve my goals :)
+
 		void ApplyErrorCorrection();
 		//typedef  Tank_Robot __super;
 		FRC_2012_Control_Interface * const m_RobotControl;
@@ -236,11 +240,32 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
 
-		void SetPresetPosition(size_t index);
+		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
 		void SetPreset1() {SetPresetPosition(0);}
 		void SetPreset2() {SetPresetPosition(1);}
 		void SetPreset3() {SetPresetPosition(2);}
 		void SetPresetPOV (double value);
+};
+
+class FRC_2012_Goals
+{
+	public:
+		static Goal *Get_ShootBalls(FRC_2012_Robot *Robot);
+		static Goal *Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex);
+	private:
+		class Fire : public AtomicGoal
+		{
+		private:
+			FRC_2012_Robot &m_Robot;
+			bool m_Terminate;
+			bool m_IsOn;
+		public:
+			Fire(FRC_2012_Robot &robot,bool On);
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s);
+			virtual void Terminate() {m_Terminate=true;}
+		};
+
 };
 
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface

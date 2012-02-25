@@ -576,7 +576,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eSwerveRobot,
 		eRobot2012,
 		eRobot2011,
-		eTestGoals,
+		eTestGoals_2011,
+		eTestGoals_2012,
 		eTestFollowGod,
 		eTestLUAShip,
 		eControlABomber,
@@ -594,6 +595,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"Robot2012",
 		"Robot2011",
 		"Goals2011",
+		"Goals2012",
 		"FollowGod",
 		"GodShip",
 		"bomber",
@@ -678,7 +680,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
-	case eTestGoals:
+	case eTestGoals_2011:
 		{
 			FRC_2011_Robot *Robot=dynamic_cast<FRC_2011_Robot *>(game.GetEntity("Robot2011"));
 			if (Robot)
@@ -695,6 +697,31 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				case 2:		goal=Get_TestLengthGoal(Robot);					break;
 					//case 3:		goal=Get_TestRotationGoal(ship);				break;
 				case 4:		goal=Get_UberTubeGoal(Robot);	break;
+				}
+				if (goal)
+					goal->Activate(); //now with the goal(s) loaded activate it
+				Robot->SetGoal(goal);
+			}
+			else
+				printf("Robot not found\n");
+			break;
+		}
+	case eTestGoals_2012:
+		{
+			FRC_2012_Robot *Robot=dynamic_cast<FRC_2012_Robot *>(game.GetEntity("Robot2012"));
+			if (Robot)
+			{
+				Goal *oldgoal=Robot->ClearGoal();
+				if (oldgoal)
+					delete oldgoal;
+
+				Goal *goal=NULL;
+				const int AutonomousValue=str_2[0]?atoi(str_2):2;
+				switch (AutonomousValue)
+				{
+				case 1:		goal=FRC_2012_Goals::Get_ShootBalls_WithPreset(Robot,0); break;
+				case 2:		goal=FRC_2012_Goals::Get_ShootBalls_WithPreset(Robot,1); break;
+				case 3:		goal=FRC_2012_Goals::Get_ShootBalls_WithPreset(Robot,2); break;
 				}
 				if (goal)
 					goal->Activate(); //now with the goal(s) loaded activate it
