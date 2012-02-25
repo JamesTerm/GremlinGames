@@ -31,6 +31,7 @@ public:
 	DeliveryCorrectionFields KeyCorrections[3][3];
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
+	size_t PowerVelocity_DisplayRow;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
