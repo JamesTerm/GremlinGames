@@ -389,12 +389,49 @@ void FRC_2012_Robot::ResetPos()
 	m_Flippers.ResetPos();
 }
 
+void FRC_2012_Robot::ApplyErrorCorrection()
+{
+	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
+	const Vec2d &Pos_m=GetPos_m();
+	//first determine which quadrant we are in
+	//These offsets are offsets added to the array indexes 
+	const size_t XOffset=(Pos_m[0]>(robot_props.KeyGrid[1][1])[0]) ? 1 : 0;
+	const size_t YOffset=(Pos_m[1]>(robot_props.KeyGrid[1][1])[1]) ? 1 : 0;
+	//Find our normalized targeted coordinates; saturate as needed
+	const Vec2D &q00=robot_props.KeyGrid[0+YOffset][0+XOffset];
+	const Vec2D &q01=robot_props.KeyGrid[0+YOffset][1+XOffset];
+	const double XWidth=q01[0]-q00[0];
+	const double xStart=max(Pos_m[0]-q00[0],0.0);
+	const double x=min(xStart/XWidth,1.0);
+	const Vec2D &q10=robot_props.KeyGrid[1+YOffset][0+XOffset];
+	const double YWidth=q10[1]-q00[1];
+	const double yStart=max(Pos_m[1]-q00[0],0.0);
+	const double y=min(yStart/YWidth,1.0);
+	//Now to blend.  Top half, bottom half then the halves
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c00=robot_props.KeyCorrections[0+YOffset][0+XOffset];
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c01=robot_props.KeyCorrections[0+YOffset][1+XOffset];
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c10=robot_props.KeyCorrections[1+YOffset][0+XOffset];
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c11=robot_props.KeyCorrections[1+YOffset][1+XOffset];
+
+	const double pc_TopHalf=    (x * c00.PowerCorrection) + ((1.0-x)*c01.PowerCorrection);
+	const double pc_BottomHalf= (x * c10.PowerCorrection) + ((1.0-x)*c11.PowerCorrection);
+	const double pc = (y * pc_TopHalf) + ((1.0-y) * pc_BottomHalf);
+
+	const double yc_TopHalf=    (x * c00.YawCorrection) + ((1.0-x)*c01.YawCorrection);
+	const double yc_BottomHalf= (x * c10.YawCorrection) + ((1.0-x)*c11.YawCorrection);
+	const double yc = (y * yc_TopHalf) + ((1.0-y) * yc_BottomHalf);
+
+	//Now to apply correction... for now we'll apply to the easiest pieces possible and change if needed
+	m_LinearVelocity*=pc;
+	m_TargetOffset[0]*=yc;
+}
+
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
 	m_TargetOffset=c_TargetBasePosition;  //2d top view x,y of the target
 	m_TargetHeight=c_TargetBaseHeight;    //1d z height (front view) of the target
 	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
-	Vec2d Pos_m=GetPos_m();
+	const Vec2d &Pos_m=GetPos_m();
 	//Got to make this fit within 20 chars :(
 	Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
 		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
@@ -444,6 +481,8 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		//	V=sqrt(G(sqrt(y^2+x^2)+y))
 		//	This is equation 7 solving v
 		m_LinearVelocity=sqrt(g*(sqrt(y2+x2)+y));
+
+		ApplyErrorCorrection();
 
 		//ta=(sin(theta)*v)/g   //This is equation 2 solving for t1
 		//tb=(x-ta*cos(theta)*v)/(cos(theta)*v)   //this is equation 3 solving for t2
@@ -724,9 +763,10 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 			for (size_t column=0;column<3;column++)
 			{
 				Vec2D &cell=props.KeyGrid[row][column];
-				const double x=7.0 * ((double)column-1.0);
-				const double y=7.0 * ((double)row-1.0);
-				cell=Vec2D(Feet2Meters(x),Feet2Meters(y));
+				const double spread=Feet2Meters(7.0);
+				const double x=spread * ((double)column-1.0);
+				const double y=(spread * ((double)row-1.0)) + DefaultY;
+				cell=Vec2D(x,y);
 				props.KeyCorrections[row][column].PowerCorrection=1.0;
 				props.KeyCorrections[row][column].YawCorrection=1.0;
 			}

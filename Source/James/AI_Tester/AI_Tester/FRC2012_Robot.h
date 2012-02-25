@@ -200,6 +200,7 @@ class FRC_2012_Robot : public Tank_Robot
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
+		void ApplyErrorCorrection();
 		//typedef  Tank_Robot __super;
 		FRC_2012_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
