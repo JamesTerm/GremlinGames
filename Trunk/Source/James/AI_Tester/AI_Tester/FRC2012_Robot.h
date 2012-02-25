@@ -217,6 +217,7 @@ class FRC_2012_Robot : public Tank_Robot
 		double m_TargetHeight;  //1d z height (front view) of the target
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
+		double m_YawErrorCorrection,m_PowerErrorCorrection;
 		size_t m_DefaultPresetIndex;
 		bool m_DisableTurretTargetingValue;
 		bool m_POVSetValve;
