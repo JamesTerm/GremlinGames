@@ -57,7 +57,7 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 		const double Angle=atan2(Target[1],Target[0]);
 		double AngleToUse=-(Angle-PI_2);
 		AngleToUse-=m_pParent->GetAtt_r();
-		SetIntendedPosition(NormalizeRotation2(AngleToUse));
+		SetIntendedPosition(NormalizeRotation2(AngleToUse) * m_pParent->m_YawErrorCorrection);
 		//TODO factor in velocity once we have our ball velocity (to solve for time)
 	}
 	__super::TimeChange(dTime_s);
@@ -95,6 +95,7 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 		bool IsTargeting=(m_pParent->m_IsTargeting);
 		if (!IsTargeting)
 		{
+			Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
 			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
 			//first get the range from 0 - 1
 			double positive_range = (Position * 0.5) + 0.5;
@@ -182,7 +183,7 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 			const double Offset=minRange/MAX_SPEED;
 			Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
-			__super::SetRequestedVelocity_FromNormalized(Velocity);
+			__super::SetRequestedVelocity_FromNormalized(Velocity * m_pParent->m_PowerErrorCorrection);
 		}
 		else
 			__super::SetRequestedVelocity_FromNormalized(0.0);
@@ -355,7 +356,8 @@ const double c_BankShot_Initial_V_Hieght=Inches2Meters(12.86)-c_BankShot_V_SatHi
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),m_DefaultPresetIndex(DefaultPresetIndex),
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefaultPresetIndex(DefaultPresetIndex),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
@@ -396,7 +398,9 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	//first determine which quadrant we are in
 	//These offsets are offsets added to the array indexes 
 	const size_t XOffset=(Pos_m[0]>(robot_props.KeyGrid[1][1])[0]) ? 1 : 0;
-	const size_t YOffset=(Pos_m[1]>(robot_props.KeyGrid[1][1])[1]) ? 1 : 0;
+	const double YCenterKey=(robot_props.KeyGrid[1][1])[1];
+	//The coordinate system is backwards for Y 
+	const size_t YOffset=(Pos_m[1] < YCenterKey) ? 1 : 0;
 	//Find our normalized targeted coordinates; saturate as needed
 	const Vec2D &q00=robot_props.KeyGrid[0+YOffset][0+XOffset];
 	const Vec2D &q01=robot_props.KeyGrid[0+YOffset][1+XOffset];
@@ -404,8 +408,9 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	const double xStart=max(Pos_m[0]-q00[0],0.0);
 	const double x=min(xStart/XWidth,1.0);
 	const Vec2D &q10=robot_props.KeyGrid[1+YOffset][0+XOffset];
+	const double YToUse=(c_HalfCourtLength-Pos_m[1]) + (2.0*YCenterKey - c_HalfCourtLength);
 	const double YWidth=q10[1]-q00[1];
-	const double yStart=max(Pos_m[1]-q00[0],0.0);
+	const double yStart=max(YToUse-q00[1],0.0);
 	const double y=min(yStart/YWidth,1.0);
 	//Now to blend.  Top half, bottom half then the halves
 	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c00=robot_props.KeyCorrections[0+YOffset][0+XOffset];
@@ -413,17 +418,18 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c10=robot_props.KeyCorrections[1+YOffset][0+XOffset];
 	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c11=robot_props.KeyCorrections[1+YOffset][1+XOffset];
 
-	const double pc_TopHalf=    (x * c00.PowerCorrection) + ((1.0-x)*c01.PowerCorrection);
-	const double pc_BottomHalf= (x * c10.PowerCorrection) + ((1.0-x)*c11.PowerCorrection);
-	const double pc = (y * pc_TopHalf) + ((1.0-y) * pc_BottomHalf);
+	const double pc_TopHalf=    (x * c01.PowerCorrection) + ((1.0-x)*c00.PowerCorrection);
+	const double pc_BottomHalf= (x * c11.PowerCorrection) + ((1.0-x)*c10.PowerCorrection);
+	const double pc = (y * pc_BottomHalf) + ((1.0-y) * pc_TopHalf);
 
-	const double yc_TopHalf=    (x * c00.YawCorrection) + ((1.0-x)*c01.YawCorrection);
-	const double yc_BottomHalf= (x * c10.YawCorrection) + ((1.0-x)*c11.YawCorrection);
+	const double yc_TopHalf=    (x * c01.YawCorrection) + ((1.0-x)*c00.YawCorrection);
+	const double yc_BottomHalf= (x * c11.YawCorrection) + ((1.0-x)*c10.YawCorrection);
 	const double yc = (y * yc_TopHalf) + ((1.0-y) * yc_BottomHalf);
 
 	//Now to apply correction... for now we'll apply to the easiest pieces possible and change if needed
-	m_LinearVelocity*=pc;
-	m_TargetOffset[0]*=yc;
+	m_YawErrorCorrection=pc;
+	m_PowerErrorCorrection=yc;
+	//DOUT(5,"pc=%f yc=%f x=%f y=%f",pc,yc,x,y);
 }
 
 void FRC_2012_Robot::TimeChange(double dTime_s)
