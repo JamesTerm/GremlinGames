@@ -67,7 +67,7 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 		const double Angle=atan2(Target[1],Target[0]);
 		double AngleToUse=-(Angle-PI_2);
 		AngleToUse-=m_pParent->GetAtt_r();
-		SetIntendedPosition(NormalizeRotation2(AngleToUse));
+		SetIntendedPosition(NormalizeRotation2(AngleToUse) * m_pParent->m_YawErrorCorrection);
 		//TODO factor in velocity once we have our ball velocity (to solve for time)
 	}
 	__super::TimeChange(dTime_s);
@@ -105,6 +105,7 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 		bool IsTargeting=(m_pParent->m_IsTargeting);
 		if (!IsTargeting)
 		{
+			Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
 			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
 			//first get the range from 0 - 1
 			double positive_range = (Position * 0.5) + 0.5;
@@ -192,6 +193,13 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 			const double Offset=minRange/MAX_SPEED;
 			Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
+			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2012RobotProps().PowerVelocity_DisplayRow;
+			if (DisplayRow!=(size_t)-1)
+			{
+				const double rps=(Velocity * MAX_SPEED) / Pi2;
+				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
+			}
+
 			__super::SetRequestedVelocity_FromNormalized(Velocity);
 		}
 		else
@@ -224,9 +232,9 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 
 FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
 	m_LowerConveyor("LowerConveyor",robot_control,eLowerConveyor),m_MiddleConveyor("MiddleConveyor",robot_control,eMiddleConveyor),
-	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
-		m_Grip(false),m_Squirt(false),m_Fire(false)
+	m_FireConveyor("FireConveyor",robot_control,eFireConveyor)
 {
+	m_ControlSignals.raw=0;
 	//This are always open loop as there is no encoder and this is specified by default
 }
 
@@ -246,19 +254,24 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
 	const bool PowerWheelReachedTolerance=fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance;
 	//Only fire when the wheel has reached its aiming speed
-	bool Fire=m_Fire && PowerWheelReachedTolerance;
+	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
+	bool Grip=m_ControlSignals.bits.Grip==1;
+	bool GripL=m_ControlSignals.bits.GripL==1;
+	bool GripM=m_ControlSignals.bits.GripM==1;
+	bool GripH=m_ControlSignals.bits.GripH==1;
+	bool Squirt=m_ControlSignals.bits.Squirt==1;
 
 	//This assumes the motors are in the same orientation: 
-	double LowerAcceleration=((m_Grip & (!LowerSensor)) || (LowerSensor & (!MiddleSensor))) | m_Squirt | Fire ?
-		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	double LowerAcceleration=((Grip & (!LowerSensor)) || (LowerSensor & (!MiddleSensor))) | GripL | Squirt | Fire ?
+		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_LowerConveyor.SetCurrentLinearAcceleration(LowerAcceleration);
 
-	double MiddleAcceleration= ((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) |  m_Squirt | Fire  ?
-		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	double MiddleAcceleration= ((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) | GripM | Squirt | Fire  ?
+		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_MiddleConveyor.SetCurrentLinearAcceleration(MiddleAcceleration);
 
-	double FireAcceleration= (MiddleSensor & (!FireSensor)) | m_Squirt | Fire  ?
-		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	double FireAcceleration= (MiddleSensor & (!FireSensor)) | GripH | Squirt | Fire  ?
+		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
 
 	m_LowerConveyor.AsEntity1D().TimeChange(dTime_s);
@@ -283,6 +296,9 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Ball_Fire"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Fire);
 		em->EventOnOff_Map["Ball_Grip"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Grip);
+		em->EventOnOff_Map["Ball_GripL"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::GripL);
+		em->EventOnOff_Map["Ball_GripM"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::GripM);
+		em->EventOnOff_Map["Ball_GripH"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::GripH);
 		em->EventOnOff_Map["Ball_Squirt"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Squirt);
 	}
 	else
@@ -290,6 +306,9 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Ball_Fire"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::Fire);
 		em->EventOnOff_Map["Ball_Grip"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::Grip);
+		em->EventOnOff_Map["Ball_GripL"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::GripL);
+		em->EventOnOff_Map["Ball_GripM"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::GripM);
+		em->EventOnOff_Map["Ball_GripH"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::GripH);
 		em->EventOnOff_Map["Ball_Squirt"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::Squirt);
 	}
 }
@@ -345,14 +364,28 @@ void FRC_2012_Robot::Flippers::BindAdditionalEventControls(bool Bind)
 const double c_CourtLength=Feet2Meters(54);
 const double c_CourtWidth=Feet2Meters(27);
 const double c_HalfCourtLength=c_CourtLength/2.0;
+const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
+//http://www.sciencedaily.com/releases/2011/03/110310151224.htm
+//The results show the optimal aim points make a "V" shape near the top center of the backboard's "square," which is actually a 
+//24-inch by 18-inch rectangle which surrounds the rim
+const FRC_2012_Robot::Vec2D c_BankShot_Box=FRC_2012_Robot::Vec2D(Inches2Meters(24),Inches2Meters(18)); //width x length
+//http://esciencenews.com/articles/2011/03/10/the.physics.bank.shots
+const double c_BankShot_BackboardY_Offset=Inches2Meters(3.327);
+const double c_BankShot_V_Angle=0.64267086025537;
+const double c_BankShot_V_Distance=Inches2Meters(166164/8299); //about 20.02 inches
+const double c_BankShot_V_MiddlePointSaturationDistance=Inches2Meters(1066219/331960);  //about 3.211
+const double c_BankShot_V_Hieght_plus_SatPoint=Inches2Meters(12.86);
+const double c_BankShot_V_SatHieght=Inches2Meters(2.57111110379327);
+const double c_BankShot_Initial_V_Hieght=Inches2Meters(12.86)-c_BankShot_V_SatHieght; //about 10.288 inches to the point of the V
 
 FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),m_DefaultPresetIndex(DefaultPresetIndex),
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefaultPresetIndex(DefaultPresetIndex),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
@@ -386,21 +419,92 @@ void FRC_2012_Robot::ResetPos()
 	m_Flippers.ResetPos();
 }
 
+FRC_2012_Robot::BallConveyorSystem &FRC_2012_Robot::GetBallConveyorSystem()
+{
+	return m_BallConveyorSystem;
+}
+
+void FRC_2012_Robot::ApplyErrorCorrection()
+{
+	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
+	const Vec2d &Pos_m=GetPos_m();
+	//first determine which quadrant we are in
+	//These offsets are offsets added to the array indexes 
+	const size_t XOffset=(Pos_m[0]>(robot_props.KeyGrid[1][1])[0]) ? 1 : 0;
+	const double YCenterKey=(robot_props.KeyGrid[1][1])[1];
+	//The coordinate system is backwards for Y 
+	const size_t YOffset=(Pos_m[1] < YCenterKey) ? 1 : 0;
+	//Find our normalized targeted coordinates; saturate as needed
+	const Vec2D &q00=robot_props.KeyGrid[0+YOffset][0+XOffset];
+	const Vec2D &q01=robot_props.KeyGrid[0+YOffset][1+XOffset];
+	const double XWidth=q01[0]-q00[0];
+	const double xStart=max(Pos_m[0]-q00[0],0.0);
+	const double x=min(xStart/XWidth,1.0);
+	const Vec2D &q10=robot_props.KeyGrid[1+YOffset][0+XOffset];
+	const double YToUse=(c_HalfCourtLength-Pos_m[1]) + (2.0*YCenterKey - c_HalfCourtLength);
+	const double YWidth=q10[1]-q00[1];
+	const double yStart=max(YToUse-q00[1],0.0);
+	const double y=min(yStart/YWidth,1.0);
+	//Now to blend.  Top half, bottom half then the halves
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c00=robot_props.KeyCorrections[0+YOffset][0+XOffset];
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c01=robot_props.KeyCorrections[0+YOffset][1+XOffset];
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c10=robot_props.KeyCorrections[1+YOffset][0+XOffset];
+	const FRC_2012_Robot_Props::DeliveryCorrectionFields &c11=robot_props.KeyCorrections[1+YOffset][1+XOffset];
+
+	const double pc_TopHalf=    (x * c01.PowerCorrection) + ((1.0-x)*c00.PowerCorrection);
+	const double pc_BottomHalf= (x * c11.PowerCorrection) + ((1.0-x)*c10.PowerCorrection);
+	const double pc = (y * pc_BottomHalf) + ((1.0-y) * pc_TopHalf);
+
+	const double yc_TopHalf=    (x * c01.YawCorrection) + ((1.0-x)*c00.YawCorrection);
+	const double yc_BottomHalf= (x * c11.YawCorrection) + ((1.0-x)*c10.YawCorrection);
+	const double yc = (y * yc_TopHalf) + ((1.0-y) * yc_BottomHalf);
+
+	//Now to apply correction... for now we'll apply to the easiest pieces possible and change if needed
+	m_YawErrorCorrection=pc;
+	m_PowerErrorCorrection=yc;
+	//DOUT(5,"pc=%f yc=%f x=%f y=%f",pc,yc,x,y);
+}
+
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
-	m_TargetOffset=c_TargetBasePosition;
-	m_TargetHeight=c_TargetBaseHeight;
-	Vec2d Pos_m=GetPos_m();
+	m_TargetOffset=c_TargetBasePosition;  //2d top view x,y of the target
+	m_TargetHeight=c_TargetBaseHeight;    //1d z height (front view) of the target
+	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
+	const Vec2d &Pos_m=GetPos_m();
 	//Got to make this fit within 20 chars :(
-	Dout(m_RobotProps.GetFRC2012RobotProps().Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
+	Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
 		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
+	const double x=Vec2D(Pos_m-m_TargetOffset).length();
+	{
+		const bool DoBankShot= (x < Feet2Meters(16));  //if we are less than 16 feet away
+		if (DoBankShot)
+		{
+			m_TargetOffset[1]+=c_BankShot_BackboardY_Offset;  //The point extends beyond the backboard
+			const double XOffsetRatio=min (fabs(Pos_m[0]/c_HalfCourtWidth),1.0);  //restore sign in the end
+			//Use this ratio to travel along the V distance... linear distribution should be adequate
+			const double VOffset=XOffsetRatio*c_BankShot_V_Distance;
+			//generate x / y from our VOffset
+			double YawOffset=sin(c_BankShot_V_Angle) * VOffset;
+			double PitchOffset=cos(c_BankShot_V_Angle) * VOffset;
+			if (PitchOffset<c_BankShot_V_SatHieght)
+				PitchOffset=c_BankShot_V_SatHieght;
+			if (Pos_m[0]<0.0)
+				YawOffset=-YawOffset;
+			//DOUT(5,"v=%f x=%f y=%f",Meters2Inches(VOffset),Meters2Inches(YawOffset),Meters2Inches(PitchOffset) );
+			m_TargetOffset[0]+=YawOffset;
+			m_TargetHeight+=(c_BankShot_Initial_V_Hieght + PitchOffset);
+			//DOUT(5,"x=%f y=%f",Meters2Inches(m_TargetOffset[0]),Meters2Inches(m_TargetHeight) );
+		}
+		else
+			m_TargetOffset[1]-=Inches2Meters(9+6);  //hoop diameter 18... half that is 9 plus the 6 inch extension out
+
+	}
 
 	//TODO tweak adjustments based off my position in the field here
 	//
 	//Now to compute my pitch, power, and hang time
 	{
 		//TODO factor in rotation if it is significant
-		const double x=Vec2D(Pos_m-m_TargetOffset).length();
 		const double y=m_TargetHeight;
 		const double y2=y*y;
 		const double x2=x*x;
@@ -417,6 +521,8 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		//	This is equation 7 solving v
 		m_LinearVelocity=sqrt(g*(sqrt(y2+x2)+y));
 
+		ApplyErrorCorrection();
+
 		//ta=(sin(theta)*v)/g   //This is equation 2 solving for t1
 		//tb=(x-ta*cos(theta)*v)/(cos(theta)*v)   //this is equation 3 solving for t2
 		//	hang time= ta+tb 
@@ -424,7 +530,10 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 		ta=(sin(m_PitchAngle)*m_LinearVelocity)/g;
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
-		DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+		{
+			DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.2f %.1f",RAD_2_DEG(m_Turret.GetPos_m()) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity));
+		}
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -514,18 +623,21 @@ void FRC_2012_Robot::SetLowGearValue(double Value)
 	}
 }
 
-void FRC_2012_Robot::SetPresetPosition(size_t index)
+void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 {
 	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
 	SetPosition(position[0],position[1]);
 
-	Vec2D Target=m_TargetOffset;
-	Target-=GetPos_m();
-	const double Angle=atan2(Target[1],Target[0]);
-	double AngleToUse=-(Angle-PI_2);
+	if (!IgnoreOrientation)
+	{	
+		Vec2D Target=m_TargetOffset;
+		Target-=GetPos_m();
+		const double Angle=atan2(Target[1],Target[0]);
+		double AngleToUse=-(Angle-PI_2);
 
-	double TurretPos=NormalizeRotation2(AngleToUse)-m_Turret.GetPos_m();
-	SetAttitude(TurretPos);
+		double TurretPos=NormalizeRotation2(AngleToUse)-m_Turret.GetPos_m();
+		SetAttitude(TurretPos);
+	}
 }
 
 void FRC_2012_Robot::SetPresetPOV (double value)
@@ -682,6 +794,23 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
 		props.Coordinates_DiplayRow=(size_t)-1;
+		props.TargetVars_DisplayRow=(size_t)-1;
+		props.PowerVelocity_DisplayRow=(size_t)-1;
+
+		for (size_t row=0;row<3;row++)
+		{
+			for (size_t column=0;column<3;column++)
+			{
+				Vec2D &cell=props.KeyGrid[row][column];
+				const double spread=Feet2Meters(7.0);
+				const double x=spread * ((double)column-1.0);
+				const double y=(spread * ((double)row-1.0)) + DefaultY;
+				cell=Vec2D(x,y);
+				props.KeyCorrections[row][column].PowerCorrection=1.0;
+				props.KeyCorrections[row][column].YawCorrection=1.0;
+			}
+		}
+
 		m_FRC2012RobotProps=props;
 	}
 	{
@@ -756,6 +885,23 @@ const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Scri
 	return err;
 }
 
+const char *ProcessKeyCorrection(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,size_t row,size_t column)
+{
+	const char* err=NULL;
+	char CellName[4];
+	CellName[0]='c';
+	CellName[1]='1'+row;
+	CellName[2]='1'+column;
+	CellName[3]=0;
+	err = script.GetFieldTable(CellName);
+
+	err = script.GetField("p", NULL, NULL,&m_FRC2012RobotProps.KeyCorrections[row][column].PowerCorrection);
+	err = script.GetField("x", NULL, NULL,&m_FRC2012RobotProps.KeyCorrections[row][column].YawCorrection);
+
+	script.Pop();
+	return err;
+}
+
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err=NULL;
@@ -816,9 +962,79 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
 		if (!err)
 			m_FRC2012RobotProps.Coordinates_DiplayRow=(size_t)fDisplayRow;
+		err=script.GetField("ds_target_vars_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2012RobotProps.TargetVars_DisplayRow=(size_t)fDisplayRow;
+
+		err=script.GetField("ds_power_velocity_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2012RobotProps.PowerVelocity_DisplayRow=(size_t)fDisplayRow;
+
+		err = script.GetFieldTable("grid_corrections");
+		if (!err)
+		{
+			for (size_t row=0;row<3;row++)
+			{
+				for (size_t column=0;column<3;column++)
+				{
+					err=ProcessKeyCorrection(m_FRC2012RobotProps,script,row,column);
+					assert(!err);
+				}
+			}
+			script.Pop();
+		}
 
 		script.Pop();
 	}
+}
+
+
+  /***********************************************************************************************************************************/
+ /*														FRC_2012_Goals::Fire														*/
+/***********************************************************************************************************************************/
+
+FRC_2012_Goals::Fire::Fire(FRC_2012_Robot &robot,bool On) : m_Robot(robot),m_Terminate(false),m_IsOn(On)
+{
+	m_Status=eInactive;
+}
+FRC_2012_Goals::Fire::Goal_Status FRC_2012_Goals::Fire::Process(double dTime_s)
+{
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	m_Robot.GetBallConveyorSystem().Fire(m_IsOn);
+	m_Status=eCompleted;
+	return m_Status;
+}
+
+
+  /***********************************************************************************************************************************/
+ /*															FRC_2012_Goals															*/
+/***********************************************************************************************************************************/
+
+Goal *FRC_2012_Goals::Get_ShootBalls(FRC_2012_Robot *Robot)
+{
+	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
+	Fire *FireOn=new Fire(*Robot,true);
+	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
+	Fire *FireOff=new Fire(*Robot,false);
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(FireOff);
+	MainGoal->AddSubgoal(goal_waitforballs);
+	MainGoal->AddSubgoal(FireOn);
+	MainGoal->AddSubgoal(goal_waitforturret);
+	return MainGoal;
+}
+
+Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex)
+{
+	Robot->SetPresetPosition(KeyIndex,true);
+	return Get_ShootBalls(Robot);
 }
 
   /***********************************************************************************************************************************/

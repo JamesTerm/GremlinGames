@@ -20,7 +20,16 @@ public:
 	//typedef osg::Vec2d Vec2D;
 	
 	Vec2D PresetPositions[3];
+	Vec2D KeyGrid[3][3];
+	struct DeliveryCorrectionFields
+	{
+		double PowerCorrection;
+		double YawCorrection;
+	};
+	DeliveryCorrectionFields KeyCorrections[3][3];
 	size_t Coordinates_DiplayRow;
+	size_t TargetVars_DisplayRow;
+	size_t PowerVelocity_DisplayRow;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
@@ -45,6 +54,8 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
 };
+
+class FRC_2012_Goals;
 
 class FRC_2012_Robot : public Tank_Robot
 {
@@ -141,23 +152,38 @@ class FRC_2012_Robot : public Tank_Robot
 			private:
 				FRC_2012_Robot * const m_pParent;
 				Rotary_Angular m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
-				bool m_Grip,m_Squirt,m_Fire;
+				union ControlSignals
+				{
+					struct ControlSignals_rw
+					{
+						unsigned char Grip   : 1;
+						unsigned char Squirt : 1;
+						unsigned char Fire   : 1;
+						unsigned char GripL  : 1;	//Manual grip low, medium, and high
+						unsigned char GripM  : 1;
+						unsigned char GripH  : 1;
+					} bits;
+					unsigned char raw;
+				} m_ControlSignals;
 			public:
 				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
-				bool GetIsFireRequested() const {return m_Fire;}
+				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
 
 				void ResetPos() {m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();}
 				//Intercept the time change to send out voltage
 				void TimeChange(double dTime_s);
 				void BindAdditionalEventControls(bool Bind);
+				//Expose for goals
+				void Fire(bool on) {m_ControlSignals.bits.Fire=on;}
 			protected:
-				//public access needed for goals
-				void Fire(bool on) {m_Fire=on;}
 				//Using meaningful terms to assert the correct direction at this level
-				void Grip(bool on) {m_Grip=on;}
-				void Squirt(bool on) {m_Squirt=on;}
+				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
+				void GripL(bool on) {m_ControlSignals.bits.GripL=on;}
+				void GripM(bool on) {m_ControlSignals.bits.GripM=on;}
+				void GripH(bool on) {m_ControlSignals.bits.GripH=on;}
+				void Squirt(bool on) {m_ControlSignals.bits.Squirt=on;}
 
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
@@ -186,10 +212,14 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 		};
 
+	public:
+		BallConveyorSystem &GetBallConveyorSystem();
+		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
+		void ApplyErrorCorrection();
 		typedef  Tank_Robot __super;
 		FRC_2012_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
@@ -201,11 +231,12 @@ class FRC_2012_Robot : public Tank_Robot
 
 		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
 		//middle of the game playing field
-		Vec2D m_TargetOffset;  
+		Vec2D m_TargetOffset;  //2d top view x,y of the target
 		//This is adjusted depending on doing a bank shot or swishing 
-		double m_TargetHeight;
+		double m_TargetHeight;  //1d z height (front view) of the target
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
+		double m_YawErrorCorrection,m_PowerErrorCorrection;
 		size_t m_DefaultPresetIndex;
 		bool m_DisableTurretTargetingValue;
 		bool m_POVSetValve;
@@ -223,12 +254,33 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
 
-		void SetPresetPosition(size_t index);
 		void SetPreset1() {SetPresetPosition(0);}
 		void SetPreset2() {SetPresetPosition(1);}
 		void SetPreset3() {SetPresetPosition(2);}
 		void SetPresetPOV (double value);
 };
+
+class FRC_2012_Goals
+{
+	public:
+		static Goal *Get_ShootBalls(FRC_2012_Robot *Robot);
+		static Goal *Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex);
+	private:
+		class Fire : public AtomicGoal
+		{
+		private:
+			FRC_2012_Robot &m_Robot;
+			bool m_Terminate;
+			bool m_IsOn;
+		public:
+			Fire(FRC_2012_Robot &robot,bool On);
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s);
+			virtual void Terminate() {m_Terminate=true;}
+		};
+
+};
+
 
 /// This contains all UI controls specific to this years robot.  Since we do not use files the primary use of this is specific keys assigned
 class FRC_2012_UI_Controller : public UI_Controller
