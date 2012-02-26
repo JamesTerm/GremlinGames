@@ -55,7 +55,16 @@ TestShip = {
 		key_1 = { x_in=0				, y_in=KeyDistance_in },
 		key_2 = { x_in=-HalfKeyWidth_in	, y_in=KeyDistance_in },
 		key_3 = { x_in= HalfKeyWidth_in	, y_in=KeyDistance_in },
-		ds_display_row=1,					--This will display the coordinates and heading (may want to leave on)
+		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
+		ds_target_vars_row=-1,				--Only used during keying the grid
+		ds_power_velocity_row=-1,			--Only used during keying the grid
+		
+		grid_corrections =
+		{
+			c11={p=1.0, x=1.0}, c12={p=1.0, x=1.0}, c13={p=1.0, x=1.0},
+			c21={p=1.0, x=1.0}, c22={p=1.0, x=1.0}, c23={p=1.0, x=1.0},
+			c31={p=1.0, x=1.0}, c32={p=1.0, x=1.0}, c33={p=1.0, x=1.0},
+		},
 		
 		turret =
 		{
@@ -100,10 +109,10 @@ TestShip = {
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
-			accel=60.0,						--These are only needed if we bind keys for power in meters per second
-			brake=60.0,
-			max_accel_forward=60,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=60			--The wheel may some time to ramp up
+			accel=1500.0,						--These are only needed if we bind keys for power in meters per second
+			brake=1500.0,
+			max_accel_forward=1500,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=1500			--The wheel may some time to ramp up
 		},
 		flippers =
 		{
