@@ -224,9 +224,9 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 
 FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
 	m_LowerConveyor("LowerConveyor",robot_control,eLowerConveyor),m_MiddleConveyor("MiddleConveyor",robot_control,eMiddleConveyor),
-	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
-		m_Grip(false),m_Squirt(false),m_Fire(false)
+	m_FireConveyor("FireConveyor",robot_control,eFireConveyor)
 {
+	m_ControlSignals.raw=0;
 	//This are always open loop as there is no encoder and this is specified by default
 }
 
@@ -246,19 +246,24 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
 	const bool PowerWheelReachedTolerance=fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance;
 	//Only fire when the wheel has reached its aiming speed
-	bool Fire=m_Fire && PowerWheelReachedTolerance;
+	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
+	bool Grip=m_ControlSignals.bits.Grip==1;
+	bool GripL=m_ControlSignals.bits.GripL==1;
+	bool GripM=m_ControlSignals.bits.GripM==1;
+	bool GripH=m_ControlSignals.bits.GripH==1;
+	bool Squirt=m_ControlSignals.bits.Squirt==1;
 
 	//This assumes the motors are in the same orientation: 
-	double LowerAcceleration=((m_Grip & (!LowerSensor)) || (LowerSensor & (!MiddleSensor))) | m_Squirt | Fire ?
-		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	double LowerAcceleration=((Grip & (!LowerSensor)) || (LowerSensor & (!MiddleSensor))) | GripL | Squirt | Fire ?
+		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_LowerConveyor.SetCurrentLinearAcceleration(LowerAcceleration);
 
-	double MiddleAcceleration= ((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) |  m_Squirt | Fire  ?
-		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	double MiddleAcceleration= ((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) | GripM | Squirt | Fire  ?
+		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_MiddleConveyor.SetCurrentLinearAcceleration(MiddleAcceleration);
 
-	double FireAcceleration= (MiddleSensor & (!FireSensor)) | m_Squirt | Fire  ?
-		((m_Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	double FireAcceleration= (MiddleSensor & (!FireSensor)) | GripH | Squirt | Fire  ?
+		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
 
 	m_LowerConveyor.AsEntity1D().TimeChange(dTime_s);
@@ -283,6 +288,9 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Ball_Fire"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Fire);
 		em->EventOnOff_Map["Ball_Grip"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Grip);
+		em->EventOnOff_Map["Ball_GripL"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::GripL);
+		em->EventOnOff_Map["Ball_GripM"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::GripM);
+		em->EventOnOff_Map["Ball_GripH"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::GripH);
 		em->EventOnOff_Map["Ball_Squirt"].Subscribe(ehl, *this, &FRC_2012_Robot::BallConveyorSystem::Squirt);
 	}
 	else
@@ -290,6 +298,9 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Ball_Fire"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::Fire);
 		em->EventOnOff_Map["Ball_Grip"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::Grip);
+		em->EventOnOff_Map["Ball_GripL"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::GripL);
+		em->EventOnOff_Map["Ball_GripM"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::GripM);
+		em->EventOnOff_Map["Ball_GripH"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::GripH);
 		em->EventOnOff_Map["Ball_Squirt"]  .Remove(*this, &FRC_2012_Robot::BallConveyorSystem::Squirt);
 	}
 }
