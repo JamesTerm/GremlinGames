@@ -154,11 +154,23 @@ class FRC_2012_Robot : public Tank_Robot
 			private:
 				FRC_2012_Robot * const m_pParent;
 				Rotary_Angular m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
-				bool m_Grip,m_Squirt,m_Fire;
+				union ControlSignals
+				{
+					struct ControlSignals_rw
+					{
+						unsigned char Grip   : 1;
+						unsigned char Squirt : 1;
+						unsigned char Fire   : 1;
+						unsigned char GripL  : 1;	//Manual grip low, medium, and high
+						unsigned char GripM  : 1;
+						unsigned char GripH  : 1;
+					} bits;
+					unsigned char raw;
+				} m_ControlSignals;
 			public:
 				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
-				bool GetIsFireRequested() const {return m_Fire;}
+				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
 
 				void ResetPos() {m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();}
@@ -167,10 +179,13 @@ class FRC_2012_Robot : public Tank_Robot
 				void BindAdditionalEventControls(bool Bind);
 			protected:
 				friend class FRC_2012_Goals;  //I need global reach to achieve my goals :)
-				void Fire(bool on) {m_Fire=on;}
+				void Fire(bool on) {m_ControlSignals.bits.Fire=on;}
 				//Using meaningful terms to assert the correct direction at this level
-				void Grip(bool on) {m_Grip=on;}
-				void Squirt(bool on) {m_Squirt=on;}
+				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
+				void GripL(bool on) {m_ControlSignals.bits.GripL=on;}
+				void GripM(bool on) {m_ControlSignals.bits.GripM=on;}
+				void GripH(bool on) {m_ControlSignals.bits.GripH=on;}
+				void Squirt(bool on) {m_ControlSignals.bits.Squirt=on;}
 
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
