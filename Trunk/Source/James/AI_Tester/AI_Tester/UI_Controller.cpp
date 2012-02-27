@@ -12,6 +12,8 @@ using namespace osg;
 bool g_UseMouse=false;
 
 
+namespace Scripting=GG_Framework::Logic::Scripting;
+
   /***************************************************************************************************************/
  /*												Mouse_ShipDriver												*/
 /***************************************************************************************************************/
@@ -231,6 +233,78 @@ UI_Controller::UI_Controller(AI_Base_Controller *base_controller) :
 	Init_AutoPilotControls();
 }
 
+
+const char *UI_Controller::ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script)
+{
+	const char *err=NULL;
+	err = script.GetFieldTable(Eventname);
+	if (!err)
+	{
+		Element.Event=Eventname;
+		std::string sType;
+		err = script.GetField("type",&sType,NULL,NULL);
+		ASSERT_MSG(!err, err);
+		err = script.GetField("joystick",&Element.Product,NULL,NULL);
+		ASSERT_MSG(!err, err);
+		
+		if (strcmp(sType.c_str(),"joystick_analog")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickAnalog;
+			JoyStick_Binder::JoyAxis_enum JoyAxis;
+			double dJoyAxis;
+			err = script.GetField("key", NULL, NULL,&dJoyAxis);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration
+			JoyAxis=(JoyStick_Binder::JoyAxis_enum)((int)dJoyAxis);
+			bool IsFlipped;
+			err = script.GetField("is_flipped", NULL, &IsFlipped,NULL);
+			ASSERT_MSG(!err, err);
+			double Multiplier;
+			err = script.GetField("multiplier", NULL, NULL,&Multiplier);
+			ASSERT_MSG(!err, err);
+			double FilterRange;
+			err = script.GetField("filter", NULL, NULL,&FilterRange);
+			ASSERT_MSG(!err, err);
+			bool IsSquared;
+			err = script.GetField("is_squared", NULL, &IsSquared,NULL);
+			ASSERT_MSG(!err, err);
+
+			Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &set=Element.Specifics.Analog;
+			set.JoyAxis=JoyAxis;
+			set.IsFlipped=IsFlipped;
+			set.Multiplier=Multiplier;
+			set.FilterRange=FilterRange;
+			set.IsSquared=IsSquared;
+			//joy.AddJoy_Analog_Default(JoyAxis,Eventname,IsFlipped,Multiplier,FilterRange,IsSquared,ProductName.c_str());
+		}
+		else if (strcmp(sType.c_str(),"joystick_button")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickButton;
+			size_t WhichButton;
+			double dWhichButton;
+			err = script.GetField("key", NULL, NULL,&dWhichButton);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
+			WhichButton=(JoyStick_Binder::JoyAxis_enum)((int)dWhichButton-1);
+			bool useOnOff;
+			err = script.GetField("on_off", NULL, &useOnOff,NULL);
+			ASSERT_MSG(!err, err);
+			bool dbl_click=false;
+			err = script.GetField("dbl", NULL, &dbl_click,NULL); //This one can be blank
+			err=NULL;  //don't return an error (assert for rest)
+
+			Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &set=Element.Specifics.Button;
+			set.WhichButton=WhichButton;
+			set.useOnOff=useOnOff;
+			set.dbl_click=dbl_click;
+			//joy.AddJoy_Button_Default( WhichButton,Eventname,useOnOff,dbl_click,ProductName.c_str());
+		}
+		else assert(false);
+		script.Pop();
+	}
+	return err;
+}
+
 void UI_Controller::Flush_AI_BaseResources()
 {
 	#if 0
@@ -250,6 +324,11 @@ void UI_Controller::Flush_AI_BaseResources()
 UI_Controller::~UI_Controller()
 {
 	Set_AI_Base_Controller(NULL); //this will unbind the events and flush the AI resources
+}
+
+GG_Framework::UI::JoyStick_Binder &UI_Controller::GetJoyStickBinder()
+{
+	return MainWindow::GetMainWindow()->GetJoystick();
 }
 
 void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
@@ -325,6 +404,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		//m_HUD_UI->m_addnText = m_ship->GetName();
 
 		m_ship->BindAdditionalEventControls(true);
+		m_ship->BindAdditionalUIControls(true,GetJoyStickBinder());
 	}
 }
 

@@ -50,11 +50,14 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetFlipperProps() const {return m_FlipperProps;}
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
+		typedef std::vector<UI_Controller::Controller_Element_Properties> Controls_List; 
+		const Controls_List &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
+		Controls_List m_RobotControls;
 };
 
 class FRC_2012_Goals;
@@ -217,6 +220,7 @@ class FRC_2012_Robot : public Tank_Robot
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
+		virtual void BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoyStick_Binder &joy);
 	private:
 		friend class FRC_2012_Goals;  //I need global reach to achieve my goals :)
 

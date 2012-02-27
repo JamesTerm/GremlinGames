@@ -100,6 +100,8 @@ class Ship_2D : public Ship
 		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
+		//Its possible that each ship may have its own specific controls
+		virtual void BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoyStick_Binder &joy) {}
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
