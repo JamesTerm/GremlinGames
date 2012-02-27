@@ -19,7 +19,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0;
 
 TestShip = {
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
+	MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10, MaxAccelReverse = 10, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = HighGearSpeed,
@@ -109,10 +109,10 @@ TestShip = {
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
-			accel=1500.0,						--These are only needed if we bind keys for power in meters per second
-			brake=1500.0,
-			max_accel_forward=1500,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=1500			--The wheel may some time to ramp up
+			accel=200.0,						--These are only needed if we bind keys for power in meters per second
+			brake=200.0,
+			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=200			--The wheel may some time to ramp up
 		},
 		flippers =
 		{
@@ -147,7 +147,7 @@ TestShip = {
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
 			--cause slipping if driver "high sticks" to start or stop quickly.
-			MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5 * 2, MaxAccelReverse = 5 * 2, 
+			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
 			MaxTorqueYaw = 25 * 2, 
 			
 			MAX_SPEED = LowGearSpeed,
