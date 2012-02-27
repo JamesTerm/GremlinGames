@@ -36,7 +36,7 @@
 #define __ShowLCD__
 #endif
 
-#define __DisableMotorControls__
+#undef __DisableMotorControls__
 #undef  __EnablePrintfDumps__
 #define __DisableCompressor__
 
@@ -191,7 +191,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	case FRC_2012_Robot::eLowerConveyor:	m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
 	case FRC_2012_Robot::eMiddleConveyor:	m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
 	case FRC_2012_Robot::eFireConveyor:		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
-	case FRC_2012_Robot::ePitchRamp:\
+	case FRC_2012_Robot::ePitchRamp:
 		//TODO research i2c's
 		break;
 	}

@@ -54,7 +54,7 @@ class SetUp_Manager
 			printf("Goals completed!\n");
 		}
 		
-		SetUp_Manager(bool UseSafety,bool UseEncoders=false) : m_Joystick(3,0), //2 joysticks starting at port 0
+		SetUp_Manager(bool UseSafety,bool UseEncoders=false) : m_Joystick(3,0), //3 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
 			m_Control.AsControlInterface().Initialize(&m_RobotProps);
