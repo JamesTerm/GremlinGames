@@ -706,6 +706,31 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 }
 
+void FRC_2012_Robot::BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoyStick_Binder &joy)
+{
+	const FRC_2012_Robot_Properties::Controls_List &robot_controls=m_RobotProps.Get_RobotControls();
+	for (size_t i=0;i<robot_controls.size();i++)
+	{
+		const UI_Controller::Controller_Element_Properties &element=robot_controls[i];
+		switch (element.Type)
+		{
+		case UI_Controller::Controller_Element_Properties::eJoystickAnalog:
+			{
+				const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
+				joy.AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
+					analog.FilterRange,analog.IsSquared,element.Product.c_str());
+
+			}
+			break;
+		case UI_Controller::Controller_Element_Properties::eJoystickButton:
+			{
+				const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
+				joy.AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,element.Product.c_str());
+			}
+			break;
+		}
+	}
+}
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Properties														*/
@@ -973,6 +998,31 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
+		err = script.GetFieldTable("controls");
+		if (!err)
+		{
+			const char * const Events[] = 
+			{
+				"Joystick_SetCurrentSpeed_2","Analog_Turn",
+				"Turret_SetCurrentVelocity","Turret_SetPotentiometerSafety",
+				"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
+				"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
+				"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
+				"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
+				"Flippers_Advance","Flippers_Retract",
+				"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
+				"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
+				"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
+			};
+			for (size_t i=0;i<_countof(Events);i++)
+			{
+				UI_Controller::Controller_Element_Properties element;
+				err=UI_Controller::ExtractControllerElementProperties(element,Events[i],script);
+				if (!err)
+					m_RobotControls.push_back(element);
+			}
+
+		}
 		script.Pop();
 	}
 }

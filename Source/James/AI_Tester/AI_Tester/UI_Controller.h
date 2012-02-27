@@ -82,6 +82,37 @@ class UI_Controller
 
 		virtual void CancelAllControls();
 
+		//returns NULL if no error
+		struct Controller_Element_Properties
+		{
+			std::string Event;
+			std::string Product;
+			enum ElementType
+			{
+				eJoystickAnalog,
+				eJoystickButton
+			} Type;
+			union ElementTypeSpecific
+			{
+				struct AnalogSpecifics_rw
+				{
+					GG_Framework::UI::JoyStick_Binder::JoyAxis_enum JoyAxis;
+					bool IsFlipped;
+					double Multiplier;
+					double FilterRange;
+					bool IsSquared;
+				} Analog;
+				struct ButtonSpecifics_rw
+				{
+					size_t WhichButton;
+					bool useOnOff;
+					bool dbl_click;
+				} Button;
+			} Specifics;
+		};
+		//Return if element was successfully created (be sure to check as some may not be present)
+		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,GG_Framework::Logic::Scripting::Script& script);
+		GG_Framework::UI::JoyStick_Binder &GetJoyStickBinder();
 	protected:
 		friend Mouse_ShipDriver;
 
