@@ -411,6 +411,11 @@ void FRC_2012_Robot::ResetPos()
 	m_Flippers.ResetPos();
 }
 
+FRC_2012_Robot::BallConveyorSystem &FRC_2012_Robot::GetBallConveyorSystem()
+{
+	return m_BallConveyorSystem;
+}
+
 void FRC_2012_Robot::ApplyErrorCorrection()
 {
 	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
@@ -1051,7 +1056,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 
 
   /***********************************************************************************************************************************/
-/*														FRC_2012_Goals::Fire														*/
+ /*														FRC_2012_Goals::Fire														*/
 /***********************************************************************************************************************************/
 
 FRC_2012_Goals::Fire::Fire(FRC_2012_Robot &robot,bool On) : m_Robot(robot),m_Terminate(false),m_IsOn(On)
@@ -1067,7 +1072,7 @@ FRC_2012_Goals::Fire::Goal_Status FRC_2012_Goals::Fire::Process(double dTime_s)
 		return m_Status;
 	}
 	ActivateIfInactive();
-	m_Robot.m_BallConveyorSystem.Fire(m_IsOn);
+	m_Robot.GetBallConveyorSystem().Fire(m_IsOn);
 	m_Status=eCompleted;
 	return m_Status;
 }

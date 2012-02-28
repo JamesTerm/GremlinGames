@@ -185,9 +185,9 @@ class FRC_2012_Robot : public Tank_Robot
 				//Intercept the time change to send out voltage
 				void TimeChange(double dTime_s);
 				void BindAdditionalEventControls(bool Bind);
-			protected:
-				friend class FRC_2012_Goals;  //I need global reach to achieve my goals :)
+				//Expose for goals
 				void Fire(bool on) {m_ControlSignals.bits.Fire=on;}
+			protected:
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
 				void GripL(bool on) {m_ControlSignals.bits.GripL=on;}
@@ -222,13 +222,14 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 		};
 
+	public:
+		BallConveyorSystem &GetBallConveyorSystem();
+		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 	private:
-		friend class FRC_2012_Goals;  //I need global reach to achieve my goals :)
-
 		void ApplyErrorCorrection();
 		//typedef  Tank_Robot __super;
 		FRC_2012_Control_Interface * const m_RobotControl;
@@ -264,7 +265,6 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
 
-		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
 		void SetPreset1() {SetPresetPosition(0);}
 		void SetPreset2() {SetPresetPosition(1);}
 		void SetPreset3() {SetPresetPosition(2);}
