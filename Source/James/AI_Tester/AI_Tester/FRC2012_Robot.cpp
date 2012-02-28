@@ -711,23 +711,27 @@ void FRC_2012_Robot::BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoySt
 	const FRC_2012_Robot_Properties::Controls_List &robot_controls=m_RobotProps.Get_RobotControls();
 	for (size_t i=0;i<robot_controls.size();i++)
 	{
-		const UI_Controller::Controller_Element_Properties &element=robot_controls[i];
-		switch (element.Type)
-		{
-		case UI_Controller::Controller_Element_Properties::eJoystickAnalog:
-			{
-				const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
-				joy.AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
-					analog.FilterRange,analog.IsSquared,element.Product.c_str());
+		const FRC_2012_Robot_Properties::Control_Props &control=robot_controls[i];
 
-			}
-			break;
-		case UI_Controller::Controller_Element_Properties::eJoystickButton:
+		for (size_t j=0;j<control.EventList.size();j++)
+		{
+			const UI_Controller::Controller_Element_Properties &element=control.EventList[j];
+			switch (element.Type)
 			{
-				const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
-				joy.AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,element.Product.c_str());
+			case UI_Controller::Controller_Element_Properties::eJoystickAnalog:
+				{
+					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
+					joy.AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
+						analog.FilterRange,analog.IsSquared,control.Controller.c_str());
+				}
+				break;
+			case UI_Controller::Controller_Element_Properties::eJoystickButton:
+				{
+					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
+					joy.AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
+				}
+				break;
 			}
-			break;
 		}
 	}
 }
@@ -1014,14 +1018,31 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 				"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 			};
-			for (size_t i=0;i<_countof(Events);i++)
-			{
-				UI_Controller::Controller_Element_Properties element;
-				err=UI_Controller::ExtractControllerElementProperties(element,Events[i],script);
-				if (!err)
-					m_RobotControls.push_back(element);
-			}
 
+			//TODO we may use actual product names here, but this will be fine for wind river build
+			const char * const Controls[] =
+			{
+				"Joystick_1","Joystick_2","Joystick_3"
+			};
+
+			for (size_t i=0;i<_countof(Controls);i++)
+			{
+				err = script.GetFieldTable(Controls[i]);
+				if (!err)
+				{
+					Control_Props control;
+					control.Controller=Controls[i];
+					for (size_t j=0;j<_countof(Events);j++)
+					{
+						UI_Controller::Controller_Element_Properties element;
+						err=UI_Controller::ExtractControllerElementProperties(element,Events[j],script);
+						if (!err)
+							control.EventList.push_back(element);
+					}
+					m_RobotControls.push_back(control);
+					script.Pop();
+				}
+			}
 		}
 		script.Pop();
 	}

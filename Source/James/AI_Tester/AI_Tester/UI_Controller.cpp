@@ -244,8 +244,6 @@ const char *UI_Controller::ExtractControllerElementProperties(Controller_Element
 		std::string sType;
 		err = script.GetField("type",&sType,NULL,NULL);
 		ASSERT_MSG(!err, err);
-		err = script.GetField("joystick",&Element.Product,NULL,NULL);
-		ASSERT_MSG(!err, err);
 		
 		if (strcmp(sType.c_str(),"joystick_analog")==0)
 		{
