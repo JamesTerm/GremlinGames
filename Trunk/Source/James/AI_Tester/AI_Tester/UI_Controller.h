@@ -86,7 +86,6 @@ class UI_Controller
 		struct Controller_Element_Properties
 		{
 			std::string Event;
-			std::string Product;
 			enum ElementType
 			{
 				eJoystickAnalog,
