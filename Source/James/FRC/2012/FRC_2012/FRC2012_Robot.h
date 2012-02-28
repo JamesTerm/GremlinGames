@@ -94,9 +94,15 @@ class FRC_2012_Robot : public Tank_Robot
 
 		typedef Framework::Base::Vec2d Vec2D;
 		//typedef osg::Vec2d Vec2D;
-		/// \param DefaultPresetIndex is a key preset index used in autonomous to pick a spot to shoot from
-		/// 0=center 1=left 2=right
-		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex=0,bool IsAutonomous=false);
+
+		enum Targets
+		{
+			eCenterHighGoal,
+			eLeftGoal,
+			eRightGoal,
+			eDefensiveKey
+		};
+		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
@@ -223,6 +229,7 @@ class FRC_2012_Robot : public Tank_Robot
 	public:
 		BallConveyorSystem &GetBallConveyorSystem();
 		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
+		void SetTarget(Targets target);
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -237,6 +244,8 @@ class FRC_2012_Robot : public Tank_Robot
 		BallConveyorSystem m_BallConveyorSystem;
 		Flippers m_Flippers;
 		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
+		Targets m_Target;		//This allows us to change our target
+		Vec2D m_DefensiveKeyPosition;
 
 		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
 		//middle of the game playing field
@@ -246,6 +255,7 @@ class FRC_2012_Robot : public Tank_Robot
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
 		double m_YawErrorCorrection,m_PowerErrorCorrection;
+		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
 		bool m_DisableTurretTargetingValue;
 		bool m_POVSetValve;
@@ -267,6 +277,10 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetPreset2() {SetPresetPosition(1);}
 		void SetPreset3() {SetPresetPosition(2);}
 		void SetPresetPOV (double value);
+
+		void SetDefensiveKeyPosition(double NormalizedDistance) {m_DefensiveKeyNormalizedDistance=NormalizedDistance;}
+		void SetDefensiveKeyOn();
+		void SetDefensiveKeyOff() {m_Target=eCenterHighGoal;}
 };
 
 class FRC_2012_Goals
@@ -290,11 +304,4 @@ class FRC_2012_Goals
 
 };
 
-
-/// This contains all UI controls specific to this years robot.  Since we do not use files the primary use of this is specific keys assigned
-class FRC_2012_UI_Controller : public UI_Controller
-{
-	public:
-		FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
-};
 
