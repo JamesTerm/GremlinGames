@@ -706,8 +706,9 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 }
 
-void FRC_2012_Robot::BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoyStick_Binder &joy)
+void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 {
+	GG_Framework::UI::JoyStick_Binder *p_joy=(GG_Framework::UI::JoyStick_Binder *)joy;
 	const FRC_2012_Robot_Properties::Controls_List &robot_controls=m_RobotProps.Get_RobotControls();
 	for (size_t i=0;i<robot_controls.size();i++)
 	{
@@ -721,14 +722,14 @@ void FRC_2012_Robot::BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoySt
 			case UI_Controller::Controller_Element_Properties::eJoystickAnalog:
 				{
 					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
-					joy.AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
+					p_joy->AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
 						analog.FilterRange,analog.IsSquared,control.Controller.c_str());
 				}
 				break;
 			case UI_Controller::Controller_Element_Properties::eJoystickButton:
 				{
 					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
-					joy.AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
+					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
 				}
 				break;
 			}

@@ -225,7 +225,7 @@ class FRC_2012_Robot : public Tank_Robot
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoyStick_Binder &joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 	private:
 		friend class FRC_2012_Goals;  //I need global reach to achieve my goals :)
 

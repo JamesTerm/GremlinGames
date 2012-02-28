@@ -101,7 +101,7 @@ class Ship_2D : public Ship
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		//Its possible that each ship may have its own specific controls
-		virtual void BindAdditionalUIControls(bool Bind, GG_Framework::UI::JoyStick_Binder &joy) {}
+		virtual void BindAdditionalUIControls(bool Bind, void *joy) {}
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.

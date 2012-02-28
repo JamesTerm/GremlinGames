@@ -402,7 +402,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		//m_HUD_UI->m_addnText = m_ship->GetName();
 
 		m_ship->BindAdditionalEventControls(true);
-		m_ship->BindAdditionalUIControls(true,GetJoyStickBinder());
+		m_ship->BindAdditionalUIControls(true,&GetJoyStickBinder());
 	}
 }
 
