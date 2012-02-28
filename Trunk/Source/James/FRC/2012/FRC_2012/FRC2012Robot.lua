@@ -204,11 +204,14 @@ TestShip = {
 				Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
 				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, is_squared=false},
 				Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, is_squared=true},
+				Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
 				
 				Ball_Grip = {type="joystick_button", key=2, on_off=true},
 				Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 				Ball_Fire = {type="joystick_button", key=6, on_off=true},
-				PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true}
+				PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
+				Robot_SetDefensiveKeyOn = {type="joystick_button", key=11, on_off=false},
+				Robot_SetDefensiveKeyOff = {type="joystick_button", key=12, on_off=false}
 			}
 		}
 	},

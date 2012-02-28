@@ -369,6 +369,9 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
+const double c_Target_MidBase_Height= Inches2Meters(61.0 - c_BallShootHeight_inches);
+const double c_Target_MiddleHoop_XOffset=Inches2Meters(27+3/8);
+
 //http://www.sciencedaily.com/releases/2011/03/110310151224.htm
 //The results show the optimal aim points make a "V" shape near the top center of the backboard's "square," which is actually a 
 //24-inch by 18-inch rectangle which surrounds the rim
@@ -382,10 +385,11 @@ const double c_BankShot_V_Hieght_plus_SatPoint=Inches2Meters(12.86);
 const double c_BankShot_V_SatHieght=Inches2Meters(2.57111110379327);
 const double c_BankShot_Initial_V_Hieght=Inches2Meters(12.86)-c_BankShot_V_SatHieght; //about 10.288 inches to the point of the V
 
-FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,size_t DefaultPresetIndex,bool IsAutonomous) : 
+FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefaultPresetIndex(DefaultPresetIndex),
+		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
@@ -467,14 +471,35 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
-	m_TargetOffset=c_TargetBasePosition;  //2d top view x,y of the target
-	m_TargetHeight=c_TargetBaseHeight;    //1d z height (front view) of the target
 	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
 	const Vec2d &Pos_m=GetPos_m();
 	//Got to make this fit within 20 chars :(
 	Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
 		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
+
+	switch (m_Target)
+	{
+		case eCenterHighGoal:
+			m_TargetOffset=c_TargetBasePosition;  //2d top view x,y of the target
+			m_TargetHeight=c_TargetBaseHeight;    //1d z height (front view) of the target
+			break;
+		case eLeftGoal:
+			m_TargetOffset=Vec2D(-c_Target_MiddleHoop_XOffset,c_HalfCourtLength);
+			m_TargetHeight=c_Target_MidBase_Height;
+			break;
+		case eRightGoal:
+			m_TargetOffset=Vec2D(c_Target_MiddleHoop_XOffset,c_HalfCourtLength);
+			m_TargetHeight=c_Target_MidBase_Height;
+			break;
+		case eDefensiveKey:
+			m_TargetOffset=m_DefensiveKeyPosition;
+			m_TargetHeight=0;
+			break;
+	}
+
 	const double x=Vec2D(Pos_m-m_TargetOffset).length();
+
+	if (m_Target != eDefensiveKey)
 	{
 		const bool DoBankShot= (x < Feet2Meters(16));  //if we are less than 16 feet away
 		if (DoBankShot)
@@ -640,6 +665,26 @@ void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 	}
 }
 
+void FRC_2012_Robot::SetTarget(Targets target)
+{
+	m_Target=target;
+}
+
+void FRC_2012_Robot::SetDefensiveKeyOn()
+{
+	//We'll simply plot the coordinates of the key based on position and orientation of the turret
+	//This is really a scale of 0 - 1 multiplied against 40 feet, but simplified to 0 - 2 * 20
+	const double Distance=Feet2Meters((m_DefensiveKeyNormalizedDistance + 1.0) * 20.0);
+	//determine our turret direction 
+	double Direction=NormalizeRotation2(GetAtt_r() + m_Turret.GetPos_m());
+	double Y=(sin(Direction+PI_2) * Distance) + GetPos_m()[1];
+	double X=(cos(-Direction+PI_2) * Distance) + GetPos_m()[0];
+	printf("Direction=%f Distance=%f x=%f y=%f\n",RAD_2_DEG(Direction),Meters2Feet(Distance),Meters2Feet(X),Meters2Feet(Y));
+	m_DefensiveKeyPosition=Vec2D(X,Y);
+	m_Target=eDefensiveKey;
+}
+
+
 void FRC_2012_Robot::SetPresetPOV (double value)
 {
 	//We put the typical case first (save the amount of branching)
@@ -680,6 +725,9 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetTargetingOff);
 		em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetTargetingValue);
+		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetDefensiveKeyPosition);
+		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetDefensiveKeyOn);
+		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetDefensiveKeyOff);
 
 		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
@@ -698,6 +746,9 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2012_Robot::SetTargetingOff);
 		em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Remove(*this, &FRC_2012_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2012_Robot::SetTargetingValue);
+		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2012_Robot::SetDefensiveKeyPosition);
+		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2012_Robot::SetDefensiveKeyOn);
+		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2012_Robot::SetDefensiveKeyOff);
 
 		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);
@@ -1029,6 +1080,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
 				"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 				"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
+				"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff"
 			};
 
 			//TODO we may use actual product names here, but this will be fine for wind river build
@@ -1107,82 +1159,4 @@ Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t Key
 {
 	Robot->SetPresetPosition(KeyIndex,true);
 	return Get_ShootBalls(Robot);
-}
-
-//TODO Nuke this class upon successful testing of the LUA controls
-
-  /***********************************************************************************************************************************/
- /*														FRC_2012_UI_Controller														*/
-/***********************************************************************************************************************************/
-#undef __2011Joysticks__
-#undef __2012Joystick_with_LogitechOperator__
-#undef __2012ActualControls__
-
-#undef __AirFlo__
-#undef __UsingXTerminator__
-
-FRC_2012_UI_Controller::FRC_2012_UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller) : UI_Controller(joy,base_controller)
-{
-	using namespace Framework::UI;
-	#if 0
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.1,false,"Joystick_1");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.1,true,"Joystick_1");
-	#endif
-
-	#ifdef __2011Joysticks__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetLowGearValue",true,1.0,0.0,false,"Joystick_1");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Turret_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"PitchRamp_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"PowerWheels_SetCurrentVelocity",true,1.0,0.0,false,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetTargetingValue",true,1.000,0.0,false,"Joystick_2");
-	
-	joy.AddJoy_Button_Default( 0,"Ball_Fire",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 5,"Ball_Grip",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 6,"Ball_Squirt",true,false,"Joystick_2");
-	#if 0
-	joy.AddJoy_Button_Default( 7,"Robot_SetTargetingOn",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 8,"Robot_SetTargetingOff",false,false,"Joystick_2");
-	#endif
-	joy.AddJoy_Button_Default( 10,"PowerWheels_IsRunning",true,false,"Joystick_2");
-	#endif
-	
-	#ifdef __2012Joystick_with_LogitechOperator__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetLowGearValue",true,1.0,0.0,false,"Joystick_1");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Turret_SetCurrentVelocity",true,1.0,0.0,false,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"PowerWheels_SetCurrentVelocity",true,1.000,0.0,false,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"PitchRamp_SetIntendedPosition",true,1.142000,0.0,false,"Joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Robot_SetTargetingValue",true,1.142000,0.0,false,"Joystick_2");
-			
-	joy.AddJoy_Button_Default( 1,"Ball_Grip",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 0,"Ball_Squirt",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 5,"Ball_Fire",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 3,"PowerWheels_IsRunning",true,false,"Joystick_2");
-	#endif
-	#ifdef __2012ActualControls__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Robot_SetLowGearValue",true,1.0,0.0,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 0,"Flippers_Retract",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 3,"Flippers_Advance",true,false,"Joystick_1");
-	
-	//scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Turret_SetCurrentVelocity",true,0.5,0.1,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 1,"Ball_Grip",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 0,"Ball_Squirt",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 3,"Ball_Fire",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 2,"PowerWheels_IsRunning",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 5,"Robot_TurretSetTargetingOff",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 4,"Robot_SetPreset1",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 8,"Robot_SetPreset2",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 9,"Robot_SetPreset3",false,false,"Joystick_2");
-	
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"PitchRamp_SetIntendedPosition",true,1.142000,0.0,false,"Joystick_3");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Robot_SetTargetingValue",true,1.142000,0.0,false,"Joystick_3");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"PowerWheels_SetCurrentVelocity",true,1.000,0.0,false,"Joystick_3");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Turret_SetCurrentVelocity",true,0.5,0.1,true,"Joystick_3");
-	
-	//TODO test to ensure up is even and down is odd
-	joy.AddJoy_Button_Default( 1,"Ball_Grip",true,false,"Joystick_3");
-	joy.AddJoy_Button_Default( 0,"Ball_Squirt",true,false,"Joystick_3");
-	joy.AddJoy_Button_Default( 5,"Ball_Fire",true,false,"Joystick_3");
-	joy.AddJoy_Button_Default( 3,"PowerWheels_IsRunning",true,false,"Joystick_3");
-	#endif
 }
