@@ -657,6 +657,13 @@ void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 	}
 }
 
+void FRC_2012_Robot::Set_Auton_PresetPosition(size_t index)
+{
+	SetPresetPosition(index,true);
+	SetAttitude(Pi);
+	m_Turret.SetPos_m(Pi);
+}
+
 void FRC_2012_Robot::SetTarget(Targets target)
 {
 	m_Target=target;
@@ -1151,7 +1158,7 @@ Goal *FRC_2012_Goals::Get_ShootBalls(FRC_2012_Robot *Robot)
 
 Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex)
 {
-	Robot->SetPresetPosition(KeyIndex,true);
+	Robot->Set_Auton_PresetPosition(KeyIndex);
 	return Get_ShootBalls(Robot);
 }
 
@@ -1326,7 +1333,11 @@ void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
 	{
 		m_RobotProps=*robot_props;  //save a copy
 
-		m_Turret_Pot.Initialize(&robot_props->GetTurretProps());
+		Rotary_Properties turret_props=robot_props->GetTurretProps();
+		//turret_props.SetMinRange(0);
+		//turret_props.SetMaxRange(Pi2);
+		turret_props.SetUsingRange(false);
+		m_Turret_Pot.Initialize(&turret_props);
 		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
 		m_Flippers_Pot.Initialize(&robot_props->GetFlipperProps());
 		m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
@@ -1359,7 +1370,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	{
 		case FRC_2012_Robot::eTurret:
 		
-			result=m_Turret_Pot.GetPotentiometerCurrentPosition();
+			result=NormalizeRotation2(m_Turret_Pot.GetPotentiometerCurrentPosition() + Pi);
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 			break;
 		case FRC_2012_Robot::ePitchRamp:
