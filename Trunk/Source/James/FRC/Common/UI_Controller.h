@@ -61,6 +61,36 @@ class UI_Controller
 
 		virtual void CancelAllControls();
 
+		//returns NULL if no error
+		struct Controller_Element_Properties
+		{
+			std::string Event;
+			enum ElementType
+			{
+				eJoystickAnalog,
+				eJoystickButton
+			} Type;
+			union ElementTypeSpecific
+			{
+				struct AnalogSpecifics_rw
+				{
+					Framework::UI::JoyStick_Binder::JoyAxis_enum JoyAxis;
+					bool IsFlipped;
+					double Multiplier;
+					double FilterRange;
+					bool IsSquared;
+				} Analog;
+				struct ButtonSpecifics_rw
+				{
+					size_t WhichButton;
+					bool useOnOff;
+					bool dbl_click;
+				} Button;
+			} Specifics;
+		};
+		//Return if element was successfully created (be sure to check as some may not be present)
+		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Framework::Scripting::Script& script);
+		Framework::UI::JoyStick_Binder &GetJoyStickBinder();
 	protected:
 		void BlackoutHandler(double bl);
 
@@ -100,6 +130,7 @@ class UI_Controller
 		void Init_AutoPilotControls();
 		AI_Base_Controller *m_Base;
 		Ship_2D *m_ship; //there is an overwhelming use of the ship so we'll cache a pointer of it here
+		Framework::UI::JoyStick_Binder &m_JoyStick_Binder;
 
 		double m_LastSliderTime[2]; //Keep track of the slider to help it stay smooth;
 		bool m_SlideButtonToggle;

@@ -5,6 +5,7 @@
 #include "../Base/Misc.h"
 #include "../Base/Event.h"
 #include "../Base/EventMap.h"
+#include "../Base/Script.h"
 #include "Physics_1D.h"
 #include "Physics_2D.h"
 #include "Entity2D.h"
@@ -21,6 +22,7 @@
 using namespace Framework::Base;
 using namespace Framework::UI;
 
+namespace Scripting=Framework::Scripting;
   /***************************************************************************************************************/
  /*												UI_Controller													*/
 /***************************************************************************************************************/
@@ -33,7 +35,8 @@ void UI_Controller::Init_AutoPilotControls()
 //! TODO: Use the script to grab the head position to provide the HUD
 UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_controller) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
-	m_Base(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_CruiseSpeed(0.0),m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),
+	m_Base(NULL),m_JoyStick_Binder(joy),
+	m_SlideButtonToggle(false),m_isControlled(false),m_CruiseSpeed(0.0),m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),
 	/*m_hud_connected(false),*/
 	m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true)
 {
@@ -41,13 +44,86 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
 	m_LastSliderTime[0]=m_LastSliderTime[1]=0.0;
 
+	//No longer putting controls here as they may change depending on what controller is used (e.g. deadzone tweaks)
+	#if 0
 	//Note: Only generic default keys assigned for windriver builds.  Others are moved to the specific robot
 	//We may wish to move these as well, but for now assert this is generic enough for all robots, which will come in
 	//handy if we want to change the driving style (e.g. arcade, tank steering, etc)
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.1,false,"Joystick_1");
 	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.1,true,"Joystick_1");
-
+	#endif
+	
 	Init_AutoPilotControls();
+}
+
+
+const char *UI_Controller::ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script)
+{
+	const char *err=NULL;
+	err = script.GetFieldTable(Eventname);
+	if (!err)
+	{
+		Element.Event=Eventname;
+		std::string sType;
+		err = script.GetField("type",&sType,NULL,NULL);
+		ASSERT_MSG(!err, err);
+		
+		if (strcmp(sType.c_str(),"joystick_analog")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickAnalog;
+			JoyStick_Binder::JoyAxis_enum JoyAxis;
+			double dJoyAxis;
+			err = script.GetField("key", NULL, NULL,&dJoyAxis);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration
+			JoyAxis=(JoyStick_Binder::JoyAxis_enum)((int)dJoyAxis);
+			bool IsFlipped;
+			err = script.GetField("is_flipped", NULL, &IsFlipped,NULL);
+			ASSERT_MSG(!err, err);
+			double Multiplier;
+			err = script.GetField("multiplier", NULL, NULL,&Multiplier);
+			ASSERT_MSG(!err, err);
+			double FilterRange;
+			err = script.GetField("filter", NULL, NULL,&FilterRange);
+			ASSERT_MSG(!err, err);
+			bool IsSquared;
+			err = script.GetField("is_squared", NULL, &IsSquared,NULL);
+			ASSERT_MSG(!err, err);
+
+			Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &set=Element.Specifics.Analog;
+			set.JoyAxis=JoyAxis;
+			set.IsFlipped=IsFlipped;
+			set.Multiplier=Multiplier;
+			set.FilterRange=FilterRange;
+			set.IsSquared=IsSquared;
+			//joy.AddJoy_Analog_Default(JoyAxis,Eventname,IsFlipped,Multiplier,FilterRange,IsSquared,ProductName.c_str());
+		}
+		else if (strcmp(sType.c_str(),"joystick_button")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickButton;
+			size_t WhichButton;
+			double dWhichButton;
+			err = script.GetField("key", NULL, NULL,&dWhichButton);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
+			WhichButton=(JoyStick_Binder::JoyAxis_enum)((int)dWhichButton-1);
+			bool useOnOff;
+			err = script.GetField("on_off", NULL, &useOnOff,NULL);
+			ASSERT_MSG(!err, err);
+			bool dbl_click=false;
+			err = script.GetField("dbl", NULL, &dbl_click,NULL); //This one can be blank
+			err=NULL;  //don't return an error (assert for rest)
+
+			Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &set=Element.Specifics.Button;
+			set.WhichButton=WhichButton;
+			set.useOnOff=useOnOff;
+			set.dbl_click=dbl_click;
+			//joy.AddJoy_Button_Default( WhichButton,Eventname,useOnOff,dbl_click,ProductName.c_str());
+		}
+		else assert(false);
+		script.Pop();
+	}
+	return err;
 }
 
 void UI_Controller::Flush_AI_BaseResources()
@@ -58,6 +134,11 @@ void UI_Controller::Flush_AI_BaseResources()
 UI_Controller::~UI_Controller()
 {
 	Set_AI_Base_Controller(NULL); //this will unbind the events and flush the AI resources
+}
+
+Framework::UI::JoyStick_Binder &UI_Controller::GetJoyStickBinder()
+{
+	return m_JoyStick_Binder;
 }
 
 void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
@@ -132,6 +213,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		//m_HUD_UI->m_addnText = m_ship->GetName();
 
 		m_ship->BindAdditionalEventControls(true);
+		m_ship->BindAdditionalUIControls(true,&GetJoyStickBinder());
 	}
 }
 

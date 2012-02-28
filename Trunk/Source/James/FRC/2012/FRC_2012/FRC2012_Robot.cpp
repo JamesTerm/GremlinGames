@@ -717,6 +717,36 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_Flippers.BindAdditionalEventControls(Bind);
 }
 
+void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)
+{
+	Framework::UI::JoyStick_Binder *p_joy=(Framework::UI::JoyStick_Binder *)joy;
+	const FRC_2012_Robot_Properties::Controls_List &robot_controls=m_RobotProps.Get_RobotControls();
+	for (size_t i=0;i<robot_controls.size();i++)
+	{
+		const FRC_2012_Robot_Properties::Control_Props &control=robot_controls[i];
+
+		for (size_t j=0;j<control.EventList.size();j++)
+		{
+			const UI_Controller::Controller_Element_Properties &element=control.EventList[j];
+			switch (element.Type)
+			{
+			case UI_Controller::Controller_Element_Properties::eJoystickAnalog:
+				{
+					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
+					p_joy->AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
+						analog.FilterRange,analog.IsSquared,control.Controller.c_str());
+				}
+				break;
+			case UI_Controller::Controller_Element_Properties::eJoystickButton:
+				{
+					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
+					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
+				}
+				break;
+			}
+		}
+	}
+}
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Properties														*/
@@ -984,6 +1014,48 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
+		err = script.GetFieldTable("controls");
+		if (!err)
+		{
+			const char * const Events[] = 
+			{
+				"Joystick_SetCurrentSpeed_2","Analog_Turn",
+				"Turret_SetCurrentVelocity","Turret_SetPotentiometerSafety",
+				"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
+				"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
+				"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
+				"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
+				"Flippers_Advance","Flippers_Retract",
+				"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
+				"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
+				"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
+			};
+
+			//TODO we may use actual product names here, but this will be fine for wind river build
+			const char * const Controls[] =
+			{
+				"Joystick_1","Joystick_2","Joystick_3"
+			};
+
+			for (size_t i=0;i<_countof(Controls);i++)
+			{
+				err = script.GetFieldTable(Controls[i]);
+				if (!err)
+				{
+					Control_Props control;
+					control.Controller=Controls[i];
+					for (size_t j=0;j<_countof(Events);j++)
+					{
+						UI_Controller::Controller_Element_Properties element;
+						err=UI_Controller::ExtractControllerElementProperties(element,Events[j],script);
+						if (!err)
+							control.EventList.push_back(element);
+					}
+					m_RobotControls.push_back(control);
+					script.Pop();
+				}
+			}
+		}
 		script.Pop();
 	}
 }
@@ -1037,12 +1109,14 @@ Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t Key
 	return Get_ShootBalls(Robot);
 }
 
+//TODO Nuke this class upon successful testing of the LUA controls
+
   /***********************************************************************************************************************************/
  /*														FRC_2012_UI_Controller														*/
 /***********************************************************************************************************************************/
 #undef __2011Joysticks__
 #undef __2012Joystick_with_LogitechOperator__
-#define __2012ActualControls__
+#undef __2012ActualControls__
 
 #undef __AirFlo__
 #undef __UsingXTerminator__
