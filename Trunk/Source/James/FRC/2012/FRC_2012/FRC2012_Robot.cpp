@@ -621,9 +621,14 @@ void FRC_2012_Robot::SetLowGear(bool on)
 {
 	m_SetLowGear=on;
 	SetBypassPosAtt_Update(true);
+	m_Turret.SetBypassPos_Update(true);
+	m_PitchRamp.SetBypassPos_Update(true);
+
 	//Now for some real magic with the properties!
 	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
 	SetBypassPosAtt_Update(false);
+	m_Turret.SetBypassPos_Update(false);
+	m_PitchRamp.SetBypassPos_Update(false);
 
 	m_RobotControl->OpenSolenoid(eUseLowGear,on);
 }

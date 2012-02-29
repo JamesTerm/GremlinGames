@@ -179,7 +179,7 @@ void Rotary_Linear::PosDisplacementCallback(double posDisplacement_m)
 void Rotary_Linear::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
-	if (m_UsingPotentiometer)
+	if ((m_UsingPotentiometer)&&(!GetBypassPos_Update()))
 	{
 		m_PIDController.Reset();
 		m_RobotControl->Reset_Rotary(m_InstanceIndex);
