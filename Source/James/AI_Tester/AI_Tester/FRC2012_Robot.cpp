@@ -1162,6 +1162,24 @@ Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t Key
 	return Get_ShootBalls(Robot);
 }
 
+Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex)
+{
+	//TODO ramp
+	Robot->Set_Auton_PresetPosition(KeyIndex);
+	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
+	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
+	Fire *FireOn=new Fire(*Robot,true);
+	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
+	Fire *FireOff=new Fire(*Robot,false);
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(FireOff);
+	MainGoal->AddSubgoal(goal_waitforballs);
+	MainGoal->AddSubgoal(FireOn);
+	MainGoal->AddSubgoal(goal_waitforturret);
+	return MainGoal;
+}
+
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
 /***********************************************************************************************************************************/
