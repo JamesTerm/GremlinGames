@@ -10,6 +10,7 @@ class Entity1D
 		double m_Dimension;
 		double m_Position;
 		std::string m_Name;
+		bool m_BypassPos_Update;  //used to preserve pos during a ResetPos() call
 	public:
 		Entity1D(const char EntityName[]);
 
@@ -29,6 +30,9 @@ class Entity1D
 		virtual double GetPos_m() const {return m_Position;}
 		//This is used when a sensor need to correct for the actual position
 		void SetPos_m(double value) {m_Position=value;}
+		//Be sure to always set this back to false!
+		void SetBypassPos_Update(bool bypass) {m_BypassPos_Update=bypass;}
+		bool GetBypassPos_Update() const {return m_BypassPos_Update;}
 	protected: 
 		///This gives derived class the ability to manipulate the displacement
 		/// \ret true if this is to be used and manipulated, false uses the default displacement
