@@ -357,6 +357,7 @@ const double c_CourtLength=Feet2Meters(54);
 const double c_CourtWidth=Feet2Meters(27);
 const double c_HalfCourtLength=c_CourtLength/2.0;
 const double c_HalfCourtWidth=c_CourtWidth/2.0;
+const FRC_2012_Robot::Vec2D c_BridgeDimensions=FRC_2012_Robot::Vec2D(Inches2Meters(48),Inches2Meters(88)); //width x length
 
 const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
@@ -1164,15 +1165,43 @@ Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t Key
 
 Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex)
 {
-	//TODO ramp
 	Robot->Set_Auton_PresetPosition(KeyIndex);
 	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
 	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
 	Fire *FireOn=new Fire(*Robot,true);
 	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
 	Fire *FireOff=new Fire(*Robot,false);
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+
+	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
+	Goal_Ship_MoveToPosition *goal_drive_2=NULL;
+	if (RampIndex != (size_t)-1)
+	{
+		const double YPad=Inches2Meters(5); //establish our Y being 5 inches from the ramp
+		const double Y = (c_BridgeDimensions[1] / 2.0) + YPad;
+		double X;
+		double X_Tweak;
+		switch (RampIndex)
+		{
+			case 0: X=0,X_Tweak=0; break;
+			case 1: X=-(c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak=-(c_HalfCourtWidth+1.9); break;
+			case 2: X= (c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak= (c_HalfCourtWidth+1.9); break;
+		}
+		WayPoint wp;
+		wp.Position[0]=X;
+		wp.Position[1]=Y;
+		wp.Power=1.0;
+		goal_drive_2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp);
+		wp.Position[1]= (Robot->GetPos_m()[1] + Y) / 2.0;  //mid point on the Y so it can straighten out
+		wp.Position[0]=  X_Tweak;
+		goal_drive_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,false,false,0.01); //don't stop on this one
+	}
 	//Inserted in reverse since this is LIFO stack list
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	if (goal_drive_1)
+	{
+		MainGoal->AddSubgoal(goal_drive_2);
+		MainGoal->AddSubgoal(goal_drive_1);
+	}
 	MainGoal->AddSubgoal(FireOff);
 	MainGoal->AddSubgoal(goal_waitforballs);
 	MainGoal->AddSubgoal(FireOn);
