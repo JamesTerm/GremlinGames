@@ -51,7 +51,7 @@ void Entity1D::TimeChange(double dTime_s)
 
 Entity2D::Entity2D(const char EntityName[]) : 
 	m_PosAtt_Read(&m_PosAtt_Buffers[0]),m_PosAtt_Write(&m_PosAtt_Buffers[1]),m_DefaultPos(Vec2D(0,0)),m_DefaultAtt(0.0),m_eventMap(NULL),
-	m_Dimensions(1.0,1.0),m_Name(EntityName),m_BypassPosAtt_Update(false)
+	m_Dimensions(1.0,1.0),m_Name(EntityName),m_BypassPosAtt_Update(false),m_Physics(((PosAtt *)m_PosAtt_Read.get())->m_att_r)
 {
 	ResetPos();
 }
