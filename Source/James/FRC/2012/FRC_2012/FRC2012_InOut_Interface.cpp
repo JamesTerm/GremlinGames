@@ -320,7 +320,9 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
-			result=m_Turret_Encoder.GetDistance();
+			//We start out wound around so we'll add Pi to get correct reading
+			//result=m_Turret_Encoder.GetDistance();
+			result=NormalizeRotation2(m_Turret_Encoder.GetDistance() + Pi);
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			//TODO research i2c's

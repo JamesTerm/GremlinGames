@@ -63,8 +63,6 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		Controls_List m_RobotControls;
 };
 
-class FRC_2012_Goals;
-
 class FRC_2012_Robot : public Tank_Robot
 {
 	public:
@@ -229,6 +227,7 @@ class FRC_2012_Robot : public Tank_Robot
 	public:
 		BallConveyorSystem &GetBallConveyorSystem();
 		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
+		void Set_Auton_PresetPosition(size_t index);
 		void SetTarget(Targets target);
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);

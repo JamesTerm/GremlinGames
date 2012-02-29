@@ -59,6 +59,11 @@ class Ship_1D_Properties : public Entity1D_Properties
 		double m_MinRange,m_MaxRange;
 		Ship_Type m_ShipType;
 		bool m_UsingRange;
+	public:
+		//These are for testing purposes only (do not use)
+		void SetMinRange(double MinRange) {m_MinRange=MinRange;}
+		void SetMaxRange(double MaxRange) {m_MaxRange=MaxRange;}
+		void SetUsingRange(bool UsingRange) {m_UsingRange=UsingRange;}
 };
 
 class Entity2D;
