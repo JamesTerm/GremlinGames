@@ -29,7 +29,6 @@
 #include "FRC2012_Robot.h"
 #include "FRC2012_Camera.h"
 #include "Common/InOut_Interface.h"
-#include "FRC2012_Goals.h"
 
 
 
