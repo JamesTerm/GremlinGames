@@ -711,21 +711,37 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			FRC_2012_Robot *Robot=dynamic_cast<FRC_2012_Robot *>(game.GetEntity("Robot2012"));
 			if (Robot)
 			{
+				const int AutonomousValue=str_2[0]?atoi(str_2):2;
+				const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
 				Goal *oldgoal=Robot->ClearGoal();
 				if (oldgoal)
 					delete oldgoal;
 
-				Goal *goal=NULL;
-				const int AutonomousValue=str_2[0]?atoi(str_2):2;
-				switch (AutonomousValue)
+				if (DoAutonomous)
 				{
-				case 1:		goal=FRC_2012_Goals::Get_ShootBalls_WithPreset(Robot,0); break;
-				case 2:		goal=FRC_2012_Goals::Get_ShootBalls_WithPreset(Robot,1); break;
-				case 3:		goal=FRC_2012_Goals::Get_ShootBalls_WithPreset(Robot,2); break;
+					//For this year we'll break up into 3 set pair of buttons (at least until vision is working)
+					//First set is the key, second the target, and last the ramps.  Once vision is working we can
+					//optionally remove key
+					const size_t Key_Selection=   (AutonomousValue >> 0) & 3;
+					const size_t Target_Selection=(AutonomousValue >> 2) & 3;
+					const size_t Ramp_Selection=  (AutonomousValue >> 4) & 3;
+					//Translate... the index is center left right, but we want right, left, and center
+					const size_t KeyTable[4] = {(size_t)-1,2,1,0};
+					const size_t Key=KeyTable[Key_Selection];
+					//We'll want to have no buttons also represent the top target to compensate for user error (should always have a target!)
+					const size_t TargetTable[4] = {0,2,1,0};
+					const size_t Target=TargetTable[Target_Selection];
+					const size_t Ramp=KeyTable[Ramp_Selection];
+					//Just to be safe check (if they had the other buttons selected)
+					if (Key!=(size_t)-1)
+					{
+						Goal *goal=NULL;
+						goal=FRC_2012_Goals::Get_FRC2012_Autonomous(Robot,Key,Target,Ramp);
+						if (goal)
+							goal->Activate(); //now with the goal(s) loaded activate it
+						Robot->SetGoal(goal);
+					}
 				}
-				if (goal)
-					goal->Activate(); //now with the goal(s) loaded activate it
-				Robot->SetGoal(goal);
 			}
 			else
 				printf("Robot not found\n");
