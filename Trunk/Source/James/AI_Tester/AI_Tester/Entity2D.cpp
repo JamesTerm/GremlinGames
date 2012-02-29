@@ -9,7 +9,7 @@ const double Pi2=M_PI*2.0;
  /*																	Entity1D														*/
 /***********************************************************************************************************************************/
 
-Entity1D::Entity1D(const char EntityName[]) : m_Dimension(1.0),m_Position(0.0),m_Name(EntityName)
+Entity1D::Entity1D(const char EntityName[]) : m_Dimension(1.0),m_Position(0.0),m_Name(EntityName),m_BypassPos_Update(false)
 {
 	ResetPos();
 }
@@ -29,7 +29,8 @@ void Entity1D::ResetPos()
 {
 	//CancelAllControls();
 	m_Physics.ResetVectors();
-	m_Position=0.0;
+	if (!m_BypassPos_Update)
+		m_Position=0.0;
 }
 
 void Entity1D::TimeChange(double dTime_s)
