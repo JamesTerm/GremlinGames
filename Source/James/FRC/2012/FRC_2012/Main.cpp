@@ -30,7 +30,6 @@
 #include "FRC2012_Robot.h"
 #include "Common/InOut_Interface.h"
 #include "FRC2012_InOut_Interface.h"
-#include "FRC2012_Goals.h"
 
 const bool c_UseDefaultControls=false;
 
