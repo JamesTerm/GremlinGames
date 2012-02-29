@@ -287,6 +287,7 @@ class FRC_2012_Goals
 	public:
 		static Goal *Get_ShootBalls(FRC_2012_Robot *Robot);
 		static Goal *Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex);
+		static Goal *Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
 	private:
 		class Fire : public AtomicGoal
 		{
