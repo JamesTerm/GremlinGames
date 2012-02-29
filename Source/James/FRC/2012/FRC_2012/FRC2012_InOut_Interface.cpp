@@ -38,7 +38,7 @@
 
 #undef __DisableMotorControls__
 #undef  __EnablePrintfDumps__
-#define __DisableCompressor__
+#undef __DisableCompressor__
 
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
@@ -50,8 +50,7 @@ void FRC_2012_Robot_Control::ResetPos()
 	//Enable this code if we have a compressor 
 	m_Compress.Stop();
 	//Allow driver station to control if they want to run the compressor
-	//TODO determine button to use for compressor
-	if (DriverStation::GetInstance()->GetDigitalIn(7))
+	if (DriverStation::GetInstance()->GetDigitalIn(8))
 	{
 		printf("RobotControl reset compressor\n");
 		m_Compress.Start();
