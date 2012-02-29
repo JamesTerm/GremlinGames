@@ -665,6 +665,13 @@ void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 	}
 }
 
+void FRC_2012_Robot::Set_Auton_PresetPosition(size_t index)
+{
+	SetPresetPosition(index,true);
+	SetAttitude(Pi);
+	m_Turret.SetPos_m(Pi);
+}
+
 void FRC_2012_Robot::SetTarget(Targets target)
 {
 	m_Target=target;
@@ -1157,6 +1164,6 @@ Goal *FRC_2012_Goals::Get_ShootBalls(FRC_2012_Robot *Robot)
 
 Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex)
 {
-	Robot->SetPresetPosition(KeyIndex,true);
+	Robot->Set_Auton_PresetPosition(KeyIndex);
 	return Get_ShootBalls(Robot);
 }
