@@ -66,6 +66,13 @@ TestShip = {
 			c31={p=1.0, x=1.0}, c32={p=1.0, x=1.0}, c33={p=1.0, x=1.0},
 		},
 		
+		auton =
+		{
+			ramp_left  ={x_in=0, y_in=0 },
+			ramp_right ={x_in=0, y_in=0 },
+			ramp_center={x_in=0, y_in=0 }
+		},
+		
 		turret =
 		{
 			is_closed='yes',				--It is closed loop when feedback has been properly calibrated
