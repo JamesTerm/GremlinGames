@@ -32,6 +32,13 @@ public:
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
 	size_t PowerVelocity_DisplayRow;
+
+	struct Autonomous_Properties
+	{
+		Vec2D RampLeft_ErrorCorrection_Offset;
+		Vec2D RampRight_ErrorCorrection_Offset;
+		Vec2D RampCenter_ErrorCorrection_Offset;
+	} Autonomous_Props;
 };
 
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
@@ -231,6 +238,7 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
 		void Set_Auton_PresetPosition(size_t index);
 		void SetTarget(Targets target);
+		const FRC_2012_Robot_Properties &GetRobotProps() const;
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -310,7 +318,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 {
 	public:
 		FRC_2012_Robot_Control();
-		const FRC_2012_Robot_Properties &GetRobotProps() {return m_RobotProps;}
+		const FRC_2012_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual bool GetBoolSensorState(size_t index);

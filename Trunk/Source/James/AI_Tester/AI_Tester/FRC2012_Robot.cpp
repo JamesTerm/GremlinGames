@@ -587,6 +587,11 @@ void FRC_2012_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
 }
 
+const FRC_2012_Robot_Properties &FRC_2012_Robot::GetRobotProps() const
+{
+	return m_RobotProps;
+}
+
 void FRC_2012_Robot::SetTargetingValue(double Value)
 {
 	//TODO determine final scaler factor for the pitch (may want to make this a property)
@@ -899,6 +904,11 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 			}
 		}
 
+		FRC_2012_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
+		auton.RampLeft_ErrorCorrection_Offset=
+		auton.RampRight_ErrorCorrection_Offset=
+		auton.RampCenter_ErrorCorrection_Offset=Vec2D(0.0,0.0);
+
 		m_FRC2012RobotProps=props;
 	}
 	{
@@ -933,7 +943,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	}
 }
 
-const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,size_t index)
+const char *ProcessVec2D(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,Vec2d &Dest)
 {
 	const char *err;
 	typedef FRC_2012_Robot_Properties::Vec2D Vec2D;
@@ -968,8 +978,20 @@ const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Scri
 		}
 	}
 	ASSERT_MSG(!err, err);
-	m_FRC2012RobotProps.PresetPositions[index]=Vec2D(width,c_HalfCourtLength-length);  //x,y  where x=width
+	Dest=Vec2D(width,length);  //x,y  where x=width
 	script.Pop();
+	return err;
+}
+
+const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,size_t index)
+{
+	const char *err;
+	typedef FRC_2012_Robot_Properties::Vec2D Vec2D;
+	Vec2D PresetPosition;
+	err=ProcessVec2D(m_FRC2012RobotProps,script,PresetPosition);
+	ASSERT_MSG(!err, err);
+	PresetPosition[1]=c_HalfCourtLength-PresetPosition[1];
+	m_FRC2012RobotProps.PresetPositions[index]=PresetPosition;  //x,y  where x=width
 	return err;
 }
 
@@ -1071,7 +1093,34 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			}
 			script.Pop();
 		}
-
+		err = script.GetFieldTable("auton");
+		if (!err)
+		{
+			err = script.GetFieldTable("ramp_left");
+			if (!err)
+			{
+				Vec2D OffsetPosition;
+				err=ProcessVec2D(m_FRC2012RobotProps,script,OffsetPosition);
+				ASSERT_MSG(!err, err);
+				m_FRC2012RobotProps.Autonomous_Props.RampLeft_ErrorCorrection_Offset=OffsetPosition;
+			}
+			err = script.GetFieldTable("ramp_right");
+			if (!err)
+			{
+				Vec2D OffsetPosition;
+				err=ProcessVec2D(m_FRC2012RobotProps,script,OffsetPosition);
+				ASSERT_MSG(!err, err);
+				m_FRC2012RobotProps.Autonomous_Props.RampRight_ErrorCorrection_Offset=OffsetPosition;
+			}
+			err = script.GetFieldTable("ramp_center");
+			if (!err)
+			{
+				Vec2D OffsetPosition;
+				err=ProcessVec2D(m_FRC2012RobotProps,script,OffsetPosition);
+				ASSERT_MSG(!err, err);
+				m_FRC2012RobotProps.Autonomous_Props.RampCenter_ErrorCorrection_Offset=OffsetPosition;
+			}
+		}
 		err = script.GetFieldTable("controls");
 		if (!err)
 		{
@@ -1170,6 +1219,7 @@ Goal *FRC_2012_Goals::Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t Key
 
 Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex)
 {
+	const FRC_2012_Robot_Props::Autonomous_Properties &auton=Robot->GetRobotProps().GetFRC2012RobotProps().Autonomous_Props;
 	Robot->Set_Auton_PresetPosition(KeyIndex);
 	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
 	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
@@ -1182,14 +1232,26 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	if (RampIndex != (size_t)-1)
 	{
 		const double YPad=Inches2Meters(5); //establish our Y being 5 inches from the ramp
-		const double Y = (c_BridgeDimensions[1] / 2.0) + YPad;
+		double Y = (c_BridgeDimensions[1] / 2.0) + YPad;
 		double X;
 		double X_Tweak;
 		switch (RampIndex)
 		{
-			case 0: X=0,X_Tweak=0; break;
-			case 1: X=-(c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak=-(c_HalfCourtWidth+1.9); break;
-			case 2: X= (c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak= (c_HalfCourtWidth+1.9); break;
+			case 0: 
+				X=0,X_Tweak=0; 
+				X+=auton.RampCenter_ErrorCorrection_Offset[0];
+				Y+=auton.RampCenter_ErrorCorrection_Offset[1];
+				break;
+			case 1: 
+				X=-(c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak=-(c_HalfCourtWidth+1.9); 
+				X+=auton.RampLeft_ErrorCorrection_Offset[0];
+				Y+=auton.RampLeft_ErrorCorrection_Offset[1];
+				break;
+			case 2: 
+				X= (c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak= (c_HalfCourtWidth+1.9); 
+				X+=auton.RampRight_ErrorCorrection_Offset[0];
+				Y+=auton.RampRight_ErrorCorrection_Offset[1];
+				break;
 		}
 		WayPoint wp;
 		wp.Position[0]=X;
