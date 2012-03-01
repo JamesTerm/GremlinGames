@@ -355,16 +355,16 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
 			break;
 		case FRC_2012_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,11," d=%.2f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
 			break;
 	}
 	#endif

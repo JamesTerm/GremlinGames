@@ -71,6 +71,9 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 		//TODO factor in velocity once we have our ball velocity (to solve for time)
 	}
 	__super::TimeChange(dTime_s);
+	#ifdef __DebugLUA__
+	Dout(m_pParent->m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	#endif
 }
 
 //This will make the scale to half with a 0.1 dead zone
@@ -131,6 +134,9 @@ void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle);
 	}
 	__super::TimeChange(dTime_s);
+	#ifdef __DebugLUA__
+	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	#endif
 }
 
 void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
@@ -334,6 +340,9 @@ void FRC_2012_Robot::Flippers::TimeChange(double dTime_s)
 		SetCurrentLinearAcceleration(m_Advance?ACCEL:-BRAKE);
 
 	__super::TimeChange(dTime_s);
+	#ifdef __DebugLUA__
+	Dout(m_pParent->m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	#endif
 }
 
 void FRC_2012_Robot::Flippers::BindAdditionalEventControls(bool Bind)
