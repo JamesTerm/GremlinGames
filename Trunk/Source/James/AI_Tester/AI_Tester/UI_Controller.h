@@ -32,7 +32,7 @@ class UI_Controller
 			Dir_Right = 1,
 		};
 
-		UI_Controller(AI_Base_Controller *base_controller=NULL);
+		UI_Controller(AI_Base_Controller *base_controller=NULL,bool AddJoystickDefaults=true);
 		virtual ~UI_Controller();
 
 		///This is the most important method, as we must have a ship to control
@@ -204,7 +204,7 @@ class UI_Controller_GameClient : public UI_GameClient
 	public:
 		UI_Controller_GameClient();
 		~UI_Controller_GameClient();
-		virtual void SetControlledEntity(Entity2D* newEntity);
+		virtual void SetControlledEntity(Entity2D* newEntity,bool AddJoystickDefaults=true);
 		virtual void AboutTo_RemoveEntity(Entity2D *Entity) {if (Entity==m_controlledEntity) SetControlledEntity(NULL);}
 	private:
 		//The one, the only!

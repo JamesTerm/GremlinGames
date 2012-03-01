@@ -177,7 +177,7 @@ void UI_Controller::Init_AutoPilotControls()
 
 
 //! TODO: Use the script to grab the head position to provide the HUD
-UI_Controller::UI_Controller(AI_Base_Controller *base_controller) : 
+UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
 	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_CruiseSpeed(0.0),
 	/*m_hud_connected(false),*/
@@ -186,50 +186,49 @@ UI_Controller::UI_Controller(AI_Base_Controller *base_controller) :
 	ResetPos();
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
 	m_LastSliderTime[0]=m_LastSliderTime[1]=0.0;
+
 	// Hard code these key bindings at first
 	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
 	JoyStick_Binder &joy = MainWindow::GetMainWindow()->GetJoystick();
 	kbm.AddKeyBindingR(true, "Ship.TryFireMainWeapon", osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON);
-	joy.AddJoy_Button_Default(0,"Ship.TryFireMainWeapon");
-	joy.AddJoy_Button_Default(1,"Missile.Launch");
-	// We can now use double-tap to fire the afterburners (for when we have them)
 	kbm.AddKeyBindingR(true, "RequestAfterburner", GG_Framework::Base::Key('w', GG_Framework::Base::Key::DBL));
 	kbm.AddKeyBindingR(true, "Thrust", GG_Framework::Base::Key('w'));
-	joy.AddJoy_Button_Default(2,"Thrust");
 	kbm.AddKeyBindingR(true, "Brake", 's');
-	joy.AddJoy_Button_Default(3,"Brake");
 	kbm.AddKeyBindingR(false, "Stop", 'x');
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eSlider1,"Joystick_SetCurrentSpeed");
-
 	kbm.AddKeyBindingR(true, "Turn_R", 'd');
 	kbm.AddKeyBindingR(true, "Turn_L", 'a');
-
 	kbm.AddKeyBindingR(false, "UseMouse", '/');
 	//I would like to keep this macro case to easily populate my defaults
-#if 0
+	#if 0
 	//for testing
 	kbm.AddKeyBindingR(true, "Test1", 'n');
 	kbm.AddKeyBindingR(true, "Test2", 'm');
-#endif
-
-	//These are not assigned by default but can configured to use via xml preferences
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.01,true);
-	//hmmm could use this to thrust
-	//joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Analog_Pitch",true,1.0,0.01,true);
-
+	#endif
 	kbm.AddKeyBindingR(true, "StrafeRight", 'e');
 	kbm.AddKeyBindingR(true, "StrafeLeft", 'q');
-
 	kbm.AddKeyBindingR(false, "UserResetPos", ' ');
 	kbm.AddKeyBindingR(false, "Slide", 'g');
-	joy.AddJoy_Button_Default(6,"Slide",false);
-
 	kbm.AddKeyBindingR(true, "StrafeLeft", osgGA::GUIEventAdapter::KEY_Left);
 	kbm.AddKeyBindingR(true, "StrafeRight", osgGA::GUIEventAdapter::KEY_Right);
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
+	kbm.AddKeyBindingR(false, "ToggleAutoPilot", 'z');
 	//kbm.AddKeyBindingR(false, "ShowHUD", osgGA::GUIEventAdapter::KEY_F4);
 
-	kbm.AddKeyBindingR(false, "ToggleAutoPilot", 'z');
+	if (AddJoystickDefaults)
+	{
+		joy.AddJoy_Button_Default(0,"Ship.TryFireMainWeapon");
+		joy.AddJoy_Button_Default(1,"Missile.Launch");
+		// We can now use double-tap to fire the afterburners (for when we have them)
+		joy.AddJoy_Button_Default(2,"Thrust");
+		joy.AddJoy_Button_Default(3,"Brake");
+		joy.AddJoy_Analog_Default(JoyStick_Binder::eSlider1,"Joystick_SetCurrentSpeed");
+		//These are not assigned by default but can configured to use via xml preferences
+		joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.01,true);
+		//hmmm could use this to thrust
+		//joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Analog_Pitch",true,1.0,0.01,true);
+		joy.AddJoy_Button_Default(6,"Slide",false);
+		joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
+	}
+
 	Init_AutoPilotControls();
 }
 
