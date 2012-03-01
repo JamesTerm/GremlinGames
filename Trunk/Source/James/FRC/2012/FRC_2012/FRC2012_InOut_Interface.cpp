@@ -275,18 +275,18 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-	case FRC_2012_Robot::eTurret:
-		Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,1,"tu_v=%.2f",Voltage);
-		break;
-	case FRC_2012_Robot::ePitchRamp:
-		Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"pi_v=%.2f",Voltage);
-		break;
-	case FRC_2012_Robot::ePowerWheels:
-		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
-		break;
-	case FRC_2012_Robot::eFlippers:
-		Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,1,"fl_v=%.2f",Voltage);
-		break;
+		case FRC_2012_Robot::eTurret:
+			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,1,"t=%.2f",Voltage);
+			break;
+		case FRC_2012_Robot::ePitchRamp:
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
+			break;
+		case FRC_2012_Robot::ePowerWheels:
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
+			break;
+		case FRC_2012_Robot::eFlippers:
+			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
+			break;
 	}
 	#endif
 }
