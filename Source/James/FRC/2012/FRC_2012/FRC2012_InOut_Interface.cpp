@@ -320,8 +320,9 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	{
 		case FRC_2012_Robot::eTurret:
 			//We start out wound around so we'll add Pi to get correct reading
+			//In may tests the threshold favors being wound counter-clockwise (not sure why) so it's -Pi
 			//result=m_Turret_Encoder.GetDistance();
-			result=NormalizeRotation2(m_Turret_Encoder.GetDistance() + Pi);
+			result=NormalizeRotation2(m_Turret_Encoder.GetDistance() - Pi);
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			//TODO research i2c's
