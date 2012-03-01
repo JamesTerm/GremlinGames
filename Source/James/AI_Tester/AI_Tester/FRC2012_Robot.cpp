@@ -1484,7 +1484,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	{
 		case FRC_2012_Robot::eTurret:
 		
-			result=NormalizeRotation2(m_Turret_Pot.GetPotentiometerCurrentPosition() + Pi);
+			result=NormalizeRotation2(m_Turret_Pot.GetPotentiometerCurrentPosition() - Pi);
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 			break;
 		case FRC_2012_Robot::ePitchRamp:
