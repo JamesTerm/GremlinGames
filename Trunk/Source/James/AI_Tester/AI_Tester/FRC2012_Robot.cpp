@@ -1129,6 +1129,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				ASSERT_MSG(!err, err);
 				m_FRC2012RobotProps.Autonomous_Props.RampCenter_ErrorCorrection_Offset=OffsetPosition;
 			}
+			script.Pop();
 		}
 		err = script.GetFieldTable("controls");
 		if (!err)
@@ -1160,7 +1161,10 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				if (!err)
 				{
 					Control_Props control;
-					control.Controller=Controls[i];
+					//Wind River uses generic name, and AI tester uses product name
+					//control.Controller=Controls[i];
+					err=script.GetField("control", &control.Controller, NULL, NULL);
+
 					for (size_t j=0;j<_countof(Events);j++)
 					{
 						UI_Controller::Controller_Element_Properties element;
