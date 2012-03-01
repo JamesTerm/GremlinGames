@@ -581,7 +581,7 @@ UI_Controller_GameClient::~UI_Controller_GameClient()
 	m_UI_Controller=NULL;
 }
 
-void UI_Controller_GameClient::SetControlledEntity(Entity2D* newEntity)
+void UI_Controller_GameClient::SetControlledEntity(Entity2D* newEntity,bool AddJoystickDefaults)
 {
 	//printf("UI_GameClient::SetControlledEntity\n");
 	if (newEntity != m_controlledEntity)
@@ -615,7 +615,7 @@ void UI_Controller_GameClient::SetControlledEntity(Entity2D* newEntity)
 
 		//We set this when we need it
 		if (!m_UI_Controller)
-			m_UI_Controller= new UI_Controller;
+			m_UI_Controller= new UI_Controller(NULL,AddJoystickDefaults);
 
 		// JAMES: Not sure of the error handling here.  Can Try_SetUIController fail? if so, why do Set_AI_Base_Controller
 		// Only to have to set it back to NULL?  What does it mean to set it to NULL?  Is this an invalid state?

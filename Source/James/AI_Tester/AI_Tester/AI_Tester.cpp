@@ -665,7 +665,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("FRC2012Robot.lua","FRC2012Robot",Commands::e2012);
 			Entity2D *TestEntity=_command.AddRobot("Robot2012","FRC2012Robot",str_3,str_4,str_5);
-			game.SetControlledEntity(TestEntity);
+			game.SetControlledEntity(TestEntity,false);
 		}
 		break;
 	case eRobot2011:
