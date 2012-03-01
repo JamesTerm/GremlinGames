@@ -31,7 +31,7 @@ using namespace std;
 class GUIThread : public GG_Framework::Base::ThreadedClass
 {
 	public:
-		GUIThread() : m_Viewer(NULL),m_IsBeingDestroyed(false)
+		GUIThread(bool useUserPrefs=true) : m_Viewer(NULL),m_IsBeingDestroyed(false),m_UseUserPrefs(useUserPrefs)
 		{
 			Run();
 		}
@@ -56,7 +56,7 @@ class GUIThread : public GG_Framework::Base::ThreadedClass
 		void tryRun() 
 		{
 			assert(!m_Viewer);
-			m_Viewer= new Viewer;
+			m_Viewer= new Viewer(m_UseUserPrefs);
 			m_Viewer->Start();
 			//printf("Exiting GUI Thread\n");
 			if (!m_IsBeingDestroyed)
@@ -69,6 +69,7 @@ class GUIThread : public GG_Framework::Base::ThreadedClass
 	private:
 		Viewer *m_Viewer;
 		bool m_IsBeingDestroyed;
+		bool m_UseUserPrefs;
 };
 
 void createHUDText(osg::Group *rootNode,osg::Geode* geode );
@@ -248,11 +249,11 @@ void DisplayHelp()
 		);
 }
 
-void SetUpUI(GUIThread *&UI_thread,Viewer_Callback_Interface *ViewerCallback)
+void SetUpUI(GUIThread *&UI_thread,Viewer_Callback_Interface *ViewerCallback,bool useUserPrefs=true)
 {
 	//Check if we have an thread instance
 	if (!UI_thread)
-		UI_thread=new GUIThread;
+		UI_thread=new GUIThread(useUserPrefs);
 
 	assert(UI_thread);
 
@@ -864,7 +865,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 
 #define MAX_PATH          260
 #pragma warning(disable : 4996)
-void CommandLineInterface()
+void CommandLineInterface(bool useUserPrefs=true)
 {
 	UI_Controller_GameClient game;
 
@@ -874,7 +875,7 @@ void CommandLineInterface()
 	GUIThread *UI_thread=NULL;
 	#else
 	GUIThread *UI_thread=NULL;
-	SetUpUI(UI_thread,&game);
+	SetUpUI(UI_thread,&game,useUserPrefs);
 	#endif
 	cout << endl;
 	cout << "Ready." << endl;
@@ -1098,5 +1099,8 @@ void CommandLineInterface()
 int main(int argc, char** argv)
 {
 	DisplayHelp();
-	CommandLineInterface();
+	bool useUserPrefs=true;
+	if ((argc==2)&&((argv[1])[0]=='0'))
+		useUserPrefs=false;
+	CommandLineInterface(useUserPrefs);
 }

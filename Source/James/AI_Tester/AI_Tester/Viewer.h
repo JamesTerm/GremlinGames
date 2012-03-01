@@ -3,7 +3,7 @@
 class Viewer
 {
 	public:
-		Viewer() :m_Callback(NULL),m_UseSyntheticTimeDeltas(false) {}
+		Viewer(bool useUserPrefs=true) :m_Callback(NULL),m_UseSyntheticTimeDeltas(false),m_UseUserPrefs(useUserPrefs) {}
 		void SetCallbackInterface(Viewer_Callback_Interface *callback) {m_Callback=callback;}
 		void Start();
 		void SetUseSyntheticTimeDeltas(bool UseSyntheticTimeDeltas) {m_UseSyntheticTimeDeltas=UseSyntheticTimeDeltas;}
@@ -28,4 +28,5 @@ class Viewer
 		osg::ref_ptr <ViewerCallback> m_ViewerCallback;
 		//This will make all time deltas the same length (ideal for debugging)
 		bool m_UseSyntheticTimeDeltas;
+		bool m_UseUserPrefs;
 };

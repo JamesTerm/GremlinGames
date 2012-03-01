@@ -28,7 +28,7 @@ void Viewer::Start()
 	// Create a new scope, so all auto-variables will be deleted when they fall out
 	{
 		// Create the singletons, These must be instantiated before the scene manager too - Rick
-		m_MainWin = new MainWindow(true, 0.0, 0, 0, true);
+		m_MainWin = new MainWindow(true, 0.0, 0, 0, m_UseUserPrefs);
 		MainWindow &mainWin=*m_MainWin;
 
 		// We are going to use this single timer to fire against
