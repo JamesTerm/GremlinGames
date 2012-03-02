@@ -32,12 +32,59 @@ using namespace std;
 namespace Base=Framework::Base;
 namespace Scripting=Framework::Scripting;
 
+
+
+//This will make the scale to half with a 0.1 dead zone
+double PositionToVelocity_Tweak(double Value)
+{
+	const double FilterRange=0.1;
+	const double Multiplier=0.5;
+	const bool isSquared=true;
+	double Temp=fabs(Value); //take out the sign... put it back in the end
+	Temp=(Temp>=FilterRange) ? Temp-FilterRange:0.0; 
+
+	Temp=Multiplier*(Temp/(1.0-FilterRange)); //apply scale first then 
+	if (isSquared) Temp*=Temp;  //square it if it is squared
+
+	//Now to restore the sign
+	Value=(Value<0.0)?-Temp:Temp;
+	return Value;
+}
+
   /***********************************************************************************************************************************/
  /*														FRC_2012_Robot::Turret														*/
 /***********************************************************************************************************************************/
+
 FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0)
+	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0),m_LastIntendedPosition(0.0)
 {
+}
+
+void FRC_2012_Robot::Turret::SetIntendedPosition_Plus(double Position)
+{
+	if (GetIsUsingPotentiometer())
+	{
+		if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
+			return;
+		bool IsTargeting=(m_pParent->m_IsTargeting);
+		if ((!IsTargeting) || m_pParent->m_DisableTurretTargetingValue)
+		{
+			m_LastIntendedPosition=Position; //grab it before all the conversions
+			Position=-Position; 
+			//By default this goes from -1 to 1.0 
+			//first get the range from 0 - 1
+			double positive_range = (Position * 0.5) + 0.5;
+			//positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=GetMinRange();
+			const double maxRange=GetMaxRange();
+			const double Scale=(maxRange-minRange);
+			Position=(positive_range * Scale) + minRange;
+			//DOUT5("Test=%f",RAD_2_DEG(Position));
+			SetIntendedPosition(Position);
+		}
+	}
+	else
+		Turret_SetRequestedVelocity(PositionToVelocity_Tweak(Position));   //allow manual use of same control
 }
 
 void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
@@ -46,11 +93,13 @@ void FRC_2012_Robot::Turret::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::Turret_SetRequestedVelocity);
+		em->EventValue_Map["Turret_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetIntendedPosition_Plus);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
 	else
 	{
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2012_Robot::Turret::Turret_SetRequestedVelocity);
+		em->EventValue_Map["Turret_SetIntendedPosition"].Remove(*this, &FRC_2012_Robot::Turret::SetIntendedPosition_Plus);
 		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Remove(*this, &FRC_2012_Robot::Turret::SetPotentiometerSafety);
 	}
 }
@@ -74,23 +123,6 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	#ifdef __DebugLUA__
 	Dout(m_pParent->m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
-}
-
-//This will make the scale to half with a 0.1 dead zone
-double PositionToVelocity_Tweak(double Value)
-{
-	const double FilterRange=0.1;
-	const double Multiplier=0.5;
-	const bool isSquared=true;
-	double Temp=fabs(Value); //take out the sign... put it back in the end
-	Temp=(Temp>=FilterRange) ? Temp-FilterRange:0.0; 
-
-	Temp=Multiplier*(Temp/(1.0-FilterRange)); //apply scale first then 
-	if (isSquared) Temp*=Temp;  //square it if it is squared
-
-	//Now to restore the sign
-	Value=(Value<0.0)?-Temp:Temp;
-	return Value;
 }
 
   /***********************************************************************************************************************************/
@@ -1143,7 +1175,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			const char * const Events[] = 
 			{
 				"Joystick_SetCurrentSpeed_2","Analog_Turn",
-				"Turret_SetCurrentVelocity","Turret_SetPotentiometerSafety",
+				"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 				"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
 				"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
 				"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
