@@ -121,6 +121,7 @@ class FRC_2012_Robot : public Tank_Robot
 			private:
 				FRC_2012_Robot * const m_pParent;
 				double m_Velocity; //adds all axis velocities then assigns on the time change
+				double m_LastIntendedPosition;
 			public:
 				Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
@@ -128,6 +129,8 @@ class FRC_2012_Robot : public Tank_Robot
 			protected:
 				//typedef Rotary_Linear __super;
 				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
+				void SetIntendedPosition_Plus(double Position);
+
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
 		};
