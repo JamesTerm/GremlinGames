@@ -127,11 +127,15 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 {
 	//TODO set the SetDistancePerPulse() for turret
 	ResetPos();
+	const double EncoderPulseRate=(1.0/360.0);
+	m_Turret_Encoder.SetDistancePerPulse(EncoderPulseRate),m_PowerWheel_Encoder.SetDistancePerPulse(EncoderPulseRate);
+	m_Turret_Encoder.Start(),m_PowerWheel_Encoder.Start();
 }
 
 FRC_2012_Robot_Control::~FRC_2012_Robot_Control() 
 {
 	//m_Compress.Stop();
+	m_Turret_Encoder.Stop(),m_PowerWheel_Encoder.Stop();
 }
 
 void FRC_2012_Robot_Control::Reset_Rotary(size_t index)
