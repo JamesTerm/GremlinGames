@@ -89,13 +89,13 @@ enum DigitalIO_SlotList
 	eEncoder_DriveLeft_B,
 	eEncoder_Turret_A,
 	eEncoder_Turret_B,
-	eEncoder_PowerWheel_A,
-	eEncoder_PowerWheel_B,
+	eLimit_PitchLeft,  
+	eLimit_PitchRight,
 	eSensor_IntakeConveyor,
 	eSensor_MiddleConveyor,
 	eSensor_FireConveyor,
-	eLimit_PitchLeft,  
-	eLimit_PitchRight,
+	eEncoder_PowerWheel_A,
+	eEncoder_PowerWheel_B,
 	eLimit_Compressor
 };
 
@@ -188,12 +188,12 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifndef __DisableMotorControls__
 	switch (index)
 	{
-	case FRC_2012_Robot::eTurret:			m_Turret_Victor.Set((float)Voltage);		break;
+	case FRC_2012_Robot::eTurret:			m_Turret_Victor.Set((float)-Voltage);		break;
 	case FRC_2012_Robot::ePowerWheels:		m_PowerWheel_Victor.Set((float)Voltage);	break;
 	case FRC_2012_Robot::eFlippers:			m_Flipper_Victor.Set((float)Voltage);		break;
-	case FRC_2012_Robot::eLowerConveyor:	m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
-	case FRC_2012_Robot::eMiddleConveyor:	m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
-	case FRC_2012_Robot::eFireConveyor:		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage));	break;
+	case FRC_2012_Robot::eLowerConveyor:	m_LowerConveyor_Relay.Set(TranslateToRelay(-Voltage));	break;
+	case FRC_2012_Robot::eMiddleConveyor:	m_MiddleConveyor_Relay.Set(TranslateToRelay(-Voltage));	break;
+	case FRC_2012_Robot::eFireConveyor:		m_FireConveyor_Relay.Set(TranslateToRelay(-Voltage));	break;
 	case FRC_2012_Robot::ePitchRamp:
 		//TODO research i2c's
 		break;
@@ -297,6 +297,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 
 bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
 {
+	return false; //remove once we have this working
 	bool ret=false;
 	switch (index)
 	{
