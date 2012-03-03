@@ -5,7 +5,12 @@ struct Rotary_Props
 	double PID[3]; //p,i,d
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
-	bool IsOpen;  //This should always be false once control is fully functional
+	enum LoopStates
+	{
+		eNone, //Will never read them (ideal for systems that do not have any encoders)
+		eOpen,  //Will read them but never alter velocities
+		eClosed, //Will attempt to match predicted velocity to actual velocity
+	} LoopState; //This should always be false once control is fully functional
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 };
 
