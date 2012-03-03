@@ -225,7 +225,7 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 			//first get the range from 0 - 1
 			double positive_range = (Velocity * 0.5) + 0.5;
 			positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=5.0 * Pi2;  //TODO determine slowest speed to use
+			const double minRange=28.0 * Pi2;  //TODO determine slowest speed to use
 			const double maxRange=MAX_SPEED;
 			const double Scale=(maxRange-minRange) / MAX_SPEED;
 			const double Offset=minRange/MAX_SPEED;
