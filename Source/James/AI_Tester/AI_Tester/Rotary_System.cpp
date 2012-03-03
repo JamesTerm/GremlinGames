@@ -48,7 +48,7 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
 	m_CalibratedScaler=MAX_SPEED;
-	if (m_Rotary_Props.IsOpen==true)
+	if ((m_Rotary_Props.LoopState==Rotary_Props::eNone)||(m_Rotary_Props.LoopState==Rotary_Props::eOpen))
 		SetPotentiometerSafety(true);
 }
 
@@ -245,8 +245,18 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 	m_PIDController.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController.Enable();
 	m_CalibratedScaler=MAX_SPEED;
-	if (m_Rotary_Props.IsOpen==true)
+	switch (m_Rotary_Props.LoopState)
+	{
+	case Rotary_Props::eNone:
 		SetEncoderSafety(true);
+		break;
+	case Rotary_Props::eOpen:
+		m_EncoderState=ePassive;
+		break;
+	case Rotary_Props::eClosed:
+		m_EncoderState=eActive;
+		break;
+	}
 }
 
 void Rotary_Angular::TimeChange(double dTime_s)
@@ -429,7 +439,7 @@ void Rotary_Properties::Init()
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
-	props.IsOpen=false;  //Always false when control is fully functional
+	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	m_RoteryProps=props;
 }
@@ -472,7 +482,9 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
-				m_RoteryProps.IsOpen=true;
+				m_RoteryProps.LoopState=Rotary_Props::eOpen;
+			else if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_RoteryProps.LoopState=Rotary_Props::eClosed;
 		}
 		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
 		if (!err)
