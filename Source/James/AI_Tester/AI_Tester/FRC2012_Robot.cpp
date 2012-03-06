@@ -214,7 +214,7 @@ void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 			//first get the range from 0 - 1
 			double positive_range = (Velocity * 0.5) + 0.5;
 			positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=5.0 * Pi2;  //TODO determine slowest speed to use
+			const double minRange=GetMinRange();
 			const double maxRange=MAX_SPEED;
 			const double Scale=(maxRange-minRange) / MAX_SPEED;
 			const double Offset=minRange/MAX_SPEED;
@@ -886,7 +886,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Properties::eSimpleMotor,
-	false,0.0,0.0,	//No limit ever!
+	false,28.0 * Pi2,0.0,	//No limit ever!  (but we are using the min range as a way to set minimum speed)
 	true //This is angular
 	),
 	m_ConveyorProps(
