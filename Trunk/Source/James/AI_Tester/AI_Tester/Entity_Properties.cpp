@@ -121,8 +121,18 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 		double range;
 		err=script.GetField("min_range_deg", NULL, NULL, &range);
 		if (!err) m_MinRange=DEG_2_RAD(range);
+		else
+		{
+			err=script.GetField("min_range", NULL, NULL, &range);
+			if (!err) m_MinRange=range;
+		}
 		err=script.GetField("max_range_deg", NULL, NULL, &range);
 		if (!err) m_MaxRange=DEG_2_RAD(range);
+		else
+		{
+			err=script.GetField("max_range", NULL, NULL, &range);
+			if (!err) m_MaxRange=range;
+		}
 		std::string sTest;
 		//TODO determine why the bool type fails
 		//script.GetField("using_range", NULL, &m_UsingRange, NULL);
