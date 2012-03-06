@@ -119,7 +119,8 @@ MainRobot = {
 			accel=200.0,						--These are only needed if we bind keys for power in meters per second
 			brake=200.0,
 			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=200			--The wheel may some time to ramp up
+			max_accel_reverse=200,			--The wheel may some time to ramp up
+			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
 		flippers =
 		{
