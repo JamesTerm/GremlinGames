@@ -89,13 +89,13 @@ enum DigitalIO_SlotList
 	eEncoder_DriveLeft_B,
 	eEncoder_Turret_A,
 	eEncoder_Turret_B,
-	eLimit_PitchLeft,  
-	eLimit_PitchRight,
+	eEncoder_PowerWheel_A,
+	eEncoder_PowerWheel_B,
 	eSensor_IntakeConveyor,
 	eSensor_MiddleConveyor,
 	eSensor_FireConveyor,
-	eEncoder_PowerWheel_A,
-	eEncoder_PowerWheel_B,
+	eLimit_PitchLeft,  
+	eLimit_PitchRight,
 	eLimit_Compressor
 };
 
