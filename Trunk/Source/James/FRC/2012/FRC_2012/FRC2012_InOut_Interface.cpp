@@ -105,6 +105,8 @@ enum SolenoidSlotList
 	eSolenoid_NoZeroUsed,
 	eSolenoid_UseLowGear_On,
 	eSolenoid_UseLowGear_Off,
+	eSolenoid_FlipperDown,
+	eSolenoid_FlipperUp,
 	eSolenoid_RampDeployment_On,
 	eSolenoid_RampDeployment_Off,
 };
@@ -116,6 +118,7 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_Turret_Victor(eVictor_Turret),m_PowerWheel_Victor(eVictor_PowerWheel),m_Flipper_Victor(eVictor_Flipper),
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
 	m_OnLowGear(eSolenoid_UseLowGear_On),m_OffLowGear(eSolenoid_UseLowGear_Off),
+	m_FlipperDown(eSolenoid_FlipperDown),m_FlipperUp(eSolenoid_FlipperUp),
 	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off),
 	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor),
 	//Sensors
@@ -388,6 +391,10 @@ void FRC_2012_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	case FRC_2012_Robot::eRampDeployment:
 		printf("RampDeployment=%d\n",Open);
 		m_OnRampDeployment.Set(Open),m_OnRampDeployment.Set(!Open);
+		break;
+	case FRC_2012_Robot::eFlipperDown:
+		printf("FlipperDown=%d\n",Open);
+		m_FlipperDown.Set(Open),m_FlipperUp.Set(!Open);
 		break;
 	}
 }
