@@ -119,8 +119,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 
 	if (m_UsingEncoders)
 	{
-		double control_left=0.0,control_right=0.0;
 		#ifdef __UseScalerPID__
+		double control_left=0.0,control_right=0.0;
 		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
 		//allow the scaler to normalize if it need to start up again.
 		if (((LeftVelocity * Encoder_LeftVelocity) > 0.0) || IsZero(Encoder_LeftVelocity) )
@@ -337,7 +337,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.WheelDiameter=c_WheelDiameter;
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
-	props.Feedback_DiplayRow=-1;  //Only assigned to a row during calibration of feedback sensor
+	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	m_TankRobotProps=props;
