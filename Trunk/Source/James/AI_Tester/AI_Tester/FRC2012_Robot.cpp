@@ -776,6 +776,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetDefensiveKeyOff);
+		em->EventOnOff_Map["Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2012_Robot::SetFlipperPneumatic);
 
 		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
@@ -797,6 +798,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2012_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2012_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2012_Robot::SetDefensiveKeyOff);
+		em->EventOnOff_Map["Flippers_Solenoid"]  .Remove(*this, &FRC_2012_Robot::SetFlipperPneumatic);
 
 		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);

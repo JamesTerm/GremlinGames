@@ -96,6 +96,7 @@ class FRC_2012_Robot : public Tank_Robot
 		enum SolenoidDevices
 		{
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
+			eFlipperDown,		//If true flipper is down
 			eRampDeployment
 		};
 
@@ -285,6 +286,8 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
 
+		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
+		
 		void SetPreset1() {SetPresetPosition(0);}
 		void SetPreset2() {SetPresetPosition(1);}
 		void SetPreset3() {SetPresetPosition(2);}
