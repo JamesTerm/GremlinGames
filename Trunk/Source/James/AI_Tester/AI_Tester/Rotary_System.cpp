@@ -78,16 +78,15 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	{
 		if (m_LastTime!=0.0)
 		{
-			double LastSpeed=fabs(CurrentVelocity);  //This is last because the time change has not happened yet
 			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
 			PotentiometerVelocity=Displacement/m_LastTime;
-			double PotentiometerSpeed=fabs(PotentiometerVelocity);
-
-			double control=0.0;
 			#ifdef __UseScalerPID__
+			double LastSpeed=fabs(CurrentVelocity);  //This is last because the time change has not happened yet
+			double PotentiometerSpeed=fabs(PotentiometerVelocity);
+			double control=0.0;
 			//only adjust calibration when both velocities are in the same direction, or in the case where the potentiometer is stopped which will
 			//allow the scaler to normalize if it need to start up again.
 			if (((CurrentVelocity * PotentiometerVelocity) > 0.0) || IsZero(PotentiometerSpeed) )
@@ -332,9 +331,8 @@ void Rotary_Angular::TimeChange(double dTime_s)
 		//Unlike linear there is no displacement measurement therefore no need to check GetLockShipToPosition()
 		if (m_EncoderState==eActive)
 		{
-			double control=0.0;
-
 			#ifdef __UseScalerPID__
+			double control=0.0;
 			//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
 			//allow the scaler to normalize if it need to start up again.
 			if (((CurrentVelocity * Encoder_Velocity) > 0.0) || IsZero(Encoder_Velocity) )
