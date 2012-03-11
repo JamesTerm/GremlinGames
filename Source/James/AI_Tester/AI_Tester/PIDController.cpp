@@ -99,11 +99,13 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 		//if (((m_totalError + m_error) * m_I < m_maximumOutput) && ((m_totalError + m_error) * m_I > m_minimumOutput))
 		//	m_totalError += m_error;
 
-		double TotalErrorCheck=(m_totalError + m_error) * m_I;
+		const double error_delta=m_error * dTime_s;  //For I accumulation we must take time into consideration
+
+		const double TotalErrorCheck=(m_totalError + error_delta) * m_I;
 		if (TotalErrorCheck < m_maximumOutput)
 		{
 			if (TotalErrorCheck > m_minimumOutput)
-				m_totalError += m_error;
+				m_totalError += error_delta;
 			else //less than the minimum output
 			{
 				//accumulate by an error which would equal the minimum output

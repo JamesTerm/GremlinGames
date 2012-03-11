@@ -137,6 +137,7 @@ void Potentiometer_Tester2::Initialize(const Ship_1D_Properties *props)
 
 void Potentiometer_Tester2::UpdatePotentiometerVoltage(double Voltage)
 {
+	//Voltage=GetTweakedVoltage(Voltage);
 	if (!m_Bypass)
 		SetRequestedVelocity(Voltage*m_PotentiometerProps.GetMaxSpeed());
 	else
