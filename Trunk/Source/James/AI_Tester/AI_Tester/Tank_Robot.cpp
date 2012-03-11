@@ -25,10 +25,19 @@ const double Pi2=M_PI*2.0;
 Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Drive(EntityName), m_RobotControl(robot_control),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
-	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),m_VoltageOverride(false),m_UseDeadZoneSkip(true)
+	#ifdef __UseScalerPID__
+	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),
+	m_VoltageOverride(false),
+	#else
+	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
+	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),
+	#endif
+	m_UseDeadZoneSkip(true)
 {
 	//m_UsingEncoders=true; //testing
+	#ifdef __UseScalerPID__
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
+	#endif
 }
 
 void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -51,7 +60,11 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
+	#ifdef __UseScalerPID__
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
+	#else
+	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
+	#endif
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
 }
@@ -61,7 +74,11 @@ void Tank_Robot::ResetPos()
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
+	#ifdef __UseScalerPID__
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
+	#else
+	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
+	#endif
 	m_UseDeadZoneSkip=true;
 }
 
@@ -103,6 +120,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	if (m_UsingEncoders)
 	{
 		double control_left=0.0,control_right=0.0;
+		#ifdef __UseScalerPID__
 		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
 		//allow the scaler to normalize if it need to start up again.
 		if (((LeftVelocity * Encoder_LeftVelocity) > 0.0) || IsZero(Encoder_LeftVelocity) )
@@ -115,7 +133,13 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 			control_right=-m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
 			m_CalibratedScaler_Right=MAX_SPEED+control_right;
 		}
-
+		#else
+		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
+		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
+		//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
+		m_ErrorOffset_Left=fabs(m_ErrorOffset_Left)>0.01?m_ErrorOffset_Left:0.0;
+		m_ErrorOffset_Right=fabs(m_ErrorOffset_Right)>0.01?m_ErrorOffset_Right:0.0;
+		#endif
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
 		//ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
 		//DOUT5("p=%f e=%f d=%f cs=%f",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
@@ -124,6 +148,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
+		#ifdef __UseScalerPID__
 		#ifdef __DebugLUA__
 		if (m_TankRobotProps.PID_Console_Dump && (RightVelocity!=0.0))
 		{
@@ -134,10 +159,21 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 				printf("y=%f VO p=%f e=%f d=%f cs=%f\n",PosY,RightVelocity,Encoder_RightVelocity,fabs(RightVelocity)-fabs(Encoder_RightVelocity),m_CalibratedScaler_Right-MAX_SPEED);
 		}
 		#endif
+		#else
+		#ifdef __DebugLUA__
+		if (m_TankRobotProps.PID_Console_Dump && (Encoder_RightVelocity!=0.0))
+		{
+			double PosY=GetPos_m()[1];
+			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+		}
+		#endif
 
+		#endif
 		//For most cases we do not need the dead zone skip
 		m_UseDeadZoneSkip=false;
-		
+
+		//For now I'm taking this out... I think it will matter on the ramp to be able to apply slight voltages!
+		#ifdef __UseScalerPID__
 		//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
 		//also only apply for lower speeds to avoid choppyness during the cruising phase
 		if ((RightVelocity*LeftVelocity > 0.0) && (fabs(Encoder_RightVelocity)<0.5))
@@ -145,6 +181,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 			//both sides of velocities are going in the same direction we only need to test one side to determine if it is accelerating
 			m_UseDeadZoneSkip=(RightVelocity<0) ? (RightVelocity<Encoder_RightVelocity) :  (RightVelocity>Encoder_RightVelocity); 
 		}
+		#endif
 	}	
 
 	//Update the physics with the actual velocity
@@ -189,12 +226,14 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	return ret;
 }
 
+#ifdef __UseScalerPID__
 void Tank_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
 	if ((m_UsingEncoders)&&(VelocityToUse==0.0)&&(m_rotDisplacement_rad==0.0))
 			m_VoltageOverride=true;
 }
+#endif
 
 //I'm leaving this as a template for derived classes... doing it this way is efficient in that it can use all constants
 const double c_rMotorDriveForward_DeadZone=0.0;
@@ -226,9 +265,12 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
 	double LeftVoltage,RightVoltage;
+
+	#ifdef __UseScalerPID__
 	if (m_VoltageOverride)
 		LeftVoltage=RightVoltage=0;
 	else
+	#endif
 	{
 		{
 			#if 0
@@ -236,14 +278,25 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
 			#endif
+
+			#ifdef __UseScalerPID__
 			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
+			#else
+			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/MAX_SPEED,RightVoltage=(RightVelocity+m_ErrorOffset_Right)/MAX_SPEED;
+			#endif
 
 			//In teleop always square as it feels right and gives more control to the user
+
+			#ifdef __UseScalerPID__
 			//for autonomous (i.e. using encoders) the natural distribution on acceleration will give the best results
 			//we can use the m_UseDeadZoneSkip to determine if we are accelerating, more important we must square on
 			//deceleration to improve our chance to not overshoot!
 			if ((!m_UsingEncoders) || (!m_UseDeadZoneSkip))
+			#else
+			//Once the new PID system is working the deceleration does not need to worry about overshooting
+			if (!m_UsingEncoders)
+			#endif
 			{
 				LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
 				//Clip the voltage as it can become really high values when squaring

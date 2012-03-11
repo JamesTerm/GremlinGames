@@ -1,4 +1,5 @@
 #pragma once
+#undef __UseScalerPID__
 
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
 class Tank_Drive_Control_Interface
@@ -55,7 +56,9 @@ class Tank_Robot : public Tank_Drive
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		#ifdef __UseScalerPID__
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
+		#endif
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
@@ -63,9 +66,15 @@ class Tank_Robot : public Tank_Drive
 		//typedef  Tank_Drive __super;
 		Tank_Drive_Control_Interface * const m_RobotControl;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
+		#ifdef __UseScalerPID__
 		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
+		#else
+		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration
+		#endif
 		bool m_UsingEncoders,m_IsAutonomous;
+		#ifdef __UseScalerPID__
 		bool m_VoltageOverride;  //when true will kill voltage
+		#endif
 		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
