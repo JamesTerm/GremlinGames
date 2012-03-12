@@ -29,6 +29,7 @@ struct Tank_Robot_Props
 	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
 	double LeftPID[3]; //p,i,d
 	double RightPID[3]; //p,i,d
+	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)

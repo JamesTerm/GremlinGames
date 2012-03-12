@@ -137,8 +137,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
 		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
 		//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
-		m_ErrorOffset_Left=fabs(m_ErrorOffset_Left)>0.01?m_ErrorOffset_Left:0.0;
-		m_ErrorOffset_Right=fabs(m_ErrorOffset_Right)>0.01?m_ErrorOffset_Right:0.0;
+		m_ErrorOffset_Left=fabs(m_ErrorOffset_Left)>m_TankRobotProps.PrecisionTolerance?m_ErrorOffset_Left:0.0;
+		m_ErrorOffset_Right=fabs(m_ErrorOffset_Right)>m_TankRobotProps.PrecisionTolerance?m_ErrorOffset_Right:0.0;
 		#endif
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
 		//ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
@@ -340,6 +340,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
+	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	m_TankRobotProps=props;
 }
 
@@ -396,6 +397,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
+		script.GetField("tolerance", NULL, NULL, &m_TankRobotProps.PrecisionTolerance);
 
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
