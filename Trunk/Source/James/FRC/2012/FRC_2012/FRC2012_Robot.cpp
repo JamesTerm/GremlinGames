@@ -787,7 +787,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2012_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2012_Robot::SetDefensiveKeyOff);
-		em->EventOnOff_Map["Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2012_Robot::SetFlipperPneumatic);
+		em->EventOnOff_Map["Robot_Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2012_Robot::SetFlipperPneumatic);
 
 		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2012_Robot::SetLowGearOn);
@@ -798,6 +798,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetPreset2"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset2);
 		em->Event_Map["Robot_SetPreset3"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset3);
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPresetPOV);
+		em->EventOnOff_Map["Robot_SetUseEncoders"].Subscribe(ehl, *this, &FRC_2012_Robot::Robot_SetUseEncoders);
 	}
 	else
 	{
@@ -809,7 +810,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2012_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2012_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2012_Robot::SetDefensiveKeyOff);
-		em->EventOnOff_Map["Flippers_Solenoid"]  .Remove(*this, &FRC_2012_Robot::SetFlipperPneumatic);
+		em->EventOnOff_Map["Robot_Flippers_Solenoid"]  .Remove(*this, &FRC_2012_Robot::SetFlipperPneumatic);
 
 		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &FRC_2012_Robot::SetLowGear);
 		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2012_Robot::SetLowGearOn);
@@ -820,6 +821,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetPreset2"]  .Remove(*this, &FRC_2012_Robot::SetPreset2);
 		em->Event_Map["Robot_SetPreset3"]  .Remove(*this, &FRC_2012_Robot::SetPreset3);
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2012_Robot::SetPresetPOV);
+		em->EventOnOff_Map["Robot_SetUseEncoders"]  .Remove(*this, &FRC_2012_Robot::Robot_SetUseEncoders);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);

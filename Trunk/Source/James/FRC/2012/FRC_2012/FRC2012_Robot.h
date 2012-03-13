@@ -294,6 +294,8 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetDefensiveKeyPosition(double NormalizedDistance) {m_DefensiveKeyNormalizedDistance=NormalizedDistance;}
 		void SetDefensiveKeyOn();
 		void SetDefensiveKeyOff() {m_Target=eCenterHighGoal;}
+
+		void Robot_SetUseEncoders(bool on) {if (m_SetLowGear) SetUseEncoders(on);}
 };
 
 class FRC_2012_Goals
