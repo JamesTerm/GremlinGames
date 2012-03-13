@@ -12,6 +12,8 @@ struct Rotary_Props
 		eClosed, //Will attempt to match predicted velocity to actual velocity
 	} LoopState; //This should always be false once control is fully functional
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
+	//Only supported in RoteryAngular
+	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.  Recommended not to use I to avoid thrashing
 };
 
 class Rotary_System : public Ship_1D
@@ -98,19 +100,16 @@ class Rotary_Angular : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
-		#ifdef __UseScalerPID__
+
+		//We have both ways to implement PID calibration depending on if we have aggressive stop property enabled
 		double m_CalibratedScaler; //used for calibration
-		#else
 		double m_ErrorOffset; //used for calibration
-		#endif
+
 		double m_MaxSpeedReference; //used for calibration
 		double m_EncoderVelocity;  //cache for later use
 		double m_RequestedVelocity_Difference;
 		EncoderUsage m_EncoderState; //dynamically able to change state
 		const EncoderUsage m_EncoderCachedState; //This is a fall-back state upon recovery of the safety state
-		#ifdef __UseScalerPID__
-		bool m_VoltageOverride;  //when true will kill voltage
-		#endif
 	public:
 		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
 		IEvent::HandlerList ehl;
