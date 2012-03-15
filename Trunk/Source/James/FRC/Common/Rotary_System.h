@@ -2,6 +2,7 @@
 
 struct Rotary_Props
 {
+	double VoltageScalar;		//Used to handle reversed voltage wiring
 	//The gear reduction used when multiplied by the encoder RPS will equal the *Rotary System's* RPS
 	//Note: This is not necessarily the multiply to match the motor speed as there may be some gearing to the system as well
 	double EncoderToRS_Ratio;

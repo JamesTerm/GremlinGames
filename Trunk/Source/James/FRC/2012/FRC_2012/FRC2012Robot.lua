@@ -47,7 +47,8 @@ MainRobot = {
 		{p=1, i=0, d=0},					--These should always match, but able to be made different
 		
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.4			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		voltage_multiply=1.0				--May be reversed using -1.0
 	},
 	
 	robot_settings =
@@ -82,6 +83,7 @@ MainRobot = {
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
 			encoder_to_wheel_ratio=1.0,		--Used to calibrate encoder to physical turret angles should match readings 
+			voltage_multiply=-1.0,			--May be reversed using -1.0
 			max_speed=10,
 			accel=1.0,						--These are only needed if we bind keys for turret
 			brake=1.0,
@@ -114,6 +116,7 @@ MainRobot = {
 			{p=1, i=0, d=0},
 			tolerance=0.1,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=1.0,     --Just use the gearing ratios here
+			voltage_multiply=1.0,
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
@@ -145,6 +148,7 @@ MainRobot = {
 		{
 			--Note: there are no encoders here so is_closed is ignored
 			tolerance=0.01,					--we need good precision
+			voltage_multiply=-1.0,			--May be reversed
 			
 			max_speed=28,
 			accel=112,						--These are needed and should be high enough to grip without slip
@@ -179,7 +183,8 @@ MainRobot = {
 				
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.4			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+				voltage_multiply=1.0				--May be reversed using -1.0
 			}
 		},
 		controls =
