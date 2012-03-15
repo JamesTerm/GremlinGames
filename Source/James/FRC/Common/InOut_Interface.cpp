@@ -171,7 +171,9 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	//Dout(3, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
 	//printf("l=%.1f r=%.1f\n", LeftVoltage,RightVoltage);
 
-	m_RobotDrive.SetLeftRightMotorOutputs((float)(LeftVoltage),(float)(RightVoltage));
+	m_RobotDrive.SetLeftRightMotorOutputs(
+			(float)(LeftVoltage * m_TankRobotProps.VoltageScalar),
+			(float)(RightVoltage * m_TankRobotProps.VoltageScalar));
 }
 
 void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
