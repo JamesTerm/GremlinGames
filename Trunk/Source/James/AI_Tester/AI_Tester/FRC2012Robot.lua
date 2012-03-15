@@ -81,7 +81,7 @@ MainRobot = {
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
-			
+			encoder_to_wheel_ratio=1.0,		--Used to calibrate encoder to physical turret angles should match readings 
 			max_speed=10,
 			accel=1.0,						--These are only needed if we bind keys for turret
 			brake=1.0,
@@ -113,6 +113,7 @@ MainRobot = {
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.1,					--we need decent precision (this will depend on ramp up time too)
+			encoder_to_wheel_ratio=1.0,     --Just use the gearing ratios here
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
