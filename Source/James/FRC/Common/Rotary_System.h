@@ -2,6 +2,9 @@
 
 struct Rotary_Props
 {
+	//The gear reduction used when multiplied by the encoder RPS will equal the *Rotary System's* RPS
+	//Note: This is not necessarily the multiply to match the motor speed as there may be some gearing to the system as well
+	double EncoderToRS_Ratio;
 	double PID[3]; //p,i,d
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
