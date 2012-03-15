@@ -331,6 +331,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//In may tests the threshold favors being wound counter-clockwise (not sure why) so it's -Pi
 			//result=m_Turret_Encoder.GetDistance();
 			result=NormalizeRotation2(m_Turret_Encoder.GetDistance() - Pi);
+			result=result * m_RobotProps.GetTurretProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			//TODO research i2c's
@@ -338,6 +339,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2012_Robot::ePowerWheels:
 			#ifndef __DisableMotorControls__
 			result= m_PowerWheel_Encoder.GetRate();
+			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			#else
 			//This is temporary code to pacify using a closed loop, remove once we have real implementation
 			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();

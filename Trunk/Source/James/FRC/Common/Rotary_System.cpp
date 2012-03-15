@@ -487,6 +487,7 @@ void Rotary_Properties::Init()
 	Rotary_Props props;
 	memset(&props,0,sizeof(Rotary_Props));
 
+	props.EncoderToRS_Ratio=1.0;
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
@@ -506,11 +507,14 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 	//if (!err) 
 
 	{
+		//double EncoderToRS_Ratio;
 		//double PID[3]; //p,i,d
 		//double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 		//int Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 		//bool IsOpen;  //This should always be false once control is fully functional
 		//bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
+
+		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_RoteryProps.EncoderToRS_Ratio);
 		err = script.GetFieldTable("pid");
 		if (!err)
 		{
