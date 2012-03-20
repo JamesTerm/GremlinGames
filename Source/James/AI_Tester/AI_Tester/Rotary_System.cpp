@@ -287,8 +287,12 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 	m_Rotary_Props=Props->GetRoteryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 
+	//Originally we created a large enough number that can divide out the voltage and small enough to recover quickly,
+	//but this turned out to be problematic when using other rotary systems... therefore I am going to make them identical
+	//range, and consider the idea of making them controlled in LUA if there are problems with that.
+	//  [3/20/2012 Terminator]
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
-	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
+	const double InputRange=max(20.0,MAX_SPEED*0.875);  
 	m_PIDController.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController.Enable();
