@@ -345,6 +345,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.ReverseSteering=false;
 	m_TankRobotProps=props;
 }
 
@@ -424,6 +425,12 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_TankRobotProps.PID_Console_Dump=true;
 		}
+		err = script.GetField("reverse_steering",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.ReverseSteering=true;
+		}
 
 		script.Pop(); 
 	}
@@ -485,9 +492,18 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 {
 	double LeftVoltageToUse=min(LeftVoltage,1.0);
 	double RightVoltageToUse=min(RightVoltage,1.0);
-	m_LeftVoltage=LeftVoltageToUse;
-	m_RightVoltage=RightVoltageToUse;
-	m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse,RightVoltageToUse);
+	if (!m_TankRobotProps.ReverseSteering)
+	{
+		m_LeftVoltage=LeftVoltageToUse;
+		m_RightVoltage=RightVoltageToUse;
+		m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse,RightVoltageToUse);
+	}
+	else
+	{
+		m_LeftVoltage=RightVoltageToUse;
+		m_RightVoltage=LeftVoltageToUse;
+		m_Encoders.UpdateLeftRightVoltage(RightVoltageToUse,LeftVoltageToUse);
+	}
 	m_Encoders.TimeChange();   //have this velocity immediately take effect
 }
 

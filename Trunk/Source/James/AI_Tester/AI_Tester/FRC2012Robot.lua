@@ -48,7 +48,8 @@ MainRobot = {
 		
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply=1.0				--May be reversed using -1.0
+		voltage_multiply=1.0,				--May be reversed using -1.0
+		reverse_steering='no'
 	},
 	
 	robot_settings =
@@ -184,7 +185,8 @@ MainRobot = {
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=1.0				--May be reversed using -1.0
+				voltage_multiply=1.0,				--May be reversed using -1.0
+				reverse_steering='no'
 			}
 		},
 		controls =
