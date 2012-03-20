@@ -87,7 +87,7 @@ void Tank_Robot::ResetPos()
 	m_UseDeadZoneSkip=true;
 }
 
-void Tank_Robot::SetUseEncoders(bool UseEncoders) 
+void Tank_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition) 
 {
 	if (!UseEncoders)
 	{
@@ -95,10 +95,13 @@ void Tank_Robot::SetUseEncoders(bool UseEncoders)
 		{
 			//first disable it
 			m_UsingEncoders=false;
-			//Now to reset stuff
 			printf("Disabling encoders for %s\n",GetName().c_str());
-			ResetPos();
-			m_EncoderGlobalVelocity=Vec2d(0.0,0.0);
+			if (ResetPosition)
+			{
+				//Now to reset stuff
+				ResetPos();
+				m_EncoderGlobalVelocity=Vec2d(0.0,0.0);
+			}
 		}
 	}
 	else
@@ -106,9 +109,9 @@ void Tank_Robot::SetUseEncoders(bool UseEncoders)
 		if (!m_UsingEncoders)
 		{
 			m_UsingEncoders=true;
-			//setup the initial value with the potentiometers value
 			printf("Enabling encoders for %s\n",GetName().c_str());
-			ResetPos();
+			if (ResetPosition) //setup the initial value with the potentiometers value
+				ResetPos();
 		}
 	}
 }
