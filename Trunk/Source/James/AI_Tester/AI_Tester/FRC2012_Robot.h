@@ -297,7 +297,7 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetDefensiveKeyOn();
 		void SetDefensiveKeyOff() {m_Target=eCenterHighGoal;}
 
-		void Robot_SetUseEncoders(bool on) {if (m_SetLowGear) SetUseEncoders(on);}
+		void Robot_SetUseEncoders(bool on) {if (m_SetLowGear) SetUseEncoders(on,false);}
 };
 
 class FRC_2012_Goals
