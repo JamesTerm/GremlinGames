@@ -170,10 +170,18 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	//For now leave this disabled... should not need to script this
 	//Dout(3, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
 	//printf("l=%.1f r=%.1f\n", LeftVoltage,RightVoltage);
-
-	m_RobotDrive.SetLeftRightMotorOutputs(
-			(float)(LeftVoltage * m_TankRobotProps.VoltageScalar),
-			(float)(RightVoltage * m_TankRobotProps.VoltageScalar));
+	if (!m_TankRobotProps.ReverseSteering)
+	{
+		m_RobotDrive.SetLeftRightMotorOutputs(
+				(float)(LeftVoltage * m_TankRobotProps.VoltageScalar),
+				(float)(RightVoltage * m_TankRobotProps.VoltageScalar));
+	}
+	else
+	{
+		m_RobotDrive.SetLeftRightMotorOutputs(
+				(float)(RightVoltage * m_TankRobotProps.VoltageScalar),
+				(float)(LeftVoltage * m_TankRobotProps.VoltageScalar));
+	}
 }
 
 void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
