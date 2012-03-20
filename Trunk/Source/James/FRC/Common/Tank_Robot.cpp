@@ -350,6 +350,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.ReverseSteering=false;
 	m_TankRobotProps=props;
 }
 
@@ -428,6 +429,12 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_TankRobotProps.PID_Console_Dump=true;
+		}
+		err = script.GetField("reverse_steering",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.ReverseSteering=true;
 		}
 
 		script.Pop(); 

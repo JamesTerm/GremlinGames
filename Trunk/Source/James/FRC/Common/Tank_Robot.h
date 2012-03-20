@@ -34,6 +34,7 @@ struct Tank_Robot_Props
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
+	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
 };
 
 class Tank_Robot_UI;

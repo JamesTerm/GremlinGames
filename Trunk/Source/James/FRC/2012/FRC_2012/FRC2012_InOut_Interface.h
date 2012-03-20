@@ -53,7 +53,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
-		//Note: If the motors are reversed, this is where to fix the issue (see 2011)
+		//Note: If the motors are reversed, this is now solved in LUA
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
 	protected: //from Rotary Interface
