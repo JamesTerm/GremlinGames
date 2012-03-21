@@ -18,6 +18,7 @@ struct Rotary_Props
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 	//Only supported in RoteryAngular
 	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.  Recommended not to use I to avoid thrashing
+	bool SquareVoltage; //will square the voltage if true
 };
 
 class Rotary_System : public Ship_1D
