@@ -151,6 +151,10 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/MAX_SPEED;
 	#endif
 
+	//Square the voltage?
+	if (m_Rotary_Props.SquareVoltage)
+		Voltage*=Voltage;
+
 	//Keep voltage override disabled for simulation to test precision stability
 	//if (!m_VoltageOverride)
 	if (true)
@@ -362,6 +366,9 @@ void Rotary_Angular::TimeChange(double dTime_s)
 	//Either error offset or calibrated scaler will be used depending on the aggressive stop property, we need not branch this as
 	//they both can be represented in the same equation
 	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/m_CalibratedScaler;
+	//Square the voltage?
+	if (m_Rotary_Props.SquareVoltage)
+		Voltage*=Voltage;
 
 	//Keep voltage override disabled for simulation to test precision stability
 	//if (!m_VoltageOverride)
@@ -396,7 +403,7 @@ void Rotary_Angular::TimeChange(double dTime_s)
 
 	#ifdef __DebugLUA__
 	if (m_Rotary_Props.PID_Console_Dump && (Encoder_Velocity!=0.0))
-		printf("p=%.2f e=%.2f eo=%.2f cs=%.2f\n",CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler-MAX_SPEED);
+		printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler-MAX_SPEED);
 	#endif
 
 	m_RobotControl->UpdateRotaryVoltage(m_InstanceIndex,Voltage);
@@ -499,6 +506,7 @@ void Rotary_Properties::Init()
 	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is only for angular so false is a good default (must be explicit in script otherwise)
+	props.SquareVoltage=false;
 	m_RoteryProps=props;
 }
 
@@ -560,7 +568,12 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_RoteryProps.UseAggressiveStop=true;
 		}
-
+		err = script.GetField("square_voltage",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_RoteryProps.SquareVoltage=true;
+		}
 	}
 	__super::LoadFromScript(script);
 }
