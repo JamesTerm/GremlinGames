@@ -253,6 +253,12 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 }
 
+void FRC_2012_Robot::PowerWheels::ResetPos()
+{
+	m_IsRunning=false;
+	__super::ResetPos();
+}
+
   /***********************************************************************************************************************************/
  /*												FRC_2012_Robot::BallConveyorSystem													*/
 /***********************************************************************************************************************************/
@@ -271,6 +277,11 @@ void FRC_2012_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Ent
 	m_LowerConveyor.Initialize(em,props);
 	m_MiddleConveyor.Initialize(em,props);
 	m_FireConveyor.Initialize(em,props);
+}
+void FRC_2012_Robot::BallConveyorSystem::ResetPos() 
+{
+	m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();
+	m_ControlSignals.raw=0;
 }
 
 void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
