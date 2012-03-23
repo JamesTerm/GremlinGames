@@ -243,9 +243,9 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 		{
 			//convert linear velocity to angular velocity
 			double RPS=m_pParent->m_LinearVelocity / (Pi * GetDimension());
-			RPS*=2.0;  //For hooded shoot we'll have to move twice as fast
+			RPS*=(2.0 * m_pParent->m_PowerErrorCorrection);  //For hooded shoot we'll have to move twice as fast
 			SetRequestedVelocity(RPS * Pi2);
-			//DOUT5("v=%f rps=%f rad=%f",m_pParent->m_LinearVelocity * 3.2808399,RPS,RPS*Pi2);
+			//DOUT5("rps=%f rad=%f",RPS,RPS*Pi2);
 		}
 		else
 			SetRequestedVelocity(0);
@@ -495,8 +495,8 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	const double yc = (y * yc_TopHalf) + ((1.0-y) * yc_BottomHalf);
 
 	//Now to apply correction... for now we'll apply to the easiest pieces possible and change if needed
-	m_YawErrorCorrection=pc;
-	m_PowerErrorCorrection=yc;
+	m_YawErrorCorrection=yc;
+	m_PowerErrorCorrection=pc;
 	//DOUT(5,"pc=%f yc=%f x=%f y=%f",pc,yc,x,y);
 }
 
