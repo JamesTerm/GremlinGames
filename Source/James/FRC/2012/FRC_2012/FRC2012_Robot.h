@@ -158,6 +158,7 @@ class FRC_2012_Robot : public Tank_Robot
 				PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void ResetPos();
 			protected:
 				typedef Rotary_Angular __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
@@ -194,7 +195,7 @@ class FRC_2012_Robot : public Tank_Robot
 				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
 
-				void ResetPos() {m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();}
+				void ResetPos();
 				//Intercept the time change to send out voltage
 				void TimeChange(double dTime_s);
 				void BindAdditionalEventControls(bool Bind);
