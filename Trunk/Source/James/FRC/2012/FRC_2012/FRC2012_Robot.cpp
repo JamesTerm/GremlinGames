@@ -254,14 +254,20 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 		{
 			//convert linear velocity to angular velocity
 			double RPS=m_pParent->m_LinearVelocity / (Pi * GetDimension());
-			RPS*=2.0;  //For hooded shoot we'll have to move twice as fast
+			RPS*=(2.0 * m_pParent->m_PowerErrorCorrection);  //For hooded shoot we'll have to move twice as fast
 			SetRequestedVelocity(RPS * Pi2);
-			//DOUT5("v=%f rps=%f rad=%f",m_pParent->m_LinearVelocity * 3.2808399,RPS,RPS*Pi2);
+			//DOUT5("rps=%f rad=%f",RPS,RPS*Pi2);
 		}
 		else
 			SetRequestedVelocity(0);
 	}
 	__super::TimeChange(dTime_s);
+}
+
+void FRC_2012_Robot::PowerWheels::ResetPos()
+{
+	m_IsRunning=false;
+	__super::ResetPos();
 }
 
   /***********************************************************************************************************************************/
@@ -282,6 +288,11 @@ void FRC_2012_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Ent
 	m_LowerConveyor.Initialize(em,props);
 	m_MiddleConveyor.Initialize(em,props);
 	m_FireConveyor.Initialize(em,props);
+}
+void FRC_2012_Robot::BallConveyorSystem::ResetPos() 
+{
+	m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();
+	m_ControlSignals.raw=0;
 }
 
 void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
@@ -506,8 +517,8 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	const double yc = (y * yc_TopHalf) + ((1.0-y) * yc_BottomHalf);
 
 	//Now to apply correction... for now we'll apply to the easiest pieces possible and change if needed
-	m_YawErrorCorrection=pc;
-	m_PowerErrorCorrection=yc;
+	m_YawErrorCorrection=yc;
+	m_PowerErrorCorrection=pc;
 	//DOUT(5,"pc=%f yc=%f x=%f y=%f",pc,yc,x,y);
 }
 
