@@ -168,7 +168,7 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	#endif
 
 	//For now leave this disabled... should not need to script this
-	//Dout(3, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
+	Dout(2, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
 	//printf("l=%.1f r=%.1f\n", LeftVoltage,RightVoltage);
 	if (!m_TankRobotProps.ReverseSteering)
 	{
