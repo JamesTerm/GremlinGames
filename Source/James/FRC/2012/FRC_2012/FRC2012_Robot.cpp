@@ -1289,9 +1289,9 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	const FRC_2012_Robot_Props::Autonomous_Properties &auton=Robot->GetRobotProps().GetFRC2012RobotProps().Autonomous_Props;
 	Robot->Set_Auton_PresetPosition(KeyIndex);
 	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
-	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
+	//Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
 	Fire *FireOn=new Fire(*Robot,true);
-	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
+	Goal_Wait *goal_waitforballs=new Goal_Wait(15.0); //wait for balls
 	Fire *FireOff=new Fire(*Robot,false);
 
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
@@ -1339,6 +1339,6 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	MainGoal->AddSubgoal(FireOff);
 	MainGoal->AddSubgoal(goal_waitforballs);
 	MainGoal->AddSubgoal(FireOn);
-	MainGoal->AddSubgoal(goal_waitforturret);
+	//MainGoal->AddSubgoal(goal_waitforturret);
 	return MainGoal;
 }
