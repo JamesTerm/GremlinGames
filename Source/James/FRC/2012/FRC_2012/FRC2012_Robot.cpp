@@ -125,6 +125,12 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	#endif
 }
 
+void FRC_2012_Robot::Turret::ResetPos()
+{
+	__super::ResetPos();
+	SetPos_m(-Pi);  //It starts out backwards
+}
+
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
@@ -467,8 +473,9 @@ void FRC_2012_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 void FRC_2012_Robot::ResetPos()
 {
 	__super::ResetPos();
-	//This only matters if we do not have an axis assigned to targeting; otherwise it will be overridden
-	m_IsTargeting=true;
+	//This should be false to avoid any conflicts during a reset; however, if we want targeting any do not have an axis for it
+	//we can set to true
+	m_IsTargeting=false;
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
@@ -732,7 +739,7 @@ void FRC_2012_Robot::Set_Auton_PresetPosition(size_t index)
 {
 	SetPresetPosition(index,true);
 	SetAttitude(Pi);
-	m_Turret.SetPos_m(Pi);
+	m_Turret.SetPos_m(-Pi);
 }
 
 void FRC_2012_Robot::SetTarget(Targets target)
