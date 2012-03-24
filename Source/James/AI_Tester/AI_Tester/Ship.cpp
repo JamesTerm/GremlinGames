@@ -76,7 +76,9 @@ Ship_2D::~Ship_2D()
 void Ship_2D::ResetPos()
 {
 	__super::ResetPos();
-
+	//Setting this to true allows starting from an arbitrary position and it not auto adjust to the intended orientation
+	//for AI and Remote... they will implicitly clear this once the send the first intended orientation
+	m_LockShipHeadingToOrientation=true;
 	m_RequestedVelocity = 0.0;
 	//m_Last_AccDel = 0.0;
 	m_Last_RequestedVelocity=-1.0;
