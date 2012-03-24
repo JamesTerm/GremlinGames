@@ -89,8 +89,13 @@ class SetUp_Manager
 		void TimeChange(double dTime_s)
 		{
 			if (dTime_s==0.0) return; //avoid division by zero errors
-			if (!m_pUI->GetAutoPilot())
-				m_JoyBinder.UpdateJoyStick(dTime_s);
+			
+			//I put this if check to ensure joystick readings were not made but it appears I already have this logic in place
+			//when I start in auto pilot, so I need not do this here.  I do want to keep this for future reference... I believe it
+			//caused some implicit problems of variables that were set do to non-driving controls.
+			//if (!m_pUI->GetAutoPilot())
+			
+			m_JoyBinder.UpdateJoyStick(dTime_s);
 			//This is called implicitly within the robot (for ease of compatability with AI)
 			//m_Control.TimeChange(dTime_s);
 			m_pRobot->TimeChange(dTime_s);
