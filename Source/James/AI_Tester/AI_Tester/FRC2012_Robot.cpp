@@ -114,6 +114,12 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	#endif
 }
 
+void FRC_2012_Robot::Turret::ResetPos()
+{
+	__super::ResetPos();
+	SetPos_m(-Pi);  //It starts out backwards
+}
+
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
@@ -721,7 +727,7 @@ void FRC_2012_Robot::Set_Auton_PresetPosition(size_t index)
 {
 	SetPresetPosition(index,true);
 	SetAttitude(Pi);
-	m_Turret.SetPos_m(Pi);
+	m_Turret.SetPos_m(-Pi);
 }
 
 void FRC_2012_Robot::SetTarget(Targets target)

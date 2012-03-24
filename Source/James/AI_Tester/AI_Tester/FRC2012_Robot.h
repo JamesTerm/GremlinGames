@@ -127,6 +127,7 @@ class FRC_2012_Robot : public Tank_Robot
 				Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void ResetPos();
 			protected:
 				//typedef Rotary_Linear __super;
 				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
