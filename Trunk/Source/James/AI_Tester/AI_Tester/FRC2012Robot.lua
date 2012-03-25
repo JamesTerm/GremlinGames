@@ -114,7 +114,7 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=1, i=1, d=0},
+			{p=0.01, i=10, d=0, p2=200, p2_width=100 },
 			tolerance=5.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=1.0,     --Just use the gearing ratios here
 			voltage_multiply=1.0,
