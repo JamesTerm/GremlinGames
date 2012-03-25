@@ -116,8 +116,8 @@ MainRobot = {
 			pid=
 			{p=0.1, i=0.005, d=0},
 			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
-			encoder_to_wheel_ratio=1.0,     --Just use the gearing ratios here
-			voltage_multiply=0.9215,
+			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
+			voltage_multiply=-1.0,
 			square_voltage='yes',
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
