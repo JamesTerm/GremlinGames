@@ -299,6 +299,8 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 	//This will copy all the props
 	m_Rotary_Props=Props->GetRoteryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
+	m_PIDController.SetPEdgeValue(m_Rotary_Props.PID[3]);
+	m_PIDController.SetPBlendWidth(m_Rotary_Props.PID[4]);
 
 	//Note: for the drive we create a large enough number that can divide out the voltage and small enough to recover quickly,
 	//but this turned out to be problematic when using other angular rotary systems... therefore I am going to use the same computation
@@ -403,7 +405,7 @@ void Rotary_Angular::TimeChange(double dTime_s)
 
 	#ifdef __DebugLUA__
 	if (m_Rotary_Props.PID_Console_Dump && (Encoder_Velocity!=0.0))
-		printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler-MAX_SPEED);
+		printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
 	#endif
 
 	m_RobotControl->UpdateRotaryVoltage(m_InstanceIndex,Voltage);
@@ -537,6 +539,9 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			err = script.GetField("d", NULL, NULL,&m_RoteryProps.PID[2]);
 			ASSERT_MSG(!err, err);
+			//These are optional as zero are ignored
+			err = script.GetField("p2", NULL, NULL,&m_RoteryProps.PID[3]);
+			err = script.GetField("p2_width", NULL, NULL,&m_RoteryProps.PID[4]);
 			script.Pop();
 		}
 		script.GetField("tolerance", NULL, NULL, &m_RoteryProps.PrecisionTolerance);
