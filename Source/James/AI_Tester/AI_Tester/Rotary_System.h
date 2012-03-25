@@ -6,7 +6,7 @@ struct Rotary_Props
 	//The gear reduction used when multiplied by the encoder RPS will equal the *Rotary System's* RPS
 	//Note: This is not necessarily the multiply to match the motor speed as there may be some gearing to the system as well
 	double EncoderToRS_Ratio;
-	double PID[3]; //p,i,d
+	double PID[5]; //p,i,d,i2,i2width
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
@@ -103,7 +103,7 @@ class Rotary_Angular : public Rotary_System
 		/// \param DisableFeedback this allows ability to bypass feedback
 		Rotary_Control_Interface * const m_RobotControl;
 		const size_t m_InstanceIndex;
-		PIDController2 m_PIDController;
+		PIDController2_DynamicProportion m_PIDController;
 		Rotary_Props m_Rotary_Props;
 
 		//We have both ways to implement PID calibration depending on if we have aggressive stop property enabled

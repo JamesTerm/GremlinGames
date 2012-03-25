@@ -120,7 +120,7 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 			m_totalError += MaxError;  
 		}
 				
-		m_result = m_P * m_error + m_I * m_totalError + m_D * (m_error - m_prevError);
+		m_result = GetP() * m_error + m_I * m_totalError + m_D * (m_error - m_prevError);
 		m_prevError = m_error;
 		
 		if (m_result > m_maximumOutput)
@@ -216,4 +216,38 @@ void PIDController2::ResetI()
 void PIDController2::ResetI(double totalError)
 {
 	m_totalError = totalError;
+}
+
+
+  /***********************************************************************************************************/
+ /*									PIDController2_DynamicProportion										*/
+/***********************************************************************************************************/
+
+
+PIDController2_DynamicProportion::PIDController2_DynamicProportion(double p, double i, double d,double maximumOutput,double minimumOutput,double maximumInput,
+							   double minimumInput,double m_tolerance,bool continuous,bool enabled) :
+	PIDController2(p,i,d,maximumOutput,minimumOutput,maximumInput,minimumInput,m_tolerance,continuous,enabled)
+{
+	m_P_EdgeValue=i;
+	m_P_BlendWidth=0;
+}
+
+double PIDController2_DynamicProportion::GetP()
+{
+	double ret=m_I;
+	if (m_P_BlendWidth>0.0)
+	{
+		//obtain the normalized blend point
+		double nbp=fabs(m_error);
+		//saturate to blend width
+		if (nbp>m_P_BlendWidth) 
+			nbp=m_P_BlendWidth;
+		//Normalize it
+		nbp/=m_P_BlendWidth;
+		//Now to perform the blend
+		ret= (nbp * m_P_EdgeValue) + ((1.0-nbp)*m_I);
+		//if (m_error!=0.0)
+		//	printf("e=%.2f te=%.2f blend=%.2f ",m_error,m_totalError,ret);
+	}
+	return ret;
 }
