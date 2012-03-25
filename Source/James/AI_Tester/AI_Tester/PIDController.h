@@ -34,7 +34,7 @@ class PIDController2
 			bool continuous=false,		///< do the endpoints wrap around? eg. Absolute encoder
 			bool enabled=false	 		///< If client knows all the above, set to true; otherwise enable use Enable() for late binding
 			);
-		~PIDController2();
+		virtual ~PIDController2();
 
 		///This is the main method which performs the computations, and must be called for each time slice
 		/// \return the final output result

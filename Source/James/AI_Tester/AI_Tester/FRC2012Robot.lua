@@ -84,7 +84,7 @@ MainRobot = {
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
 			encoder_to_wheel_ratio=1.0,		--Used to calibrate encoder to physical turret angles should match readings 
-			voltage_multiply=1.0,			--May be reversed using -1.0
+			voltage_multiply=-1.0,			--May be reversed using -1.0
 			max_speed=10,
 			accel=1.0,						--These are only needed if we bind keys for turret
 			brake=1.0,
@@ -115,9 +115,9 @@ MainRobot = {
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
 			{p=0.01, i=10, d=0, p2=200, p2_width=100 },
-			tolerance=5.0,					--we need decent precision (this will depend on ramp up time too)
-			encoder_to_wheel_ratio=1.0,     --Just use the gearing ratios here
-			voltage_multiply=1.0,
+			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
+			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
+			voltage_multiply=-1.0,
 			square_voltage='yes',
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
@@ -150,7 +150,7 @@ MainRobot = {
 		{
 			--Note: there are no encoders here so is_closed is ignored
 			tolerance=0.01,					--we need good precision
-			voltage_multiply=1.0,			--May be reversed
+			voltage_multiply=-1.0,			--May be reversed
 			
 			max_speed=28,
 			accel=112,						--These are needed and should be high enough to grip without slip
