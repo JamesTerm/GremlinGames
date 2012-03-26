@@ -34,7 +34,7 @@ class PIDController2
 			bool continuous=false,		///< do the endpoints wrap around? eg. Absolute encoder
 			bool enabled=false	 		///< If client knows all the above, set to true; otherwise enable use Enable() for late binding
 			);
-		virtual ~PIDController2();
+		~PIDController2();
 
 		///This is the main method which performs the computations, and must be called for each time slice
 		/// \return the final output result
@@ -55,7 +55,7 @@ class PIDController2
 		void SetInputRange(double minimumInput, double maximumInput);
 		void SetOutputRange(double mimimumOutput, double maximumOutput);
 		void SetPID(double p, double i, double d);
-		virtual double GetP();
+		double GetP();
 		double GetI();
 		double GetD();
 
@@ -78,7 +78,7 @@ class PIDController2
 		/// A quick call often function that zero's the I only
 		void ResetI();
 		void ResetI(double totalError);  //allow client to set to specific value
-	protected:
+	private:
 		double m_P;			// factor for "proportional" control
 		double m_I;			// factor for "integral" control
 		double m_D;			// factor for "derivative" control
@@ -93,29 +93,4 @@ class PIDController2
 		double m_result;
 		bool m_continuous;	// do the endpoints wrap around? eg. Absolute encoder
 		bool m_enabled;		//is the pid controller enabled
-};
-
-class PIDController2_DynamicProportion : public PIDController2
-{
-	private:
-		double m_P_EdgeValue;  //The value to blended on the ends
-		double m_P_BlendWidth; //The value used to determine the edge for each side of the set point
-	public:
-		PIDController2_DynamicProportion(
-			double p,					///< proportional coefficient
-			double i,					///< integral coefficient
-			double d,					///< derivative coefficient
-			double maximumOutput=1.0,	///< maximum output
-			double minimumOutput=-1.0,	///< minimum output|
-			double maximumInput=1.0,	///< maximum input - limit setpoint to this
-			double minimumInput=-1.0,	///< minimum input - limit setpoint to this
-			double m_tolerance=.05,		///<the percentage error that is considered on target
-			bool continuous=false,		///< do the endpoints wrap around? eg. Absolute encoder
-			bool enabled=false	 		///< If client knows all the above, set to true; otherwise enable use Enable() for late binding
-			);
-
-		void SetPEdgeValue(double edgeValue) {m_P_EdgeValue=edgeValue;}
-		//If set to zero this feature is bypassed
-		void SetPBlendWidth(double width) {m_P_BlendWidth=width;}
-		virtual double GetP();
 };
