@@ -94,8 +94,8 @@ enum DigitalIO_SlotList
 	eSensor_IntakeConveyor,
 	eSensor_MiddleConveyor,
 	eSensor_FireConveyor,
-	eLimit_PitchLeft,  
-	eLimit_PitchRight,
+	eDigitalOut_BreakDrive_A,  
+	eDigitalOut_BreakDrive_B,
 	eLimit_Compressor
 };
 
@@ -124,7 +124,8 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	//Sensors
 	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B),
 	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
-	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor)
+	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
+	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B)
 
 	//m_Potentiometer(1)
 {
@@ -396,13 +397,18 @@ void FRC_2012_Robot_Control::OpenSolenoid(size_t index,bool Open)
 		printf("UseLowGear=%d\n",Open);
 		m_OnLowGear.Set(Open),m_OffLowGear.Set(!Open);
 		break;
-	case FRC_2012_Robot::eRampDeployment:
-		printf("RampDeployment=%d\n",Open);
-		m_OnRampDeployment.Set(Open),m_OnRampDeployment.Set(!Open);
-		break;
 	case FRC_2012_Robot::eFlipperDown:
 		printf("FlipperDown=%d\n",Open);
 		m_FlipperDown.Set(Open),m_FlipperUp.Set(!Open);
+		break;
+	case FRC_2012_Robot::eUseBreakDrive:
+		printf("UseBreakDrive=%d\n",Open);
+		m_UseBreakDrive_A.Set(Open?1:0);
+		m_UseBreakDrive_B.Set(Open?1:0);
+		break;
+	case FRC_2012_Robot::eRampDeployment:
+		printf("RampDeployment=%d\n",Open);
+		m_OnRampDeployment.Set(Open),m_OnRampDeployment.Set(!Open);
 		break;
 	}
 }
