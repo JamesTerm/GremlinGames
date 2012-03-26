@@ -18,6 +18,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		
 		Encoder m_Turret_Encoder, m_PowerWheel_Encoder;
 		DigitalInput m_Intake_Limit,m_Middle_Limit,m_Fire_Limit;
+		DigitalOutput m_UseBreakDrive_A,m_UseBreakDrive_B;  //It does not matter which side these are on
 		//TODO see if we will need limit switches for the turret or pitch
 		//TODO see if we'll have pot for flippers
 		//AnalogChannel m_Potentiometer;

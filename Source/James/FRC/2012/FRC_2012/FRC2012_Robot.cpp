@@ -792,6 +792,15 @@ void FRC_2012_Robot::SetPresetPOV (double value)
 		m_POVSetValve=false;
 }
 
+void FRC_2012_Robot::Robot_SetCreepMode(bool on) 
+{
+	if (m_SetLowGear)
+	{
+		SetUseEncoders(on,false);
+		m_RobotControl->OpenSolenoid(eUseBreakDrive,on);
+	}
+}
+
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Framework::Base::EventMap *em=GetEventMap(); 
@@ -816,7 +825,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetPreset2"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset2);
 		em->Event_Map["Robot_SetPreset3"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPreset3);
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2012_Robot::SetPresetPOV);
-		em->EventOnOff_Map["Robot_SetUseEncoders"].Subscribe(ehl, *this, &FRC_2012_Robot::Robot_SetUseEncoders);
+		em->EventOnOff_Map["Robot_SetCreepMode"].Subscribe(ehl, *this, &FRC_2012_Robot::Robot_SetCreepMode);
 	}
 	else
 	{
@@ -839,7 +848,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetPreset2"]  .Remove(*this, &FRC_2012_Robot::SetPreset2);
 		em->Event_Map["Robot_SetPreset3"]  .Remove(*this, &FRC_2012_Robot::SetPreset3);
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2012_Robot::SetPresetPOV);
-		em->EventOnOff_Map["Robot_SetUseEncoders"]  .Remove(*this, &FRC_2012_Robot::Robot_SetUseEncoders);
+		em->EventOnOff_Map["Robot_SetCreepMode"]  .Remove(*this, &FRC_2012_Robot::Robot_SetCreepMode);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
@@ -1207,7 +1216,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 				"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 				"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
-				"Robot_SetUseEncoders"
+				"Robot_SetCreepMode"
 			};
 
 			//TODO we may use actual product names here, but this will be fine for wind river build
