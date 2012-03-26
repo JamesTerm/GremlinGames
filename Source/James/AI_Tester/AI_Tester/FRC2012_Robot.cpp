@@ -462,8 +462,7 @@ void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 void FRC_2012_Robot::ResetPos()
 {
 	__super::ResetPos();
-	//This should be false to avoid any conflicts during a reset; however, if we want targeting any do not have an axis for it
-	//we can set to true
+	//This should be false to avoid any conflicts during a reset
 	m_IsTargeting=false;
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
@@ -726,6 +725,7 @@ void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 
 void FRC_2012_Robot::Set_Auton_PresetPosition(size_t index)
 {
+	m_IsTargeting=true;  //This is just in case the pitch is in wrong position or if it is missing
 	SetPresetPosition(index,true);
 	SetAttitude(Pi);
 	m_Turret.SetPos_m(-Pi);
@@ -1265,6 +1265,38 @@ FRC_2012_Goals::Fire::Goal_Status FRC_2012_Goals::Fire::Process(double dTime_s)
 	return m_Status;
 }
 
+  /***********************************************************************************************************************************/
+ /*													FRC_2012_Goals::OperateSolenoid													*/
+/***********************************************************************************************************************************/
+
+FRC_2012_Goals::OperateSolenoid::OperateSolenoid(FRC_2012_Robot &robot,FRC_2012_Robot::SolenoidDevices SolenoidDevice,bool Open) : m_Robot(robot),
+m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsOpen(Open) 
+{	
+	m_Status=eInactive;
+}
+
+FRC_2012_Goals::OperateSolenoid::Goal_Status FRC_2012_Goals::OperateSolenoid::Process(double dTime_s)
+{
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	switch (m_SolenoidDevice)
+	{
+		case FRC_2012_Robot::eFlipperDown:
+			m_Robot.SetFlipperPneumatic(m_IsOpen);
+			break;
+		case FRC_2012_Robot::eUseLowGear:
+		case FRC_2012_Robot::eUseBreakDrive:
+			assert(false);
+			break;
+	}
+	m_Status=eCompleted;
+	return m_Status;
+}
 
   /***********************************************************************************************************************************/
  /*															FRC_2012_Goals															*/
@@ -1296,15 +1328,20 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	const FRC_2012_Robot_Props::Autonomous_Properties &auton=Robot->GetRobotProps().GetFRC2012RobotProps().Autonomous_Props;
 	Robot->Set_Auton_PresetPosition(KeyIndex);
 	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
-	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
+	//Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
 	Fire *FireOn=new Fire(*Robot,true);
 	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
 	Fire *FireOff=new Fire(*Robot,false);
 
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
 	Goal_Ship_MoveToPosition *goal_drive_2=NULL;
+	OperateSolenoid *DeployFlipper=NULL;
+	Fire *EndSomeFire_On=NULL;
+	Goal_Wait *goal_waitEndFire=NULL;
+	Fire *EndSomeFire_Off=NULL;
 	if (RampIndex != (size_t)-1)
 	{
+		DeployFlipper=new OperateSolenoid(*Robot,FRC_2012_Robot::eFlipperDown,true);
 		const double YPad=Inches2Meters(5); //establish our Y being 5 inches from the ramp
 		double Y = (c_BridgeDimensions[1] / 2.0) + YPad;
 		double X;
@@ -1335,18 +1372,25 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 		wp.Position[1]= (Robot->GetPos_m()[1] + Y) / 2.0;  //mid point on the Y so it can straighten out
 		wp.Position[0]=  X_Tweak;
 		goal_drive_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,false,false,0.01); //don't stop on this one
+		EndSomeFire_On=new Fire(*Robot,true);
+		goal_waitEndFire=new Goal_Wait(8.0); //wait for balls
+		EndSomeFire_Off=new Fire(*Robot,false);
 	}
 	//Inserted in reverse since this is LIFO stack list
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	if (goal_drive_1)
 	{
+		MainGoal->AddSubgoal(EndSomeFire_Off);
+		MainGoal->AddSubgoal(goal_waitEndFire);
+		MainGoal->AddSubgoal(EndSomeFire_On);
 		MainGoal->AddSubgoal(goal_drive_2);
 		MainGoal->AddSubgoal(goal_drive_1);
+		MainGoal->AddSubgoal(DeployFlipper);
 	}
 	MainGoal->AddSubgoal(FireOff);
 	MainGoal->AddSubgoal(goal_waitforballs);
 	MainGoal->AddSubgoal(FireOn);
-	MainGoal->AddSubgoal(goal_waitforturret);
+	//MainGoal->AddSubgoal(goal_waitforturret);
 	return MainGoal;
 }
 
@@ -1613,6 +1657,9 @@ void FRC_2012_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	case FRC_2012_Robot::eUseLowGear:
 		printf("UseLowGear=%d\n",Open);
 		//m_UseLowGear=Open;
+		break;
+	case FRC_2012_Robot::eFlipperDown:
+		printf("FlipperDown=%d\n",Open);
 		break;
 	case FRC_2012_Robot::eUseBreakDrive:
 		printf("UseBreakDrive=%d\n",Open);
