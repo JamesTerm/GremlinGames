@@ -404,7 +404,7 @@ void UI_Controller::Slider_Accel(double Intensity)
 
 void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 {
-	if (m_Ship_Keyboard_currAccel[1]==0.0)
+	if ((m_Ship_Keyboard_currAccel[1]==0.0)&&(!AreControlsDisabled()))
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
@@ -428,7 +428,7 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 
 void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 {
-	if (m_Ship_Keyboard_currAccel[1]==0.0)
+	if ((m_Ship_Keyboard_currAccel[1]==0.0)&&(!AreControlsDisabled()))
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
