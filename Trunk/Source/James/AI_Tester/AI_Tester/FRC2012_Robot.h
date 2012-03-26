@@ -240,12 +240,13 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 		};
 
-	public:
+	public: //Autonomous public access (wind river has problems with friend technique)
 		BallConveyorSystem &GetBallConveyorSystem();
 		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
 		void Set_Auton_PresetPosition(size_t index);
 		void SetTarget(Targets target);
 		const FRC_2012_Robot_Properties &GetRobotProps() const;
+		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -288,8 +289,6 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetLowGearOn() {SetLowGear(true);}
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
-
-		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
 		
 		void SetPreset1() {SetPresetPosition(0);}
 		void SetPreset2() {SetPresetPosition(1);}
@@ -323,6 +322,19 @@ class FRC_2012_Goals
 			virtual void Terminate() {m_Terminate=true;}
 		};
 
+		class OperateSolenoid : public AtomicGoal
+		{
+		private:
+			FRC_2012_Robot &m_Robot;
+			const FRC_2012_Robot::SolenoidDevices m_SolenoidDevice;
+			bool m_Terminate;
+			bool m_IsOpen;
+		public:
+			OperateSolenoid(FRC_2012_Robot &robot,FRC_2012_Robot::SolenoidDevices SolenoidDevice,bool Open);
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s);
+			virtual void Terminate() {m_Terminate=true;}
+		};
 };
 
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
