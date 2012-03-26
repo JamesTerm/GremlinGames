@@ -194,13 +194,14 @@ MainRobot = {
 		{
 			Joystick_1 =
 			{
-				control = "CH FLIGHTSTICK PRO",
+				--control = "CH FLIGHTSTICK PRO",
+				control = "Logitech Attack 3",
 				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, is_squared=true},
 				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
 				Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
 				Flippers_Retract = {type="joystick_button", key=3, on_off=true},
 				Flippers_Advance = {type="joystick_button", key=4, on_off=true},
-				Robot_SetUseEncoders = {type="joystick_button", key=1, on_off=true}
+				Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
 			},
 
 			Joystick_2 =

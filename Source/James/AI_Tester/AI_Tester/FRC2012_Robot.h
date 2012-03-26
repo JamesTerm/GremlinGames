@@ -97,6 +97,7 @@ class FRC_2012_Robot : public Tank_Robot
 		{
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
 			eFlipperDown,		//If true flipper is down
+			eUseBreakDrive,		//OpenSolenoid() is called with true then its in break mode (default is coast) This is really a digital output
 			eRampDeployment
 		};
 
@@ -299,7 +300,7 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetDefensiveKeyOn();
 		void SetDefensiveKeyOff() {m_Target=eCenterHighGoal;}
 
-		void Robot_SetUseEncoders(bool on) {if (m_SetLowGear) SetUseEncoders(on,false);}
+		void Robot_SetCreepMode(bool on);
 };
 
 class FRC_2012_Goals
