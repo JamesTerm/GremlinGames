@@ -77,9 +77,8 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 {
 	if (m_enabled)
 	{
-		//m_error = (setpoint - input) * dTime_s;  //Using dTime_s will keep the errors consistent if time is erratic
-		//I have found that multiplying by time is not correct as it forces client to use large values
-		m_error = (setpoint - input);
+		//While it is true it forces client to use large values it is consistent and will yield much better results
+		m_error = (setpoint - input) * dTime_s;  //Using dTime_s will keep the errors consistent if time is erratic
 		if (m_continuous)
 		{
 			if (fabs(m_error) > 
@@ -99,13 +98,11 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 		//if (((m_totalError + m_error) * m_I < m_maximumOutput) && ((m_totalError + m_error) * m_I > m_minimumOutput))
 		//	m_totalError += m_error;
 
-		const double error_delta=m_error * dTime_s;  //For I accumulation we must take time into consideration
-
-		const double TotalErrorCheck=(m_totalError + error_delta) * m_I;
+		double TotalErrorCheck=(m_totalError + m_error) * m_I;
 		if (TotalErrorCheck < m_maximumOutput)
 		{
 			if (TotalErrorCheck > m_minimumOutput)
-				m_totalError += error_delta;
+				m_totalError += m_error;
 			else //less than the minimum output
 			{
 				//accumulate by an error which would equal the minimum output
@@ -120,7 +117,7 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 			m_totalError += MaxError;  
 		}
 				
-		m_result = GetP() * m_error + m_I * m_totalError + m_D * (m_error - m_prevError);
+		m_result = m_P * m_error + m_I * m_totalError + m_D * (m_error - m_prevError);
 		m_prevError = m_error;
 		
 		if (m_result > m_maximumOutput)
@@ -216,38 +213,4 @@ void PIDController2::ResetI()
 void PIDController2::ResetI(double totalError)
 {
 	m_totalError = totalError;
-}
-
-
-  /***********************************************************************************************************/
- /*									PIDController2_DynamicProportion										*/
-/***********************************************************************************************************/
-
-
-PIDController2_DynamicProportion::PIDController2_DynamicProportion(double p, double i, double d,double maximumOutput,double minimumOutput,double maximumInput,
-							   double minimumInput,double m_tolerance,bool continuous,bool enabled) :
-	PIDController2(p,i,d,maximumOutput,minimumOutput,maximumInput,minimumInput,m_tolerance,continuous,enabled)
-{
-	m_P_EdgeValue=i;
-	m_P_BlendWidth=0;
-}
-
-double PIDController2_DynamicProportion::GetP()
-{
-	double ret=m_I;
-	if (m_P_BlendWidth>0.0)
-	{
-		//obtain the normalized blend point
-		double nbp=fabs(m_error);
-		//saturate to blend width
-		if (nbp>m_P_BlendWidth) 
-			nbp=m_P_BlendWidth;
-		//Normalize it
-		nbp/=m_P_BlendWidth;
-		//Now to perform the blend
-		ret= (nbp * m_P_EdgeValue) + ((1.0-nbp)*m_I);
-		//if (m_error!=0.0)
-		//	printf("e=%.2f te=%.2f blend=%.2f ",m_error,m_totalError,ret);
-	}
-	return ret;
 }
