@@ -114,11 +114,11 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=0.01, i=10, d=0, p2=200, p2_width=100 },
+			{p=1, i=0, d=0 },
 			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
 			voltage_multiply=-1.0,
-			square_voltage='yes',
+			square_voltage='no',
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
