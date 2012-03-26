@@ -93,7 +93,7 @@ void MultitaskGoal::Activate()
 Goal::Goal_Status MultitaskGoal::Process(double dTime_s)
 {
 	ActivateIfInactive();
-	Goal_Status status;
+	Goal_Status status=eFailed;
 	size_t NonActiveCount=0;
 	for (GoalList::iterator it = m_GoalsToProcess.begin(); it!=m_GoalsToProcess.end(); ++it)
 	{
