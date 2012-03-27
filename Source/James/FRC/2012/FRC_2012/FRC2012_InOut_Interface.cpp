@@ -125,7 +125,8 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B),
 	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
 	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
-	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B)
+	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B),
+	m_PowerWheelAverager(0.05)
 
 	//m_Potentiometer(1)
 {
@@ -337,8 +338,8 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//We start out wound around so we'll add Pi to get correct reading
 			//In may tests the threshold favors being wound counter-clockwise (not sure why) so it's -Pi
 			//result=m_Turret_Encoder.GetDistance();
-			result=NormalizeRotation2(m_Turret_Encoder.GetDistance() - Pi);
-			result=result * m_RobotProps.GetTurretProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
+			result=m_Turret_Encoder.GetDistance() * m_RobotProps.GetTurretProps().GetRoteryProps().EncoderToRS_Ratio;
+			result=NormalizeRotation2(result - Pi);
 			break;
 		case FRC_2012_Robot::ePitchRamp:
 			//TODO research i2c's
@@ -347,6 +348,11 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#ifndef __DisableMotorControls__
 			result= m_PowerWheel_Encoder.GetRate();
 			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
+			{
+				//result=m_PowerWheelFilter(result);
+				double average=m_PowerWheelAverager.GetAverage(result);
+				result=IsZero(average)?0.0:average;
+			}
 			#else
 			//This is temporary code to pacify using a closed loop, remove once we have real implementation
 			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();

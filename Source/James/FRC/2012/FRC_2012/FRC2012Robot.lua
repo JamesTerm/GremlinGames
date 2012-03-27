@@ -48,8 +48,8 @@ MainRobot = {
 		
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply=1.0,				--May be reversed using -1.0
-		reverse_steering='no'
+		voltage_multiply=-1.0,				--May be reversed using -1.0
+		reverse_steering='yes'
 	},
 	
 	robot_settings =
@@ -82,14 +82,15 @@ MainRobot = {
 			ds_display_row=-1,				--Assign to a row (e.g. 0-4) when trying to calibrate the potentiometer
 			pid=
 			{p=1, i=0, d=0},
-			tolerance=0.001,				--we need high precision
-			encoder_to_wheel_ratio=1.0,		--Used to calibrate encoder to physical turret angles should match readings 
-			voltage_multiply=-1.0,			--May be reversed using -1.0
+			tolerance=0.1,				--we need high precision
+			encoder_to_wheel_ratio=-1.064,     --Just use the gearing ratios here			
+			voltage_multiply=1.0,			--May be reversed using -1.0
 			max_speed=10,
-			accel=1.0,						--These are only needed if we bind keys for turret
-			brake=1.0,
-			max_accel_forward=10,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=10,
+			accel=10.0,						--These are only needed if we bind keys for turret
+			brake=10.0,
+			max_accel_forward=20,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=20,
+			using_range=0,
 			min_range_deg=-180,				--These are probably good to go, but may need to be smaller
 			max_range_deg= 180
 		},
@@ -114,11 +115,13 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=0.1, i=0.005, d=0},
-			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
-			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
-			voltage_multiply=-1.0,
-			square_voltage='yes',
+			--{p=0, i=0, d=0},
+			--{p=0.1, i=0.5, d=0},
+			{p=400.0, i=5.0, d=200.0},
+			tolerance=25.0,					--we need decent precision (this will depend on ramp up time too)
+			encoder_to_wheel_ratio=0.85,     --Just use the gearing ratios here
+			voltage_multiply=-1,
+			square_voltage='no',
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
@@ -130,7 +133,7 @@ MainRobot = {
 		},
 		flippers =
 		{
-			is_closed=1,				--Not sure yet about this
+			is_closed=0,				--Not sure yet about this
 			show_pid_dump='no',
 			ds_display_row=-1,
 			pid=
@@ -142,7 +145,7 @@ MainRobot = {
 			brake=10.0,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			min_range_deg=-90,				--TODO find out what these are
 			max_range_deg= 90
 		},
@@ -179,15 +182,15 @@ MainRobot = {
 				--We must NOT use I or D for low gear, we must keep it very responsive
 				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
 				left_pid=
-				{p=1, i=0, d=0},
+				{p=50, i=0, d=0},
 				right_pid=
-				{p=1, i=0, d=0},					--These should always match, but able to be made different
+				{p=50, i=0, d=0},					--These should always match, but able to be made different
 				
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=1.0,				--May be reversed using -1.0
-				reverse_steering='no'
+				voltage_multiply=-1.0,				--May be reversed using -1.0
+				reverse_steering='yes'
 			}
 		},
 		controls =
@@ -196,7 +199,7 @@ MainRobot = {
 			{
 				control = "CH FLIGHTSTICK PRO",
 				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, is_squared=true},
-				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
+				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=0.8, filter=0.1, is_squared=false},
 				Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
 				Flippers_Retract = {type="joystick_button", key=3, on_off=true},
 				Flippers_Advance = {type="joystick_button", key=4, on_off=true},
