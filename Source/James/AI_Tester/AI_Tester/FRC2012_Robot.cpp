@@ -1291,6 +1291,7 @@ FRC_2012_Goals::OperateSolenoid::Goal_Status FRC_2012_Goals::OperateSolenoid::Pr
 			break;
 		case FRC_2012_Robot::eUseLowGear:
 		case FRC_2012_Robot::eUseBreakDrive:
+		case FRC_2012_Robot::eRampDeployment:
 			assert(false);
 			break;
 	}
