@@ -1,5 +1,7 @@
 #pragma once
 
+#undef __UseScalerPID__
+
 struct Rotary_Props
 {
 	double VoltageScalar;		//Used to handle reversed voltage wiring
