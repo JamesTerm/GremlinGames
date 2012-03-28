@@ -351,8 +351,9 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			{
 				result=m_PowerWheelFilter(result);
-				double average=m_PowerWheelAverager.GetAverage(result);
-				result=IsZero(average)?0.0:average;
+				//double average=m_PowerWheelAverager.GetAverage(result);
+				//result=IsZero(average)?0.0:average;
+				result=IsZero(result)?0.0:result;
 			}
 			#else
 			//This is temporary code to pacify using a closed loop, remove once we have real implementation
