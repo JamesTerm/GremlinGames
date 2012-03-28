@@ -42,9 +42,9 @@ MainRobot = {
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
 		left_pid=
-		{p=1, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+		{p=0, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
 		right_pid=
-		{p=1, i=0, d=0},					--These should always match, but able to be made different
+		{p=0, i=0, d=0},					--These should always match, but able to be made different
 		
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -63,9 +63,9 @@ MainRobot = {
 		
 		grid_corrections =
 		{
-			c11={p=1.7, x=1.0}, c12={p=1.7, x=1.0}, c13={p=1.7, x=1.0},
-			c21={p=1.7, x=1.0}, c22={p=1.7, x=1.0}, c23={p=1.7, x=1.0},
-			c31={p=1.7, x=1.0}, c32={p=1.7, x=1.0}, c33={p=1.7, x=1.0},
+			c11={p=2.2, x=1.0}, c12={p=2.2, x=1.0}, c13={p=2.2, x=1.0},
+			c21={p=2.2, x=1.0}, c22={p=2.2, x=1.0}, c23={p=2.2, x=1.0},
+			c31={p=2.2, x=1.0}, c32={p=2.2, x=1.0}, c33={p=2.2, x=1.0},
 		},
 		
 		auton =
@@ -81,9 +81,9 @@ MainRobot = {
 			show_pid_dump='no',				--Only turn on if you want to analyze the PID dump (only one at a time, and it must be closed loop)
 			ds_display_row=-1,				--Assign to a row (e.g. 0-4) when trying to calibrate the potentiometer
 			pid=
-			{p=1, i=0, d=0},
-			tolerance=0.1,				--we need high precision
-			encoder_to_wheel_ratio=-1.064,     --Just use the gearing ratios here			
+			{p=25, i=3, d=2},
+			tolerance=0.001,				--we need high precision
+			encoder_to_wheel_ratio=1.064,     --Just use the gearing ratios here			
 			voltage_multiply=1.0,			--May be reversed using -1.0
 			max_speed=10,
 			accel=10.0,						--These are only needed if we bind keys for turret
@@ -117,8 +117,9 @@ MainRobot = {
 			pid=
 			--{p=0, i=0, d=0},
 			--{p=0.1, i=0.5, d=0},
-			{p=400.0, i=5.0, d=200.0},
-			tolerance=25.0,					--we need decent precision (this will depend on ramp up time too)
+			--{p=400.0, i=5.0, d=200.0},
+			{p=400.0, i=75.0, d=200.0},
+			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=0.85,     --Just use the gearing ratios here
 			voltage_multiply=-1,
 			square_voltage='no',
@@ -201,8 +202,7 @@ MainRobot = {
 				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, is_squared=true},
 				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=0.8, filter=0.1, is_squared=false},
 				Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
-				Flippers_Retract = {type="joystick_button", key=3, on_off=true},
-				Flippers_Advance = {type="joystick_button", key=4, on_off=true},
+				Robot_Flippers_Solenoid = {type="joystick_button", key=2, on_off=true},
 				Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
 			},
 
@@ -234,7 +234,9 @@ MainRobot = {
 				PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
 				Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
 				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, is_squared=false},
-				Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, is_squared=true},
+				--This top one is only for open loop mode, and works like the game pad
+				--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, is_squared=true},
+				--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
 				Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
 				
 				--Ball_Grip = {type="joystick_button", key=2, on_off=true},
