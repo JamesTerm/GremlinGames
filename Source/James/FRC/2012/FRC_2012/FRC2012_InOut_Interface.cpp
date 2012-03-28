@@ -135,6 +135,7 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	const double EncoderPulseRate=(1.0/360.0);
 	m_Turret_Encoder.SetDistancePerPulse(EncoderPulseRate),m_PowerWheel_Encoder.SetDistancePerPulse(EncoderPulseRate);
 	m_Turret_Encoder.Start(),m_PowerWheel_Encoder.Start();
+	m_PowerWheelFilter.Reset();
 }
 
 FRC_2012_Robot_Control::~FRC_2012_Robot_Control() 
@@ -349,7 +350,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result= m_PowerWheel_Encoder.GetRate();
 			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			{
-				//result=m_PowerWheelFilter(result);
+				result=m_PowerWheelFilter(result);
 				double average=m_PowerWheelAverager.GetAverage(result);
 				result=IsZero(average)?0.0:average;
 			}
