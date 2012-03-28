@@ -472,7 +472,11 @@ void FRC_2012_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 }
 void FRC_2012_Robot::ResetPos()
 {
+	//We cannot reset position between auton and telop
+	SetBypassPosAtt_Update(true);
 	__super::ResetPos();
+	SetBypassPosAtt_Update(false);
+
 	//This should be false to avoid any conflicts during a reset
 	m_IsTargeting=false;
 	m_Turret.ResetPos();
@@ -1340,7 +1344,7 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
 	//Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
 	Fire *FireOn=new Fire(*Robot,true);
-	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
+	Goal_Wait *goal_waitforballs=new Goal_Wait(5.0); //wait for balls
 	Fire *FireOff=new Fire(*Robot,false);
 
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
