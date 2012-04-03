@@ -109,7 +109,8 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	SetRequestedVelocity_FromNormalized(m_Velocity);
 	m_Velocity=0.0;
 
-	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
+	//if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
+	if (false)
 	{
 		Vec2D Target=m_pParent->m_TargetOffset;
 		Target-=m_pParent->GetPos_m();
@@ -664,6 +665,7 @@ const FRC_2012_Robot_Properties &FRC_2012_Robot::GetRobotProps() const
 
 void FRC_2012_Robot::SetTargetingValue(double Value)
 {
+	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
 	//TODO determine final scaler factor for the pitch (may want to make this a property)
 	//printf("\r%f       ",Value);
 	if (Value > -0.98)
@@ -686,6 +688,7 @@ void FRC_2012_Robot::SetTargetingValue(double Value)
 
 void FRC_2012_Robot::SetLowGear(bool on) 
 {
+	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
 	m_SetLowGear=on;
 	SetBypassPosAtt_Update(true);
 	m_Turret.SetBypassPos_Update(true);

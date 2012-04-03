@@ -27,15 +27,16 @@ namespace Scripting=Framework::Scripting;
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/
 /***********************************************************************************************************************************/
-Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
-	Tank_Drive(EntityName), m_RobotControl(robot_control),
+Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous) :
+	Tank_Drive(EntityName), 
+	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
 	#ifdef __UseScalerPID__
 	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),
 	m_VoltageOverride(false),
 	#else
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
-	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),
+	m_UsingEncoders(IsAutonomous),
 	#endif
 	m_UseDeadZoneSkip(true)
 {
