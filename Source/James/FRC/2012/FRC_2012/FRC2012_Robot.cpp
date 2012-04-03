@@ -1353,9 +1353,9 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
 	Goal_Ship_MoveToPosition *goal_drive_2=NULL;
 	OperateSolenoid *DeployFlipper=NULL;
-	Fire *EndSomeFire_On=NULL;
-	Goal_Wait *goal_waitEndFire=NULL;
-	Fire *EndSomeFire_Off=NULL;
+	//Fire *EndSomeFire_On=NULL;
+	//Goal_Wait *goal_waitEndFire=NULL;
+	//Fire *EndSomeFire_Off=NULL;
 	if (RampIndex != (size_t)-1)
 	{
 		DeployFlipper=new OperateSolenoid(*Robot,FRC_2012_Robot::eFlipperDown,true);
@@ -1389,17 +1389,17 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 		wp.Position[1]= (Robot->GetPos_m()[1] + Y) / 2.0;  //mid point on the Y so it can straighten out
 		wp.Position[0]=  X_Tweak;
 		goal_drive_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,false,false,0.01); //don't stop on this one
-		EndSomeFire_On=new Fire(*Robot,true);
-		goal_waitEndFire=new Goal_Wait(8.0); //wait for balls
-		EndSomeFire_Off=new Fire(*Robot,false);
+		//EndSomeFire_On=new Fire(*Robot,true);
+		//goal_waitEndFire=new Goal_Wait(8.0); //wait for balls
+		//EndSomeFire_Off=new Fire(*Robot,false);
 	}
 	//Inserted in reverse since this is LIFO stack list
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	if (goal_drive_1)
 	{
-		MainGoal->AddSubgoal(EndSomeFire_Off);
-		MainGoal->AddSubgoal(goal_waitEndFire);
-		MainGoal->AddSubgoal(EndSomeFire_On);
+		//MainGoal->AddSubgoal(EndSomeFire_Off);
+		//MainGoal->AddSubgoal(goal_waitEndFire);
+		//MainGoal->AddSubgoal(EndSomeFire_On);
 		MainGoal->AddSubgoal(goal_drive_2);
 		MainGoal->AddSubgoal(goal_drive_1);
 		MainGoal->AddSubgoal(DeployFlipper);
