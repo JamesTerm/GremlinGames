@@ -66,6 +66,8 @@ class Tank_Robot : public Tank_Drive
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
+	protected:
+		bool m_IsAutonomous;
 	private:
 		typedef  Tank_Drive __super;
 		Tank_Drive_Control_Interface * const m_RobotControl;
@@ -75,7 +77,7 @@ class Tank_Robot : public Tank_Drive
 		#else
 		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration
 		#endif
-		bool m_UsingEncoders,m_IsAutonomous;
+		bool m_UsingEncoders;
 		#ifdef __UseScalerPID__
 		bool m_VoltageOverride;  //when true will kill voltage
 		#endif
