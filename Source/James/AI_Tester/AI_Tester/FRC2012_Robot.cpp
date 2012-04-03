@@ -1344,9 +1344,9 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
 	Goal_Ship_MoveToPosition *goal_drive_2=NULL;
 	OperateSolenoid *DeployFlipper=NULL;
-	Fire *EndSomeFire_On=NULL;
-	Goal_Wait *goal_waitEndFire=NULL;
-	Fire *EndSomeFire_Off=NULL;
+	//Fire *EndSomeFire_On=NULL;
+	//Goal_Wait *goal_waitEndFire=NULL;
+	//Fire *EndSomeFire_Off=NULL;
 	if (RampIndex != (size_t)-1)
 	{
 		DeployFlipper=new OperateSolenoid(*Robot,FRC_2012_Robot::eFlipperDown,true);
