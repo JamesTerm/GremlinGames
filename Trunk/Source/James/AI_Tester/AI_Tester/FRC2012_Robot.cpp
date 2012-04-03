@@ -98,7 +98,8 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	SetRequestedVelocity_FromNormalized(m_Velocity);
 	m_Velocity=0.0;
 
-	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
+	//if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
+	if (false)
 	{
 		Vec2D Target=m_pParent->m_TargetOffset;
 		Target-=m_pParent->GetPos_m();
@@ -1379,17 +1380,17 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 		wp.Position[1]= (Robot->GetPos_m()[1] + Y) / 2.0;  //mid point on the Y so it can straighten out
 		wp.Position[0]=  X_Tweak;
 		goal_drive_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,false,false,0.01); //don't stop on this one
-		EndSomeFire_On=new Fire(*Robot,true);
-		goal_waitEndFire=new Goal_Wait(8.0); //wait for balls
-		EndSomeFire_Off=new Fire(*Robot,false);
+		//EndSomeFire_On=new Fire(*Robot,true);
+		//goal_waitEndFire=new Goal_Wait(8.0); //wait for balls
+		//EndSomeFire_Off=new Fire(*Robot,false);
 	}
 	//Inserted in reverse since this is LIFO stack list
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	if (goal_drive_1)
 	{
-		MainGoal->AddSubgoal(EndSomeFire_Off);
-		MainGoal->AddSubgoal(goal_waitEndFire);
-		MainGoal->AddSubgoal(EndSomeFire_On);
+		//MainGoal->AddSubgoal(EndSomeFire_Off);
+		//MainGoal->AddSubgoal(goal_waitEndFire);
+		//MainGoal->AddSubgoal(EndSomeFire_On);
 		MainGoal->AddSubgoal(goal_drive_2);
 		MainGoal->AddSubgoal(goal_drive_1);
 		MainGoal->AddSubgoal(DeployFlipper);
