@@ -32,6 +32,31 @@
 using namespace Framework::Base;
 
   /***********************************************************************************************************************************/
+ /*																Encoder2															*/
+/***********************************************************************************************************************************/
+
+
+Encoder2::Encoder2(UINT32 aChannel, UINT32 bChannel, bool reverseDirection) : Encoder(aChannel,bChannel,reverseDirection),
+		m_LastDistance(0.0)
+{
+}
+
+void Encoder2::Reset2()
+{
+	m_LastDistance=0.0;
+	Reset();
+}
+
+double Encoder2::GetRate2(double dTime_s)
+{
+	//Using distance will yield the same rate as GetRate, without precision loss to GetRaw()
+	const double CurrentDistance=GetDistance();
+	const double delta=CurrentDistance - m_LastDistance;
+	m_LastDistance=CurrentDistance;
+	return delta*dTime_s;
+}
+
+  /***********************************************************************************************************************************/
  /*														Driver_Station_Joystick														*/
 /***********************************************************************************************************************************/
 

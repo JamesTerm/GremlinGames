@@ -126,7 +126,7 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
 	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
 	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B),
-	m_PowerWheelAverager(0.05)
+	m_PowerWheelAverager(0.05),m_dTime_s(0.0)
 
 	//m_Potentiometer(1)
 {
@@ -159,6 +159,7 @@ void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifndef __DisableCamera__
 	m_Camera.CameraProcessing_TimeChange(dTime_s);
 	#endif
+	m_dTime_s=dTime_s;
 }
 
 void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
@@ -347,7 +348,12 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2012_Robot::ePowerWheels:
 			#ifndef __DisableMotorControls__
-			result= m_PowerWheel_Encoder.GetRate();
+			
+			//Here we use the new GetRate2 which should offer better precision
+			
+			//result= m_PowerWheel_Encoder.GetRate();
+			result= m_PowerWheel_Encoder.GetRate2(m_dTime_s);
+			
 			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			{
 				result=m_PowerWheelFilter(result);
