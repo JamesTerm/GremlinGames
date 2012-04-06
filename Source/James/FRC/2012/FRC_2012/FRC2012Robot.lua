@@ -72,7 +72,9 @@ MainRobot = {
 		{
 			ramp_left  ={x_in=0, y_in=0 },
 			ramp_right ={x_in=0, y_in=0 },
-			ramp_center={x_in=0, y_in=0 }
+			ramp_center={x_in=0, y_in=0 },
+			x_left_arc=1.9,
+			x_right_arc=1.9
 		},
 		
 		turret =
