@@ -1,5 +1,21 @@
 #pragma once
 
+///This class is an Encoder that provides a more accurate way to obtain the current rate
+class Encoder2 : public Encoder
+{
+	public:
+		Encoder2(UINT32 aChannel, UINT32 bChannel, bool reverseDirection=false);
+		///This uses a different technique of obtaining the rate by use of the actual pulse count.  This should produce less noisy results
+		///at higher speeds.  This is simple as it does not support overrlap as it would take about 5 continuous 
+		///hours at 78 rps before the end is reached
+		/// \param dTime_s delta time slice in seconds
+		double GetRate2(double dTime_s);
+		///unfortunately reset is not virtual... client code should call this if using reset
+		void Reset2();
+	private:
+		double m_LastDistance;  //keep note of last distance
+};
+
 class Tank_Robot_Control : public Tank_Drive_Control_Interface
 {
 	public:
