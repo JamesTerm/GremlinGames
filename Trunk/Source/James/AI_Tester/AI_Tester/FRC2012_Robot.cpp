@@ -984,6 +984,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		auton.RampLeft_ErrorCorrection_Offset=
 		auton.RampRight_ErrorCorrection_Offset=
 		auton.RampCenter_ErrorCorrection_Offset=Vec2D(0.0,0.0);
+		auton.XLeftArc=auton.XRightArc=1.9;
 
 		m_FRC2012RobotProps=props;
 	}
@@ -1172,13 +1173,14 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err = script.GetFieldTable("auton");
 		if (!err)
 		{
+			struct FRC_2012_Robot_Props::Autonomous_Properties &auton=m_FRC2012RobotProps.Autonomous_Props;
 			err = script.GetFieldTable("ramp_left");
 			if (!err)
 			{
 				Vec2D OffsetPosition;
 				err=ProcessVec2D(m_FRC2012RobotProps,script,OffsetPosition);
 				ASSERT_MSG(!err, err);
-				m_FRC2012RobotProps.Autonomous_Props.RampLeft_ErrorCorrection_Offset=OffsetPosition;
+				auton.RampLeft_ErrorCorrection_Offset=OffsetPosition;
 			}
 			err = script.GetFieldTable("ramp_right");
 			if (!err)
@@ -1186,7 +1188,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				Vec2D OffsetPosition;
 				err=ProcessVec2D(m_FRC2012RobotProps,script,OffsetPosition);
 				ASSERT_MSG(!err, err);
-				m_FRC2012RobotProps.Autonomous_Props.RampRight_ErrorCorrection_Offset=OffsetPosition;
+				auton.RampRight_ErrorCorrection_Offset=OffsetPosition;
 			}
 			err = script.GetFieldTable("ramp_center");
 			if (!err)
@@ -1194,8 +1196,10 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				Vec2D OffsetPosition;
 				err=ProcessVec2D(m_FRC2012RobotProps,script,OffsetPosition);
 				ASSERT_MSG(!err, err);
-				m_FRC2012RobotProps.Autonomous_Props.RampCenter_ErrorCorrection_Offset=OffsetPosition;
+				auton.RampCenter_ErrorCorrection_Offset=OffsetPosition;
 			}
+			script.GetField("x_left_arc", NULL, NULL, &auton.XLeftArc);
+			script.GetField("x_right_arc", NULL, NULL, &auton.XRightArc);
 			script.Pop();
 		}
 		err = script.GetFieldTable("controls");
@@ -1338,15 +1342,15 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
 	//Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
 	Fire *FireOn=new Fire(*Robot,true);
-	Goal_Wait *goal_waitforballs=new Goal_Wait(5.0); //wait for balls
+	Goal_Wait *goal_waitforballs=new Goal_Wait(7.0); //wait for balls
 	Fire *FireOff=new Fire(*Robot,false);
 
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
 	Goal_Ship_MoveToPosition *goal_drive_2=NULL;
 	OperateSolenoid *DeployFlipper=NULL;
-	//Fire *EndSomeFire_On=NULL;
-	//Goal_Wait *goal_waitEndFire=NULL;
-	//Fire *EndSomeFire_Off=NULL;
+	Fire *EndSomeFire_On=NULL;
+	Goal_Wait *goal_waitEndFire=NULL;
+	Fire *EndSomeFire_Off=NULL;
 	if (RampIndex != (size_t)-1)
 	{
 		DeployFlipper=new OperateSolenoid(*Robot,FRC_2012_Robot::eFlipperDown,true);
@@ -1362,12 +1366,12 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 				Y+=auton.RampCenter_ErrorCorrection_Offset[1];
 				break;
 			case 1: 
-				X=-(c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak=-(c_HalfCourtWidth+1.9); 
+				X=-(c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak=-(c_HalfCourtWidth+auton.XLeftArc); 
 				X+=auton.RampLeft_ErrorCorrection_Offset[0];
 				Y+=auton.RampLeft_ErrorCorrection_Offset[1];
 				break;
 			case 2: 
-				X= (c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak= (c_HalfCourtWidth+1.9); 
+				X= (c_HalfCourtWidth-(c_BridgeDimensions[0]/2.0)),X_Tweak= (c_HalfCourtWidth+auton.XRightArc); 
 				X+=auton.RampRight_ErrorCorrection_Offset[0];
 				Y+=auton.RampRight_ErrorCorrection_Offset[1];
 				break;
@@ -1380,18 +1384,26 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 		wp.Position[1]= (Robot->GetPos_m()[1] + Y) / 2.0;  //mid point on the Y so it can straighten out
 		wp.Position[0]=  X_Tweak;
 		goal_drive_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,false,false,0.01); //don't stop on this one
-		//EndSomeFire_On=new Fire(*Robot,true);
-		//goal_waitEndFire=new Goal_Wait(8.0); //wait for balls
-		//EndSomeFire_Off=new Fire(*Robot,false);
+		//Since turret is disabled for targeting only fire if we are in the middle key
+		if (RampIndex==0)
+		{
+			EndSomeFire_On=new Fire(*Robot,true);
+			goal_waitEndFire=new Goal_Wait(8.0); //wait for balls
+			EndSomeFire_Off=new Fire(*Robot,false);
+		}
 	}
 	//Inserted in reverse since this is LIFO stack list
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	if (goal_drive_1)
 	{
-		//MainGoal->AddSubgoal(EndSomeFire_Off);
-		//MainGoal->AddSubgoal(goal_waitEndFire);
-		//MainGoal->AddSubgoal(EndSomeFire_On);
+		if (RampIndex==0)
+		{
+			MainGoal->AddSubgoal(EndSomeFire_Off);
+			MainGoal->AddSubgoal(goal_waitEndFire);
+		}
 		MainGoal->AddSubgoal(goal_drive_2);
+		if (RampIndex==0)
+			MainGoal->AddSubgoal(EndSomeFire_On);
 		MainGoal->AddSubgoal(goal_drive_1);
 		MainGoal->AddSubgoal(DeployFlipper);
 	}
