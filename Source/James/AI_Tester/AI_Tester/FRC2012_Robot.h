@@ -38,6 +38,7 @@ public:
 		Vec2D RampLeft_ErrorCorrection_Offset;
 		Vec2D RampRight_ErrorCorrection_Offset;
 		Vec2D RampCenter_ErrorCorrection_Offset;
+		double XLeftArc,XRightArc;
 	} Autonomous_Props;
 };
 
