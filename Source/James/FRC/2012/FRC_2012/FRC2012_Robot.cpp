@@ -34,6 +34,8 @@ namespace Scripting=Framework::Scripting;
 
 
 
+#define __DisableTurretTargeting__
+
 //This will make the scale to half with a 0.1 dead zone
 double PositionToVelocity_Tweak(double Value)
 {
@@ -109,8 +111,8 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 	SetRequestedVelocity_FromNormalized(m_Velocity);
 	m_Velocity=0.0;
 
-	//if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
-	if (false)
+	#ifndef __DisableTurretTargeting__
+	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
 	{
 		Vec2D Target=m_pParent->m_TargetOffset;
 		Target-=m_pParent->GetPos_m();
@@ -120,6 +122,8 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 		SetIntendedPosition(NormalizeRotation2(AngleToUse) * m_pParent->m_YawErrorCorrection);
 		//TODO factor in velocity once we have our ball velocity (to solve for time)
 	}
+	#endif
+
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
 	Dout(m_pParent->m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
@@ -729,6 +733,7 @@ void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 	Vec2D position=m_RobotProps.GetFRC2012RobotProps().PresetPositions[index];
 	SetPosition(position[0],position[1]);
 
+	#ifndef __DisableTurretTargeting__
 	if (!IgnoreOrientation)
 	{	
 		Vec2D Target=m_TargetOffset;
@@ -739,6 +744,13 @@ void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 		double TurretPos=NormalizeRotation2(AngleToUse)-m_Turret.GetPos_m();
 		SetAttitude(TurretPos);
 	}
+	#else
+	if (!IgnoreOrientation)
+	{	
+		//with turret not working assume its always in the zero position
+		SetAttitude(0.0);
+	}
+	#endif
 }
 
 void FRC_2012_Robot::Set_Auton_PresetPosition(size_t index)
@@ -760,7 +772,11 @@ void FRC_2012_Robot::SetDefensiveKeyOn()
 	//This is really a scale of 0 - 1 multiplied against 40 feet, but simplified to 0 - 2 * 20
 	const double Distance=Feet2Meters((m_DefensiveKeyNormalizedDistance + 1.0) * 20.0);
 	//determine our turret direction 
+	#ifndef __DisableTurretTargeting__
 	double Direction=NormalizeRotation2(GetAtt_r() + m_Turret.GetPos_m());
+	#else
+	double Direction=0.0;
+	#endif
 	double Y=(sin(Direction+PI_2) * Distance) + GetPos_m()[1];
 	double X=(cos(-Direction+PI_2) * Distance) + GetPos_m()[0];
 	printf("Direction=%f Distance=%f x=%f y=%f\n",RAD_2_DEG(Direction),Meters2Feet(Distance),Meters2Feet(X),Meters2Feet(Y));
