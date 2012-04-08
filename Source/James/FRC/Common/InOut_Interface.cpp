@@ -53,7 +53,7 @@ double Encoder2::GetRate2(double dTime_s)
 	const double CurrentDistance=GetDistance();
 	const double delta=CurrentDistance - m_LastDistance;
 	m_LastDistance=CurrentDistance;
-	return delta*dTime_s;
+	return delta/dTime_s;
 }
 
   /***********************************************************************************************************************************/
