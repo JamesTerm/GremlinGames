@@ -38,10 +38,12 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		
 		Victor m_1,m_2,m_3,m_4;  //explicitly specify victor speed controllers for the robot drive
 		RobotDrive m_RobotDrive;
-		Encoder m_LeftEncoder,m_RightEncoder;
+		Encoder2 m_LeftEncoder,m_RightEncoder;
 
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
+		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
+
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;

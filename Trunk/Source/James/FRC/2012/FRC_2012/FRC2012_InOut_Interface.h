@@ -38,7 +38,6 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		//Note these are temporary to avoid flooding, and should be removed once they are no longer needed
 		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
 		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
-		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 	public:
 		FRC_2012_Robot_Control(bool UseSafety);
 		virtual ~FRC_2012_Robot_Control();

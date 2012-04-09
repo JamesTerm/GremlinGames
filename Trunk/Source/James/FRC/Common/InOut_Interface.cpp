@@ -135,7 +135,7 @@ Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) :
 	m_1(1),m_2(2),m_3(3),m_4(4),
 	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
-	m_LeftEncoder(3,4),m_RightEncoder(1,2)
+	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0)
 {
 	//ResetPos();  may need this later
 	SetSafety(UseSafety);
@@ -172,9 +172,9 @@ double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
 void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
-	double LeftRate=m_LeftEncoder.GetRate();
+	double LeftRate=m_LeftEncoder.GetRate2(m_dTime_s);
 	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
-	double RightRate=m_RightEncoder.GetRate();
+	double RightRate=m_RightEncoder.GetRate2(m_dTime_s);
 	//RightRate=m_KalFilter_EncodeRight(RightRate);
 	LeftVelocity=RPS_To_LinearVelocity(LeftRate);
 	RightVelocity=RPS_To_LinearVelocity(RightRate);
@@ -211,6 +211,7 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 
 void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
 {
+	m_dTime_s=dTime_s;
 }
 
 
