@@ -29,6 +29,7 @@ public:
 		double YawCorrection;
 	};
 	DeliveryCorrectionFields KeyCorrections[3][3];
+	double FireButtonStayOn_Time;  //Time to stay on before stopping the conveyors
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
 	size_t PowerVelocity_DisplayRow;
@@ -181,6 +182,8 @@ class FRC_2012_Robot : public Tank_Robot
 			private:
 				FRC_2012_Robot * const m_pParent;
 				Rotary_Angular m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
+				double m_FireStayOn_Time;  //Time counter of the value remaining in the on state
+				bool m_FireStayOn;  //A valve mechanism that must time out to turn off
 				union ControlSignals
 				{
 					struct ControlSignals_rw
@@ -368,6 +371,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		void TriggerLower(bool on) {m_LowerSensor=on;}
 		void TriggerMiddle(bool on) {m_MiddleSensor=on;}
 		void TriggerFire(bool on) {m_FireSensor=on;}
+		void SlowWheel(bool on) {m_SlowWheel=on;}
 
 	protected:
 		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
@@ -380,6 +384,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
 		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 		bool m_LowerSensor,m_MiddleSensor,m_FireSensor;
+		bool m_SlowWheel;
 };
 
 class FRC_2012_Turret_UI
