@@ -38,6 +38,12 @@ public:
 		Vec2D RampRight_ErrorCorrection_Offset;
 		Vec2D RampCenter_ErrorCorrection_Offset;
 		double XLeftArc,XRightArc;
+		struct WaitForBall_Info
+		{
+			double InitialWait;
+			double TimeOutWait;			//If -1 then it is infinite and will not multi task a wait time (great for testing)
+			double ToleranceThreshold;  //If zero then only the initial wait is used for each ball (or not using the wait for ball feature)
+		} FirstBall_Wait,SecondBall_Wait; //We'll want to tweak the second ball a bit differently
 	} Autonomous_Props;
 };
 
@@ -244,6 +250,7 @@ class FRC_2012_Robot : public Tank_Robot
 
 	public: //Autonomous public access (wind river has problems with friend technique)
 		BallConveyorSystem &GetBallConveyorSystem();
+		PowerWheels &GetPowerWheels();
 		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
 		void Set_Auton_PresetPosition(size_t index);
 		void SetTarget(Targets target);
@@ -319,6 +326,19 @@ class FRC_2012_Goals
 			bool m_IsOn;
 		public:
 			Fire(FRC_2012_Robot &robot,bool On);
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s);
+			virtual void Terminate() {m_Terminate=true;}
+		};
+
+		class WaitForBall : public AtomicGoal
+		{
+		private:
+			FRC_2012_Robot &m_Robot;
+			double m_Tolerance;
+			bool m_Terminate;
+		public:
+			WaitForBall(FRC_2012_Robot &robot,double Tolerance);
 			virtual void Activate() {m_Status=eActive;}
 			virtual Goal_Status Process(double dTime_s);
 			virtual void Terminate() {m_Terminate=true;}
