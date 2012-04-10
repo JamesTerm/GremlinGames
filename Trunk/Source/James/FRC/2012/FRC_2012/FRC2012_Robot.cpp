@@ -312,7 +312,8 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	const bool MiddleSensor=m_pParent->m_RobotControl->GetBoolSensorState(eMiddleConveyor_Sensor);
 	const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
 	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
-	const bool PowerWheelReachedTolerance=fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance;
+	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetRequestedVelocity()!=0.0) &&
+		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
 	bool Grip=m_ControlSignals.bits.Grip==1;
