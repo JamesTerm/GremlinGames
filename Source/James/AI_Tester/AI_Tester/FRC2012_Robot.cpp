@@ -276,7 +276,7 @@ void FRC_2012_Robot::PowerWheels::ResetPos()
 
 FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
 	m_LowerConveyor("LowerConveyor",robot_control,eLowerConveyor),m_MiddleConveyor("MiddleConveyor",robot_control,eMiddleConveyor),
-	m_FireConveyor("FireConveyor",robot_control,eFireConveyor)
+	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),m_FireStayOn_Time(0.0),m_FireStayOn(false)
 {
 	m_ControlSignals.raw=0;
 	//This are always open loop as there is no encoder and this is specified by default
@@ -310,6 +310,22 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	bool GripH=m_ControlSignals.bits.GripH==1;
 	bool Squirt=m_ControlSignals.bits.Squirt==1;
 
+	if (Fire)
+	{
+		m_FireStayOn=true;
+		m_FireStayOn_Time=0.0;
+	}
+	else
+	{
+		if (m_FireStayOn)
+		{
+			m_FireStayOn_Time+=dTime_s;
+			//printf("Fire Staying on=%f\n",m_FireStayOn_Time);
+			if (m_FireStayOn_Time>m_pParent->m_RobotProps.GetFRC2012RobotProps().FireButtonStayOn_Time)
+				m_FireStayOn=false;
+		}
+	}
+
 	//This assumes the motors are in the same orientation: 
 	double LowerAcceleration=((Grip & (!LowerSensor)) || (LowerSensor & (!MiddleSensor))) | GripL | Squirt | Fire ?
 		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
@@ -319,7 +335,7 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_MiddleConveyor.SetCurrentLinearAcceleration(MiddleAcceleration);
 
-	double FireAcceleration= (MiddleSensor & (!FireSensor)) | GripH | Squirt | Fire  ?
+	double FireAcceleration= (MiddleSensor & (!FireSensor)) | GripH | Squirt | Fire | m_FireStayOn ?
 		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
 	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
 
@@ -978,6 +994,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
 		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
+		props.FireButtonStayOn_Time=0.100; //100 ms
 		props.Coordinates_DiplayRow=(size_t)-1;
 		props.TargetVars_DisplayRow=(size_t)-1;
 		props.PowerVelocity_DisplayRow=(size_t)-1;
@@ -1172,6 +1189,8 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("ds_power_velocity_row", NULL, NULL, &fDisplayRow);
 		if (!err)
 			m_FRC2012RobotProps.PowerVelocity_DisplayRow=(size_t)fDisplayRow;
+
+		script.GetField("fire_stay_on_time", NULL, NULL, &m_FRC2012RobotProps.FireButtonStayOn_Time);
 
 		err = script.GetFieldTable("grid_corrections");
 		if (!err)
@@ -1469,6 +1488,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			}
 			break;
 		case FRC_2012_Robot::ePowerWheels:
+			if (m_SlowWheel) Voltage=0.0;
 			m_PowerWheelVoltage=Voltage;
 			m_PowerWheel_Enc.UpdateEncoderVoltage(Voltage);
 			m_PowerWheel_Enc.TimeChange();
@@ -1531,7 +1551,7 @@ bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
 }
 
 FRC_2012_Robot_Control::FRC_2012_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_TurretVoltage(0.0),m_PowerWheelVoltage(0.0),
-	m_LowerSensor(false),m_MiddleSensor(false),m_FireSensor(false)
+	m_LowerSensor(false),m_MiddleSensor(false),m_FireSensor(false),m_SlowWheel(false)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
@@ -1582,12 +1602,14 @@ void FRC_2012_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMa
 		em->EventOnOff_Map["Ball_LowerSensor"].Subscribe(ehl, *this, &FRC_2012_Robot_Control::TriggerLower);
 		em->EventOnOff_Map["Ball_MiddleSensor"].Subscribe(ehl, *this, &FRC_2012_Robot_Control::TriggerMiddle);
 		em->EventOnOff_Map["Ball_FireSensor"].Subscribe(ehl, *this, &FRC_2012_Robot_Control::TriggerFire);
+		em->EventOnOff_Map["Ball_SlowWheel"].Subscribe(ehl, *this, &FRC_2012_Robot_Control::SlowWheel);
 	}
 	else
 	{
 		em->EventOnOff_Map["Ball_LowerSensor"]  .Remove(*this, &FRC_2012_Robot_Control::TriggerLower);
 		em->EventOnOff_Map["Ball_MiddleSensor"]  .Remove(*this, &FRC_2012_Robot_Control::TriggerMiddle);
 		em->EventOnOff_Map["Ball_FireSensor"]  .Remove(*this, &FRC_2012_Robot_Control::TriggerFire);
+		em->EventOnOff_Map["Ball_SlowWheel"]  .Remove(*this, &FRC_2012_Robot_Control::SlowWheel);
 	}
 }
 
