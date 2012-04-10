@@ -96,3 +96,40 @@ class MultitaskGoal : public Goal
 		GoalList m_GoalsToProcess;
 		bool m_WaitAll;
 };
+
+//This class can be used as a stand-alone composite which does nothing special but goes through a list
+class Generic_CompositeGoal : public CompositeGoal
+{
+	private:
+		//typedef CompositeGoal __super;
+	public:
+		Generic_CompositeGoal()
+		{
+			m_Status=eInactive;
+		}
+		//give public access for client to populate goals
+		virtual void AddSubgoal(Goal *g) {__super::AddSubgoal(g);}
+		//client activates manually when goals are added
+		virtual void Activate()
+		{
+			m_Status=eActive; 
+		}
+
+		virtual Goal_Status Process(double dTime_s)
+		{
+			//Client will activate
+			if (m_Status==eInactive)
+				return m_Status;
+
+			if (m_Status==eActive)
+				m_Status=ProcessSubgoals(dTime_s);
+
+			return m_Status;
+		}
+		virtual void Terminate()
+		{
+			//ensure its all clean
+			RemoveAllSubgoals();
+			m_Status=eInactive; //make this inactive
+		}
+};
