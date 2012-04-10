@@ -75,7 +75,15 @@ MainRobot = {
 			ramp_right ={x_in=0, y_in=0 },
 			ramp_center={x_in=0, y_in=0 },
 			x_left_arc=1.9,
-			x_right_arc=1.9
+			x_right_arc=1.9,
+			--If you put -1.0 for the timeout wait it will wait infinitely (good for initial testing or if we are not tipping ramps)
+			--ball 1 initial wait should be long enough for a good ramp up from zero speed
+			--ball_1 ={initial_wait=  2.0, tolerance=75.0, timeout_wait=4.0},
+			--ball 2 initial wait should be long enough to recover from dip and short enough to be active during second ball's deployment
+			--ball_2 ={initial_wait=0.500, tolerance=75.0, timeout_wait=4.0}
+			--panic mode incase the wait ball doesn't work... using zero makes it work like before just pure time
+			ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
+			ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0}
 		},
 		
 		turret =
