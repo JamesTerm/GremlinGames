@@ -1359,7 +1359,7 @@ FRC_2012_Goals::Fire::Goal_Status FRC_2012_Goals::Fire::Process(double dTime_s)
  /*													FRC_2012_Goals::WaitForBall														*/
 /***********************************************************************************************************************************/
 
-FRC_2012_Goals::WaitForBall::WaitForBall(FRC_2012_Robot &robot,double Tolerance) :  m_Robot(robot),m_Terminate(false),m_Tolerance(Tolerance)
+FRC_2012_Goals::WaitForBall::WaitForBall(FRC_2012_Robot &robot,double Tolerance) :  m_Robot(robot),m_Tolerance(Tolerance),m_Terminate(false)
 {
 	m_Status=eInactive;
 }
