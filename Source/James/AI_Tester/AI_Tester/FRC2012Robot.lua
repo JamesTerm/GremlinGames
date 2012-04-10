@@ -75,7 +75,15 @@ MainRobot = {
 			ramp_right ={x_in=0, y_in=0 },
 			ramp_center={x_in=0, y_in=0 },
 			x_left_arc=1.9,
-			x_right_arc=1.9
+			x_right_arc=1.9,
+			--If you put -1.0 for the timeout wait it will wait infinitely (good for initial testing or if we are not tipping ramps)
+			--ball 1 initial wait should be long enough for a good ramp up from zero speed
+			ball_1 ={initial_wait=  2.0, tolerance=75.0, timeout_wait=4.0},
+			--ball 2 initial wait should be long enough to recover from dip and short enough to be active during second ball's deployment
+			ball_2 ={initial_wait=0.500, tolerance=75.0, timeout_wait=4.0}
+			--panic mode incase the wait ball doesn't work... using zero makes it work like before just pure time
+			--ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
+			--ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0}
 		},
 		
 		turret =
@@ -201,7 +209,8 @@ MainRobot = {
 				control = "Logitech Attack 3",
 				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, is_squared=true},
 				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
-				Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
+				--Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
+				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, is_squared=false},
 				Flippers_Retract = {type="joystick_button", key=3, on_off=true},
 				Flippers_Advance = {type="joystick_button", key=4, on_off=true},
 				Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
@@ -216,7 +225,8 @@ MainRobot = {
 				Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 				--Ball_Fire = {type="joystick_button", key=4, on_off=true},
 				--PowerWheels_IsRunning = {type="joystick_button", key=3, on_off=true},
-				Robot_TurretSetTargetingOff = {type="joystick_button", key=6, on_off=true},
+				--Robot_TurretSetTargetingOff = {type="joystick_button", key=6, on_off=true},
+				Ball_SlowWheel = {type="joystick_button", key=6, on_off=true},
 				Robot_SetPreset1 = {type="joystick_button", key=5, on_off=false},
 				Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
 				Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},

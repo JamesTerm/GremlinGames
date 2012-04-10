@@ -301,7 +301,8 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	const bool MiddleSensor=m_pParent->m_RobotControl->GetBoolSensorState(eMiddleConveyor_Sensor);
 	const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
 	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
-	const bool PowerWheelReachedTolerance=fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance;
+	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetRequestedVelocity()!=0.0) &&
+		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
 	bool Grip=m_ControlSignals.bits.Grip==1;
@@ -499,6 +500,11 @@ void FRC_2012_Robot::ResetPos()
 FRC_2012_Robot::BallConveyorSystem &FRC_2012_Robot::GetBallConveyorSystem()
 {
 	return m_BallConveyorSystem;
+}
+
+FRC_2012_Robot::PowerWheels &FRC_2012_Robot::GetPowerWheels()
+{
+	return m_PowerWheels;
 }
 
 void FRC_2012_Robot::ApplyErrorCorrection()
@@ -1018,7 +1024,14 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		auton.RampRight_ErrorCorrection_Offset=
 		auton.RampCenter_ErrorCorrection_Offset=Vec2D(0.0,0.0);
 		auton.XLeftArc=auton.XRightArc=1.9;
-
+		FRC_2012_Robot_Props::Autonomous_Properties::WaitForBall_Info &ball_1=auton.FirstBall_Wait;
+		ball_1.InitialWait=4.0;
+		ball_1.TimeOutWait=-1.0;
+		ball_1.ToleranceThreshold=0.0;
+		FRC_2012_Robot_Props::Autonomous_Properties::WaitForBall_Info &ball_2=auton.SecondBall_Wait;
+		ball_2.InitialWait=4.0;
+		ball_2.TimeOutWait=-1.0;
+		ball_2.ToleranceThreshold=0.0;
 		m_FRC2012RobotProps=props;
 	}
 	{
@@ -1233,6 +1246,33 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				ASSERT_MSG(!err, err);
 				auton.RampCenter_ErrorCorrection_Offset=OffsetPosition;
 			}
+			{
+				const char * const fieldTable[]=
+				{
+					"ball_1","ball_2"
+				};
+				//You just gotta love pointers to do this!  ;)
+				FRC_2012_Robot_Props::Autonomous_Properties::WaitForBall_Info *ballTable[]=
+				{
+					&auton.FirstBall_Wait,&auton.SecondBall_Wait
+				};
+				for (size_t i=0;i<2;i++)
+				{
+					err = script.GetFieldTable(fieldTable[i]);
+					if (!err)
+					{
+						FRC_2012_Robot_Props::Autonomous_Properties::WaitForBall_Info &ball=*ballTable[i];
+						err=script.GetField("initial_wait", NULL, NULL, &ball.InitialWait);
+						ASSERT_MSG(!err, err);
+						err=script.GetField("timeout_wait", NULL, NULL, &ball.TimeOutWait);
+						ASSERT_MSG(!err, err);
+						err=script.GetField("tolerance", NULL, NULL, &ball.ToleranceThreshold);
+						ASSERT_MSG(!err, err);
+						script.Pop();
+					}
+				}
+			}
+
 			script.GetField("x_left_arc", NULL, NULL, &auton.XLeftArc);
 			script.GetField("x_right_arc", NULL, NULL, &auton.XRightArc);
 			script.Pop();
@@ -1254,6 +1294,10 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 				"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
 				"Robot_SetCreepMode","Robot_Flippers_Solenoid"
+				//AI Tester events only
+				#if 1
+					,"Ball_SlowWheel"
+				#endif
 			};
 
 			//TODO we may use actual product names here, but this will be fine for wind river build
@@ -1308,6 +1352,34 @@ FRC_2012_Goals::Fire::Goal_Status FRC_2012_Goals::Fire::Process(double dTime_s)
 	ActivateIfInactive();
 	m_Robot.GetBallConveyorSystem().Fire(m_IsOn);
 	m_Status=eCompleted;
+	return m_Status;
+}
+
+  /***********************************************************************************************************************************/
+ /*													FRC_2012_Goals::WaitForBall														*/
+/***********************************************************************************************************************************/
+
+FRC_2012_Goals::WaitForBall::WaitForBall(FRC_2012_Robot &robot,double Tolerance) :  m_Robot(robot),m_Terminate(false),m_Tolerance(Tolerance)
+{
+	m_Status=eInactive;
+}
+Goal::Goal_Status FRC_2012_Goals::WaitForBall::Process(double dTime_s)
+{
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	//Keep simple... if we have noisy artifacts that yield false positives then we may need to consider blend and / or Kalman
+	const double PowerWheelSpeedDifference=m_Robot.GetPowerWheels().GetRequestedVelocity_Difference();
+	//when we encounter the tolerance dip in speed we are done
+	if (fabs(PowerWheelSpeedDifference)>m_Tolerance)
+	{
+		printf("Ball Deployed\n");
+		m_Status=eCompleted;
+	}
 	return m_Status;
 }
 
@@ -1375,9 +1447,60 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	const FRC_2012_Robot_Props::Autonomous_Properties &auton=Robot->GetRobotProps().GetFRC2012RobotProps().Autonomous_Props;
 	Robot->Set_Auton_PresetPosition(KeyIndex);
 	Robot->SetTarget((FRC_2012_Robot::Targets)TargetIndex);
-	//Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
 	Fire *FireOn=new Fire(*Robot,true);
-	Goal_Wait *goal_waitforballs=new Goal_Wait(7.0); //wait for balls
+	#if 0
+	Goal_Wait *goal_waitforballs=new Goal_Wait(auton.FirstBall_Wait.InitialWait); //wait for balls
+	#else
+	Generic_CompositeGoal *goal_waitforballs= new Generic_CompositeGoal;
+	{
+		const FRC_2012_Robot_Props::Autonomous_Properties::WaitForBall_Info &ball_1=auton.FirstBall_Wait;
+		const FRC_2012_Robot_Props::Autonomous_Properties::WaitForBall_Info &ball_2=auton.SecondBall_Wait;
+
+		Generic_CompositeGoal *Ball_1_Composite= new Generic_CompositeGoal;
+		if (ball_1.ToleranceThreshold!=0.0)
+		{
+			//Create the wait for ball goal
+			WaitForBall *Ball_1_Wait=new WaitForBall(*Robot,ball_1.ToleranceThreshold);
+			//determine if we have a timeout
+			if (ball_1.TimeOutWait==-1.0)
+				Ball_1_Composite->AddSubgoal(Ball_1_Wait);	
+			else
+			{
+				MultitaskGoal *WaitWithTimeout1=new MultitaskGoal(false);
+				WaitWithTimeout1->AddGoal(Ball_1_Wait);
+				WaitWithTimeout1->AddGoal(new Goal_Wait(ball_1.TimeOutWait));
+				Ball_1_Composite->AddSubgoal(WaitWithTimeout1);
+			}
+		}
+		Ball_1_Composite->AddSubgoal(new Goal_Wait(ball_1.InitialWait));
+		Ball_1_Composite->Activate(); //ready to go
+
+
+		Generic_CompositeGoal *Ball_2_Composite= new Generic_CompositeGoal;
+		if (ball_2.ToleranceThreshold!=0.0)
+		{
+			//Create the wait for ball goal
+			WaitForBall *Ball_2_Wait=new WaitForBall(*Robot,ball_2.ToleranceThreshold);
+			//determine if we have a timeout
+			if (ball_2.TimeOutWait==-1.0)
+				Ball_2_Composite->AddSubgoal(Ball_2_Wait);	
+			else
+			{
+				MultitaskGoal *WaitWithTimeout2=new MultitaskGoal(false);
+				WaitWithTimeout2->AddGoal(Ball_2_Wait);
+				WaitWithTimeout2->AddGoal(new Goal_Wait(ball_2.TimeOutWait));
+				Ball_2_Composite->AddSubgoal(WaitWithTimeout2);
+			}
+		}
+		Ball_2_Composite->AddSubgoal(new Goal_Wait(ball_2.InitialWait));
+		Ball_2_Composite->Activate(); //ready to go
+
+		//put in backwards
+		goal_waitforballs->AddSubgoal(Ball_2_Composite);
+		goal_waitforballs->AddSubgoal(Ball_1_Composite);
+		goal_waitforballs->Activate(); //ready to go
+	}
+	#endif
 	Fire *FireOff=new Fire(*Robot,false);
 
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
@@ -1445,7 +1568,7 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	MainGoal->AddSubgoal(FireOff);
 	MainGoal->AddSubgoal(goal_waitforballs);
 	MainGoal->AddSubgoal(FireOn);
-	//MainGoal->AddSubgoal(goal_waitforturret);
+	MainGoal->Activate();
 	return MainGoal;
 }
 
