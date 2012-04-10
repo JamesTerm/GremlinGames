@@ -79,6 +79,9 @@ class  CompositeGoal : public Goal
 class MultitaskGoal : public Goal
 {
 	public:
+		/// \param WaitAll if true the goal is active when the state of all objects are no longer active; If false it will either be the first
+		/// completed goal or when all goals are no longer active (whichever comes first).  The idea is similar to WaitForMultipleObjects in win32.
+		MultitaskGoal(bool WaitAll=true);
 		~MultitaskGoal();
 		///first add the goals here
 		void AddGoal(Goal *g) {m_GoalsToProcess.push_back(g);}
@@ -91,4 +94,5 @@ class MultitaskGoal : public Goal
 	private:
 		typedef std::list<Goal *> GoalList;
 		GoalList m_GoalsToProcess;
+		bool m_WaitAll;
 };
