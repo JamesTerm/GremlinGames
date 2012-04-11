@@ -60,6 +60,7 @@ MainRobot = {
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
 		ds_power_velocity_row=-1,			--Only used during keying the grid
+		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
 		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
 		
 		grid_corrections =

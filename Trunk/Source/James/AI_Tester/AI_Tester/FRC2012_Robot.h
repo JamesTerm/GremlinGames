@@ -29,7 +29,8 @@ public:
 		double YawCorrection;
 	};
 	DeliveryCorrectionFields KeyCorrections[3][3];
-	double FireButtonStayOn_Time;  //Time to stay on before stopping the conveyors
+	double FireTriggerDelay;		//Time for stable signal before triggering the fire
+	double FireButtonStayOn_Time;   //Time to stay on before stopping the conveyors
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
 	size_t PowerVelocity_DisplayRow;
@@ -188,8 +189,10 @@ class FRC_2012_Robot : public Tank_Robot
 			private:
 				FRC_2012_Robot * const m_pParent;
 				Rotary_Angular m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
+				double m_FireDelayTrigger_Time; //Time counter of the value remaining in the on-to-delay state
 				double m_FireStayOn_Time;  //Time counter of the value remaining in the on state
-				bool m_FireStayOn;  //A valve mechanism that must time out to turn off
+				bool m_FireDelayTriggerOn; //A valve mechanism that must meet time requirement to disable the delay
+				bool m_FireStayOn;		   //A valve mechanism that must time out to turn off
 				union ControlSignals
 				{
 					struct ControlSignals_rw
