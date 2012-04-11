@@ -276,7 +276,9 @@ void FRC_2012_Robot::PowerWheels::ResetPos()
 
 FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
 	m_LowerConveyor("LowerConveyor",robot_control,eLowerConveyor),m_MiddleConveyor("MiddleConveyor",robot_control,eMiddleConveyor),
-	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),m_FireStayOn_Time(0.0),m_FireStayOn(false)
+	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
+	m_FireDelayTrigger_Time(0.0),m_FireStayOn_Time(0.0),
+	m_FireDelayTriggerOn(false),m_FireStayOn(false)
 {
 	m_ControlSignals.raw=0;
 	//This are always open loop as there is no encoder and this is specified by default
@@ -310,6 +312,24 @@ void FRC_2012_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	bool GripM=m_ControlSignals.bits.GripM==1;
 	bool GripH=m_ControlSignals.bits.GripH==1;
 	bool Squirt=m_ControlSignals.bits.Squirt==1;
+
+	if (Fire)
+	{
+		if (m_FireDelayTriggerOn)
+		{
+			m_FireDelayTrigger_Time+=dTime_s;
+			//printf("Fire delaying =%f\n",m_FireDelayTrigger_Time);
+			if (m_FireDelayTrigger_Time>m_pParent->m_RobotProps.GetFRC2012RobotProps().FireTriggerDelay)
+				m_FireDelayTriggerOn=false;
+		}
+	}
+	else
+	{
+		m_FireDelayTriggerOn=true;
+		m_FireDelayTrigger_Time=0.0;
+	}
+
+	Fire = Fire && !m_FireDelayTriggerOn;
 
 	if (Fire)
 	{
@@ -1000,6 +1020,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		props.PresetPositions[0]=Vec2D(0.0,DefaultY);
 		props.PresetPositions[1]=Vec2D(-HalfKeyWidth,DefaultY);
 		props.PresetPositions[2]=Vec2D(HalfKeyWidth,DefaultY);
+		props.FireTriggerDelay=0.100;  //e.g. 10 iterations of good tolerance
 		props.FireButtonStayOn_Time=0.100; //100 ms
 		props.Coordinates_DiplayRow=(size_t)-1;
 		props.TargetVars_DisplayRow=(size_t)-1;
@@ -1203,6 +1224,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 			m_FRC2012RobotProps.PowerVelocity_DisplayRow=(size_t)fDisplayRow;
 
+		script.GetField("fire_trigger_delay", NULL, NULL, &m_FRC2012RobotProps.FireTriggerDelay);
 		script.GetField("fire_stay_on_time", NULL, NULL, &m_FRC2012RobotProps.FireButtonStayOn_Time);
 
 		err = script.GetFieldTable("grid_corrections");
