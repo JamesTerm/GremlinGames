@@ -176,6 +176,13 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
 	double RightRate=m_RightEncoder.GetRate2(m_dTime_s);
 	//RightRate=m_KalFilter_EncodeRight(RightRate);
+	
+	//Quick test of using GetRate() vs. GetRate2()
+	#if 0
+	if ((LeftRate>0.0)||(RightRate>0.0))
+		printf("l1=%.1f l2=%.1f r1=%.1f r2=%.1f\n",m_LeftEncoder.GetRate(),LeftRate,m_RightEncoder.GetRate(),RightRate);
+	#endif
+	
 	LeftVelocity=RPS_To_LinearVelocity(LeftRate);
 	RightVelocity=RPS_To_LinearVelocity(RightRate);
 	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", LeftVelocity,RightVelocity);
