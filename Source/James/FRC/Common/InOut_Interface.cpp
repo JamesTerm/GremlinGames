@@ -172,9 +172,11 @@ double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
 void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	LeftVelocity=0.0,RightVelocity=0.0;
-	double LeftRate=m_LeftEncoder.GetRate2(m_dTime_s);
+	//double LeftRate=m_LeftEncoder.GetRate2(m_dTime_s);
+	double LeftRate=m_LeftEncoder.GetRate();
 	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
-	double RightRate=m_RightEncoder.GetRate2(m_dTime_s);
+	//double RightRate=m_RightEncoder.GetRate2(m_dTime_s);
+	double RightRate=m_RightEncoder.GetRate();
 	//RightRate=m_KalFilter_EncodeRight(RightRate);
 	
 	//Quick test of using GetRate() vs. GetRate2()

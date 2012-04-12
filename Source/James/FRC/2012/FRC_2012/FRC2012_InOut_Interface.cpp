@@ -350,8 +350,14 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			
 			//Here we use the new GetRate2 which should offer better precision
 			
-			//result= m_PowerWheel_Encoder.GetRate();
-			result= m_PowerWheel_Encoder.GetRate2(m_TankRobotControl.Get_dTime_s());
+			result= m_PowerWheel_Encoder.GetRate();
+			//result= m_PowerWheel_Encoder.GetRate2(m_TankRobotControl.Get_dTime_s());
+			
+			//Quick test of using GetRate() vs. GetRate2()
+			#if 0
+			if (result>0.0)
+				printf("pw1=%.1f pw2=%.1f t=%f\n",m_PowerWheel_Encoder.GetRate(),result,m_TankRobotControl.Get_dTime_s());
+			#endif
 			
 			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			{
