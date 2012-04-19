@@ -122,11 +122,11 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off),
 	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor),
 	//Sensors
-	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B),
+	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
 	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
 	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
 	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B),
-	m_PowerWheelAverager(0.05)
+	m_PowerWheelAverager(0.5)
 
 	//m_Potentiometer(1)
 {
@@ -360,11 +360,12 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#endif
 			
 			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
+			
 			{
 				result=m_PowerWheelFilter(result);
-				//double average=m_PowerWheelAverager.GetAverage(result);
-				//result=IsZero(average)?0.0:average;
-				result=IsZero(result)?0.0:result;
+				double average=m_PowerWheelAverager.GetAverage(result);
+				result=IsZero(average)?0.0:average;
+				//result=IsZero(result)?0.0:result;
 			}
 			#else
 			//This is temporary code to pacify using a closed loop, remove once we have real implementation

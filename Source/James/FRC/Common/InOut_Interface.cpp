@@ -36,7 +36,7 @@ using namespace Framework::Base;
 /***********************************************************************************************************************************/
 
 
-Encoder2::Encoder2(UINT32 aChannel, UINT32 bChannel, bool reverseDirection) : Encoder(aChannel,bChannel,reverseDirection),
+Encoder2::Encoder2(UINT32 aChannel, UINT32 bChannel, bool reverseDirection, EncodingType encodingType) : Encoder(aChannel,bChannel,reverseDirection,encodingType),
 		m_LastDistance(0.0)
 {
 }
