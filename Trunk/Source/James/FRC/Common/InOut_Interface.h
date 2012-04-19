@@ -4,7 +4,7 @@
 class Encoder2 : public Encoder
 {
 	public:
-		Encoder2(UINT32 aChannel, UINT32 bChannel, bool reverseDirection=false);
+		Encoder2(UINT32 aChannel, UINT32 bChannel, bool reverseDirection=false, CounterBase::EncodingType encodingType = k4X);
 		///This uses a different technique of obtaining the rate by use of the actual pulse count.  This should produce less noisy results
 		///at higher speeds.  This is simple as it does not support overrlap as it would take about 5 continuous 
 		///hours at 78 rps before the end is reached
