@@ -198,12 +198,14 @@ class Priority_Averager
 		if ((m_Iteration_Counter % m_SampleSize)==0)
 		{
 			m_CurrentBadApple_Percentage+=m_PurgePercent;
-			if (m_PurgePercent >= (1.0 / (double)m_SampleSize))
+			//printf(" p=%.2f ",m_CurrentBadApple_Percentage);
+			if (m_CurrentBadApple_Percentage >= 1.0)
 			{
 				//Time to purge all the bad apples
 				flush();
 				m_queue.push(ret);  //put one good apple back in to start the cycle over
-				m_CurrentBadApple_Percentage=0.0;
+				m_CurrentBadApple_Percentage-=1.0;
+				//printf(" p=%.2f ",m_CurrentBadApple_Percentage);
 			}
 		}
 		return ret;
