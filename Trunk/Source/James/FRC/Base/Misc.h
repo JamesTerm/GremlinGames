@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <map>
+#include <queue>
 
 typedef std::map<std::string, std::string, std::greater<std::string> > StringMap;
 #define ASSERT(cond) assert(cond);
@@ -141,7 +142,6 @@ private:
 };
 
 //Here is a very light weight averager that uses the blend technique to obtain an average.  Designed to easily replace Averager.
-template<class T>
 class Blend_Averager
 {
 public:
@@ -150,7 +150,7 @@ public:
 	//get and set smoothing value  (optional)
 	//exposing this allows for dynamic smoothing
 	double &GetSmoothingValue() {return m_SmoothingValue;}
-	T GetAverage(T newItem)
+	double GetAverage(double newItem)
 	{
 		if (m_SmoothingValue!=-1.0)
 			m_CurrentValue=((newItem * m_SmoothingValue ) + (m_CurrentValue  * (1.0-m_SmoothingValue)));
@@ -164,7 +164,50 @@ public:
 	void Reset(){m_SmoothingValue=-1;}
 private:
 	double m_SmoothingValue,m_DefaultSmoothingValue;
-	T m_CurrentValue;
+	double m_CurrentValue;
+};
+
+
+class Priority_Averager
+{
+	private:
+		std::priority_queue<double> m_queue;
+		const size_t m_SampleSize;
+		const double m_PurgePercent;
+
+		double m_CurrentBadApple_Percentage;
+		size_t m_Iteration_Counter;
+		void flush()
+		{
+			while (!m_queue.empty())
+				m_queue.pop();
+		}
+	public:
+	Priority_Averager(size_t SampleSize, double PurgePercent) : m_SampleSize(SampleSize),m_PurgePercent(PurgePercent),
+		m_CurrentBadApple_Percentage(0.0),m_Iteration_Counter(0)
+	{
+	}
+	double operator()(double newItem)
+	{
+		m_queue.push(newItem);
+		double ret=m_queue.top();
+		if (m_queue.size()>m_SampleSize)
+			m_queue.pop();
+		//Now to manage when to purge the bad apples
+		m_Iteration_Counter++;
+		if ((m_Iteration_Counter % m_SampleSize)==0)
+		{
+			m_CurrentBadApple_Percentage+=m_PurgePercent;
+			if (m_PurgePercent >= (1.0 / (double)m_SampleSize))
+			{
+				//Time to purge all the bad apples
+				flush();
+				m_queue.push(ret);  //put one good apple back in to start the cycle over
+				m_CurrentBadApple_Percentage=0.0;
+			}
+		}
+		return ret;
+	}
 };
 
 #ifndef M_PI
