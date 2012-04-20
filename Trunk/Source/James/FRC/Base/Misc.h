@@ -142,6 +142,7 @@ private:
 };
 
 //Here is a very light weight averager that uses the blend technique to obtain an average.  Designed to easily replace Averager.
+template<class T>
 class Blend_Averager
 {
 public:
@@ -150,7 +151,7 @@ public:
 	//get and set smoothing value  (optional)
 	//exposing this allows for dynamic smoothing
 	double &GetSmoothingValue() {return m_SmoothingValue;}
-	double GetAverage(double newItem)
+	T operator()(T newItem)
 	{
 		if (m_SmoothingValue!=-1.0)
 			m_CurrentValue=((newItem * m_SmoothingValue ) + (m_CurrentValue  * (1.0-m_SmoothingValue)));
@@ -164,7 +165,7 @@ public:
 	void Reset(){m_SmoothingValue=-1;}
 private:
 	double m_SmoothingValue,m_DefaultSmoothingValue;
-	double m_CurrentValue;
+	T m_CurrentValue;
 };
 
 
