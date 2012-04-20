@@ -444,7 +444,7 @@ void ChaseVehicle_Imp::GetLookAtVectors(bool usingPOV, const osg::Quat &intended
 		if (dTime_s>0.0) 
 			Acceleration = (CurrentVelocity-m_LastVehicleVelocity)/dTime_s;
 
-		double LocalAcceleration=m_acceleratorBlend->GetAverage(Acceleration*Self_Entity->GetDirection());
+		double LocalAcceleration=(*m_acceleratorBlend)(Acceleration*Self_Entity->GetDirection());
 
 		// Use that in proportion to the maximum acceleration
 		double mtf = GetMaxAccelForward();
