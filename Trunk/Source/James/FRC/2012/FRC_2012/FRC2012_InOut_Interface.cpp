@@ -126,7 +126,7 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
 	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
 	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B),
-	m_PowerWheelAverager(0.5),m_PowerWheel_PriorityAverager(5,0.25)
+	m_PowerWheelAverager(0.5),m_PowerWheel_PriorityAverager(10,0.30)
 
 	//m_Potentiometer(1)
 {
@@ -352,6 +352,12 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			
 			result= m_PowerWheel_Encoder.GetRate();
 			//result= m_PowerWheel_Encoder.GetRate2(m_TankRobotControl.Get_dTime_s());
+			#if 0
+			if (result!=0.0)
+				printf("%.2f  %.2f \n",result,m_PowerWheel_PriorityAverager(result));
+			#else
+			result=m_PowerWheel_PriorityAverager(result);
+			#endif
 			
 			//Quick test of using GetRate() vs. GetRate2()
 			#if 0
@@ -362,7 +368,6 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			
 			{
-				result=m_PowerWheel_PriorityAverager(result);
 				result=m_PowerWheelFilter(result);
 				//double average=m_PowerWheelAverager.GetAverage(result);
 				//result=IsZero(average)?0.0:average;
