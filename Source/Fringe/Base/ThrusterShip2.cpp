@@ -246,7 +246,7 @@ void ThrustShip2::ApplyTorqueThrusters(Physics::PhysicsEntity &PhysicsToUse,cons
 	#endif
 
 	// Tell the RC Controller about it so it can be sent
-	m_TS_RC_Controller->LocalTorque = m_TorqueReported_Averager.GetAverage(TorqueToApply);
+	m_TS_RC_Controller->LocalTorque = m_TorqueReported_Averager(TorqueToApply);
 }
 
 

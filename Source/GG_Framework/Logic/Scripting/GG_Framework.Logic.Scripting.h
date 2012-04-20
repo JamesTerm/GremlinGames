@@ -1,7 +1,8 @@
 // GG_Framework.Logic.Scripting.h
 #pragma once
 
-#define __UseStandAloneVersion__
+//The stand alone works in AI tester, but not in the game (we may want to fix that at some point)
+#undef __UseStandAloneVersion__
 
 #ifdef FRAMEWORK_LOGIC_SCRIPTING_EXPORTS
 #define FRAMEWORK_LOGIC_SCRIPTING_API __declspec(dllexport)
