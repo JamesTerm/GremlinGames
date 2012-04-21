@@ -45,6 +45,7 @@ public:
 			double TimeOutWait;			//If -1 then it is infinite and will not multi task a wait time (great for testing)
 			double ToleranceThreshold;  //If zero then only the initial wait is used for each ball (or not using the wait for ball feature)
 		} FirstBall_Wait,SecondBall_Wait; //We'll want to tweak the second ball a bit differently
+		double MoveForward;				//Optional to move forward to use less power to shoot
 	} Autonomous_Props;
 };
 
