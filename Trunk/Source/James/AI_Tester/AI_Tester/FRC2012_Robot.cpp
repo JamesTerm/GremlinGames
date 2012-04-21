@@ -1041,6 +1041,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		}
 
 		FRC_2012_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
+		auton.MoveForward=0.0;
 		auton.RampLeft_ErrorCorrection_Offset=
 		auton.RampRight_ErrorCorrection_Offset=
 		auton.RampCenter_ErrorCorrection_Offset=Vec2D(0.0,0.0);
@@ -1244,6 +1245,13 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			struct FRC_2012_Robot_Props::Autonomous_Properties &auton=m_FRC2012RobotProps.Autonomous_Props;
+			{
+				double length;
+				err = script.GetField("move_forward_ft", NULL, NULL,&length);
+				if (!err)
+					auton.MoveForward=Feet2Meters(length);
+			}
+
 			err = script.GetFieldTable("ramp_left");
 			if (!err)
 			{
@@ -1473,6 +1481,17 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	#if 0
 	Goal_Wait *goal_waitforballs=new Goal_Wait(auton.FirstBall_Wait.InitialWait); //wait for balls
 	#else
+	Goal_Ship_MoveToPosition *goal_drive_foward=NULL;
+	if (auton.MoveForward!=0.0)
+	{
+		const Vec2d start_pos=Robot->GetRobotProps().GetFRC2012RobotProps().PresetPositions[KeyIndex];
+		WayPoint wp;
+		wp.Position[0]=start_pos[0];
+		wp.Position[1]=start_pos[1]+auton.MoveForward;
+		wp.Power=1.0;
+		goal_drive_foward=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	}
+
 	Generic_CompositeGoal *goal_waitforballs= new Generic_CompositeGoal;
 	{
 		const FRC_2012_Robot_Props::Autonomous_Properties::WaitForBall_Info &ball_1=auton.FirstBall_Wait;
@@ -1589,6 +1608,8 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	}
 	MainGoal->AddSubgoal(FireOff);
 	MainGoal->AddSubgoal(goal_waitforballs);
+	if (goal_drive_foward)
+		MainGoal->AddSubgoal(goal_drive_foward);
 	MainGoal->AddSubgoal(FireOn);
 	MainGoal->Activate();
 	return MainGoal;
