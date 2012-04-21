@@ -72,6 +72,7 @@ MainRobot = {
 		
 		auton =
 		{
+			move_forward_ft =0.0;
 			ramp_left  ={x_in=0, y_in=0 },
 			ramp_right ={x_in=0, y_in=0 },
 			ramp_center={x_in=0, y_in=0 },
