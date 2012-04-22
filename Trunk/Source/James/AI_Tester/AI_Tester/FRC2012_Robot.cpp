@@ -535,7 +535,7 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	const Vec2d &Pos_m=GetPos_m();
 	#else
 	//We can use the error grid cells directly by simply positioning the robot at the right place
-	size_t HackedIndex=0;
+	size_t HackedIndex;
 	switch (m_Target)
 	{
 	case eLeftGoal:
@@ -543,6 +543,9 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 		break;
 	case eRightGoal:
 		HackedIndex=2;
+		break;
+	default:
+		HackedIndex=0;
 		break;
 	}
 
