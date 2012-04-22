@@ -24,6 +24,7 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 
 
 #define __DisableTurretTargeting__
+#define __DisableEncoderTracking__
 
 //This will make the scale to half with a 0.1 dead zone
 double PositionToVelocity_Tweak(double Value)
@@ -530,7 +531,23 @@ FRC_2012_Robot::PowerWheels &FRC_2012_Robot::GetPowerWheels()
 void FRC_2012_Robot::ApplyErrorCorrection()
 {
 	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
+	#ifndef __DisableEncoderTracking__
 	const Vec2d &Pos_m=GetPos_m();
+	#else
+	//We can use the error grid cells directly by simply positioning the robot at the right place
+	size_t HackedIndex=0;
+	switch (m_Target)
+	{
+	case eLeftGoal:
+		HackedIndex=1;
+		break;
+	case eRightGoal:
+		HackedIndex=2;
+		break;
+	}
+
+	const Vec2d &Pos_m=	robot_props.PresetPositions[HackedIndex];
+	#endif
 	//first determine which quadrant we are in
 	//These offsets are offsets added to the array indexes 
 	const size_t XOffset=(Pos_m[0]>(robot_props.KeyGrid[1][1])[0]) ? 1 : 0;
@@ -571,10 +588,19 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 void FRC_2012_Robot::TimeChange(double dTime_s)
 {
 	const FRC_2012_Robot_Props &robot_props=m_RobotProps.GetFRC2012RobotProps();
+	#ifndef __DisableEncoderTracking__
 	const Vec2d &Pos_m=GetPos_m();
 	//Got to make this fit within 20 chars :(
 	Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
 		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
+	#else
+	const Vec2d &Pos_m=	robot_props.PresetPositions[0];
+	{	//Even though this is disabled... still want it to read correctly for encoder reading and calibration
+		const Vec2d &Pos_temp=GetPos_m();
+		Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_temp[0]),
+			Meters2Feet(Pos_temp[1]),RAD_2_DEG(GetAtt_r()));
+	}
+	#endif
 
 	switch (m_Target)
 	{
