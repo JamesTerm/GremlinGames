@@ -19,6 +19,14 @@ typedef unsigned long DWORD;
 typedef long LONG;
 
 //Got some win32 stuff here... not going to include windows.h though
+//I've gotta pack it since the bfSize must precede immediately after the bfType
+
+#if (defined(_WIN32) || defined(__WIN32__))
+#pragma pack(push, 1)
+#else
+#pragma pack(1)
+#endif // WIN32
+
 typedef struct tagBITMAPFILEHEADER { 
 	WORD    bfType; 
 	DWORD   bfSize; 
@@ -40,6 +48,12 @@ typedef struct tagBITMAPINFOHEADER{
 	DWORD  biClrUsed; 
 	DWORD  biClrImportant; 
 } BITMAPINFOHEADER, *PBITMAPINFOHEADER; 
+
+#if (defined(_WIN32) || defined(__WIN32__))
+#pragma pack(pop)
+#else
+#pragma pack()
+#endif // WIN32
 
 
 #define MakeID(a,b) ((b)<<8|(a))
@@ -156,6 +170,7 @@ class MapPidDump
 				m_Amplitude[i]=1.0;
 				m_Offset[i]=0.0;
 			}
+			m_Offset[eCalibratedScaler]=-CS_Scaler;
 		}
 
 		~MapPidDump()
@@ -206,15 +221,17 @@ class MapPidDump
 		{
 			if (Dest)
 			{
-				m_DestFileHandle=_open(Dest,_O_WRONLY);
+				m_DestFileHandle=_open(Dest,_O_WRONLY|_O_CREAT,_S_IWRITE);
 				if (m_DestFileHandle!=-1)
 				{
+					size_t HeaderSize=sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
 					//First the bitmap file header
 					BITMAPFILEHEADER fileheader;
 					memset(&fileheader,0,sizeof(BITMAPFILEHEADER));
 					fileheader.bfType=MakeID('B','M');  //Specifies the file type, must be BM. 
-					fileheader.bfSize=m_Bitmap.size();
-					fileheader.bfOffBits=sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+					fileheader.bfSize=m_Bitmap.size() + HeaderSize;
+					fileheader.bfOffBits=HeaderSize;
 					_write(m_DestFileHandle,&fileheader,sizeof(BITMAPFILEHEADER));
 
 					//Now the bitmap info header
@@ -224,7 +241,7 @@ class MapPidDump
 					infoheader.biWidth=m_Bitmap.xres();
 					//Specifies the height of the bitmap, in pixels. If biHeight is positive, the bitmap is a bottom-up DIB and  its origin is the 
 					//lower-left corner. If biHeight is negative, the bitmap is a top-down DIB and its origin is the upper-left corner. 
-					infoheader.biHeight=-m_Bitmap.yres();
+					infoheader.biHeight=m_Bitmap.yres();
 					infoheader.biPlanes=1; //Specifies the number of planes for the target device. This value must be set to 1. 
 					infoheader.biBitCount=24;  //good ole 24bit rgb no alpha
 					infoheader.biCompression=0;  //0 is BI_RGB uncompressed
