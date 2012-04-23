@@ -65,6 +65,7 @@ const pixel_bgr_u8 Pixel_Color[]=
 	{0xf0,0x10,0xf0}, //Magenta
 	{0xf0,0xf0,0x10}, //Cyan
 	{0x10,0xf0,0xf0}, //Yellow
+	{0x80,0x80,0x80}, //Gray
 	{0xf0,0xf0,0xf0}, //white
 };
 
@@ -140,9 +141,9 @@ class Bitmap
 double MapPidDump_GetValue(const char *source)
 {
 	double ret=0.0;
-	char Buffer[8];
+	char Buffer[16];
 	//copy it all... then we'll chop off the space
-	memcpy(Buffer,source,8);
+	memcpy(Buffer,source,16);
 	char *Terminator=strchr(Buffer,' ');
 	if (!Terminator) //or linefeed terminated
 		Terminator=strchr(Buffer,'\n');
@@ -157,20 +158,23 @@ class MapPidDump
 {
 	public:
 		//Dest can be null for practice run
-		MapPidDump(const char Source[],double Velocity_Scaler=1.0/400.0,double CS_Scaler=1.0/3.0) : 
-		  m_Bitmap(c_X_Resolution,c_Y_Resolution),m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(CS_Scaler),
+		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler) : 
+		  m_Bitmap(c_X_Resolution,c_Y_Resolution),m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(CS_Scaler),m_YPos_Scaler(YPos_Scaler),
 		  m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1)
 		{
 			m_SourceFileHandle=_open(Source, _O_RDONLY );
 			m_Error= (m_SourceFileHandle==-1);
 			if (m_Error)
 				printf("source %s not found \n",Source);
-			for (size_t i=0;i<eNoColumns;i++)
+			for (size_t i=0;i<eNoItemsToGraph;i++)
 			{
 				m_Amplitude[i]=1.0;
 				m_Offset[i]=0.0;
+				m_ElementsColumn[i]=0.0;
 			}
-			m_Offset[eCalibratedScaler]=-CS_Scaler;
+			//This (for now) toggles between the new and old way to represent the cs
+			if (CS_Scaler==1.0/3.0)
+				m_Offset[eCalibratedScaler]=-CS_Scaler;
 		}
 
 		~MapPidDump()
@@ -191,6 +195,7 @@ class MapPidDump
 
 		void operator()(const char *Dest=NULL)
 		{
+			AddMarkers();
 			const size_t ChunkSize=1024;
 			char buffer[ChunkSize];
 			int result;
@@ -211,7 +216,7 @@ class MapPidDump
 					splice_offset=result-count;
 					//save this for next time
 					if (splice_offset>0)
-						memcpy(buffer,buffer+(count-1),splice_offset);
+						memcpy(buffer,buffer+count,splice_offset);
 				}
 			}	while (result>0);
 			WriteBitmap(Dest); //checks null implicitly
@@ -258,22 +263,75 @@ class MapPidDump
 		}
 		enum ColumnItems
 		{
-			eVoltage, ePredictedVelocity, eEncoderVelocity, eCalibratedScaler, eNoColumns
+			eVoltage, ePredictedVelocity, eEncoderVelocity, eCalibratedScaler, eYPos, eNoItemsToGraph
 		};
 
+		int GetYPos(double y)
+		{
+			const int YRes=m_Bitmap.yres();
+			const int HalfYRes=YRes>>1;
+			return (int)((float)(HalfYRes-1)*y)+HalfYRes;
+		}
+
+		void AddMarkers()
+		{
+
+			enum Markers
+			{
+				eMarker_Top,
+				eMarker_Top_75,
+				eMarker_Top_50,
+				eMarker_Top_25,
+				eMarker_0,
+				eMarker_Bottom_25,
+				eMarker_Bottom_50,
+				eMarker_Bottom_75,
+				eMarker_Bottom,
+				eMarker_NoItems
+			};
+			int Position[eMarker_NoItems];
+			Position[eMarker_Top]=GetYPos(1.0);			
+			Position[eMarker_Top_75]=GetYPos(0.75);			
+			Position[eMarker_Top_50]=GetYPos(0.5);			
+			Position[eMarker_Top_25]=GetYPos(0.25);			
+			Position[eMarker_0]=GetYPos(0.0);			
+			Position[eMarker_Bottom_25]=GetYPos(-0.25);			
+			Position[eMarker_Bottom_50]=GetYPos(-0.50);			
+			Position[eMarker_Bottom_75]=GetYPos(-0.75);			
+			Position[eMarker_Bottom]=GetYPos(-1.0);			
+			for (size_t x=0;x<5;x++)
+			{
+				for (size_t i=0;i<eMarker_NoItems;i++)
+				{
+					pixel_bgr_u8 &pixel=m_Bitmap(x,Position[i]);
+					pixel=Pixel_Color[5];  
+				}
+			}
+			for (size_t x=5;x<10;x++)
+			{
+				for (size_t i=0;i<eMarker_NoItems;i+=2)
+				{
+					pixel_bgr_u8 &pixel=m_Bitmap(x,Position[i]);
+					pixel=Pixel_Color[5];  
+				}
+			}
+		}
 		bool ProcessColumn(const double *Elements)
 		{
-			const int XRes=c_X_Resolution;
-			const int YRes=c_Y_Resolution;
+			const int XRes=m_Bitmap.xres();
+			const int YRes=m_Bitmap.yres();
 			const int HalfYRes=YRes>>1;
 
-			for (size_t i=0;i<eNoColumns;i++)
+			for (size_t i=0;i<eNoItemsToGraph;i++)
 			{
 				//simply plot each point
 				double NormalizedValue=Elements[i];
 				//conduct the normalizing
 				switch (i)
 				{
+					case eYPos:
+						NormalizedValue*=m_YPos_Scaler;
+						break;
 					case ePredictedVelocity:
 					case eEncoderVelocity:
 						NormalizedValue*=m_Velocity_Scaler;
@@ -292,14 +350,13 @@ class MapPidDump
 				pixel=Pixel_Color[i];  
 			}
 			m_ColumnIndex++;
-			return (m_ColumnIndex<XRes);
+			return (m_ColumnIndex<(size_t)XRes);
 		}
 		//All processing here, returns number of bytes processed... client will manage merging remainder for next iteration
 		//if returns 0... then we cannot process any more and client will need to stop calling
 		size_t Process(const char * Source,size_t size)
 		{
 			const char *EqualPointer=Source;
-			double Elements[eNoColumns];
 			const char *EndEqualPtr=strrchr(Source,'=');
 			bool TestColumn,Error=false;
 			//Traverse to each = sign; since it is now in a buffer we can navigate around freely
@@ -322,18 +379,21 @@ class MapPidDump
 				char Command=EqualPointer[-1];  //looks crazy but will address the letter before the equal sign
 				switch (Command)
 				{
+				case 'y':
+					m_ElementsColumn[eYPos]=value;
+					break;
 				case 'v':
-					Elements[eVoltage]=value;
+					m_ElementsColumn[eVoltage]=value;
 					break;
 				case 'p':
-					Elements[ePredictedVelocity]=value;
+					m_ElementsColumn[ePredictedVelocity]=value;
 					break;
 				case 'e':
-					Elements[eEncoderVelocity]=value;
+					m_ElementsColumn[eEncoderVelocity]=value;
 					break;
 				case 's':
-					Elements[eCalibratedScaler]=value;
-					TestColumn=ProcessColumn(Elements);
+					m_ElementsColumn[eCalibratedScaler]=value;
+					TestColumn=ProcessColumn(m_ElementsColumn);
 					if (!TestColumn)
 						Error=true;
 					break;
@@ -341,12 +401,21 @@ class MapPidDump
 				if (Error)
 					break;
 			}
-			size_t ret= EqualPointer?((size_t)(EqualPointer-Source))-2:size;
+			if (EqualPointer)
+			{
+				//Ensure we get the whole command
+				while((*EqualPointer!=' ')&&(*EqualPointer!='\n'))
+					EqualPointer--;
+				EqualPointer++;
+			}
+			size_t ret= EqualPointer?((size_t)(EqualPointer-Source)):size;
 			return ret;
 		}
 		Bitmap m_Bitmap;
 		const double m_Velocity_Scaler,m_CS_Scaler;  //used to normalize the data
-		double m_Amplitude[eNoColumns],m_Offset[eNoColumns];  //further tweaking of graphs
+		const double m_YPos_Scaler;
+		double m_Amplitude[eNoItemsToGraph],m_Offset[eNoItemsToGraph];  //further tweaking of graphs
+		double m_ElementsColumn[eNoItemsToGraph];
 		size_t m_ColumnIndex;
 		int m_SourceFileHandle,m_DestFileHandle;
 		bool m_Error;
@@ -355,12 +424,18 @@ class MapPidDump
 void main(int argc,const char **argv)
 {
 	if (argc < 2)
-		printf("usage: MapPidDump <source> <dest> \n");
+	{
+		printf("usage: MapPidDump <source> <dest> [Velocity Scaler] [CS Scaler] [Y Scaler]\n");
+		printf("Defaults: Velocity=400, CS=3, Y=5\n");
+	}
 	else
 	{
-		MapPidDump instance(argv[1]); //instantiate with source
+		double Velocity_Scaler=argc>3?(1.0/atof(argv[3])):1.0/400.0;
+		double CS_Scaler=argc>4?(1.0/atof(argv[4])):1.0/3.0;
+		double YPos_Scaler=argc>5?(1.0/atof(argv[5])):1.0/5.0;
+		MapPidDump instance(argv[1],Velocity_Scaler,CS_Scaler,YPos_Scaler); //instantiate with source
 		//Check for error
 		if (!instance.IsError())
-			instance(argc==3?argv[2]:NULL);  //perform the operation with optional file to write
+			instance(argc>2?argv[2]:NULL);  //perform the operation with optional file to write
 	}
 }
