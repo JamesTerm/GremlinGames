@@ -158,8 +158,9 @@ class MapPidDump
 {
 	public:
 		//Dest can be null for practice run
+		//Note the CS Scaler is inverted as this is more readable
 		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler) : 
-		  m_Bitmap(c_X_Resolution,c_Y_Resolution),m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(CS_Scaler),m_YPos_Scaler(YPos_Scaler),
+		  m_Bitmap(c_X_Resolution,c_Y_Resolution),m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(-CS_Scaler),m_YPos_Scaler(YPos_Scaler),
 		  m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1)
 		{
 			m_SourceFileHandle=_open(Source, _O_RDONLY );
@@ -174,7 +175,7 @@ class MapPidDump
 			}
 			//This (for now) toggles between the new and old way to represent the cs
 			if (CS_Scaler==1.0/3.0)
-				m_Offset[eCalibratedScaler]=-CS_Scaler;
+				m_Offset[eCalibratedScaler]=CS_Scaler;  //Note: this is positive since m_CS_Scaler is inverted
 		}
 
 		~MapPidDump()
