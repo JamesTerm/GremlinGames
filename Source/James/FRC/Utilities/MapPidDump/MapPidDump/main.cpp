@@ -159,9 +159,9 @@ class MapPidDump
 	public:
 		//Dest can be null for practice run
 		//Note the CS Scaler is inverted as this is more readable
-		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler) : 
+		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler,bool UseEncoderOffset) : 
 		  m_Bitmap(c_X_Resolution,c_Y_Resolution),m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(-CS_Scaler),m_YPos_Scaler(YPos_Scaler),
-		  m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1)
+		  m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1),m_UseEncoderOffset(UseEncoderOffset)
 		{
 			m_SourceFileHandle=_open(Source, _O_RDONLY );
 			m_Error= (m_SourceFileHandle==-1);
@@ -393,6 +393,9 @@ class MapPidDump
 					m_ElementsColumn[eEncoderVelocity]=value;
 					break;
 				case 's':
+				case 'o':
+					if	(((!m_UseEncoderOffset)&&(Command=='s')) ||
+						((m_UseEncoderOffset)&&(Command=='o')))
 					m_ElementsColumn[eCalibratedScaler]=value;
 					TestColumn=ProcessColumn(m_ElementsColumn);
 					if (!TestColumn)
@@ -419,6 +422,7 @@ class MapPidDump
 		double m_ElementsColumn[eNoItemsToGraph];
 		size_t m_ColumnIndex;
 		int m_SourceFileHandle,m_DestFileHandle;
+		bool m_UseEncoderOffset;
 		bool m_Error;
 };
 
@@ -426,7 +430,7 @@ void main(int argc,const char **argv)
 {
 	if (argc < 2)
 	{
-		printf("usage: MapPidDump <source> <dest> [Velocity Scaler] [CS Scaler] [Y Scaler]\n");
+		printf("usage: MapPidDump <source> <dest> [Velocity Scaler] [CS Scaler] [Y Scaler] [Use Encoder Offset=false]\n");
 		printf("Defaults: Velocity=400, CS=3, Y=5\n");
 	}
 	else
@@ -434,7 +438,8 @@ void main(int argc,const char **argv)
 		double Velocity_Scaler=argc>3?(1.0/atof(argv[3])):1.0/400.0;
 		double CS_Scaler=argc>4?(1.0/atof(argv[4])):1.0/3.0;
 		double YPos_Scaler=argc>5?(1.0/atof(argv[5])):1.0/5.0;
-		MapPidDump instance(argv[1],Velocity_Scaler,CS_Scaler,YPos_Scaler); //instantiate with source
+		bool UseEncoderOffset=argc>6? (atoi(argv[6])==0?false:true) : false;
+		MapPidDump instance(argv[1],Velocity_Scaler,CS_Scaler,YPos_Scaler,UseEncoderOffset); //instantiate with source
 		//Check for error
 		if (!instance.IsError())
 			instance(argc>2?argv[2]:NULL);  //perform the operation with optional file to write
