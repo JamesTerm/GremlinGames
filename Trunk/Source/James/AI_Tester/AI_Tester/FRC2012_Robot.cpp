@@ -480,7 +480,7 @@ FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interfac
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
@@ -534,22 +534,7 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	#ifndef __DisableEncoderTracking__
 	const Vec2d &Pos_m=GetPos_m();
 	#else
-	//We can use the error grid cells directly by simply positioning the robot at the right place
-	size_t HackedIndex;
-	switch (m_Target)
-	{
-	case eLeftGoal:
-		HackedIndex=1;
-		break;
-	case eRightGoal:
-		HackedIndex=2;
-		break;
-	default:
-		HackedIndex=0;
-		break;
-	}
-
-	const Vec2d &Pos_m=	robot_props.PresetPositions[HackedIndex];
+	const Vec2d &Pos_m=	robot_props.PresetPositions[m_AutonPresetIndex];
 	#endif
 	//first determine which quadrant we are in
 	//These offsets are offsets added to the array indexes 
@@ -586,6 +571,19 @@ void FRC_2012_Robot::ApplyErrorCorrection()
 	m_YawErrorCorrection=yc;
 	m_PowerErrorCorrection=pc;
 	//DOUT(5,"pc=%f yc=%f x=%f y=%f",pc,yc,x,y);
+	//We can use the error grid cells directly by simply positioning the robot at the right place
+	size_t HackedIndex;
+	switch (m_Target)
+	{
+	case eLeftGoal:
+	case eRightGoal:
+		m_PowerErrorCorrection=robot_props.Autonomous_Props.TwoShotScaler;
+		break;
+	default:
+		HackedIndex=0;
+		break;
+	}
+
 }
 
 void FRC_2012_Robot::TimeChange(double dTime_s)
@@ -597,7 +595,7 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 	Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_m[0]),
 		Meters2Feet(Pos_m[1]),RAD_2_DEG(GetAtt_r()));
 	#else
-	const Vec2d &Pos_m=	robot_props.PresetPositions[0];
+	const Vec2d &Pos_m=	robot_props.PresetPositions[m_AutonPresetIndex];
 	{	//Even though this is disabled... still want it to read correctly for encoder reading and calibration
 		const Vec2d &Pos_temp=GetPos_m();
 		Dout(robot_props.Coordinates_DiplayRow,"%.2f %.2f %.1f",Meters2Feet(Pos_temp[0]),
@@ -815,6 +813,7 @@ void FRC_2012_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 
 void FRC_2012_Robot::Set_Auton_PresetPosition(size_t index)
 {
+	m_AutonPresetIndex=index;
 	m_IsTargeting=true;  //This is just in case the pitch is in wrong position or if it is missing
 	SetPresetPosition(index,true);
 	SetAttitude(Pi);
@@ -1071,6 +1070,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 
 		FRC_2012_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.MoveForward=0.0;
+		auton.TwoShotScaler=1.0;
 		auton.RampLeft_ErrorCorrection_Offset=
 		auton.RampRight_ErrorCorrection_Offset=
 		auton.RampCenter_ErrorCorrection_Offset=Vec2D(0.0,0.0);
@@ -1280,6 +1280,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				if (!err)
 					auton.MoveForward=Feet2Meters(length);
 			}
+			err = script.GetField("two_shot_scaler", NULL, NULL,&auton.TwoShotScaler);
 
 			err = script.GetFieldTable("ramp_left");
 			if (!err)
