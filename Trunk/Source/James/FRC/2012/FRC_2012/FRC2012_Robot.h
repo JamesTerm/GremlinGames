@@ -46,6 +46,7 @@ public:
 			double ToleranceThreshold;  //If zero then only the initial wait is used for each ball (or not using the wait for ball feature)
 		} FirstBall_Wait,SecondBall_Wait; //We'll want to tweak the second ball a bit differently
 		double MoveForward;				//Optional to move forward to use less power to shoot
+		double TwoShotScaler;			//Scaler used for two point shots
 	} Autonomous_Props;
 };
 
@@ -287,6 +288,7 @@ class FRC_2012_Robot : public Tank_Robot
 		double m_YawErrorCorrection,m_PowerErrorCorrection;
 		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
+		size_t m_AutonPresetIndex;  //used only because encoder tracking is disabled
 		bool m_DisableTurretTargetingValue;
 		bool m_POVSetValve;
 
