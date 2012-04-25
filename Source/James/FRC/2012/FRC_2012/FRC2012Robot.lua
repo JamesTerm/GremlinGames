@@ -65,14 +65,15 @@ MainRobot = {
 		
 		grid_corrections =
 		{
-			c11={p=2.2, x=1.0}, c12={p=2.2, x=1.0}, c13={p=2.2, x=1.0},
-			c21={p=2.2, x=1.0}, c22={p=2.2, x=1.0}, c23={p=2.2, x=1.0},
-			c31={p=2.2, x=1.0}, c32={p=2.2, x=1.0}, c33={p=2.2, x=1.0},
+			c11={p=1.7, x=1.0}, c12={p=1.7, x=1.0}, c13={p=1.7, x=1.0},
+			c21={p=1.8, x=1.0}, c22={p=1.8, x=1.0}, c23={p=1.8, x=1.0},
+			c31={p=1.7, x=1.0}, c32={p=1.7, x=1.0}, c33={p=1.7, x=1.0},
 		},
 		
 		auton =
 		{
 			move_forward_ft =0.0,
+			two_shot_scaler =1.4,
 			ramp_left  ={x_in=0, y_in=0 },
 			ramp_right ={x_in=0, y_in=0 },
 			ramp_center={x_in=0, y_in=0 },
