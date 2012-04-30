@@ -289,7 +289,7 @@ void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,d
 void Swerve_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
-	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,-1,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 
 bool Swerve_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
