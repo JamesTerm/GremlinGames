@@ -47,6 +47,7 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
+		Averager<double,4> m_Averager_EncoderLeft, m_Averager_EncodeRight;
 	public:
 		double Get_dTime_s() const {return m_dTime_s;}
 };

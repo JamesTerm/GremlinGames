@@ -1402,7 +1402,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
  /*														FRC_2012_Goals::Fire														*/
 /***********************************************************************************************************************************/
 
-FRC_2012_Goals::Fire::Fire(FRC_2012_Robot &robot,bool On) : m_Robot(robot),m_Terminate(false),m_IsOn(On)
+FRC_2012_Goals::Fire::Fire(FRC_2012_Robot &robot,bool On, bool DoSquirt) : m_Robot(robot),m_Terminate(false),m_IsOn(On),m_DoSquirt(DoSquirt)
 {
 	m_Status=eInactive;
 }
@@ -1415,7 +1415,11 @@ FRC_2012_Goals::Fire::Goal_Status FRC_2012_Goals::Fire::Process(double dTime_s)
 		return m_Status;
 	}
 	ActivateIfInactive();
-	m_Robot.GetBallConveyorSystem().Fire(m_IsOn);
+	if (!m_DoSquirt)
+		m_Robot.GetBallConveyorSystem().Fire(m_IsOn);
+	else
+		m_Robot.GetBallConveyorSystem().Squirt(m_IsOn);
+		
 	m_Status=eCompleted;
 	return m_Status;
 }
@@ -1486,18 +1490,20 @@ FRC_2012_Goals::OperateSolenoid::Goal_Status FRC_2012_Goals::OperateSolenoid::Pr
  /*															FRC_2012_Goals															*/
 /***********************************************************************************************************************************/
 
-Goal *FRC_2012_Goals::Get_ShootBalls(FRC_2012_Robot *Robot)
+Goal *FRC_2012_Goals::Get_ShootBalls(FRC_2012_Robot *Robot,bool DoSquirt)
 {
-	Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
-	Fire *FireOn=new Fire(*Robot,true);
-	Goal_Wait *goal_waitforballs=new Goal_Wait(4.0); //wait for balls
-	Fire *FireOff=new Fire(*Robot,false);
+	//Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
+	Goal_Wait *goal_waitforballs1=new Goal_Wait(8.0); //wait for balls
+	Fire *FireOn=new Fire(*Robot,true,DoSquirt);
+	Goal_Wait *goal_waitforballs2=new Goal_Wait(7.0); //wait for balls
+	Fire *FireOff=new Fire(*Robot,false,DoSquirt);
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(FireOff);
-	MainGoal->AddSubgoal(goal_waitforballs);
+	MainGoal->AddSubgoal(goal_waitforballs2);
 	MainGoal->AddSubgoal(FireOn);
-	MainGoal->AddSubgoal(goal_waitforturret);
+	MainGoal->AddSubgoal(goal_waitforballs1);
+	//MainGoal->AddSubgoal(goal_waitforturret);
 	return MainGoal;
 }
 
