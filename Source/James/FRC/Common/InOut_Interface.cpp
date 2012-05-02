@@ -135,7 +135,7 @@ Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) :
 	m_1(1),m_2(2),m_3(3),m_4(4),
 	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
-	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0)
+	m_LeftEncoder(3,4),m_RightEncoder(1,2,true),m_dTime_s(0.0)
 {
 	//ResetPos();  may need this later
 	SetSafety(UseSafety);
@@ -174,10 +174,15 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 	LeftVelocity=0.0,RightVelocity=0.0;
 	//double LeftRate=m_LeftEncoder.GetRate2(m_dTime_s);
 	double LeftRate=m_LeftEncoder.GetRate();
-	//LeftRate=m_KalFilter_EncodeLeft(LeftRate);
+	LeftRate=m_KalFilter_EncodeLeft(LeftRate);
+	LeftRate=m_Averager_EncoderLeft.GetAverage(LeftRate);
+	LeftRate=IsZero(LeftRate)?0.0:LeftRate;
+
 	//double RightRate=m_RightEncoder.GetRate2(m_dTime_s);
 	double RightRate=m_RightEncoder.GetRate();
-	//RightRate=m_KalFilter_EncodeRight(RightRate);
+	RightRate=m_KalFilter_EncodeRight(RightRate);
+	RightRate=m_Averager_EncodeRight.GetAverage(RightRate);
+	RightRate=IsZero(RightRate)?0.0:RightRate;
 	
 	//Quick test of using GetRate() vs. GetRate2()
 	#if 0

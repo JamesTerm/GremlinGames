@@ -218,13 +218,13 @@ class FRC_2012_Robot : public Tank_Robot
 				void BindAdditionalEventControls(bool Bind);
 				//Expose for goals
 				void Fire(bool on) {m_ControlSignals.bits.Fire=on;}
+				void Squirt(bool on) {m_ControlSignals.bits.Squirt=on;}
 			protected:
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
 				void GripL(bool on) {m_ControlSignals.bits.GripL=on;}
 				void GripM(bool on) {m_ControlSignals.bits.GripM=on;}
 				void GripH(bool on) {m_ControlSignals.bits.GripH=on;}
-				void Squirt(bool on) {m_ControlSignals.bits.Squirt=on;}
 
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
@@ -320,7 +320,7 @@ class FRC_2012_Robot : public Tank_Robot
 class FRC_2012_Goals
 {
 	public:
-		static Goal *Get_ShootBalls(FRC_2012_Robot *Robot);
+		static Goal *Get_ShootBalls(FRC_2012_Robot *Robot,bool DoSquirt=false);
 		static Goal *Get_ShootBalls_WithPreset(FRC_2012_Robot *Robot,size_t KeyIndex);
 		static Goal *Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
 	private:
@@ -330,8 +330,9 @@ class FRC_2012_Goals
 			FRC_2012_Robot &m_Robot;
 			bool m_Terminate;
 			bool m_IsOn;
+			bool m_DoSquirt;  //If True it does the feed instead of fire
 		public:
-			Fire(FRC_2012_Robot &robot,bool On);
+			Fire(FRC_2012_Robot &robot, bool On, bool DoSquirt=false);
 			virtual void Activate() {m_Status=eActive;}
 			virtual Goal_Status Process(double dTime_s);
 			virtual void Terminate() {m_Terminate=true;}

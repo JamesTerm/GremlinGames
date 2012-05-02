@@ -33,7 +33,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		//probably will not need these
 		//KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 		KalmanFilter m_PowerWheelFilter;
-		Blend_Averager<double> m_PowerWheelAverager;
+		Averager<double,5> m_PowerWheelAverager;
 		Priority_Averager m_PowerWheel_PriorityAverager;
 		
 		//Note these are temporary to avoid flooding, and should be removed once they are no longer needed

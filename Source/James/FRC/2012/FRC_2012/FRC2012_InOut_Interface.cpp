@@ -126,7 +126,8 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
 	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
 	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B),
-	m_PowerWheelAverager(0.5),m_PowerWheel_PriorityAverager(10,0.30)
+	//m_PowerWheelAverager(0.5),
+	m_PowerWheel_PriorityAverager(10,0.30)
 
 	//m_Potentiometer(1)
 {
@@ -369,9 +370,13 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			
 			{
 				result=m_PowerWheelFilter(result);
+				#if 1
 				//double average=m_PowerWheelAverager(result);
-				//result=IsZero(average)?0.0:average;
+				double average=m_PowerWheelAverager.GetAverage(result);
+				result=IsZero(average)?0.0:average;
+				#else
 				result=IsZero(result)?0.0:result;
+				#endif
 			}
 			#else
 			//This is temporary code to pacify using a closed loop, remove once we have real implementation
