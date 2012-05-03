@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <string.h>
 #include <xutility>
+#include <vector>
 
 using namespace std;
 typedef unsigned char BYTE;
@@ -160,8 +161,8 @@ class MapPidDump
 		//Dest can be null for practice run
 		//Note the CS Scaler is inverted as this is more readable
 		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler,bool UseEncoderOffset) : 
-		  m_Bitmap(c_X_Resolution,c_Y_Resolution),m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(-CS_Scaler),m_YPos_Scaler(YPos_Scaler),
-		  m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1),m_UseEncoderOffset(UseEncoderOffset)
+		 m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(-CS_Scaler),m_YPos_Scaler(YPos_Scaler),
+		 m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1),m_UseEncoderOffset(UseEncoderOffset)
 		{
 			m_SourceFileHandle=_open(Source, _O_RDONLY );
 			m_Error= (m_SourceFileHandle==-1);
@@ -176,6 +177,9 @@ class MapPidDump
 			//This (for now) toggles between the new and old way to represent the cs
 			if (CS_Scaler==1.0/3.0)
 				m_Offset[eCalibratedScaler]=CS_Scaler;  //Note: this is positive since m_CS_Scaler is inverted
+
+			//Setup the initial bitmap
+			 m_Bitmap.push_back(new Bitmap(c_X_Resolution,c_Y_Resolution));
 		}
 
 		~MapPidDump()
@@ -190,6 +194,12 @@ class MapPidDump
 				_close(m_DestFileHandle);
 				m_DestFileHandle=-1;
 			}
+			for (size_t i=0;i<m_Bitmap.size();i++)
+			{
+				delete m_Bitmap[i];
+				m_Bitmap[i]=NULL;
+			}
+			m_Bitmap.clear();
 		}
 
 		bool IsError() const {return m_Error;}
@@ -205,7 +215,10 @@ class MapPidDump
 			do 
 			{
 				result=_read(m_SourceFileHandle,buffer+splice_offset,ChunkSize-24);  //make size a bit less to add the termination
-				result+=splice_offset; //absorb the splice now
+
+				//We do not need to mess with the last splice
+				if (result>0)
+					result+=splice_offset; //absorb the splice now
 				assert(result<ChunkSize);
 				if (result>0)
 				{
@@ -227,38 +240,47 @@ class MapPidDump
 		{
 			if (Dest)
 			{
-				m_DestFileHandle=_open(Dest,_O_WRONLY|_O_CREAT,_S_IWRITE);
-				if (m_DestFileHandle!=-1)
+				char NumberBuffer[16];
+				for (size_t i=0;i<m_Bitmap.size();i++)
 				{
-					size_t HeaderSize=sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+					Bitmap &bitmap=*m_Bitmap[i];
+					string FileName=Dest;
+					FileName+='_';
+					FileName+=_itoa(i,NumberBuffer,10);
+					FileName+=".bmp";
+					m_DestFileHandle=_open(FileName.c_str(),_O_WRONLY|_O_CREAT,_S_IWRITE);
+					if (m_DestFileHandle!=-1)
+					{
+						size_t HeaderSize=sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
-					//First the bitmap file header
-					BITMAPFILEHEADER fileheader;
-					memset(&fileheader,0,sizeof(BITMAPFILEHEADER));
-					fileheader.bfType=MakeID('B','M');  //Specifies the file type, must be BM. 
-					fileheader.bfSize=m_Bitmap.size() + HeaderSize;
-					fileheader.bfOffBits=HeaderSize;
-					_write(m_DestFileHandle,&fileheader,sizeof(BITMAPFILEHEADER));
+						//First the bitmap file header
+						BITMAPFILEHEADER fileheader;
+						memset(&fileheader,0,sizeof(BITMAPFILEHEADER));
+						fileheader.bfType=MakeID('B','M');  //Specifies the file type, must be BM. 
+						fileheader.bfSize=bitmap.size() + HeaderSize;
+						fileheader.bfOffBits=HeaderSize;
+						_write(m_DestFileHandle,&fileheader,sizeof(BITMAPFILEHEADER));
 
-					//Now the bitmap info header
-					BITMAPINFOHEADER infoheader;
-					memset(&infoheader,0,sizeof(BITMAPINFOHEADER));
-					infoheader.biSize=sizeof(BITMAPINFOHEADER); //Specifies the number of bytes required by the structure. 
-					infoheader.biWidth=m_Bitmap.xres();
-					//Specifies the height of the bitmap, in pixels. If biHeight is positive, the bitmap is a bottom-up DIB and  its origin is the 
-					//lower-left corner. If biHeight is negative, the bitmap is a top-down DIB and its origin is the upper-left corner. 
-					infoheader.biHeight=m_Bitmap.yres();
-					infoheader.biPlanes=1; //Specifies the number of planes for the target device. This value must be set to 1. 
-					infoheader.biBitCount=24;  //good ole 24bit rgb no alpha
-					infoheader.biCompression=0;  //0 is BI_RGB uncompressed
-					//Thats enough stuff the rest can be zero's
-					_write(m_DestFileHandle,&infoheader,sizeof(BITMAPINFOHEADER));
-					//Now to just dump the whole bitmap
-					_write(m_DestFileHandle,m_Bitmap(),m_Bitmap.size());
+						//Now the bitmap info header
+						BITMAPINFOHEADER infoheader;
+						memset(&infoheader,0,sizeof(BITMAPINFOHEADER));
+						infoheader.biSize=sizeof(BITMAPINFOHEADER); //Specifies the number of bytes required by the structure. 
+						infoheader.biWidth=bitmap.xres();
+						//Specifies the height of the bitmap, in pixels. If biHeight is positive, the bitmap is a bottom-up DIB and  its origin is the 
+						//lower-left corner. If biHeight is negative, the bitmap is a top-down DIB and its origin is the upper-left corner. 
+						infoheader.biHeight=bitmap.yres();
+						infoheader.biPlanes=1; //Specifies the number of planes for the target device. This value must be set to 1. 
+						infoheader.biBitCount=24;  //good ole 24bit rgb no alpha
+						infoheader.biCompression=0;  //0 is BI_RGB uncompressed
+						//Thats enough stuff the rest can be zero's
+						_write(m_DestFileHandle,&infoheader,sizeof(BITMAPINFOHEADER));
+						//Now to just dump the whole bitmap
+						_write(m_DestFileHandle,bitmap(),bitmap.size());
 
-					//all done... close
-					_close(m_DestFileHandle);
-					m_DestFileHandle=-1;
+						//all done... close
+						_close(m_DestFileHandle);
+						m_DestFileHandle=-1;
+					}
 				}
 			}
 		}
@@ -269,13 +291,15 @@ class MapPidDump
 
 		int GetYPos(double y)
 		{
-			const int YRes=m_Bitmap.yres();
+			Bitmap &bitmap=*m_Bitmap[m_Bitmap.size()-1];
+			const int YRes=bitmap.yres();
 			const int HalfYRes=YRes>>1;
 			return (int)((float)(HalfYRes-1)*y)+HalfYRes;
 		}
 
 		void AddMarkers()
 		{
+			Bitmap &bitmap=*m_Bitmap[m_Bitmap.size()-1];
 
 			enum Markers
 			{
@@ -304,7 +328,7 @@ class MapPidDump
 			{
 				for (size_t i=0;i<eMarker_NoItems;i++)
 				{
-					pixel_bgr_u8 &pixel=m_Bitmap(x,Position[i]);
+					pixel_bgr_u8 &pixel=bitmap(x,Position[i]);
 					pixel=Pixel_Color[5];  
 				}
 			}
@@ -312,15 +336,16 @@ class MapPidDump
 			{
 				for (size_t i=0;i<eMarker_NoItems;i+=2)
 				{
-					pixel_bgr_u8 &pixel=m_Bitmap(x,Position[i]);
+					pixel_bgr_u8 &pixel=bitmap(x,Position[i]);
 					pixel=Pixel_Color[5];  
 				}
 			}
 		}
 		bool ProcessColumn(const double *Elements)
 		{
-			const int XRes=m_Bitmap.xres();
-			const int YRes=m_Bitmap.yres();
+			Bitmap &bitmap=*m_Bitmap[m_Bitmap.size()-1];
+			const int XRes=bitmap.xres();
+			const int YRes=bitmap.yres();
 			const int HalfYRes=YRes>>1;
 
 			for (size_t i=0;i<eNoItemsToGraph;i++)
@@ -347,7 +372,7 @@ class MapPidDump
 				int YPos=(int)((float)(HalfYRes-1)*Sample)+HalfYRes;
 
 				//Now with x and y positions computed fill in the pixel
-				pixel_bgr_u8 &pixel=m_Bitmap(m_ColumnIndex,YPos);
+				pixel_bgr_u8 &pixel=bitmap(m_ColumnIndex,YPos);
 				pixel=Pixel_Color[i];  
 			}
 			m_ColumnIndex++;
@@ -399,7 +424,13 @@ class MapPidDump
 					m_ElementsColumn[eCalibratedScaler]=value;
 					TestColumn=ProcessColumn(m_ElementsColumn);
 					if (!TestColumn)
-						Error=true;
+					{
+						//We can assume error is due to the column length
+						assert(m_ColumnIndex==m_Bitmap[0]->xres());
+						//reset the column with a new bitmap
+						m_Bitmap.push_back(new Bitmap(c_X_Resolution,c_Y_Resolution));
+						m_ColumnIndex=0;
+					}
 					break;
 				}
 				if (Error)
@@ -408,14 +439,14 @@ class MapPidDump
 			if (EqualPointer)
 			{
 				//Ensure we get the whole command
-				while((*EqualPointer!=' ')&&(*EqualPointer!='\n'))
+				while((*EqualPointer!=' ')&&(*EqualPointer!='\n')&& EqualPointer>Source)
 					EqualPointer--;
 				EqualPointer++;
 			}
 			size_t ret= EqualPointer?((size_t)(EqualPointer-Source)):size;
 			return ret;
 		}
-		Bitmap m_Bitmap;
+		std::vector<Bitmap *> m_Bitmap;
 		const double m_Velocity_Scaler,m_CS_Scaler;  //used to normalize the data
 		const double m_YPos_Scaler;
 		double m_Amplitude[eNoItemsToGraph],m_Offset[eNoItemsToGraph];  //further tweaking of graphs
