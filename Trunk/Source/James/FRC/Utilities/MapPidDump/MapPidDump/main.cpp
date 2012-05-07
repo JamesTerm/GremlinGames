@@ -241,10 +241,19 @@ class MapPidDump
 			if (Dest)
 			{
 				char NumberBuffer[16];
+				char *DestToUse=new char[strlen(Dest)+4];  //extra padding for the terminator
+				strcpy(DestToUse,Dest);
+
+				//see if we need to add the extension
+				char * const Period=strrchr(DestToUse,'.');
+				//Terminate the buffer on the period if we have a match
+				if ((Period)&&(_stricmp(Period,".bmp")==0))
+					Period[0]=0;
+
 				for (size_t i=0;i<m_Bitmap.size();i++)
 				{
 					Bitmap &bitmap=*m_Bitmap[i];
-					string FileName=Dest;
+					string FileName=DestToUse;
 					FileName+='_';
 					FileName+=_itoa(i,NumberBuffer,10);
 					FileName+=".bmp";
@@ -282,6 +291,7 @@ class MapPidDump
 						m_DestFileHandle=-1;
 					}
 				}
+				delete[] DestToUse;
 			}
 		}
 		enum ColumnItems
@@ -463,6 +473,7 @@ void main(int argc,const char **argv)
 	{
 		printf("usage: MapPidDump <source> <dest> [Velocity Scaler] [CS Scaler] [Y Scaler] [Use Encoder Offset=false]\n");
 		printf("Defaults: Velocity=400, CS=3, Y=5\n");
+		printf("Destination .bmp extension is optional (it will add it if one is not provided)\n");
 	}
 	else
 	{
