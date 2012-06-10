@@ -138,6 +138,7 @@ class Ship_2D : public Ship
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s) {}
 
 		AI_Base_Controller* m_controller;
+		Ship_Properties m_ShipProps;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
 
 		// Used in Keyboard acceleration and braking
@@ -148,7 +149,7 @@ class Ship_2D : public Ship
 
 		//Stuff needed for physics
 		double Mass;
-		double MaxAccelLeft,MaxAccelRight,MaxAccelForward,MaxAccelReverse;
+		double MaxAccelLeft,MaxAccelRight;//,MaxAccelForward,MaxAccelReverse;
 		double MaxTorqueYaw;
 		double Camera_Restraint;
 		double G_Dampener;
