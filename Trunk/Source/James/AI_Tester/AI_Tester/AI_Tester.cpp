@@ -720,24 +720,35 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 
 				if (DoAutonomous)
 				{
-					//For this year we'll break up into 3 set pair of buttons (at least until vision is working)
-					//First set is the key, second the target, and last the ramps.  Once vision is working we can
-					//optionally remove key
-					const size_t Key_Selection=   (AutonomousValue >> 0) & 3;
-					const size_t Target_Selection=(AutonomousValue >> 2) & 3;
-					const size_t Ramp_Selection=  (AutonomousValue >> 4) & 3;
-					//Translate... the index is center left right, but we want right, left, and center
-					const size_t KeyTable[4] = {(size_t)-1,2,1,0};
-					const size_t Key=KeyTable[Key_Selection];
-					//We'll want to have no buttons also represent the top target to compensate for user error (should always have a target!)
-					const size_t TargetTable[4] = {0,2,1,0};
-					const size_t Target=TargetTable[Target_Selection];
-					const size_t Ramp=KeyTable[Ramp_Selection];
-					//Just to be safe check (if they had the other buttons selected)
-					if (Key!=(size_t)-1)
+					if (((AutonomousValue >> 6) & 1)==0)
+					{
+						//For this year we'll break up into 3 set pair of buttons (at least until vision is working)
+						//First set is the key, second the target, and last the ramps.  Once vision is working we can
+						//optionally remove key
+						const size_t Key_Selection=   (AutonomousValue >> 0) & 3;
+						const size_t Target_Selection=(AutonomousValue >> 2) & 3;
+						const size_t Ramp_Selection=  (AutonomousValue >> 4) & 3;
+						//Translate... the index is center left right, but we want right, left, and center
+						const size_t KeyTable[4] = {(size_t)-1,2,1,0};
+						const size_t Key=KeyTable[Key_Selection];
+						//We'll want to have no buttons also represent the top target to compensate for user error (should always have a target!)
+						const size_t TargetTable[4] = {0,2,1,0};
+						const size_t Target=TargetTable[Target_Selection];
+						const size_t Ramp=KeyTable[Ramp_Selection];
+						//Just to be safe check (if they had the other buttons selected)
+						if (Key!=(size_t)-1)
+						{
+							Goal *goal=NULL;
+							goal=FRC_2012_Goals::Get_FRC2012_Autonomous(Robot,Key,Target,Ramp);
+							if (goal)
+								goal->Activate(); //now with the goal(s) loaded activate it
+							Robot->SetGoal(goal);
+						}
+					}
+					else
 					{
 						Goal *goal=NULL;
-						goal=FRC_2012_Goals::Get_FRC2012_Autonomous(Robot,Key,Target,Ramp);
+						goal=FRC_2012_Goals::Get_ShootBalls(Robot,true);
 						if (goal)
 							goal->Activate(); //now with the goal(s) loaded activate it
 						Robot->SetGoal(goal);
