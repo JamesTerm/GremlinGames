@@ -19,7 +19,9 @@ HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10, MaxAccelReverse = 10, 
+	MaxAccelLeft = 4, MaxAccelRight = 4, 
+	MaxAccelForward = 2, MaxAccelReverse = 2, 
+	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = HighGearSpeed,
