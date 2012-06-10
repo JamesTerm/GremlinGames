@@ -201,6 +201,7 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 	if (ship_props)
 	{
 		ship_props->Initialize(this);
+		m_ShipProps=*ship_props;
 	}
 	else
 	{
@@ -223,8 +224,8 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 
 		MaxAccelLeft=40.0 * Scale;
 		MaxAccelRight=40.0 * Scale;
-		MaxAccelForward=87.0 * Scale;
-		MaxAccelReverse=70.0 * Scale;
+		//MaxAccelForward=87.0 * Scale;
+		//MaxAccelReverse=70.0 * Scale;
 		MaxTorqueYaw=2.5;
 		dHeading = DEG_2_RAD(270.0);
 	}
@@ -382,8 +383,8 @@ void Ship_2D::TimeChange(double dTime_s)
 	//}
 
 	//Apply the restraints now... I need this to compute my roll offset
-	Vec2d AccRestraintPositive(MaxAccelRight,MaxAccelForward);
-	Vec2d AccRestraintNegative(MaxAccelLeft,MaxAccelReverse);
+	Vec2d AccRestraintPositive(MaxAccelRight,m_ShipProps.GetMaxAccelForward(currVelocity));
+	Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetMaxAccelReverse(currVelocity));
 
 	if (!manualMode)
 	{

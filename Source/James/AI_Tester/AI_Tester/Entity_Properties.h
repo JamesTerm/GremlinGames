@@ -109,8 +109,12 @@ class Ship_Properties : public Entity_Properties
 		};
 		Ship_Type GetShipType() const {return m_ShipType;}
 		double GetEngagedMaxSpeed() const {return m_ENGAGED_MAX_SPEED;}
-		double GetMaxAccelForward() const {return m_MaxAccelForward;}
-		double GetMaxAccelReverse() const {return m_MaxAccelReverse;}
+		//These methods are really more for the simulation... so using the high yields a better reading for testing
+		double GetMaxAccelForward() const {return m_MaxAccelForward_High;}
+		double GetMaxAccelReverse() const {return m_MaxAccelReverse_High;}
+
+		double GetMaxAccelForward(double Velocity) const;
+		double GetMaxAccelReverse(double Velocity) const;
 	private:
 		//typedef Entity_Properties __super;
 		// This is the rate used by the keyboard
@@ -130,6 +134,7 @@ class Ship_Properties : public Entity_Properties
 		double m_ACCEL, m_BRAKE, m_STRAFE, m_AFTERBURNER_ACCEL, m_AFTERBURNER_BRAKE;
 
 		double m_MaxAccelLeft,m_MaxAccelRight,m_MaxAccelForward,m_MaxAccelReverse;
+		double m_MaxAccelForward_High,m_MaxAccelReverse_High;
 		double m_MaxTorqueYaw;
 		Ship_Type m_ShipType;
 };

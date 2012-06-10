@@ -222,8 +222,8 @@ Ship_Properties::Ship_Properties()
 
 	m_MaxAccelLeft=40.0 * Scale;
 	m_MaxAccelRight=40.0 * Scale;
-	m_MaxAccelForward=87.0 * Scale;
-	m_MaxAccelReverse=70.0 * Scale;
+	m_MaxAccelForward=m_MaxAccelForward_High=87.0 * Scale;
+	m_MaxAccelReverse=m_MaxAccelReverse_High=70.0 * Scale;
 	m_MaxTorqueYaw=2.5;
 
 	double RAMP_UP_DUR = 1.0;
@@ -305,7 +305,15 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("MaxAccelLeft", NULL, NULL, &m_MaxAccelLeft);
 		script.GetField("MaxAccelRight", NULL, NULL, &m_MaxAccelRight);
 		script.GetField("MaxAccelForward", NULL, NULL, &m_MaxAccelForward);
+		err=script.GetField("MaxAccelForward_High", NULL, NULL, &m_MaxAccelForward_High);
+		if (err)
+			m_MaxAccelForward_High=m_MaxAccelForward;
+
 		script.GetField("MaxAccelReverse", NULL, NULL, &m_MaxAccelReverse);
+		err=script.GetField("MaxAccelReverse_High", NULL, NULL, &m_MaxAccelReverse_High);
+		if (err)
+			m_MaxAccelReverse_High=m_MaxAccelReverse;
+
 		script.GetField("MaxTorqueYaw", NULL, NULL, &m_MaxTorqueYaw);
 
 		err = script.GetField("MAX_SPEED", NULL, NULL, &m_MAX_SPEED);
@@ -338,9 +346,26 @@ void Ship_Properties::Initialize(Ship_2D *NewShip) const
 
 	NewShip->MaxAccelLeft=m_MaxAccelLeft;
 	NewShip->MaxAccelRight=m_MaxAccelRight;
-	NewShip->MaxAccelForward=m_MaxAccelForward;
-	NewShip->MaxAccelReverse=m_MaxAccelReverse;
+	//NewShip->MaxAccelForward=m_MaxAccelForward;
+	//NewShip->MaxAccelReverse=m_MaxAccelReverse;
 	NewShip->MaxTorqueYaw=m_MaxTorqueYaw;
+}
+
+
+double Ship_Properties::GetMaxAccelForward(double Velocity) const
+{
+	const double ratio = fabs(Velocity)/m_MAX_SPEED;
+	const double  &Low=m_MaxAccelForward;
+	const double &High=m_MaxAccelForward_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+double Ship_Properties::GetMaxAccelReverse(double Velocity) const
+{
+	const double ratio = fabs(Velocity)/m_MAX_SPEED;
+	const double  &Low=m_MaxAccelReverse;
+	const double &High=m_MaxAccelReverse_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
 }
 
   /***********************************************************************************************************************************/

@@ -19,7 +19,9 @@ HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10, MaxAccelReverse = 10, 
+	MaxAccelLeft = 4, MaxAccelRight = 4, 
+	MaxAccelForward = 2, MaxAccelReverse = 2, 
+	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = HighGearSpeed,
@@ -42,9 +44,9 @@ MainRobot = {
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
 		left_pid=
-		{p=1, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+		{p=100, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
 		right_pid=
-		{p=1, i=0, d=0},					--These should always match, but able to be made different
+		{p=100, i=0, d=0},					--These should always match, but able to be made different
 		
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
