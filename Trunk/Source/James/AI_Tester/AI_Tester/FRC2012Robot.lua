@@ -212,7 +212,7 @@ MainRobot = {
 			{
 				--control = "CH FLIGHTSTICK PRO",
 				control = "Logitech Attack 3",
-				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, is_squared=true},
+				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, is_squared=true},
 				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
 				--Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
 				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, is_squared=false},
