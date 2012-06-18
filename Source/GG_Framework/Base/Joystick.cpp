@@ -219,6 +219,21 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,VOID* pC
 	return Instance->EnumObjectsCallback(pdidoi);
 }
 
+
+//http://www.codeproject.com/Articles/10880/A-trim-implementation-for-std-string
+void Trim2(std::string &str)
+{
+	using namespace std;
+	string::size_type pos = str.find_last_not_of(' ');
+	if (pos != string::npos)
+	{
+		str.erase(pos + 1);
+		pos=str.find_first_not_of(' ');
+		if (pos != string::npos) str.erase(0,pos);
+	}
+	else str.erase(str.begin(),str.end());
+}
+
 BOOL DirectInput_Joystick::DIEnumDevicesCallback( LPCDIDEVICEINSTANCE lpddi) 
 {
 
@@ -226,6 +241,14 @@ BOOL DirectInput_Joystick::DIEnumDevicesCallback( LPCDIDEVICEINSTANCE lpddi)
 	DIJoyInfo NewEntry;
 	NewEntry.Common.ProductName=lpddi->tszProductName;
 	NewEntry.Common.InstanceName=lpddi->tszInstanceName;
+	//I can't explain this but on some devices... they will change from upper to lower case depending on the whim of a cold-boot... furthermore
+	//some devices will change from an all uppercase with a trailing space to a CamelCase with a non-trailing space.  We'll fix both problems here
+	//by forcing all to lowercase, and to trim the spacing
+	std::transform(NewEntry.Common.ProductName.begin(),NewEntry.Common.ProductName.end(),NewEntry.Common.ProductName.begin(),tolower);
+	std::transform(NewEntry.Common.InstanceName.begin(),NewEntry.Common.InstanceName.end(),NewEntry.Common.InstanceName.begin(),tolower);
+	Trim2(NewEntry.Common.ProductName);
+	Trim2(NewEntry.Common.InstanceName);
+
 	try
 	{
 		if (FAILED(m_lpDInput->CreateDevice(lpddi->guidInstance,&NewEntry.lpDInputDevice,NULL)))
