@@ -10,6 +10,8 @@ struct Rotary_Props
 	double EncoderToRS_Ratio;
 	double PID[3]; //p,i,d
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+	//Currently supporting 4 terms in polynomial equation
+	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
 	{
@@ -20,7 +22,6 @@ struct Rotary_Props
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 	//Only supported in RoteryAngular
 	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.  Recommended not to use I to avoid thrashing
-	bool SquareVoltage; //will square the voltage if true
 };
 
 class Rotary_System : public Ship_1D

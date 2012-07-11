@@ -142,9 +142,14 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/MAX_SPEED;
 	#endif
 
-	//Square the voltage?
-	if (m_Rotary_Props.SquareVoltage)
-		Voltage*=Voltage;
+	//Apply the polynomial equation to the voltage to linearize the curve
+	{
+		double *c=m_Rotary_Props.Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+	}
 
 	//Keep voltage override disabled for simulation to test precision stability
 	//if (!m_VoltageOverride)
@@ -357,9 +362,15 @@ void Rotary_Angular::TimeChange(double dTime_s)
 	//Either error offset or calibrated scaler will be used depending on the aggressive stop property, we need not branch this as
 	//they both can be represented in the same equation
 	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/m_CalibratedScaler;
-	//Square the voltage?
-	if (m_Rotary_Props.SquareVoltage)
-		Voltage*=Voltage;
+
+	//Apply the polynomial equation to the voltage to linearize the curve
+	{
+		double *c=m_Rotary_Props.Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+	}
 
 	//Keep voltage override disabled for simulation to test precision stability
 	//if (!m_VoltageOverride)
@@ -497,7 +508,11 @@ void Rotary_Properties::Init()
 	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is only for angular so false is a good default (must be explicit in script otherwise)
-	props.SquareVoltage=false;
+	props.Polynomial[0]=0.0;
+	props.Polynomial[1]=1.0;
+	props.Polynomial[2]=0.0;
+	props.Polynomial[3]=0.0;
+	props.Polynomial[4]=0.0;
 	m_RoteryProps=props;
 }
 
@@ -559,11 +574,20 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_RoteryProps.UseAggressiveStop=true;
 		}
-		err = script.GetField("square_voltage",&sTest,NULL,NULL);
+		err = script.GetFieldTable("curve_voltage");
 		if (!err)
 		{
-			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
-				m_RoteryProps.SquareVoltage=true;
+			err = script.GetField("c", NULL, NULL,&m_RoteryProps.Polynomial[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t1", NULL, NULL,&m_RoteryProps.Polynomial[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t2", NULL, NULL,&m_RoteryProps.Polynomial[2]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t3", NULL, NULL,&m_RoteryProps.Polynomial[3]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t4", NULL, NULL,&m_RoteryProps.Polynomial[4]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
 		}
 	}
 	__super::LoadFromScript(script);
