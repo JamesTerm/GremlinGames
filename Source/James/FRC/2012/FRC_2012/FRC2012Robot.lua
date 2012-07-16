@@ -18,6 +18,9 @@ KeyDepth_in=48;
 HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
+	--Version helps to identify a positive update to lua
+	version = 1;
+	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = 4, MaxAccelReverse = 4, 
