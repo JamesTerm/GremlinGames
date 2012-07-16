@@ -1198,6 +1198,13 @@ const char *ProcessKeyCorrection(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scrip
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err=NULL;
+	{
+		double version;
+		err=script.GetField("version", NULL, NULL, &version);
+		if (!err)
+			printf ("Version=%.2f\n",version);
+	}
+
 	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
 	if (!err) 
