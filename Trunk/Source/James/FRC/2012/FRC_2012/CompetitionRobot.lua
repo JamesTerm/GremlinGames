@@ -18,6 +18,9 @@ KeyDepth_in=48;
 HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
+	--Version helps to identify a positive update to lua
+	version = 1;
+	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
 	MaxAccelForward = 2, MaxAccelReverse = 2, 
@@ -143,7 +146,8 @@ MainRobot = {
 			tolerance=17.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=0.85,     --Just use the gearing ratios here
 			voltage_multiply=1,
-			square_voltage='no',
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
