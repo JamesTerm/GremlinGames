@@ -300,6 +300,8 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/MAX_SPEED,RightVoltage=(RightVelocity+m_ErrorOffset_Right)/MAX_SPEED;
 			#endif
 
+			//Old legacy square method here (turned out to be pretty good)
+			#if 0	
 			//In teleop always square as it feels right and gives more control to the user
 
 			#ifdef __UseScalerPID__
@@ -309,7 +311,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			if ((!m_UsingEncoders) || (!m_UseDeadZoneSkip))
 			#else
 			//Once the new PID system is working the deceleration does not need to worry about overshooting
-			if (!m_UsingEncoders)
+			//if (!m_UsingEncoders)
 			#endif
 			{
 				LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
@@ -324,6 +326,33 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 				if (RightVelocity<0)
 					RightVoltage=-RightVoltage;
 			}
+			#else
+			//Apply the polynomial equation to the voltage to linearize the curve
+			{
+				double *c=m_TankRobotProps.Polynomial;
+				double x2=LeftVoltage*LeftVoltage;
+				double x3=LeftVoltage*x2;
+				double x4=x2*x2;
+				LeftVoltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*LeftVoltage) + c[0]; 
+
+				x2=RightVoltage*RightVoltage;
+				x3=RightVoltage*x2;
+				x4=x2*x2;
+				RightVoltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*RightVoltage) + c[0]; 
+
+				//Clip the voltage as it can become really high values when applying equation
+				if (LeftVoltage>1.0)
+					LeftVoltage=1.0;
+				if (RightVoltage>1.0)
+					RightVoltage=1.0;
+				//restore the sign
+				if (LeftVelocity<0)
+					LeftVoltage=-LeftVoltage;
+				if (RightVelocity<0)
+					RightVoltage=-RightVoltage;
+			}
+
+			#endif
 		}
 		// m_UseDeadZoneSkip,  When true this is ideal for telop, and for acceleration in autonomous as it always starts movement
 		// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
@@ -333,6 +362,15 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	}
 
 	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
+
+	#ifdef __DebugLUA__
+	if (m_TankRobotProps.PID_Console_Dump && ((LeftVoltage!=0.0)||(RightVoltage!=0.0)))
+	{
+		double PosY=GetPos_m()[1];
+		printf("v=%.2f v=%.2f ",LeftVoltage,RightVoltage);
+	}
+	#endif
+
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 
@@ -357,6 +395,11 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.ReverseSteering=false;
+	props.Polynomial[0]=0.0;
+	props.Polynomial[1]=1.0;
+	props.Polynomial[2]=0.0;
+	props.Polynomial[3]=0.0;
+	props.Polynomial[4]=0.0;
 	m_TankRobotProps=props;
 }
 
@@ -441,6 +484,22 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_TankRobotProps.ReverseSteering=true;
+		}
+
+		err = script.GetFieldTable("curve_voltage");
+		if (!err)
+		{
+			err = script.GetField("c", NULL, NULL,&m_TankRobotProps.Polynomial[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t1", NULL, NULL,&m_TankRobotProps.Polynomial[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t2", NULL, NULL,&m_TankRobotProps.Polynomial[2]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t3", NULL, NULL,&m_TankRobotProps.Polynomial[3]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t4", NULL, NULL,&m_TankRobotProps.Polynomial[4]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
 		}
 
 		script.Pop(); 
