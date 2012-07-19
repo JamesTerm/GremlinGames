@@ -19,7 +19,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1;
+	version = 2;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
@@ -55,7 +55,11 @@ MainRobot = {
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
-		reverse_steering='no'
+		curve_voltage=
+		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		reverse_steering='no',
+		 left_encoder_reversed='no',
+		right_encoder_reversed='yes'
 	},
 	
 	robot_settings =
@@ -216,7 +220,11 @@ MainRobot = {
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 				voltage_multiply=1.0,				--May be reversed using -1.0
-				reverse_steering='no'
+				curve_voltage=
+				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+				reverse_steering='no',
+				 left_encoder_reversed='no',
+				right_encoder_reversed='yes'
 			}
 		},
 		controls =

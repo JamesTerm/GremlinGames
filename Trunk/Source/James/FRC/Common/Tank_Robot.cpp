@@ -402,6 +402,8 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.Polynomial[2]=0.0;
 	props.Polynomial[3]=0.0;
 	props.Polynomial[4]=0.0;
+	props.LeftEncoderReversed=false;
+	props.RightEncoderReversed=false;
 	m_TankRobotProps=props;
 }
 
@@ -486,6 +488,18 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_TankRobotProps.ReverseSteering=true;
+		}
+		err = script.GetField("left_encoder_reversed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.LeftEncoderReversed=true;
+		}
+		err = script.GetField("right_encoder_reversed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.RightEncoderReversed=true;
 		}
 
 		err = script.GetFieldTable("curve_voltage");

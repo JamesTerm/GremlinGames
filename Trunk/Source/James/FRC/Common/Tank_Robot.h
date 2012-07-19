@@ -38,6 +38,9 @@ struct Tank_Robot_Props
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
 	//Currently supporting 4 terms in polynomial equation
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
+	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
+	bool LeftEncoderReversed,RightEncoderReversed;
 };
 
 class Tank_Robot_UI;
