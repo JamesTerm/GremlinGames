@@ -26,7 +26,6 @@ struct Tank_Robot_Props
 	//the width is a measurement of the the center of the wheel width to the other wheel
 	Vec2D WheelDimensions;
 	double WheelDiameter;
-	double VoltageScalar;		//Used to handle reversed voltage wiring
 	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
 	double LeftPID[3]; //p,i,d
 	double RightPID[3]; //p,i,d
@@ -38,6 +37,9 @@ struct Tank_Robot_Props
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
 	//Currently supporting 4 terms in polynomial equation
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
+	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
+	bool LeftEncoderReversed,RightEncoderReversed;
 };
 
 class Tank_Robot_UI;
@@ -116,6 +118,10 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		double GetLeftVoltage() const {return m_LeftVoltage;}
 		double GetRightVoltage() const {return m_RightVoltage;}
 		void SetDisplayVoltage(bool display) {m_DisplayVoltage=display;}
+
+		void SetLeftRightReverseDirectionEncoder(bool Left_reverseDirection,bool Right_reverseDirection) 
+		{	m_Encoders.SetLeftRightReverseDirectionEncoder(Left_reverseDirection,Right_reverseDirection);
+		}
 	protected: //from Robot_Control_Interface
 		virtual void Reset_Encoders();
 		virtual void Initialize(const Entity_Properties *props);

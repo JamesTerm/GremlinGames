@@ -189,7 +189,8 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
 	Ship_1D_Properties::eRobotArm,
 	false	//Not using the range
-	),Ship_1D(EntityName)
+	),Ship_1D(EntityName),
+	m_EncoderScalar(1.0)
 {
 }
 
@@ -223,7 +224,12 @@ void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 
 double Encoder_Simulator::GetEncoderVelocity()
 {
-	return m_Physics.GetVelocity();
+	return m_Physics.GetVelocity() * m_EncoderScalar;
+}
+
+void Encoder_Simulator::SetReverseDirection(bool reverseDirection)
+{
+	m_EncoderScalar= reverseDirection? -1.0 : 1.0;
 }
 
 void Encoder_Simulator::TimeChange()
