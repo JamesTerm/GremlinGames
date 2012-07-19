@@ -49,11 +49,13 @@ class Encoder_Simulator : public Ship_1D
 		//This is broken up so that the real interface does not have to pass time
 		void SetTimeDelta(double dTime_s) {m_Time_s=dTime_s;}
 		void TimeChange();
+		void SetReverseDirection(bool reverseDirection);  //emulates functionality of the encoder (needed because kids put them in differently)
 	protected:
 	private:
 		double m_Time_s;
 		Ship_1D_Properties m_EncoderProps;
 		GG_Framework::Base::EventMap m_DummyMap;
+		double m_EncoderScalar; //used to implement reverse
 };
 
 class Encoder_Tester
@@ -65,6 +67,11 @@ class Encoder_Tester
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		void SetTimeDelta(double dTime_s);
 		void TimeChange();
+
+		void SetLeftRightReverseDirectionEncoder(bool Left_reverseDirection,bool Right_reverseDirection)
+		{
+			m_LeftEncoder.SetReverseDirection(Left_reverseDirection),m_RightEncoder.SetReverseDirection(Right_reverseDirection);
+		}
 	private:
 		Encoder_Simulator m_LeftEncoder;
 		Encoder_Simulator m_RightEncoder;

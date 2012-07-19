@@ -56,7 +56,9 @@ MainRobot = {
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-		reverse_steering='no'
+		reverse_steering='no',
+		 left_encoder_reversed='no',
+		right_encoder_reversed='no'
 	},
 	
 	robot_settings =
@@ -211,7 +213,9 @@ MainRobot = {
 				voltage_multiply=1.0,				--May be reversed using -1.0
 				curve_voltage=
 				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-				reverse_steering='no'
+				reverse_steering='no',
+				 left_encoder_reversed='no',
+				right_encoder_reversed='no'
 			}
 		},
 		controls =

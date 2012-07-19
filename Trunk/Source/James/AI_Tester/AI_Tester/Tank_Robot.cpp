@@ -386,7 +386,6 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.WheelDiameter=c_WheelDiameter;
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
-	props.VoltageScalar=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
@@ -397,6 +396,8 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.Polynomial[2]=0.0;
 	props.Polynomial[3]=0.0;
 	props.Polynomial[4]=0.0;
+	props.LeftEncoderReversed=false;
+	props.RightEncoderReversed=false;
 	m_TankRobotProps=props;
 }
 
@@ -431,7 +432,8 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 			m_TankRobotProps.WheelDiameter=Inches2Meters(wheel_diameter);
 		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_TankRobotProps.MotorToWheelGearRatio);
-		script.GetField("voltage_multiply", NULL, NULL, &m_TankRobotProps.VoltageScalar);
+		//Using the left right reverse encoder flag
+		//script.GetField("voltage_multiply", NULL, NULL, &m_TankRobotProps.VoltageScalar);
 		err = script.GetFieldTable("left_pid");
 		if (!err)
 		{
@@ -481,6 +483,18 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_TankRobotProps.ReverseSteering=true;
+		}
+		err = script.GetField("left_encoder_reversed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.LeftEncoderReversed=true;
+		}
+		err = script.GetField("right_encoder_reversed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.RightEncoderReversed=true;
 		}
 
 		err = script.GetFieldTable("curve_voltage");
@@ -532,6 +546,9 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		//We'll try to construct the props to match our properties
 		Ship_1D_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward(),robot_props->GetMaxAccelReverse());
 		m_Encoders.Initialize(&props);
+
+		//Now to set the encoders reverse state
+		m_Encoders.SetLeftRightReverseDirectionEncoder(m_TankRobotProps.LeftEncoderReversed,m_TankRobotProps.RightEncoderReversed);
 	}
 }
 
