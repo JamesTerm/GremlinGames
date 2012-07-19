@@ -311,7 +311,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			if ((!m_UsingEncoders) || (!m_UseDeadZoneSkip))
 			#else
 			//Once the new PID system is working the deceleration does not need to worry about overshooting
-			//if (!m_UsingEncoders)
+			if (!m_UsingEncoders)
 			#endif
 			{
 				LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
@@ -365,10 +365,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 
 	#ifdef __DebugLUA__
 	if (m_TankRobotProps.PID_Console_Dump && ((LeftVoltage!=0.0)||(RightVoltage!=0.0)))
-	{
-		double PosY=GetPos_m()[1];
 		printf("v=%.2f v=%.2f ",LeftVoltage,RightVoltage);
-	}
 	#endif
 
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
