@@ -35,6 +35,9 @@ struct Tank_Robot_Props
 	bool IsOpen;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
+	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
+	//Currently supporting 4 terms in polynomial equation
+	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 };
 
 class Tank_Robot_UI;
