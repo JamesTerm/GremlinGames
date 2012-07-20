@@ -222,9 +222,32 @@ void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 	#endif
 }
 
+const double Polynomial[5]=
+{
+	//0.0,1.0   ,0.0    ,0.0   ,0.0
+	  0.0,2.4878,-2.2091,0.7134,0.0
+};
+
 double Encoder_Simulator::GetEncoderVelocity()
 {
+	#if 0
 	return m_Physics.GetVelocity() * m_EncoderScalar;
+	#else
+	double Voltage = m_Physics.GetVelocity() / m_EncoderProps.GetMaxSpeed();
+	double Direction=Voltage<0 ? -1.0 : 1.0;
+	Voltage=fabs(Voltage); //make positive
+	//Apply the victor curve
+	//Apply the polynomial equation to the voltage to linearize the curve
+	{
+		const double *c=Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		Voltage *= Direction;
+	}
+	return Voltage * m_EncoderProps.GetMaxSpeed();
+	#endif
 }
 
 void Encoder_Simulator::SetReverseDirection(bool reverseDirection)

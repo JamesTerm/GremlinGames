@@ -328,17 +328,22 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			}
 			#else
 			//Apply the polynomial equation to the voltage to linearize the curve
+			//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 			{
+				double Voltage=fabs(LeftVoltage);
 				double *c=m_TankRobotProps.Polynomial;
-				double x2=LeftVoltage*LeftVoltage;
-				double x3=LeftVoltage*x2;
+				double x2=Voltage*Voltage;
+				double x3=Voltage*x2;
 				double x4=x2*x2;
-				LeftVoltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*LeftVoltage) + c[0]; 
+				Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+				LeftVoltage=Voltage;
 
-				x2=RightVoltage*RightVoltage;
-				x3=RightVoltage*x2;
+				Voltage=fabs(RightVoltage);
+				x2=Voltage*Voltage;
+				x3=Voltage*x2;
 				x4=x2*x2;
-				RightVoltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*RightVoltage) + c[0]; 
+				Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+				RightVoltage=Voltage;
 
 				//Clip the voltage as it can become really high values when applying equation
 				if (LeftVoltage>1.0)
@@ -544,7 +549,8 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		//This will copy all the props
 		m_TankRobotProps=robot_props->GetTankRobotProps();
 		//We'll try to construct the props to match our properties
-		Ship_1D_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward(),robot_props->GetMaxAccelReverse());
+		//Note: for max accel it needs to be powerful enough to handle curve equations
+		Ship_1D_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
 		m_Encoders.Initialize(&props);
 
 		//Now to set the encoders reverse state
