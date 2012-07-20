@@ -153,11 +153,14 @@ void Rotary_Linear::TimeChange(double dTime_s)
 
 	//Apply the polynomial equation to the voltage to linearize the curve
 	{
+		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
+		double y=fabs(Voltage);
 		double *c=m_Rotary_Props.Polynomial;
-		double x2=Voltage*Voltage;
-		double x3=Voltage*x2;
+		double x2=y*Voltage;
+		double x3=y*x2;
 		double x4=x2*x2;
-		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
+		Voltage=(Voltage<0)?-y:y;
 	}
 
 	//Keep voltage override disabled for simulation to test precision stability
@@ -374,11 +377,14 @@ void Rotary_Angular::TimeChange(double dTime_s)
 
 	//Apply the polynomial equation to the voltage to linearize the curve
 	{
+		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
+		double y=fabs(Voltage);
 		double *c=m_Rotary_Props.Polynomial;
-		double x2=Voltage*Voltage;
-		double x3=Voltage*x2;
+		double x2=y*Voltage;
+		double x3=y*x2;
 		double x4=x2*x2;
-		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
+		Voltage=(Voltage<0)?-y:y;
 	}
 
 	//Keep voltage override disabled for simulation to test precision stability
