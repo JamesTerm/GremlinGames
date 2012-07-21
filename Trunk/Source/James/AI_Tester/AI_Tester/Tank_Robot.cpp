@@ -553,8 +553,13 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		Ship_1D_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
 		m_Encoders.Initialize(&props);
 
+		#if 1
 		//Now to set the encoders reverse state
 		m_Encoders.SetLeftRightReverseDirectionEncoder(m_TankRobotProps.LeftEncoderReversed,m_TankRobotProps.RightEncoderReversed);
+		#else
+		//Testing a side imbalance
+		m_Encoders.SetLeftRightScalar(1.0,0.94);
+		#endif
 	}
 }
 
