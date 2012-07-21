@@ -50,6 +50,7 @@ class Encoder_Simulator : public Ship_1D
 		void SetTimeDelta(double dTime_s) {m_Time_s=dTime_s;}
 		void TimeChange();
 		void SetReverseDirection(bool reverseDirection);  //emulates functionality of the encoder (needed because kids put them in differently)
+		void SetEncoderScalar(double value) {m_EncoderScalar=value;}  //This helps to simulate differences between sides
 	protected:
 	private:
 		double m_Time_s;
@@ -71,6 +72,10 @@ class Encoder_Tester
 		void SetLeftRightReverseDirectionEncoder(bool Left_reverseDirection,bool Right_reverseDirection)
 		{
 			m_LeftEncoder.SetReverseDirection(Left_reverseDirection),m_RightEncoder.SetReverseDirection(Right_reverseDirection);
+		}
+		void SetLeftRightScalar(double LeftScalar,double RightScalar)
+		{
+			m_LeftEncoder.SetEncoderScalar(LeftScalar),m_RightEncoder.SetEncoderScalar(RightScalar);
 		}
 	private:
 		Encoder_Simulator m_LeftEncoder;

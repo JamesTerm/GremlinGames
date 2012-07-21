@@ -246,7 +246,7 @@ double Encoder_Simulator::GetEncoderVelocity()
 		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
 		Voltage *= Direction;
 	}
-	return Voltage * m_EncoderProps.GetMaxSpeed();
+	return Voltage * m_EncoderProps.GetMaxSpeed() * m_EncoderScalar;
 	#endif
 }
 
