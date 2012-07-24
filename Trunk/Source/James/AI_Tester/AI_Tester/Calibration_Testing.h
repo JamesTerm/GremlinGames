@@ -56,6 +56,7 @@ class Encoder_Simulator : public Ship_1D
 		double m_Time_s;
 		Ship_1D_Properties m_EncoderProps;
 		GG_Framework::Base::EventMap m_DummyMap;
+		LatencyFilter m_Latency;
 		double m_EncoderScalar; //used to implement reverse
 };
 
