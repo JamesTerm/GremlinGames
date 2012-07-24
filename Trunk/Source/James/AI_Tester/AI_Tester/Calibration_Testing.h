@@ -58,6 +58,7 @@ class Encoder_Simulator : public Ship_1D
 		GG_Framework::Base::EventMap m_DummyMap;
 		LatencyFilter m_Latency;
 		double m_EncoderScalar; //used to implement reverse
+		bool m_GetEncoderFirstCall;  //allows GetEncoderVelocity to know when a new set of calls occur within a time slice
 };
 
 class Encoder_Tester

@@ -64,11 +64,12 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 		SetPotentiometerSafety(true);
 	else
 		m_UsingPotentiometer=true;
+	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
 void Rotary_Linear::TimeChange(double dTime_s)
 {
-	const double CurrentVelocity=m_Physics.GetVelocity();
+	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 	double PotentiometerVelocity=0.0; //increased scope for debugging dump
@@ -322,11 +323,12 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 		m_EncoderState=eActive;
 		break;
 	}
+	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
 void Rotary_Angular::TimeChange(double dTime_s)
 {
-	const double CurrentVelocity=m_Physics.GetVelocity();
+	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
 	double Encoder_Velocity=0.0;
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 	{
@@ -509,6 +511,7 @@ void Rotary_Properties::Init()
 	props.EncoderToRS_Ratio=1.0;
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
+	props.InputLatency=0.0;
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
@@ -552,6 +555,8 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		script.GetField("tolerance", NULL, NULL, &m_RoteryProps.PrecisionTolerance);
+		script.GetField("latency", NULL, NULL, &m_RoteryProps.InputLatency);
+
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
 		if (!err)

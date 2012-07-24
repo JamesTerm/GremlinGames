@@ -190,7 +190,7 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_Time_s(0.0),m_
 	Ship_1D_Properties::eRobotArm,
 	false	//Not using the range
 	),Ship_1D(EntityName),m_Latency(0.170),
-	m_EncoderScalar(1.0)
+	m_EncoderScalar(1.0),m_GetEncoderFirstCall(false)
 {
 }
 
@@ -233,6 +233,8 @@ double Encoder_Simulator::GetEncoderVelocity()
 	#if 0
 	return m_Physics.GetVelocity() * m_EncoderScalar;
 	#else
+	if (!m_GetEncoderFirstCall) return m_Latency();
+
 	double Voltage = m_Physics.GetVelocity() / m_EncoderProps.GetMaxSpeed();
 	double Direction=Voltage<0 ? -1.0 : 1.0;
 	Voltage=fabs(Voltage); //make positive
@@ -248,6 +250,7 @@ double Encoder_Simulator::GetEncoderVelocity()
 	}
 	double ret=Voltage * m_EncoderProps.GetMaxSpeed() * m_EncoderScalar;
 	ret=m_Latency(ret,m_Time_s);
+	m_GetEncoderFirstCall=false; //weed out the repeat calls
 	return ret;
 	#endif
 }
@@ -259,6 +262,7 @@ void Encoder_Simulator::SetReverseDirection(bool reverseDirection)
 
 void Encoder_Simulator::TimeChange()
 {
+	m_GetEncoderFirstCall=true;
 	__super::TimeChange(m_Time_s);
 }
 
