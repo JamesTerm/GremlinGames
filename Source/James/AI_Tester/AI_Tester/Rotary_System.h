@@ -9,6 +9,7 @@ struct Rotary_Props
 	//Note: This is not necessarily the multiply to match the motor speed as there may be some gearing to the system as well
 	double EncoderToRS_Ratio;
 	double PID[3]; //p,i,d
+	double InputLatency;  //Used with PID to help avoid oscillation in the error control (We can make one for each if needed)
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	//Currently supporting 4 terms in polynomial equation
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
@@ -56,6 +57,7 @@ class Rotary_Linear : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
+		LatencyFilter m_PID_Input_Latency;
 		double m_LastPosition;  //used for calibration
 		#ifdef __UseScalerPID__
 		double m_CalibratedScaler; //used for calibration
@@ -108,6 +110,7 @@ class Rotary_Angular : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
+		LatencyFilter m_PID_Input_Latency;
 
 		//We have both ways to implement PID calibration depending on if we have aggressive stop property enabled
 		double m_CalibratedScaler; //used for calibration

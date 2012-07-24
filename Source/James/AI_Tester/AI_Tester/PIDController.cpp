@@ -31,6 +31,11 @@ double LatencyFilter::operator()(double input,double dTime_s)
 	return value;
 }
 
+double LatencyFilter::operator()()
+{
+	return m_Queue.size()?m_Queue.front():0.0;
+}
+
 void LatencyFilter::SetLatency(double Latency)
 {
 	m_Latency_s=Latency;
