@@ -68,6 +68,8 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	#endif
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
+	m_PID_Input_Latency_Left.SetLatency(m_TankRobotProps.InputLatency);
+	m_PID_Input_Latency_Right.SetLatency(m_TankRobotProps.InputLatency);
 }
 void Tank_Robot::ResetPos()
 {
@@ -118,8 +120,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 	//Display encoders without applying calibration
 
-	double LeftVelocity=GetLeftVelocity();
-	double RightVelocity=GetRightVelocity();
+	double LeftVelocity=m_PID_Input_Latency_Left(GetLeftVelocity(),dTime_s);
+	double RightVelocity=m_PID_Input_Latency_Right(GetRightVelocity(),dTime_s);
 
 	if (m_UsingEncoders)
 	{
@@ -390,12 +392,14 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	const double c_WheelDiameter=0.1524;  //6 inches
 	props.WheelDiameter=c_WheelDiameter;
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
+	props.InputLatency=0.0;
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
 	props.VoltageScalar=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=false;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
 	props.ReverseSteering=false;
 	props.Polynomial[0]=0.0;
 	props.Polynomial[1]=1.0;
@@ -462,6 +466,9 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		script.GetField("tolerance", NULL, NULL, &m_TankRobotProps.PrecisionTolerance);
+		script.GetField("latency", NULL, NULL, &m_TankRobotProps.InputLatency);
+		script.GetField("left_max_offset", NULL, NULL, &m_TankRobotProps.LeftMaxSpeedOffset);
+		script.GetField("right_max_offset", NULL, NULL, &m_TankRobotProps.RightMaxSpeedOffset);
 
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);

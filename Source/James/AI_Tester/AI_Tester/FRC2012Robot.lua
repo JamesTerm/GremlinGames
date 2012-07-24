@@ -47,10 +47,11 @@ MainRobot = {
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
 		left_pid=
-		{p=100, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+		{p=25, i=0, d=5},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
 		right_pid=
-		{p=100, i=0, d=0},					--These should always match, but able to be made different
-		
+		{p=25, i=0, d=5},					--These should always match, but able to be made different
+		latency=0.170,
+		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
@@ -203,10 +204,10 @@ MainRobot = {
 				--We must NOT use I or D for low gear, we must keep it very responsive
 				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
 				left_pid=
-				{p=1, i=0, d=0},
+				{p=25, i=0, d=5},
 				right_pid=
-				{p=1, i=0, d=0},					--These should always match, but able to be made different
-				
+				{p=25, i=0, d=5},					--These should always match, but able to be made different
+				latency=0.170,
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
