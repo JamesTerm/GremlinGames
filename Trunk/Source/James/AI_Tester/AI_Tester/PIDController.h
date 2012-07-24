@@ -11,6 +11,7 @@ class LatencyFilter
 		/// \param dTime_s is the slice of time for this call
 		/// \ret Tries to return the actual position of where it was m_Latency_ms ago; otherwise will return a more current position
 		double operator()(double input,double dTime_s);
+		void SetLatency(double Latency);
 	private:
 		std::queue<double> m_Queue; //This grows as needed
 		double m_Latency_s;  //Latency in seconds
