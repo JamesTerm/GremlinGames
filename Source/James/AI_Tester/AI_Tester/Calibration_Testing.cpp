@@ -2,8 +2,8 @@
 #include "AI_Tester.h"
 namespace AI_Tester
 {
-	#include "Calibration_Testing.h"
 	#include "PIDController.h"
+	#include "Calibration_Testing.h"
 	#include "Tank_Robot.h"
 	#include "Robot_Control_Interface.h"
 	#include "Rotary_System.h"
@@ -180,7 +180,7 @@ const double c_Encoder_TestRate=1.1;
 const double c_Encoder_MaxAccel=2.0;
 #endif
 
-Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
+Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_Time_s(0.0),m_EncoderProps(
 	EntityName,
 	68.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
@@ -189,7 +189,7 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_EncoderProps(
 	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
 	Ship_1D_Properties::eRobotArm,
 	false	//Not using the range
-	),Ship_1D(EntityName),
+	),Ship_1D(EntityName),m_Latency(0.170),
 	m_EncoderScalar(1.0)
 {
 }
@@ -246,7 +246,9 @@ double Encoder_Simulator::GetEncoderVelocity()
 		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
 		Voltage *= Direction;
 	}
-	return Voltage * m_EncoderProps.GetMaxSpeed() * m_EncoderScalar;
+	double ret=Voltage * m_EncoderProps.GetMaxSpeed() * m_EncoderScalar;
+	ret=m_Latency(ret,m_Time_s);
+	return ret;
 	#endif
 }
 

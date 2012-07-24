@@ -16,6 +16,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <queue>
 #include <climits>
 #include <cassert>
 #include <math.h>
