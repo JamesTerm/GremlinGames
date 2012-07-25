@@ -299,7 +299,8 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
 			#else
-			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/MAX_SPEED,RightVoltage=(RightVelocity+m_ErrorOffset_Right)/MAX_SPEED;
+			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
+			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
 			#endif
 
 			//Old legacy square method here (turned out to be pretty good)
