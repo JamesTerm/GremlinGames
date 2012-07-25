@@ -30,7 +30,10 @@ struct Tank_Robot_Props
 	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
 	double LeftPID[3]; //p,i,d
 	double RightPID[3]; //p,i,d
+	double InputLatency;  //Used with PID to help avoid oscillation in the error control (We can make one for each if needed)
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+	double LeftMaxSpeedOffset;	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
+	double RightMaxSpeedOffset;
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
@@ -91,6 +94,7 @@ class Tank_Robot : public Tank_Drive
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
+		LatencyFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
 };
 
 class Tank_Robot_Properties : public Ship_Properties

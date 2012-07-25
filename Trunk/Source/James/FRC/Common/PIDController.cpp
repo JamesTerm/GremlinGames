@@ -1,5 +1,42 @@
 #include <math.h>
+#include <queue>
+#include <assert.h>
 #include "PIDController.h"
+
+  /***********************************************************************************************************/
+ /*												LatencyFilter												*/
+/***********************************************************************************************************/
+
+LatencyFilter::LatencyFilter(double Latency) : m_Latency_s(Latency) 
+{
+	assert(m_Latency_s>=0);  //must have a positive value
+}
+
+double LatencyFilter::operator()(double input,double dTime_s)
+{
+	m_Queue.push(input);
+	//We'll cheat and work with the current dTime_s to obtain a ballpark idea of how much time each entry is... this should be fine as long
+	//as the slices are somewhat even... the idea here is to be simple and quick instead of complex and slow with a trade off of accuracy
+	double CurrentLatency= m_Queue.size() * dTime_s;
+	double value=m_Queue.front();
+	while (CurrentLatency > m_Latency_s) 
+	{
+		value=m_Queue.front();
+		m_Queue.pop();
+		CurrentLatency= m_Queue.size() * dTime_s;
+	};
+	return value;
+}
+
+double LatencyFilter::operator()()
+{
+	return m_Queue.size()?m_Queue.front():0.0;
+}
+
+void LatencyFilter::SetLatency(double Latency)
+{
+	m_Latency_s=Latency;
+}
 
   /***********************************************************************************************************/
  /*												KalmanFilter												*/
