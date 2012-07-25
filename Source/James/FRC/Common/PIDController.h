@@ -1,5 +1,23 @@
 #pragma once
 
+//To assist in better control on the PID in addition to the linearization of the victor, there can also be latency from the time the voltage is
+//applied to the time it takes effect.  This class makes it easy for systems to account for the latency to reduce error for PID and possibly
+//unnecessary oscillation that would otherwise occur
+class LatencyFilter
+{
+	public:
+		LatencyFilter(double Latency=0.0);
+		/// \param input is the actual position where it is
+		/// \param dTime_s is the slice of time for this call
+		/// \ret Tries to return the actual position of where it was m_Latency_ms ago; otherwise will return a more current position
+		double operator()(double input,double dTime_s);
+		double operator()();  //This is a passive operation that simply allows multiple calls to obtain the last known value
+		void SetLatency(double Latency);
+	private:
+		std::queue<double> m_Queue; //This grows as needed
+		double m_Latency_s;  //Latency in seconds
+};
+
 class KalmanFilter
 {
 	public:
@@ -8,7 +26,7 @@ class KalmanFilter
 		double operator()(double input);
 		void Reset();
 	private:
-	    //initial values for the kalman filter
+	    //initial values for the Kalman filter
 	    double m_x_est_last;
 	    double m_last;
 	    //the noise in the system
