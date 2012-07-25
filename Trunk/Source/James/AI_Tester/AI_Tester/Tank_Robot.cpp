@@ -118,10 +118,19 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 {
 	double Encoder_LeftVelocity,Encoder_RightVelocity;
 	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+	#ifndef __UseInducedLatency__
+	Encoder_LeftVelocity=m_PID_Input_Latency_Left(Encoder_LeftVelocity,dTime_s);
+	Encoder_RightVelocity=m_PID_Input_Latency_Right(Encoder_RightVelocity,dTime_s);
+	#endif
+
 	//Display encoders without applying calibration
 
+	#ifdef __UseInducedLatency__
 	double LeftVelocity=m_PID_Input_Latency_Left(GetLeftVelocity(),dTime_s);
 	double RightVelocity=m_PID_Input_Latency_Right(GetRightVelocity(),dTime_s);
+	#else
+	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
+	#endif
 
 	if (m_UsingEncoders)
 	{

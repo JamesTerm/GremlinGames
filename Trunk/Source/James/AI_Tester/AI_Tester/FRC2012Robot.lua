@@ -23,8 +23,8 @@ MainRobot = {
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
-	MaxAccelForward = 4, MaxAccelReverse = 4, 
-	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
+	MaxAccelForward = 2, MaxAccelReverse = 2, 
+	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = HighGearSpeed,
@@ -39,7 +39,7 @@ MainRobot = {
 	tank_drive =
 	{
 		is_closed=0,						--This should always be false for high gear
-		show_pid_dump='no',
+		show_pid_dump='y',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
@@ -50,7 +50,7 @@ MainRobot = {
 		{p=25, i=0, d=5},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
 		right_pid=
 		{p=25, i=0, d=5},					--These should always match, but able to be made different
-		latency=0.170,
+		latency=0.300,
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -208,7 +208,7 @@ MainRobot = {
 				{p=25, i=0, d=5},
 				right_pid=
 				{p=25, i=0, d=5},					--These should always match, but able to be made different
-				latency=0.170,
+				latency=0.300,
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)

@@ -768,7 +768,8 @@ void FRC_2012_Robot::SetLowGear(bool on)
 void FRC_2012_Robot::SetLowGearValue(double Value)
 {
 	//printf("\r%f       ",Value);
-	if (Value > 0.0)
+	//if (Value > 0.0)
+	if (true)
 	{
 		if (m_SetLowGear)
 		{
