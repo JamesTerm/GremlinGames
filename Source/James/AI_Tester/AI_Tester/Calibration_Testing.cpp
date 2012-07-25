@@ -189,7 +189,7 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_Time_s(0.0),m_
 	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
 	Ship_1D_Properties::eRobotArm,
 	false	//Not using the range
-	),Ship_1D(EntityName),m_Latency(0.170),
+	),Ship_1D(EntityName),m_Latency(0.300),
 	m_EncoderScalar(1.0),m_GetEncoderFirstCall(false)
 {
 }

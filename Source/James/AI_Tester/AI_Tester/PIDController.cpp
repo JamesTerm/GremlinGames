@@ -42,6 +42,57 @@ void LatencyFilter::SetLatency(double Latency)
 }
 
   /***********************************************************************************************************/
+ /*											LatencyPredictionFilter											*/
+/***********************************************************************************************************/
+
+LatencyPredictionFilter::LatencyPredictionFilter(double Latency) : m_Predicted(0.0),
+	m_Prev_Input(0.0),m_Prev_Time(0.0),
+	m_Prev_Prev_Input(0.0),m_Prev_Prev_Time(0.0),
+	m_Prev_Prev_Prev_Input(0.0),m_Prev_Prev_Prev_Time(0.0),
+	m_Latency_s(Latency) 
+{
+	assert(m_Latency_s>=0);  //must have a positive value
+}
+
+double LatencyPredictionFilter::operator()(double input,double dTime_s)
+{
+	//avoid division by zero
+	if (dTime_s * m_Prev_Time * m_Prev_Prev_Time==0.0) 
+	{
+		//Might as well handle the first-run case since we do not know the time slices yet
+		if (dTime_s!=0)
+			m_Prev_Prev_Prev_Time=m_Prev_Prev_Time=m_Prev_Time=dTime_s;
+		return m_Predicted;
+	}
+	//We'll cheat and work with the current dTime_s to obtain a derivative;  This would be acceleration if the input is velocity
+	const double LastLastRate= (m_Prev_Prev_Input - m_Prev_Prev_Prev_Input) / m_Prev_Prev_Time;
+	const double LastRate= (m_Prev_Input - m_Prev_Prev_Input) / m_Prev_Time;
+	const double CurrentRate= (input - m_Prev_Input) / dTime_s;
+	//Just do a simple average of the rates... we can change if this is problematic
+	const double PredictedRate=(CurrentRate+LastRate+LastLastRate) * 0.3333333333333333;
+	m_Predicted=input + (PredictedRate * m_Latency_s);
+
+	//cycle the new input into cache
+	m_Prev_Prev_Prev_Input=m_Prev_Prev_Input;
+	m_Prev_Prev_Prev_Time=m_Prev_Prev_Time;
+	m_Prev_Prev_Input=m_Prev_Input;
+	m_Prev_Prev_Time=m_Prev_Time;
+	m_Prev_Input=input;
+	m_Prev_Time=dTime_s;
+	return m_Predicted;
+}
+
+double LatencyPredictionFilter::operator()()
+{
+	return m_Predicted;  //This is the last value that was submitted
+}
+
+void LatencyPredictionFilter::SetLatency(double Latency)
+{
+	m_Latency_s=Latency;
+}
+
+  /***********************************************************************************************************/
  /*												KalmanFilter												*/
 /***********************************************************************************************************/
 
