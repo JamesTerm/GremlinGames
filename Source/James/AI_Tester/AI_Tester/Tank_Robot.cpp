@@ -114,6 +114,17 @@ void Tank_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition)
 	}
 }
 
+double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity)
+{
+	//see if velocity is in range
+	double ret=Velocity;
+	if ((PredictedEncoderVelocity>Velocity)&&(EncoderVelocity>Velocity))
+		ret=min(PredictedEncoderVelocity,EncoderVelocity);
+	if ((PredictedEncoderVelocity<Velocity)&&(EncoderVelocity<Velocity))
+		ret=max(PredictedEncoderVelocity,EncoderVelocity);
+	return ret;
+}
+
 void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
 {
 	double Encoder_LeftVelocity,Encoder_RightVelocity;
@@ -155,8 +166,10 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
 		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
 		#else
-		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Predicted_Encoder_LeftVelocity,dTime_s);
-		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Predicted_Encoder_RightVelocity,dTime_s);
+		const double Encoder_Left_ToUse=ComputeVelocityWithTolerance(Encoder_LeftVelocity,Predicted_Encoder_LeftVelocity,LeftVelocity);
+		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_Left_ToUse,dTime_s);
+		const double Encoder_Right_ToUse=ComputeVelocityWithTolerance(Encoder_RightVelocity,Predicted_Encoder_RightVelocity,RightVelocity);
+		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_Right_ToUse,dTime_s);
 		#endif
 
 		//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
@@ -187,7 +200,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump &&  ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			#ifdef __UseInducedLatency__
+			#ifndef __ShowEncoderPrediction__
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
 			#else
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Predicted_Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Predicted_Encoder_RightVelocity,m_ErrorOffset_Right);
@@ -216,7 +229,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump && ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			#ifdef __UseInducedLatency__
+			#ifndef __ShowEncoderPrediction__
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
 			#else
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Predicted_Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Predicted_Encoder_RightVelocity,m_ErrorOffset_Right);
