@@ -887,9 +887,9 @@ void FRC_2012_Robot::SetPresetPOV (double value)
 
 void FRC_2012_Robot::Robot_SetCreepMode(bool on) 
 {
+	SetUseEncoders(on,false);  //High gear can use them
 	if (m_SetLowGear)
 	{
-		SetUseEncoders(on,false);
 		m_RobotControl->OpenSolenoid(eUseBreakDrive,on);
 	}
 }
