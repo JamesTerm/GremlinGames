@@ -1,7 +1,7 @@
 #pragma once
-#undef __UseScalerPID__
-#undef __UseInducedLatency__
-#undef __ShowEncoderPrediction__
+#undef __Tank_UseScalerPID__
+#undef __Tank_UseInducedLatency__
+#undef __Tank_ShowEncoderPrediction__
 
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
 class Tank_Drive_Control_Interface
