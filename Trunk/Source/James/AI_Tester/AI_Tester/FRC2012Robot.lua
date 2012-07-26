@@ -38,8 +38,8 @@ MainRobot = {
 	
 	tank_drive =
 	{
-		is_closed=0,						--This should always be false for high gear
-		show_pid_dump='no',
+		is_closed=1,						--This should always be false for high gear
+		show_pid_dump='y',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
