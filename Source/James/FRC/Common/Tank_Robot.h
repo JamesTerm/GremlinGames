@@ -1,5 +1,7 @@
 #pragma once
-#undef __UseScalerPID__
+#undef __Tank_UseScalerPID__
+#undef __Tank_UseInducedLatency__
+#undef __Tank_ShowEncoderPrediction__
 
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
 class Tank_Drive_Control_Interface
@@ -94,7 +96,11 @@ class Tank_Robot : public Tank_Drive
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
+		#ifdef __UseInducedLatency__
 		LatencyFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
+		#else
+		LatencyPredictionFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
+		#endif
 };
 
 class Tank_Robot_Properties : public Ship_Properties
