@@ -26,6 +26,9 @@ using namespace std;
 namespace Base=Framework::Base;
 namespace Scripting=Framework::Scripting;
 
+
+double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity);
+
   /***********************************************************************************************************************************/
  /*															Rotary_Linear															*/
 /***********************************************************************************************************************************/
@@ -34,14 +37,14 @@ Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *r
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_LastPosition(0.0),
-	#ifdef __UseScalerPID__
+	#ifdef __Rotary_UseScalerPID__
 	m_CalibratedScaler(1.0),
 	#else
 	m_ErrorOffset(0.0),
 	#endif
 	m_LastTime(0.0),m_MaxSpeedReference(0.0),
 	m_UsingPotentiometer(false) //to be safe
-	#ifdef __UseScalerPID__
+	#ifdef __Rotary_UseScalerPID__
 	,  
 	m_VoltageOverride(false)
 	#endif
@@ -64,7 +67,7 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
-	#ifdef __UseScalerPID__
+	#ifdef __Rotary_UseScalerPID__
 	m_CalibratedScaler=MAX_SPEED;
 	#else
 	m_ErrorOffset=0.0;
@@ -78,7 +81,13 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 
 void Rotary_Linear::TimeChange(double dTime_s)
 {
+	#ifdef __Rotary_UseInducedLatency__
 	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
+	#else
+	const double CurrentVelocity=m_Physics.GetVelocity();
+	double Predicted_Pot_Velocity=0.0;
+	#endif
+
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 	double PotentiometerVelocity=0.0; //increased scope for debugging dump
@@ -93,7 +102,8 @@ void Rotary_Linear::TimeChange(double dTime_s)
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
 			PotentiometerVelocity=Displacement/m_LastTime;
-			#ifdef __UseScalerPID__
+
+			#ifdef __Rotary_UseScalerPID__
 			double LastSpeed=fabs(CurrentVelocity);  //This is last because the time change has not happened yet
 			double PotentiometerSpeed=fabs(PotentiometerVelocity);
 			double control=0.0;
@@ -105,7 +115,13 @@ void Rotary_Linear::TimeChange(double dTime_s)
 				m_CalibratedScaler=MAX_SPEED+control;
 			}
 			#else
+			#ifdef __Rotary_UseInducedLatency__
 			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity,dTime_s);
+			#else
+			Predicted_Pot_Velocity=m_PID_Input_Latency(PotentiometerVelocity,CurrentVelocity,dTime_s);
+			const double PotentiometerVelocity_ToUse=ComputeVelocityWithTolerance(PotentiometerVelocity,Predicted_Pot_Velocity,CurrentVelocity);
+			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity_ToUse,dTime_s);
+			#endif
 			//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 			m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
 			#endif
@@ -123,7 +139,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		//is to seamlessly transfer between manual and auto
 		if (m_UsingPotentiometer)
 		{
-			#ifdef __UseScalerPID__
+			#ifdef __Rotary_UseScalerPID__
 			m_CalibratedScaler=MAX_SPEED;
 			#else
 			m_ErrorOffset=0.0;
@@ -146,7 +162,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 
 	__super::TimeChange(dTime_s);
 	//Note: CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
-	#ifdef __UseScalerPID__
+	#ifdef __Rotary_UseScalerPID__
 	double Voltage=m_Physics.GetVelocity()/m_CalibratedScaler;
 	#else
 	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/MAX_SPEED;
@@ -195,7 +211,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		Voltage=-Voltage;
 	#endif
 
-	#ifdef __UseScalerPID__
+	#ifdef __Rotary_UseScalerPID__
 	#ifdef __DebugLUA__
 	if ((m_Rotary_Props.PID_Console_Dump)&&(Voltage!=0.0))
 	{
@@ -211,7 +227,11 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	if ((m_Rotary_Props.PID_Console_Dump)&&(PotentiometerVelocity!=0.0))
 	{
 		double PosY=m_LastPosition;
+		#ifndef __Rotary_ShowEncoderPrediction__
 		printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
+		#else
+		printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,Predicted_Pot_Velocity,m_ErrorOffset);
+		#endif
 	}
 	#endif
 
@@ -220,7 +240,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 	m_RobotControl->UpdateRotaryVoltage(m_InstanceIndex,Voltage);
 }
 
-#ifdef __UseScalerPID__
+#ifdef __Rotary_UseScalerPID__
 void Rotary_Linear::PosDisplacementCallback(double posDisplacement_m)
 {
 	m_VoltageOverride=false;
@@ -259,7 +279,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 			//This is no longer necessary
 			//MAX_SPEED=m_MaxSpeedReference;
 			m_LastPosition=0.0;
-			#ifdef __UseScalerPID__
+			#ifdef __Rotary_UseScalerPID__
 			m_CalibratedScaler=MAX_SPEED;
 			#else
 			m_ErrorOffset=0.0;
@@ -277,7 +297,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 			printf("Enabling potentiometer for %s\n",GetName().c_str());
 			ResetPos();
 			m_UsingRange=GetUsingRange_Props();
-			#ifdef __UseScalerPID__
+			#ifdef __Rotary_UseScalerPID__
 			m_CalibratedScaler=MAX_SPEED;
 			#else
 			m_ErrorOffset=0.0;
@@ -337,11 +357,20 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 
 void Rotary_Angular::TimeChange(double dTime_s)
 {
+	#ifdef __Rotary_UseInducedLatency__
 	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
+	#else
+	const double CurrentVelocity=m_Physics.GetVelocity();
+	double Predicted_Encoder_Velocity=0.0;
+	#endif
+
 	double Encoder_Velocity=0.0;
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 	{
 		Encoder_Velocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+		#ifndef __Rotary_UseInducedLatency__
+		Predicted_Encoder_Velocity=m_PID_Input_Latency(Encoder_Velocity,CurrentVelocity,dTime_s);
+		#endif
 
 		//Unlike linear there is no displacement measurement therefore no need to check GetLockShipToPosition()
 		if (m_EncoderState==eActive)
@@ -353,13 +382,23 @@ void Rotary_Angular::TimeChange(double dTime_s)
 				//allow the scaler to normalize if it need to start up again.
 				if (((CurrentVelocity * Encoder_Velocity) > 0.0) || IsZero(Encoder_Velocity) )
 				{
+					#ifdef __Rotary_UseInducedLatency__
 					control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_Velocity),dTime_s);
+					#else
+					const double Encoder_ToUse=ComputeVelocityWithTolerance(Encoder_Velocity,Predicted_Encoder_Velocity,CurrentVelocity);
+					control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_ToUse),dTime_s);
+					#endif
 					m_CalibratedScaler=MAX_SPEED+control;
 				}
 			}
 			else
 			{
+				#ifdef __Rotary_UseInducedLatency__
 				m_ErrorOffset=m_PIDController(CurrentVelocity,Encoder_Velocity,dTime_s);
+				#else
+				const double Encoder_ToUse=ComputeVelocityWithTolerance(Encoder_Velocity,Predicted_Encoder_Velocity,CurrentVelocity);
+				m_ErrorOffset=m_PIDController(CurrentVelocity,Encoder_ToUse,dTime_s);
+				#endif
 				//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 				m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
 			}
@@ -422,7 +461,13 @@ void Rotary_Angular::TimeChange(double dTime_s)
 
 	#ifdef __DebugLUA__
 	if (m_Rotary_Props.PID_Console_Dump && (Encoder_Velocity!=0.0))
+	{
+		#ifndef __Rotary_ShowEncoderPrediction__
 		printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
+		#else
+		printf("v=%.2f p=%.2f e=%.2f y=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,Predicted_Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
+		#endif
+	}
 	#endif
 
 	m_RobotControl->UpdateRotaryVoltage(m_InstanceIndex,Voltage);

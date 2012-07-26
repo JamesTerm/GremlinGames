@@ -18,6 +18,26 @@ class LatencyFilter
 		double m_Latency_s;  //Latency in seconds
 };
 
+//This is the same idea and interface to the latency filter, but instead of inducing latency it will predict what the value will be by first
+//derivative prediction
+class LatencyPredictionFilter
+{
+	public:
+		LatencyPredictionFilter(double Latency=0.0);
+		/// \param input is the actual position where it is
+		/// \target_point is the current predicted point from the force feed 
+		/// \param dTime_s is the slice of time for this call
+		/// \ret Tries to return the actual position of where it was m_Latency_ms ago; otherwise will return a more current position
+		double operator()(double input,double target_point,double dTime_s);
+		double operator()();  //This is a passive operation that simply allows multiple calls to obtain the last known value
+		void SetLatency(double Latency);
+	private:
+		double m_Predicted;
+		//cache two iterations of values for prediction
+		double m_Prev_Input,m_Prev_Target;
+		double m_Latency_s;  //Latency in seconds
+};
+
 class KalmanFilter
 {
 	public:
