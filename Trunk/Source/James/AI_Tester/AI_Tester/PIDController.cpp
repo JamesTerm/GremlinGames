@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "AI_Tester.h"
 
 namespace AI_Tester
 {
@@ -47,22 +46,23 @@ void LatencyFilter::SetLatency(double Latency)
  /*											LatencyPredictionFilter											*/
 /***********************************************************************************************************/
 
-LatencyPredictionFilter::LatencyPredictionFilter(double Latency) : m_Predicted(0.0),m_Prev_Input(0.0),m_Latency_s(Latency) 
+LatencyPredictionFilter::LatencyPredictionFilter(double Latency) : m_Predicted(0.0),m_Prev_Input(0.0),m_Prev_Target(0.0),m_Latency_s(Latency) 
 {
 	assert(m_Latency_s>=0);  //must have a positive value
 }
 
-double LatencyPredictionFilter::operator()(double input,double dTime_s)
+double LatencyPredictionFilter::operator()(double input,double target_point,double dTime_s)
 {
 	//avoid division by zero
 	if (dTime_s==0.0) 
 		return m_Predicted;
 
 	const double CurrentRate= (input - m_Prev_Input) / dTime_s;
-	//Just do a simple average of the rates... we can change if this is problematic
-	const double PredictedRate=m_RateAverager.GetAverage(CurrentRate);
-	m_Predicted=input + (PredictedRate * m_Latency_s);
+	const double TargetRate= (target_point - m_Prev_Target) / dTime_s;
+	const double PredictedRate=(CurrentRate + TargetRate) * 0.5;
+	m_Predicted=input + ( PredictedRate * m_Latency_s);
 	m_Prev_Input=input;
+	m_Prev_Target=target_point;
 	return m_Predicted;
 }
 
