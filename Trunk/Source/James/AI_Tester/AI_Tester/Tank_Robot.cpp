@@ -26,7 +26,7 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	Tank_Drive(EntityName), 
 	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
-	#ifdef __UseScalerPID__
+	#ifdef __Tank_UseScalerPID__
 	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),
 	m_VoltageOverride(false),
 	#else
@@ -36,7 +36,7 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	m_UseDeadZoneSkip(true)
 {
 	//m_UsingEncoders=true; //testing
-	#ifdef __UseScalerPID__
+	#ifdef __Tank_UseScalerPID__
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
 	#endif
 }
@@ -61,7 +61,7 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
-	#ifdef __UseScalerPID__
+	#ifdef __Tank_UseScalerPID__
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	#else
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
@@ -77,7 +77,7 @@ void Tank_Robot::ResetPos()
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
-	#ifdef __UseScalerPID__
+	#ifdef __Tank_UseScalerPID__
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	#else
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
@@ -132,21 +132,18 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 
 	//Display encoders without applying calibration
 
-	#ifdef __UseInducedLatency__
+	#ifdef __Tank_UseInducedLatency__
 	double LeftVelocity=m_PID_Input_Latency_Left(GetLeftVelocity(),dTime_s);
 	double RightVelocity=m_PID_Input_Latency_Right(GetRightVelocity(),dTime_s);
 	#else
-	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
-	#endif
-
-	#ifndef __UseInducedLatency__
-	double Predicted_Encoder_LeftVelocity=m_PID_Input_Latency_Left(Encoder_LeftVelocity,LeftVelocity,dTime_s);
-	double Predicted_Encoder_RightVelocity=m_PID_Input_Latency_Right(Encoder_RightVelocity,RightVelocity,dTime_s);
+	const double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
+	const double Predicted_Encoder_LeftVelocity=m_PID_Input_Latency_Left(Encoder_LeftVelocity,LeftVelocity,dTime_s);
+	const double Predicted_Encoder_RightVelocity=m_PID_Input_Latency_Right(Encoder_RightVelocity,RightVelocity,dTime_s);
 	#endif
 
 	if (m_UsingEncoders)
 	{
-		#ifdef __UseScalerPID__
+		#ifdef __Tank_UseScalerPID__
 		double control_left=0.0,control_right=0.0;
 		//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
 		//allow the scaler to normalize if it need to start up again.
@@ -162,7 +159,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		}
 		#else
 
-		#ifdef __UseInducedLatency__
+		#ifdef __Tank_UseInducedLatency__
 		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
 		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
 		#else
@@ -184,7 +181,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		//printf("\rl=%f,%f r=%f,%f       ",LeftVelocity,m_CalibratedScaler_Left,RightVelocity,m_CalibratedScaler_Right);
 		//printf("\rp=%f e=%f d=%f cs=%f          ",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
 		
-		#ifdef __UseScalerPID__
+		#ifdef __Tank_UseScalerPID__
 		#ifdef __DebugLUA__
 		if (m_TankRobotProps.PID_Console_Dump && (RightVelocity!=0.0))
 		{
@@ -200,7 +197,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump &&  ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			#ifndef __ShowEncoderPrediction__
+			#ifndef __Tank_ShowEncoderPrediction__
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
 			#else
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Predicted_Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Predicted_Encoder_RightVelocity,m_ErrorOffset_Right);
@@ -213,7 +210,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		m_UseDeadZoneSkip=false;
 
 		//For now I'm taking this out... I think it will matter on the ramp to be able to apply slight voltages!
-		#ifdef __UseScalerPID__
+		#ifdef __Tank_UseScalerPID__
 		//We only use deadzone when we are accelerating in either direction, so first check that both sides are going in the same direction
 		//also only apply for lower speeds to avoid choppyness during the cruising phase
 		if ((RightVelocity*LeftVelocity > 0.0) && (fabs(Encoder_RightVelocity)<0.5))
@@ -229,7 +226,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump && ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			#ifndef __ShowEncoderPrediction__
+			#ifndef __Tank_ShowEncoderPrediction__
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
 			#else
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Predicted_Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Predicted_Encoder_RightVelocity,m_ErrorOffset_Right);
@@ -280,7 +277,7 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	return ret;
 }
 
-#ifdef __UseScalerPID__
+#ifdef __Tank_UseScalerPID__
 void Tank_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	m_VoltageOverride=false;
@@ -320,7 +317,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
 	double LeftVoltage,RightVoltage;
 
-	#ifdef __UseScalerPID__
+	#ifdef __Tank_UseScalerPID__
 	if (m_VoltageOverride)
 		LeftVoltage=RightVoltage=0;
 	else
@@ -333,7 +330,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
 			#endif
 
-			#ifdef __UseScalerPID__
+			#ifdef __Tank_UseScalerPID__
 			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
 			#else
@@ -345,7 +342,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			#if 0	
 			//In teleop always square as it feels right and gives more control to the user
 
-			#ifdef __UseScalerPID__
+			#ifdef __Tank_UseScalerPID__
 			//for autonomous (i.e. using encoders) the natural distribution on acceleration will give the best results
 			//we can use the m_UseDeadZoneSkip to determine if we are accelerating, more important we must square on
 			//deceleration to improve our chance to not overshoot!

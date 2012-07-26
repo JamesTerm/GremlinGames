@@ -1,6 +1,8 @@
 #pragma once
 
-#undef __UseScalerPID__
+#undef __Rotary_UseScalerPID__
+#undef __Rotary_UseInducedLatency__
+#undef __Rotary_ShowEncoderPrediction__
 
 struct Rotary_Props
 {
@@ -57,7 +59,12 @@ class Rotary_Linear : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
+		#ifdef __UseInducedLatency__
 		LatencyFilter m_PID_Input_Latency;
+		#else
+		LatencyPredictionFilter m_PID_Input_Latency;
+		#endif
+
 		double m_LastPosition;  //used for calibration
 		#ifdef __UseScalerPID__
 		double m_CalibratedScaler; //used for calibration
@@ -110,7 +117,11 @@ class Rotary_Angular : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
+		#ifdef __UseInducedLatency__
 		LatencyFilter m_PID_Input_Latency;
+		#else
+		LatencyPredictionFilter m_PID_Input_Latency;
+		#endif
 
 		//We have both ways to implement PID calibration depending on if we have aggressive stop property enabled
 		double m_CalibratedScaler; //used for calibration
