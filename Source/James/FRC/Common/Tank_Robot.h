@@ -96,7 +96,7 @@ class Tank_Robot : public Tank_Drive
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderHeading;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
-		#ifdef __UseInducedLatency__
+		#ifdef __Tank_UseInducedLatency__
 		LatencyFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
 		#else
 		LatencyPredictionFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
