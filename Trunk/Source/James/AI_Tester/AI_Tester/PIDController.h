@@ -33,9 +33,8 @@ class LatencyPredictionFilter
 	private:
 		double m_Predicted;
 		//cache two iterations of values for prediction
-		double m_Prev_Input,m_Prev_Time;
-		double m_Prev_Prev_Input,m_Prev_Prev_Time;
-		double m_Prev_Prev_Prev_Input,m_Prev_Prev_Prev_Time;
+		double m_Prev_Input;
+		Averager<double,5> m_RateAverager;
 		double m_Latency_s;  //Latency in seconds
 };
 

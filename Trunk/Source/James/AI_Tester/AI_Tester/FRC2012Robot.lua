@@ -23,8 +23,8 @@ MainRobot = {
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
-	MaxAccelForward = 2, MaxAccelReverse = 2, 
-	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
+	MaxAccelForward = 4, MaxAccelReverse = 4, 
+	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = HighGearSpeed,
@@ -39,7 +39,7 @@ MainRobot = {
 	tank_drive =
 	{
 		is_closed=0,						--This should always be false for high gear
-		show_pid_dump='y',
+		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
