@@ -19,7 +19,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 2;
+	version = 3.0,
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
@@ -40,7 +40,7 @@ MainRobot = {
 	tank_drive =
 	{
 		is_closed=0,						--This should always be false for high gear
-		show_pid_dump='no',
+		show_pid_dump='n',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
@@ -48,12 +48,14 @@ MainRobot = {
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
 		left_pid=
-		{p=0, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+		{p=50, i=0, d=25},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
 		right_pid=
-		{p=0, i=0, d=0},					--These should always match, but able to be made different
-		
+		{p=50, i=0, d=25},					--These should always match, but able to be made different
+		latency=0.220,
+		left_max_offset=0.20 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		--encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=1.0,
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
@@ -146,15 +148,19 @@ MainRobot = {
 			--{p=400.0, i=75.0, d=200.0},
 			--{p=250.0, i=10.0, d=250.0},
 			--{p=250.0, i=0.0, d=250.0},   --fall back
-			{p=700.0, i=0.0, d=400.0},
-			tolerance=17.0,					--we need decent precision (this will depend on ramp up time too)
-			encoder_to_wheel_ratio=0.85,     --Just use the gearing ratios here
-			voltage_multiply=1,
+			--{p=700.0, i=0.0, d=400.0},
+			{p=500, i=25, d=100},
+			--latency=1.270,
+			latency=0.0,
+			tolerance=9.0,					--we need decent precision (this will depend on ramp up time too)
+			encoder_to_wheel_ratio=1.0,     --Just use the gearing ratios here
+			voltage_multiply=1.0,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
-			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
+			--max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
+			max_speed=460;
 			accel=200.0,						--These are only needed if we bind keys for power in meters per second
 			brake=200.0,
 			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
@@ -212,10 +218,11 @@ MainRobot = {
 				--We must NOT use I or D for low gear, we must keep it very responsive
 				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
 				left_pid=
-				{p=130, i=0, d=180},
+				{p=100, i=0, d=50},
 				right_pid=
-				{p=130, i=0, d=180},					--These should always match, but able to be made different
-				
+				{p=100, i=0, d=50},					--These should always match, but able to be made different
+				latency=0.220,
+				left_max_offset=0.05 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -232,8 +239,8 @@ MainRobot = {
 			Joystick_1 =
 			{
 				control = "CH FLIGHTSTICK PRO",
-				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.00, is_squared=false},
-				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.00, is_squared=false},
+				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.20, is_squared=false},
+				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.20, is_squared=false},
 				Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
 				Robot_Flippers_Solenoid = {type="joystick_button", key=3, on_off=true},
 				Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
@@ -266,7 +273,7 @@ MainRobot = {
 				control = "CH THROTTLE QUADRANT",
 				PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
 				Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
-				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, is_squared=false},
+				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.174400, filter=0.0, is_squared=false},
 				--This top one is only for open loop mode, and works like the game pad
 				--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, is_squared=true},
 				--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
