@@ -160,8 +160,8 @@ class MapPidDump
 	public:
 		//Dest can be null for practice run
 		//Note the CS Scaler is inverted as this is more readable
-		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler,bool UseEncoderOffset) : 
-		 m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(-CS_Scaler),m_YPos_Scaler(YPos_Scaler),
+		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler,bool UseEncoderOffset,size_t LRFilter) : 
+		 m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(-CS_Scaler),m_YPos_Scaler(YPos_Scaler),m_ElementsColumnIndexFilter(LRFilter),
 		 m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1),m_UseEncoderOffset(UseEncoderOffset)
 		{
 			m_SourceFileHandle=_open(Source, _O_RDONLY );
@@ -172,7 +172,9 @@ class MapPidDump
 			{
 				m_Amplitude[i]=1.0;
 				m_Offset[i]=0.0;
-				m_ElementsColumn[i]=0.0;
+				m_ElementsColumn[0][i]=0.0;
+				m_ElementsColumn[1][i]=0.0;
+				m_ElementsColumnIndex[i]=0;
 			}
 			//This (for now) toggles between the new and old way to represent the cs
 			if (CS_Scaler==1.0/3.0)
@@ -416,30 +418,43 @@ class MapPidDump
 				switch (Command)
 				{
 				case 'y':
-					m_ElementsColumn[eYPos]=value;
+					m_ElementsColumn[m_ElementsColumnIndex[eYPos]][eYPos]=value,m_ElementsColumnIndex[eYPos]++;
 					break;
 				case 'v':
-					m_ElementsColumn[eVoltage]=value;
+					m_ElementsColumn[m_ElementsColumnIndex[eVoltage]][eVoltage]=value,m_ElementsColumnIndex[eVoltage]++;
 					break;
 				case 'p':
-					m_ElementsColumn[ePredictedVelocity]=value;
+					m_ElementsColumn[m_ElementsColumnIndex[ePredictedVelocity]][ePredictedVelocity]=value,m_ElementsColumnIndex[ePredictedVelocity]++;
 					break;
 				case 'e':
-					m_ElementsColumn[eEncoderVelocity]=value;
+					m_ElementsColumn[m_ElementsColumnIndex[eEncoderVelocity]][eEncoderVelocity]=value,m_ElementsColumnIndex[eEncoderVelocity]++;
 					break;
 				case 's':
 				case 'o':
 					if	(((!m_UseEncoderOffset)&&(Command=='s')) ||
 						((m_UseEncoderOffset)&&(Command=='o')))
-					m_ElementsColumn[eCalibratedScaler]=value;
-					TestColumn=ProcessColumn(m_ElementsColumn);
-					if (!TestColumn)
+					m_ElementsColumn[m_ElementsColumnIndex[eCalibratedScaler]][eCalibratedScaler]=value,m_ElementsColumnIndex[eCalibratedScaler]++;
+
+					if (m_ElementsColumnIndex[eCalibratedScaler]>=2)
 					{
-						//We can assume error is due to the column length
-						assert(m_ColumnIndex==m_Bitmap[0]->xres());
-						//reset the column with a new bitmap
-						m_Bitmap.push_back(new Bitmap(c_X_Resolution,c_Y_Resolution));
-						m_ColumnIndex=0;
+						//The drive will have 2 elements per 1 Y position
+						if (m_ElementsColumnIndex[eYPos]==1)
+							m_ElementsColumn[1][eYPos]=m_ElementsColumn[0][eYPos];
+						for (size_t i=0;i<2;i++)
+						{
+							if (i==m_ElementsColumnIndexFilter) continue;
+							TestColumn=ProcessColumn(m_ElementsColumn[i]);
+							if (!TestColumn)
+							{
+								//We can assume error is due to the column length
+								assert(m_ColumnIndex==m_Bitmap[0]->xres());
+								//reset the column with a new bitmap
+								m_Bitmap.push_back(new Bitmap(c_X_Resolution,c_Y_Resolution));
+								m_ColumnIndex=0;
+							}
+						}
+						for (size_t i=0;i<eNoItemsToGraph;i++)
+							m_ElementsColumnIndex[i]=0;
 					}
 					break;
 				}
@@ -460,7 +475,9 @@ class MapPidDump
 		const double m_Velocity_Scaler,m_CS_Scaler;  //used to normalize the data
 		const double m_YPos_Scaler;
 		double m_Amplitude[eNoItemsToGraph],m_Offset[eNoItemsToGraph];  //further tweaking of graphs
-		double m_ElementsColumn[eNoItemsToGraph];
+		double m_ElementsColumn[2][eNoItemsToGraph];
+		size_t m_ElementsColumnIndex[eNoItemsToGraph];
+		size_t m_ElementsColumnIndexFilter;  //Used to filter (set to -1 to not use)
 		size_t m_ColumnIndex;
 		int m_SourceFileHandle,m_DestFileHandle;
 		bool m_UseEncoderOffset;
@@ -471,8 +488,9 @@ void main(int argc,const char **argv)
 {
 	if (argc < 2)
 	{
-		printf("usage: MapPidDump <source> <dest> [Velocity Scaler] [CS Scaler] [Y Scaler] [Use Encoder Offset=false]\n");
-		printf("Defaults: Velocity=400, CS=3, Y=5\n");
+		printf("usage: MapPidDump <source> <dest> [Velocity Scaler] [CS Scaler] [Y Scaler] [Use Encoder Offset] [l/r filter]\n");
+		printf("Defaults: Velocity=400, CS=3, Y=5, UseEO=0, LR=-1\n");
+		printf("L/R Filter: 0=Right only, 1=Left Only, -1=No Filter (tank drive only)\n");
 		printf("Destination .bmp extension is optional (it will add it if one is not provided)\n");
 	}
 	else
@@ -481,7 +499,8 @@ void main(int argc,const char **argv)
 		double CS_Scaler=argc>4?(1.0/atof(argv[4])):1.0/3.0;
 		double YPos_Scaler=argc>5?(1.0/atof(argv[5])):1.0/5.0;
 		bool UseEncoderOffset=argc>6? (atoi(argv[6])==0?false:true) : false;
-		MapPidDump instance(argv[1],Velocity_Scaler,CS_Scaler,YPos_Scaler,UseEncoderOffset); //instantiate with source
+		size_t LR_Filter=argc>7? (atoi(argv[7])) : -1;
+		MapPidDump instance(argv[1],Velocity_Scaler,CS_Scaler,YPos_Scaler,UseEncoderOffset,LR_Filter); //instantiate with source
 		//Check for error
 		if (!instance.IsError())
 			instance(argc>2?argv[2]:NULL);  //perform the operation with optional file to write
