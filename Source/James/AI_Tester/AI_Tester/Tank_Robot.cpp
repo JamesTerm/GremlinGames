@@ -129,13 +129,23 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	double Encoder_LeftVelocity,Encoder_RightVelocity;
 	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
 
-	//Display encoders without applying calibration
+	//Note: the capping for the velocities interpreted, this can occur easily when going full speed while starting to turn, the ship's velocity
+	//does not count against the velocity if it is turning, and what ends up happening is that we cap off max voltage for one side and the rate of turn
+	//may get compromised... this will all be resolved in the injection displacement, and should be fine.  However, we need to cap the speeds here to
+	//eliminate getting error, as there really is no error for this case... and when it straightens back out there will not be an overwhelming amount
+	//of error to manage.  This was noticeable even using just PD for powerful sudden adjustment in the turn back caused it to over compensate slightly
+	//(looked like a critical dampening recovery).
+	//  [7/27/2012 JamesK]
 
 	#ifdef __Tank_UseInducedLatency__
-	double LeftVelocity=m_PID_Input_Latency_Left(GetLeftVelocity(),dTime_s);
-	double RightVelocity=m_PID_Input_Latency_Right(GetRightVelocity(),dTime_s);
+	const double LeftVelocity=m_PID_Input_Latency_Left(
+		min(max(GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED),dTime_s);
+	const double RightVelocity=m_PID_Input_Latency_Right(
+		min(max(GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED),dTime_s);
 	#else
-	const double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
+	const double LeftVelocity=min(max(GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
+	const double RightVelocity=min(max(GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
+
 	const double Predicted_Encoder_LeftVelocity=m_PID_Input_Latency_Left(Encoder_LeftVelocity,LeftVelocity,dTime_s);
 	const double Predicted_Encoder_RightVelocity=m_PID_Input_Latency_Right(Encoder_RightVelocity,RightVelocity,dTime_s);
 	#endif
