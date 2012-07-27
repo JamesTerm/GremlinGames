@@ -390,6 +390,12 @@ class MapPidDump
 			m_ColumnIndex++;
 			return (m_ColumnIndex<(size_t)XRes);
 		}
+		void AdvanceElementsColumnIndex(ColumnItems column)
+		{
+			m_ElementsColumnIndex[column]++;
+			if (m_ElementsColumnIndex[column]>=2)
+				m_ElementsColumnIndex[column]=0;
+		}
 		//All processing here, returns number of bytes processed... client will manage merging remainder for next iteration
 		//if returns 0... then we cannot process any more and client will need to stop calling
 		size_t Process(const char * Source,size_t size)
@@ -418,16 +424,16 @@ class MapPidDump
 				switch (Command)
 				{
 				case 'y':
-					m_ElementsColumn[m_ElementsColumnIndex[eYPos]][eYPos]=value,m_ElementsColumnIndex[eYPos]++;
+					m_ElementsColumn[m_ElementsColumnIndex[eYPos]][eYPos]=value,AdvanceElementsColumnIndex(eYPos);
 					break;
 				case 'v':
-					m_ElementsColumn[m_ElementsColumnIndex[eVoltage]][eVoltage]=value,m_ElementsColumnIndex[eVoltage]++;
+					m_ElementsColumn[m_ElementsColumnIndex[eVoltage]][eVoltage]=value,AdvanceElementsColumnIndex(eVoltage);
 					break;
 				case 'p':
-					m_ElementsColumn[m_ElementsColumnIndex[ePredictedVelocity]][ePredictedVelocity]=value,m_ElementsColumnIndex[ePredictedVelocity]++;
+					m_ElementsColumn[m_ElementsColumnIndex[ePredictedVelocity]][ePredictedVelocity]=value,AdvanceElementsColumnIndex(ePredictedVelocity);
 					break;
 				case 'e':
-					m_ElementsColumn[m_ElementsColumnIndex[eEncoderVelocity]][eEncoderVelocity]=value,m_ElementsColumnIndex[eEncoderVelocity]++;
+					m_ElementsColumn[m_ElementsColumnIndex[eEncoderVelocity]][eEncoderVelocity]=value,AdvanceElementsColumnIndex(eEncoderVelocity);
 					break;
 				case 's':
 				case 'o':
