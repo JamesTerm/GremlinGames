@@ -76,9 +76,11 @@ void Tank_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properti
 	m_PID_Input_Latency_Left.SetLatency(m_TankRobotProps.InputLatency);
 	m_PID_Input_Latency_Right.SetLatency(m_TankRobotProps.InputLatency);
 }
-void Tank_Robot::ResetPos()
+void Tank_Robot::Reset(bool ResetPosition)
 {
-	__super::ResetPos();
+	//This is here in case it is needed typically this is not needed here as other code will call ResetPos() explicitly
+	if (ResetPosition)
+		ResetPos();
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
@@ -99,12 +101,9 @@ void Tank_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition)
 			//first disable it
 			m_UsingEncoders=false;
 			printf("Disabling encoders for %s\n",GetName().c_str());
-			if (ResetPosition)
-			{
-				//Now to reset stuff
-				ResetPos();
-				m_EncoderGlobalVelocity=Vec2d(0.0,0.0);
-			}
+			//Now to reset stuff
+			Reset(ResetPosition);
+			m_EncoderGlobalVelocity=Vec2d(0.0,0.0);
 		}
 	}
 	else
@@ -113,8 +112,8 @@ void Tank_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition)
 		{
 			m_UsingEncoders=true;
 			printf("Enabling encoders for %s\n",GetName().c_str());
-			if (ResetPosition) //setup the initial value with the potentiometers value
-				ResetPos();
+			//setup the initial value with the encoders value
+			Reset(ResetPosition);
 		}
 	}
 }
