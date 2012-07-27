@@ -59,7 +59,7 @@ class Rotary_Linear : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
-		#ifdef __UseInducedLatency__
+		#ifdef __Rotary_UseInducedLatency__
 		LatencyFilter m_PID_Input_Latency;
 		#else
 		LatencyPredictionFilter m_PID_Input_Latency;
@@ -117,7 +117,7 @@ class Rotary_Angular : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
-		#ifdef __UseInducedLatency__
+		#ifdef __Rotary_UseInducedLatency__
 		LatencyFilter m_PID_Input_Latency;
 		#else
 		LatencyPredictionFilter m_PID_Input_Latency;
