@@ -60,7 +60,7 @@ class Tank_Robot : public Tank_Drive
 		Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
-		virtual void ResetPos();
+		void Reset(bool ResetPosition=true);
 		/// \param ResetPos typically true for autonomous and false for dynamic use
 		void SetUseEncoders(bool UseEncoders,bool ResetPosition=true);
 		virtual void TimeChange(double dTime_s);
