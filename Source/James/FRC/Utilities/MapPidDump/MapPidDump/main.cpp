@@ -161,7 +161,7 @@ class MapPidDump
 		//Dest can be null for practice run
 		//Note the CS Scaler is inverted as this is more readable
 		MapPidDump(const char Source[],double Velocity_Scaler,double CS_Scaler,double YPos_Scaler,bool UseEncoderOffset,size_t LRFilter) : 
-		 m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(-CS_Scaler),m_YPos_Scaler(YPos_Scaler),m_ElementsColumnIndexFilter(LRFilter),
+		  m_Velocity_Scaler(Velocity_Scaler),m_CS_Scaler(UseEncoderOffset?CS_Scaler:-CS_Scaler),m_YPos_Scaler(YPos_Scaler),m_ElementsColumnIndexFilter(LRFilter),
 		 m_ColumnIndex(0),m_SourceFileHandle(-1),m_DestFileHandle(-1),m_UseEncoderOffset(UseEncoderOffset)
 		{
 			m_SourceFileHandle=_open(Source, _O_RDONLY );
