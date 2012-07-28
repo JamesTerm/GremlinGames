@@ -459,8 +459,7 @@ class MapPidDump
 								m_ColumnIndex=0;
 							}
 						}
-						for (size_t i=0;i<eNoItemsToGraph;i++)
-							m_ElementsColumnIndex[i]=0;
+						m_ElementsColumnIndex[eCalibratedScaler]=0;
 					}
 					break;
 				}
