@@ -53,7 +53,7 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	m_TankRobotProps=RobotProps->GetTankRobotProps();
 	m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
 	m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
-	m_PIDController_Heading.SetPID(0.0,0.0,0.0);
+	m_PIDController_Heading.SetPID(50.0,0.0,0.0);
 
 	const double OutputRange=MAX_SPEED*0.875;  //create a small range
 	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
@@ -267,7 +267,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		AngularVelocity=m_Physics.GetAngularVelocity();
 		const double Predicted_Heading_Velocity=m_PID_Input_Latency_Heading(m_EncoderAngularVelocity,AngularVelocity,dTime_s);
 		const double Encoder_Heading_ToUse=ComputeVelocityWithTolerance(m_EncoderAngularVelocity,Predicted_Heading_Velocity,AngularVelocity);
-		m_ErrorOffset_Heading=m_PIDController_Heading(AngularVelocity,Encoder_Heading_ToUse,dTime_s);
+		m_ErrorOffset_Heading=m_PIDController_Heading(AngularVelocity,m_EncoderAngularVelocity,dTime_s);
 		#if 1
 		if (m_ErrorOffset_Heading!=0.0)
 			printf("Angular Error=%f\n",m_ErrorOffset_Heading);
@@ -342,7 +342,7 @@ void Tank_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	//Apply error correction to the heading
-	Torque+= ((-m_ErrorOffset_Heading / dTime_s) * PhysicsToUse.GetMass());
+	Torque+= ((-m_ErrorOffset_Heading * PhysicsToUse.GetMass()) / dTime_s);
 
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
