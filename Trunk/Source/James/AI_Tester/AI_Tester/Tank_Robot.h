@@ -94,7 +94,7 @@ class Tank_Robot : public Tank_Drive
 		#endif
 		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
-		double m_EncoderHeading;
+		double m_EncoderAngularVelocity;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 		#ifdef __Tank_UseInducedLatency__
 		LatencyFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;

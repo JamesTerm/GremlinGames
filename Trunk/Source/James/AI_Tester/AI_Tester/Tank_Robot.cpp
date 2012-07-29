@@ -251,7 +251,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	//TODO add gyro's yaw readings for Angular velocity here
 	//Store the value here to be picked up in GetOldVelocity()
 	m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
-	m_EncoderHeading=AngularVelocity;
+	m_EncoderAngularVelocity=AngularVelocity;
 	//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 	//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 
@@ -274,7 +274,7 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
 		double computedAngularVelocity=m_Physics.GetAngularVelocity();
 		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
-		m_Physics.SetAngularVelocity(m_EncoderHeading);
+		m_Physics.SetAngularVelocity(m_EncoderAngularVelocity);
 		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 		//We must set this back so that the PID can compute the entire error
 		m_Physics.SetLinearVelocity(computedVelocity);
