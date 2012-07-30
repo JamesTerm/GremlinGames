@@ -115,8 +115,11 @@ class FlightDynamics_2D : public PhysicsEntity_2D
 		//provide common area to initialize members
 		void init();
 		FlightDynamics_2D();
+		FlightDynamics_2D(const double *HeadingToUse);
 		FlightDynamics_2D(const double &HeadingToUse);
 
+		//Allow late binding of heading to use (client code should set this once as soon as possible)
+		void SetHeadingToUse(const double *HeadingToUse) {m_HeadingToUse=HeadingToUse;}
 		virtual void ResetVectors();
 
 		///This will measure the distance between this quat and the look dir quat.  With the current algorithm the most desired results occur when the
@@ -128,7 +131,7 @@ class FlightDynamics_2D : public PhysicsEntity_2D
 		/// \param Orientation this will break down the quat into its lookDir and UpDir for you
 		//osg::Vec2d ComputeAngularDistance(double Orientation);
 		double ComputeAngularDistance(double Orientation);
-		const double &GetHeading() {return m_HeadingToUse;}
+		const double &GetHeading() {return *m_HeadingToUse;}
 
 		virtual void TimeChangeUpdate(double DeltaTime_s,osg::Vec2d &PositionDisplacement,double &RotationDisplacement);
 
@@ -206,7 +209,7 @@ class FlightDynamics_2D : public PhysicsEntity_2D
 	private:
 		double m_DefaultHeading;
 		// I'll try to keep this read only, so that client who own their own Heading can use this code, without worrying about the Heading being changed
-		const double &m_HeadingToUse;
+		const double *m_HeadingToUse;
 		//This keeps track of the current rate of acceleration.  These are in local orientation.
 		osg::Vec2d m_CurrentAcceleration,m_TargetAcceleration;
 		LinearAccelerationRates m_LinearAccelerationRates;
