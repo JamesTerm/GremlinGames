@@ -569,12 +569,17 @@ void FlightDynamics_2D::init()
 	G_Dampener = 1.0;
 }
 
-FlightDynamics_2D::FlightDynamics_2D() : m_HeadingToUse(m_DefaultHeading), m_Pilot(this)
+FlightDynamics_2D::FlightDynamics_2D() : m_HeadingToUse(&m_DefaultHeading), m_Pilot(this)
 {
 	init();
 }
 
-FlightDynamics_2D::FlightDynamics_2D(const double &HeadingToUse) : m_HeadingToUse(HeadingToUse), m_Pilot(this)
+FlightDynamics_2D::FlightDynamics_2D(const double *HeadingToUse) : m_HeadingToUse(HeadingToUse), m_Pilot(this)
+{
+	init();
+}
+
+FlightDynamics_2D::FlightDynamics_2D(const double &HeadingToUse) : m_HeadingToUse(&HeadingToUse), m_Pilot(this)
 {
 	init();
 }
@@ -582,7 +587,7 @@ FlightDynamics_2D::FlightDynamics_2D(const double &HeadingToUse) : m_HeadingToUs
 void FlightDynamics_2D::ResetVectors()
 {
 	__super::ResetVectors();
-	if (m_HeadingToUse==m_DefaultHeading)
+	if (m_HeadingToUse==&m_DefaultHeading)
 		m_DefaultHeading=0.0;
 	m_CurrentAcceleration=m_TargetAcceleration=osg::Vec2d(0.0,0.0);
 	m_Pilot.ResetVectors();
@@ -591,7 +596,7 @@ void FlightDynamics_2D::ResetVectors()
 double FlightDynamics_2D::ComputeAngularDistance(const osg::Vec2d &lookDir)
 {
 	double lookDir_radians= atan2(lookDir[0],lookDir[1]);
-	double distance=m_HeadingToUse-lookDir_radians;
+	double distance=*m_HeadingToUse-lookDir_radians;
 	if (distance>M_PI)
 		distance-=Pi2;
 	else if (distance<-M_PI)
@@ -615,7 +620,7 @@ osg::Vec2d FlightDynamics_2D::ComputeAngularDistance(double Orientation)
 
 double FlightDynamics_2D::ComputeAngularDistance(double Orientation)
 {
-	double DistanceDirection= m_HeadingToUse-Orientation;
+	double DistanceDirection= *m_HeadingToUse-Orientation;
 	if (DistanceDirection>M_PI)
 		DistanceDirection-=Pi2;
 	else if (DistanceDirection<-M_PI)
@@ -627,7 +632,7 @@ void FlightDynamics_2D::TimeChangeUpdate(double DeltaTime_s,osg::Vec2d &Position
 {
 	__super::TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	m_Pilot.Update(DeltaTime_s, G_Dampener);
-	if (m_HeadingToUse==m_DefaultHeading)
+	if (m_HeadingToUse==&m_DefaultHeading)
 		m_DefaultHeading+=RotationDisplacement;
 }
 
@@ -699,7 +704,7 @@ osg::Vec2d FlightDynamics_2D::GetForceFromVelocity(const osg::Vec2d &vDesiredVel
 	{
 		osg::Vec2d Zerod=osg::Vec2d(0.0,0.0);
 		osg::Vec2d Acceleration=Zerod;
-		osg::Vec2d HeadingToUse_NV=osg::Vec2d(sin(m_HeadingToUse),cos(m_HeadingToUse));
+		osg::Vec2d HeadingToUse_NV=osg::Vec2d(sin(*m_HeadingToUse),cos(*m_HeadingToUse));
 		const osg::Vec2d DeltaVelocity=(vDesiredVelocity-GetLinearVelocity());
 		//compute the maximum deceleration speed, since we need to reach 0 by the time we reach our desired velocity
 		//Note: these are in local orientation so they need to be converted to global
