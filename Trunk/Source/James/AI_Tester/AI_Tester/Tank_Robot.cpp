@@ -33,8 +33,9 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
 	m_UsingEncoders(IsAutonomous),
 	#endif
-	m_UseDeadZoneSkip(true)
+	m_UseDeadZoneSkip(true), m_Heading(0.0), m_HeadingUpdateTimer(0.0)
 {
+	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
 	//m_UsingEncoders=true; //testing
 	#ifdef __Tank_UseScalerPID__
 	m_CalibratedScaler_Left=m_CalibratedScaler_Right=1.0;
@@ -75,7 +76,10 @@ void Tank_Robot::Reset(bool ResetPosition)
 {
 	//This is here in case it is needed typically this is not needed here as other code will call ResetPos() explicitly
 	if (ResetPosition)
+	{
 		ResetPos();
+		m_Heading=0.0;
+	}
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
@@ -276,6 +280,32 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 		m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
 		m_Physics.SetAngularVelocity(m_EncoderAngularVelocity);
 		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+		const double &HeadingLatency=m_TankRobotProps.HeadingLatency;
+		if (HeadingLatency!=0.0)
+		{	//manage the heading update... 
+			m_HeadingUpdateTimer+=DeltaTime_s;
+			if (m_HeadingUpdateTimer>HeadingLatency)
+			{
+				m_HeadingUpdateTimer-=HeadingLatency;
+				//This should never happen unless we had a huge delta time (e.g. breakpoint)
+				if (m_HeadingUpdateTimer>HeadingLatency)
+				{
+					m_HeadingUpdateTimer=0.0; //Just reset... it is not critical to have exact interval
+					printf("Warning: m_HeadingUpdateTimer>m_TankRobotProps.InputLatency\n");
+				}
+				//Sync up with our entities heading on this latency interval
+				m_Heading=GetAtt_r();
+			}
+			else
+			{
+				//Use our original angular velocity for the heading update to avoid having to make corrections
+				m_Heading+=computedAngularVelocity*DeltaTime_s;
+			}
+		}
+		else
+		{
+			m_Heading+=RotationDisplacement;  // else always pull heading from the injected displacement (always in sync with entity)
+		}
 		//We must set this back so that the PID can compute the entire error
 		m_Physics.SetLinearVelocity(computedVelocity);
 		m_Physics.SetAngularVelocity(computedAngularVelocity);
@@ -438,6 +468,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.WheelDiameter=c_WheelDiameter;
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.InputLatency=0.0;
+	props.HeadingLatency=0.0;
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
 	props.VoltageScalar=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
@@ -512,6 +543,9 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		}
 		script.GetField("tolerance", NULL, NULL, &m_TankRobotProps.PrecisionTolerance);
 		script.GetField("latency", NULL, NULL, &m_TankRobotProps.InputLatency);
+		err = script.GetField("heading_latency", NULL, NULL, &m_TankRobotProps.HeadingLatency);
+		if (err)
+			m_TankRobotProps.HeadingLatency=m_TankRobotProps.InputLatency+0.100;  //Give a good default without needing to add this property
 		script.GetField("left_max_offset", NULL, NULL, &m_TankRobotProps.LeftMaxSpeedOffset);
 		script.GetField("right_max_offset", NULL, NULL, &m_TankRobotProps.RightMaxSpeedOffset);
 

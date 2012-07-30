@@ -33,6 +33,7 @@ struct Tank_Robot_Props
 	double LeftPID[3]; //p,i,d
 	double RightPID[3]; //p,i,d
 	double InputLatency;  //Used with PID to help avoid oscillation in the error control (We can make one for each if needed)
+	double HeadingLatency; //Should be about 100ms + Input Latency... this will establish intervals to sync up the heading with entity
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	double LeftMaxSpeedOffset;	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
 	double RightMaxSpeedOffset;
@@ -101,6 +102,9 @@ class Tank_Robot : public Tank_Drive
 		#else
 		LatencyPredictionFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
 		#endif
+		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
+		double m_Heading;  //We take over the heading from physics
+		double m_HeadingUpdateTimer;
 };
 
 class Tank_Robot_Properties : public UI_Ship_Properties
