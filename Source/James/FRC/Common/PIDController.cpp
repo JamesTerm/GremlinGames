@@ -62,6 +62,18 @@ double LatencyPredictionFilter::operator()(double input,double target_point,doub
 	return m_Predicted;
 }
 
+double LatencyPredictionFilter::operator()(double input,double dTime_s)
+{
+	//avoid division by zero
+	if (dTime_s==0.0) 
+		return m_Predicted;
+
+	const double CurrentRate= (input - m_Prev_Input) / dTime_s;
+	m_Predicted=input + ( CurrentRate * m_Latency_s);
+	m_Prev_Input=input;
+	return m_Predicted;
+}
+
 double LatencyPredictionFilter::operator()()
 {
 	return m_Predicted;  //This is the last value that was submitted
