@@ -29,6 +29,11 @@ class LatencyPredictionFilter
 		/// \param dTime_s is the slice of time for this call
 		/// \ret Tries to return the actual position of where it was m_Latency_ms ago; otherwise will return a more current position
 		double operator()(double input,double target_point,double dTime_s);
+		//This version does not blend in the target rate
+		/// \param input is the actual position where it is
+		/// \param dTime_s is the slice of time for this call
+		/// \ret Tries to return the actual position of where it was m_Latency_ms ago; otherwise will return a more current position
+		double operator()(double input,double dTime_s);
 		double operator()();  //This is a passive operation that simply allows multiple calls to obtain the last known value
 		void SetLatency(double Latency);
 	private:
