@@ -57,7 +57,10 @@ class PhysicsEntity_1D
 		///It should be noted that this treats roll as a separate factor, which is best suited for avionic type of context
 		/// \Note all restraint parameters are positive (i.e. ForceRestraintNegative)
 		double ComputeRestrainedForce(double LocalForce,double ForceRestraintPositive,double ForceRestraintNegative,double dTime_s);
-
+		__inline double GetForceNormal(double gravity=9.80665) const;
+		/// \param Brake is a brake coast parameter where if gravity pulls it down it can apply a scalar to slow down the reversed rate
+		/// where 0 is full stop and 1 is full coast (range is 0 - 1)
+		double GetFrictionalForce(double DeltaTime_s,double Ground=0.0,double gravity=9.80665,double BrakeResistence=0.0) const;
 	protected:
 		double m_EntityMass;
 		double m_StaticFriction,m_KineticFriction;

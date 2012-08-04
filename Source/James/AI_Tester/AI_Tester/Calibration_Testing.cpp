@@ -249,7 +249,7 @@ double Encoder_Simulator::GetEncoderVelocity()
 		Voltage *= Direction;
 	}
 	double ret=Voltage * m_EncoderProps.GetMaxSpeed() * m_EncoderScalar;
-	ret=m_Latency(ret,m_Time_s);
+	//ret=m_Latency(ret,m_Time_s);
 	m_GetEncoderFirstCall=false; //weed out the repeat calls
 	return ret;
 	#endif
@@ -266,6 +266,74 @@ void Encoder_Simulator::TimeChange()
 	__super::TimeChange(m_Time_s);
 }
 
+  /***************************************************************************************************************/
+ /*												Encoder_Simulator												*/
+/***************************************************************************************************************/
+
+Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),m_EncoderProps(
+	EntityName,
+	68.0,    //Mass (150 pounds)
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	c_Encoder_TestRate,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
+	Ship_1D_Properties::eRobotArm,
+	false	//Not using the range
+	),
+	m_EncoderScalar(1.0)
+{
+}
+
+void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
+{
+	if (props)
+		m_EncoderProps=*props;
+		//m_Physics.SetMass(68);  //(about 150 pounds)
+	m_Physics.SetMass(20);
+	m_Physics.SetFriction(0.8,0.2);
+}
+
+void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
+{
+	double Direction=Voltage<0 ? -1.0 : 1.0;
+	Voltage=fabs(Voltage); //make positive
+	//Apply the victor curve
+	//Apply the polynomial equation to the voltage to linearize the curve
+	{
+		const double *c=Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		Voltage *= Direction;
+	}
+	//From this point it is a percentage (hopefully linear distribution after applying the curve) of the max force to apply... This can be
+	//computed from stall torque ratings of motor with various gear reductions and so forth
+	//on JVN's spread sheet torque at wheel is (WST / DWR) * 2  (for nm)  (Wheel stall torque / Drive Wheel Radius * 2 sides)
+	//where stall torque is ST / GearReduction * DriveTrain efficiency
+	//  The spreadsheet claims we have 366.24 nm, where I computed 248.79
+	// Anyhow this number can be scripted out and adjusted
+	const double MaxForce=248.79;
+	m_Physics.ApplyFractionalForce(MaxForce * Voltage,m_Time_s);
+}
+
+double Encoder_Simulator2::GetEncoderVelocity() const
+{
+	return m_Physics.GetVelocity();
+}
+
+void Encoder_Simulator2::SetReverseDirection(bool reverseDirection)
+{
+	m_EncoderScalar= reverseDirection? -1.0 : 1.0;
+}
+
+void Encoder_Simulator2::TimeChange()
+{
+	//m_GetEncoderFirstCall=true;
+	const double Ground=0.0;  //ground in radians
+	double FrictionForce=m_Physics.GetFrictionalForce(m_Time_s,Ground);
+	m_Physics.ApplyFractionalForce(FrictionForce,m_Time_s);  //apply the friction
+}
 
   /***************************************************************************************************************/
  /*													Encoder_Tester												*/
