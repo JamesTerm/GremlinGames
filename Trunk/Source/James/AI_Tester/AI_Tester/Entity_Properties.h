@@ -12,6 +12,7 @@ class Entity1D_Properties
 		virtual ~Entity1D_Properties() {}
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		void Initialize(Entity1D *NewEntity) const;
+		double GetMass() const {return m_Mass;}
 	protected:
 		std::string m_EntityName;  //derived classes can let base class know what type to read
 	private:

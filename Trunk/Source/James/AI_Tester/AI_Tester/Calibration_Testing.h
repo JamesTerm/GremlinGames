@@ -61,6 +61,27 @@ class Encoder_Simulator : public Ship_1D
 		bool m_GetEncoderFirstCall;  //allows GetEncoderVelocity to know when a new set of calls occur within a time slice
 };
 
+class Encoder_Simulator2
+{
+	public:
+		Encoder_Simulator2(const char *EntityName="EncSimulator");
+		virtual void Initialize(const Ship_1D_Properties *props=NULL);
+
+		void UpdateEncoderVoltage(double Voltage);
+		virtual double GetEncoderVelocity() const;
+		//This is broken up so that the real interface does not have to pass time
+		void SetTimeDelta(double dTime_s) {m_Time_s=dTime_s;}
+		void TimeChange();
+		void SetReverseDirection(bool reverseDirection);  //emulates functionality of the encoder (needed because kids put them in differently)
+		void SetEncoderScalar(double value) {m_EncoderScalar=value;}  //This helps to simulate differences between sides
+	protected:
+	private:
+		double m_Time_s;
+		Ship_1D_Properties m_EncoderProps;
+		PhysicsEntity_1D m_Physics;
+		double m_EncoderScalar; //used to implement reverse
+};
+
 class Encoder_Tester
 {
 	public:
@@ -80,6 +101,11 @@ class Encoder_Tester
 			m_LeftEncoder.SetEncoderScalar(LeftScalar),m_RightEncoder.SetEncoderScalar(RightScalar);
 		}
 	private:
+		#if 1
 		Encoder_Simulator m_LeftEncoder;
 		Encoder_Simulator m_RightEncoder;
+		#else
+		Encoder_Simulator2 m_LeftEncoder;
+		Encoder_Simulator2 m_RightEncoder;
+		#endif
 };

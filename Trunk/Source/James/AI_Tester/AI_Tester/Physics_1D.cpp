@@ -237,3 +237,25 @@ void PhysicsEntity_1D::TimeChangeUpdate(double DeltaTime_s,double &PositionDispl
 	//Transfer the velocity to displacement
 	PositionDisplacement = m_Velocity * DeltaTime_s;
 }
+
+__inline double PhysicsEntity_1D::GetForceNormal(double gravity) const
+{
+	//for now there is little tolerance to become kinetic, but we may want more
+	double fc = IsZero(m_Velocity)?m_StaticFriction:m_KineticFriction;
+	return (fc * m_EntityMass * gravity);
+}
+
+double PhysicsEntity_1D::GetFrictionalForce(double DeltaTime_s,double Ground,double gravity,double BrakeResistence) const
+{
+	if (!DeltaTime_s) return 0.0;  //since we divide by time avoid division by zero
+	double NormalForce=GetForceNormal(gravity) * cos(Ground);
+	const double StoppingForce=(fabs(m_Velocity) * m_EntityMass) / DeltaTime_s;
+	NormalForce=min(StoppingForce,NormalForce); //friction can never be greater than the stopping force
+	double GravityForce=(m_EntityMass * gravity * sin(Ground));
+	double FrictionForce= GravityForce + NormalForce;
+	//If the friction force overflows beyond stopping force, apply a scale to the overflow of force 
+	if (FrictionForce>StoppingForce) FrictionForce=(BrakeResistence * (FrictionForce-StoppingForce));
+
+	//Return the fractional force in the opposite direction of the current velocity
+	return (m_Velocity>0.0)? -FrictionForce : FrictionForce;
+}
