@@ -61,6 +61,31 @@ class Encoder_Simulator : public Ship_1D
 		bool m_GetEncoderFirstCall;  //allows GetEncoderVelocity to know when a new set of calls occur within a time slice
 };
 
+class Drive_Train_Characteristics
+{
+	public:
+		__inline static double GetAmp_To_Torque_nm(double Amps);
+		__inline static double GetVel_To_Torque_nm(double Vel_rps);
+		__inline static double GetTorque_To_Vel_nm(double Vel_rps);
+		struct DriveTrainProps
+		{
+			DriveTrainProps(double dt,double gr,double dwr,double mc) : 
+			DriveTrain_Efficiency(dt),GearReduction(gr),DriveWheelRadius(dwr),m_NoMotors(mc) {}
+			double DriveTrain_Efficiency;
+			double GearReduction;  //In reciprocal form of spread sheet
+			double DriveWheelRadius; //in meters
+			double m_NoMotors;  //Used to get total torque
+		};
+		Drive_Train_Characteristics();
+		__inline double GetWheelStallTorque(double Torque);
+		__inline double GetTorqueAtWheel(double Torque);
+		__inline double GetWheelRPS(double LinearVelocity);
+		__inline double GetMotorRPS(double LinearVelocity);
+		__inline double GetTorqueFromLinearVelocity(double LinearVelocity);
+	private:
+		DriveTrainProps m_Props;
+};
+
 class Encoder_Simulator2
 {
 	public:
@@ -80,6 +105,7 @@ class Encoder_Simulator2
 		Ship_1D_Properties m_EncoderProps;
 		PhysicsEntity_1D m_Physics;
 		double m_EncoderScalar; //used to implement reverse
+		Drive_Train_Characteristics m_DriveTrain;
 };
 
 class Encoder_Tester
@@ -101,7 +127,7 @@ class Encoder_Tester
 			m_LeftEncoder.SetEncoderScalar(LeftScalar),m_RightEncoder.SetEncoderScalar(RightScalar);
 		}
 	private:
-		#if 1
+		#if 0
 		Encoder_Simulator m_LeftEncoder;
 		Encoder_Simulator m_RightEncoder;
 		#else

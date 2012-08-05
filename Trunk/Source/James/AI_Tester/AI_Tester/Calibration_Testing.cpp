@@ -267,8 +267,53 @@ void Encoder_Simulator::TimeChange()
 }
 
   /***************************************************************************************************************/
- /*												Encoder_Simulator												*/
+ /*												Encoder_Simulator2												*/
 /***************************************************************************************************************/
+const double c_OunceInchToNewton=0.00706155183333;
+const double c_CIM_Amp_To_Torque_oz=(1.0/(133.0-2.7)) * 343.3;
+const double c_CIM_Amp_To_Torque_nm=c_CIM_Amp_To_Torque_oz*c_OunceInchToNewton;
+const double c_CIM_Vel_To_Torque_oz=(1.0/(5310/60.0)) * 343.4;
+const double c_CIM_Vel_To_Torque_nm=c_CIM_Vel_To_Torque_oz*c_OunceInchToNewton; 
+const double c_CIM_Torque_to_Vel_nm=1.0 / c_CIM_Vel_To_Torque_nm;
+
+__inline double Drive_Train_Characteristics::GetAmp_To_Torque_nm(double Amps)
+{
+	return max ((Amps-2.7) * c_CIM_Amp_To_Torque_nm,0.0);
+}
+__inline double Drive_Train_Characteristics::GetVel_To_Torque_nm(double Vel_rps)
+{
+	return (Vel_rps * c_CIM_Vel_To_Torque_nm);
+}
+__inline double Drive_Train_Characteristics::GetTorque_To_Vel_nm(double Vel_rps)
+{
+	return (Vel_rps * c_CIM_Torque_to_Vel_nm);
+}
+
+Drive_Train_Characteristics::Drive_Train_Characteristics() : m_Props(1.0,14.25,0.0762,2.0) 
+{
+}
+__inline double Drive_Train_Characteristics::GetWheelStallTorque(double Torque)
+{
+	return Torque * m_Props.GearReduction * m_Props.DriveTrain_Efficiency;
+}
+__inline double Drive_Train_Characteristics::GetTorqueAtWheel(double Torque)
+{
+	return (GetWheelStallTorque(Torque) / m_Props.DriveWheelRadius);
+}
+__inline double Drive_Train_Characteristics::GetWheelRPS(double LinearVelocity)
+{
+	return LinearVelocity / (M_PI * 2.0 * m_Props.DriveWheelRadius);			
+}
+__inline double Drive_Train_Characteristics::GetMotorRPS(double LinearVelocity)
+{
+	return GetWheelRPS(LinearVelocity) *  m_Props.GearReduction;
+}
+__inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double LinearVelocity)
+{
+	double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS(LinearVelocity));
+	return GetTorqueAtWheel(MotorTorque * 2.0);
+}
+
 
 Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),m_EncoderProps(
 	EntityName,
@@ -313,8 +358,13 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 	//where stall torque is ST / GearReduction * DriveTrain efficiency
 	//  The spreadsheet claims we have 366.24 nm, where I computed 248.79
 	// Anyhow this number can be scripted out and adjusted
-	const double MaxForce=248.79;
-	m_Physics.ApplyFractionalForce(MaxForce * Voltage,m_Time_s);
+	//const double MaxForce=248.79;
+	//const double MaxForce=366.24;
+	const double MaxForce=1030.0;  //TODO determine why this is so high
+	double ForceToApply=MaxForce * Voltage;
+	const double ForceAbsorbed=m_DriveTrain.GetTorqueFromLinearVelocity(m_Physics.GetVelocity());
+	ForceToApply-=ForceAbsorbed;
+	m_Physics.ApplyFractionalForce(ForceToApply,m_Time_s);
 }
 
 double Encoder_Simulator2::GetEncoderVelocity() const
