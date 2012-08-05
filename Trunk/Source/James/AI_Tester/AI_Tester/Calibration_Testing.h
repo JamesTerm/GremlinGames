@@ -82,6 +82,7 @@ class Drive_Train_Characteristics
 		__inline double GetWheelRPS(double LinearVelocity);
 		__inline double GetMotorRPS(double LinearVelocity);
 		__inline double GetTorqueFromLinearVelocity(double LinearVelocity);
+		__inline double GetTorqueFromVoltage(double Voltage);
 	private:
 		DriveTrainProps m_Props;
 };

@@ -288,8 +288,9 @@ __inline double Drive_Train_Characteristics::GetTorque_To_Vel_nm(double Vel_rps)
 {
 	return (Vel_rps * c_CIM_Torque_to_Vel_nm);
 }
-
-Drive_Train_Characteristics::Drive_Train_Characteristics() : m_Props(1.0,14.25,0.0762,2.0) 
+//gear reduction (5310/60.0) / (427.68 / 60.0) = 12.415824915824915824915824915825
+//TODO compute gear reduction from max speed and pass into props here
+Drive_Train_Characteristics::Drive_Train_Characteristics() : m_Props(1.0,12.4158,0.0762,2.0) 
 {
 }
 __inline double Drive_Train_Characteristics::GetWheelStallTorque(double Torque)
@@ -310,8 +311,16 @@ __inline double Drive_Train_Characteristics::GetMotorRPS(double LinearVelocity)
 }
 __inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double LinearVelocity)
 {
-	double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS(LinearVelocity));
+	const double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS(LinearVelocity));
 	return GetTorqueAtWheel(MotorTorque * 2.0);
+}
+
+__inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage)
+{
+	const double Amps=fabs(Voltage*133.0);
+	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
+	const double WheelTorque=GetTorqueAtWheel(MotorTorque * 2.0);
+	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
 }
 
 
@@ -356,12 +365,8 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 	//computed from stall torque ratings of motor with various gear reductions and so forth
 	//on JVN's spread sheet torque at wheel is (WST / DWR) * 2  (for nm)  (Wheel stall torque / Drive Wheel Radius * 2 sides)
 	//where stall torque is ST / GearReduction * DriveTrain efficiency
-	//  The spreadsheet claims we have 366.24 nm, where I computed 248.79
-	// Anyhow this number can be scripted out and adjusted
-	//const double MaxForce=248.79;
-	//const double MaxForce=366.24;
-	const double MaxForce=1030.0;  //TODO determine why this is so high
-	double ForceToApply=MaxForce * Voltage;
+	//This is all computed in the drive train
+	double ForceToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
 	const double ForceAbsorbed=m_DriveTrain.GetTorqueFromLinearVelocity(m_Physics.GetVelocity());
 	ForceToApply-=ForceAbsorbed;
 	m_Physics.ApplyFractionalForce(ForceToApply,m_Time_s);
