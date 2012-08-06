@@ -78,6 +78,7 @@ class Tank_Robot : public Tank_Drive
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
+		virtual void SetAttitude(double radians);  //from ship tester
 	protected:
 		bool m_IsAutonomous;
 	private:
