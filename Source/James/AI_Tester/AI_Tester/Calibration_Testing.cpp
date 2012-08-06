@@ -344,7 +344,7 @@ void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 		m_EncoderProps=*props;
 	//m_Physics.SetMass(68);  //(about 150 pounds)
 	m_Physics.SetMass(50);  //adjust this to match latency we observe
-	m_Physics.SetFriction(0.8,0.1);
+	m_Physics.SetFriction(0.8,0.08);
 }
 
 void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
@@ -404,6 +404,8 @@ void Encoder_Tester::Initialize(const Ship_1D_Properties *props)
 {
 	m_LeftEncoder.Initialize(props);
 	m_RightEncoder.Initialize(props);
+	//Cool way to add friction uneven to simulate 
+	//m_RightEncoder.SetFriction(0.8,0.12);
 }
 
 void Encoder_Tester::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
