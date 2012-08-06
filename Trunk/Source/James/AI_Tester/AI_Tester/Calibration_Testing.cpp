@@ -342,9 +342,9 @@ void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 {
 	if (props)
 		m_EncoderProps=*props;
-		//m_Physics.SetMass(68);  //(about 150 pounds)
-	m_Physics.SetMass(20);
-	m_Physics.SetFriction(0.8,0.2);
+	//m_Physics.SetMass(68);  //(about 150 pounds)
+	m_Physics.SetMass(50);  //adjust this to match latency we observe
+	m_Physics.SetFriction(0.8,0.1);
 }
 
 void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
