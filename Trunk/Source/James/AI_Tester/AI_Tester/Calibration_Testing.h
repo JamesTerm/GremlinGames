@@ -51,6 +51,7 @@ class Encoder_Simulator : public Ship_1D
 		void TimeChange();
 		void SetReverseDirection(bool reverseDirection);  //emulates functionality of the encoder (needed because kids put them in differently)
 		void SetEncoderScalar(double value) {m_EncoderScalar=value;}  //This helps to simulate differences between sides
+		void SetFriction(double StaticFriction,double KineticFriction) {}
 	protected:
 	private:
 		double m_Time_s;
@@ -100,6 +101,7 @@ class Encoder_Simulator2
 		void TimeChange();
 		void SetReverseDirection(bool reverseDirection);  //emulates functionality of the encoder (needed because kids put them in differently)
 		void SetEncoderScalar(double value) {m_EncoderScalar=value;}  //This helps to simulate differences between sides
+		void SetFriction(double StaticFriction,double KineticFriction) {m_Physics.SetFriction(StaticFriction,KineticFriction);}
 	protected:
 	private:
 		double m_Time_s;
@@ -129,6 +131,7 @@ class Encoder_Tester
 		}
 	private:
 		#if 0
+		//This is still good for a lesser stress (keeping the latency disabled)
 		Encoder_Simulator m_LeftEncoder;
 		Encoder_Simulator m_RightEncoder;
 		#else
