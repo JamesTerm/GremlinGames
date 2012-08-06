@@ -453,6 +453,12 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 
+void Tank_Robot::SetAttitude(double radians)
+{
+	m_Heading=radians;
+	__super::SetAttitude(radians);
+}
+
   /***********************************************************************************************************************************/
  /*													Tank_Robot_Properties															*/
 /***********************************************************************************************************************************/
