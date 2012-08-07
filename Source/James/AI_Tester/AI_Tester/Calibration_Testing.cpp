@@ -374,7 +374,15 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 
 double Encoder_Simulator2::GetEncoderVelocity() const
 {
+	#if 0
+	static size_t i=0;
+	double Velocity=m_Physics.GetVelocity();
+	if (((i++ % 50)==0)&&(Velocity!=0.0))
+		printf("Velocty=%f\n",Velocity);
+	return 0.0;
+	#else
 	return m_Physics.GetVelocity();
+	#endif
 }
 
 void Encoder_Simulator2::SetReverseDirection(bool reverseDirection)

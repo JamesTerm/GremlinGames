@@ -41,6 +41,8 @@ PhysicsEntity_1D::PhysicsEntity_1D()
 	m_EntityMass=5.0;
 	m_StaticFriction=0.8;
 	m_KineticFriction=0.2;
+	m_AngularInertiaCoefficient=1.0;
+	m_RadiusOfConcentratedMass=1.0;
 	m_SummedExternalForces=0.0;
 	m_lastTime_s=0.0;
 
@@ -51,6 +53,21 @@ void PhysicsEntity_1D::SetFriction(double StaticFriction,double KineticFriction)
 {
 	m_StaticFriction=StaticFriction;
 	m_KineticFriction=KineticFriction;
+}
+
+void PhysicsEntity_1D::SetAngularInertiaCoefficient(double AngularInertiaCoefficient)
+{
+	m_AngularInertiaCoefficient=AngularInertiaCoefficient;
+}
+
+void PhysicsEntity_1D::SetRadiusOfConcentratedMass(double RadiusOfConcentratedMass)
+{
+	m_RadiusOfConcentratedMass=RadiusOfConcentratedMass;
+}
+
+double PhysicsEntity_1D::GetRadiusOfConcentratedMass() const
+{
+	return m_RadiusOfConcentratedMass;
 }
 
 void PhysicsEntity_1D::SetVelocity(double Velocity)
@@ -71,6 +88,43 @@ void PhysicsEntity_1D::ApplyFractionalForce( double force,double FrameDuration)
 
 	//if (AccelerationDelta[1]!=0)
 	//	DebugOutput("Acc%f Vel%f\n",AccelerationDelta[1],m_Velocity[1]);
+}
+
+inline double PhysicsEntity_1D::GetAngularAccelerationDelta(double torque,double RadialArmDistance)
+{
+	/* We want a cross product here, and divide by the mass and angular inertia
+	return (RadialArmDistance^torque) / (m_EntityMass*m_AngularInertiaCoefficient);
+
+	// [Rick Notes], Why divide by the arm distance?  Shouldn't we be multiplying?  Why square that, and along just the component?
+	// We divide by I to solve for a... see formula below
+	*/
+
+	// t=Ia 
+	//I=sum(m*r^2) or sum(AngularCoef*m*r^2)
+
+	double ret;
+	{
+		//Avoid division by zero... no radial arm distance no acceleration!
+		if (RadialArmDistance==0)
+		{
+			ret=0;
+			return ret;
+		}
+		//Doing it this way keeps the value of torque down to a reasonable level
+		// [Rick Notes]  What does a "Reasonable Level" mean?  Perhaps we should see the equation somewhere
+		// I forgot what the equation was and I get a bit lost.
+		double RadiusRatio(m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass/RadialArmDistance);
+		assert(RadiusRatio!=0);  //no-one should be using a zero sized radius!
+		ret=(torque/(m_AngularInertiaCoefficient*m_EntityMass*RadiusRatio));
+	}
+	return ret;
+}
+
+void PhysicsEntity_1D::ApplyFractionalTorque( double torque,double FrameDuration,double RadialArmDistance)
+{
+	double AccelerationDelta=GetAngularAccelerationDelta(torque,RadialArmDistance);
+	double VelocityDelta=AccelerationDelta*FrameDuration;
+	m_Velocity+=VelocityDelta;
 }
 
 double PhysicsEntity_1D::GetForceFromVelocity(double vDesiredVelocity,double DeltaTime_s)
