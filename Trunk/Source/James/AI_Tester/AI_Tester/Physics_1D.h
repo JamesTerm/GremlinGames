@@ -43,6 +43,7 @@ class PhysicsEntity_1D
 		/// \todo Provide helper methods to compute this value
 		void SetAngularInertiaCoefficient(double AngularInertiaCoefficient);
 		///This sets the radius for yaw axis, pitch axis, and roll axis.  Default = 1,1,1
+		///This may represent the object's bounding box when used in conjunction with the angular inertia coefficient
 		void SetRadiusOfConcentratedMass(double RadiusOfConcentratedMass);
 		double GetRadiusOfConcentratedMass() const;
 

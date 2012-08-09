@@ -70,20 +70,27 @@ class Drive_Train_Characteristics
 		__inline static double GetTorque_To_Vel_nm(double Vel_rps);
 		struct DriveTrainProps
 		{
-			DriveTrainProps(double dt,double gr,double dwr,double mc) : 
-			DriveTrain_Efficiency(dt),GearReduction(gr),DriveWheelRadius(dwr),m_NoMotors(mc) {}
+			DriveTrainProps(double wm,double dt,double gr,double taowr,double dwr,double mc) :  Wheel_Mass(wm), 
+			DriveTrain_Efficiency(dt),GearReduction(gr),DriveWheelRadius(dwr),NoMotors(mc),TorqueAppliedOnWheelRadius(taowr) {}
+			double Wheel_Mass;  //This is a total mass of all the wheels and gears for one side
 			double DriveTrain_Efficiency;
 			double GearReduction;  //In reciprocal form of spread sheet
+			double TorqueAppliedOnWheelRadius; //in meters
 			double DriveWheelRadius; //in meters
-			double m_NoMotors;  //Used to get total torque
+			double NoMotors;  //Used to get total torque
 		};
 		Drive_Train_Characteristics();
 		__inline double GetWheelStallTorque(double Torque);
 		__inline double GetTorqueAtWheel(double Torque);
 		__inline double GetWheelRPS(double LinearVelocity);
 		__inline double GetMotorRPS(double LinearVelocity);
+		__inline double GetWheelRPS_Angular(double AngularVelocity);
+		__inline double GetMotorRPS_Angular(double AngularVelocity);
 		__inline double GetTorqueFromLinearVelocity(double LinearVelocity);
+		__inline double GetWheelTorqueFromVoltage(double Voltage);
 		__inline double GetTorqueFromVoltage(double Voltage);
+		__inline double GetTorqueFromVelocity(double AngularVelocity);
+		const DriveTrainProps &GetDriveTrainProps() const {return m_Props;}
 	private:
 		DriveTrainProps m_Props;
 };
