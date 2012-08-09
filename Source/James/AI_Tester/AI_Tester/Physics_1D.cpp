@@ -92,32 +92,26 @@ void PhysicsEntity_1D::ApplyFractionalForce( double force,double FrameDuration)
 
 inline double PhysicsEntity_1D::GetAngularAccelerationDelta(double torque,double RadialArmDistance)
 {
-	/* We want a cross product here, and divide by the mass and angular inertia
-	return (RadialArmDistance^torque) / (m_EntityMass*m_AngularInertiaCoefficient);
+	// We want a cross product here, and divide by the mass and angular inertia
+	//return (RadialArmDistance*torque) / (m_EntityMass*m_AngularInertiaCoefficient);
 
-	// [Rick Notes], Why divide by the arm distance?  Shouldn't we be multiplying?  Why square that, and along just the component?
-	// We divide by I to solve for a... see formula below
-	*/
+	//We are solving for angular acceleration so a=t / I
 
 	// t=Ia 
 	//I=sum(m*r^2) or sum(AngularCoef*m*r^2)
 
-	double ret;
+	double AngularAcceleration=0;
+	//Avoid division by zero... no radial arm distance no acceleration!
+	if (RadialArmDistance!=0)
 	{
-		//Avoid division by zero... no radial arm distance no acceleration!
-		if (RadialArmDistance==0)
-		{
-			ret=0;
-			return ret;
-		}
 		//Doing it this way keeps the value of torque down to a reasonable level
-		// [Rick Notes]  What does a "Reasonable Level" mean?  Perhaps we should see the equation somewhere
-		// I forgot what the equation was and I get a bit lost.
 		double RadiusRatio(m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass/RadialArmDistance);
 		assert(RadiusRatio!=0);  //no-one should be using a zero sized radius!
-		ret=(torque/(m_AngularInertiaCoefficient*m_EntityMass*RadiusRatio));
+		AngularAcceleration=(torque/(m_AngularInertiaCoefficient*m_EntityMass*RadiusRatio));
+		//This is another way to view it
+		//AngularAcceleration=((RadialArmDistance*torque)/(m_AngularInertiaCoefficient*m_EntityMass*m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass));
 	}
-	return ret;
+	return AngularAcceleration;
 }
 
 void PhysicsEntity_1D::ApplyFractionalTorque( double torque,double FrameDuration,double RadialArmDistance)

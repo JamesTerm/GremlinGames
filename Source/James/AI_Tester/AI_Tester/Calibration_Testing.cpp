@@ -290,7 +290,13 @@ __inline double Drive_Train_Characteristics::GetTorque_To_Vel_nm(double Vel_rps)
 }
 //gear reduction (5310/60.0) / (427.68 / 60.0) = 12.415824915824915824915824915825
 //TODO compute gear reduction from max speed and pass into props here
-Drive_Train_Characteristics::Drive_Train_Characteristics() : m_Props(1.0,12.4158,0.0762,2.0) 
+Drive_Train_Characteristics::Drive_Train_Characteristics() : 
+m_Props(3.0, //Wheel Mass
+		1.0,  //Drive train efficiency
+		12.4158,  //Gear reduction
+		0.0508,   //Torque applied on wheel radius
+		0.0762,	  //Wheel radius
+		2.0)	  //No motors
 {
 }
 __inline double Drive_Train_Characteristics::GetWheelStallTorque(double Torque)
@@ -309,13 +315,23 @@ __inline double Drive_Train_Characteristics::GetMotorRPS(double LinearVelocity)
 {
 	return GetWheelRPS(LinearVelocity) *  m_Props.GearReduction;
 }
+
+__inline double Drive_Train_Characteristics::GetWheelRPS_Angular(double AngularVelocity)
+{
+	return AngularVelocity / (M_PI * 2.0);			
+}
+__inline double Drive_Train_Characteristics::GetMotorRPS_Angular(double AngularVelocity)
+{
+	return GetWheelRPS_Angular(AngularVelocity) *  m_Props.GearReduction;
+}
+
 __inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double LinearVelocity)
 {
 	const double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS(LinearVelocity));
 	return GetTorqueAtWheel(MotorTorque * 2.0);
 }
 
-__inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage)
+__inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Voltage)
 {
 	const double Amps=fabs(Voltage*133.0);
 	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
@@ -323,6 +339,19 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
 }
 
+__inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage)
+{
+	const double Amps=fabs(Voltage*133.0);
+	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
+	const double WheelTorque=GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
+	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
+}
+
+__inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double AngularVelocity)
+{
+	const double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS_Angular(AngularVelocity));
+	return GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
+}
 
 Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),m_EncoderProps(
 	EntityName,
@@ -342,9 +371,15 @@ void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 {
 	if (props)
 		m_EncoderProps=*props;
+	#if 0
 	//m_Physics.SetMass(68);  //(about 150 pounds)
 	m_Physics.SetMass(50);  //adjust this to match latency we observe
 	m_Physics.SetFriction(0.8,0.08);
+	#else
+	m_Physics.SetMass(m_DriveTrain.GetDriveTrainProps().Wheel_Mass);
+	m_Physics.SetFriction(0.8,0.2);
+	m_Physics.SetRadiusOfConcentratedMass(m_DriveTrain.GetDriveTrainProps().DriveWheelRadius);
+	#endif
 }
 
 void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
@@ -366,10 +401,17 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 	//on JVN's spread sheet torque at wheel is (WST / DWR) * 2  (for nm)  (Wheel stall torque / Drive Wheel Radius * 2 sides)
 	//where stall torque is ST / GearReduction * DriveTrain efficiency
 	//This is all computed in the drive train
-	double ForceToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
-	const double ForceAbsorbed=m_DriveTrain.GetTorqueFromLinearVelocity(m_Physics.GetVelocity());
+	#if 0
+	double ForceToApply=m_DriveTrain.GetWheelTorqueFromVoltage(Voltage);
+	const double ForceAbsorbed=m_DriveTrain.GetWheelTorqueFromVelocity(m_Physics.GetVelocity());
 	ForceToApply-=ForceAbsorbed;
 	m_Physics.ApplyFractionalForce(ForceToApply,m_Time_s);
+	#else
+	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
+	const double TorqueAbsorbed=m_DriveTrain.GetTorqueFromVelocity(m_Physics.GetVelocity());
+	TorqueToApply-=TorqueAbsorbed;
+	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
+	#endif
 }
 
 double Encoder_Simulator2::GetEncoderVelocity() const
@@ -378,10 +420,11 @@ double Encoder_Simulator2::GetEncoderVelocity() const
 	static size_t i=0;
 	double Velocity=m_Physics.GetVelocity();
 	if (((i++ % 50)==0)&&(Velocity!=0.0))
-		printf("Velocty=%f\n",Velocity);
+		printf("Velocty=%f\n",Velocity *  m_DriveTrain.GetDriveTrainProps().DriveWheelRadius );
 	return 0.0;
 	#else
-	return m_Physics.GetVelocity();
+	//return m_Physics.GetVelocity();
+	return m_Physics.GetVelocity() *  m_DriveTrain.GetDriveTrainProps().DriveWheelRadius;
 	#endif
 }
 
