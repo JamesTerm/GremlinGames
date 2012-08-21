@@ -413,25 +413,16 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 				double x3=Voltage*x2;
 				double x4=x2*x2;
 				Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-				LeftVoltage=Voltage;
+				Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
+				LeftVoltage=(LeftVoltage<0)?-Voltage:Voltage; //restore sign
 
 				Voltage=fabs(RightVoltage);
 				x2=Voltage*Voltage;
 				x3=Voltage*x2;
 				x4=x2*x2;
 				Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-				RightVoltage=Voltage;
-
-				//Clip the voltage as it can become really high values when applying equation
-				if (LeftVoltage>1.0)
-					LeftVoltage=1.0;
-				if (RightVoltage>1.0)
-					RightVoltage=1.0;
-				//restore the sign
-				if (LeftVelocity<0)
-					LeftVoltage=-LeftVoltage;
-				if (RightVelocity<0)
-					RightVoltage=-RightVoltage;
+				Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
+				RightVoltage=(RightVoltage<0)?-Voltage:Voltage; //restore sign
 			}
 
 			#endif
