@@ -205,7 +205,7 @@ class Ship_Tester : public Ship_2D
 		Ship_Tester(const char EntityName[]) : Ship_2D(EntityName) {}
 		~Ship_Tester();
 		void SetPosition(double x,double y);
-		void SetAttitude(double radians);
+		virtual void SetAttitude(double radians);
 		Goal *ClearGoal();
 		void SetGoal(Goal *goal);
 };
