@@ -64,6 +64,7 @@ class Tank_Robot : public Tank_Drive
 		void Reset(bool ResetPosition=true);
 		/// \param ResetPos typically true for autonomous and false for dynamic use
 		void SetUseEncoders(bool UseEncoders,bool ResetPosition=true);
+		void SetIsAutonomous(bool IsAutonomous);
 		virtual void TimeChange(double dTime_s);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 	protected:
