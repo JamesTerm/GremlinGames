@@ -172,7 +172,10 @@ double PhysicsEntity_1D::GetVelocityFromDistance_Linear(double Distance,double F
 
 	double IdealSpeed=Distance_Length/DeltaTime_s;
 	double AccelerationMagnitude=fabs(Acceleration);
-	double Time=sqrt(2.0*(Distance_Length/AccelerationMagnitude));
+	//Note the a=0.5 ((a * t)^2) change... this computes to be true 
+	//double Time=sqrt(2.0*(Distance_Length/AccelerationMagnitude));
+	double Time=sqrt(2.0*Distance_Length)/AccelerationMagnitude;
+
 
 	double MaxSpeed=Distance_Length/Time;
 	double SpeedToUse=min(IdealSpeed,MaxSpeed);
@@ -223,7 +226,8 @@ double PhysicsEntity_1D::GetVelocityFromDistance_Angular(double Distance,double 
 		{
 			//Given the distance compute the time needed
 			//Place the division first keeps the multiply small
-			double Time=sqrt(2.0*(DistanceLength/Acceleration));
+			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
+			double Time=sqrt(2.0*DistanceLength)/Acceleration;
 
 			//Now compute maximum speed for this time
 			double MaxSpeed=DistanceLength/Time;
