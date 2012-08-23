@@ -3,6 +3,7 @@
 
 using namespace AI_Tester;
 using namespace std;
+using namespace osg;
 
 const double Pi2=M_PI*2.0;
 //The actual force between two objects are f=(G m1 m2)/ r^2
@@ -17,18 +18,18 @@ inline bool PosBNE(double val,double t)
 }
 
 
-inline const osg::Vec2d Vec2Multiply (const osg::Vec2d &A,const osg::Vec2d &rhs)
+inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
 {
-	return osg::Vec2d(A[0]*rhs._v[0], A[1]*rhs._v[1]);
+	return Vec2d(A[0]*rhs._v[0], A[1]*rhs._v[1]);
 }
 
-inline const osg::Vec2d Vec2_abs (const osg::Vec2d &A)
+inline const Vec2d Vec2_abs (const Vec2d &A)
 {
-	return osg::Vec2d(fabs(A[0]),fabs( A[1]));
+	return Vec2d(fabs(A[0]),fabs( A[1]));
 }
-inline const osg::Vec2d Vec2_min (const osg::Vec2d &A,const osg::Vec2d &B)
+inline const Vec2d Vec2_min (const Vec2d &A,const Vec2d &B)
 {
-	return osg::Vec2d(min(A[0],B[0]),min(A[1],B[1]));
+	return Vec2d(min(A[0],B[0]),min(A[1],B[1]));
 }
 
 
@@ -75,7 +76,7 @@ void PhysicsEntity_2D::CopyFrom(const PhysicsEntity_2D& rhs)
 
 void PhysicsEntity_2D::ResetVectors()
 {
-	m_LinearVelocity= osg::Vec2d(0,0);
+	m_LinearVelocity= Vec2d(0,0);
 	m_AngularVelocity= 0.0;
 }
 
@@ -88,7 +89,7 @@ PhysicsEntity_2D::PhysicsEntity_2D()
 	m_KineticFriction=0.2;
 	m_AngularInertiaCoefficient=1.0;
 	m_RadiusOfConcentratedMass=1.0;
-	m_SummedExternalForces=osg::Vec2d(0,0);
+	m_SummedExternalForces=Vec2d(0,0);
 	m_lastTime_s=0.0;
 
 	ResetVectors();
@@ -115,11 +116,11 @@ double PhysicsEntity_2D::GetRadiusOfConcentratedMass() const
 	return m_RadiusOfConcentratedMass;
 }
 
-void PhysicsEntity_2D::SetLinearVelocity( const osg::Vec2d &LinearVelocity)
+void PhysicsEntity_2D::SetLinearVelocity( const Vec2d &LinearVelocity)
 { 
 	m_LinearVelocity=LinearVelocity;
 }
-osg::Vec2d PhysicsEntity_2D::GetLinearVelocity() const
+Vec2d PhysicsEntity_2D::GetLinearVelocity() const
 {
 	return m_LinearVelocity;
 }
@@ -133,11 +134,11 @@ double PhysicsEntity_2D::GetAngularVelocity() const
 	return m_AngularVelocity;
 }
 
-void PhysicsEntity_2D::ApplyFractionalForce( const osg::Vec2d &force,double FrameDuration)
+void PhysicsEntity_2D::ApplyFractionalForce( const Vec2d &force,double FrameDuration)
 {
 	//I'm writing this out so I can easily debug
-	osg::Vec2d AccelerationDelta=force/m_EntityMass;
-	osg::Vec2d VelocityDelta=AccelerationDelta*FrameDuration;
+	Vec2d AccelerationDelta=force/m_EntityMass;
+	Vec2d VelocityDelta=AccelerationDelta*FrameDuration;
 	m_LinearVelocity+=VelocityDelta;
 
 	//if (AccelerationDelta[1]!=0)
@@ -150,7 +151,7 @@ void PhysicsEntity_2D::ApplyFractionalTorque( double torque,double FrameDuration
 	m_AngularVelocity+=VelocityDelta;
 }
 
-void PhysicsEntity_2D::ApplyFractionalForce( const osg::Vec2d &force, const osg::Vec2d &point,double FrameDuration )
+void PhysicsEntity_2D::ApplyFractionalForce( const Vec2d &force, const Vec2d &point,double FrameDuration )
 {
 	//Use this as a "get by" if the code doesn't work properly
 #if 0
@@ -166,7 +167,7 @@ void PhysicsEntity_2D::ApplyFractionalForce( const osg::Vec2d &force, const osg:
 	//X=cos(N)*f.length = contribution for torque
 
 	double TorqueToApply;
-	osg::Vec2d ForceToApply;
+	Vec2d ForceToApply;
 	double RadialArmDistance;
 
 	{
@@ -186,7 +187,7 @@ void PhysicsEntity_2D::ApplyFractionalForce( const osg::Vec2d &force, const osg:
 		TorqueToApply=(cos(N)*ForceLength); 
 	}
 
-	osg::Vec2d vecToCenter = -point;
+	Vec2d vecToCenter = -point;
 	//Note we should be able to support a point set at 0,0,0 in which case we use the force itself as the direction... otherwise a zero'd point
 	//results in a zero'd vector which would omit applying the force
 	if (vecToCenter.length2()==0.0)
@@ -230,17 +231,17 @@ inline double PhysicsEntity_2D::GetAngularAccelerationDelta(double torque,double
 	return ret;
 }
 
-osg::Vec2d PhysicsEntity_2D::GetForceFromVelocity(const osg::Vec2d &vDesiredVelocity,double DeltaTime_s)
+Vec2d PhysicsEntity_2D::GetForceFromVelocity(const Vec2d &vDesiredVelocity,double DeltaTime_s)
 {
-	osg::Vec2d DeltaVelocity=(vDesiredVelocity-GetLinearVelocity());
+	Vec2d DeltaVelocity=(vDesiredVelocity-GetLinearVelocity());
 	//A=Delta V / Delta T
-	osg::Vec2d Acceleration=DeltaVelocity/DeltaTime_s;  //This may be pretty quick (apply Force restrictions later)
+	Vec2d Acceleration=DeltaVelocity/DeltaTime_s;  //This may be pretty quick (apply Force restrictions later)
 
 
-	//if (Acceleration!=osg::Vec2d(0,0,0))
+	//if (Acceleration!=Vec2d(0,0,0))
 	//	printf(" x=%f,y=%f,z=%f\n",Acceleration[0],Acceleration[1],Acceleration[2]);
 	//Now that we know what the acceleration needs to be figure out how much force to get it there
-	osg::Vec2d Force= Acceleration * m_EntityMass;
+	Vec2d Force= Acceleration * m_EntityMass;
 	//if (PosBNE(Force[0],0)||(PosBNE(Force[1],0))||(PosBNE(Force[2],0)))
 	//	printf("tx=%f,ty=%f,tz=%f\n",Force[0],Force[1],Force[2]);
 
@@ -265,7 +266,7 @@ double PhysicsEntity_2D::GetTorqueFromVelocity( double vDesiredVelocity,double D
 	//A=Delta V / Delta T
 	double Acceleration=DeltaVelocity/DeltaTime_s;  //This may be pretty quick (apply torque restrictions later)
 
-	//if (Acceleration!=osg::Vec2d(0,0,0))
+	//if (Acceleration!=Vec2d(0,0,0))
 	//	printf(" x=%f,y=%f,z=%f\n",Acceleration[0],Acceleration[1],Acceleration[2]);
 	//Now that we know what the acceleration needs to be figure out how much force to get it there
 	double Torque= Acceleration * m_EntityMass;
@@ -390,7 +391,7 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 	return ret;
 }
 
-inline osg::Vec2d PhysicsEntity_2D::GetVelocityFromCollision(osg::Vec2d ThisVelocityToUse,double otherEntityMass,osg::Vec2d otherEntityVelocity)
+inline Vec2d PhysicsEntity_2D::GetVelocityFromCollision(Vec2d ThisVelocityToUse,double otherEntityMass,Vec2d otherEntityVelocity)
 {
 	//almost not quite
 	//return (m_LinearVelocity*(m_EntityMass-otherEntityMass)) / (m_EntityMass+otherEntityMass);
@@ -398,7 +399,7 @@ inline osg::Vec2d PhysicsEntity_2D::GetVelocityFromCollision(osg::Vec2d ThisVelo
 	/// en.wikipedia.org/wiki/Elastic_collision
 	// Here is the equation
 	// ((vel1 ( mass1 - mass2 )) + (2 * mass2 * vel2))) / (m1+m2)
-	osg::Vec2d ret= (ThisVelocityToUse *(m_EntityMass-otherEntityMass));
+	Vec2d ret= (ThisVelocityToUse *(m_EntityMass-otherEntityMass));
 	ret+= (otherEntityVelocity*(2 * otherEntityMass));
 	ret/= (m_EntityMass+otherEntityMass);
 	return ret;
@@ -406,9 +407,9 @@ inline osg::Vec2d PhysicsEntity_2D::GetVelocityFromCollision(osg::Vec2d ThisVelo
 
 
 //just like GetVelocityFromDistance_Angular except we do not normalize the DistanceDirection
-osg::Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear(const osg::Vec2d &Distance,const osg::Vec2d &ForceRestraintPositive,const osg::Vec2d &ForceRestraintNegative,double DeltaTime_s, const osg::Vec2d& matchVel)
+Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,const Vec2d &ForceRestraintPositive,const Vec2d &ForceRestraintNegative,double DeltaTime_s, const Vec2d& matchVel)
 {
-	osg::Vec2d ret;
+	Vec2d ret;
 	//These are initialized as we go
 	double Acceleration;
 	double Restraint;
@@ -456,10 +457,10 @@ osg::Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear(const osg::Vec2d &Di
 	return ret;
 }
 
-osg::Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear_v1(const osg::Vec2d &Distance,const osg::Vec2d &ForceRestraintPositive,const osg::Vec2d &ForceRestraintNegative,double DeltaTime_s, const osg::Vec2d& matchVel)
+Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear_v1(const Vec2d &Distance,const Vec2d &ForceRestraintPositive,const Vec2d &ForceRestraintNegative,double DeltaTime_s, const Vec2d& matchVel)
 {
-	osg::Vec2d ret;
-	osg::Vec2d DistToUse=Distance; //save the original distance as it is const anyhow
+	Vec2d ret;
+	Vec2d DistToUse=Distance; //save the original distance as it is const anyhow
 
 	DistToUse-=(matchVel*DeltaTime_s);
 	double dDistance=DistToUse.length();
@@ -467,12 +468,12 @@ osg::Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear_v1(const osg::Vec2d 
 		return matchVel;
 
 	//This is how many meters per second the ship is capable to stop for this given time frame
-	osg::Vec2d Restraint;
+	Vec2d Restraint;
 	//Compute the restraint based off of its current direction
 	for (size_t i=0;i<3;i++)
 		Restraint[i]=DistToUse[i]>0?ForceRestraintPositive[i]:ForceRestraintNegative[i];
 
-	osg::Vec2d Acceleration=(Restraint/m_EntityMass); //obtain acceleration
+	Vec2d Acceleration=(Restraint/m_EntityMass); //obtain acceleration
 
 	double IdealSpeed=Distance.length()/DeltaTime_s;
 	double AccelerationMagnitude=Acceleration.length();
@@ -513,9 +514,9 @@ double PhysicsEntity_2D::ComputeRestrainedTorque(double Torque,double TorqueRest
 }
 
 
-osg::Vec2d PhysicsEntity_2D::ComputeRestrainedForce(const osg::Vec2d &LocalForce,const osg::Vec2d &ForceRestraintPositive,const osg::Vec2d &ForceRestraintNegative,double dTime_s)
+Vec2d PhysicsEntity_2D::ComputeRestrainedForce(const Vec2d &LocalForce,const Vec2d &ForceRestraintPositive,const Vec2d &ForceRestraintNegative,double dTime_s)
 {
-	osg::Vec2d ForceToApply=LocalForce;
+	Vec2d ForceToApply=LocalForce;
 	if (ForceRestraintPositive[0]!=-1)
 	{
 		double SmallestRatio=1.0;
@@ -550,7 +551,7 @@ osg::Vec2d PhysicsEntity_2D::ComputeRestrainedForce(const osg::Vec2d &LocalForce
 	return ForceToApply;
 }
 
-void PhysicsEntity_2D::TimeChangeUpdate(double DeltaTime_s,osg::Vec2d &PositionDisplacement,double &RotationDisplacement)
+void PhysicsEntity_2D::TimeChangeUpdate(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	//Transfer the velocity to displacement
 	RotationDisplacement = m_AngularVelocity * DeltaTime_s;
@@ -565,8 +566,8 @@ void PhysicsEntity_2D::TimeChangeUpdate(double DeltaTime_s,osg::Vec2d &PositionD
 void FlightDynamics_2D::init()
 {
 	//populate LinearAccelerationRates with some good defaults
-	const osg::Vec2d AccDelta(30.0,30.0);
-	const osg::Vec2d DecDelta(60.0,60.0);
+	const Vec2d AccDelta(30.0,30.0);
+	const Vec2d DecDelta(60.0,60.0);
 	LinearAccelerationRates &_=m_LinearAccelerationRates;
 	_.AccDeltaNeg=_.AccDeltaPos=AccDelta;
 	_.DecDeltaNeg=_.DecDeltaPos=DecDelta;
@@ -595,11 +596,11 @@ void FlightDynamics_2D::ResetVectors()
 	__super::ResetVectors();
 	if (m_HeadingToUse==&m_DefaultHeading)
 		m_DefaultHeading=0.0;
-	m_CurrentAcceleration=m_TargetAcceleration=osg::Vec2d(0.0,0.0);
+	m_CurrentAcceleration=m_TargetAcceleration=Vec2d(0.0,0.0);
 	m_Pilot.ResetVectors();
 }
 
-double FlightDynamics_2D::ComputeAngularDistance(const osg::Vec2d &lookDir)
+double FlightDynamics_2D::ComputeAngularDistance(const Vec2d &lookDir)
 {
 	double lookDir_radians= atan2(lookDir[0],lookDir[1]);
 	double distance=*m_HeadingToUse-lookDir_radians;
@@ -610,17 +611,17 @@ double FlightDynamics_2D::ComputeAngularDistance(const osg::Vec2d &lookDir)
 	return distance;
 }
 
-osg::Vec2d FlightDynamics_2D::ComputeAngularDistance_asLookDir(const osg::Vec2d &lookDir)
+Vec2d FlightDynamics_2D::ComputeAngularDistance_asLookDir(const Vec2d &lookDir)
 {
 	double distance=ComputeAngularDistance(lookDir);
-	return osg::Vec2d(sin(distance),cos(distance));
+	return Vec2d(sin(distance),cos(distance));
 }
 
 #if 0
-osg::Vec2d FlightDynamics_2D::ComputeAngularDistance(double Orientation)
+Vec2d FlightDynamics_2D::ComputeAngularDistance(double Orientation)
 {
 	double distance=Orientation-m_HeadingToUse;
-	return osg::Vec2d(sin(distance),cos(distance));
+	return Vec2d(sin(distance),cos(distance));
 }
 #endif
 
@@ -634,7 +635,7 @@ double FlightDynamics_2D::ComputeAngularDistance(double Orientation)
 	return DistanceDirection;
 }
 
-void FlightDynamics_2D::TimeChangeUpdate(double DeltaTime_s,osg::Vec2d &PositionDisplacement,double &RotationDisplacement)
+void FlightDynamics_2D::TimeChangeUpdate(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	__super::TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	m_Pilot.Update(DeltaTime_s, G_Dampener);
@@ -648,15 +649,15 @@ FlightDynamics_2D::LinearAccelerationRates &FlightDynamics_2D::GetLinearAccelera
 	return m_LinearAccelerationRates;
 }
 
-void FlightDynamics_2D::SetTargetAcceleration(const osg::Vec2d &TargetAcceleration)
+void FlightDynamics_2D::SetTargetAcceleration(const Vec2d &TargetAcceleration)
 {
 	m_TargetAcceleration=TargetAcceleration;
 }
 
-osg::Vec2d FlightDynamics_2D::GetAcceleration_Delta(double dTime_s,const osg::Vec2d &TargetAcceleration,bool Clipping)
+Vec2d FlightDynamics_2D::GetAcceleration_Delta(double dTime_s,const Vec2d &TargetAcceleration,bool Clipping)
 {
 	//implicitly initialized in case we need to do no work
-	osg::Vec2d ret(0.0,0.0);
+	Vec2d ret(0.0,0.0);
 	//Note: this is somewhat simplified when we cross-over the zero thresh-hold, where instead of blending one derivative against the other
 	//it will follow through with first tagged one.  Since the deltas are encapsulated it should work, because it will still
 	//accurately predict the force that will be applied.  The amount of error for this case should be minimal enough to not be noticeable.
@@ -673,7 +674,7 @@ osg::Vec2d FlightDynamics_2D::GetAcceleration_Delta(double dTime_s,const osg::Ve
 			double Delta=m_CurrentAcceleration[i]>0?_.AccDeltaPos[i]:_.DecDeltaNeg[i];
 			Delta*=dTime_s;
 			if (Clipping)
-				ret[i]=std::min(Delta,TargetAcceleration[i]-m_CurrentAcceleration[i]);
+				ret[i]=min(Delta,TargetAcceleration[i]-m_CurrentAcceleration[i]);
 			else
 				ret[i]=Delta;
 		}
@@ -682,7 +683,7 @@ osg::Vec2d FlightDynamics_2D::GetAcceleration_Delta(double dTime_s,const osg::Ve
 			double Delta=m_CurrentAcceleration[i]>0?_.DecDeltaPos[i]:_.AccDeltaNeg[i];
 			Delta*=dTime_s;
 			if (Clipping)
-				ret[i]=std::max(-Delta,TargetAcceleration[i]-m_CurrentAcceleration[i]);
+				ret[i]=max(-Delta,TargetAcceleration[i]-m_CurrentAcceleration[i]);
 			else
 				ret[i]=Delta;
 		}
@@ -690,35 +691,35 @@ osg::Vec2d FlightDynamics_2D::GetAcceleration_Delta(double dTime_s,const osg::Ve
 	return ret;
 }
 
-osg::Vec2d FlightDynamics_2D::GetAcceleration_Delta (double dTime_s)
+Vec2d FlightDynamics_2D::GetAcceleration_Delta (double dTime_s)
 {
 	return GetAcceleration_Delta(dTime_s,m_TargetAcceleration);
 }
 
 void FlightDynamics_2D::Acceleration_TimeChangeUpdate(double dTime_s)
 {
-	const osg::Vec2d Acceleration_Delta=GetAcceleration_Delta(dTime_s);
+	const Vec2d Acceleration_Delta=GetAcceleration_Delta(dTime_s);
 	m_CurrentAcceleration+=Acceleration_Delta;
 }
 
-osg::Vec2d FlightDynamics_2D::GetForceFromVelocity(const osg::Vec2d &vDesiredVelocity,double DeltaTime_s)
+Vec2d FlightDynamics_2D::GetForceFromVelocity(const Vec2d &vDesiredVelocity,double DeltaTime_s)
 {
-	osg::Vec2d Force;
+	Vec2d Force;
 	if (!m_UsingAccelerationRate)
 		Force=__super::GetForceFromVelocity(vDesiredVelocity,DeltaTime_s);
 	else
 	{
-		osg::Vec2d Zerod=osg::Vec2d(0.0,0.0);
-		osg::Vec2d Acceleration=Zerod;
-		osg::Vec2d HeadingToUse_NV=osg::Vec2d(sin(*m_HeadingToUse),cos(*m_HeadingToUse));
-		const osg::Vec2d DeltaVelocity=(vDesiredVelocity-GetLinearVelocity());
+		Vec2d Zerod=Vec2d(0.0,0.0);
+		Vec2d Acceleration=Zerod;
+		Vec2d HeadingToUse_NV=Vec2d(sin(*m_HeadingToUse),cos(*m_HeadingToUse));
+		const Vec2d DeltaVelocity=(vDesiredVelocity-GetLinearVelocity());
 		//compute the maximum deceleration speed, since we need to reach 0 by the time we reach our desired velocity
 		//Note: these are in local orientation so they need to be converted to global
-		const osg::Vec2d MaxDeceleration=Vec2Multiply(HeadingToUse_NV , GetAcceleration_Delta(DeltaTime_s,osg::Vec2d(0.0,0.0),false));
-		osg::Vec2d Global_CurrentAcceleration(Vec2Multiply(HeadingToUse_NV , m_CurrentAcceleration));
+		const Vec2d MaxDeceleration=Vec2Multiply(HeadingToUse_NV , GetAcceleration_Delta(DeltaTime_s,Vec2d(0.0,0.0),false));
+		Vec2d Global_CurrentAcceleration(Vec2Multiply(HeadingToUse_NV , m_CurrentAcceleration));
 		
 		//A=Delta V / Delta T
-		const osg::Vec2d NewAcceleration_target=DeltaVelocity/DeltaTime_s;  //This may be pretty quick (apply Force restrictions later)
+		const Vec2d NewAcceleration_target=DeltaVelocity/DeltaTime_s;  //This may be pretty quick (apply Force restrictions later)
 
 		{
 			double MaxDeceleration_Length=MaxDeceleration.length();
@@ -737,15 +738,15 @@ osg::Vec2d FlightDynamics_2D::GetForceFromVelocity(const osg::Vec2d &vDesiredVel
 	return Force;
 }
 
-osg::Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const osg::Vec2d &Distance,const osg::Vec2d &ForceRestraintPositive,const osg::Vec2d &ForceRestraintNegative,double DeltaTime_s, const osg::Vec2d& matchVel)
+Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,const Vec2d &ForceRestraintPositive,const Vec2d &ForceRestraintNegative,double DeltaTime_s, const Vec2d& matchVel)
 {
-	osg::Vec2d ret;
+	Vec2d ret;
 
 	if (!m_UsingAccelerationRate)
 		ret=__super::GetVelocityFromDistance_Linear(Distance,ForceRestraintPositive,ForceRestraintNegative,DeltaTime_s,matchVel);
 	else
 	{
-		const osg::Vec2d MaxDeceleration=GetAcceleration_Delta(1.0,osg::Vec2d(0.0,0.0),false);
+		const Vec2d MaxDeceleration=GetAcceleration_Delta(1.0,Vec2d(0.0,0.0),false);
 #if 0
 		//I thought there may be a problem with solving each element separately so I wrote this version
 		double dDistance=Distance.length();
@@ -755,7 +756,7 @@ osg::Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const osg::Vec2d &D
 		double AccelerationMagnitude=ForceRestraintNegative[1]/m_EntityMass; //for now this is the amount of reverse thrust, but I need to work this out at some point
 
 		double Time=sqrt(2.0*dDistance/AccelerationMagnitude);
-		ret=(dDistance>RampError)?Distance/max(Time,DeltaTime_s) : osg::Vec2d(0,0,0);
+		ret=(dDistance>RampError)?Distance/max(Time,DeltaTime_s) : Vec2d(0,0,0);
 
 		//DebugOutput("d=%f %f ds=%f s=%f\n",Distance[1],dDistance,ret.length(),m_LinearVelocity.length());
 
