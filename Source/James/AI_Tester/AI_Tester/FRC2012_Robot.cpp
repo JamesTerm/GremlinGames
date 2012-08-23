@@ -767,6 +767,7 @@ void FRC_2012_Robot::SetLowGear(bool on)
 
 void FRC_2012_Robot::SetLowGearValue(double Value)
 {
+	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
 	//printf("\r%f       ",Value);
 	if (Value > 0.0)
 	{
