@@ -122,6 +122,14 @@ void Tank_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition)
 	}
 }
 
+void Tank_Robot::SetIsAutonomous(bool IsAutonomous)
+{
+	m_IsAutonomous=IsAutonomous;  //this is important (to disable joystick controls etc)
+	//We only explicitly turn them on... not off (that will be configured else where)
+	if (IsAutonomous)
+		SetUseEncoders(true);
+}
+
 double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity)
 {
 	//see if velocity is in range

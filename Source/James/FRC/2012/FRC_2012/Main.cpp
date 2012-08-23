@@ -161,7 +161,7 @@ public:
 		m_Manager.SetAutoPilot(true);  //we are not driving the robot
 		//Now to set up our goal
 		FRC_2012_Robot *Robot=m_Manager.GetRobot();  //we can always cast down
-		Robot->SetUseEncoders(true);
+		Robot->SetIsAutonomous(true);
 		//m_Manager.GetRobot()->SetUseEncoders(false);
 
 		//assert(ship);
