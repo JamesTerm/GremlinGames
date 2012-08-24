@@ -369,9 +369,7 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 		{
 			//Given the distance compute the time needed
 			//Place the division first keeps the multiply small
-			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
-			double Time=sqrt(2.0*DistanceLength)/Acceleration;
-
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
 			//Now compute maximum speed for this time
 			double MaxSpeed=DistanceLength/Time;
@@ -435,9 +433,7 @@ Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,con
 		{
 			//Given the distance compute the time needed
 			//Place the division first keeps the multiply small
-			//Note the a=0.5 ((a * t)^2) change... this computes to be true 
-			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
-			double Time=sqrt(2.0*DistanceLength)/Acceleration;
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
 			//Now compute maximum speed for this time
 			double MaxSpeed=DistanceLength/Time;
@@ -477,9 +473,7 @@ Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear_v1(const Vec2d &Distance,
 
 	double IdealSpeed=Distance.length()/DeltaTime_s;
 	double AccelerationMagnitude=Acceleration.length();
-	//Note the a=0.5 ((a * t)^2) change... this computes to be true 
-	//double Time=sqrt(2.0*(dDistance/AccelerationMagnitude));
-	double Time=sqrt(2.0*dDistance)/AccelerationMagnitude;
+	double Time=sqrt(2.0*(dDistance/AccelerationMagnitude));
 
 	double MaxSpeed=dDistance/Time;
 	double SpeedToUse=min(IdealSpeed,MaxSpeed);
@@ -785,13 +779,10 @@ Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,co
 
 			{
 				//Solve the Acceleration... given a distance what would it have to be going its fastest ramp rate
-				//double Time=sqrt(2.0*(DistanceLength/MaxDeceleration[i]));
-				double Time=sqrt(2.0*DistanceLength)/MaxDeceleration[i];
-
+				double Time=sqrt(2.0*(DistanceLength/MaxDeceleration[i]));
 				Acceleration=min(Acceleration,MaxDeceleration_Length*Time);
 			}
-			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
-			double Time=sqrt(2.0*DistanceLength)/Acceleration;
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
 			//using distance/DTime in the max helps taper off the last frame to not over compensate
 			ret[i]=DistanceLength/max(Time,DeltaTime_s);
