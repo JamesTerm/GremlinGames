@@ -477,7 +477,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
 	props.VoltageScalar=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
-	props.IsOpen=false;  //Always false when control is fully functional
+	props.IsOpen=true;  //Always true by default until control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
