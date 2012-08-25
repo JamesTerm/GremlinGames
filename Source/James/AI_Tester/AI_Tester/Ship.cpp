@@ -478,6 +478,12 @@ void Ship_2D::TimeChange(double dTime_s)
 		//ForceToApply=(GetAtt_quat().conj() * GlobalForce);
 		ForceToApply=GlobalToLocal(GetAtt_r(),GlobalForce);
 
+		#if 0
+		if (fabs(LocalVelocity[1])>0.0)
+			printf("v=%.2f ",(ForceToApply[1]/Mass) / AccRestraintPositive[1]);
+		#endif
+
+
 		if (!UsingRequestedVelocity)
 			ForceToApply[1]+=m_currAccel[1] * Mass;
 		//This shows no force being applied when key is released

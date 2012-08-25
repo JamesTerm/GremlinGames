@@ -738,7 +738,17 @@ Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,co
 	Vec2d ret;
 
 	if (!m_UsingAccelerationRate)
+	{
 		ret=__super::GetVelocityFromDistance_Linear(Distance,ForceRestraintPositive,ForceRestraintNegative,DeltaTime_s,matchVel);
+		#if 0
+		if (m_HeadingToUse)
+		{
+			Vec2d LocalVelocity=GlobalToLocal(*m_HeadingToUse,m_LinearVelocity);
+			if (fabs(m_LinearVelocity[1])>0.0)
+				printf("y=%.2f p=%.2f e=%.2f cs=0\n",Distance[1],ret[1],m_LinearVelocity[1]);
+		}
+		#endif
+	}
 	else
 	{
 		const Vec2d MaxDeceleration=GetAcceleration_Delta(1.0,Vec2d(0.0,0.0),false);
