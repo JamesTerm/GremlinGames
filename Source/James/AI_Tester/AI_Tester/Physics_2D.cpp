@@ -403,6 +403,13 @@ Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,con
 			//Place the division first keeps the multiply small
 			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
+			if (Time>DeltaTime_s)
+			{
+				Time-=DeltaTime_s;
+				if (IsZero(Time))
+					Time=0.0;
+			}
+
 			//Now compute maximum speed for this time
 			double MaxSpeed=Acceleration*Time;
 			ret[i]=min(IdealSpeed,MaxSpeed);
