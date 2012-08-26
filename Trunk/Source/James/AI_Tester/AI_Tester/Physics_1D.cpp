@@ -224,6 +224,15 @@ double PhysicsEntity_1D::GetVelocityFromDistance_Angular(double Distance,double 
 			//Given the distance compute the time needed
 			//Place the division first keeps the multiply small
 			double Time=sqrt(2.0*(DistanceLength/Acceleration));
+			//With torque and its fixed point nature... it is important to have the jump ahead of the slope so that it doesn't overshoot
+			//this can be accomplished by subtracting this delta time and working with that value... this should work very well but it could
+			//be possible for a slight overshoot when the delta times slices are irregular. 
+			if (Time>DeltaTime_s)
+			{
+				Time-=DeltaTime_s;
+				if (IsZero(Time))
+					Time=0.0;
+			}
 
 			//Now compute maximum speed for this time
 			double MaxSpeed=Acceleration*Time;
