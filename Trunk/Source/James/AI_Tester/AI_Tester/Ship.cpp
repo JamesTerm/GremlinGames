@@ -607,6 +607,11 @@ void Ship_2D::TimeChange(double dTime_s)
 		#endif
 		//printf("\r%f %f            ",m_rotDisplacement_rad,rotVel);
 		TorqueToApply=m_Physics.GetTorqueFromVelocity(rotVel,dTime_s);
+		#if 0
+		if (fabs(rotVel)>0.0)
+			printf("v=%.2f ",TorqueToApply / Ships_TorqueRestraint);
+		#endif
+
 	}
 	else
 		TorqueToApply=m_rotAccel_rad_s*Mass*dTime_s;

@@ -329,7 +329,10 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 	double ret;
 
 	//This is how many radians the ship is capable to turn for this given time frame
-	double Acceleration=(Restraint/m_EntityMass); //obtain acceleration
+	//TODO for now I've added a 95% reduction in overall acceleration to ensure that we minimize over compensation.  I believe this is due to either
+	//precision loss or the order of steps in the update... assuming it is precision loss I can live with this here, but perhaps a more robust solution
+	//would be to offer this as a parameter
+	double Acceleration=(Restraint/m_EntityMass) * 0.95; //obtain acceleration
 
 	{
 		//first compute which direction to go
@@ -372,7 +375,7 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
 			//Now compute maximum speed for this time
-			double MaxSpeed=DistanceLength/Time;
+			double MaxSpeed=Acceleration*Time;
 			ret=min(IdealSpeed,MaxSpeed);
 
 			if (DistanceDirection<0)
@@ -386,6 +389,11 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 				ret=-ret;
 		}
 	}
+	#if 0
+	if (fabs(m_AngularVelocity)>0.0)
+		printf("y=%.2f p=%.2f e=%.2f cs=0\n",Distance,ret,m_AngularVelocity);
+	#endif
+
 	return ret;
 }
 
