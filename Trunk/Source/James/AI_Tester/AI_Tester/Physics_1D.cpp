@@ -174,6 +174,13 @@ double PhysicsEntity_1D::GetVelocityFromDistance_Linear(double Distance,double F
 	double AccelerationMagnitude=fabs(Acceleration);
 	double Time=sqrt(2.0*(Distance_Length/AccelerationMagnitude));
 
+	if (Time>DeltaTime_s)
+	{
+		Time-=DeltaTime_s;
+		if (IsZero(Time))
+			Time=0.0;
+	}
+
 	double MaxSpeed=AccelerationMagnitude*Time;
 	double SpeedToUse=min(IdealSpeed,MaxSpeed);
 
