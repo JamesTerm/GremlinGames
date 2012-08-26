@@ -279,51 +279,6 @@ double PhysicsEntity_2D::GetTorqueFromVelocity( double vDesiredVelocity,double D
 	return Torque;
 }
 
-#if 0
-double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s)
-{
-	double ret;
-	//This is how many radians the ship is capable to turn for this given time frame
-	double Acceleration=(Restraint/m_EntityMass); //obtain acceleration
-
-	{
-		//first compute which direction to go
-		double DistanceDirection=Distance;
-		if (IsZero(DistanceDirection))
-		{
-			ret=0.0;
-			continue;
-		}
-
-		if (DistanceDirection>M_PI)
-			DistanceDirection-=Pi2;
-		else if (DistanceDirection<-M_PI)
-			DistanceDirection+=Pi2;
-		double DistanceLength=fabs(DistanceDirection);
-
-		double IdealSpeed=fabs(DistanceDirection/DeltaTime_s);
-
-		if (Restraint!=-1)
-		{
-			//Given the distance compute the time needed
-			//Time = sqrt( Distance / Acceleration  )
-			//double Time=sqrt(fabs(DistanceDirection/Acceleration[i]));
-			double Time=sqrt(2.0*(DistanceLength/Acceleration[i]));
-
-			//Now compute maximum speed for this time
-			double MaxSpeed=Acceleration*Time;
-			ret=min(IdealSpeed,MaxSpeed);
-		}
-		else
-			ret=IdealSpeed;  //i.e. god speed
-
-		if (DistanceDirection<0)
-			ret=-ret;
-	}
-	return ret;
-}
-#endif 
-
 double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s,double matchVel,bool normalize)
 {
 	double ret;
@@ -444,7 +399,6 @@ Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,con
 			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
 			//Now compute maximum speed for this time
-			//double MaxSpeed=DistanceLength/Time;
 			double MaxSpeed=Acceleration*Time;
 			ret[i]=min(IdealSpeed,MaxSpeed);
 
@@ -484,7 +438,7 @@ Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear_v1(const Vec2d &Distance,
 	double AccelerationMagnitude=Acceleration.length();
 	double Time=sqrt(2.0*(dDistance/AccelerationMagnitude));
 
-	double MaxSpeed=dDistance/Time;
+	double MaxSpeed=AccelerationMagnitude*Time;
 	double SpeedToUse=min(IdealSpeed,MaxSpeed);
 
 	//DebugOutput("d=%f i=%f m=%f\n",Distance[1],IdealSpeed,MaxSpeed);
@@ -803,10 +757,17 @@ Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,co
 			}
 			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
+			//TODO at some point this should PID to solve from the super class force feed method... I've put the correct equation below, but it does not work
+			//properly with this attempt to solve... these ramp functions are only used in game code so I'll table it for now
+			//  [8/26/2012 Terminator]
+			#if 1
 			//using distance/DTime in the max helps taper off the last frame to not over compensate
 			ret[i]=DistanceLength/max(Time,DeltaTime_s);
-			//ret[i]=DistanceLength/max(Time,DeltaTime_s);
-
+			#else
+			const double MaxSpeed=Acceleration*Time;
+			const double IdealSpeed=DistanceLength/DeltaTime_s;
+			ret[i]=min(MaxSpeed,IdealSpeed);
+			#endif
 
 			//if (i==1)
 				//DebugOutput("Distance=%f,Time=%f,Speed=%f,vel=%f\n",DistanceDirection,Time,ret[i],m_LinearVelocity[i]);
