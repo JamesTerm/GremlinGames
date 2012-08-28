@@ -285,8 +285,11 @@ void Tank_Robot::TimeChange(double dTime_s)
 bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	bool ret=false;
-	const bool UpdateDisplacement=true;
-	if (UpdateDisplacement)
+	//Note: for now there is no passive setting, which would be great for open loop driving while maintaining the position as it was for rebound rumble
+	//Instead we can keep the logic simple and only apply displacement if we are using the encoders... this way the simulations of the open loop (lesser stress)
+	//will work properly without adding this extra complexity
+	//  [8/27/2012 Terminator]
+	if (m_UsingEncoders)
 	{
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
 		double computedAngularVelocity=m_Physics.GetAngularVelocity();
@@ -324,6 +327,8 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 		m_Physics.SetAngularVelocity(computedAngularVelocity);
 		ret=true;
 	}
+	else
+		m_Heading=GetAtt_r();
 	if (!ret)
 		ret=__super::InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	return ret;
@@ -482,7 +487,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
 	props.VoltageScalar=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
-	props.IsOpen=false;  //Always false when control is fully functional
+	props.IsOpen=true;  //Always true by default until control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;

@@ -273,51 +273,6 @@ double PhysicsEntity_2D::GetTorqueFromVelocity( double vDesiredVelocity,double D
 	return Torque;
 }
 
-#if 0
-double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s)
-{
-	double ret;
-	//This is how many radians the ship is capable to turn for this given time frame
-	double Acceleration=(Restraint/m_EntityMass); //obtain acceleration
-
-	{
-		//first compute which direction to go
-		double DistanceDirection=Distance;
-		if (IsZero(DistanceDirection))
-		{
-			ret=0.0;
-			continue;
-		}
-
-		if (DistanceDirection>M_PI)
-			DistanceDirection-=Pi2;
-		else if (DistanceDirection<-M_PI)
-			DistanceDirection+=Pi2;
-		double DistanceLength=fabs(DistanceDirection);
-
-		double IdealSpeed=fabs(DistanceDirection/DeltaTime_s);
-
-		if (Restraint!=-1)
-		{
-			//Given the distance compute the time needed
-			//Time = sqrt( Distance / Acceleration  )
-			//double Time=sqrt(fabs(DistanceDirection/Acceleration[i]));
-			double Time=sqrt(2.0*(DistanceLength/Acceleration[i]));
-
-			//Now compute maximum speed for this time
-			double MaxSpeed=Acceleration*Time;
-			ret=min(IdealSpeed,MaxSpeed);
-		}
-		else
-			ret=IdealSpeed;  //i.e. god speed
-
-		if (DistanceDirection<0)
-			ret=-ret;
-	}
-	return ret;
-}
-#endif 
-
 double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double Restraint,double DeltaTime_s,double matchVel,bool normalize)
 {
 	double ret;
@@ -363,12 +318,18 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 		{
 			//Given the distance compute the time needed
 			//Place the division first keeps the multiply small
-			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
-			double Time=sqrt(2.0*DistanceLength)/Acceleration;
-
-
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
+			//With torque and its fixed point nature... it is important to have the jump ahead of the slope so that it doesn't overshoot
+			//this can be accomplished by subtracting this delta time and working with that value... this should work very well but it could
+			//be possible for a slight overshoot when the delta times slices are irregular. 
+			if (Time>DeltaTime_s)
+			{
+				Time-=DeltaTime_s;
+				if (IsZero(Time))
+					Time=0.0;
+			}
 			//Now compute maximum speed for this time
-			double MaxSpeed=DistanceLength/Time;
+			double MaxSpeed=Acceleration*Time;
 			ret=min(IdealSpeed,MaxSpeed);
 
 			if (DistanceDirection<0)
@@ -382,6 +343,11 @@ double PhysicsEntity_2D::GetVelocityFromDistance_Angular(double Distance,double 
 				ret=-ret;
 		}
 	}
+	#if 0
+	if (fabs(m_AngularVelocity)>0.0)
+		printf("y=%.2f p=%.2f e=%.2f cs=0\n",Distance,ret,m_AngularVelocity);
+	#endif
+
 	return ret;
 }
 
@@ -429,12 +395,17 @@ Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,con
 		{
 			//Given the distance compute the time needed
 			//Place the division first keeps the multiply small
-			//Note the a=0.5 ((a * t)^2) change... this computes to be true 
-			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
-			double Time=sqrt(2.0*DistanceLength)/Acceleration;
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
+
+			if (Time>DeltaTime_s)
+			{
+				Time-=DeltaTime_s;
+				if (IsZero(Time))
+					Time=0.0;
+			}
 
 			//Now compute maximum speed for this time
-			double MaxSpeed=DistanceLength/Time;
+			double MaxSpeed=Acceleration*Time;
 			ret[i]=min(IdealSpeed,MaxSpeed);
 
 			if (DistanceDirection<0.0)
@@ -471,11 +442,9 @@ Vec2d PhysicsEntity_2D::GetVelocityFromDistance_Linear_v1(const Vec2d &Distance,
 
 	double IdealSpeed=Distance.length()/DeltaTime_s;
 	double AccelerationMagnitude=Acceleration.length();
-	//Note the a=0.5 ((a * t)^2) change... this computes to be true 
-	//double Time=sqrt(2.0*(dDistance/AccelerationMagnitude));
-	double Time=sqrt(2.0*dDistance)/AccelerationMagnitude;
+	double Time=sqrt(2.0*(dDistance/AccelerationMagnitude));
 
-	double MaxSpeed=dDistance/Time;
+	double MaxSpeed=AccelerationMagnitude*Time;
 	double SpeedToUse=min(IdealSpeed,MaxSpeed);
 
 	//DebugOutput("d=%f i=%f m=%f\n",Distance[1],IdealSpeed,MaxSpeed);
@@ -735,7 +704,17 @@ Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,co
 	Vec2d ret;
 
 	if (!m_UsingAccelerationRate)
+	{
 		ret=__super::GetVelocityFromDistance_Linear(Distance,ForceRestraintPositive,ForceRestraintNegative,DeltaTime_s,matchVel);
+		#if 0
+		if (m_HeadingToUse)
+		{
+			Vec2d LocalVelocity=GlobalToLocal(*m_HeadingToUse,m_LinearVelocity);
+			if (fabs(m_LinearVelocity[1])>0.0)
+				printf("y=%.2f p=%.2f e=%.2f cs=0\n",Distance[1],ret[1],m_LinearVelocity[1]);
+		}
+		#endif
+	}
 	else
 	{
 		const Vec2d MaxDeceleration=GetAcceleration_Delta(1.0,Vec2d(0.0,0.0),false);
@@ -777,18 +756,22 @@ Vec2d FlightDynamics_2D::GetVelocityFromDistance_Linear(const Vec2d &Distance,co
 
 			{
 				//Solve the Acceleration... given a distance what would it have to be going its fastest ramp rate
-				//double Time=sqrt(2.0*(DistanceLength/MaxDeceleration[i]));
-				double Time=sqrt(2.0*DistanceLength)/MaxDeceleration[i];
-
+				double Time=sqrt(2.0*(DistanceLength/MaxDeceleration[i]));
 				Acceleration=min(Acceleration,MaxDeceleration_Length*Time);
 			}
-			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
-			double Time=sqrt(2.0*DistanceLength)/Acceleration;
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
 
+			//TODO at some point this should PID to solve from the super class force feed method... I've put the correct equation below, but it does not work
+			//properly with this attempt to solve... these ramp functions are only used in game code so I'll table it for now
+			//  [8/26/2012 Terminator]
+			#if 1
 			//using distance/DTime in the max helps taper off the last frame to not over compensate
 			ret[i]=DistanceLength/max(Time,DeltaTime_s);
-			//ret[i]=DistanceLength/max(Time,DeltaTime_s);
-
+			#else
+			const double MaxSpeed=Acceleration*Time;
+			const double IdealSpeed=DistanceLength/DeltaTime_s;
+			ret[i]=min(MaxSpeed,IdealSpeed);
+			#endif
 
 			//if (i==1)
 				//DebugOutput("Distance=%f,Time=%f,Speed=%f,vel=%f\n",DistanceDirection,Time,ret[i],m_LinearVelocity[i]);
