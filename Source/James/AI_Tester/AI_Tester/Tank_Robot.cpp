@@ -319,6 +319,8 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 		m_Physics.SetAngularVelocity(computedAngularVelocity);
 		ret=true;
 	}
+	else
+		m_Heading=GetAtt_r();
 	if (!ret)
 		ret=__super::InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	return ret;
