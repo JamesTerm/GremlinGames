@@ -280,8 +280,11 @@ void Tank_Robot::TimeChange(double dTime_s)
 bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	bool ret=false;
-	const bool UpdateDisplacement=true;
-	if (UpdateDisplacement)
+	//Note: for now there is no passive setting, which would be great for open loop driving while maintaining the position as it was for rebound rumble
+	//Instead we can keep the logic simple and only apply displacement if we are using the encoders... this way the simulations of the open loop (lesser stress)
+	//will work properly without adding this extra complexity
+	//  [8/27/2012 Terminator]
+	if (m_UsingEncoders)
 	{
 		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
 		double computedAngularVelocity=m_Physics.GetAngularVelocity();
