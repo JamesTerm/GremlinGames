@@ -126,12 +126,16 @@ double PhysicsEntity_1D::GetVelocityFromDistance_Linear(double Distance,double F
 
 	double IdealSpeed=Distance_Length/DeltaTime_s;
 	double AccelerationMagnitude=fabs(Acceleration);
-	//Note the a=0.5 ((a * t)^2) change... this computes to be true 
-	//double Time=sqrt(2.0*(Distance_Length/AccelerationMagnitude));
-	double Time=sqrt(2.0*Distance_Length)/AccelerationMagnitude;
+	double Time=sqrt(2.0*(Distance_Length/AccelerationMagnitude));
 
+	if (Time>DeltaTime_s)
+	{
+		Time-=DeltaTime_s;
+		if (IsZero(Time))
+			Time=0.0;
+	}
 
-	double MaxSpeed=Distance_Length/Time;
+	double MaxSpeed=AccelerationMagnitude*Time;
 	double SpeedToUse=min(IdealSpeed,MaxSpeed);
 
 	//DebugOutput("d=%f i=%f m=%f\n",Distance[1],IdealSpeed,MaxSpeed);
@@ -180,11 +184,19 @@ double PhysicsEntity_1D::GetVelocityFromDistance_Angular(double Distance,double 
 		{
 			//Given the distance compute the time needed
 			//Place the division first keeps the multiply small
-			//double Time=sqrt(2.0*(DistanceLength/Acceleration));
-			double Time=sqrt(2.0*DistanceLength)/Acceleration;
+			double Time=sqrt(2.0*(DistanceLength/Acceleration));
+			//With torque and its fixed point nature... it is important to have the jump ahead of the slope so that it doesn't overshoot
+			//this can be accomplished by subtracting this delta time and working with that value... this should work very well but it could
+			//be possible for a slight overshoot when the delta times slices are irregular. 
+			if (Time>DeltaTime_s)
+			{
+				Time-=DeltaTime_s;
+				if (IsZero(Time))
+					Time=0.0;
+			}
 
 			//Now compute maximum speed for this time
-			double MaxSpeed=DistanceLength/Time;
+			double MaxSpeed=Acceleration*Time;
 			ret=min(IdealSpeed,MaxSpeed);
 
 			if (DistanceDirection<0)

@@ -81,6 +81,7 @@ class Entity2D
 	
 		//All read cases use the read pointer, all write cases use the write pointer followed by an interlocked exchange of the pointers
 		PosAtt *m_PosAtt_Read,*m_PosAtt_Write; 
+		double m_att_r;  //I need a dedicated heading for physics to use
 		void UpdatePosAtt();
 
 		Vec2D m_DefaultPos;
