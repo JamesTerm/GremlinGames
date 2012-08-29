@@ -82,9 +82,9 @@ struct WayPoint
 class Goal_Ship_MoveToPosition : public AtomicGoal
 {
 	public:
-		/// \param double safestop_tolerance used to set safe stop tolerance, default one/tenth of a meter is about 4 inches
+		/// \param double safestop_tolerance used to set safe stop tolerance, default is a little over an inch
 		Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true,
-				bool LockOrientation=false,double safestop_tolerance=0.10);
+				bool LockOrientation=false,double safestop_tolerance=0.03);
 		~Goal_Ship_MoveToPosition();
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
