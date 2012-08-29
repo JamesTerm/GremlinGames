@@ -13,6 +13,7 @@ HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
 LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
 
 KeyDistance_in=144;
+--KeyDistance_in=0;
 KeyWidth_in=101;
 KeyDepth_in=48;
 HalfKeyWidth_in=KeyWidth_in/2.0;
@@ -38,7 +39,7 @@ MainRobot = {
 	
 	tank_drive =
 	{
-		is_closed=0,						--This should always be false for high gear
+		is_closed=1,
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
@@ -47,10 +48,12 @@ MainRobot = {
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
 		left_pid=
-		{p=25, i=0, d=5},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+		{p=200, i=0, d=50},
 		right_pid=
-		{p=25, i=0, d=5},					--These should always match, but able to be made different
-		latency=0.300,
+		{p=200, i=0, d=50},					--These should always match, but able to be made different
+		latency=0.0,
+		heading_latency=0.0,
+		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
