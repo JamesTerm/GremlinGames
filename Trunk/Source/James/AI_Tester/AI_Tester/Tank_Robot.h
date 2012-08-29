@@ -37,6 +37,7 @@ struct Tank_Robot_Props
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	double LeftMaxSpeedOffset;	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
 	double RightMaxSpeedOffset;
+	double DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
@@ -80,6 +81,7 @@ class Tank_Robot : public Tank_Drive
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 		virtual void SetAttitude(double radians);  //from ship tester
+		virtual double Get_DriveTo_ForceDegradeScalar() const {return m_TankRobotProps.DriveTo_ForceDegradeScalar;}
 	protected:
 		bool m_IsAutonomous;
 	private:
