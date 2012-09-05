@@ -54,12 +54,13 @@ class Tank_Robot_UI;
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class Tank_Robot : public Tank_Drive
+class Tank_Robot : public Ship_Tester
 {
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 		Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
+		virtual ~Tank_Robot();
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		void Reset(bool ResetPosition=true);
@@ -82,11 +83,16 @@ class Tank_Robot : public Tank_Drive
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 		virtual void SetAttitude(double radians);  //from ship tester
 		virtual double Get_DriveTo_ForceDegradeScalar() const {return m_TankRobotProps.DriveTo_ForceDegradeScalar;}
+		virtual Tank_Drive *CreateDrive() {return new Tank_Drive(this);}
+		virtual void DestroyDrive();
+		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
+		virtual void ResetPos();
 	protected:
 		bool m_IsAutonomous;
 	private:
 		//typedef  Tank_Drive __super;
 		Tank_Drive_Control_Interface * const m_RobotControl;
+		Tank_Drive * const m_VehicleDrive;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
 		#ifdef __UseScalerPID__
 		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
@@ -109,6 +115,9 @@ class Tank_Robot : public Tank_Drive
 		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
 		double m_Heading;  //We take over the heading from physics
 		double m_HeadingUpdateTimer;
+	public:
+		double GetLeftVelocity() const {return m_VehicleDrive->GetLeftVelocity();}
+		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
 };
 
 class Tank_Robot_Properties : public UI_Ship_Properties

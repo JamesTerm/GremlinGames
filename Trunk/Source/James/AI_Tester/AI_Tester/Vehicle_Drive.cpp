@@ -13,16 +13,26 @@ const double Pi2=M_PI*2.0;
  /*													Vehicle_Drive_Common															*/
 /***********************************************************************************************************************************/
 
+//Note: these member variables are arguably written to before read; however, I'm initializing to not mistake first iteration as corrupted data
+Vehicle_Drive_Common::Vehicle_Drive_Common() : m_CachedLocalForce(Vec2D()),m_CachedTorque(0.0)
+{
+}
+
 void Vehicle_Drive_Common::Vehicle_Drive_Common_ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	//Client code will call this explicitly from within Apply Thrusters
+	//UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+
+	//These are set in InterpolateThrusterChanges
+	//m_CachedLocalForce=LocalForce;
+	//m_CachedTorque=Torque;
+
 	//Just cache these here to not pollute the control
-	m_CachedLocalForce=LocalForce;
-	m_CachedTorque=Torque;
 	m_CachedLinearVelocity=PhysicsToUse.GetLinearVelocity();
 	m_CachedAngularVelocity=PhysicsToUse.GetAngularVelocity();
 
-	InterpolateThrusterChanges(m_CachedLocalForce,m_CachedTorque,dTime_s);
+	//Client code will call this explicitly from within Apply Thrusters... using accessors to the cached data
+	//InterpolateThrusterChanges(m_CachedLocalForce,m_CachedTorque,dTime_s);
 	//No torque restraint... restraints are applied during the update of velocities
 }
 
@@ -46,19 +56,25 @@ bool Vehicle_Drive_Common::Vehicle_Drive_Common_InjectDisplacement(PhysicsEntity
 	return _InjectedDisplacement;
 }
 
+void Vehicle_Drive_Common::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
+{
+	m_CachedLocalForce=LocalForce;
+	m_CachedTorque=Torque;
+}
 
   /***********************************************************************************************************************************/
  /*															Tank_Drive																*/
 /***********************************************************************************************************************************/
 
-Tank_Drive::Tank_Drive(const char EntityName[]) : Ship_Tester(EntityName), m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
+Tank_Drive::Tank_Drive(Entity2D *Parent) : m_pParent(Parent),m_LeftLinearVelocity(0.0),m_RightLinearVelocity(0.0)
 {
 }
 
 void Tank_Drive::ResetPos()
 {
 	m_LeftLinearVelocity=m_RightLinearVelocity=0.0;
-	__super::ResetPos();
+	//No longer aggregating, but could callback to Vehicle_Drive_Common if needed (currently not needed)
+	//__super::ResetPos();
 }
 
 void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
@@ -70,7 +86,8 @@ void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	//W is the vehicle’s track width
 	const double W=GetWheelDimensions()[0];
 
-	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	Vec2d CurrentVelocity=GlobalToLocal(m_pParent->GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	const double Mass=m_pParent->GetPhysics().GetMass();
 	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
 	//FWD=IsZero(FWD)?0.0:FWD;
 	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
@@ -128,7 +145,9 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 
 void Tank_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
 {
-	Vec2d OldLocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+	const FlightDynamics_2D &Physics=m_pParent->GetPhysics();
+	const double Mass=Physics.GetMass();
+	Vec2d OldLocalVelocity=GlobalToLocal(m_pParent->GetAtt_r(),Physics.GetLinearVelocity());
 	Vec2d LocalVelocity;
 	double AngularVelocity;
 	InterpolateVelocities(m_LeftLinearVelocity,m_RightLinearVelocity,LocalVelocity,AngularVelocity,dTime_s);
@@ -137,8 +156,10 @@ void Tank_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,dou
 	LocalForce=(LinearAcceleration * Mass) / dTime_s;
 
 	//Now then we'll compute the torque
-	double AngularAcceleration=AngularVelocity - m_Physics.GetAngularVelocity();
+	double AngularAcceleration=AngularVelocity - Physics.GetAngularVelocity();
 	Torque = (AngularAcceleration * Mass) / dTime_s;
+	//call super for it to cache internally
+	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 #if 0
@@ -155,8 +176,8 @@ void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Loca
 void Tank_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
-	//__super::ApplyThrusters(PhysicsToUse,GetCachedLocalForce(),LocalTorque,TorqueRestraint,dTime_s);
-	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	//This is now aggregated so no need to call super
+	//__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 #endif
 
@@ -164,7 +185,7 @@ bool Tank_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplaceme
 {
 	//For test purposes
 	//return false;
-	return Vehicle_Drive_Common_InjectDisplacement(m_Physics,DeltaTime_s,GetAtt_r(),PositionDisplacement,RotationDisplacement);
+	return Vehicle_Drive_Common_InjectDisplacement(m_pParent->GetPhysics(),DeltaTime_s,m_pParent->GetAtt_r(),PositionDisplacement,RotationDisplacement);
 }
 
 
@@ -172,7 +193,7 @@ bool Tank_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplaceme
  /*														Swerve_Drive																*/
 /***********************************************************************************************************************************/
 
-Swerve_Drive::Swerve_Drive(const char EntityName[]) : Ship_Tester(EntityName)
+Swerve_Drive::Swerve_Drive(Entity2D *Parent) : m_pParent(Parent)
 {
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
 }
@@ -180,11 +201,13 @@ Swerve_Drive::Swerve_Drive(const char EntityName[]) : Ship_Tester(EntityName)
 void Swerve_Drive::ResetPos()
 {
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
-	__super::ResetPos();
+	//No longer aggregating, but could callback to Vehicle_Drive_Common if needed (currently not needed)
+	//__super::ResetPos();
 }
 
 void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
+	const double Mass=m_pParent->GetPhysics().GetMass();
 	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
 
 	//L is the vehicle’s wheelbase
@@ -198,7 +221,7 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	//Allow around 2-3 degrees of freedom for rotation.  While manual control worked fine without it, it is needed for
 	//targeting goals (e.g. follow ship)
 
-	Vec2d CurrentVelocity=GlobalToLocal(GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	Vec2d CurrentVelocity=GlobalToLocal(m_pParent->GetAtt_r(),PhysicsToUse.GetLinearVelocity());
 	const double STR=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
 	//STR=IsZero(STR)?0.0:STR;
 	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
@@ -273,7 +296,9 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 
 void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
 {
-	Vec2d OldLocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
+	const FlightDynamics_2D &Physics=m_pParent->GetPhysics();
+	const double Mass=Physics.GetMass();
+	Vec2d OldLocalVelocity=GlobalToLocal(m_pParent->GetAtt_r(),Physics.GetLinearVelocity());
 	Vec2d LocalVelocity;
 	double AngularVelocity;
 	InterpolateVelocities(GetSwerveVelocities(),LocalVelocity,AngularVelocity,dTime_s);
@@ -282,19 +307,22 @@ void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,d
 	LocalForce=(LinearAcceleration * Mass) / dTime_s;
 
 	//Now then we'll compute the torque
-	double AngularAcceleration=AngularVelocity - m_Physics.GetAngularVelocity();
+	double AngularAcceleration=AngularVelocity - Physics.GetAngularVelocity();
 	Torque = (AngularAcceleration * Mass) / dTime_s;
+	//call super for it to cache internally
+	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 void Swerve_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
-	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);	
-	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	//This is now aggregated so no need to call super
+	//__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 
 bool Swerve_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement)
 {
-	return Vehicle_Drive_Common_InjectDisplacement(m_Physics,DeltaTime_s,GetAtt_r(),PositionDisplacement,RotationDisplacement);
+	return Vehicle_Drive_Common_InjectDisplacement(m_pParent->GetPhysics(),DeltaTime_s,m_pParent->GetAtt_r(),PositionDisplacement,RotationDisplacement);
 }
 
 double Swerve_Drive::GetIntendedVelocitiesFromIndex(size_t index) const

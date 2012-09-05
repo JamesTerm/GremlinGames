@@ -23,8 +23,8 @@ const double Pi2=M_PI*2.0;
  /*																Tank_Robot															*/
 /***********************************************************************************************************************************/
 Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous) :
-	Tank_Drive(EntityName), 
-	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),
+	Ship_Tester(EntityName), 
+	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),m_VehicleDrive(NULL),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
 	#ifdef __Tank_UseScalerPID__
 	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),
@@ -42,8 +42,20 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	#endif
 }
 
+void Tank_Robot::DestroyDrive() 
+{
+	delete m_VehicleDrive;
+	const_cast<Tank_Drive *>(m_VehicleDrive)=NULL;
+}
+
+Tank_Robot::~Tank_Robot()
+{
+	DestroyDrive();
+}
+
 void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
+	const_cast<Tank_Drive *>(m_VehicleDrive)=CreateDrive();
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
@@ -155,8 +167,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	const double RightVelocity=m_PID_Input_Latency_Right(
 		min(max(GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED),dTime_s);
 	#else
-	const double LeftVelocity=min(max(GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
-	const double RightVelocity=min(max(GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
+	const double LeftVelocity=min(max(m_VehicleDrive->GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
+	const double RightVelocity=min(max(m_VehicleDrive->GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
 
 	const double Predicted_Encoder_LeftVelocity=m_PID_Input_Latency_Left(Encoder_LeftVelocity,LeftVelocity,dTime_s);
 	const double Predicted_Encoder_RightVelocity=m_PID_Input_Latency_Right(Encoder_RightVelocity,RightVelocity,dTime_s);
@@ -259,7 +271,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	//Update the physics with the actual velocity
 	Vec2d LocalVelocity;
 	double AngularVelocity;
-	InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+	m_VehicleDrive->InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 	//TODO add gyro's yaw readings for Angular velocity here
 	//Store the value here to be picked up in GetOldVelocity()
 	m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
@@ -267,7 +279,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 	//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 
-	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
+	m_VehicleDrive->InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 void Tank_Robot::TimeChange(double dTime_s)
@@ -325,7 +337,7 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	else
 		m_Heading=GetAtt_r();
 	if (!ret)
-		ret=__super::InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+		ret=m_VehicleDrive->InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	return ret;
 }
 
@@ -365,8 +377,8 @@ void Tank_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 
 void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
+	m_VehicleDrive->UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	double LeftVelocity=m_VehicleDrive->GetLeftVelocity(),RightVelocity=m_VehicleDrive->GetRightVelocity();
 	double LeftVoltage,RightVoltage;
 
 	#ifdef __Tank_UseScalerPID__
@@ -455,6 +467,24 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	#endif
 
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+}
+
+void Tank_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+{
+	UpdateVelocities(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	m_VehicleDrive->ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	//We are not going to use these interpolated values in the control (it would corrupt it)... however we can monitor them here, or choose to
+	//view them here as needed
+	Vec2D force;
+	double torque;
+	InterpolateThrusterChanges(force,torque,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+}
+
+void Tank_Robot::ResetPos()
+{
+	m_VehicleDrive->ResetPos();
+	__super::ResetPos();
 }
 
 void Tank_Robot::SetAttitude(double radians)

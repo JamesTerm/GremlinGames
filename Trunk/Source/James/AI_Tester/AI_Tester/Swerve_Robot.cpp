@@ -61,7 +61,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
 Swerve_Robot::Swerve_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders) : 
-	Swerve_Drive(EntityName), m_RobotControl(robot_control), 
+	Ship_Tester(EntityName), m_SwerveDrive(this), m_RobotControl(robot_control), 
 	m_UsingEncoders(UseEncoders) //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
 	const char * const ModuleName[]=
@@ -101,6 +101,7 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 }
 void Swerve_Robot::ResetPos()
 {
+	m_SwerveDrive.ResetPos();
 	__super::ResetPos();
 	m_RobotControl->Reset_Encoders();
 	for (size_t i=0;i<4;i++)
@@ -117,7 +118,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	//Now the new UpdateVelocities was just called... work with these intended velocities
 	for (size_t i=0;i<4;i++)
 	{
-		const double IntendedDirection=GetIntendedVelocitiesFromIndex(i+4);
+		const double IntendedDirection=m_SwerveDrive.GetIntendedVelocitiesFromIndex(i+4);
 		double SwivelDirection=IntendedDirection;  //this is either the intended direction or the reverse of it
 		const Ship_1D &Swivel=m_DrivingModule[i]->GetSwivel();
 		//This is normalized implicitly
@@ -146,7 +147,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		//Only apply swivel adjustments if we have significant movement (this matters in targeting tests)
 		if ((fabs(LocalForce[0])>1.5)||(fabs(LocalForce[1])>1.5)||(fabs(m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity()) > 0.05))
 			m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
-		const double IntendedSpeed=GetIntendedVelocitiesFromIndex(i);
+		const double IntendedSpeed=m_SwerveDrive.GetIntendedVelocitiesFromIndex(i);
 
 		//To minimize error only apply the Y component amount to the velocity
 		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
@@ -170,7 +171,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		#endif
 	}
 
-	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
+	m_SwerveDrive.InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 void Swerve_Robot::TimeChange(double dTime_s)
@@ -190,7 +191,7 @@ void Swerve_Robot::TimeChange(double dTime_s)
 bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
 	//TODO we'll want to get the measured velocities which should work (or possibly use) like the Swerve_Drive code
-	return __super::InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+	return m_SwerveDrive.InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 
 	//bool ret=false;
 	//if (m_UsingEncoders)
@@ -222,9 +223,21 @@ double Swerve_Robot::RPS_To_LinearVelocity(double RPS)
 
 void Swerve_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	m_SwerveDrive.UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 	//double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
 	//m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
+}
+
+void Swerve_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+{
+	UpdateVelocities(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	m_SwerveDrive.ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	//We are not going to use these interpolated values in the control (it would corrupt it)... however we can monitor them here, or choose to
+	//view them here as needed
+	Vec2D force;
+	double torque;
+	InterpolateThrusterChanges(force,torque,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 
   /***********************************************************************************************************************************/
