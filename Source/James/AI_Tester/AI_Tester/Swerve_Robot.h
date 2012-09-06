@@ -31,7 +31,8 @@ class Robot_Control_Interface
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class Swerve_Robot : public Ship_Tester
+class Swerve_Robot : public Ship_Tester,
+					 public SwerveVelocity_Interface
 {
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -53,7 +54,7 @@ class Swerve_Robot : public Ship_Tester
 		//virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
-		virtual const Swerve_Drive::SwerveVelocities &GetSwerveVelocities() const {return m_Swerve_Robot_Velocities;}
+		virtual const SwerveVelocities &GetSwerveVelocities() const {return m_Swerve_Robot_Velocities;}
 
 		//Get the sweet spot between the update and interpolation to avoid oscillation 
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
@@ -106,7 +107,7 @@ class Swerve_Robot : public Ship_Tester
 
 		bool m_UsingEncoders;
 		Vec2D m_WheelDimensions; //cached from the Swerve_Robot_Properties
-		Swerve_Drive::SwerveVelocities m_Swerve_Robot_Velocities;
+		SwerveVelocities m_Swerve_Robot_Velocities;
 	public:
 		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_SwerveDrive.GetSwerveVelocitiesFromIndex(index);}
 };

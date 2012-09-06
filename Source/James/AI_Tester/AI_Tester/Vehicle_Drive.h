@@ -54,40 +54,47 @@ class Tank_Drive : public Vehicle_Drive_Common
 		virtual const Vec2D &GetWheelDimensions() const {return m_pParent->GetDimensions();}
 };
 
-class Swerve_Drive : public Vehicle_Drive_Common
+struct SwerveVelocities
+{
+	enum SectionOrder
+	{
+		eFrontLeft,
+		eFrontRight,
+		eRearLeft,
+		eRearRight
+	};
+	SwerveVelocities()
+	{
+		memset(this,0,sizeof(SwerveVelocities));
+	}
+	union uVelocity
+	{
+		struct Explicit
+		{
+			double sFL,sFR,sRL,sRR; //wheel tangential speeds in MPS
+			double aFL,aFR,aRL,aRR; //wheel angles in radians clockwise from straight ahead
+		} Named;
+		double AsArray[8];
+	} Velocity;
+};
+
+class SwerveVelocity_Interface
 {
 	public:
-		struct SwerveVelocities
-		{
-			enum SectionOrder
-			{
-				eFrontLeft,
-				eFrontRight,
-				eRearLeft,
-				eRearRight
-			};
-			SwerveVelocities()
-			{
-				memset(this,0,sizeof(SwerveVelocities));
-			}
-			union uVelocity
-			{
-				struct Explicit
-				{
-					double sFL,sFR,sRL,sRR; //wheel tangential speeds in MPS
-					double aFL,aFR,aRL,aRR; //wheel angles in radians clockwise from straight ahead
-				} Named;
-				double AsArray[8];
-			} Velocity;
-		};
+	virtual const SwerveVelocities &GetSwerveVelocities() const =0;
+};
+
+class Swerve_Drive : public Vehicle_Drive_Common
+{
 	private:
 		Entity2D * const m_pParent;
+		SwerveVelocity_Interface * const m_SwerveVelocity_Interface;
 		//typedef Ship_2D __super;
 		SwerveVelocities m_Velocities;
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Swerve_Drive(Entity2D *Parent);
+		Swerve_Drive(Entity2D *Parent,SwerveVelocity_Interface *SwerveVelocityManager=NULL);
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
 
@@ -102,8 +109,8 @@ class Swerve_Drive : public Vehicle_Drive_Common
 	protected:
 		//This method converts the given left right velocities into a form local linear velocity and angular velocity
 		void InterpolateVelocities(SwerveVelocities Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
-		//Override this if the actual velocities are different than the intended velocities as InterpolateVelocities() calls this accessor
-		virtual const SwerveVelocities &GetSwerveVelocities() const {return m_Velocities;}
+		//This will attempt to access the actual velocities that are different than the intended velocities as InterpolateVelocities() calls this
+		const SwerveVelocities &GetSwerveVelocities() const;
 		const SwerveVelocities &GetIntendedVelocities() const {return m_Velocities;}
 		//override the wheel dimensions, which by default are the entities dimensions (a good approximation)
 		virtual const Vec2D &GetWheelDimensions() const {return m_pParent->GetDimensions();}

@@ -61,7 +61,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
 Swerve_Robot::Swerve_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders) : 
-	Ship_Tester(EntityName), m_SwerveDrive(this), m_RobotControl(robot_control), 
+	Ship_Tester(EntityName), m_SwerveDrive(this,this), m_RobotControl(robot_control), 
 	m_UsingEncoders(UseEncoders) //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
 	const char * const ModuleName[]=

@@ -193,7 +193,8 @@ bool Tank_Drive::InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplaceme
  /*														Swerve_Drive																*/
 /***********************************************************************************************************************************/
 
-Swerve_Drive::Swerve_Drive(Entity2D *Parent) : m_pParent(Parent)
+Swerve_Drive::Swerve_Drive(Entity2D *Parent,SwerveVelocity_Interface *SwerveVelocityManager) : m_pParent(Parent),
+	m_SwerveVelocity_Interface(SwerveVelocityManager)
 {
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
 }
@@ -292,6 +293,11 @@ void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &Loca
 	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
 	#endif
 	//DOUT5("%f %f %f",FWD,STR,omega);  //Test accuracy
+}
+
+const SwerveVelocities &Swerve_Drive::GetSwerveVelocities() const 
+{
+	return m_SwerveVelocity_Interface ? m_SwerveVelocity_Interface->GetSwerveVelocities() : m_Velocities;
 }
 
 void Swerve_Drive::InterpolateThrusterChanges(Vec2d &LocalForce,double &Torque,double dTime_s)
