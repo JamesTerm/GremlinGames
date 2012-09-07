@@ -54,7 +54,8 @@ class Tank_Robot_UI;
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class Tank_Robot : public Ship_Tester
+class Tank_Robot : public Ship_Tester,
+				   public Vehicle_Drive_Common_Interface
 {
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -79,7 +80,6 @@ class Tank_Robot : public Ship_Tester
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		#endif
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
-		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 		virtual void SetAttitude(double radians);  //from ship tester
 		virtual double Get_DriveTo_ForceDegradeScalar() const {return m_TankRobotProps.DriveTo_ForceDegradeScalar;}
@@ -87,6 +87,13 @@ class Tank_Robot : public Ship_Tester
 		virtual void DestroyDrive();
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		virtual void ResetPos();
+	protected:  //from Vehicle_Drive_Common_Interface
+		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
+		//Note by default Tank Robot is assumed to be a 6 wheel drive... if this should change we add a new property
+		virtual double GetWheelTurningDiameter() const {return m_TankRobotProps.WheelDimensions[0];}
+		virtual double Vehicle_Drive_GetAtt_r() const {return GetAtt_r();}
+		virtual const PhysicsEntity_2D &Vehicle_Drive_GetPhysics() const {return GetPhysics();}
+		virtual PhysicsEntity_2D &Vehicle_Drive_GetPhysics_RW() {return GetPhysics();}
 	protected:
 		bool m_IsAutonomous;
 	private:
