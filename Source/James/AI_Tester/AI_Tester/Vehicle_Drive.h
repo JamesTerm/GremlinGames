@@ -9,7 +9,8 @@ class Vehicle_Drive_Common_Interface
 		//override the wheel dimensions, which by default are the entities dimensions (a good approximation)
 		virtual const Vec2D &GetWheelDimensions() const =0;
 		//This returns the measurement of the turning diameter where the wheels turn within themselves
-		//usually for a 4 wheel drive this is length from corner to corner, and for a 6 wheel drive this is just the track width
+		//usually for a 4 wheel drive this is length from corner to corner, and for a 6 wheel drive this ranges from the track width (if centered)
+		//to either set of 4 wheels (sharing the same center).  Typically the set of 4 wheels makes a square resulting in track width
 		virtual double GetWheelTurningDiameter() const =0;
 		virtual double Vehicle_Drive_GetAtt_r() const=0;
 		virtual const PhysicsEntity_2D &Vehicle_Drive_GetPhysics() const=0;
