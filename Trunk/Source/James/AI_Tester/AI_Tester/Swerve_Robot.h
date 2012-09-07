@@ -32,7 +32,7 @@ class Robot_Control_Interface
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
 class Swerve_Robot : public Ship_Tester,
-					 public SwerveVelocity_Interface
+					 public Swerve_Drive_Interface
 {
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -53,12 +53,19 @@ class Swerve_Robot : public Ship_Tester,
 		//virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		//virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
-		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
-		virtual const SwerveVelocities &GetSwerveVelocities() const {return m_Swerve_Robot_Velocities;}
-
 		//Get the sweet spot between the update and interpolation to avoid oscillation 
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
+
+		//from Swerve_Drive_Interface
+		virtual const SwerveVelocities &GetSwerveVelocities() const {return m_Swerve_Robot_Velocities;}
+	protected:  //from Vehicle_Drive_Common_Interface
+		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
+		virtual double GetWheelTurningDiameter() const {return m_WheelDimensions.length();}
+		virtual double Vehicle_Drive_GetAtt_r() const {return GetAtt_r();}
+		virtual const PhysicsEntity_2D &Vehicle_Drive_GetPhysics() const {return GetPhysics();}
+		virtual PhysicsEntity_2D &Vehicle_Drive_GetPhysics_RW() {return GetPhysics();}
+
 	private:
 		Swerve_Drive m_SwerveDrive;
 		//typedef  Tank_Drive __super;

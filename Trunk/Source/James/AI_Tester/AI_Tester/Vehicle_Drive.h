@@ -1,8 +1,26 @@
 #pragma once
+
+class Vehicle_Drive_Common_Interface
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		//override the wheel dimensions, which by default are the entities dimensions (a good approximation)
+		virtual const Vec2D &GetWheelDimensions() const =0;
+		//This returns the measurement of the turning diameter where the wheels turn within themselves
+		//usually for a 4 wheel drive this is length from corner to corner, and for a 6 wheel drive this is just the track width
+		virtual double GetWheelTurningDiameter() const =0;
+		virtual double Vehicle_Drive_GetAtt_r() const=0;
+		virtual const PhysicsEntity_2D &Vehicle_Drive_GetPhysics() const=0;
+		//This method will help me identify write operation cases easier
+		virtual PhysicsEntity_2D &Vehicle_Drive_GetPhysics_RW()=0;
+};
+
 class Vehicle_Drive_Common
 {
 	public:
-		Vehicle_Drive_Common();
+		Vehicle_Drive_Common(Vehicle_Drive_Common_Interface *VehicleProps);
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 
@@ -13,10 +31,11 @@ class Vehicle_Drive_Common
 		//Unlike in robot tank We'll only cache the values to work with in the Apply Thrusters, and apply them only to the inject displacement
 		//This way when swerve is unable to deliver due to error and limitations, the actual control will not be compromised
 		void Vehicle_Drive_Common_ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
-		bool Vehicle_Drive_Common_InjectDisplacement(PhysicsEntity_2D &PhysicsToUse,double DeltaTime_s,double Att_r,Vec2D &PositionDisplacement,double &RotationDisplacement);
+		bool Vehicle_Drive_Common_InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 		//TODO verify this is not needed
 		//const Vec2D &GetCachedLocalForce() {return m_CachedLocalForce;}
 	protected:
+		Vehicle_Drive_Common_Interface * const m_VehicleProps;
 	private:
 		Vec2D m_CachedLocalForce,m_CachedLinearVelocity;
 		double m_CachedTorque,m_CachedAngularVelocity;
@@ -28,13 +47,13 @@ class Vehicle_Drive_Common
 class Tank_Drive : public Vehicle_Drive_Common
 {
 	private:
-		Entity2D * const m_pParent;
+		Vehicle_Drive_Common_Interface * const m_pParent;
 		//typedef Ship_2D __super;
 		double m_LeftLinearVelocity,m_RightLinearVelocity;
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Tank_Drive(Entity2D *Parent);
+		Tank_Drive(Vehicle_Drive_Common_Interface *Parent);
 		double GetLeftVelocity() const {return m_LeftLinearVelocity;}
 		double GetRightVelocity() const {return m_RightLinearVelocity;}
 		// Places the ship back at its initial position and resets all vectors
@@ -49,9 +68,6 @@ class Tank_Drive : public Vehicle_Drive_Common
 		//This will convert the force into both motor velocities and interpolate the final torque and force to apply
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
-	protected:
-		//override the wheel dimensions, which by default are the entities dimensions (a good approximation)
-		virtual const Vec2D &GetWheelDimensions() const {return m_pParent->GetDimensions();}
 };
 
 struct SwerveVelocities
@@ -78,7 +94,7 @@ struct SwerveVelocities
 	} Velocity;
 };
 
-class SwerveVelocity_Interface
+class Swerve_Drive_Interface : public Vehicle_Drive_Common_Interface
 {
 	public:
 	virtual const SwerveVelocities &GetSwerveVelocities() const =0;
@@ -87,14 +103,13 @@ class SwerveVelocity_Interface
 class Swerve_Drive : public Vehicle_Drive_Common
 {
 	private:
-		Entity2D * const m_pParent;
-		SwerveVelocity_Interface * const m_SwerveVelocity_Interface;
+		Swerve_Drive_Interface * const m_pParent;
 		//typedef Ship_2D __super;
 		SwerveVelocities m_Velocities;
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Swerve_Drive(Entity2D *Parent,SwerveVelocity_Interface *SwerveVelocityManager=NULL);
+		Swerve_Drive(Swerve_Drive_Interface *Parent);
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
 
@@ -109,9 +124,5 @@ class Swerve_Drive : public Vehicle_Drive_Common
 	protected:
 		//This method converts the given left right velocities into a form local linear velocity and angular velocity
 		void InterpolateVelocities(SwerveVelocities Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
-		//This will attempt to access the actual velocities that are different than the intended velocities as InterpolateVelocities() calls this
-		const SwerveVelocities &GetSwerveVelocities() const;
 		const SwerveVelocities &GetIntendedVelocities() const {return m_Velocities;}
-		//override the wheel dimensions, which by default are the entities dimensions (a good approximation)
-		virtual const Vec2D &GetWheelDimensions() const {return m_pParent->GetDimensions();}
 };
