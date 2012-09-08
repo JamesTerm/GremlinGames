@@ -66,6 +66,7 @@ class Rotary_Linear : public Rotary_System
 		#endif
 
 		double m_LastPosition;  //used for calibration
+		double m_MatchVelocity;
 		#ifdef __UseScalerPID__
 		double m_CalibratedScaler; //used for calibration
 		#else
@@ -84,6 +85,8 @@ class Rotary_Linear : public Rotary_System
 		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual void ResetPos();
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
+		//This is optionally used to lock to another ship (e.g. drive using rotary system)
+		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
@@ -92,6 +95,7 @@ class Rotary_Linear : public Rotary_System
 		#endif
 		virtual void SetPotentiometerSafety(bool DisableFeedback);
 		bool GetIsUsingPotentiometer() const {return m_UsingPotentiometer;}
+		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
@@ -124,6 +128,7 @@ class Rotary_Angular : public Rotary_System
 		#endif
 
 		//We have both ways to implement PID calibration depending on if we have aggressive stop property enabled
+		double m_MatchVelocity;
 		double m_CalibratedScaler; //used for calibration
 		double m_ErrorOffset; //used for calibration
 
@@ -140,6 +145,8 @@ class Rotary_Angular : public Rotary_System
 		virtual void ResetPos();
 		double GetRequestedVelocity_Difference() const {return m_RequestedVelocity_Difference;}
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
+		//This is optionally used to lock to another ship (e.g. drive using rotary system)
+		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
@@ -148,6 +155,7 @@ class Rotary_Angular : public Rotary_System
 
 		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);
 		EncoderUsage GetEncoderUsage() const {return m_EncoderCachedState;}
+		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
 class Rotary_Properties : public Ship_1D_Properties
