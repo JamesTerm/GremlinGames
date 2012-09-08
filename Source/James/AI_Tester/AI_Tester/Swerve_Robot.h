@@ -48,6 +48,7 @@ struct Swerve_Robot_Props
 };
 
 class Swerve_Robot_UI;
+#undef __UseControlWithLockedVelocity__
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
@@ -114,16 +115,22 @@ class Swerve_Robot : public Ship_Tester,
 		class DrivingModule
 		{
 			public:
-				DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control);
+				DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t SectionOrder);
 				struct DrivingModule_Props
 				{
+					#ifdef __UseControlWithLockedVelocity__
 					const Ship_1D_Properties *Swivel_Props;
 					const Ship_1D_Properties *Drive_Props;
+					#else
+					const  Rotary_Properties *Swivel_Props;
+					const  Rotary_Properties *Drive_Props;
+					#endif
 				};
 				virtual void Initialize(GG_Framework::Base::EventMap& em,const DrivingModule_Props *props=NULL);
 				virtual void TimeChange(double dTime_s);
 				void SetIntendedSwivelDirection(double direction) {m_IntendedSwivelDirection=direction;}
 				void SetIntendedDriveVelocity(double Velocity) {m_IntendedDriveVelocity=Velocity;}
+				#ifdef __UseControlWithLockedVelocity__
 				class ControlWithLockedVelocity : public Ship_1D
 				{
 					public:
@@ -134,15 +141,28 @@ class Swerve_Robot : public Ship_Tester,
 					private:
 						double m_MatchVelocity;
 				};
+				#endif
+				#ifdef __UseControlWithLockedVelocity__
 				//I have no problem exposing read-only access to these :)
-				const ControlWithLockedVelocity &GetSwivel() {return m_Swivel;}
-				const ControlWithLockedVelocity &GetDrive() {return m_Drive;}
+				const ControlWithLockedVelocity &GetSwivel() const {return m_Swivel;}
+				const ControlWithLockedVelocity &GetDrive() const {return m_Drive;}
+				#else
+				//I have no problem exposing read-only access to these :)
+				const Rotary_Linear &GetSwivel() const {return m_Swivel;}
+				const Rotary_Angular &GetDrive() const {return m_Drive;}
+				#endif
+
 				void ResetPos() {m_Drive.ResetPos(),m_Swivel.ResetPos();}
 				
 			private:
 				std::string m_ModuleName,m_SwivelName,m_DriveName;
+				#ifdef __UseControlWithLockedVelocity__
 				ControlWithLockedVelocity m_Swivel;  //apply control to swivel mechanism
 				ControlWithLockedVelocity m_Drive;  //apply control to drive motor
+				#else
+				Rotary_Linear m_Swivel;  //apply control to swivel mechanism
+				Rotary_Angular m_Drive;  //apply control to drive motor
+				#endif
 				//Pass along the intended swivel direction and drive velocity
 				double m_IntendedSwivelDirection,m_IntendedDriveVelocity;
 
@@ -165,15 +185,15 @@ class Swerve_Robot_Properties : public UI_Ship_Properties
 		typedef osg::Vec2d Vec2D;
 
 		Swerve_Robot_Properties();
-		const Ship_1D_Properties &GetSwivelProps() const {return m_SwivelProps;}
-		const Ship_1D_Properties &GetDriveProps() const {return m_DriveProps;}
+		const Rotary_Properties &GetSwivelProps() const {return m_SwivelProps;}
+		const Rotary_Properties &GetDriveProps() const {return m_DriveProps;}
 		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
 		//the width is a measurement of the the center of the wheel width to the other wheel
 		const Vec2D &GetWheelDimensions() const {return m_SwerveRobotProps.WheelDimensions;}
 		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
 	private:
 		//Note the drive properties is a measurement of linear movement (not angular velocity)
-		Ship_1D_Properties m_SwivelProps,m_DriveProps;
+		Rotary_Properties m_SwivelProps,m_DriveProps;
 		Swerve_Robot_Props m_SwerveRobotProps;
 };
 

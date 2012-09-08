@@ -4,10 +4,8 @@ namespace AI_Tester
 {
 	#include "PIDController.h"
 	#include "Calibration_Testing.h"
-	//Note we can remove the tank drive train includes once we have a swerve robot control
-	#include "Tank_Robot.h"
 	#include "Robot_Control_Interface.h"
-	#include "FRC2011_Robot.h"
+	#include "Rotary_System.h"
 	#include "Swerve_Robot.h"
 }
 
@@ -22,8 +20,13 @@ const double Pi2=M_PI*2.0;
  /*													Swerve_Robot::DrivingModule														*/
 /***********************************************************************************************************************************/
 
-Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control) : m_ModuleName(EntityName),
-	m_SwivelName("Swivel"),m_DriveName("Drive"),m_Swivel(m_SwivelName.c_str()),m_Drive(m_DriveName.c_str()),
+Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t SectionOrder) : m_ModuleName(EntityName),
+	m_SwivelName("Swivel"),m_DriveName("Drive"),
+	#ifdef __UseControlWithLockedVelocity__
+	m_Swivel(m_SwivelName.c_str()),m_Drive(m_DriveName.c_str()),
+	#else
+	m_Swivel(m_SwivelName.c_str(),robot_control,SectionOrder+4),m_Drive(m_DriveName.c_str(),robot_control,SectionOrder),
+	#endif
 	m_IntendedSwivelDirection(0.0),m_IntendedDriveVelocity(0.0),
 	m_RobotControl(robot_control)
 {
@@ -65,9 +68,7 @@ Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interfac
 		"ModuleLF","ModuleRF","ModuleLR","ModuleRR"
 	};
 	for (size_t i=0;i<4;i++)
-		m_DrivingModule[i]=new DrivingModule(ModuleName[i],m_RobotControl);
-
-	//m_UsingEncoders=true; //testing
+		m_DrivingModule[i]=new DrivingModule(ModuleName[i],m_RobotControl,i);
 }
 
 Swerve_Robot::~Swerve_Robot()

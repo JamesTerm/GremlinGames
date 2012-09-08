@@ -27,7 +27,7 @@ double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncod
 Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
-	m_LastPosition(0.0),
+	m_LastPosition(0.0),m_MatchVelocity(0.0),
 	#ifdef __Rotary_UseScalerPID__
 	m_CalibratedScaler(1.0),
 	#else
@@ -303,7 +303,7 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
-	m_CalibratedScaler(1.0),m_ErrorOffset(0.0),
+	m_MatchVelocity(0.0),m_CalibratedScaler(1.0),m_ErrorOffset(0.0),
 	m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
 	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState)
 {

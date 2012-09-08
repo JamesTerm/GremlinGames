@@ -644,6 +644,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 		break;
 
+	case eCurrent:
 	case eSwerveRobot:
 		{
 			#ifdef _DEBUG
@@ -656,7 +657,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
-	case eCurrent:
 	case eRobot2012:
 		{
 			#ifdef _DEBUG
