@@ -16,17 +16,13 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);  //We may limit swerve to this
-const double c_GearHeightOffset=1.397;  //55 inches
-const double c_WheelDiameter=0.1524;  //6 inches
-const double c_MotorToWheelGearRatio=12.0/36.0;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
  /*													Swerve_Robot::DrivingModule														*/
 /***********************************************************************************************************************************/
 
-Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Tank_Drive_Control_Interface *robot_control) : m_ModuleName(EntityName),
+Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control) : m_ModuleName(EntityName),
 	m_SwivelName("Swivel"),m_DriveName("Drive"),m_Swivel(m_SwivelName.c_str()),m_Drive(m_DriveName.c_str()),
 	m_IntendedSwivelDirection(0.0),m_IntendedDriveVelocity(0.0),
 	m_RobotControl(robot_control)
@@ -60,7 +56,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
   /***********************************************************************************************************************************/
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
-Swerve_Robot::Swerve_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders) : 
+Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool UseEncoders) : 
 	Ship_Tester(EntityName), m_SwerveDrive(this), m_RobotControl(robot_control), 
 	m_UsingEncoders(UseEncoders) //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 {
@@ -89,16 +85,21 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 	m_RobotControl->Initialize(props);
 
 	const Swerve_Robot_Properties *RobotProps=dynamic_cast<const Swerve_Robot_Properties *>(props);
-
-	m_WheelDimensions=RobotProps->GetWheelDimensions();
-	for (size_t i=0;i<4;i++)
+	if (RobotProps)
 	{
-		DrivingModule::DrivingModule_Props props;
-		props.Swivel_Props=&RobotProps->GetSwivelProps();
-		props.Drive_Props=&RobotProps->GetDriveProps();
-		m_DrivingModule[i]->Initialize(em,&props);
+		//This will copy all the props
+		m_SwerveRobotProps=RobotProps->GetSwerveRobotProps();
+		m_WheelDimensions=RobotProps->GetWheelDimensions();
+		for (size_t i=0;i<4;i++)
+		{
+			DrivingModule::DrivingModule_Props props;
+			props.Swivel_Props=&RobotProps->GetSwivelProps();
+			props.Drive_Props=&RobotProps->GetDriveProps();
+			m_DrivingModule[i]->Initialize(em,&props);
+		}
 	}
 }
+
 void Swerve_Robot::ResetPos()
 {
 	m_SwerveDrive.ResetPos();
@@ -177,7 +178,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 void Swerve_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
-	m_RobotControl->Tank_Drive_Control_TimeChange(dTime_s);
+	m_RobotControl->Swerve_Drive_Control_TimeChange(dTime_s);
 	//TODO add encoder support here
 	//{
 	//	//Display encoders without applying calibration
@@ -209,11 +210,6 @@ bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplace
 	//return ret;
 }
 
-double Swerve_Robot::RPS_To_LinearVelocity(double RPS)
-{
-	return RPS * c_MotorToWheelGearRatio * M_PI * c_WheelDiameter; 
-}
-
 //void Swerve_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 //{
 //	m_VoltageOverride=false;
@@ -241,7 +237,7 @@ void Swerve_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &Lo
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2011_Robot_Properties														*/
+ /*														Swerve_Robot_Properties														*/
 /***********************************************************************************************************************************/
 
 Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
@@ -270,11 +266,182 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	60.0,60.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Properties::eSimpleMotor,
 	false	//No limit ever!
-	),
-	m_WheelDimensions(0.4953,0.6985) //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side (can only go 390 degrees a second)
-	//m_WheelDimensions(0.3758,0.53)  //This is trimmed down to turn 514 degrees a second with a 2.914 speed
+	)
 {
+	Swerve_Robot_Props props;
+	memset(&props,0,sizeof(Swerve_Robot_Props));
+
+	//Late assign this to override the initial default
+	props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side (can only go 390 degrees a second)
+	//props.WheelDimensions=Vec2D(0.3758,0.53);  //This is trimmed down to turn 514 degrees a second with a 2.914 speed
+
+	//const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);  //We may limit swerve to this
+	//const double c_GearHeightOffset=1.397;  //55 inches
+	//const double c_MotorToWheelGearRatio=12.0/36.0;
+
+	const double c_WheelDiameter=0.1524;  //6 inches
+	props.WheelDiameter=c_WheelDiameter;
+	props.Polynomial_Wheel[0]=0.0;
+	props.Polynomial_Wheel[1]=1.0;
+	props.Polynomial_Wheel[2]=0.0;
+	props.Polynomial_Wheel[3]=0.0;
+	props.Polynomial_Wheel[4]=0.0;
+	*props.Polynomial_Swivel=*props.Polynomial_Wheel;
+	props.Wheel_PID[0]=props.Swivel_PID[0]=100.0; //setting to a safe 1.0
+	props.InputLatency=0.0;
+	props.HeadingLatency=0.0;
+	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
+	props.VoltageScalar=1.0;  //May need to be reversed
+	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
+	props.IsOpen_Wheel=true;  //Always true by default until control is fully functional
+	props.IsOpen_Swivel=true;
+	for (size_t i=0;i<4;i++)
+	{
+		props.PID_Console_Dump_Wheel[i]=false;  //Always false unless you want to analyze PID (only one system at a time!)
+		props.PID_Console_Dump_Swivel[i]=false;  //Always false unless you want to analyze PID (only one system at a time!)
+		props.MaxSpeedOffset[i]=0.0;
+		props.EncoderReversed_Wheel[i]=false;
+		props.EncoderReversed_Swivel[i]=false;
+	}
+	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.ReverseSteering=false;
+	props.DriveTo_ForceDegradeScalar=1.0;
+	m_SwerveRobotProps=props;
 }
+
+
+  /***********************************************************************************************************************************/
+ /*														Swerve_Robot_Control														*/
+/***********************************************************************************************************************************/
+
+Swerve_Robot_Control::Swerve_Robot_Control() : m_DisplayVoltage(true)
+{
+	for (size_t i=0;i<4;i++)
+	{
+		m_EncoderVoltage[i]=0;
+		m_PotentiometerVoltage[i]=0;
+	}
+}
+void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
+{
+	const Swerve_Robot_Properties *robot_props=dynamic_cast<const Swerve_Robot_Properties *>(props);
+
+	//For now robot_props can be NULL since the swerve robot is borrowing it
+	if (robot_props)
+	{
+		m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
+
+		//This will copy all the props
+		m_SwerveRobotProps=robot_props->GetSwerveRobotProps();
+		//We'll try to construct the props to match our properties
+		//Note: for max accel it needs to be powerful enough to handle curve equations
+		//Ship_1D_Properties props("SwerveEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
+		for (size_t i=0;i<4;i++)
+		{
+			m_Encoders[i].Initialize(&robot_props->GetDriveProps());
+			m_Encoders[i].SetReverseDirection(m_SwerveRobotProps.EncoderReversed_Wheel[i]);
+			m_Potentiometers[i].Initialize(&robot_props->GetSwivelProps());
+			//TODO add reverse direction support for potentiometers
+			//m_Potentiometers[i].SetReverseDirection(m_SwerveRobotProps.EncoderReversed_Swivel[i]);
+		}
+	}
+}
+
+void Swerve_Robot_Control::Reset_Encoders()
+{
+	//Yup... method driven ;)
+	for (size_t i=0;i<Swerve_Robot::eNoSwerveRobotSpeedControllerDevices;i++)
+		Reset_Rotary(i);
+}
+
+void Swerve_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
+{
+	for (size_t i=0;i<4;i++)
+	{
+		m_Encoders[i].SetTimeDelta(dTime_s);
+		m_Potentiometers[i].SetTimeDelta(dTime_s);
+	}
+	if (m_DisplayVoltage)
+	{
+		//display voltages
+		DOUT2("fl=%.2f fr=%.2f rl=%.2f rr=%.2f\n",m_EncoderVoltage[Swerve_Robot::eWheel_FL],m_EncoderVoltage[Swerve_Robot::eWheel_FR],
+			m_EncoderVoltage[Swerve_Robot::eWheel_RL],m_EncoderVoltage[Swerve_Robot::eWheel_RR]);
+	}
+}
+void Swerve_Robot_Control::Reset_Rotary(size_t index)
+{
+	switch (index)
+	{
+		case Swerve_Robot::eWheel_FL:
+		case Swerve_Robot::eWheel_FR:
+		case Swerve_Robot::eWheel_RL:
+		case Swerve_Robot::eWheel_RR:
+			m_Encoders[index].ResetPos();
+			break;
+		case Swerve_Robot::eSwivel_FL:
+		case Swerve_Robot::eSwivel_FR:
+		case Swerve_Robot::eSwivel_RL:
+		case Swerve_Robot::eSwivel_RR:
+			m_Potentiometers[index-4].ResetPos();
+			break;
+	}
+}
+
+double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
+{
+	double result=0.0;
+
+	switch (index)
+	{
+		case Swerve_Robot::eWheel_FL:
+		case Swerve_Robot::eWheel_FR:
+		case Swerve_Robot::eWheel_RL:
+		case Swerve_Robot::eWheel_RR:
+			result=m_Encoders[index].GetEncoderVelocity();
+			break;
+		case Swerve_Robot::eSwivel_FL:
+		case Swerve_Robot::eSwivel_FR:
+		case Swerve_Robot::eSwivel_RL:
+		case Swerve_Robot::eSwivel_RR:
+			result=NormalizeRotation2(m_Potentiometers[index-4].GetPotentiometerCurrentPosition());
+			break;
+	}
+	return result;
+}
+
+void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
+{
+	switch (index)
+	{
+	case Swerve_Robot::eWheel_FL:
+	case Swerve_Robot::eWheel_FR:
+	case Swerve_Robot::eWheel_RL:
+	case Swerve_Robot::eWheel_RR:
+		//if (m_SlowWheel) Voltage=0.0;
+		m_EncoderVoltage[index]=Voltage;
+		m_Encoders[index].UpdateEncoderVoltage(Voltage);
+		m_Encoders[index].TimeChange();
+
+		break;
+	case Swerve_Robot::eSwivel_FL:
+	case Swerve_Robot::eSwivel_FR:
+	case Swerve_Robot::eSwivel_RL:
+	case Swerve_Robot::eSwivel_RR:
+		{
+			size_t i=index-4;
+			m_PotentiometerVoltage[i]=Voltage;
+			m_Potentiometers[i].UpdatePotentiometerVoltage(Voltage);
+			m_Potentiometers[i].TimeChange();  //have this velocity immediately take effect
+		}
+		break;
+	}
+}
+
+double Swerve_Robot_Control::RPS_To_LinearVelocity(double RPS)
+{
+	return RPS * m_SwerveRobotProps.MotorToWheelGearRatio * M_PI * m_SwerveRobotProps.WheelDiameter; 
+}
+
 
   /***************************************************************************************************************/
  /*													Wheel_UI													*/
@@ -418,7 +585,7 @@ void Swerve_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties
 	{
 		Wheel_UI::Wheel_Properties props;
 		props.m_Offset=Offsets[i];
-		props.m_Wheel_Diameter=c_WheelDiameter;
+		props.m_Wheel_Diameter=m_SwerveRobot->GetSwerveRobotProps().WheelDiameter;
 		m_Wheel[i].Initialize(em,&props);
 	}
 }
@@ -452,7 +619,7 @@ void Swerve_Robot_UI::TimeChange(double dTime_s)
 		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
 		const double LinearVelocity=_.GetSwerveVelocitiesFromIndex(i);
 		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
-		const double RPS=LinearVelocity /  (PI * c_WheelDiameter * PixelHackScale);
+		const double RPS=LinearVelocity /  (PI * _.GetSwerveRobotProps().WheelDiameter * PixelHackScale);
 		const double AngularVelocity=RPS * Pi2;
 		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
 	}
