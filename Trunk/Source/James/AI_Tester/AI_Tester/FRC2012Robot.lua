@@ -43,7 +43,7 @@ MainRobot = {
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
+		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,

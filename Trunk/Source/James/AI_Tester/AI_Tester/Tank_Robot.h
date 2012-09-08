@@ -89,8 +89,8 @@ class Tank_Robot : public Ship_Tester,
 		virtual void ResetPos();
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
-		//Note by default Tank Robot is assumed to be a 6 wheel drive with a squared 4 wheel set... if this should change we can add a new property
-		virtual double GetWheelTurningDiameter() const {return m_TankRobotProps.WheelDimensions[0];}
+		//Note by default a 6WD Tank Robot is assumed to set length for a 4WD (or half the total length of 6)
+		virtual double GetWheelTurningDiameter() const {return m_TankRobotProps.WheelDimensions.length();}
 		virtual double Vehicle_Drive_GetAtt_r() const {return GetAtt_r();}
 		virtual const PhysicsEntity_2D &Vehicle_Drive_GetPhysics() const {return GetPhysics();}
 		virtual PhysicsEntity_2D &Vehicle_Drive_GetPhysics_RW() {return GetPhysics();}
