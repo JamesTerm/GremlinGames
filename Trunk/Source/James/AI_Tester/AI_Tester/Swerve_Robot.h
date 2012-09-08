@@ -1,33 +1,53 @@
 #pragma once
 
-#if 0
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
-class Robot_Control_Interface
+class Swerve_Drive_Control_Interface : public Rotary_Control_Interface
 {
 	public:
 		//This is primarily used for updates to dashboard and driver station during a test build
-		virtual void TimeChange(double dTime_s)=0;
+		virtual void Swerve_Drive_Control_TimeChange(double dTime_s)=0;
 		//We need to pass the properties to the Robot Control to be able to make proper conversions.
 		//The client code may cast the properties to obtain the specific data 
 		virtual void Initialize(const Entity_Properties *props)=0;
-		virtual void Reset_Arm()=0; 
 		virtual void Reset_Encoders()=0;
-
-		//Encoders populate this with current velocity of motors
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
-		/// \param The index is ordinal enumerated to specific robot's interpretation
-		/// \see subclass for enumeration specifics
-		virtual void UpdateVoltage(size_t index,double Voltage)=0;
-		///This is a implemented by reading the potentiometer and converting its value to correspond to the arm's current angle
-		///This is in radians of the arm's gear ratio
-		///TODO break this apart to reading pure analog values and have the potentiometer conversion happen within the robot
-		virtual double GetArmCurrentPosition()=0;
-		/// \param The index is ordinal enumerated to specific robot's interpretation
-		/// \see subclass for enumeration specifics
-		virtual void CloseSolenoid(size_t index,bool Close)=0;  //true=close false=open
 };
-#endif
+
+struct Swerve_Robot_Props
+{
+	//typedef Framework::Base::Vec2d Vec2D;
+	typedef osg::Vec2d Vec2D;
+
+	//Currently supporting 4 terms in polynomial equation
+	//Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	double Polynomial_Wheel[5];
+	double Polynomial_Swivel[5];  
+
+	//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
+	//the width is a measurement of the the center of the wheel width to the other wheel
+	Vec2D WheelDimensions;
+	double WheelDiameter;
+	double VoltageScalar;		//Used to handle reversed voltage wiring
+	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
+	double Wheel_PID[3]; //p,i,d
+	double Swivel_PID[3]; //p,i,d
+	double InputLatency;  //Used with PID to help avoid oscillation in the error control (We can make one for each if needed)
+	double HeadingLatency; //Should be about 100ms + Input Latency... this will establish intervals to sync up the heading with entity
+	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+	double MaxSpeedOffset[4];	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
+	double DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
+	double SwivelRange;  //Value in radians of the swivel range 0 is infinite
+	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
+	bool IsOpen_Wheel,IsOpen_Swivel;  //give ability to open or close loop for wheel or swivel system  
+	//This will dump the console PID info (Only active if __DebugLUA__ is defined)
+	bool PID_Console_Dump_Wheel[4];  
+	bool PID_Console_Dump_Swivel[4];
+	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
+	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
+	bool EncoderReversed_Wheel[4];
+	bool EncoderReversed_Swivel[4];
+};
+
+class Swerve_Robot_UI;
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
@@ -35,24 +55,41 @@ class Swerve_Robot : public Ship_Tester,
 					 public Swerve_Drive_Interface
 {
 	public:
+		//Note these order in the same as SwerveVelocities::SectionOrder
+		enum Swerve_Robot_SpeedControllerDevices
+		{
+			eWheel_FL,
+			eWheel_FR,
+			eWheel_RL,
+			eWheel_RR,
+			eSwivel_FL,
+			eSwivel_FR,
+			eSwivel_RL,
+			eSwivel_RR,
+			eNoSwerveRobotSpeedControllerDevices
+		};
+
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Swerve_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool UseEncoders=false);
+		Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool UseEncoders=false);
 		~Swerve_Robot();
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
 		virtual void TimeChange(double dTime_s);
-		static double RPS_To_LinearVelocity(double RPS);
 
 		//Accessors needed for setting goals
 	protected:
+		friend Swerve_Robot_UI;
+
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		//virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		//virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
+		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
+
 		//Get the sweet spot between the update and interpolation to avoid oscillation 
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
@@ -69,7 +106,7 @@ class Swerve_Robot : public Ship_Tester,
 	private:
 		Swerve_Drive m_SwerveDrive;
 		//typedef  Tank_Drive __super;
-		Tank_Drive_Control_Interface * const m_RobotControl;
+		Swerve_Drive_Control_Interface * const m_RobotControl;
 
 		//The driving module consists of a swivel motor and the driving motor for a wheel.  It manages / converts the intended direction and speed to 
 		//actual direction and velocity (i.e. works in reverse) as well as working with sensor feedback (e.g. potentiometer, encoder) for error
@@ -77,7 +114,7 @@ class Swerve_Robot : public Ship_Tester,
 		class DrivingModule
 		{
 			public:
-				DrivingModule(const char EntityName[],Tank_Drive_Control_Interface *robot_control);
+				DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control);
 				struct DrivingModule_Props
 				{
 					const Ship_1D_Properties *Swivel_Props;
@@ -109,12 +146,14 @@ class Swerve_Robot : public Ship_Tester,
 				//Pass along the intended swivel direction and drive velocity
 				double m_IntendedSwivelDirection,m_IntendedDriveVelocity;
 
-				Tank_Drive_Control_Interface * const m_RobotControl;
+				Swerve_Drive_Control_Interface * const m_RobotControl;
 		} *m_DrivingModule[4]; //FL, FR, RL, RR  The four modules used  (We could put 6 here if we want)
 
 		bool m_UsingEncoders;
 		Vec2D m_WheelDimensions; //cached from the Swerve_Robot_Properties
 		SwerveVelocities m_Swerve_Robot_Velocities;
+		Swerve_Robot_Props m_SwerveRobotProps; //cached in the Initialize from specific robot
+
 	public:
 		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_SwerveDrive.GetSwerveVelocitiesFromIndex(index);}
 };
@@ -130,44 +169,41 @@ class Swerve_Robot_Properties : public UI_Ship_Properties
 		const Ship_1D_Properties &GetDriveProps() const {return m_DriveProps;}
 		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
 		//the width is a measurement of the the center of the wheel width to the other wheel
-		const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
+		const Vec2D &GetWheelDimensions() const {return m_SwerveRobotProps.WheelDimensions;}
+		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
 	private:
 		//Note the drive properties is a measurement of linear movement (not angular velocity)
 		Ship_1D_Properties m_SwivelProps,m_DriveProps;
-		Vec2D m_WheelDimensions;
+		Swerve_Robot_Props m_SwerveRobotProps;
 };
 
-#if 0
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
 ///are correct
-class Robot_Control : public Robot_Control_Interface
+class Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 {
 	public:
-		Robot_Control(FRC_2011_Robot *Robot);
+		Swerve_Robot_Control();
 		//This is only needed for simulation
-		virtual void TimeChange(double dTime_s);
-	protected: //from Robot_Control_Interface
-		//Will reset various members as needed (e.g. Kalman filters)
-		virtual void Reset_Arm(); 
-		virtual void Reset_Encoders();
+	protected: //from Rotary_Control_Interface
+		virtual void Reset_Rotary(size_t index=0); 
+		virtual double GetRotaryCurrentPorV(size_t index=0);
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
+
+		//from Swerve_Drive_Control_Interface
+		virtual void Swerve_Drive_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
-		//virtual void UpdateVoltage(size_t index,double Voltage); this is overridden
-		//pacify this by returning its current value
-		virtual double GetArmCurrentPosition();
+		virtual void Reset_Encoders();
+
+		double RPS_To_LinearVelocity(double RPS);
 	protected:
-		FRC_2011_Robot * const m_Robot;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
-		double m_ArmMaxSpeed;
-		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
-		Encoder_Tester m_Encoders;
-		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
+		Potentiometer_Tester2 m_Potentiometers[4]; //simulate a real potentiometer for calibration testing
+		Encoder_Simulator m_Encoders[4];
 		//cache voltage values for display
-		double m_LeftVoltage,m_RightVoltage,m_ArmVoltage,m_RollerVoltage;
-		bool m_Deployment,m_Claw,m_Rist;
+		double m_EncoderVoltage[4],m_PotentiometerVoltage[4];
+		Swerve_Robot_Props m_SwerveRobotProps; //cached in the Initialize from specific robot
+		bool m_DisplayVoltage;
 };
-#endif
 
 class Wheel_UI
 {
@@ -230,10 +266,10 @@ class Swerve_Robot_UI
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Swerve_Robot_UI_Control : public Swerve_Robot, public Tank_Robot_Control
+class Swerve_Robot_UI_Control : public Swerve_Robot, public Swerve_Robot_Control
 {
 	public:
-		Swerve_Robot_UI_Control(const char EntityName[]) : Swerve_Robot(EntityName,this),Tank_Robot_Control(),
+		Swerve_Robot_UI_Control(const char EntityName[]) : Swerve_Robot(EntityName,this),Swerve_Robot_Control(),
 			m_SwerveUI(this) {}
 
 	protected:
