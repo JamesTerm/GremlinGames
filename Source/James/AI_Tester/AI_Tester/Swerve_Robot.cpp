@@ -58,10 +58,12 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
   /***********************************************************************************************************************************/
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
-Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool UseEncoders) : 
-	Ship_Tester(EntityName), m_SwerveDrive(this), m_RobotControl(robot_control), 
-	m_UsingEncoders(UseEncoders) //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
+Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
+	Ship_Tester(EntityName), m_SwerveDrive(this), m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control), 
+	m_UsingEncoders(IsAutonomous), //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
+	m_Heading(0.0), m_HeadingUpdateTimer(0.0)
 {
+	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
 	const char * const ModuleName[]=
 	{
 		"ModuleLF","ModuleRF","ModuleLR","ModuleRR"
@@ -104,11 +106,15 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 			//TODO drive.RoteryProps().EncoderReversed
 			m_DrivingModule[i]->Initialize(em,&props);
 		}
+
+		//This can be dynamically called so we always call it
+		SetUseEncoders(!m_SwerveRobotProps.IsOpen_Wheel);
 	}
 }
 
 void Swerve_Robot::ResetPos()
 {
+	m_Heading=0.0;
 	m_SwerveDrive.ResetPos();
 	__super::ResetPos();
 	m_RobotControl->Reset_Encoders();
@@ -119,6 +125,43 @@ void Swerve_Robot::ResetPos()
 		m_Swerve_Robot_Velocities.Velocity.AsArray[i]=0.0;
 
 	}
+}
+
+
+void Swerve_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition) 
+{
+	if (!UseEncoders)
+	{
+		if (m_UsingEncoders)
+		{
+			//first disable it
+			m_UsingEncoders=false;
+			printf("Disabling encoders for %s\n",GetName().c_str());
+			//Now to reset stuff
+			//Reset(ResetPosition);
+			ResetPos();
+			m_EncoderGlobalVelocity=Vec2d(0.0,0.0);
+		}
+	}
+	else
+	{
+		if (!m_UsingEncoders)
+		{
+			m_UsingEncoders=true;
+			printf("Enabling encoders for %s\n",GetName().c_str());
+			//setup the initial value with the encoders value
+			//Reset(ResetPosition);
+			ResetPos();
+		}
+	}
+}
+
+void Swerve_Robot::SetIsAutonomous(bool IsAutonomous)
+{
+	m_IsAutonomous=IsAutonomous;  //this is important (to disable joystick controls etc)
+	//We only explicitly turn them on... not off (that will be configured else where)
+	if (IsAutonomous)
+		SetUseEncoders(true);
 }
 
 void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
@@ -187,6 +230,25 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		#endif
 	}
 
+	{
+		Vec2d LocalVelocity;
+		double AngularVelocity;
+		SwerveVelocities encoders;
+		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(0);
+		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(1);
+		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(2);
+		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(3);
+		encoders.Velocity.Named.aFL=m_RobotControl->GetRotaryCurrentPorV(4);
+		encoders.Velocity.Named.aFR=m_RobotControl->GetRotaryCurrentPorV(5);
+		encoders.Velocity.Named.aRL=m_RobotControl->GetRotaryCurrentPorV(6);
+		encoders.Velocity.Named.aRR=m_RobotControl->GetRotaryCurrentPorV(7);
+		m_SwerveDrive.InterpolateVelocities(encoders,LocalVelocity,AngularVelocity,dTime_s);
+		//TODO add gyro's yaw readings for Angular velocity here
+		//Store the value here to be picked up in GetOldVelocity()
+		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
+		m_EncoderAngularVelocity=AngularVelocity;
+	}
+
 	m_SwerveDrive.InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
@@ -199,23 +261,56 @@ void Swerve_Robot::TimeChange(double dTime_s)
 
 bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
 {
-	//TODO we'll want to get the measured velocities which should work (or possibly use) like the Swerve_Drive code
-	return m_SwerveDrive.InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
-
-	//bool ret=false;
-	//if (m_UsingEncoders)
-	//{
-	//	Vec2d computedVelocity=m_Physics.GetLinearVelocity();
-	//	//double computedAngularVelocity=m_Physics.GetAngularVelocity();
-	//	m_Physics.SetLinearVelocity(m_EncoderGlobalVelocity);
-	//	//m_Physics.SetAngularVelocity(m_EncoderHeading);
-	//	m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
-	//	//We must set this back so that the PID can compute the entire error
-	//	m_Physics.SetLinearVelocity(computedVelocity);
-	//	//m_Physics.SetAngularVelocity(computedAngularVelocity);
-	//	ret=true;
-	//}
-	//return ret;
+	bool ret=false;
+	//Note: for now there is no passive setting, which would be great for open loop driving while maintaining the position as it was for rebound rumble
+	//Instead we can keep the logic simple and only apply displacement if we are using the encoders... this way the simulations of the open loop (lesser stress)
+	//will work properly without adding this extra complexity
+	//  [8/27/2012 Terminator]
+	if (m_UsingEncoders)
+	{
+		Vec2D EncoderGlobalVelocity=m_EncoderGlobalVelocity;
+		double EncoderAngularVelocity=m_EncoderAngularVelocity;
+		Vec2d computedVelocity=m_Physics.GetLinearVelocity();
+		double computedAngularVelocity=m_Physics.GetAngularVelocity();
+		m_Physics.SetLinearVelocity(EncoderGlobalVelocity);
+		m_Physics.SetAngularVelocity(EncoderAngularVelocity);
+		m_Physics.TimeChangeUpdate(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+		const double &HeadingLatency=m_SwerveRobotProps.HeadingLatency;
+		if (HeadingLatency!=0.0)
+		{	//manage the heading update... 
+			m_HeadingUpdateTimer+=DeltaTime_s;
+			if (m_HeadingUpdateTimer>HeadingLatency)
+			{
+				m_HeadingUpdateTimer-=HeadingLatency;
+				//This should never happen unless we had a huge delta time (e.g. breakpoint)
+				if (m_HeadingUpdateTimer>HeadingLatency)
+				{
+					m_HeadingUpdateTimer=0.0; //Just reset... it is not critical to have exact interval
+					printf("Warning: m_HeadingUpdateTimer>m_TankRobotProps.InputLatency\n");
+				}
+				//Sync up with our entities heading on this latency interval
+				m_Heading=GetAtt_r();
+			}
+			else
+			{
+				//Use our original angular velocity for the heading update to avoid having to make corrections
+				m_Heading+=computedAngularVelocity*DeltaTime_s;
+			}
+		}
+		else
+		{
+			m_Heading+=RotationDisplacement;  // else always pull heading from the injected displacement (always in sync with entity)
+		}
+		//We must set this back so that the PID can compute the entire error
+		m_Physics.SetLinearVelocity(computedVelocity);
+		m_Physics.SetAngularVelocity(computedAngularVelocity);
+		ret=true;
+	}
+	else
+		m_Heading=GetAtt_r();
+	if (!ret)
+		ret=m_SwerveDrive.InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+	return ret;
 }
 
 //void Swerve_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
@@ -242,6 +337,12 @@ void Swerve_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &Lo
 	double torque;
 	InterpolateThrusterChanges(force,torque,dTime_s);
 	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+}
+
+void Swerve_Robot::SetAttitude(double radians)
+{
+	m_Heading=radians;
+	__super::SetAttitude(radians);
 }
 
   /***********************************************************************************************************************************/
