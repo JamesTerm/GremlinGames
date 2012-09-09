@@ -185,6 +185,8 @@ class Swerve_Robot_Properties : public UI_Ship_Properties
 		typedef osg::Vec2d Vec2D;
 
 		Swerve_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+
 		const Rotary_Properties &GetSwivelProps() const {return m_SwivelProps;}
 		const Rotary_Properties &GetDriveProps() const {return m_DriveProps;}
 		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
