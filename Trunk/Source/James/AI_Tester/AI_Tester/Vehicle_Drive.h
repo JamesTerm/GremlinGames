@@ -122,8 +122,9 @@ class Swerve_Drive : public Vehicle_Drive_Common
 
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
-	protected:
+
 		//This method converts the given left right velocities into a form local linear velocity and angular velocity
-		void InterpolateVelocities(SwerveVelocities Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+		void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+protected:
 		const SwerveVelocities &GetIntendedVelocities() const {return m_Velocities;}
 };

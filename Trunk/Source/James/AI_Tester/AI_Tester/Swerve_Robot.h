@@ -71,12 +71,14 @@ class Swerve_Robot : public Ship_Tester,
 
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool UseEncoders=false);
+		Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 		~Swerve_Robot();
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
-		void SetUseEncoders(bool UseEncoders) {m_UsingEncoders=UseEncoders;}
+		/// \param ResetPos typically true for autonomous and false for dynamic use
+		void SetUseEncoders(bool UseEncoders,bool ResetPosition=true);
+		void SetIsAutonomous(bool IsAutonomous);
 		virtual void TimeChange(double dTime_s);
 
 		//Accessors needed for setting goals
@@ -89,6 +91,7 @@ class Swerve_Robot : public Ship_Tester,
 		//virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
+		virtual void SetAttitude(double radians);  //from ship tester
 
 		//Get the sweet spot between the update and interpolation to avoid oscillation 
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
@@ -103,6 +106,7 @@ class Swerve_Robot : public Ship_Tester,
 		virtual const PhysicsEntity_2D &Vehicle_Drive_GetPhysics() const {return GetPhysics();}
 		virtual PhysicsEntity_2D &Vehicle_Drive_GetPhysics_RW() {return GetPhysics();}
 
+		bool m_IsAutonomous;
 	private:
 		Swerve_Drive m_SwerveDrive;
 		//typedef  Tank_Drive __super;
@@ -143,8 +147,13 @@ class Swerve_Robot : public Ship_Tester,
 		bool m_UsingEncoders;
 		Vec2D m_WheelDimensions; //cached from the Swerve_Robot_Properties
 		SwerveVelocities m_Swerve_Robot_Velocities;
+		Vec2D m_EncoderGlobalVelocity;
+		double m_EncoderAngularVelocity;
 		Swerve_Robot_Props m_SwerveRobotProps; //cached in the Initialize from specific robot
 
+		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
+		double m_Heading;  //We take over the heading from physics
+		double m_HeadingUpdateTimer;
 	public:
 		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_SwerveDrive.GetSwerveVelocitiesFromIndex(index);}
 };

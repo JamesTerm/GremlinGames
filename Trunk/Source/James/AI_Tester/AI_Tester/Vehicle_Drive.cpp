@@ -238,9 +238,9 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 
 }
 
-void Swerve_Drive::InterpolateVelocities(SwerveVelocities Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+void Swerve_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
 {
-	SwerveVelocities::uVelocity::Explicit &_=Velocities.Velocity.Named;
+	const SwerveVelocities::uVelocity::Explicit &_=Velocities.Velocity.Named;
 	const Vec2D &WheelDimensions=m_pParent->GetWheelDimensions();
 	//L is the vehicle’s wheelbase
 	const double L=WheelDimensions[1];
