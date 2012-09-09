@@ -157,6 +157,16 @@ void Ship_1D_Properties::Initialize(Ship_1D *NewShip) const
 	NewShip->m_MaxRange=m_MaxRange;
 }
 
+void Ship_1D_Properties::SetFromShip_Properties (const Ship_Properties & NewValue)
+{
+	m_MAX_SPEED=NewValue.GetEngagedMaxSpeed();
+	//TODO
+	//m_ACCEL=NewValue.m_ACCEL;
+	//m_BRAKE=NewValue.m_BRAKE;
+	m_MaxAccelForward=NewValue.GetMaxAccelForward();
+	m_MaxAccelReverse=NewValue.GetMaxAccelReverse();
+}
+
   /***********************************************************************************************************************************/
  /*															Entity_Properties														*/
 /***********************************************************************************************************************************/

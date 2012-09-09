@@ -14,6 +14,9 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
+namespace Scripting=GG_Framework::Logic::Scripting;
+//namespace Scripting=Framework::Scripting;
+
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
@@ -94,8 +97,15 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 		for (size_t i=0;i<4;i++)
 		{
 			DrivingModule::DrivingModule_Props props;
-			props.Swivel_Props=&RobotProps->GetSwivelProps();
-			props.Drive_Props=&RobotProps->GetDriveProps();
+			Rotary_Properties drive=RobotProps->GetSwivelProps();
+			Rotary_Properties swivel=RobotProps->GetSwivelProps();
+			props.Swivel_Props=&swivel;
+			props.Drive_Props=&drive;
+			//Now to copy the custom per section properties over for this element
+			//TODO max_offset support
+			drive.RoteryProps().PID_Console_Dump=m_SwerveRobotProps.PID_Console_Dump_Wheel[i];
+			swivel.RoteryProps().PID_Console_Dump=m_SwerveRobotProps.PID_Console_Dump_Swivel[i];
+			//TODO drive.RoteryProps().EncoderReversed
 			m_DrivingModule[i]->Initialize(em,&props);
 		}
 	}
@@ -310,6 +320,244 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	m_SwerveRobotProps=props;
 }
 
+void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	err = script.GetFieldTable("swerve_drive");
+	if (!err) 
+	{
+		//Quick snap shot of all the properties
+		//Vec2D WheelDimensions;
+		//double WheelDiameter;
+		//double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
+		//double LeftPID[3]; //p,i,d
+		//double RightPID[3]; //p,i,d
+		//Get the ship dimensions
+		err = script.GetFieldTable("wheel_base_dimensions");
+		if (!err)
+		{
+			double length_in, width_in;	
+			//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
+			err = script.GetField("length_in", NULL, NULL,&length_in);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("width_in", NULL, NULL,&width_in);
+			ASSERT_MSG(!err, err);
+			m_SwerveRobotProps.WheelDimensions=Vec2D(Inches2Meters(width_in),Inches2Meters(length_in));  //x,y  where x=width
+			script.Pop();
+		}
+
+		double wheel_diameter;
+		//Note: there shouldn't be a rotary system equivalent of this to pass down
+		err=script.GetField("wheel_diameter_in", NULL, NULL, &wheel_diameter);
+		if (!err)
+			m_SwerveRobotProps.WheelDiameter=Inches2Meters(wheel_diameter);
+
+		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_SwerveRobotProps.MotorToWheelGearRatio);
+		m_DriveProps.RoteryProps().EncoderToRS_Ratio=m_SwerveRobotProps.MotorToWheelGearRatio;
+
+		script.GetField("voltage_multiply", NULL, NULL, &m_SwerveRobotProps.VoltageScalar);
+		err = script.GetFieldTable("wheel_pid");
+		if (!err)
+		{
+			err = script.GetField("p", NULL, NULL,&m_SwerveRobotProps.Wheel_PID[0]);
+			m_DriveProps.RoteryProps().PID[0]=m_SwerveRobotProps.Wheel_PID[0];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("i", NULL, NULL,&m_SwerveRobotProps.Wheel_PID[1]);
+			m_DriveProps.RoteryProps().PID[1]=m_SwerveRobotProps.Wheel_PID[1];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("d", NULL, NULL,&m_SwerveRobotProps.Wheel_PID[2]);
+			m_DriveProps.RoteryProps().PID[2]=m_SwerveRobotProps.Wheel_PID[2];
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+		err = script.GetFieldTable("swivel_pid");
+		if (!err)
+		{
+			err = script.GetField("p", NULL, NULL,&m_SwerveRobotProps.Swivel_PID[0]);
+			m_DriveProps.RoteryProps().PID[0]=m_SwerveRobotProps.Swivel_PID[0];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("i", NULL, NULL,&m_SwerveRobotProps.Swivel_PID[1]);
+			m_DriveProps.RoteryProps().PID[1]=m_SwerveRobotProps.Swivel_PID[1];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("d", NULL, NULL,&m_SwerveRobotProps.Swivel_PID[2]);
+			m_DriveProps.RoteryProps().PID[2]=m_SwerveRobotProps.Swivel_PID[2];
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+		script.GetField("tolerance", NULL, NULL, &m_SwerveRobotProps.PrecisionTolerance);
+		m_DriveProps.RoteryProps().PrecisionTolerance=m_SwerveRobotProps.PrecisionTolerance;
+		//TODO see if we want this for swivel
+
+		script.GetField("latency", NULL, NULL, &m_SwerveRobotProps.InputLatency);
+		m_DriveProps.RoteryProps().InputLatency=m_SwerveRobotProps.InputLatency;
+
+		err = script.GetField("heading_latency", NULL, NULL, &m_SwerveRobotProps.HeadingLatency);
+		if (err)
+			m_SwerveRobotProps.HeadingLatency=m_SwerveRobotProps.InputLatency+0.100;  //Give a good default without needing to add this property
+
+		const char * const section_table[]=
+		{
+			"fl","fr","rl","rr"
+		};
+
+		err = script.GetFieldTable("max_offset");
+		if (!err)
+		{
+			for (size_t i=0;i<4;i++)
+			{
+				err = script.GetField(section_table[i], NULL, NULL,&m_SwerveRobotProps.MaxSpeedOffset[i]);
+				ASSERT_MSG(!err, err);
+			}
+			script.Pop();
+		}
+
+		script.GetField("drive_to_scale", NULL, NULL, &m_SwerveRobotProps.DriveTo_ForceDegradeScalar);
+		
+		double fDisplayRow;
+		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+		{
+			m_SwerveRobotProps.Feedback_DiplayRow=(size_t)fDisplayRow;
+			m_DriveProps.RoteryProps().Feedback_DiplayRow=m_SwerveRobotProps.Feedback_DiplayRow;
+		}
+
+		string sTest;
+		err = script.GetField("is_closed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+			{
+				m_SwerveRobotProps.IsOpen_Wheel=true;
+				m_DriveProps.RoteryProps().LoopState=Rotary_Props::eOpen;
+			}
+			else
+			{
+				m_SwerveRobotProps.IsOpen_Wheel=false;
+				m_DriveProps.RoteryProps().LoopState=Rotary_Props::eClosed;
+			}
+		}
+		err = script.GetField("is_closed_swivel",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+			{
+				m_SwerveRobotProps.IsOpen_Swivel=true;
+				m_SwivelProps.RoteryProps().LoopState=Rotary_Props::eOpen;
+			}
+			else
+			{
+				m_SwerveRobotProps.IsOpen_Swivel=false;
+				m_SwivelProps.RoteryProps().LoopState=Rotary_Props::eClosed;
+			}
+		}
+
+		err = script.GetFieldTable("show_pid_dump_wheel");
+		if (!err)
+		{
+			for (size_t i=0;i<4;i++)
+			{
+				err = script.GetField(section_table[i],&sTest , NULL, NULL);
+				if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+					m_SwerveRobotProps.PID_Console_Dump_Wheel[i]=true;
+				ASSERT_MSG(!err, err);
+			}
+			script.Pop();
+		}
+
+		err = script.GetFieldTable("show_pid_dump_swivel");
+		if (!err)
+		{
+			for (size_t i=0;i<4;i++)
+			{
+				err = script.GetField(section_table[i],&sTest , NULL, NULL);
+				if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+					m_SwerveRobotProps.PID_Console_Dump_Swivel[i]=true;
+				ASSERT_MSG(!err, err);
+			}
+			script.Pop();
+		}
+
+		err = script.GetField("reverse_steering",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_SwerveRobotProps.ReverseSteering=true;
+		}
+
+		err = script.GetFieldTable("encoder_reversed_wheel");
+		if (!err)
+		{
+			for (size_t i=0;i<4;i++)
+			{
+				err = script.GetField(section_table[i],&sTest , NULL, NULL);
+				if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+					m_SwerveRobotProps.EncoderReversed_Wheel[i]=true;
+				ASSERT_MSG(!err, err);
+			}
+			script.Pop();
+		}
+
+		err = script.GetFieldTable("encoder_reversed_swivel");
+		if (!err)
+		{
+			for (size_t i=0;i<4;i++)
+			{
+				err = script.GetField(section_table[i],&sTest , NULL, NULL);
+				if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+					m_SwerveRobotProps.EncoderReversed_Swivel[i]=true;
+				ASSERT_MSG(!err, err);
+			}
+			script.Pop();
+		}
+
+		err = script.GetFieldTable("curve_voltage_wheel");
+		if (!err)
+		{
+			err = script.GetField("c", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[0]);
+			m_DriveProps.RoteryProps().Polynomial[0]=m_SwerveRobotProps.Polynomial_Wheel[0];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t1", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[1]);
+			m_DriveProps.RoteryProps().Polynomial[1]=m_SwerveRobotProps.Polynomial_Wheel[1];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t2", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[2]);
+			m_DriveProps.RoteryProps().Polynomial[2]=m_SwerveRobotProps.Polynomial_Wheel[2];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t3", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[3]);
+			m_DriveProps.RoteryProps().Polynomial[3]=m_SwerveRobotProps.Polynomial_Wheel[3];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t4", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[4]);
+			m_DriveProps.RoteryProps().Polynomial[4]=m_SwerveRobotProps.Polynomial_Wheel[4];
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+
+		err = script.GetFieldTable("curve_voltage_wheel");
+		if (!err)
+		{
+			err = script.GetField("c", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[0]);
+			m_SwivelProps.RoteryProps().Polynomial[0]=m_SwerveRobotProps.Polynomial_Wheel[0];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t1", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[1]);
+			m_SwivelProps.RoteryProps().Polynomial[1]=m_SwerveRobotProps.Polynomial_Wheel[1];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t2", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[2]);
+			m_SwivelProps.RoteryProps().Polynomial[2]=m_SwerveRobotProps.Polynomial_Wheel[2];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t3", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[3]);
+			m_SwivelProps.RoteryProps().Polynomial[3]=m_SwerveRobotProps.Polynomial_Wheel[3];
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t4", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[4]);
+			m_SwivelProps.RoteryProps().Polynomial[4]=m_SwerveRobotProps.Polynomial_Wheel[4];
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+
+		//The main script pop of swerve_drive field table
+		script.Pop(); 
+	}
+	__super::LoadFromScript(script);
+	m_DriveProps.SetFromShip_Properties(*this);
+}
 
   /***********************************************************************************************************************************/
  /*														Swerve_Robot_Control														*/
@@ -367,6 +615,9 @@ void Swerve_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
 		//display voltages
 		DOUT2("fl=%.2f fr=%.2f rl=%.2f rr=%.2f\n",m_EncoderVoltage[Swerve_Robot::eWheel_FL],m_EncoderVoltage[Swerve_Robot::eWheel_FR],
 			m_EncoderVoltage[Swerve_Robot::eWheel_RL],m_EncoderVoltage[Swerve_Robot::eWheel_RR]);
+		//display voltages  (using wheel enums since the order is consistent)
+		DOUT4("fl=%.2f fr=%.2f rl=%.2f rr=%.2f\n",m_PotentiometerVoltage[Swerve_Robot::eWheel_FL],m_PotentiometerVoltage[Swerve_Robot::eWheel_FR],
+			m_PotentiometerVoltage[Swerve_Robot::eWheel_RL],m_PotentiometerVoltage[Swerve_Robot::eWheel_RR]);
 	}
 }
 void Swerve_Robot_Control::Reset_Rotary(size_t index)
