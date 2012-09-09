@@ -25,11 +25,7 @@ const double Pi2=M_PI*2.0;
 
 Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t SectionOrder) : m_ModuleName(EntityName),
 	m_SwivelName("Swivel"),m_DriveName("Drive"),
-	#ifdef __UseControlWithLockedVelocity__
-	m_Swivel(m_SwivelName.c_str()),m_Drive(m_DriveName.c_str()),
-	#else
 	m_Swivel(m_SwivelName.c_str(),robot_control,SectionOrder+4),m_Drive(m_DriveName.c_str(),robot_control,SectionOrder),
-	#endif
 	m_IntendedSwivelDirection(0.0),m_IntendedDriveVelocity(0.0),
 	m_RobotControl(robot_control)
 {
