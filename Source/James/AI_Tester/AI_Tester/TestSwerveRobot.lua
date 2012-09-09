@@ -1,15 +1,28 @@
+Pi=3.14159265358979323846
+Pi2=Pi*2
+Inches2Meters=0.0254
+Feet2Meters=0.3048
+Meters2Feet=3.2808399
+Meters2Inches=39.3700787
+
+wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
+WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
+HighGearSpeed = (427.68 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
+LowGearSpeed  = (167.06 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
+
 TestShip = {
+
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 5, MaxAccelRight = 5, MaxAccelForward = 5, MaxAccelReverse = 5, 
+	MaxAccelLeft = 20, MaxAccelRight = 20, 
+	MaxAccelForward = 4, MaxAccelReverse = 4, 
+	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
 	
-	MAX_SPEED = 2.916, -- Maximum Speed (m/s)
-	ENGAGED_MAX_SPEED = 2.916, -- Engagement Speed
+	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
-	AFTERBURNER_ACCEL = 2, -- Take this to the limit
-	BRAKE = 10,     -- Brake Deceleration m/s2 (1g = 9.8)
-	-- Turn Rates (deg/sec)
-	dHeading = 390,
+	BRAKE = ACCEL,
+	-- Turn Rates (radians/sec) This is always correct do not change
+	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
@@ -20,7 +33,7 @@ TestShip = {
 		is_closed_swivel=0,
 		
 		show_pid_dump_wheel=
-		{fl=1, fr=0, rl=0, rr=0},
+		{fl=0, fr=0, rl=0, rr=0},
 		show_pid_dump_swivel=
 		{fl=0, fr=0, rl=0, rr=0},
 		
@@ -40,8 +53,8 @@ TestShip = {
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
-		--curve_voltage_wheel=
-		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		curve_voltage_wheel=
+		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		--curve_voltage_swivel=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',

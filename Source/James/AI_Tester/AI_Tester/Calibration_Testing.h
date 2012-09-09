@@ -109,6 +109,7 @@ class Encoder_Simulator2
 		void SetReverseDirection(bool reverseDirection);  //emulates functionality of the encoder (needed because kids put them in differently)
 		void SetEncoderScalar(double value) {m_EncoderScalar=value;}  //This helps to simulate differences between sides
 		void SetFriction(double StaticFriction,double KineticFriction) {m_Physics.SetFriction(StaticFriction,KineticFriction);}
+		void ResetPos();
 	protected:
 	private:
 		double m_Time_s;

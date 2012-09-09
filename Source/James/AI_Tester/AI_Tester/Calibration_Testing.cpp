@@ -441,6 +441,11 @@ void Encoder_Simulator2::TimeChange()
 	m_Physics.ApplyFractionalForce(FrictionForce,m_Time_s);  //apply the friction
 }
 
+void Encoder_Simulator2::ResetPos()
+{
+	m_Physics.ResetVectors();
+}
+
   /***************************************************************************************************************/
  /*													Encoder_Tester												*/
 /***************************************************************************************************************/

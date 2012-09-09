@@ -191,7 +191,7 @@ class Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 	protected:
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		Potentiometer_Tester2 m_Potentiometers[4]; //simulate a real potentiometer for calibration testing
-		Encoder_Simulator m_Encoders[4];
+		Encoder_Simulator2 m_Encoders[4];
 		//cache voltage values for display
 		double m_EncoderVoltage[4],m_PotentiometerVoltage[4];
 		Swerve_Robot_Props m_SwerveRobotProps; //cached in the Initialize from specific robot

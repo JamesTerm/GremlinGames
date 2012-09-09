@@ -93,7 +93,7 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 		for (size_t i=0;i<4;i++)
 		{
 			DrivingModule::DrivingModule_Props props;
-			Rotary_Properties drive=RobotProps->GetSwivelProps();
+			Rotary_Properties drive=RobotProps->GetDriveProps();
 			Rotary_Properties swivel=RobotProps->GetSwivelProps();
 			props.Swivel_Props=&swivel;
 			props.Drive_Props=&drive;
@@ -161,6 +161,14 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
 		double VelocityToUse=cos(DistanceToIntendedSwivel)*IntendedSpeed;
 
+		#ifdef __DebugLUA__
+		if (m_SwerveRobotProps.PID_Console_Dump_Wheel[i] && (m_RobotControl->GetRotaryCurrentPorV(i)!=0.0))
+		{
+			double PosY=GetPos_m()[1];
+			printf("y=%.2f ",PosY);
+		}
+		#endif
+
 		m_DrivingModule[i]->SetIntendedDriveVelocity(VelocityToUse);
 		m_DrivingModule[i]->TimeChange(dTime_s);
 
@@ -184,16 +192,9 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 
 void Swerve_Robot::TimeChange(double dTime_s)
 {
-	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Swerve_Drive_Control_TimeChange(dTime_s);
-	//TODO add encoder support here
-	//{
-	//	//Display encoders without applying calibration
-	//	double Encoder_LeftVelocity,Encoder_RightVelocity;
-	//	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-	//}
-	__super::TimeChange(dTime_s);
 
+	__super::TimeChange(dTime_s);
 }
 
 bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
@@ -314,6 +315,9 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	props.ReverseSteering=false;
 	props.DriveTo_ForceDegradeScalar=1.0;
 	m_SwerveRobotProps=props;
+	//Always use aggressive stop for driving
+	m_DriveProps.RoteryProps().UseAggressiveStop=true;
+	m_SwivelProps.RoteryProps().UseAggressiveStop=true;
 }
 
 void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
@@ -370,13 +374,13 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			err = script.GetField("p", NULL, NULL,&m_SwerveRobotProps.Swivel_PID[0]);
-			m_DriveProps.RoteryProps().PID[0]=m_SwerveRobotProps.Swivel_PID[0];
+			m_SwivelProps.RoteryProps().PID[0]=m_SwerveRobotProps.Swivel_PID[0];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("i", NULL, NULL,&m_SwerveRobotProps.Swivel_PID[1]);
-			m_DriveProps.RoteryProps().PID[1]=m_SwerveRobotProps.Swivel_PID[1];
+			m_SwivelProps.RoteryProps().PID[1]=m_SwerveRobotProps.Swivel_PID[1];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("d", NULL, NULL,&m_SwerveRobotProps.Swivel_PID[2]);
-			m_DriveProps.RoteryProps().PID[2]=m_SwerveRobotProps.Swivel_PID[2];
+			m_SwivelProps.RoteryProps().PID[2]=m_SwerveRobotProps.Swivel_PID[2];
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}

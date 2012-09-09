@@ -164,7 +164,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 		double y=fabs(Voltage);
 		double *c=m_Rotary_Props.Polynomial;
-		double x2=y*Voltage;
+		double x2=y*y;
 		double x3=y*x2;
 		double x4=x2*x2;
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
@@ -412,7 +412,7 @@ void Rotary_Angular::TimeChange(double dTime_s)
 		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 		double y=fabs(Voltage);
 		double *c=m_Rotary_Props.Polynomial;
-		double x2=y*Voltage;
+		double x2=y*y;
 		double x3=y*x2;
 		double x4=x2*x2;
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
@@ -454,7 +454,10 @@ void Rotary_Angular::TimeChange(double dTime_s)
 	if (m_Rotary_Props.PID_Console_Dump && (Encoder_Velocity!=0.0))
 	{
 		#ifndef __Rotary_ShowEncoderPrediction__
-		printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
+		if (m_Rotary_Props.UseAggressiveStop)
+			printf("v=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset);
+		else
+			printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
 		#else
 		printf("v=%.2f p=%.2f e=%.2f y=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,Predicted_Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
 		#endif
