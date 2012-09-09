@@ -166,6 +166,37 @@ void Swerve_Robot::SetIsAutonomous(bool IsAutonomous)
 
 void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
 {
+	SwerveVelocities encoders;
+	if (m_SwerveRobotProps.IsOpen_Wheel)
+	{
+		encoders.Velocity.Named.sFL=m_Swerve_Robot_Velocities.Velocity.Named.sFL;
+		encoders.Velocity.Named.sFR=m_Swerve_Robot_Velocities.Velocity.Named.sFR;
+		encoders.Velocity.Named.sRL=m_Swerve_Robot_Velocities.Velocity.Named.sRL;
+		encoders.Velocity.Named.sRR=m_Swerve_Robot_Velocities.Velocity.Named.sRR;
+	}
+	else
+	{
+		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(0);
+		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(1);
+		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(2);
+		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(3);
+	}
+
+	if (m_SwerveRobotProps.IsOpen_Swivel)
+	{
+		encoders.Velocity.Named.aFL=m_Swerve_Robot_Velocities.Velocity.Named.aFL;
+		encoders.Velocity.Named.aFR=m_Swerve_Robot_Velocities.Velocity.Named.aFR;
+		encoders.Velocity.Named.aRL=m_Swerve_Robot_Velocities.Velocity.Named.aRL;
+		encoders.Velocity.Named.aRR=m_Swerve_Robot_Velocities.Velocity.Named.aRR;
+	}
+	else
+	{
+		encoders.Velocity.Named.aFL=m_RobotControl->GetRotaryCurrentPorV(4);
+		encoders.Velocity.Named.aFR=m_RobotControl->GetRotaryCurrentPorV(5);
+		encoders.Velocity.Named.aRL=m_RobotControl->GetRotaryCurrentPorV(6);
+		encoders.Velocity.Named.aRR=m_RobotControl->GetRotaryCurrentPorV(7);
+	}
+
 	//Now the new UpdateVelocities was just called... work with these intended velocities
 	for (size_t i=0;i<4;i++)
 	{
@@ -233,15 +264,6 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	{
 		Vec2d LocalVelocity;
 		double AngularVelocity;
-		SwerveVelocities encoders;
-		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(0);
-		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(1);
-		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(2);
-		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(3);
-		encoders.Velocity.Named.aFL=m_RobotControl->GetRotaryCurrentPorV(4);
-		encoders.Velocity.Named.aFR=m_RobotControl->GetRotaryCurrentPorV(5);
-		encoders.Velocity.Named.aRL=m_RobotControl->GetRotaryCurrentPorV(6);
-		encoders.Velocity.Named.aRR=m_RobotControl->GetRotaryCurrentPorV(7);
 		m_SwerveDrive.InterpolateVelocities(encoders,LocalVelocity,AngularVelocity,dTime_s);
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
