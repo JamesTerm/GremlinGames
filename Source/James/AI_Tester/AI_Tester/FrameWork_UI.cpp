@@ -10,6 +10,7 @@ namespace AI_Tester
 	#include "FRC2011_Robot.h"
 	#include "FRC2012_Robot.h"
 	#include "Swerve_Robot.h"
+	#include "Nona_Robot.h"
 }
 
 using namespace AI_Tester;
@@ -338,8 +339,13 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 				NewShip=new Tank_Robot_UI_Control(EntityName);
 				break;
 			case Ship_Properties::eSwerve_Robot:
-				//NewShip=new Swerve_Drive(EntityName); //less stress
 				NewShip=new Swerve_Robot_UI_Control(EntityName);
+				break;
+			case Ship_Properties::eButterfly_Robot:
+				NewShip=new Butterfly_Robot_UI_Control(EntityName);
+				break;
+			case Ship_Properties::eNona_Robot:
+				NewShip=new Nona_Robot_UI_Control(EntityName);
 				break;
 			case Ship_Properties::eFRC2011_Robot:
 				NewShip=new FRC_2011_Robot_UI(EntityName);

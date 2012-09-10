@@ -575,6 +575,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eCurrent,
 		eTankRobot,
 		eSwerveRobot,
+		eButterflyRobot,
+		eNonaRobot,
 		eRobot2012,
 		eRobot2011,
 		eTestGoals_2011,
@@ -593,6 +595,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"current",
 		"TankRobot",
 		"SwerveRobot",
+		"ButterflyRobot",
+		"NonaRobot",
 		"Robot2012",
 		"Robot2011",
 		"Goals2011",
@@ -643,8 +647,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
-
-	case eCurrent:
 	case eSwerveRobot:
 		{
 			#ifdef _DEBUG
@@ -654,6 +656,27 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
 			Entity2D *TestEntity=_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity);
+		}
+		break;
+	case eButterflyRobot:
+	case eCurrent:
+		{
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eSwerve);
+			Entity2D *TestEntity=_command.AddRobot("Butterfly","TestButterflyRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity);
+		}
+		break;
+	case eNonaRobot:
+		{
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eSwerve);
+			Entity2D *TestEntity=_command.AddRobot("Nona","TestNonaRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
