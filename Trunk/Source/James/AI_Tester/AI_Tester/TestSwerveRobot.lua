@@ -48,7 +48,7 @@ TestShip = {
 		swivel_pid=
 		{p=100, i=0, d=50},
 		latency=0.0,
-		heading_latency=0.0,
+		heading_latency=0.50,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)

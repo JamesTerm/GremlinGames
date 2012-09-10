@@ -47,12 +47,9 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
 	//m_Swivel.SetMatchVelocity(m_IntendedSwivelDirection);
 	//m_Drive.SetMatchVelocity(m_IntendedDriveVelocity);
 
-	//TODO manage voltage
 	//Update the swivel and drive times
-	Entity1D &swivel_entity=m_Swivel;  //This gets around keeping time change protected in derived classes
-	swivel_entity.TimeChange(dTime_s);
-	Entity1D &drive_entity=m_Drive;  //This gets around keeping time change protected in derived classes
-	drive_entity.TimeChange(dTime_s);
+	m_Swivel.AsEntity1D().TimeChange(dTime_s);
+	m_Drive.AsEntity1D().TimeChange(dTime_s);
 }
 
   /***********************************************************************************************************************************/
@@ -254,7 +251,13 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		//Now to grab and update the actual swerve velocities
 		//Note: using GetIntendedVelocities() is a lesser stress for debug purposes
 		#if 1
+		//This is kind of a hack, but since there a threshold on the angular distance tolerance... for open loop we can evaluate when the intended direction is straight ahead and
+		//if the current position distance is substantially small then lock it to zero.  This is no impact on closed loop which can solve this using 'I' in PID, and has no impact
+		//on Nona drive
+		//  [9/9/2012 Terminator]
 		m_Swerve_Robot_Velocities.Velocity.AsArray[i+4]=CurrentSwivelDirection;
+		if ((m_SwerveRobotProps.IsOpen_Swivel) && (IntendedDirection==0.0) && (DistanceToIntendedSwivel<0.005))
+			m_Swerve_Robot_Velocities.Velocity.AsArray[i+4]=0.0;
 		m_Swerve_Robot_Velocities.Velocity.AsArray[i]=CurrentVelocity;
 		#else
 		m_Swerve_Robot_Velocities=GetIntendedVelocities();
@@ -335,18 +338,10 @@ bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplace
 	return ret;
 }
 
-//void Swerve_Robot::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
-//{
-//	m_VoltageOverride=false;
-//	if ((m_UsingEncoders)&&(VelocityToUse==0.0)&&(m_rotDisplacement_rad==0.0))
-//			m_VoltageOverride=true;
-//}
 
 void Swerve_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	m_SwerveDrive.UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	//double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
-	//m_RobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);
 }
 
 void Swerve_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
@@ -993,7 +988,7 @@ void Swerve_Robot_UI::TimeChange(double dTime_s)
 		m_Wheel[i].SetSwivel(_.GetSwerveVelocitiesFromIndex(i+4));
 		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
 		const double LinearVelocity=_.GetSwerveVelocitiesFromIndex(i);
-		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
+		const double PixelHackScale=m_Wheel[i].GetFontSize()/8.0;  //scale the wheels to be pixel aesthetic
 		const double RPS=LinearVelocity /  (PI * _.GetSwerveRobotProps().WheelDiameter * PixelHackScale);
 		const double AngularVelocity=RPS * Pi2;
 		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
