@@ -108,6 +108,8 @@ class Ship_Properties : public Entity_Properties
 			eDefault,
 			eRobotTank,
 			eSwerve_Robot,
+			eButterfly_Robot,
+			eNona_Robot,
 			eFRC2011_Robot,
 			eFRC2012_Robot,
 		};

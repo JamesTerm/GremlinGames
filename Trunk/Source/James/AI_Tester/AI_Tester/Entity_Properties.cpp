@@ -213,6 +213,8 @@ const char * const csz_RobotNames[] =
 {
 	"RobotTank",
 	"RobotSwerve",
+	"RobotButterfly",
+	"RobotNona",
 	"Robot2011",
 	"Robot2012",
 };

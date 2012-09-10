@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Nona_Robot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Physics_1D.cpp"
 				>
 			</File>
@@ -331,6 +335,10 @@
 			</File>
 			<File
 				RelativePath=".\Goal.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Nona_Robot.h"
 				>
 			</File>
 			<File
