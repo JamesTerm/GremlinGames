@@ -331,3 +331,113 @@ double Swerve_Drive::GetSwerveVelocitiesFromIndex(size_t index) const
 {
 	return m_pParent->GetSwerveVelocities().Velocity.AsArray[index];
 }
+
+
+  /***********************************************************************************************************************************/
+ /*															Butterfly_Drive															*/
+/***********************************************************************************************************************************/
+
+Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent)
+{
+	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
+	memset(&m_Velocities,0,sizeof(SwerveVelocities));
+}
+
+void Butterfly_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+{
+	const double Mass=m_pParent->Vehicle_Drive_GetPhysics().GetMass();
+	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
+	const Vec2D &WheelDimensions=m_pParent->GetWheelDimensions();
+
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+
+	//const double D = sqrt((L*L)+(W*W));
+	const double R = m_pParent->GetWheelTurningDiameter();
+
+	//Allow around 2-3 degrees of freedom for rotation.  While manual control worked fine without it, it is needed for
+	//targeting goals (e.g. follow ship)
+
+	Vec2d CurrentVelocity=GlobalToLocal(m_pParent->Vehicle_Drive_GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	//STR=IsZero(STR)?0.0:STR;
+	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
+	//FWD=IsZero(FWD)?0.0:FWD;
+	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
+	//RCW=fabs(RCW)<0.3?0.0:RCW;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (Pi * R);  //R is really diameter
+
+	const double C = FWD - RCW;
+	const double D = FWD + RCW;
+	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
+
+	_.sFL = D;
+	_.sFR = C;
+	_.sRL = D;
+	_.sRR = C;
+
+	#if 0
+	DOUT2("%f %f %f",FWD,STR,RCW);
+	DOUT4("%f %f %f %f",_.sFL,_.sFR,_.sRL,_.sRR);
+	DOUT5("%f %f %f %f",_.aFL,_.aFR,_.aRL,_.aRR);
+	#endif
+	//DOUT4("%f %f %f",FWD,STR,RCW);  //Test accuracy
+
+}
+
+void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+{
+	const SwerveVelocities::uVelocity::Explicit &_=Velocities.Velocity.Named;
+	const Vec2D &WheelDimensions=m_pParent->GetWheelDimensions();
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+	const double D = m_pParent->GetWheelTurningDiameter();
+
+	const double FWD = (_.sFR+_.sFL+_.sRL+_.sRR)/4;
+
+	const double STR = 0.0;
+	const double HP=Pi/2;
+	//const double HalfDimLength=GetWheelDimensions().length()/2;
+
+	//Here we go it is finally working I just needed to take out the last division
+	//const double omega = ((_.sFR*cos(atan2(W,L)+HP))+_.sFL*cos(atan2(-W,L)+(HP))
+	//	+_.sRL*cos(atan2(-W,-L)+(HP)+_.sRR*cos(atan2(W,-L)+(HP)))/4);
+
+	const double omega = (_.sFR*-1.0+_.sFL*1.0+_.sRL*1.0+_.sRR*-1.0)/4;
+
+	LocalVelocity[0]=STR;
+	LocalVelocity[1]=FWD;
+
+	AngularVelocity=(omega / (Pi * D)) * Pi2;
+}
+
+  /***********************************************************************************************************************************/
+ /*																Nona_Drive															*/
+/***********************************************************************************************************************************/
+
+Nona_Drive::Nona_Drive(Swerve_Drive_Interface *Parent) : Butterfly_Drive(Parent),m_KickerWheel(0.0)
+{
+	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
+	memset(&m_Velocities,0,sizeof(SwerveVelocities));
+}
+
+void Nona_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
+{
+	const double Mass=m_pParent->Vehicle_Drive_GetPhysics().GetMass();
+
+	Vec2d CurrentVelocity=GlobalToLocal(m_pParent->Vehicle_Drive_GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	m_KickerWheel=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
+
+	//DOUT5("%f %f",CurrentVelocity[0],m_KickerWheel);
+	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+}
+
+void Nona_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+{
+	__super::InterpolateVelocities(Velocities,LocalVelocity,AngularVelocity,dTime_s);
+	LocalVelocity[0]=m_KickerWheel;
+}

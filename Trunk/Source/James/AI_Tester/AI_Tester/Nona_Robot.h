@@ -2,9 +2,11 @@
 
 class Butterfly_Robot : public Swerve_Robot
 {
-public:
-		Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
-		~Butterfly_Robot();
+	public:
+			Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
+			~Butterfly_Robot();
+	protected:
+		virtual Swerve_Drive *CreateDrive() {return new Butterfly_Drive(this);}
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
@@ -43,9 +45,11 @@ class Butterfly_Robot_UI_Control : public Butterfly_Robot, public Swerve_Robot_C
 
 class Nona_Robot : public Butterfly_Robot
 {
-public:
-		Nona_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
-		~Nona_Robot();
+	public:
+			Nona_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
+			~Nona_Robot();
+	protected:
+		virtual Swerve_Drive *CreateDrive() {return new Nona_Drive(this);}
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control

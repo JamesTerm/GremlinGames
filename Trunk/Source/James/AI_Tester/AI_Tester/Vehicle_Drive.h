@@ -103,10 +103,6 @@ class Swerve_Drive_Interface : public Vehicle_Drive_Common_Interface
 
 class Swerve_Drive : public Vehicle_Drive_Common
 {
-	private:
-		Swerve_Drive_Interface * const m_pParent;
-		//typedef Ship_2D __super;
-		SwerveVelocities m_Velocities;
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
@@ -124,7 +120,36 @@ class Swerve_Drive : public Vehicle_Drive_Common
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 
 		//This method converts the given left right velocities into a form local linear velocity and angular velocity
-		void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
-protected:
+		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+	protected:
+		Swerve_Drive_Interface * const m_pParent;
+		//typedef Ship_2D __super;
+		SwerveVelocities m_Velocities;
 		const SwerveVelocities &GetIntendedVelocities() const {return m_Velocities;}
+};
+
+class Butterfly_Drive : public Swerve_Drive
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		Butterfly_Drive(Swerve_Drive_Interface *Parent);
+
+		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+};
+
+class Nona_Drive : public Butterfly_Drive
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		Nona_Drive(Swerve_Drive_Interface *Parent);
+
+		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
+		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+	private:
+		double m_KickerWheel;
 };

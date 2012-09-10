@@ -97,6 +97,9 @@ class Swerve_Robot : public Ship_Tester,
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 
+		virtual Swerve_Drive *CreateDrive() {return new Swerve_Drive(this);}
+		virtual void DestroyDrive();
+
 		//from Swerve_Drive_Interface
 		virtual const SwerveVelocities &GetSwerveVelocities() const {return m_Swerve_Robot_Velocities;}
 	protected:  //from Vehicle_Drive_Common_Interface
@@ -108,7 +111,7 @@ class Swerve_Robot : public Ship_Tester,
 
 		bool m_IsAutonomous;
 	private:
-		Swerve_Drive m_SwerveDrive;
+		Swerve_Drive * const m_VehicleDrive;
 		//typedef  Tank_Drive __super;
 		Swerve_Drive_Control_Interface * const m_RobotControl;
 
@@ -155,7 +158,7 @@ class Swerve_Robot : public Ship_Tester,
 		double m_Heading;  //We take over the heading from physics
 		double m_HeadingUpdateTimer;
 	public:
-		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_SwerveDrive.GetSwerveVelocitiesFromIndex(index);}
+		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_VehicleDrive->GetSwerveVelocitiesFromIndex(index);}
 };
 
 class Swerve_Robot_Properties : public UI_Ship_Properties

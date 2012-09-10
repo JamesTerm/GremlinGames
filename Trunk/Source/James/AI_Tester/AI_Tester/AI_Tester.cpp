@@ -660,7 +660,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 		break;
 	case eButterflyRobot:
-	case eCurrent:
 		{
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			g_WorldScaleFactor=100.0;
@@ -671,6 +670,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 		break;
 	case eNonaRobot:
+	case eCurrent:
 		{
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			g_WorldScaleFactor=100.0;
@@ -791,7 +791,11 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 
 			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("TankRobot"));
-			Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("SwerveRobot"));
+
+			//Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("SwerveRobot"));
+			//Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("ButterflyRobot"));
+			Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("NonaRobot"));
+
 			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
 			if (!ship)
 			{
@@ -800,8 +804,18 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			}
 			if (!SwerveShip)
 			{
-				_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
-				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
+				#if 0
+				//_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
+				//SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
+				#endif
+				#if 0
+				_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eSwerve);
+				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("ButterflyRobot","TestButterflyRobot",str_3,str_4,str_5));
+				#endif
+				#if 1
+				_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eSwerve);
+				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5));
+				#endif
 			}
 
 			if (!Followship)
