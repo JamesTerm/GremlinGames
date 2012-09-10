@@ -181,10 +181,10 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	}
 	else
 	{
-		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(0);
-		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(1);
-		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(2);
-		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(3);
+		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(eWheel_FL);
+		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(eWheel_FR);
+		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(eWheel_RL);
+		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(eWheel_RR);
 	}
 
 	if (m_SwerveRobotProps.IsOpen_Swivel)
@@ -196,10 +196,10 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	}
 	else
 	{
-		encoders.Velocity.Named.aFL=m_RobotControl->GetRotaryCurrentPorV(4);
-		encoders.Velocity.Named.aFR=m_RobotControl->GetRotaryCurrentPorV(5);
-		encoders.Velocity.Named.aRL=m_RobotControl->GetRotaryCurrentPorV(6);
-		encoders.Velocity.Named.aRR=m_RobotControl->GetRotaryCurrentPorV(7);
+		encoders.Velocity.Named.aFL=m_RobotControl->GetRotaryCurrentPorV(eSwivel_FL);
+		encoders.Velocity.Named.aFR=m_RobotControl->GetRotaryCurrentPorV(eSwivel_FR);
+		encoders.Velocity.Named.aRL=m_RobotControl->GetRotaryCurrentPorV(eSwivel_RL);
+		encoders.Velocity.Named.aRR=m_RobotControl->GetRotaryCurrentPorV(eSwivel_RR);
 	}
 
 	//Now the new UpdateVelocities was just called... work with these intended velocities

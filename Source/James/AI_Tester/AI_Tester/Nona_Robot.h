@@ -46,17 +46,42 @@ class Butterfly_Robot_UI_Control : public Butterfly_Robot, public Swerve_Robot_C
 class Nona_Robot : public Butterfly_Robot
 {
 	public:
-			Nona_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
-			~Nona_Robot();
+		enum Nona_Robot_SpeedControllerDevices
+		{
+			eWheel_Kicker = Swerve_Robot::eNoSwerveRobotSpeedControllerDevices,
+			eNoNonaRobotSpeedControllerDevices
+		};
+
+		Nona_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
+		~Nona_Robot();
 	protected:
-		virtual Swerve_Drive *CreateDrive() {return new Nona_Drive(this);}
+		virtual Swerve_Drive *CreateDrive();
+		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
+	private:
+		Rotary_Angular m_KickerWheel;  //apply control to kicker wheel
+		Nona_Drive * const m_NonaDrive; //cache, avoid needing to dynamic cast each iteration
+};
+
+class Nona_Robot_Control : public Swerve_Robot_Control
+{
+	public:
+		Nona_Robot_Control();
+	protected: //from Rotary_Control_Interface
+		virtual void Reset_Rotary(size_t index=0); 
+		virtual double GetRotaryCurrentPorV(size_t index=0);
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
+
+		virtual void Reset_Encoders();
+	private:
+		Encoder_Simulator2 m_KickerWheelEncoder;
+		double m_KickerWheelVoltage;
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Nona_Robot_UI_Control : public Nona_Robot, public Swerve_Robot_Control
+class Nona_Robot_UI_Control : public Nona_Robot, public Nona_Robot_Control
 {
 	public:
-		Nona_Robot_UI_Control(const char EntityName[]) : Nona_Robot(EntityName,this),Swerve_Robot_Control(),
+		Nona_Robot_UI_Control(const char EntityName[]) : Nona_Robot(EntityName,this),Nona_Robot_Control(),
 			m_NonaUI(this) {}
 
 	protected:
