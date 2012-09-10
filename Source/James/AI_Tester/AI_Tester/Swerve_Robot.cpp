@@ -56,7 +56,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
 Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
-	Ship_Tester(EntityName), m_SwerveDrive(this), m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control), 
+	Ship_Tester(EntityName), m_VehicleDrive(NULL), m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control), 
 	m_UsingEncoders(IsAutonomous), //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 	m_Heading(0.0), m_HeadingUpdateTimer(0.0)
 {
@@ -69,6 +69,12 @@ Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interfac
 		m_DrivingModule[i]=new DrivingModule(ModuleName[i],m_RobotControl,i);
 }
 
+void Swerve_Robot::DestroyDrive() 
+{
+	delete m_VehicleDrive;
+	const_cast<Swerve_Drive *>(m_VehicleDrive)=NULL;
+}
+
 Swerve_Robot::~Swerve_Robot()
 {
 	for (size_t i=0;i<4;i++)
@@ -76,10 +82,12 @@ Swerve_Robot::~Swerve_Robot()
 		delete m_DrivingModule[i];
 		m_DrivingModule[i]=NULL;
 	}
+	DestroyDrive();
 }
 
 void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
+	const_cast<Swerve_Drive *>(m_VehicleDrive)=CreateDrive();
 	__super::Initialize(em,props);
 	m_RobotControl->Initialize(props);
 
@@ -112,7 +120,7 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 void Swerve_Robot::ResetPos()
 {
 	m_Heading=0.0;
-	m_SwerveDrive.ResetPos();
+	m_VehicleDrive->ResetPos();
 	__super::ResetPos();
 	m_RobotControl->Reset_Encoders();
 	for (size_t i=0;i<4;i++)
@@ -197,7 +205,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	//Now the new UpdateVelocities was just called... work with these intended velocities
 	for (size_t i=0;i<4;i++)
 	{
-		const double IntendedDirection=m_SwerveDrive.GetIntendedVelocitiesFromIndex(i+4);
+		const double IntendedDirection=m_VehicleDrive->GetIntendedVelocitiesFromIndex(i+4);
 		double SwivelDirection=IntendedDirection;  //this is either the intended direction or the reverse of it
 		const Ship_1D &Swivel=m_DrivingModule[i]->GetSwivel();
 		//This is normalized implicitly
@@ -226,7 +234,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		//Only apply swivel adjustments if we have significant movement (this matters in targeting tests)
 		if ((fabs(LocalForce[0])>1.5)||(fabs(LocalForce[1])>1.5)||(fabs(m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity()) > 0.05))
 			m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
-		const double IntendedSpeed=m_SwerveDrive.GetIntendedVelocitiesFromIndex(i);
+		const double IntendedSpeed=m_VehicleDrive->GetIntendedVelocitiesFromIndex(i);
 
 		//To minimize error only apply the Y component amount to the velocity
 		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
@@ -267,14 +275,14 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	{
 		Vec2d LocalVelocity;
 		double AngularVelocity;
-		m_SwerveDrive.InterpolateVelocities(encoders,LocalVelocity,AngularVelocity,dTime_s);
+		m_VehicleDrive->InterpolateVelocities(encoders,LocalVelocity,AngularVelocity,dTime_s);
 		//TODO add gyro's yaw readings for Angular velocity here
 		//Store the value here to be picked up in GetOldVelocity()
 		m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
 		m_EncoderAngularVelocity=AngularVelocity;
 	}
 
-	m_SwerveDrive.InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
+	m_VehicleDrive->InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 void Swerve_Robot::TimeChange(double dTime_s)
@@ -334,20 +342,20 @@ bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplace
 	else
 		m_Heading=GetAtt_r();
 	if (!ret)
-		ret=m_SwerveDrive.InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+		ret=m_VehicleDrive->InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	return ret;
 }
 
 
 void Swerve_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	m_SwerveDrive.UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	m_VehicleDrive->UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 }
 
 void Swerve_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	UpdateVelocities(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
-	m_SwerveDrive.ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	m_VehicleDrive->ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 	//We are not going to use these interpolated values in the control (it would corrupt it)... however we can monitor them here, or choose to
 	//view them here as needed
 	Vec2D force;
