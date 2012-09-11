@@ -92,6 +92,66 @@ class Nona_Robot_Control : public Swerve_Robot_Control
 		double m_KickerWheelVoltage;
 };
 
+class Omni_Wheel_UI
+{
+	public:
+		Omni_Wheel_UI() : m_UIParent(NULL) {}
+		typedef osg::Vec2d Vec2D;
+
+		struct Wheel_Properties
+		{
+			Vec2D m_Offset;  //Placement of the wheel in reference to the parent object (default 0,0)
+			double m_Wheel_Diameter; //in meters default 0.1524  (6 inches)
+		};
+
+		void UI_Init(Actor_Text *parent);
+
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		//Keep virtual for special kind of wheels
+		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
+		virtual void Text_SizeToUse(double SizeToUse);
+
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+		//Where 0 is up and 1.57 is right and -1.57 is left
+		void SetSwivel(double SwivelAngle){m_Swivel=-SwivelAngle;}
+		//This will add to the existing rotation and normalize
+		void AddRotation(double RadiansToAdd);
+		double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
+	private:
+		Actor_Text *m_UIParent;
+		Wheel_Properties m_props;
+		osg::ref_ptr<osgText::Text> m_Front,m_Back,m_Tread; //Tread is really a line that helps show speed
+		double m_Rotation,m_Swivel;
+};
+
+///This is only for the simulation where we need not have client code instantiate a Robot_Control
+class Nona_Robot_UI
+{
+	public:
+		typedef osg::Vec2d Vec2D;
+
+		Nona_Robot_UI(Nona_Robot *NonaRobot) : m_NonaRobot(NonaRobot) {}
+	public:
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+
+		virtual void UI_Init(Actor_Text *parent);
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos);
+		virtual void Text_SizeToUse(double SizeToUse);
+
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+
+		virtual void TimeChange(double dTime_s);
+
+	protected:
+		virtual void UpdateVoltage(size_t index,double Voltage) {}
+		virtual void CloseSolenoid(size_t index,bool Close) {}
+
+	private:
+		Nona_Robot * const m_NonaRobot;
+		Omni_Wheel_UI m_Wheel[5];
+};
+
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
 class Nona_Robot_UI_Control : public Nona_Robot, public Nona_Robot_Control
 {
@@ -119,5 +179,5 @@ class Nona_Robot_UI_Control : public Nona_Robot, public Nona_Robot_Control
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_NonaUI.UpdateScene(geode,AddOrRemove);}
 
 	private:
-		Swerve_Robot_UI m_NonaUI;
+		Nona_Robot_UI m_NonaUI;
 };

@@ -81,6 +81,8 @@ class Swerve_Robot : public Ship_Tester,
 		void SetIsAutonomous(bool IsAutonomous);
 		virtual void TimeChange(double dTime_s);
 
+		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
+		const Swerve_Drive_Control_Interface &GetRobotControl() const {return *m_RobotControl;}
 		//Accessors needed for setting goals
 	protected:
 		friend Swerve_Robot_UI;
@@ -90,7 +92,6 @@ class Swerve_Robot : public Ship_Tester,
 		//virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
 		//virtual void BindAdditionalEventControls(bool Bind);
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
-		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
 		virtual void SetAttitude(double radians);  //from ship tester
 
 		//Get the sweet spot between the update and interpolation to avoid oscillation 
