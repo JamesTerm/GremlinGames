@@ -14,13 +14,21 @@ KickerSpeed = (307.13 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's 
 
 Mass=Pounds2Kilograms * 148
 Gravity=9.80665
-CoF_Omni_Radial=0.85
+--Give ability to tweak both sets
+Drive_CoF_Omni_Radial=0.85
+Kicker_CoF_Omni_Radial=0.85
+Kicker_WeightBias=0.33
+Drive_WeightBias=1.0-Kicker_WeightBias
+Kicker_MaxAccel=Kicker_CoF_Omni_Radial * Kicker_WeightBias * Mass * Gravity / Mass  --does not change
+Drive_MaxAccel=  Drive_CoF_Omni_Radial * Drive_WeightBias  * Mass * Gravity / Mass  --does not change
+
 TestShip = {
 
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
-	MaxAccelForward = 4, MaxAccelReverse = 4, 
-	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
+	--MaxAccelForward = 4, MaxAccelReverse = 4, 
+	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
+	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = HighGearSpeed,
@@ -89,8 +97,8 @@ TestShip = {
 		--Using 1 kicker wheel 0.20
 		--0.85 * 13.426 * 9.80665 = 111.914 Newtons
 		--A = Force / Mass = 111.914 / 67.1317 = 1.667
-		max_accel_forward=CoF_Omni_Radial * 0.3333 * Mass * Gravity / Mass,
-		max_accel_reverse=CoF_Omni_Radial * 0.3333 * Mass * Gravity / Mass,
+		max_accel_forward=Kicker_MaxAccel,
+		max_accel_reverse=Kicker_MaxAccel
 	},
 
 	UI =
