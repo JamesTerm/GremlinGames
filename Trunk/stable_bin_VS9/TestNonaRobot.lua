@@ -41,7 +41,7 @@ TestShip = {
 	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2,
 	
 	Dimensions =
-	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
+	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches These are ignored
 	
 	swerve_drive =
 	{
@@ -57,7 +57,6 @@ TestShip = {
 		wheel_base_dimensions =
 		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},
 		
-		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = 6,
 		wheel_pid=
 		{p=200, i=0, d=50},
@@ -101,7 +100,7 @@ TestShip = {
 	UI =
 	{
 		Length=5, Width=5,
-		TextImage="     \n,   ,\n(-+-)\n'   '\n     "
+		TextImage="     \n,   ,\n(   )\n'   '\n     "
 	}
 }
 
