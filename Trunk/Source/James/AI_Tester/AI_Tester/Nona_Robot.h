@@ -54,12 +54,25 @@ class Nona_Robot : public Butterfly_Robot
 
 		Nona_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 		~Nona_Robot();
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 	protected:
 		virtual Swerve_Drive *CreateDrive();
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 	private:
 		Rotary_Angular m_KickerWheel;  //apply control to kicker wheel
 		Nona_Drive * const m_NonaDrive; //cache, avoid needing to dynamic cast each iteration
+};
+
+class Nona_Robot_Properties : public Swerve_Robot_Properties
+{
+	public:
+		Nona_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+
+		const Rotary_Properties &GetKickerWheelProps() const {return m_KickerWheelProps;}
+	private:
+		//Note the kicker wheel properties is a measurement of linear movement (not angular velocity)
+		Rotary_Properties m_KickerWheelProps;
 };
 
 class Nona_Robot_Control : public Swerve_Robot_Control
@@ -71,6 +84,8 @@ class Nona_Robot_Control : public Swerve_Robot_Control
 		virtual double GetRotaryCurrentPorV(size_t index=0);
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
 
+		virtual void Swerve_Drive_Control_TimeChange(double dTime_s);
+		virtual void Initialize(const Entity_Properties *props);
 		virtual void Reset_Encoders();
 	private:
 		Encoder_Simulator2 m_KickerWheelEncoder;

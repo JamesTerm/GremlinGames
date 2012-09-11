@@ -7,8 +7,9 @@ Meters2Inches=39.3700787
 
 wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
-HighGearSpeed = (427.68 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (167.06 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
+HighGearSpeed = (492.83 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
+LowGearSpeed  = (184.81 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
+KickerSpeed = (307.13 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
 
 TestShip = {
 
@@ -50,14 +51,35 @@ TestShip = {
 		latency=0.0,
 		heading_latency=0.50,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
-		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		--This is obtained from stage 2 in the general gear ratios
+		encoder_to_wheel_ratio=1.0,			
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage_wheel=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		--curve_voltage_swivel=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
+	},
+
+	kicker =
+	{
+		is_closed='yes',
+		show_pid_dump='no',
+		ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
+		pid=
+		{p=200, i=0, d=50 },
+		latency=0.0,
+		encoder_to_wheel_ratio=0.7,     --Just use the gearing ratios here
+		voltage_multiply=1.0,
+		curve_voltage=
+		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+
+		length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+		max_speed=KickerSpeed,			--8.04 feet per second From spread sheet
+		accel=10.0,						--These are only needed if we bind keys for power in meters per second
+		brake=10.0,
+		max_accel_forward=4,			--These are in radians, plan on increasing these as much as possible
+		max_accel_reverse=4,			--The wheel may some time to ramp up
 	},
 
 	UI =
