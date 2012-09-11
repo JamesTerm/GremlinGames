@@ -4,6 +4,7 @@ Inches2Meters=0.0254
 Feet2Meters=0.3048
 Meters2Feet=3.2808399
 Meters2Inches=39.3700787
+Pounds2Kilograms=0.453592
 
 wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -11,6 +12,9 @@ HighGearSpeed = (492.83 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM'
 LowGearSpeed  = (184.81 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
 KickerSpeed = (307.13 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
 
+Mass=Pounds2Kilograms * 148
+Gravity=9.80665
+CoF_Omni_Radial=0.85
 TestShip = {
 
 	Mass = 25, -- Weight kg
@@ -78,8 +82,15 @@ TestShip = {
 		max_speed=KickerSpeed,			--8.04 feet per second From spread sheet
 		accel=10.0,						--These are only needed if we bind keys for power in meters per second
 		brake=10.0,
-		max_accel_forward=4,			--These are in radians, plan on increasing these as much as possible
-		max_accel_reverse=4,			--The wheel may some time to ramp up
+		--These are low because of traction
+		--Using 2 kicker wheels 0.3333
+		--0.85 * 15.1197 * 9.80665 = 126.0325 Newtons
+		--A = Force / Mass = 126.0325 / 67.1317 = 1.877
+		--Using 1 kicker wheel 0.20
+		--0.85 * 13.426 * 9.80665 = 111.914 Newtons
+		--A = Force / Mass = 111.914 / 67.1317 = 1.667
+		max_accel_forward=CoF_Omni_Radial * 0.3333 * Mass * Gravity / Mass,
+		max_accel_reverse=CoF_Omni_Radial * 0.3333 * Mass * Gravity / Mass,
 	},
 
 	UI =
