@@ -91,12 +91,6 @@ TestShip = {
 		accel=10.0,						--These are only needed if we bind keys for power in meters per second
 		brake=10.0,
 		--These are low because of traction
-		--Using 2 kicker wheels 0.3333
-		--0.85 * 15.1197 * 9.80665 = 126.0325 Newtons
-		--A = Force / Mass = 126.0325 / 67.1317 = 1.877
-		--Using 1 kicker wheel 0.20
-		--0.85 * 13.426 * 9.80665 = 111.914 Newtons
-		--A = Force / Mass = 111.914 / 67.1317 = 1.667
 		max_accel_forward=Kicker_MaxAccel,
 		max_accel_reverse=Kicker_MaxAccel
 	},
