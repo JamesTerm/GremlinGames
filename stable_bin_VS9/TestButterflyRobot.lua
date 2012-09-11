@@ -67,4 +67,4 @@ TestShip = {
 	}
 }
 
-RobotSwerve = TestShip
+RobotButterfly = TestShip
