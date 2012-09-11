@@ -188,6 +188,8 @@ class Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 {
 	public:
 		Swerve_Robot_Control();
+		void SetDisplayVoltage(bool display) {m_DisplayVoltage=display;}
+
 		//This is only needed for simulation
 	protected: //from Rotary_Control_Interface
 		virtual void Reset_Rotary(size_t index=0); 

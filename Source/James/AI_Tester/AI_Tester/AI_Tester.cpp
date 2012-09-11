@@ -14,6 +14,7 @@ namespace AI_Tester
 	#include "FRC2011_Robot.h"
 	#include "FRC2012_Robot.h"
 	#include "Swerve_Robot.h"
+	#include "Nona_Robot.h"
 }
 
 void cls(void *hConsole=NULL);
@@ -284,6 +285,8 @@ private:
 	RobotMap Robot_Database;
 	typedef map<string ,Swerve_Robot_Properties,greater<string>> SwerveRobotMap;
 	SwerveRobotMap SwerveRobot_Database;
+	typedef map<string ,Nona_Robot_Properties,greater<string>> NonaRobotMap;
+	NonaRobotMap NonaRobot_Database;
 
 	typedef map<string ,FRC_2011_Robot_Properties,greater<string>> Robot2011Map;
 	Robot2011Map Robot2011_Database;
@@ -340,6 +343,8 @@ public:
 	{
 		eTank,
 		eSwerve,
+		eButterfly,
+		eNona,
 		e2011,
 		e2012
 	};
@@ -360,6 +365,7 @@ public:
 				}
 				break;
 			case eSwerve:
+			case eButterfly:
 				{
 					SwerveRobotMap::iterator iter=SwerveRobot_Database.find(RobotName);
 					if (iter==SwerveRobot_Database.end())
@@ -367,6 +373,17 @@ public:
 						//New entry
 						SwerveRobot_Database[RobotName]=Swerve_Robot_Properties();
 						new_entry=&SwerveRobot_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
+			case eNona:
+				{
+					NonaRobotMap::iterator iter=NonaRobot_Database.find(RobotName);
+					if (iter==NonaRobot_Database.end())
+					{
+						//New entry
+						NonaRobot_Database[RobotName]=Nona_Robot_Properties();
+						new_entry=&NonaRobot_Database[RobotName];  //reference to avoid copy
 					}
 				}
 				break;
@@ -418,6 +435,13 @@ public:
 		{
 			SwerveRobotMap::iterator iter=SwerveRobot_Database.find(str_2);
 			if (iter!=SwerveRobot_Database.end())
+				props=&((*iter).second);
+		}
+
+		if (props==NULL)
+		{
+			NonaRobotMap::iterator iter=NonaRobot_Database.find(str_2);
+			if (iter!=NonaRobot_Database.end())
 				props=&((*iter).second);
 		}
 
@@ -664,7 +688,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eSwerve);
+			_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eButterfly);
 			Entity2D *TestEntity=_command.AddRobot("Butterfly","TestButterflyRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
@@ -675,7 +699,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eSwerve);
+			_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eNona);
 			Entity2D *TestEntity=_command.AddRobot("Nona","TestNonaRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
@@ -809,11 +833,11 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				//SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
 				#endif
 				#if 0
-				_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eSwerve);
+				_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eButterfly);
 				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("ButterflyRobot","TestButterflyRobot",str_3,str_4,str_5));
 				#endif
 				#if 1
-				_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eSwerve);
+				_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eNona);
 				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5));
 				#endif
 			}
