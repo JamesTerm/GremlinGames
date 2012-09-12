@@ -91,10 +91,16 @@ void Tank_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	const double Mass=m_pParent->Vehicle_Drive_GetPhysics().GetMass();
 	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
 	//FWD=IsZero(FWD)?0.0:FWD;
+	const Vec2D &WheelDimensions=m_pParent->GetWheelDimensions();
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+	const double inv_skid=1.0/cos(atan2(W,L));
 	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
 	//RCW=fabs(RCW)<0.3?0.0:RCW;
 	double RPS=RCW / Pi2;
-	RCW=RPS * (Pi * D);  //D is the turning diameter
+	RCW=RPS * (Pi * D) * inv_skid;  //D is the turning diameter
 
 	m_LeftLinearVelocity = FWD + RCW;
 	m_RightLinearVelocity = FWD - RCW;
@@ -119,7 +125,13 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
 	//Here we go it is finally working I just needed to take out the last division
-	const double omega = ((LeftLinearVelocity) + (RightLinearVelocity*-1))/2.0;
+	const Vec2D &WheelDimensions=m_pParent->GetWheelDimensions();
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+	const double skid=cos(atan2(W,L));
+	const double omega = ((LeftLinearVelocity*skid) + (RightLinearVelocity*-skid))/2.0;
 
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
@@ -364,10 +376,11 @@ void Butterfly_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2
 	//STR=IsZero(STR)?0.0:STR;
 	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
 	//FWD=IsZero(FWD)?0.0:FWD;
+	const double inv_skid=1.0/cos(atan2(W,L));
 	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
 	//RCW=fabs(RCW)<0.3?0.0:RCW;
 	double RPS=RCW / Pi2;
-	RCW=RPS * (Pi * R);  //R is really diameter
+	RCW=RPS * (Pi * R) * inv_skid;  //R is really diameter
 
 	const double C = FWD - RCW;
 	const double D = FWD + RCW;
@@ -406,8 +419,8 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 	//Here we go it is finally working I just needed to take out the last division
 	//const double omega = ((_.sFR*cos(atan2(W,L)+HP))+_.sFL*cos(atan2(-W,L)+(HP))
 	//	+_.sRL*cos(atan2(-W,-L)+(HP)+_.sRR*cos(atan2(W,-L)+(HP)))/4);
-
-	const double omega = (_.sFR*-1.0+_.sFL*1.0+_.sRL*1.0+_.sRR*-1.0)/4;
+	const double skid=cos(atan2(W,L));
+	const double omega = (_.sFR*-skid+_.sFL*skid+_.sRL*skid+_.sRR*-skid)/4;
 
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
