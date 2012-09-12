@@ -18,6 +18,12 @@ class Vehicle_Drive_Common_Interface
 		virtual PhysicsEntity_2D &Vehicle_Drive_GetPhysics_RW()=0;
 };
 
+//The way the drive works is like the following:
+//1.  Get desired velocity (e.g. from distance)
+//2.  Update Voltage
+//3.  PID
+//4.  Translate velocity
+//5.  Inject displacement
 class Vehicle_Drive_Common
 {
 	public:
