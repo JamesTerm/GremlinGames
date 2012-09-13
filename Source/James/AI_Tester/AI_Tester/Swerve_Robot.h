@@ -103,6 +103,8 @@ class Swerve_Robot : public Ship_Tester,
 
 		//from Swerve_Drive_Interface
 		virtual const SwerveVelocities &GetSwerveVelocities() const {return m_Swerve_Robot_Velocities;}
+		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),m_EncoderGlobalVelocity);}
+		virtual double GetAngularVelocity_ToDisplay() {return m_EncoderAngularVelocity;}
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 		virtual double GetWheelTurningDiameter() const {return m_WheelDimensions.length();}

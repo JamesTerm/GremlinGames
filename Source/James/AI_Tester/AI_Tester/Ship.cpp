@@ -79,9 +79,9 @@ void Ship_2D::ResetPos()
 	//Setting this to true allows starting from an arbitrary position and it not auto adjust to the intended orientation
 	//for AI and Remote... they will implicitly clear this once the send the first intended orientation
 	m_LockShipHeadingToOrientation=true;
-	m_RequestedVelocity = 0.0;
+	m_RequestedVelocity[0]=m_RequestedVelocity[1] = 0.0;
 	//m_Last_AccDel = 0.0;
-	m_Last_RequestedVelocity=-1.0;
+	m_Last_RequestedVelocity[0]=m_Last_RequestedVelocity[1]=-1.0;
 	m_rotAccel_rad_s = m_rotDisplacement_rad = 0.0;
 	m_currAccel =	Vec2d(0,0);
 	m_IntendedOrientation=GetAtt_r();
@@ -98,10 +98,10 @@ void Ship_2D::SetSimFlightMode(bool SimFlightMode)
 	if (m_SimFlightMode!=SimFlightMode)
 	{
 		//Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
-		//m_RequestedVelocity=LocalVelocity[1];
+		//m_RequestedVelocity=LocalVelocity;
 		//unfortunately a slide turn maneuver requires this, but fortunately is is for UI.  This is not perfect if the user intended to go backwards
 		//but that would not be something desirable
-		m_RequestedVelocity=m_Physics.GetLinearVelocity().length(); 
+		m_RequestedVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity()); 
 		m_SimFlightMode=SimFlightMode;	
 		DebugOutput("SimFlightMode=%d\n",SimFlightMode);
 	}
@@ -125,12 +125,19 @@ void Ship_2D::SetRequestedVelocity(double Velocity)
 	//assert(IsLocallyControlled());
 	SetSimFlightMode(true);
 	if (Velocity>0.0)
-		m_RequestedVelocity=MIN(Velocity,GetMaxSpeed());
+		m_RequestedVelocity[1]=MIN(Velocity,GetMaxSpeed());
 	else
-		m_RequestedVelocity=MAX(Velocity,-GetMaxSpeed());
-
+		m_RequestedVelocity[1]=MAX(Velocity,-GetMaxSpeed());
+	m_RequestedVelocity[0]=0;
 }
 
+void Ship_2D::SetRequestedVelocity(Vec2D Velocity)
+{
+	//Note: with 2D submissions we do not need to manually set sim mode 
+	//assert(IsLocallyControlled());
+	m_RequestedVelocity=Velocity;  //I'm not doing speed checking for this one (this will be checked later anyhow)
+	//DOUT5("%f %f",m_RequestedVelocity[0],m_RequestedVelocity[1]);
+}
 
 #if 0
 Vec3d Ship_2D::GetArtificialHorizonComponent() const
@@ -316,8 +323,8 @@ void Ship_2D::TimeChange(double dTime_s)
 	//Vec3d LocalVelocity(GetAtt_quat().conj() * m_Physics.GetLinearVelocity());
 	Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	double currVelocity = LocalVelocity[1];
-	bool manualMode = !((m_SimFlightMode)&&(m_currAccel[0]==0));
-	bool afterBurnerOn = (m_RequestedVelocity > GetEngaged_Max_Speed());
+	bool manualMode = !m_SimFlightMode;
+	bool afterBurnerOn = (m_RequestedVelocity[1] > GetEngaged_Max_Speed());
 	bool afterBurnerBrakeOn = (fabs(currVelocity) > GetEngaged_Max_Speed());
 	//const FlightCharacteristics& currFC((afterBurnerOn||afterBurnerBrakeOn) ? Afterburner_Characteristics : GetFlightCharacteristics());
 
@@ -392,16 +399,16 @@ void Ship_2D::TimeChange(double dTime_s)
 		//The most undesired effect is that when no delta is applied neither should any extra force be applied.  There is indeed a distinction
 		//between cruise control (e.g. slider) and using a Key button entry in this regard.  The else case here keeps these more separated where
 		//you are either using one mode or the other
-		double VelocityDelta=m_currAccel[1]*dTime_s;
+		Vec2d VelocityDelta=m_currAccel*dTime_s;
 
 		bool UsingRequestedVelocity=false;
 		bool YawPitchActive=(fabs(m_rotDisplacement_rad)>0.001);
 
 		//Note: m_RequestedVelocity is not altered with the velocity delta, but it will keep up to date
-		if (VelocityDelta!=0) //if user is changing his adjustments then reset the velocity to current velocity
+		if (VelocityDelta[1]!=0) //if user is changing his adjustments then reset the velocity to current velocity
 		{
 			if (!YawPitchActive)
-				m_RequestedVelocity=m_Last_RequestedVelocity=currVelocity+VelocityDelta;
+				m_RequestedVelocity=m_Last_RequestedVelocity=LocalVelocity+VelocityDelta;
 			else
 			{
 				//If speeding/braking during hard turns do not use currVelocity as the centripetal forces will lower it
@@ -418,7 +425,7 @@ void Ship_2D::TimeChange(double dTime_s)
 				//active the requested velocity mode by setting this to 0 (this will keep it on until a new velocity delta is used)
 				//TODO work out a new system for resetting this I cannot use zero, but -1 is not correct either since we can use
 				//negative direction
-				m_Last_RequestedVelocity=-1.0;  
+				m_Last_RequestedVelocity[0]=m_Last_RequestedVelocity[1]=-1.0;  
 				UsingRequestedVelocity=true;
 			}
 			else
@@ -426,7 +433,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		}
 
 		//Just transfer the acceleration directly into our velocity to use variable
-		double VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:currVelocity+VelocityDelta;
+		Vec2d VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:LocalVelocity+VelocityDelta;
 
 		#if 0
 		if (stricmp(GetName().c_str(),"Q33_2")==0)
@@ -441,18 +448,18 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			if (m_currAccel[1]<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
 			{
-				if ((VelocityToUse) < -ENGAGED_MAX_SPEED)
+				if ((VelocityToUse[1]) < -ENGAGED_MAX_SPEED)
 				{
-					m_RequestedVelocity = VelocityToUse = -ENGAGED_MAX_SPEED;
+					m_RequestedVelocity[1] = VelocityToUse[1] = -ENGAGED_MAX_SPEED;
 					m_currAccel[1]=0.0;
 				}
 			}
 			else 
 			{
 				double MaxSpeed=afterBurnerOn?MAX_SPEED:ENGAGED_MAX_SPEED;
-				if ((VelocityToUse) > MaxSpeed)
+				if ((VelocityToUse[1]) > MaxSpeed)
 				{
-					m_RequestedVelocity=VelocityToUse=MaxSpeed;
+					m_RequestedVelocity[1]=VelocityToUse[1]=MaxSpeed;
 					m_currAccel[1]=0.0;
 				}
 			}
@@ -462,9 +469,9 @@ void Ship_2D::TimeChange(double dTime_s)
 		Vec2d GlobalForce;
 		if (UsingRequestedVelocity)
 		{
-			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),VelocityToUse),dTime_s);
+			GlobalForce=m_Physics.GetForceFromVelocity(LocalToGlobal(GetAtt_r(),VelocityToUse),dTime_s);
 			//Allow subclass to evaluate the requested velocity in use;
-			RequestedVelocityCallback(VelocityToUse,dTime_s);
+			RequestedVelocityCallback(VelocityToUse[1],dTime_s);
 		}
 		else
 		{
