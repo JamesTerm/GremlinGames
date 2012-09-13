@@ -49,7 +49,8 @@ class Ship_2D : public Ship
 		///This implicitly will place back in auto mode with a speed of zero
 		void Stop(){SetRequestedVelocity(0.0);}
 		void SetRequestedVelocity(double Velocity);
-		double GetRequestedVelocity(){return m_RequestedVelocity;}
+		void SetRequestedVelocity(Vec2D Velocity);
+		double GetRequestedVelocity(){return m_RequestedVelocity[1];}
 		void FireAfterburner() {SetRequestedVelocity(GetMaxSpeed());}
 		void SetCurrentLinearAcceleration(const Vec2D &Acceleration) {m_currAccel=Acceleration;}
 
@@ -102,6 +103,9 @@ class Ship_2D : public Ship
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		//Its possible that each ship may have its own specific controls
 		virtual void BindAdditionalUIControls(bool Bind, void *joy) {}
+		//Override to get sensor/encoder's real velocity
+		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),GetPhysics().GetLinearVelocity());}
+		virtual double GetAngularVelocity_ToDisplay() {return GetPhysics().GetAngularVelocity();}
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
@@ -161,7 +165,7 @@ class Ship_2D : public Ship
 		double EngineDeceleration,EngineRampStrafe;
 	
 		//Use this technique when m_AlterTrajectory is true
-		double m_RequestedVelocity;
+		Vec2D m_RequestedVelocity;
 		double m_AutoLevelDelay; ///< The potential gimbal lock, and user rolling will trigger a delay for the autolevel (when enabled)
 		double m_HeadingSpeedScale; //used by auto pilot control to have slower turn speeds for way points
 		double m_rotAccel_rad_s;
@@ -185,7 +189,7 @@ class Ship_2D : public Ship
 		Threshold_Averager<eThrustState,5> m_thrustState_Average;
 		eThrustState m_thrustState;
 		//double m_Last_AccDel;  ///< This monitors a previous AccDec session to determine when to reset the speed
-		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
+		Vec2D m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
 
 		// When notifying everything about thrusters, we want to keep a bit of an averager
 		Averager<osg::Vec3d, 5> m_ThrustReported_Averager;

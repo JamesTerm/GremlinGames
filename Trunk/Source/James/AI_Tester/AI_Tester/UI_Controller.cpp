@@ -608,7 +608,7 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
 				{
-					m_ship->SetRequestedVelocity(SpeedCalibrated);
+					//m_ship->SetRequestedVelocity(SpeedCalibrated);
 					m_CruiseSpeed=SpeedCalibrated;
 				}
 			}
@@ -632,7 +632,7 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
 				{
-					m_ship->SetRequestedVelocity(SpeedCalibrated);
+					//m_ship->SetRequestedVelocity(SpeedCalibrated);
 					m_CruiseSpeed=SpeedCalibrated;
 				}
 			}
@@ -696,7 +696,11 @@ void UI_Controller::UpdateController(double dTime_s)
 			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
 
 			// apply various input sources to current acceleration
-			m_ship->SetCurrentLinearAcceleration(shipAccel); 
+			if (m_ship->GetAlterTrajectory())
+				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+shipAccel[1])); //this will check implicitly for which mode to use
+			else
+				m_ship->SetCurrentLinearAcceleration(shipAccel); 
+
 			
 			//flush the JoyMouse current acceleration vec2 since it works on an additive nature
 			m_Ship_JoyMouse_currAccel=Vec2d(0.0,0.0);
@@ -748,8 +752,9 @@ void UI_Controller::UpdateUI(double dTime_s)
 	{
 		#if 1
 		Vec2d pos=m_ship->GetPos_m();
-		DOUT(1,"x=%f y=%f r=%f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
-		DOUT(3,"Speed=%f mode=%s",Meters2Feet(m_ship->GetPhysics().GetLinearVelocity().length()),m_ship->GetAlterTrajectory()?"Sim":"Slide");
+		DOUT(1,"x=%.2f y=%.2f r=%.2f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
+		Vec2d Velocity=m_ship->GetLinearVelocity_ToDisplay();
+		DOUT(3,"Vel[0]=%.2f Vel[1]=%.2f Rot=%.2f mode=%s",Meters2Feet(Velocity[0]),Meters2Feet(Velocity[1]),m_ship->GetAngularVelocity_ToDisplay(),m_ship->GetAlterTrajectory()?"Sim":"Slide");
 		#endif
 		#if 0
 		Vec2d pos=m_ship->GetPos_m();
