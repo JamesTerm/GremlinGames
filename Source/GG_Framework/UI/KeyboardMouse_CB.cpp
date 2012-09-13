@@ -156,8 +156,10 @@ void KeyboardMouse_CB::BindToPrefs(const XMLNode &userPrefsNode)
 					if (GetAttributeBool(eventNode,"shift",false))
 						key.flags |= osgGA::GUIEventAdapter::MODKEY_SHIFT;
 
-					if (GetAttributeBool(eventNode,"dbl",false))
-						key.flags |= Key::DBL;
+					//TODO fix double click to work properly on vista, win 7 systems
+					//  [9/13/2012 JamesK]
+					//if (GetAttributeBool(eventNode,"dbl",false))
+					//	key.flags |= Key::DBL;
 
 					bool useOnOff=GetAttributeBool(eventNode,"onOff",true);
 
