@@ -191,7 +191,8 @@ UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystic
 	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
 	JoyStick_Binder &joy = MainWindow::GetMainWindow()->GetJoystick();
 	kbm.AddKeyBindingR(true, "Ship.TryFireMainWeapon", osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON);
-	kbm.AddKeyBindingR(true, "RequestAfterburner", GG_Framework::Base::Key('w', GG_Framework::Base::Key::DBL));
+	//disabled until it works
+	//kbm.AddKeyBindingR(true, "RequestAfterburner", GG_Framework::Base::Key('w', GG_Framework::Base::Key::DBL));
 	kbm.AddKeyBindingR(true, "Thrust", GG_Framework::Base::Key('w'));
 	kbm.AddKeyBindingR(true, "Brake", 's');
 	kbm.AddKeyBindingR(false, "Stop", 'x');
@@ -334,7 +335,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 	if (m_Base)
 	{
 		Entity2D::EventMap* em = m_ship->GetEventMap();
-		em->EventOnOff_Map["RequestAfterburner"].Remove(*this, &UI_Controller::AfterBurner_Thrust);
+		//disabled until it works
+		//em->EventOnOff_Map["RequestAfterburner"].Remove(*this, &UI_Controller::AfterBurner_Thrust);
 		em->EventOnOff_Map["Thrust"].Remove(*this, &UI_Controller::Thrust);
 		em->EventOnOff_Map["Brake"].Remove(*this, &UI_Controller::Brake);
 		em->Event_Map["Stop"].Remove(*this, &UI_Controller::Stop);
@@ -343,6 +345,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["UserResetPos"].Remove(*this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Remove(*this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Remove(*this, &UI_Controller::ToggleSlide);
+		em->EventOnOff_Map["SlideHold"].Remove(*this, &UI_Controller::SlideHold);
 		em->EventOnOff_Map["StrafeLeft"].Remove(*this, &UI_Controller::StrafeLeft);
 		em->EventOnOff_Map["StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->Event_Map["ToggleAutoPilot"].Remove(*this, &UI_Controller::TryToggleAutoPilot);
@@ -366,8 +369,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		m_ship=&m_Base->m_ship;
 		m_mouseDriver=new Mouse_ShipDriver(*m_ship,this, 3);
 		Entity2D::EventMap* em = m_ship->GetEventMap();
-
-		em->EventOnOff_Map["RequestAfterburner"].Subscribe(ehl, *this, &UI_Controller::AfterBurner_Thrust);
+		//disabled until it works
+		//em->EventOnOff_Map["RequestAfterburner"].Subscribe(ehl, *this, &UI_Controller::AfterBurner_Thrust);
 		em->EventOnOff_Map["Thrust"].Subscribe(ehl, *this, &UI_Controller::Thrust);
 		em->EventOnOff_Map["Brake"].Subscribe(ehl, *this, &UI_Controller::Brake);
 		em->Event_Map["Stop"].Subscribe(ehl, *this, &UI_Controller::Stop);
@@ -376,6 +379,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["UserResetPos"].Subscribe(ehl, *this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Subscribe(ehl, *this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Subscribe(ehl, *this, &UI_Controller::ToggleSlide);
+		em->EventOnOff_Map["SlideHold"].Subscribe(ehl, *this, &UI_Controller::SlideHold);
 		em->EventOnOff_Map["StrafeLeft"].Subscribe(ehl, *this, &UI_Controller::StrafeLeft);
 		em->EventOnOff_Map["StrafeRight"].Subscribe(ehl, *this, &UI_Controller::StrafeRight);
 		em->Event_Map["ToggleAutoPilot"].Subscribe(ehl, *this, &UI_Controller::TryToggleAutoPilot);
@@ -419,9 +423,10 @@ void UI_Controller::UseMouse()
 }
 
 void UI_Controller::Ship_AfterBurner_Thrust(bool on)	
-{		
+{	
+	//Note this will happen implicitly
 	// Touching the Afterburner always places us back in SImFLight mode
-	m_ship->SetSimFlightMode(true);
+	//m_ship->SetSimFlightMode(true);
 
 	// Set the current requested speed for the ship based on whether we are turning afterburner on or off
 	if (on)
@@ -614,7 +619,7 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 			}
 		}
 		else
-			Ship_Thrust(0.0);
+			m_Ship_JoyMouse_currAccel[1]=Speed;
 	}
 }
 
@@ -638,7 +643,7 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 			}
 		}
 		else
-			Ship_Thrust(0.0);
+			m_Ship_JoyMouse_currAccel[1]=Speed;
 	}
 }
 

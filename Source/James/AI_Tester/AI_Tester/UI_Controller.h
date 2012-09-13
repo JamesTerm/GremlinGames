@@ -53,6 +53,7 @@ class UI_Controller
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
 		virtual void ResetPos();
 		void UserResetPos();
+		void SlideHold(bool holdslide) {if (AreControlsDisabled()) return; m_ship->SetSimFlightMode(!holdslide);}
 		void ToggleSlide() {if (AreControlsDisabled()) return; m_ship->SetSimFlightMode(!m_ship->GetAlterTrajectory());}
 		void ToggleAutoLevel();
 		void StrafeLeft(bool on) {if (AreControlsDisabled() && on) return; Ship_StrafeLeft(on);}
