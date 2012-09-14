@@ -960,7 +960,7 @@ void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 				{
 					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
 					p_joy->AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
-						analog.FilterRange,analog.IsSquared,control.Controller.c_str());
+						analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
 				}
 				break;
 			case UI_Controller::Controller_Element_Properties::eJoystickButton:

@@ -100,7 +100,7 @@ class UI_Controller
 					bool IsFlipped;
 					double Multiplier;
 					double FilterRange;
-					bool IsSquared;
+					double CurveIntensity;
 				} Analog;
 				struct ButtonSpecifics_rw
 				{
