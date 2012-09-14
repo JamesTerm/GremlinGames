@@ -64,10 +64,10 @@ void JoyStick_Binder::SetControlledEventMap(GG_Framework::UI::EventMap* em)
 }
 
 void JoyStick_Binder::AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped,double Multiplier,
-															  double FilterRange,bool isSquared,const char ProductName[])
+															  double FilterRange,double CurveIntensity,const char ProductName[])
 {
 	
-	Analog_EventEntry key(WhichAxis,ProductName,IsFlipped,Multiplier,FilterRange,isSquared);
+	Analog_EventEntry key(WhichAxis,ProductName,IsFlipped,Multiplier,FilterRange,CurveIntensity);
 	std::vector<std::string> *eventNames = m_JoyAnalogBindings[key];
 	if (!eventNames)
 	{
@@ -145,10 +145,10 @@ void JoyStick_Binder::AddJoy_Button_Binding(size_t WhichButton,const char eventN
 
 
 void JoyStick_Binder::AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped,double Multiplier,
-											double FilterRange,bool isSquared,const char ProductName[])
+											double FilterRange,double CurveIntensity,const char ProductName[])
 {
 	if (!m_Config->InterceptDefaultKey(eventName,"joystick_analog"))
-		AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,isSquared,ProductName);
+		AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName);
 }
 
 void JoyStick_Binder::AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff,bool dbl_click,const char ProductName[])
@@ -247,7 +247,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 								Temp=(Temp>=key.FilterRange) ? Temp-key.FilterRange:0.0; 
 
 								Temp=key.Multiplier*(Temp/(1.0-key.FilterRange)); //apply scale first then 
-								if (key.isSquared) Temp*=Temp;  //square it if it is squared
+								Temp=key.CurveIntensity*pow(Temp,3) + (1.0-key.CurveIntensity)*Temp; //apply the curve intensity
 
 								//Now to restore the sign
 								Value=(Value<0.0)?-Temp:Temp;
@@ -371,10 +371,10 @@ void JoyStick_Binder::BindToPrefs(const XMLNode &userPrefsNode)
 				bool isFlipped=ConfigurationManager::GetAttributeBool(eventNode,"isFlipped",false);
 				double Multiplier=ConfigurationManager::GetAttributeDouble(eventNode,"Multiplier",1.0);
 				double FilterRange=ConfigurationManager::GetAttributeDouble(eventNode,"FilterRange",0.0);
-				bool isSquared=ConfigurationManager::GetAttributeBool(eventNode,"isSquared",false);
+				double CurveIntensity=ConfigurationManager::GetAttributeDouble(eventNode,"CurveIntensity",0.0);
 				const char *Product=ConfigurationManager::GetAttributeString(eventNode,"product","any");
 
-				AddJoy_Analog_Binding(WhichAxis,eventNode.getName(),isFlipped,Multiplier,FilterRange,isSquared,Product);
+				AddJoy_Analog_Binding(WhichAxis,eventNode.getName(),isFlipped,Multiplier,FilterRange,CurveIntensity,Product);
 			}
 		}
 	}
@@ -427,7 +427,7 @@ void JoyStick_Binder::WriteSettings(XMLNode &node,std::vector<XMLNode> &vectorXM
 						//TODO support these
 						childNode.addAttribute("Multiplier", BuildString("%f",((*iter->second)[i].Multiplier)).c_str());
 						childNode.addAttribute("FilterRange", BuildString("%f",((*iter->second)[i].FilterRange)).c_str());
-						childNode.addAttribute("isSquared", ((*iter->second)[i].isSquared)?"1":"0");
+						childNode.addAttribute("CurveIntensity", BuildString("%f",((*iter->second)[i].CurveIntensity)).c_str());
 					}
 					vectorXMLNodes.push_back(childNode);
 				}
