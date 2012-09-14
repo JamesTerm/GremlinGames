@@ -28,7 +28,7 @@ Drive_MaxAccel=  Drive_CoF_Omni_Radial * Drive_WeightBias  * Mass * Gravity / Ma
 TestShip = {
 
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 20, MaxAccelRight = 20, 
+	MaxAccelLeft = Kicker_MaxAccel, MaxAccelRight = Kicker_MaxAccel, 
 	--MaxAccelForward = 4, MaxAccelReverse = 4, 
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 

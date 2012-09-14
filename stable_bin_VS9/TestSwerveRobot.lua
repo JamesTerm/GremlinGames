@@ -13,7 +13,7 @@ LowGearSpeed  = (167.06 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
 TestShip = {
 
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 20, MaxAccelRight = 20, 
+	MaxAccelLeft = 4, MaxAccelRight = 4, 
 	MaxAccelForward = 4, MaxAccelReverse = 4, 
 	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
