@@ -184,7 +184,8 @@ void Actor_Text::update(osg::NodeVisitor *nv, osg::Drawable *draw)
 						Text->setColor(osg::Vec4(1.0f,0.0f,0.5f,1.0f));  //This is almost magenta (easier to see)
 					else if (m_TeamName=="blue")
 						Text->setColor(osg::Vec4(0.0f,0.5f,1.0f,1.0f));  //This is almost cyan (easier to see too)
-
+					else if (m_TeamName=="green")
+						Text->setColor(osg::Vec4(0.0f,1.0f,0.5f,1.0f)); 
 				}
 			}
 		}

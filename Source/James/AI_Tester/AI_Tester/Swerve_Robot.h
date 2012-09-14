@@ -98,6 +98,7 @@ class Swerve_Robot : public Ship_Tester,
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 
+		virtual double Get_DriveTo_ForceDegradeScalar() const {return m_SwerveRobotProps.DriveTo_ForceDegradeScalar;}
 		virtual Swerve_Drive *CreateDrive() {return new Swerve_Drive(this);}
 		virtual void DestroyDrive();
 
