@@ -246,8 +246,11 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 								double Temp=fabs(Value); //take out the sign... put it back in the end
 								Temp=(Temp>=key.FilterRange) ? Temp-key.FilterRange:0.0; 
 
-								Temp=key.Multiplier*(Temp/(1.0-key.FilterRange)); //apply scale first then 
-								Temp=key.CurveIntensity*pow(Temp,3) + (1.0-key.CurveIntensity)*Temp; //apply the curve intensity
+								Temp=key.Multiplier*(Temp/(1.0-key.FilterRange)); //apply scale first then
+								if (key.CurveIntensity<=1.0)
+									Temp=key.CurveIntensity*pow(Temp,3) + (1.0-key.CurveIntensity)*Temp; //apply the curve intensity
+								else
+									Temp=pow(Temp,key.CurveIntensity); //apply the curve intensity
 
 								//Now to restore the sign
 								Value=(Value<0.0)?-Temp:Temp;
