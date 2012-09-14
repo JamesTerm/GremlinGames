@@ -263,8 +263,8 @@ const char *UI_Controller::ExtractControllerElementProperties(Controller_Element
 			double FilterRange;
 			err = script.GetField("filter", NULL, NULL,&FilterRange);
 			ASSERT_MSG(!err, err);
-			bool IsSquared;
-			err = script.GetField("is_squared", NULL, &IsSquared,NULL);
+			double CurveIntensity;
+			err = script.GetField("curve_intensity", NULL, NULL, &CurveIntensity);
 			ASSERT_MSG(!err, err);
 
 			Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &set=Element.Specifics.Analog;
@@ -272,7 +272,7 @@ const char *UI_Controller::ExtractControllerElementProperties(Controller_Element
 			set.IsFlipped=IsFlipped;
 			set.Multiplier=Multiplier;
 			set.FilterRange=FilterRange;
-			set.IsSquared=IsSquared;
+			set.CurveIntensity=CurveIntensity;
 			//joy.AddJoy_Analog_Default(JoyAxis,Eventname,IsFlipped,Multiplier,FilterRange,IsSquared,ProductName.c_str());
 		}
 		else if (strcmp(sType.c_str(),"joystick_button")==0)
