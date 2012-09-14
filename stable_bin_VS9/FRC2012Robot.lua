@@ -13,13 +13,19 @@ HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
 LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
 
 KeyDistance_in=144;
+--KeyDistance_in=0;
 KeyWidth_in=101;
 KeyDepth_in=48;
 HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
+	--Version helps to identify a positive update to lua
+	--version = 1;
+	
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10, MaxAccelReverse = 10, 
+	MaxAccelLeft = 20, MaxAccelRight = 20, 
+	MaxAccelForward = 4, MaxAccelReverse = 4, 
+	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
 	
 	MAX_SPEED = HighGearSpeed,
@@ -33,21 +39,30 @@ MainRobot = {
 	
 	tank_drive =
 	{
-		is_closed=0,						--This should always be false for high gear
+		is_closed=1,
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
+		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
 		left_pid=
-		{p=1, i=0, d=0},					--In FRC 2011 pid was 1,1,0 but lets keep i to zero if we can
+		{p=200, i=0, d=50},
 		right_pid=
-		{p=1, i=0, d=0},					--These should always match, but able to be made different
-		
+		{p=200, i=0, d=50},					--These should always match, but able to be made different
+		latency=0.0,
+		heading_latency=0.0,
+		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
+		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.4			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		voltage_multiply=1.0,				--May be reversed using -1.0
+		curve_voltage=
+		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		reverse_steering='no',
+		 left_encoder_reversed='no',
+		right_encoder_reversed='no'
 	},
 	
 	robot_settings =
@@ -58,19 +73,33 @@ MainRobot = {
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
 		ds_power_velocity_row=-1,			--Only used during keying the grid
+		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
+		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
 		
 		grid_corrections =
 		{
-			c11={p=1.0, x=1.0}, c12={p=1.0, x=1.0}, c13={p=1.0, x=1.0},
-			c21={p=1.0, x=1.0}, c22={p=1.0, x=1.0}, c23={p=1.0, x=1.0},
-			c31={p=1.0, x=1.0}, c32={p=1.0, x=1.0}, c33={p=1.0, x=1.0},
+			c11={p=1.7, x=1.0}, c12={p=1.7, x=1.0}, c13={p=1.7, x=1.0},
+			c21={p=1.8, x=1.0}, c22={p=1.8, x=1.0}, c23={p=1.8, x=1.0},
+			c31={p=1.7, x=1.0}, c32={p=1.7, x=1.0}, c33={p=1.7, x=1.0},
 		},
 		
 		auton =
 		{
+			move_forward_ft =0.0,
+			two_shot_scaler =1.4,
 			ramp_left  ={x_in=0, y_in=0 },
 			ramp_right ={x_in=0, y_in=0 },
-			ramp_center={x_in=0, y_in=0 }
+			ramp_center={x_in=0, y_in=0 },
+			x_left_arc=1.9,
+			x_right_arc=1.9,
+			--If you put -1.0 for the timeout wait it will wait infinitely (good for initial testing or if we are not tipping ramps)
+			--ball 1 initial wait should be long enough for a good ramp up from zero speed
+			ball_1 ={initial_wait=  2.0, tolerance=75.0, timeout_wait=4.0},
+			--ball 2 initial wait should be long enough to recover from dip and short enough to be active during second ball's deployment
+			ball_2 ={initial_wait=0.500, tolerance=75.0, timeout_wait=4.0}
+			--panic mode incase the wait ball doesn't work... using zero makes it work like before just pure time
+			--ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
+			--ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0}
 		},
 		
 		turret =
@@ -81,7 +110,8 @@ MainRobot = {
 			pid=
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
-			
+			encoder_to_wheel_ratio=1.0,		--Used to calibrate encoder to physical turret angles should match readings 
+			voltage_multiply=-1.0,			--May be reversed using -1.0
 			max_speed=10,
 			accel=1.0,						--These are only needed if we bind keys for turret
 			brake=1.0,
@@ -111,15 +141,21 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=1, i=0, d=0},
-			tolerance=0.1,					--we need decent precision (this will depend on ramp up time too)
+			{p=50, i=1, d=25 },
+			latency=0.300,
+			tolerance=1.0,					--we need decent precision (this will depend on ramp up time too)
+			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
+			voltage_multiply=-1.0,
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
 			accel=200.0,						--These are only needed if we bind keys for power in meters per second
 			brake=200.0,
 			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=200			--The wheel may some time to ramp up
+			max_accel_reverse=200,			--The wheel may some time to ramp up
+			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
 		flippers =
 		{
@@ -143,6 +179,7 @@ MainRobot = {
 		{
 			--Note: there are no encoders here so is_closed is ignored
 			tolerance=0.01,					--we need good precision
+			voltage_multiply=-1.0,			--May be reversed
 			
 			max_speed=28,
 			accel=112,						--These are needed and should be high enough to grip without slip
@@ -165,43 +202,53 @@ MainRobot = {
 			
 			tank_drive =
 			{
-				is_closed=1,						--True should help low gear, but disable if there are problems
+				is_closed=0,						--By default false, and can be turned on dynamically
 				show_pid_dump='no',
 				ds_display_row=-1,
 				--We must NOT use I or D for low gear, we must keep it very responsive
 				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
 				left_pid=
-				{p=1, i=0, d=0},
+				{p=25, i=0, d=5},
 				right_pid=
-				{p=1, i=0, d=0},					--These should always match, but able to be made different
-				
+				{p=25, i=0, d=5},					--These should always match, but able to be made different
+				latency=0.300,
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.4			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+				voltage_multiply=1.0,				--May be reversed using -1.0
+				curve_voltage=
+				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+				reverse_steering='no',
+				 left_encoder_reversed='no',
+				right_encoder_reversed='no'
 			}
 		},
 		controls =
 		{
 			Joystick_1 =
 			{
-				control = "CH FLIGHTSTICK PRO",
-				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, is_squared=true},
-				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
-				Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
-				Flippers_Retract = {type="joystick_button", key=1, on_off=true},
-				Flippers_Advance = {type="joystick_button", key=4, on_off=true}
+				--control = "CH FLIGHTSTICK PRO",
+				control = "Logitech Attack 3",
+				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+				--Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+				Flippers_Retract = {type="joystick_button", key=3, on_off=true},
+				Flippers_Advance = {type="joystick_button", key=4, on_off=true},
+				Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
 			},
 
 			Joystick_2 =
 			{
 				control = "Logitech Dual Action",
 				--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-				Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.5, filter=0.1, is_squared=false},
+				Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 				--Ball_Grip = {type="joystick_button", key=2, on_off=true},
 				Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 				--Ball_Fire = {type="joystick_button", key=4, on_off=true},
 				--PowerWheels_IsRunning = {type="joystick_button", key=3, on_off=true},
-				Robot_TurretSetTargetingOff = {type="joystick_button", key=6, on_off=true},
+				--Robot_TurretSetTargetingOff = {type="joystick_button", key=6, on_off=true},
+				Ball_SlowWheel = {type="joystick_button", key=6, on_off=true},
 				Robot_SetPreset1 = {type="joystick_button", key=5, on_off=false},
 				Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
 				Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
@@ -217,11 +264,11 @@ MainRobot = {
 			Joystick_3 =
 			{	
 				control = "CH THROTTLE QUADRANT",
-				PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
-				Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
-				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, is_squared=false},
-				Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, is_squared=true},
-				Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
+				PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+				Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+				Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, curve_intensity=1.0},
+				Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 				
 				--Ball_Grip = {type="joystick_button", key=2, on_off=true},
 				Ball_Squirt = {type="joystick_button", key=1, on_off=true},
