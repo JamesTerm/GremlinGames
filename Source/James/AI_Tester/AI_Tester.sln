@@ -43,8 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{3B78
 		AI_Tester\FRC2012Robot.lua = AI_Tester\FRC2012Robot.lua
 		AI_Tester\TestButterflyRobot.lua = AI_Tester\TestButterflyRobot.lua
 		AI_Tester\TestNonaRobot.lua = AI_Tester\TestNonaRobot.lua
-		AI_Tester\TestRobot.lua = AI_Tester\TestRobot.lua
 		AI_Tester\TestSwerveRobot.lua = AI_Tester\TestSwerveRobot.lua
+		AI_Tester\TestTankRobot.lua = AI_Tester\TestTankRobot.lua
 	EndProjectSection
 EndProject
 Global

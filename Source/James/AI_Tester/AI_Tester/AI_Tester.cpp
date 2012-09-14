@@ -666,7 +666,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			#endif
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("TestRobot.lua","TestRobot",Commands::eTank);
+			_command.LoadRobot("TestTankRobot.lua","TestRobot",Commands::eTank);
 			Entity2D *TestEntity=_command.AddRobot("TankRobot","TestRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
@@ -823,7 +823,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
 			if (!ship)
 			{
-				_command.LoadRobot("TestRobot.lua","TestRobot",Commands::eTank);
+				_command.LoadRobot("TestTankRobot.lua","TestRobot",Commands::eTank);
 				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("TankRobot","TestRobot",str_3,str_4,str_5));
 			}
 			if (!SwerveShip)
