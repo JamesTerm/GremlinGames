@@ -816,9 +816,9 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 
 			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("TankRobot"));
 
-			//Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("SwerveRobot"));
+			Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("SwerveRobot"));
 			//Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("ButterflyRobot"));
-			Ship_Tester *SwerveShip=dynamic_cast<Ship_Tester *>(game.GetEntity("NonaRobot"));
+			Ship_Tester *NonaShip=dynamic_cast<Ship_Tester *>(game.GetEntity("NonaRobot"));
 
 			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
 			if (!ship)
@@ -828,17 +828,20 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			}
 			if (!SwerveShip)
 			{
-				#if 0
-				//_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
-				//SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
+				#if 1
+				_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
+				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5));
 				#endif
 				#if 0
 				_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eButterfly);
 				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("ButterflyRobot","TestButterflyRobot",str_3,str_4,str_5));
 				#endif
+			}
+			if (!NonaShip)
+			{
 				#if 1
 				_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eNona);
-				SwerveShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5));
+				NonaShip=dynamic_cast<Ship_Tester *>(_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5));
 				#endif
 			}
 
@@ -849,8 +852,10 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			}
 			ship->GetGameAttributes().GetTeamName()="blue";
 			SwerveShip->GetGameAttributes().GetTeamName()="red";
-			_.ShipFollowShip(ship,Followship,0.5,-1.0,0.5);
-			_.ShipFollowShip(SwerveShip,Followship,-0.5,-1.0,5.0);
+			NonaShip->GetGameAttributes().GetTeamName()="green";
+			_.ShipFollowShip(ship,Followship,0.0,-1.0,0.5);
+			_.ShipFollowShip(SwerveShip,Followship,-1.0,-1.0,5.0);
+			_.ShipFollowShip(NonaShip,Followship,1.0,-1.0,5.0);
 			_.GiveRobotSquareWayPointGoal(Followship);
 			game.SetControlledEntity(Followship);
 		}
