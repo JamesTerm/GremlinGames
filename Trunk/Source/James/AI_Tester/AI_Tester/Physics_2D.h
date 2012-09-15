@@ -85,18 +85,23 @@ class PhysicsEntity_2D
 		virtual Vec2D GetForceFromVelocity( 
 			const Vec2D &vDesiredVelocity,	///< How fast do you want to go (in a specific direction)
 			double DeltaTime_s					///< How quickly do you want to get there
-			);
+			) const;
 		virtual double GetTorqueFromVelocity( 
 			double vDesiredVelocity,	///< How fast do you want to go (in a specific direction)
 			double DeltaTime_s					///< How quickly do you want to get there (usually in time slices)
-			);
+			) const;
 
 		///This is a clean way to compute how much torque that can be applied given the maximum amount available (e.g. thruster capacity)
 		///It should be noted that this treats roll as a separate factor, which is best suited for avionic type of context
 		/// \Note all restraint parameters are positive (i.e. ForceRestraintNegative)
 		double ComputeRestrainedTorque(double Torque,double TorqueRestraint,double dTime_s);
 		Vec2D ComputeRestrainedForce(const Vec2D &LocalForce,const Vec2D &ForceRestraintPositive,const Vec2D &ForceRestraintNegative,double dTime_s);
-
+		//This returns in the form of magnitude using the proper equations
+		double GetCentripetalAcceleration_Magnitude(double DeltaTime_s) const;
+		///This returns the global acceleration needed to maintain linear velocity
+		Vec2D GetCentripetalAcceleration(double DeltaTime_s) const;
+		///This returns the global force needed to maintain the current linear velocity
+		Vec2D GetCentripetalForce(double DeltaTime_s) const;
 	protected:
 		double m_EntityMass;
 		double m_StaticFriction,m_KineticFriction;
