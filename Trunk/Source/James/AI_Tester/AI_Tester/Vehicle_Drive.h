@@ -144,6 +144,8 @@ class Butterfly_Drive : public Swerve_Drive
 
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+	protected:
+		virtual double GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const;
 };
 
 class Nona_Drive : public Butterfly_Drive
@@ -157,10 +159,10 @@ class Nona_Drive : public Butterfly_Drive
 		Nona_Drive(Swerve_Drive_Interface *Parent);
 
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
-		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 		double GetKickerWheelIntendedVelocity() const {return m_KickerWheel;}
 		//This is used as a cheat to avoid needing to resolve velocity using a callback technique... this needs to be set back to what it was when
 		//altered
 		void SetKickerWheelVelocity(double velocity) {m_KickerWheel=velocity;}
 	protected:
+		virtual double GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const;
 };
