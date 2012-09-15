@@ -357,8 +357,9 @@ Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(
 
 void Butterfly_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	const double Mass=m_pParent->Vehicle_Drive_GetPhysics().GetMass();
-	double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
+	const double Mass=PhysicsToUse.GetMass();
+	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
+	const double TorqueRestrained=PhysicsToUse.ComputeRestrainedTorque(Torque,TorqueRestraint,dTime_s);
 	const Vec2D &WheelDimensions=m_pParent->GetWheelDimensions();
 
 	//L is the vehicle’s wheelbase
@@ -373,8 +374,10 @@ void Butterfly_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2
 	//targeting goals (e.g. follow ship)
 
 	Vec2d CurrentVelocity=GlobalToLocal(m_pParent->Vehicle_Drive_GetAtt_r(),PhysicsToUse.GetLinearVelocity());
+	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
+
 	//STR=IsZero(STR)?0.0:STR;
-	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1];
+	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1]-CentripetalAcceleration[1];
 	//FWD=IsZero(FWD)?0.0:FWD;
 	const double inv_skid=1.0/cos(atan2(W,L));
 	double RCW=(TorqueRestrained/Mass)*dTime_s+PhysicsToUse.GetAngularVelocity();
@@ -440,10 +443,13 @@ Nona_Drive::Nona_Drive(Swerve_Drive_Interface *Parent) : Butterfly_Drive(Parent)
 
 void Nona_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	const double Mass=m_pParent->Vehicle_Drive_GetPhysics().GetMass();
+	const double Mass=PhysicsToUse.GetMass();
+	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
+	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
+	//DOUT5("%f, %f, %f",CentripetalAcceleration[0],CentripetalAcceleration[1], PhysicsToUse.GetCentripetalAcceleration_Magnitude(dTime_s));
 
-	Vec2d CurrentVelocity=GlobalToLocal(m_pParent->Vehicle_Drive_GetAtt_r(),PhysicsToUse.GetLinearVelocity());
-	m_KickerWheel=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0];
+	Vec2d CurrentVelocity=GlobalToLocal(Heading,PhysicsToUse.GetLinearVelocity());
+	m_KickerWheel=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0] - CentripetalAcceleration[0];
 
 	//DOUT5("%f %f",CurrentVelocity[0],m_KickerWheel);
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
