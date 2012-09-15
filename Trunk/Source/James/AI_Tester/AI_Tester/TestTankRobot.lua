@@ -7,7 +7,9 @@ Meters2Inches=39.3700787
 
 Wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelBase_Length_In=27.5
 HighGearSpeed = (427.68 / 60.0) * Pi * Wheel_diameter_in * Inches2Meters  --RPM's from Parker
+inv_skid=1.0/math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In/2))
 
 
 TestShip = {
@@ -24,7 +26,7 @@ TestShip = {
 	-- Turn Rates (deg/sec)
 	-- Turn rates with the 0.6477 was 514; however with the real wheel base... this can be smaller to 674
 	-- However I don't need to go that fast and it cost more to move and turn so I'll trim it back some
-	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
+	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2 * inv_skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
@@ -35,7 +37,7 @@ TestShip = {
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
+		{length_in=WheelBase_Length_In/2, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
