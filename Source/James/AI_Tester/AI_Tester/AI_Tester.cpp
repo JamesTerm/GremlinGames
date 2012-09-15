@@ -689,7 +689,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eButterfly);
-			Entity2D *TestEntity=_command.AddRobot("Butterfly","TestButterflyRobot",str_3,str_4,str_5);
+			Entity2D *TestEntity=_command.AddRobot("ButterflyRobot","TestButterflyRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
@@ -700,7 +700,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			g_WorldScaleFactor=100.0;
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eNona);
-			Entity2D *TestEntity=_command.AddRobot("Nona","TestNonaRobot",str_3,str_4,str_5);
+			Entity2D *TestEntity=_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity);
 		}
 		break;
