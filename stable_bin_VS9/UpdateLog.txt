@@ -1,0 +1,7 @@
+
+9/13/2012 Major revamp on how the ship controls work with the cruise control where the requested velocity is now a Vec2d.  Also fixed speed to show linear and angular velocities from encoders (if over-ridden).  Also added new joystick curve to replace isSquared to better control the curve of input
+
+9/14/2012 Show 3 different drives for the followgod test
+
+9/15/2012 Major bugfix to how Nona deals with centripetal forces... where now circle strafes, and sharp fast turns work properly.  Also fixed autonomous for all drives by applying a strafe scaler in the DriveToLocation
+

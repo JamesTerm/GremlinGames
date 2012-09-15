@@ -24,11 +24,12 @@ Kicker_WeightBias=0.33
 Drive_WeightBias=1.0-Kicker_WeightBias
 Kicker_MaxAccel=Kicker_CoF_Omni_Radial * Kicker_WeightBias * Mass * Gravity / Mass  --does not change
 Drive_MaxAccel=  Drive_CoF_Omni_Radial * Drive_WeightBias  * Mass * Gravity / Mass  --does not change
+MaxCentripetalTraverse=20 --The maximum amount of centripetal force that can be allowed (may want to be higher for better drive)
 
 TestShip = {
 
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = Kicker_MaxAccel, MaxAccelRight = Kicker_MaxAccel, 
+	MaxAccelLeft = MaxCentripetalTraverse, MaxAccelRight = MaxCentripetalTraverse, 
 	--MaxAccelForward = 4, MaxAccelReverse = 4, 
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
@@ -65,6 +66,7 @@ TestShip = {
 		latency=0.0,
 		heading_latency=0.50,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
+		strafe_to_scale=Kicker_MaxAccel/MaxCentripetalTraverse,  --In autonomous we need the max for to be seta kicker max accel
 		--This is obtained from stage 2 in the general gear ratios
 		encoder_to_wheel_ratio=1.0,			
 		voltage_multiply=1.0,				--May be reversed using -1.0
@@ -77,7 +79,7 @@ TestShip = {
 
 	kicker =
 	{
-		is_closed='yes',
+		is_closed=1,
 		show_pid_dump='no',
 		ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 		pid=
