@@ -403,6 +403,18 @@ void Butterfly_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2
 
 }
 
+double Butterfly_Drive::GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const
+{
+	#if 1
+	return 0.0;
+	#else
+	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
+	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
+	DOUT5 ("%f",CentripetalAcceleration[0]);
+	return 0.80 * CentripetalAcceleration[0];  //just hard code the CoF which allows x percent of the centripetal force to escape
+	#endif
+}
+
 void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
 {
 	const SwerveVelocities::uVelocity::Explicit &_=Velocities.Velocity.Named;
@@ -415,7 +427,7 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 
 	const double FWD = (_.sFR+_.sFL+_.sRL+_.sRR)/4;
 
-	const double STR = 0.0;
+	const double STR = GetStrafeVelocity(m_pParent->Vehicle_Drive_GetPhysics(),dTime_s);
 	const double HP=Pi/2;
 	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
@@ -455,8 +467,7 @@ void Nona_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
 }
 
-void Nona_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+double Nona_Drive::GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const
 {
-	__super::InterpolateVelocities(Velocities,LocalVelocity,AngularVelocity,dTime_s);
-	LocalVelocity[0]=m_KickerWheel;
+	return m_KickerWheel;
 }
