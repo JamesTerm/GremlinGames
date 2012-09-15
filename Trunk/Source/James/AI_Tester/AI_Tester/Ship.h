@@ -141,7 +141,7 @@ class Ship_2D : public Ship
 		///This allows subclass to evaluate the requested velocity when it is in use
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s) {}
 		//override to manipulate a distance force degrade, which is used to compensate for deceleration inertia
-		virtual double Get_DriveTo_ForceDegradeScalar() const {return 1.0;}
+		virtual Vec2D Get_DriveTo_ForceDegradeScalar() const {return Vec2D(1.0,1.0);}
 
 		AI_Base_Controller* m_controller;
 		Ship_Properties m_ShipProps;

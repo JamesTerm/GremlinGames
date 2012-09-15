@@ -82,7 +82,7 @@ class Tank_Robot : public Ship_Tester,
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement);
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 		virtual void SetAttitude(double radians);  //from ship tester
-		virtual double Get_DriveTo_ForceDegradeScalar() const {return m_TankRobotProps.DriveTo_ForceDegradeScalar;}
+		virtual Vec2D Get_DriveTo_ForceDegradeScalar() const {return Vec2D(1.0,m_TankRobotProps.DriveTo_ForceDegradeScalar);}
 		virtual Tank_Drive *CreateDrive() {return new Tank_Drive(this);}
 		virtual void DestroyDrive();
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
