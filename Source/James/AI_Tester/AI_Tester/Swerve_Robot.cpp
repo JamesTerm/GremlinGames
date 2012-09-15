@@ -439,7 +439,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	}
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.ReverseSteering=false;
-	props.DriveTo_ForceDegradeScalar=1.0;
+	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
 	m_SwerveRobotProps=props;
 	//Always use aggressive stop for driving
 	m_DriveProps.RoteryProps().UseAggressiveStop=true;
@@ -537,7 +537,8 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		script.GetField("drive_to_scale", NULL, NULL, &m_SwerveRobotProps.DriveTo_ForceDegradeScalar);
+		script.GetField("drive_to_scale", NULL, NULL, &m_SwerveRobotProps.DriveTo_ForceDegradeScalar[1]);
+		script.GetField("strafe_to_scale", NULL, NULL, &m_SwerveRobotProps.DriveTo_ForceDegradeScalar[0]);
 		
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
