@@ -524,7 +524,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.Polynomial[4]=0.0;
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
-	props.DriveTo_ForceDegradeScalar=1.0;
+	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
 	m_TankRobotProps=props;
 }
 
@@ -589,8 +589,9 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TankRobotProps.HeadingLatency=m_TankRobotProps.InputLatency+0.100;  //Give a good default without needing to add this property
 		script.GetField("left_max_offset", NULL, NULL, &m_TankRobotProps.LeftMaxSpeedOffset);
 		script.GetField("right_max_offset", NULL, NULL, &m_TankRobotProps.RightMaxSpeedOffset);
-		script.GetField("drive_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar);
-		
+		script.GetField("drive_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar[1]);
+		script.GetField("strafe_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar[0]);
+
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
 		if (!err)

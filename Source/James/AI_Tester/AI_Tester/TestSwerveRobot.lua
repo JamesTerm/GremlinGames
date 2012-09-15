@@ -13,7 +13,7 @@ LowGearSpeed  = (167.06 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
 TestShip = {
 
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 4, MaxAccelRight = 4, 
+	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = 4, MaxAccelReverse = 4, 
 	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
@@ -50,6 +50,7 @@ TestShip = {
 		latency=0.0,
 		heading_latency=0.50,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
+		strafe_to_scale=4/20,  --In autonomous we need the max to match the max forward and reverse
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
