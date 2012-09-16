@@ -220,6 +220,7 @@ class Wheel_UI
 {
 	public:
 		Wheel_UI() : m_UIParent(NULL) {}
+		virtual ~Wheel_UI() {}
 		typedef osg::Vec2d Vec2D;
 
 		struct Wheel_Properties
@@ -242,6 +243,9 @@ class Wheel_UI
 		//This will add to the existing rotation and normalize
 		void AddRotation(double RadiansToAdd);
 		double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
+	protected:
+		virtual osg::Vec4 GetFrontWheelColor() const {return osg::Vec4(0.0,1.0,0.0,1.0);}
+		virtual osg::Vec4 GetBackWheelColor() const {return osg::Vec4(1.0,0.0,0.0,1.0);}
 	private:
 		Actor_Text *m_UIParent;
 		Wheel_Properties m_props;
@@ -255,7 +259,8 @@ class Swerve_Robot_UI
 	public:
 		typedef osg::Vec2d Vec2D;
 
-		Swerve_Robot_UI(Swerve_Robot *SwerveRobot) : m_SwerveRobot(SwerveRobot) {}
+		Swerve_Robot_UI(Swerve_Robot *SwerveRobot);
+		~Swerve_Robot_UI();
 	public:
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 
@@ -270,10 +275,11 @@ class Swerve_Robot_UI
 	protected:
 		virtual void UpdateVoltage(size_t index,double Voltage) {}
 		virtual void CloseSolenoid(size_t index,bool Close) {}
-
+		virtual Wheel_UI *Create_WheelUI() {return new Wheel_UI;}
+		virtual void Destroy_WheelUI(Wheel_UI *wheel_ui) {delete wheel_ui;}
 	private:
 		Swerve_Robot * const m_SwerveRobot;
-		Wheel_UI m_Wheel[4];
+		Wheel_UI *m_Wheel[4];
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
