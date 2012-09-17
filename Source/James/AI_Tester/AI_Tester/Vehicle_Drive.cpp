@@ -423,20 +423,13 @@ void Butterfly_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D 
 	const double Mass=PhysicsToUse.GetMass();
 	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
 
-	//Vec2d AlteredVelocity=GlobalToLocal(PhysicsToUse.GetAngularVelocity()*dTime_s,m_LocalVelocity);
 	double Rotation=-(PhysicsToUse.GetAngularVelocity()*dTime_s);
 	double StrafeVelocity;
 	StrafeVelocity=sin(Rotation)*m_LocalVelocity[1]+cos(fabs(Rotation))*m_LocalVelocity[0];
 
-	//add in the current CentripetalAcceleration displacement
-	//Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
-	//m_StrafeVelocity+=(CentripetalAcceleration[0] * dTime_s);
-	//m_StrafeVelocity+=CentripetalAcceleration[0];
-	//m_StrafeVelocity+=(-LocalForce[0]/Mass)*dTime_s;
 	//just hard code the CoF which allows x percent of the centripetal force to escape
 	StrafeVelocity+=((GetFrictionalForce(Mass,0.20,StrafeVelocity,dTime_s)/Mass) * dTime_s);
-	//DOUT5 ("%f %f %f",CentripetalAcceleration[0],(-LocalForce[0]/Mass)*dTime_s,m_StrafeVelocity);
-	DOUT5 ("%f x=%f y=%f",StrafeVelocity,m_LocalVelocity[0],m_LocalVelocity[1]);
+	//DOUT5 ("%f x=%f y=%f",StrafeVelocity,m_LocalVelocity[0],m_LocalVelocity[1]);
 	m_LocalVelocity[0]=StrafeVelocity;
 	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
