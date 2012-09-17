@@ -47,7 +47,7 @@ class UI_Controller
 		void Thrust(bool on){if (AreControlsDisabled() && on) return; Ship_Thrust(on);}
 		void Slider_Accel(double Intensity);
 		void Brake(bool on){if (AreControlsDisabled() && on) return; Ship_Brake(on);}
-		void Stop() {if (AreControlsDisabled()) return; m_ship->Stop();}
+		void Stop() {if (AreControlsDisabled()) return; m_ShipKeyVelocity=0.0;m_ship->Stop();}
 		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedVelocity(speed);}
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
@@ -165,6 +165,7 @@ class UI_Controller
 		///This one is used exclusively for the Joystick and Mouse turn methods
 		double m_Ship_JoyMouse_rotAcc_rad_s;
 		osg::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
+		double m_ShipKeyVelocity;
 
 		//void ConnectHUD_Elements(bool connect);
 		//bool m_hud_connected;

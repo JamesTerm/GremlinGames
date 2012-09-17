@@ -179,9 +179,8 @@ void UI_Controller::Init_AutoPilotControls()
 //! TODO: Use the script to grab the head position to provide the HUD
 UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
-	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_CruiseSpeed(0.0),
-	/*m_hud_connected(false),*/
-	m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true)
+	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),
+	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true)
 {
 	ResetPos();
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
@@ -558,7 +557,7 @@ void UI_Controller::UserResetPos()
 
 void UI_Controller::ResetPos()
 {
-	m_Ship_Keyboard_rotAcc_rad_s =	m_Ship_JoyMouse_rotAcc_rad_s = 0.0;
+	m_Ship_Keyboard_rotAcc_rad_s =	m_Ship_JoyMouse_rotAcc_rad_s = m_ShipKeyVelocity = 0.0;
 	m_Ship_Keyboard_currAccel = m_Ship_JoyMouse_currAccel =	Vec2d(0,0);
 
 	//m_HUD_UI->Reset();
@@ -702,7 +701,10 @@ void UI_Controller::UpdateController(double dTime_s)
 
 			// apply various input sources to current acceleration
 			if (m_ship->GetAlterTrajectory())
-				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+shipAccel[1])); //this will check implicitly for which mode to use
+			{
+				m_ShipKeyVelocity+=(shipAccel[1]*dTime_s);
+				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
+			}
 			else
 				m_ship->SetCurrentLinearAcceleration(shipAccel); 
 
