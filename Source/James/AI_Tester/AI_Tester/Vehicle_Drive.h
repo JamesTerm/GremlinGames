@@ -146,7 +146,7 @@ class Butterfly_Drive : public Swerve_Drive
 		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 	protected:
 		virtual double GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const;
-	    double m_StrafeVelocity;  //keep track of the current strafing velocity (for better interpreted displacement)
+	    Vec2D m_LocalVelocity;  //keep track of the current velocity (for better interpreted displacement of strafing)
 		void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 };
 
