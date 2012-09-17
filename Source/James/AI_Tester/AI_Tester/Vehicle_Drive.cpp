@@ -349,7 +349,7 @@ double Swerve_Drive::GetSwerveVelocitiesFromIndex(size_t index) const
  /*															Butterfly_Drive															*/
 /***********************************************************************************************************************************/
 
-Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent)
+Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent), m_StrafeVelocity(0.0)
 {
 	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
@@ -403,15 +403,47 @@ void Butterfly_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2
 
 }
 
+double GetFrictionalForce(double Mass,double CoF,double Velocity,double DeltaTime_s,double BrakeResistence=0.0)
+{
+	const double gravity=9.80665;
+	if (!DeltaTime_s) return 0.0;  //since we divide by time avoid division by zero
+	double NormalForce=CoF*Mass*gravity;
+	const double StoppingForce=(fabs(Velocity) * Mass) / DeltaTime_s;
+	NormalForce=min(StoppingForce,NormalForce); //friction can never be greater than the stopping force
+	double FrictionForce= NormalForce;
+	//If the friction force overflows beyond stopping force, apply a scale to the overflow of force 
+	if (FrictionForce>StoppingForce) FrictionForce=(BrakeResistence * (FrictionForce-StoppingForce));
+
+	//Return the fractional force in the opposite direction of the current velocity
+	return (Velocity>0.0)? -FrictionForce : FrictionForce;
+}
+
+void Butterfly_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+{
+	const double Mass=PhysicsToUse.GetMass();
+	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
+
+	Vec2d LocalVelocity=GlobalToLocal(Heading,PhysicsToUse.GetLinearVelocity());
+	Vec2d AlteredVelocity=GlobalToLocal(PhysicsToUse.GetAngularVelocity()*dTime_s,Vec2d(m_StrafeVelocity,LocalVelocity[1]));
+	m_StrafeVelocity=AlteredVelocity[0];
+	//add in the current CentripetalAcceleration displacement
+	//Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
+	//m_StrafeVelocity+=(CentripetalAcceleration[0] * dTime_s);
+	//m_StrafeVelocity+=CentripetalAcceleration[0];
+	//m_StrafeVelocity+=(-LocalForce[0]/Mass)*dTime_s;
+	//just hard code the CoF which allows x percent of the centripetal force to escape
+	m_StrafeVelocity+=((GetFrictionalForce(Mass,0.20,m_StrafeVelocity,dTime_s)/Mass) * dTime_s);
+	//DOUT5 ("%f %f %f",CentripetalAcceleration[0],(-LocalForce[0]/Mass)*dTime_s,m_StrafeVelocity);
+	DOUT5 ("%f x=%f y=%f",m_StrafeVelocity,LocalVelocity[0],LocalVelocity[1]);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+}
+
 double Butterfly_Drive::GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const
 {
-	#if 1
+	#if 0
 	return 0.0;
 	#else
-	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
-	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
-	DOUT5 ("%f",CentripetalAcceleration[0]);
-	return 0.80 * CentripetalAcceleration[0];  //just hard code the CoF which allows x percent of the centripetal force to escape
+	return m_StrafeVelocity; 
 	#endif
 }
 
@@ -470,4 +502,10 @@ void Nona_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 double Nona_Drive::GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const
 {
 	return m_KickerWheel;
+}
+
+void Nona_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+{
+	//bypass butterfly implementation
+	Swerve_Drive::Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
