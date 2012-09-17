@@ -349,7 +349,7 @@ double Swerve_Drive::GetSwerveVelocitiesFromIndex(size_t index) const
  /*															Butterfly_Drive															*/
 /***********************************************************************************************************************************/
 
-Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent), m_StrafeVelocity(0.0)
+Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent), m_LocalVelocity(Vec2d(0.0,0.0))
 {
 	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
@@ -423,18 +423,21 @@ void Butterfly_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D 
 	const double Mass=PhysicsToUse.GetMass();
 	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
 
-	Vec2d LocalVelocity=GlobalToLocal(Heading,PhysicsToUse.GetLinearVelocity());
-	Vec2d AlteredVelocity=GlobalToLocal(PhysicsToUse.GetAngularVelocity()*dTime_s,Vec2d(m_StrafeVelocity,LocalVelocity[1]));
-	m_StrafeVelocity=AlteredVelocity[0];
+	//Vec2d AlteredVelocity=GlobalToLocal(PhysicsToUse.GetAngularVelocity()*dTime_s,m_LocalVelocity);
+	double Rotation=-(PhysicsToUse.GetAngularVelocity()*dTime_s);
+	double StrafeVelocity;
+	StrafeVelocity=sin(Rotation)*m_LocalVelocity[1]+cos(fabs(Rotation))*m_LocalVelocity[0];
+
 	//add in the current CentripetalAcceleration displacement
 	//Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
 	//m_StrafeVelocity+=(CentripetalAcceleration[0] * dTime_s);
 	//m_StrafeVelocity+=CentripetalAcceleration[0];
 	//m_StrafeVelocity+=(-LocalForce[0]/Mass)*dTime_s;
 	//just hard code the CoF which allows x percent of the centripetal force to escape
-	m_StrafeVelocity+=((GetFrictionalForce(Mass,0.20,m_StrafeVelocity,dTime_s)/Mass) * dTime_s);
+	StrafeVelocity+=((GetFrictionalForce(Mass,0.20,StrafeVelocity,dTime_s)/Mass) * dTime_s);
 	//DOUT5 ("%f %f %f",CentripetalAcceleration[0],(-LocalForce[0]/Mass)*dTime_s,m_StrafeVelocity);
-	DOUT5 ("%f x=%f y=%f",m_StrafeVelocity,LocalVelocity[0],LocalVelocity[1]);
+	DOUT5 ("%f x=%f y=%f",StrafeVelocity,m_LocalVelocity[0],m_LocalVelocity[1]);
+	m_LocalVelocity[0]=StrafeVelocity;
 	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 
@@ -443,7 +446,7 @@ double Butterfly_Drive::GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,d
 	#if 0
 	return 0.0;
 	#else
-	return m_StrafeVelocity; 
+	return m_LocalVelocity[0]; 
 	#endif
 }
 
@@ -471,6 +474,7 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
+	m_LocalVelocity=LocalVelocity;
 
 	AngularVelocity=(omega / (Pi * D)) * Pi2;
 }
