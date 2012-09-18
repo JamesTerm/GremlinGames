@@ -349,7 +349,8 @@ double Swerve_Drive::GetSwerveVelocitiesFromIndex(size_t index) const
  /*															Butterfly_Drive															*/
 /***********************************************************************************************************************************/
 
-Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent), m_LocalVelocity(Vec2d(0.0,0.0))
+Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent),m_GlobalStrafeVelocity(Vec2d(0.0,0.0)), 
+	m_LocalVelocity(Vec2d(0.0,0.0)),m_CachedAngularVelocity(0.0)
 {
 	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
@@ -374,7 +375,7 @@ void Butterfly_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2
 	//targeting goals (e.g. follow ship)
 
 	Vec2d CurrentVelocity=GlobalToLocal(m_pParent->Vehicle_Drive_GetAtt_r(),PhysicsToUse.GetLinearVelocity());
-	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
+	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration_2D(dTime_s));
 
 	//STR=IsZero(STR)?0.0:STR;
 	const double FWD=((LocalForce[1]/Mass)*dTime_s)+CurrentVelocity[1]-CentripetalAcceleration[1];
@@ -423,14 +424,18 @@ void Butterfly_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D 
 	const double Mass=PhysicsToUse.GetMass();
 	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
 
-	double Rotation=-(PhysicsToUse.GetAngularVelocity()*dTime_s);
-	double StrafeVelocity;
-	StrafeVelocity=sin(Rotation)*m_LocalVelocity[1]+cos(fabs(Rotation))*m_LocalVelocity[0];
-
+	double CentripetalAcceleration=PhysicsEntity_2D::GetCentripetalAcceleration(m_LocalVelocity[1],m_CachedAngularVelocity,dTime_s);
+	//CentripetalAcceleration+=((GetFrictionalForce(Mass,0.20,CentripetalAcceleration,dTime_s)/Mass) * dTime_s);
+	Vec2d LocalStrafeVelocity=GlobalToLocal(Heading,m_GlobalStrafeVelocity);  //bring our cached velocity to local to add it
+	//Add the centripetal acceleration to the x component to our velocity 
+	LocalStrafeVelocity[0]+=CentripetalAcceleration;
+	LocalStrafeVelocity[1]=0;  //all y component velocity will get absorbed with radial friction
 	//just hard code the CoF which allows x percent of the centripetal force to escape
-	StrafeVelocity+=((GetFrictionalForce(Mass,0.20,StrafeVelocity,dTime_s)/Mass) * dTime_s);
-	//DOUT5 ("%f x=%f y=%f",StrafeVelocity,m_LocalVelocity[0],m_LocalVelocity[1]);
-	m_LocalVelocity[0]=StrafeVelocity;
+	LocalStrafeVelocity[0]+=((GetFrictionalForce(Mass,0.20,LocalStrafeVelocity[0],dTime_s)/Mass) * dTime_s);
+	//Cache this velocity in its global direction
+	m_GlobalStrafeVelocity=LocalToGlobal(Heading,LocalStrafeVelocity);
+	m_LocalVelocity[0]=LocalStrafeVelocity[0];
+	//DOUT5 ("%f x=%f y=%f",CentripetalAcceleration,Meters2Feet(m_LocalVelocity[0]),Meters2Feet(m_LocalVelocity[1]));
 	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 
@@ -470,6 +475,7 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 	m_LocalVelocity=LocalVelocity;
 
 	AngularVelocity=(omega / (Pi * D)) * Pi2;
+	m_CachedAngularVelocity=AngularVelocity;
 }
 
   /***********************************************************************************************************************************/
@@ -486,7 +492,7 @@ void Nona_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 {
 	const double Mass=PhysicsToUse.GetMass();
 	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
-	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration(dTime_s));
+	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration_2D(dTime_s));
 	//DOUT5("%f, %f, %f",CentripetalAcceleration[0],CentripetalAcceleration[1], PhysicsToUse.GetCentripetalAcceleration_Magnitude(dTime_s));
 
 	Vec2d CurrentVelocity=GlobalToLocal(Heading,PhysicsToUse.GetLinearVelocity());

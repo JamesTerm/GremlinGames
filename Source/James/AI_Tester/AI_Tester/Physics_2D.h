@@ -97,9 +97,10 @@ class PhysicsEntity_2D
 		double ComputeRestrainedTorque(double Torque,double TorqueRestraint,double dTime_s);
 		Vec2D ComputeRestrainedForce(const Vec2D &LocalForce,const Vec2D &ForceRestraintPositive,const Vec2D &ForceRestraintNegative,double dTime_s);
 		//This returns in the form of magnitude using the proper equations
-		double GetCentripetalAcceleration_Magnitude(double DeltaTime_s) const;
+		static double GetCentripetalAcceleration(double LinearVelocity,double AngularVelocity,double DeltaTime_s);
+		double GetCentripetalAcceleration(double DeltaTime_s) const;
 		///This returns the global acceleration needed to maintain linear velocity
-		Vec2D GetCentripetalAcceleration(double DeltaTime_s) const;
+		Vec2D GetCentripetalAcceleration_2D(double DeltaTime_s) const;
 		///This returns the global force needed to maintain the current linear velocity
 		Vec2D GetCentripetalForce(double DeltaTime_s) const;
 	protected:
