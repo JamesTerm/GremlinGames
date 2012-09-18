@@ -520,22 +520,28 @@ Vec2d PhysicsEntity_2D::ComputeRestrainedForce(const Vec2d &LocalForce,const Vec
 	return ForceToApply;
 }
 
-double PhysicsEntity_2D::GetCentripetalAcceleration_Magnitude(double DeltaTime_s) const
+double PhysicsEntity_2D::GetCentripetalAcceleration(double LinearVelocity,double AngularVelocity,double DeltaTime_s)
 {
 	//centripetal_a = v^2 / r
 	//first we'll need to find r given the current angular velocity
 	//r = s / theta  (where theta is rotational displacement or angular velocity * time)
-	const double theta=m_AngularVelocity;
+	const double theta=LinearVelocity>0.0?-AngularVelocity:AngularVelocity;
 	if (IsZero(theta)) return 0.0;
-	const double v = m_LinearVelocity.length();
+	const double v = LinearVelocity;
 	const double s =v / DeltaTime_s;
 	const double r = s / theta;
 	if (IsZero(r)) return 0.0;
 	const double centripetal_acceleration= v * v / r;
-	return centripetal_acceleration;
+	return LinearVelocity>0.0?centripetal_acceleration:-centripetal_acceleration;
 }
 
-Vec2d PhysicsEntity_2D::GetCentripetalAcceleration(double DeltaTime_s) const
+double PhysicsEntity_2D::GetCentripetalAcceleration(double DeltaTime_s) const
+{
+	//Note the length of linear velocity works because it does not matter which direction the velocity is facing
+	return GetCentripetalAcceleration(m_LinearVelocity.length(),m_AngularVelocity,DeltaTime_s);
+}
+
+Vec2d PhysicsEntity_2D::GetCentripetalAcceleration_2D(double DeltaTime_s) const
 {
 	return GetCentripetalForce(DeltaTime_s) / m_EntityMass;
 }
