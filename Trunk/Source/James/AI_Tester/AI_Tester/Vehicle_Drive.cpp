@@ -117,7 +117,7 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	const double D=m_pParent->GetWheelTurningDiameter();
 
 	//const double FWD = (LeftLinearVelocity*cos(1.0)+RightLinearVelocity*cos(1.0))/2.0;
-	const double FWD = (LeftLinearVelocity + RightLinearVelocity) / 2.0;
+	const double FWD = (LeftLinearVelocity + RightLinearVelocity) * 0.5;
 	//const double STR = (LeftLinearVelocity*sin(0.0)+ RightLinearVelocity*sin(0.0))/2.0;
 	const double STR = 0.0;
 
@@ -131,7 +131,7 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	//W is the vehicle’s track width
 	const double W=WheelDimensions[0];
 	const double skid=cos(atan2(W,L));
-	const double omega = ((LeftLinearVelocity*skid) + (RightLinearVelocity*-skid))/2.0;
+	const double omega = ((LeftLinearVelocity*skid) + (RightLinearVelocity*-skid)) * 0.5;
 
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
@@ -269,15 +269,15 @@ void Swerve_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,Vec2
 	const double W=WheelDimensions[0];
 	const double D = m_pParent->GetWheelTurningDiameter();
 
-	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))/4;
+	const double FWD = (_.sFR*cos(_.aFR)+_.sFL*cos(_.aFL)+_.sRL*cos(_.aRL)+_.sRR*cos(_.aRR))*0.25;
 
-	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))/4;
+	const double STR = (_.sFR*sin(_.aFR)+_.sFL*sin(_.aFL)+_.sRL*sin(_.aRL)+_.sRR*sin(_.aRR))*0.25;
 	const double HP=Pi/2;
 	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
 	//Here we go it is finally working I just needed to take out the last division
 	const double omega = ((_.sFR*cos(atan2(W,L)+(HP-_.aFR))+_.sFL*cos(atan2(-W,L)+(HP-_.aFL))
-		+_.sRL*cos(atan2(-W,-L)+(HP-_.aRL))+_.sRR*cos(atan2(W,-L)+(HP-_.aRR)))/4);
+		+_.sRL*cos(atan2(-W,-L)+(HP-_.aRL))+_.sRR*cos(atan2(W,-L)+(HP-_.aRR)))*0.25);
 
 	//const double omega = (((_.sFR*cos(atan2(W,L)+(HP-_.aFR))/4)+(_.sFL*cos(atan2(-W,L)+(HP-_.aFL))/4)
 	//	+(_.sRL*cos(atan2(-W,-L)+(HP-_.aRL))/4)+(_.sRR*cos(atan2(W,-L)+(HP-_.aRR))/4)));
@@ -461,7 +461,7 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 	const double W=WheelDimensions[0];
 	const double D = m_pParent->GetWheelTurningDiameter();
 
-	const double FWD = (_.sFR+_.sFL+_.sRL+_.sRR)/4;
+	const double FWD = (_.sFR+_.sFL+_.sRL+_.sRR)*0.25;
 
 	const double STR = GetStrafeVelocity(m_pParent->Vehicle_Drive_GetPhysics(),dTime_s);
 	const double HP=Pi/2;
@@ -471,7 +471,7 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 	//const double omega = ((_.sFR*cos(atan2(W,L)+HP))+_.sFL*cos(atan2(-W,L)+(HP))
 	//	+_.sRL*cos(atan2(-W,-L)+(HP)+_.sRR*cos(atan2(W,-L)+(HP)))/4);
 	const double skid=cos(atan2(W,L));
-	const double omega = (_.sFR*-skid+_.sFL*skid+_.sRL*skid+_.sRR*-skid)/4;
+	const double omega = (_.sFR*-skid+_.sFL*skid+_.sRL*skid+_.sRR*-skid)*0.25;
 
 	LocalVelocity[0]=STR;
 	LocalVelocity[1]=FWD;
