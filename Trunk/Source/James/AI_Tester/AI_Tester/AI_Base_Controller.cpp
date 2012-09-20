@@ -8,6 +8,58 @@ using namespace osg;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
+ /*															Tank_Steering															*/
+/***********************************************************************************************************************************/
+
+Tank_Steering::Tank_Steering() : m_LeftVelocity(0.0),m_RightVelocity(0.0),m_AreControlsDisabled(false)
+{
+}
+
+void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,double dTime_s)
+{
+	if (ship.GetAlterTrajectory())
+		AuxVelocity=((m_LeftVelocity + m_RightVelocity) * 0.5) * ship.GetEngaged_Max_Speed();
+	else
+	{
+		//Haha this is absolutely silly driving tank steering in slide mode, but it works
+		LinearAcceleration[1]+=((m_LeftVelocity + m_RightVelocity) * 0.5) * ship.GetAccelSpeed();
+	}
+	const double difference=(m_LeftVelocity + -m_RightVelocity);
+	const double omega = (fabs(difference)>0.05)? difference * 0.5 : 0;
+	AngularAcceleration=omega*ship.GetHeadingSpeed();
+	//DOUT4("%f %f %f",m_LeftVelocity,m_RightVelocity,difference);
+}
+
+void Tank_Steering::Joystick_SetLeftVelocity(double Velocity)
+{
+	if (!m_AreControlsDisabled)
+		m_LeftVelocity=Velocity;
+	else
+		m_LeftVelocity=0.0;
+}
+void Tank_Steering::Joystick_SetRightVelocity(double Velocity)
+{
+	if (!m_AreControlsDisabled)
+		m_RightVelocity=Velocity;
+	else
+		m_RightVelocity=0.0;
+}
+
+void Tank_Steering::BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)
+{
+	if (Bind)
+	{
+		em->EventValue_Map["Joystick_SetLeftVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetLeftVelocity);
+		em->EventValue_Map["Joystick_SetRightVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetRightVelocity);
+	}
+	else
+	{
+		em->EventValue_Map["Joystick_SetLeftVelocity"].Remove(*this, &Tank_Steering::Joystick_SetLeftVelocity);
+		em->EventValue_Map["Joystick_SetRightVelocity"].Remove(*this, &Tank_Steering::Joystick_SetRightVelocity);
+	}
+}
+
+  /***********************************************************************************************************************************/
  /*														AI_Base_Controller															*/
 /***********************************************************************************************************************************/
 

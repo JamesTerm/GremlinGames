@@ -106,6 +106,13 @@ class Swerve_Robot : public Ship_Tester,
 		virtual const SwerveVelocities &GetSwerveVelocities() const {return m_Swerve_Robot_Velocities;}
 		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),m_EncoderGlobalVelocity);}
 		virtual double GetAngularVelocity_ToDisplay() {return m_EncoderAngularVelocity;}
+
+		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,double dTime_s) 
+			{m_TankSteering.UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,*this,dTime_s);
+			}
+		virtual void BindAdditionalEventControls(bool Bind) 
+			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
+			}
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 		virtual double GetWheelTurningDiameter() const {return m_WheelDimensions.length();}
@@ -161,6 +168,7 @@ class Swerve_Robot : public Ship_Tester,
 		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
 		double m_Heading;  //We take over the heading from physics
 		double m_HeadingUpdateTimer;
+		Tank_Steering m_TankSteering;  //adding controls for tank steering
 	public:
 		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_VehicleDrive->GetSwerveVelocitiesFromIndex(index);}
 };

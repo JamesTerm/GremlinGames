@@ -1,6 +1,26 @@
 #pragma once
 
+//An aggregated type of control for robots that wish to use this kind of steering
+class Tank_Steering
+{
+	private:
+		double m_LeftVelocity, m_RightVelocity;  //for tank steering
+		bool m_AreControlsDisabled;
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
 
+		Tank_Steering();
+
+		void SetAreControlsDisabled(bool AreControlsDisabled) {m_AreControlsDisabled=AreControlsDisabled;}
+		//This is the ui controllers time change callback update... client code must handle initializing as this will only write to those
+		//that need to be written to
+		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,double dTime_s);
+		void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+	protected:
+		void Joystick_SetLeftVelocity(double Velocity);
+		void Joystick_SetRightVelocity(double Velocity);
+};
 
 class AI_Base_Controller
 {
