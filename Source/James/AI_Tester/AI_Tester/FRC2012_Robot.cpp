@@ -1395,6 +1395,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 					script.Pop();
 				}
 			}
+			script.Pop();
 		}
 		script.Pop();
 	}
