@@ -141,6 +141,8 @@ class UI_Controller
 
 		void Joystick_SetCurrentSpeed(double Speed);
 		void Joystick_SetCurrentSpeed_2(double Speed);
+		void Joystick_SetLeftVelocity(double Velocity);
+		void Joystick_SetRightVelocity(double Velocity);
 
 		void Ship_StrafeLeft(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? -m_ship->GetStrafeSpeed() : 0.0;	}
 		void Ship_StrafeRight(bool on)	{		m_Ship_Keyboard_currAccel[0]= on? m_ship->GetStrafeSpeed() : 0.0;	}
@@ -175,18 +177,7 @@ class UI_Controller
 		bool m_SlideButtonToggle;
 		bool m_FireButton;
 		double m_CruiseSpeed; ///< This is used with the Joystick control to only apply speed changes when a change occurs
-
-		// Build the various HUD elements
-		//void BuildHUD();
-		//bool m_targetLeadRetShowing;
-		//bool m_targetInRangeLeadRetShowing;
-
-		//osg::ref_ptr<GG_Framework::UI::ActorTransform> m_shipSiteRetical;
-		//osg::ref_ptr<osg::Geode> m_tgtDirLineGeode;
-
-		//osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_targetOutRangeLeadRetical;
-		//osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_targetInRangeLeadRetical;
-		//osg::ref_ptr<GG_Framework::UI::OSG::ThreadUpdatedPosAttTransform> m_tgtDirLineTransform;
+		double m_LeftVelocity, m_RightVelocity;  //for tank steering
 
 		// Are we flying in auto-pilot?
 		bool m_autoPilot;
