@@ -179,7 +179,7 @@ void UI_Controller::Init_AutoPilotControls()
 //! TODO: Use the script to grab the head position to provide the HUD
 UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
-	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),m_LeftVelocity(0.0),m_RightVelocity(0.0),
+	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),
 	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true)
 {
 	ResetPos();
@@ -359,8 +359,6 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Analog_Slider_Accel"].Remove(*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
-		em->EventValue_Map["Joystick_SetLeftVelocity"].Remove(*this, &UI_Controller::Joystick_SetLeftVelocity);
-		em->EventValue_Map["Joystick_SetRightVelocity"].Remove(*this, &UI_Controller::Joystick_SetRightVelocity);
 		m_ship->BindAdditionalEventControls(false);
 		Flush_AI_BaseResources();
 	}
@@ -401,8 +399,6 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Analog_Slider_Accel"].Subscribe(ehl,*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
-		em->EventValue_Map["Joystick_SetLeftVelocity"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetLeftVelocity);
-		em->EventValue_Map["Joystick_SetRightVelocity"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetRightVelocity);
 
 		// Tell the HUD the name of this ship
 		//m_HUD_UI->m_addnText = m_ship->GetName();
@@ -650,50 +646,6 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 	}
 }
 
-void UI_Controller::Joystick_SetLeftVelocity(double Velocity)
-{
-	if (!AreControlsDisabled())
-		m_LeftVelocity=Velocity;
-	else
-		m_LeftVelocity=0.0;
-}
-
-void UI_Controller::Joystick_SetRightVelocity(double Velocity)
-{
-	if (!AreControlsDisabled())
-		m_RightVelocity=Velocity;
-	else
-		m_RightVelocity=0.0;
-}
-
-#if 0
-osg::Geometry* UI_Controller::MakeVelLine(osg::Vec2 vel)
-{
-	// Create the vertices and geometry and get them together
-	osg::Vec2Array* velocityVerts = new osg::Vec2Array;
-	velocityVerts->push_back(osg::Vec2(0,0,0));
-	velocityVerts->push_back(vel);
-	osg::Geometry* velGeom = new osg::Geometry;
-	velGeom->setVertexArray(velocityVerts);
-
-	// We will make the line all yellow
-	osg::Vec4Array* yellow = new osg::Vec4Array;
-	yellow->push_back(osg::Vec4(1.0f,1.0f,0.0f,1.0f));
-	velGeom->setColorArray(yellow);
-	velGeom->setColorBinding(osg::Geometry::BIND_OVERALL);
-
-	// No need to worry about normals directions
-	osg::Vec3Array* normals = new osg::Vec3Array;
-	normals->push_back(osg::Vec3(0.0f,-1.0f,0.0f));
-	velGeom->setNormalArray(normals);
-	velGeom->setNormalBinding(osg::Geometry::BIND_OVERALL);
-
-	// We want to draw this geometry as a line
-	velGeom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES,0,2));
-	return velGeom;
-}
-#endif
-
 bool UI_Controller::AreControlsDisabled()
 {
 	//return (m_autoPilot || !m_ship->IsShowing());
@@ -716,21 +668,16 @@ void UI_Controller::UpdateController(double dTime_s)
 		//Now for the ship
 		if (!AreControlsDisabled())
 		{
-			//factor in the tank steering velocities
-			double AuxillerySpeed=0.0;
+			//factor in the auxiliary control velocities
+			double AuxiliaryVelocity=0.0;
 			{
-				if (m_ship->GetAlterTrajectory())
-					AuxillerySpeed=((m_LeftVelocity + m_RightVelocity) * 0.5) * m_ship->GetEngaged_Max_Speed();
-				else
-				{
-					//Haha this is absolutely silly driving tank steering in slide mode, but it works
-					m_Ship_JoyMouse_currAccel[1]+=((m_LeftVelocity + m_RightVelocity) * 0.5) * m_ship->GetAccelSpeed();
-				}
-				const double difference=(m_LeftVelocity + -m_RightVelocity);
-				const double omega = (fabs(difference)>0.05)? difference * 0.5 : 0;
-				m_Ship_JoyMouse_rotAcc_rad_s+=omega*m_ship->GetHeadingSpeed();
-				//DOUT4("%f %f %f",m_LeftVelocity,m_RightVelocity,difference);
+				Vec2d AuxLinearAcceleration=Vec2d(0.0,0.0);
+				double AuxAngularAcceleration=0.0;
+				m_ship->UpdateController(AuxiliaryVelocity,AuxLinearAcceleration,AuxAngularAcceleration,dTime_s);
+				m_Ship_JoyMouse_currAccel+=AuxLinearAcceleration;
+				m_Ship_JoyMouse_rotAcc_rad_s+=AuxAngularAcceleration;
 			}
+
 			// Normally we pass the the ship the addition of the keyboard and mouse accel
 			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
 
@@ -738,7 +685,7 @@ void UI_Controller::UpdateController(double dTime_s)
 			if (m_ship->GetAlterTrajectory())
 			{
 				m_ShipKeyVelocity+=(shipAccel[1]*dTime_s);
-				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+AuxillerySpeed+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
+				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+AuxiliaryVelocity+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
 			}
 			else
 				m_ship->SetCurrentLinearAcceleration(shipAccel); 
