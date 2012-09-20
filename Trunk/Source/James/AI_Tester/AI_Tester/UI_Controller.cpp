@@ -717,11 +717,19 @@ void UI_Controller::UpdateController(double dTime_s)
 		if (!AreControlsDisabled())
 		{
 			//factor in the tank steering velocities
-			const double TankVelocity=((m_LeftVelocity + m_RightVelocity) / 2.0) * m_ship->GetEngaged_Max_Speed();
+			double AuxillerySpeed=0.0;
 			{
-				const double omega = (m_LeftVelocity + -m_RightVelocity)/2.0;
+				if (m_ship->GetAlterTrajectory())
+					AuxillerySpeed=((m_LeftVelocity + m_RightVelocity) * 0.5) * m_ship->GetEngaged_Max_Speed();
+				else
+				{
+					//Haha this is absolutely silly driving tank steering in slide mode, but it works
+					m_Ship_JoyMouse_currAccel[1]+=((m_LeftVelocity + m_RightVelocity) * 0.5) * m_ship->GetAccelSpeed();
+				}
+				const double difference=(m_LeftVelocity + -m_RightVelocity);
+				const double omega = (fabs(difference)>0.05)? difference * 0.5 : 0;
 				m_Ship_JoyMouse_rotAcc_rad_s+=omega*m_ship->GetHeadingSpeed();
-				//DOUT4("%f %f",m_LeftVelocity,m_RightVelocity);
+				//DOUT4("%f %f %f",m_LeftVelocity,m_RightVelocity,difference);
 			}
 			// Normally we pass the the ship the addition of the keyboard and mouse accel
 			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
@@ -730,7 +738,7 @@ void UI_Controller::UpdateController(double dTime_s)
 			if (m_ship->GetAlterTrajectory())
 			{
 				m_ShipKeyVelocity+=(shipAccel[1]*dTime_s);
-				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+TankVelocity+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
+				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+AuxillerySpeed+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
 			}
 			else
 				m_ship->SetCurrentLinearAcceleration(shipAccel); 
