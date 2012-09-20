@@ -179,7 +179,7 @@ void UI_Controller::Init_AutoPilotControls()
 //! TODO: Use the script to grab the head position to provide the HUD
 UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
-	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),
+	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),m_LeftVelocity(0.0),m_RightVelocity(0.0),
 	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true)
 {
 	ResetPos();
@@ -359,6 +359,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Analog_Slider_Accel"].Remove(*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
+		em->EventValue_Map["Joystick_SetLeftVelocity"].Remove(*this, &UI_Controller::Joystick_SetLeftVelocity);
+		em->EventValue_Map["Joystick_SetRightVelocity"].Remove(*this, &UI_Controller::Joystick_SetRightVelocity);
 		m_ship->BindAdditionalEventControls(false);
 		Flush_AI_BaseResources();
 	}
@@ -399,6 +401,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Analog_Slider_Accel"].Subscribe(ehl,*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
+		em->EventValue_Map["Joystick_SetLeftVelocity"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetLeftVelocity);
+		em->EventValue_Map["Joystick_SetRightVelocity"].Subscribe(ehl,*this, &UI_Controller::Joystick_SetRightVelocity);
 
 		// Tell the HUD the name of this ship
 		//m_HUD_UI->m_addnText = m_ship->GetName();
@@ -628,10 +632,10 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
+			//Avoid jitter for slider controls by testing the tolerance of change
 			if ((fabs(Speed-m_LastSliderTime[1])>0.05)||(Speed==0))
 			{
 				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
-				//This works but I really did not like the feel of it
 				double SpeedCalibrated=Speed*SpeedToUse;
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
@@ -644,6 +648,22 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 		else
 			m_Ship_JoyMouse_currAccel[1]=Speed;
 	}
+}
+
+void UI_Controller::Joystick_SetLeftVelocity(double Velocity)
+{
+	if (!AreControlsDisabled())
+		m_LeftVelocity=Velocity;
+	else
+		m_LeftVelocity=0.0;
+}
+
+void UI_Controller::Joystick_SetRightVelocity(double Velocity)
+{
+	if (!AreControlsDisabled())
+		m_RightVelocity=Velocity;
+	else
+		m_RightVelocity=0.0;
 }
 
 #if 0
@@ -696,6 +716,13 @@ void UI_Controller::UpdateController(double dTime_s)
 		//Now for the ship
 		if (!AreControlsDisabled())
 		{
+			//factor in the tank steering velocities
+			const double TankVelocity=((m_LeftVelocity + m_RightVelocity) / 2.0) * m_ship->GetEngaged_Max_Speed();
+			{
+				const double omega = (m_LeftVelocity + -m_RightVelocity)/2.0;
+				m_Ship_JoyMouse_rotAcc_rad_s+=omega*m_ship->GetHeadingSpeed();
+				//DOUT4("%f %f",m_LeftVelocity,m_RightVelocity);
+			}
 			// Normally we pass the the ship the addition of the keyboard and mouse accel
 			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
 
@@ -703,7 +730,7 @@ void UI_Controller::UpdateController(double dTime_s)
 			if (m_ship->GetAlterTrajectory())
 			{
 				m_ShipKeyVelocity+=(shipAccel[1]*dTime_s);
-				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
+				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+TankVelocity+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
 			}
 			else
 				m_ship->SetCurrentLinearAcceleration(shipAccel); 
