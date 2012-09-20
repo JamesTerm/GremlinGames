@@ -99,7 +99,12 @@ TestShip = {
 		max_accel_forward=Kicker_MaxAccel,
 		max_accel_reverse=Kicker_MaxAccel
 	},
-
+	
+	controls =
+	{
+		tank_steering_tolerance=0.07
+	},
+		
 	UI =
 	{
 		Length=5, Width=5,
