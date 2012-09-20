@@ -5,6 +5,7 @@ class Tank_Steering
 {
 	private:
 		double m_LeftVelocity, m_RightVelocity;  //for tank steering
+		double m_StraightDeadZone_Tolerance;  //used to help controls drive straight
 		bool m_AreControlsDisabled;
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -17,6 +18,9 @@ class Tank_Steering
 		//that need to be written to
 		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,double dTime_s);
 		void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+
+		//range 0-1 the higher this is the lower turning precision, but easier to drive straight
+		void SetStraightDeadZone_Tolerance(double Tolerance) {m_StraightDeadZone_Tolerance=Tolerance;}
 	protected:
 		void Joystick_SetLeftVelocity(double Velocity);
 		void Joystick_SetRightVelocity(double Velocity);

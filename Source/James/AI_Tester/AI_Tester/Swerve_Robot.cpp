@@ -97,6 +97,7 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 		//This will copy all the props
 		m_SwerveRobotProps=RobotProps->GetSwerveRobotProps();
 		m_WheelDimensions=RobotProps->GetWheelDimensions();
+		m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetSwerveRobotProps().TankSteering_Tolerance);
 		for (size_t i=0;i<4;i++)
 		{
 			DrivingModule::DrivingModule_Props props;
@@ -440,6 +441,8 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.ReverseSteering=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
+	props.SwivelRange=0.0;
+	props.TankSteering_Tolerance=0.05;
 	m_SwerveRobotProps=props;
 	//Always use aggressive stop for driving
 	m_DriveProps.RoteryProps().UseAggressiveStop=true;
@@ -678,10 +681,16 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
-
 		//The main script pop of swerve_drive field table
 		script.Pop(); 
 	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		script.GetField("tank_steering_tolerance", NULL, NULL,&m_SwerveRobotProps.TankSteering_Tolerance);
+		script.Pop();
+	}
+
 	__super::LoadFromScript(script);
 	m_DriveProps.SetFromShip_Properties(*this);
 }
