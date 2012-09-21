@@ -5,18 +5,47 @@ Inches2Meters=0.0254
 Feet2Meters=0.3048
 Meters2Feet=3.2808399
 Meters2Inches=39.3700787
+OunceInchToNewton=0.00706155183333
 
 FRC2012_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 --Parker claimed 20.38, but I've measured 22 5/16
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
 HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
+inv_skid=1.0/math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
 
-KeyDistance_in=144;
---KeyDistance_in=0;
-KeyWidth_in=101;
-KeyDepth_in=48;
-HalfKeyWidth_in=KeyWidth_in/2.0;
+--CIM Motor torque
+CIM_StallTorque_OzIn=343.3
+CIM_StallTorque_Nm=CIM_StallTorque_OzIn*OunceInchToNewton
+CIM_MaxRPM=5310
+CIM_Vel_To_Torque_oz=(1.0/(CIM_MaxRPM/60.0)) * CIM_StallTorque_OzIn
+CIM_Vel_To_Torque_nm=CIM_Vel_To_Torque_oz*OunceInchToNewton
+CIM_MotorTorque=(CIM_MaxRPM / 60) * CIM_Vel_To_Torque_nm  --long math to show its equal to CIM_StallTorque_Nm
+
+DriveTrain_GearReduction = 12.4158
+DriveTrain_Efficiency=1.0
+DriveTrain_MaxTorque = 2.0 * CIM_MotorTorque * DriveTrain_GearReduction * DriveTrain_Efficiency
+
+--Now to compute the linear equivalent
+DriveTrain_PayloadMass = 3.0   --This combines mass with each moment used to compute acceleration
+DriveTrain_MaxAccel_rad= DriveTrain_MaxTorque / DriveTrain_PayloadMass
+DriveTrain_MaxAccel_rps= DriveTrain_MaxAccel_rad / (2.0 * Pi)
+DriveTrain_WheelDiameter = Inches2Meters * FRC2012_wheel_diameter_in
+DriveTrain_MaxAccel_linear = DriveTrain_MaxAccel_rps * (Pi * DriveTrain_WheelDiameter)
+DriveTrain_MaxForce = DriveTrain_MaxAccel_linear * DriveTrain_PayloadMass
+
+--extra computations
+DriveTrain_MaxWheelRPS_High = HighGearSpeed / (Pi * DriveTrain_WheelDiameter)  --The fastest RPS of the wheels
+DriveTrain_MaxWheelRPS_Low  = LowGearSpeed  / (Pi * DriveTrain_WheelDiameter)
+DriveTrain_MotorRPS = DriveTrain_MaxWheelRPS_High * DriveTrain_GearReduction
+DriveTrain_MaxAngularVelocity_High = DriveTrain_MaxWheelRPS_High * 2.0 * Pi --In radians
+
+KeyDistance_in=144
+--KeyDistance_in=0
+KeyWidth_in=101
+KeyDepth_in=48
+HalfKeyWidth_in=KeyWidth_in/2.0
+
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
@@ -32,7 +61,7 @@ MainRobot = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
+	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2 * inv_skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
@@ -62,7 +91,8 @@ MainRobot = {
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
-		right_encoder_reversed='no'
+		right_encoder_reversed='no',
+		inv_max_force = 1/15.0  --solved empiracally
 	},
 	
 	robot_settings =
@@ -220,7 +250,8 @@ MainRobot = {
 				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 				reverse_steering='no',
 				 left_encoder_reversed='no',
-				right_encoder_reversed='no'
+				right_encoder_reversed='no',
+				inv_max_force = 0.0  --solved empiracally
 			}
 		},
 		controls =
@@ -228,7 +259,7 @@ MainRobot = {
 			Joystick_1 =
 			{
 				--control = "CH FLIGHTSTICK PRO",
-				control = "Logitech Attack 3",
+				control = "logitech attack 3",
 				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 				--Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
@@ -240,7 +271,7 @@ MainRobot = {
 
 			Joystick_2 =
 			{
-				control = "Logitech Dual Action",
+				control = "logitech dual action",
 				--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 				Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 				--Ball_Grip = {type="joystick_button", key=2, on_off=true},
@@ -263,7 +294,7 @@ MainRobot = {
 
 			Joystick_3 =
 			{	
-				control = "CH THROTTLE QUADRANT",
+				control = "ch throttle quadrant",
 				PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
 				Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
 				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},

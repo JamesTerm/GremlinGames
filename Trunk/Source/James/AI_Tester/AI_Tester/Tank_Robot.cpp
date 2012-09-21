@@ -33,7 +33,8 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
 	m_UsingEncoders(IsAutonomous),
 	#endif
-	m_UseDeadZoneSkip(true), m_Heading(0.0), m_HeadingUpdateTimer(0.0)
+	m_UseDeadZoneSkip(true), m_Heading(0.0), m_HeadingUpdateTimer(0.0),
+	m_PreviousLeftVelocity(0.0),m_PreviousRightVelocity(0.0)
 {
 	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
 	//m_UsingEncoders=true; //testing
@@ -101,6 +102,7 @@ void Tank_Robot::Reset(bool ResetPosition)
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	#endif
 	m_UseDeadZoneSkip=true;
+	m_PreviousLeftVelocity=m_PreviousRightVelocity=0.0;
 }
 
 void Tank_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition) 
@@ -398,8 +400,29 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
 			#else
+			#if 0
 			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
 			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+			#else
+			//compute acceleration
+			const double LeftAcceleration=(LeftVelocity-m_PreviousLeftVelocity)/dTime_s;
+			const double RightAcceleration=(RightVelocity-m_PreviousRightVelocity)/dTime_s;
+			//Since the mass is not dynamic (like it would be for an arm) we'll absorb the acceleration the final scalar
+			//This should be fine for speed control type of rotary systems
+			//compute force from the computed mass this is the sum of all moment and weight
+			//const double ComputedMass=1.0;
+			//const double LeftForce=LeftAcceleration*ComputedMass;
+			//const double RightForce=RightAcceleration*ComputedMass;
+
+			//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
+			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
+			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+			LeftVoltage+=LeftAcceleration*m_TankRobotProps.InverseMaxForce;
+			RightVoltage+=RightAcceleration*m_TankRobotProps.InverseMaxForce;
+
+			//Keep track of previous velocity to compute acceleration
+			m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
+			#endif
 			#endif
 
 			//Old legacy square method here (turned out to be pretty good)
@@ -525,6 +548,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
+	props.InverseMaxForce=0.0;
 	m_TankRobotProps=props;
 }
 
@@ -647,6 +671,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
+		script.GetField("inv_max_force", NULL, NULL, &m_TankRobotProps.InverseMaxForce);
 		script.Pop(); 
 	}
 	__super::LoadFromScript(script);
