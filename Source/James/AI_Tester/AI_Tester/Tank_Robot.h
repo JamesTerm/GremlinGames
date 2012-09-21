@@ -45,6 +45,9 @@ struct Tank_Robot_Props
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
 	//Currently supporting 4 terms in polynomial equation
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
+	//or alternatively solved empirically.  Using zero disables this feature
+	double InverseMaxForce;  //This is used to solve voltage at the acceleration level where the acceleration / force gets scaled down to voltage
 	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
 	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
 	bool LeftEncoderReversed,RightEncoderReversed;
@@ -122,6 +125,7 @@ class Tank_Robot : public Ship_Tester,
 		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
 		double m_Heading;  //We take over the heading from physics
 		double m_HeadingUpdateTimer;
+		double m_PreviousLeftVelocity,m_PreviousRightVelocity; //used to compute acceleration
 	public:
 		double GetLeftVelocity() const {return m_VehicleDrive->GetLeftVelocity();}
 		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
