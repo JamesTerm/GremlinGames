@@ -305,7 +305,7 @@ Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface 
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_MatchVelocity(0.0),m_CalibratedScaler(1.0),m_ErrorOffset(0.0),
 	m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
-	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState)
+	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState),m_PreviousVelocity(0.0)
 {
 }
 
@@ -401,11 +401,16 @@ void Rotary_Angular::TimeChange(double dTime_s)
 		m_EncoderVelocity=Encoder_Velocity;
 	}
 	__super::TimeChange(dTime_s);
-
+	const double Velocity=m_Physics.GetVelocity();
+	const double Acceleration=(Velocity-m_PreviousVelocity)/dTime_s;
 	//CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
 	//Either error offset or calibrated scaler will be used depending on the aggressive stop property, we need not branch this as
 	//they both can be represented in the same equation
-	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/m_CalibratedScaler;
+	double Voltage=(Velocity+m_ErrorOffset)/m_CalibratedScaler;
+
+	Voltage+=Acceleration*m_Rotary_Props.InverseMaxForce;
+	//Keep track of previous velocity to compute acceleration
+	m_PreviousVelocity=Velocity;
 
 	//Apply the polynomial equation to the voltage to linearize the curve
 	{
@@ -570,6 +575,7 @@ void Rotary_Properties::Init()
 	props.Polynomial[2]=0.0;
 	props.Polynomial[3]=0.0;
 	props.Polynomial[4]=0.0;
+	props.InverseMaxForce=0.0;
 	m_RoteryProps=props;
 }
 
@@ -648,6 +654,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
+		script.GetField("inv_max_force", NULL, NULL, &m_RoteryProps.InverseMaxForce);
 	}
 	__super::LoadFromScript(script);
 }

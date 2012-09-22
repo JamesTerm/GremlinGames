@@ -57,7 +57,8 @@ TestShip = {
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
-		right_encoder_reversed='no'
+		right_encoder_reversed='no',
+		inv_max_force = 1/15.0  --solved empiracally
 	},
 	
 	UI =
