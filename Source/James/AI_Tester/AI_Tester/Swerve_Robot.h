@@ -37,6 +37,9 @@ struct Swerve_Robot_Props
 	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	double SwivelRange;  //Value in radians of the swivel range 0 is infinite
 	double TankSteering_Tolerance; //used to help controls drive straight
+	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
+	//or alternatively solved empirically.  Using zero disables this feature
+	double InverseMaxForce;  //This is used to solve voltage at the acceleration level where the acceleration / force gets scaled down to voltage
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen_Wheel,IsOpen_Swivel;  //give ability to open or close loop for wheel or swivel system  
 	//This will dump the console PID info (Only active if __DebugLUA__ is defined)

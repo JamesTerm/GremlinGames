@@ -15,6 +15,9 @@ struct Rotary_Props
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	//Currently supporting 4 terms in polynomial equation
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
+	//or alternatively solved empirically.  Using zero disables this feature
+	double InverseMaxForce;  //This is used to solve voltage at the acceleration level where the acceleration / force gets scaled down to voltage
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
 	{
@@ -137,6 +140,7 @@ class Rotary_Angular : public Rotary_System
 		double m_RequestedVelocity_Difference;
 		EncoderUsage m_EncoderState; //dynamically able to change state
 		const EncoderUsage m_EncoderCachedState; //This is a fall-back state upon recovery of the safety state
+		double m_PreviousVelocity; //used to compute acceleration
 	public:
 		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
 		IEvent::HandlerList ehl;
