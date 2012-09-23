@@ -37,6 +37,44 @@ inline double SaturateRotation(double Rotation)
 	return Rotation;
 }
 
+struct Ship_Props
+{
+	//typedef Entity_Properties __super;
+	// This is the rate used by the keyboard
+	double dHeading;
+
+	//May need these later to simulate pilot error in the AI
+	//! G-Force limits
+	//double StructuralDmgGLimit, PilotGLimit, PilotTimeToPassOut, PilotTimeToRecover, PilotMaxTimeToRecover;
+
+	//! We can break this up even more if needed
+	double EngineRampForward,EngineRampReverse,EngineRampAfterBurner;
+	double EngineDeceleration,EngineRampStrafe;
+
+	//! Engaged max speed is basically the fastest speed prior to using after-burner.  For AI and auto pilot it is the trigger speed to
+	//! enable the afterburner
+	double MAX_SPEED,ENGAGED_MAX_SPEED;
+	double ACCEL, BRAKE, STRAFE, AFTERBURNER_ACCEL, AFTERBURNER_BRAKE;
+
+	double MaxAccelLeft,MaxAccelRight,MaxAccelForward,MaxAccelReverse;
+	double MaxAccelForward_High,MaxAccelReverse_High;
+	double MaxTorqueYaw;
+	enum Ship_Type
+	{
+		eDefault,
+		eRobotTank,
+		eSwerve_Robot,
+		eButterfly_Robot,
+		eNona_Robot,
+		eFRC2011_Robot,
+		eFRC2012_Robot,
+	};
+	Ship_Type ShipType;
+
+	double GetMaxAccelForward(double Velocity) const;
+	double GetMaxAccelReverse(double Velocity) const;
+};
+
 class Ship_2D : public Ship
 {
 	public:
@@ -147,7 +185,7 @@ class Ship_2D : public Ship
 		virtual Vec2D Get_DriveTo_ForceDegradeScalar() const {return Vec2D(1.0,1.0);}
 
 		AI_Base_Controller* m_controller;
-		Ship_Properties m_ShipProps;
+		Ship_Props m_ShipProps;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
 
 		// Used in Keyboard acceleration and braking
@@ -218,4 +256,35 @@ class Ship_Tester : public Ship_2D
 		virtual void SetAttitude(double radians);
 		Goal *ClearGoal();
 		void SetGoal(Goal *goal);
+};
+
+class Ship_Properties : public Entity_Properties
+{
+	public:
+		Ship_Properties();
+		virtual ~Ship_Properties() {}
+		const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(Ship_2D *NewShip) const;
+		Ship_Props::Ship_Type GetShipType() const {return m_ShipProps.ShipType;}
+		double GetEngagedMaxSpeed() const {return m_ShipProps.ENGAGED_MAX_SPEED;}
+		//These methods are really more for the simulation... so using the high yields a better reading for testing
+		double GetMaxAccelForward() const {return m_ShipProps.MaxAccelForward_High;}
+		double GetMaxAccelReverse() const {return m_ShipProps.MaxAccelReverse_High;}
+
+		const Ship_Props &GetShipProps() const {return m_ShipProps;}
+	private:
+		Ship_Props m_ShipProps;
+};
+
+
+class UI_Ship_Properties : public Ship_Properties
+{
+	public:
+		UI_Ship_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(const char **TextImage,osg::Vec2d &Dimension) const;
+	private:
+		std::string m_TextImage;
+		osg::Vec2d m_UI_Dimensions;
 };

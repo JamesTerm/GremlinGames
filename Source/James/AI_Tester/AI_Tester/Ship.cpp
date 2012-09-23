@@ -12,12 +12,16 @@ using namespace osg;
 
 bool g_DisableEngineRampUp2=false;
 
-  /***************************************************************************************************************/
- /*													Ship_2D														*/
-/***************************************************************************************************************/
+namespace Scripting=GG_Framework::Logic::Scripting;
+//namespace Scripting=Framework::Scripting;
+
 const double PI=M_PI;
 const double Pi2=M_PI*2.0;
 const double Half_Pi=M_PI/2.0;
+
+  /***************************************************************************************************************/
+ /*													Ship_2D														*/
+/***************************************************************************************************************/
 
 namespace AI_Tester
 {
@@ -208,7 +212,7 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 	if (ship_props)
 	{
 		ship_props->Initialize(this);
-		m_ShipProps=*ship_props;
+		m_ShipProps=ship_props->GetShipProps();
 	}
 	else
 	{
@@ -668,5 +672,226 @@ void Ship_2D::DestroyEntity(bool shotDown, Vec3d collisionPt)
 	}
 }
 #endif
-//////////////////////////////////////////////////////////////////////////
 
+  /***********************************************************************************************************************************/
+ /*															Ship_Props																*/
+/***********************************************************************************************************************************/
+
+double Ship_Props::GetMaxAccelForward(double Velocity) const
+{
+	const double ratio = fabs(Velocity)/MAX_SPEED;
+	const double  &Low=MaxAccelForward;
+	const double &High=MaxAccelForward_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+double Ship_Props::GetMaxAccelReverse(double Velocity) const
+{
+	const double ratio = fabs(Velocity)/MAX_SPEED;
+	const double  &Low=MaxAccelReverse;
+	const double &High=MaxAccelReverse_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+  /***********************************************************************************************************************************/
+ /*															Ship_Properties															*/
+/***********************************************************************************************************************************/
+//These must be in the same order as they are in Ship_Properties::Ship_Type
+const char * const csz_RobotNames[] =
+{
+	"RobotTank",
+	"RobotSwerve",
+	"RobotButterfly",
+	"RobotNona",
+	"Robot2011",
+	"Robot2012",
+};
+
+Ship_Properties::Ship_Properties()
+{
+	Ship_Props props;
+	memset(&props,0,sizeof(Ship_Props));
+
+	props.dHeading = DEG_2_RAD(270.0);
+
+	double Scale=0.2;  //we must scale everything down to see on the view
+	props.MAX_SPEED = 2000.0 * Scale;
+	props.ENGAGED_MAX_SPEED = 400.0 * Scale;
+	props.ACCEL = 60.0 * Scale;
+	props.BRAKE = 50.0 * Scale;
+	props.STRAFE = props.BRAKE; //could not find this one
+	props.AFTERBURNER_ACCEL = 107.0 * Scale;
+	props.AFTERBURNER_BRAKE = props.BRAKE;
+
+	props.MaxAccelLeft=40.0 * Scale;
+	props.MaxAccelRight=40.0 * Scale;
+	props.MaxAccelForward=props.MaxAccelForward_High=87.0 * Scale;
+	props.MaxAccelReverse=props.MaxAccelReverse_High=70.0 * Scale;
+	props.MaxTorqueYaw=2.5;
+
+	double RAMP_UP_DUR = 1.0;
+	double RAMP_DOWN_DUR = 1.0;
+	props.EngineRampAfterBurner= props.AFTERBURNER_ACCEL/RAMP_UP_DUR;
+	props.EngineRampForward= props.ACCEL/RAMP_UP_DUR;
+	props.EngineRampReverse= props.BRAKE/RAMP_UP_DUR;
+	props.EngineRampStrafe= props.STRAFE/RAMP_UP_DUR;
+	props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
+	m_ShipProps=props;
+};
+
+const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
+{
+	Ship_Props &props=m_ShipProps;
+	const char* err;
+	props.ShipType=Ship_Props::eDefault;
+	m_EntityName="Ship";
+	err = script.GetGlobalTable("Ship");
+	if (err)
+	{
+		for (size_t i=0;i<_countof(csz_RobotNames);i++)
+		{
+			err = script.GetGlobalTable(csz_RobotNames[i]);
+			if (!err)
+			{
+				props.ShipType=(Ship_Props::Ship_Type)(i+1);
+				m_EntityName=csz_RobotNames[i];
+				break;
+			}
+		}
+	}
+	return err;
+}
+
+void Ship_Properties::LoadFromScript(Scripting::Script& script)
+{
+	Ship_Props &props=m_ShipProps;
+	const char* err=NULL;
+	{
+		double dHeading;
+		err = script.GetField("dHeading", NULL, NULL, &dHeading);
+		if (!err)
+			props.dHeading=DEG_2_RAD(dHeading);
+		else
+			script.GetField("heading_rad", NULL, NULL, &props.dHeading);
+
+		err = script.GetField("ACCEL", NULL, NULL, &props.ACCEL);
+		err = script.GetField("BRAKE", NULL, NULL, &props.BRAKE);
+		err = script.GetField("STRAFE", NULL, NULL, &props.STRAFE);
+		if (err)
+			props.STRAFE=props.BRAKE; 		//Give strafe the default of the brake
+
+		props.AFTERBURNER_ACCEL=props.ACCEL;  //Give afterburner acceleration rate the same as thrusters for default
+		err = script.GetField("AFTERBURNER_ACCEL", NULL, NULL, &props.AFTERBURNER_ACCEL);
+
+		props.AFTERBURNER_BRAKE=props.BRAKE;  //Give afterburner brake rate the same as brakes for default
+		err = script.GetField("AFTERBURNER_ACCEL", NULL, NULL, &props.AFTERBURNER_BRAKE);
+
+		// By defaults, we want all of the engines to ramp up to full in this amount of time
+		double RAMP_UP_DUR = 1.0;
+		double RAMP_DOWN_DUR = 1.0;
+
+		err = script.GetField("RAMP_UP_DUR", NULL, NULL, &RAMP_UP_DUR);
+		err = script.GetField("RAMP_DOWN_DUR", NULL, NULL, &RAMP_DOWN_DUR);
+		const double MIN_RAMP = 0.00001;	// Avoid stupid numbers, div by 0 errors, etc.
+		if (RAMP_UP_DUR < MIN_RAMP) RAMP_UP_DUR = MIN_RAMP;	
+		if (RAMP_DOWN_DUR < MIN_RAMP) RAMP_DOWN_DUR = MIN_RAMP;
+
+		err = script.GetField("EngineDeceleration", NULL, NULL, &props.EngineDeceleration);
+		if (err) props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
+		err = script.GetField("EngineRampStrafe", NULL, NULL, &props.EngineRampStrafe);
+		if (err) props.EngineRampStrafe= props.STRAFE/RAMP_UP_DUR;
+		err = script.GetField("EngineRampForward", NULL, NULL, &props.EngineRampForward);
+		if (err) props.EngineRampForward= props.ACCEL/RAMP_UP_DUR;
+		err = script.GetField("EngineRampReverse", NULL, NULL, &props.EngineRampReverse);
+		if (err) props.EngineRampReverse= props.BRAKE/RAMP_UP_DUR;
+		err = script.GetField("EngineRampAfterBurner", NULL, NULL, &props.EngineRampAfterBurner);
+		if (err) props.EngineRampAfterBurner= props.AFTERBURNER_ACCEL/RAMP_UP_DUR;
+
+
+		script.GetField("MaxAccelLeft", NULL, NULL, &props.MaxAccelLeft);
+		script.GetField("MaxAccelRight", NULL, NULL, &props.MaxAccelRight);
+		script.GetField("MaxAccelForward", NULL, NULL, &props.MaxAccelForward);
+		err=script.GetField("MaxAccelForward_High", NULL, NULL, &props.MaxAccelForward_High);
+		if (err)
+			props.MaxAccelForward_High=props.MaxAccelForward;
+
+		script.GetField("MaxAccelReverse", NULL, NULL, &props.MaxAccelReverse);
+		err=script.GetField("MaxAccelReverse_High", NULL, NULL, &props.MaxAccelReverse_High);
+		if (err)
+			props.MaxAccelReverse_High=props.MaxAccelReverse;
+
+		script.GetField("MaxTorqueYaw", NULL, NULL, &props.MaxTorqueYaw);
+
+		err = script.GetField("MAX_SPEED", NULL, NULL, &props.MAX_SPEED);
+		err = script.GetField("ENGAGED_MAX_SPEED", NULL, NULL, &props.ENGAGED_MAX_SPEED);
+		if (err)
+			props.ENGAGED_MAX_SPEED=props.MAX_SPEED;
+
+	}
+
+	// Let the base class finish things up
+	__super::LoadFromScript(script);
+}
+
+void Ship_Properties::Initialize(Ship_2D *NewShip) const
+{
+	const Ship_Props &props=m_ShipProps;
+	NewShip->dHeading=props.dHeading;
+	NewShip->MAX_SPEED=props.MAX_SPEED;
+	NewShip->ENGAGED_MAX_SPEED=props.ENGAGED_MAX_SPEED;
+	NewShip->ACCEL=props.ACCEL;
+	NewShip->BRAKE=props.BRAKE;
+	NewShip->STRAFE=props.STRAFE;
+	NewShip->AFTERBURNER_ACCEL=props.AFTERBURNER_ACCEL;
+	NewShip->AFTERBURNER_BRAKE=props.AFTERBURNER_BRAKE;
+
+	NewShip->EngineRampAfterBurner=props.EngineRampAfterBurner;
+	NewShip->EngineRampForward=props.EngineRampForward;
+	NewShip->EngineRampReverse=props.EngineRampReverse;
+	NewShip->EngineRampStrafe=props.EngineRampStrafe;
+	NewShip->EngineDeceleration=props.EngineDeceleration;
+
+	NewShip->MaxAccelLeft=props.MaxAccelLeft;
+	NewShip->MaxAccelRight=props.MaxAccelRight;
+	//NewShip->MaxAccelForward=props.MaxAccelForward;
+	//NewShip->MaxAccelReverse=props.MaxAccelReverse;
+	NewShip->MaxTorqueYaw=props.MaxTorqueYaw;
+}
+
+  /***********************************************************************************************************************************/
+ /*														UI_Ship_Properties															*/
+/***********************************************************************************************************************************/
+
+UI_Ship_Properties::UI_Ship_Properties()
+{
+	m_TextImage="*";
+	m_UI_Dimensions[0]=1,m_UI_Dimensions[1]=1;
+};
+
+void UI_Ship_Properties::Initialize(const char **TextImage,osg::Vec2d &Dimension) const
+{
+	*TextImage=m_TextImage.c_str();
+	Dimension[0]=m_UI_Dimensions[0];
+	Dimension[1]=m_UI_Dimensions[1];
+}
+
+void UI_Ship_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	{
+		//Get the ships UI
+		err = script.GetFieldTable("UI");
+		if (!err)
+		{
+			err = script.GetField("Length", NULL, NULL,&m_UI_Dimensions[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("Width", NULL, NULL,&m_UI_Dimensions[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("TextImage",&m_TextImage,NULL,NULL);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+
+	}
+	__super::LoadFromScript(script);
+}

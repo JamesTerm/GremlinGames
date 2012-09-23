@@ -333,25 +333,25 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 
 		switch(ship_props->GetShipType())
 		{
-			case Ship_Properties::eDefault:
+			case Ship_Props::eDefault:
 				NewShip=new Ship_Tester(EntityName);
 				break;
-			case Ship_Properties::eRobotTank:
+			case Ship_Props::eRobotTank:
 				NewShip=new Tank_Robot_UI_Control(EntityName);
 				break;
-			case Ship_Properties::eSwerve_Robot:
+			case Ship_Props::eSwerve_Robot:
 				NewShip=new Swerve_Robot_UI_Control(EntityName);
 				break;
-			case Ship_Properties::eButterfly_Robot:
+			case Ship_Props::eButterfly_Robot:
 				NewShip=new Butterfly_Robot_UI_Control(EntityName);
 				break;
-			case Ship_Properties::eNona_Robot:
+			case Ship_Props::eNona_Robot:
 				NewShip=new Nona_Robot_UI_Control(EntityName);
 				break;
-			case Ship_Properties::eFRC2011_Robot:
+			case Ship_Props::eFRC2011_Robot:
 				NewShip=new FRC_2011_Robot_UI(EntityName);
 				break;
-			case Ship_Properties::eFRC2012_Robot:
+			case Ship_Props::eFRC2012_Robot:
 				NewShip=new FRC_2012_Robot_UI(EntityName);
 				break;
 		}
