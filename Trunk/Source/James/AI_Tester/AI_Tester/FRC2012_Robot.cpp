@@ -1041,7 +1041,8 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	Ship_1D_Properties::eRobotArm,
 	true,	//Using the range
 	-PI_2,PI_2 //TODO
-	)
+	),
+	m_RobotControls(&s_ControlsEvents)
 {
 	{
 		FRC_2012_Robot_Props props;
@@ -1217,7 +1218,6 @@ const char *FRC_2012_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(siz
 	return (index<_countof(g_Events))?g_Events[index] : NULL;
 }
 FRC_2012_Robot_Properties::ControlEvents FRC_2012_Robot_Properties::s_ControlsEvents;
-LUA_Controls_Properties FRC_2012_Robot_Properties::s_RobotControls(&s_ControlsEvents);
 
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
@@ -1437,7 +1437,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	err = script.GetFieldTable("controls");
 	if (!err)
 	{
-		s_RobotControls.LoadFromScript(script);
+		m_RobotControls.LoadFromScript(script);
 		script.Pop();
 	}
 }

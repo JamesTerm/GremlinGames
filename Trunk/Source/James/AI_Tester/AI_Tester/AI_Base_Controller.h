@@ -66,8 +66,6 @@ class LUA_Controls_Properties
 
 		Controls_List m_Controls;
 		LUA_Controls_Properties_Interface * const m_pParent;
-		//This is a check to ensure the script is only loaded one time (e.g. if this class is used as a static member)
-		bool m_ScriptLoaded;
 	public:
 		LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent);
 
@@ -76,6 +74,7 @@ class LUA_Controls_Properties
 		void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		//Just have the client (from ship) call this
 		void BindAdditionalUIControls(bool Bind,void *joy) const;
+		LUA_Controls_Properties &operator= (const LUA_Controls_Properties &CopyFrom);
 };
 
 //An aggregated type of control for robots that wish to use this kind of steering
