@@ -37,6 +37,7 @@ struct Tank_Robot_Props
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	double LeftMaxSpeedOffset;	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
 	double RightMaxSpeedOffset;
+	double TankSteering_Tolerance; //used to help controls drive straight
 	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen;  //This property only applies in teleop
@@ -90,6 +91,13 @@ class Tank_Robot : public Ship_Tester,
 		virtual void DestroyDrive();
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		virtual void ResetPos();
+		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,double dTime_s) 
+			{m_TankSteering.UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,*this,dTime_s);
+			}
+		virtual void BindAdditionalEventControls(bool Bind) 
+			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
+			}
+
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		//Note by default a 6WD Tank Robot is assumed to set length for a 4WD (or half the total length of 6)
@@ -126,6 +134,7 @@ class Tank_Robot : public Ship_Tester,
 		double m_Heading;  //We take over the heading from physics
 		double m_HeadingUpdateTimer;
 		double m_PreviousLeftVelocity,m_PreviousRightVelocity; //used to compute acceleration
+		Tank_Steering m_TankSteering;  //adding controls for tank steering
 	public:
 		double GetLeftVelocity() const {return m_VehicleDrive->GetLeftVelocity();}
 		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
