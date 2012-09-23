@@ -84,6 +84,7 @@ void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *pro
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
 	m_PID_Input_Latency_Left.SetLatency(m_TankRobotProps.InputLatency);
 	m_PID_Input_Latency_Right.SetLatency(m_TankRobotProps.InputLatency);
+	m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetTankRobotProps().TankSteering_Tolerance);
 }
 void Tank_Robot::Reset(bool ResetPosition)
 {
@@ -548,6 +549,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
+	props.TankSteering_Tolerance=0.05;
 	props.InverseMaxForce=0.0;
 	m_TankRobotProps=props;
 }
@@ -674,6 +676,13 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("inv_max_force", NULL, NULL, &m_TankRobotProps.InverseMaxForce);
 		script.Pop(); 
 	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		script.GetField("tank_steering_tolerance", NULL, NULL,&m_TankRobotProps.TankSteering_Tolerance);
+		script.Pop();
+	}
+
 	__super::LoadFromScript(script);
 }
 

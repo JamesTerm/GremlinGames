@@ -63,6 +63,11 @@ TestShip = {
 		inv_max_force = 1/15.0  --solved empiracally
 	},
 	
+	controls =
+	{
+		tank_steering_tolerance=0.07
+	},
+
 	UI =
 	{
 		Length=5, Width=5,
