@@ -232,10 +232,18 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 				}
 			}
 		}
+
 		//Note the velocity is checked once before the time change here, and once after for the current
 		//Only apply swivel adjustments if we have significant movement (this matters in targeting tests)
-		if ((fabs(LocalForce[0])>1.5)||(fabs(LocalForce[1])>1.5)||(fabs(m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity()) > 0.05))
-			m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
+		//if ((fabs(LocalForce[0])>1.5)||(fabs(LocalForce[1])>1.5)||(fabs(m_DrivingModule[i]->GetDrive().GetPhysics().GetVelocity()) > 0.05))
+		//This logic fails when driving a direct strafe from a stop
+
+		//This logic allows for 2 / 3 degrees of freedom... which help keep it from auto correcting too much
+		//if (DistanceToIntendedSwivel>0.034)
+		//For now I'll leave this disabled since close loop is doing so well, but once I get the swivel on-line for simulation I may need to reconsider
+
+		m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
+
 		const double IntendedSpeed=m_VehicleDrive->GetIntendedVelocitiesFromIndex(i);
 
 		//To minimize error only apply the Y component amount to the velocity
