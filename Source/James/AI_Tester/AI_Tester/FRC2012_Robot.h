@@ -75,7 +75,7 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		//};
 		//typedef std::vector<Control_Props> Controls_List;
 		//const Controls_List &Get_RobotControls() const {return m_RobotControls;}
-		const LUA_Controls_Properties &Get_RobotControls() const {return s_RobotControls;}
+		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
@@ -89,7 +89,7 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		};
 		static ControlEvents s_ControlsEvents;
 		//Controls_List m_RobotControls;
-		static LUA_Controls_Properties s_RobotControls;
+		LUA_Controls_Properties m_RobotControls;
 };
 
 class FRC_2012_Robot : public Tank_Robot

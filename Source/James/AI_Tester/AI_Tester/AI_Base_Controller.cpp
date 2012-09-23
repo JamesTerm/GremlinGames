@@ -12,8 +12,16 @@ namespace Scripting=GG_Framework::Logic::Scripting;
  /*														LUA_Controls_Properties														*/
 /***********************************************************************************************************************************/
 
-LUA_Controls_Properties::LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent) : m_pParent(parent),m_ScriptLoaded(false)
+LUA_Controls_Properties::LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent) : m_pParent(parent)
 {
+}
+
+LUA_Controls_Properties &LUA_Controls_Properties::operator= (const LUA_Controls_Properties &CopyFrom)
+{
+	m_Controls=CopyFrom.m_Controls;
+	//Note: this one probably requires a static interface
+	const_cast<LUA_Controls_Properties_Interface *>(m_pParent)=CopyFrom.m_pParent;
+	return *this;
 }
 
 const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script)
@@ -87,9 +95,8 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 
 void LUA_Controls_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
 {
-	//This is a one-time operation... we may want to flush and let it succeed to allow tweaking of controls
-	if (m_ScriptLoaded) return;
-	m_ScriptLoaded=true;
+	//ensure the list is clean (incase it gets called again)
+	m_Controls.clear();
 
 	const char* err=NULL;
 	//Note i is cardinal (more readable in LUA)
