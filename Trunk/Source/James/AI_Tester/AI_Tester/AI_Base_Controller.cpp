@@ -6,6 +6,152 @@ using namespace GG_Framework::Base;
 using namespace osg;
 
 const double Pi2=M_PI*2.0;
+namespace Scripting=GG_Framework::Logic::Scripting;
+
+  /***********************************************************************************************************************************/
+ /*														LUA_Controls_Properties														*/
+/***********************************************************************************************************************************/
+
+LUA_Controls_Properties::LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent) : m_pParent(parent),m_ScriptLoaded(false)
+{
+}
+
+const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script)
+{
+	const char *err=NULL;
+	err = script.GetFieldTable(Eventname);
+	if (!err)
+	{
+		Element.Event=Eventname;
+		std::string sType;
+		err = script.GetField("type",&sType,NULL,NULL);
+		ASSERT_MSG(!err, err);
+		
+		if (strcmp(sType.c_str(),"joystick_analog")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickAnalog;
+			JoyAxis_enum JoyAxis;
+			double dJoyAxis;
+			err = script.GetField("key", NULL, NULL,&dJoyAxis);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration
+			JoyAxis=(JoyAxis_enum)((int)dJoyAxis);
+			bool IsFlipped;
+			err = script.GetField("is_flipped", NULL, &IsFlipped,NULL);
+			ASSERT_MSG(!err, err);
+			double Multiplier;
+			err = script.GetField("multiplier", NULL, NULL,&Multiplier);
+			ASSERT_MSG(!err, err);
+			double FilterRange;
+			err = script.GetField("filter", NULL, NULL,&FilterRange);
+			ASSERT_MSG(!err, err);
+			double CurveIntensity;
+			err = script.GetField("curve_intensity", NULL, NULL, &CurveIntensity);
+			ASSERT_MSG(!err, err);
+
+			Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &set=Element.Specifics.Analog;
+			set.JoyAxis=JoyAxis;
+			set.IsFlipped=IsFlipped;
+			set.Multiplier=Multiplier;
+			set.FilterRange=FilterRange;
+			set.CurveIntensity=CurveIntensity;
+			//joy.AddJoy_Analog_Default(JoyAxis,Eventname,IsFlipped,Multiplier,FilterRange,IsSquared,ProductName.c_str());
+		}
+		else if (strcmp(sType.c_str(),"joystick_button")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickButton;
+			size_t WhichButton;
+			double dWhichButton;
+			err = script.GetField("key", NULL, NULL,&dWhichButton);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
+			WhichButton=(JoyAxis_enum)((int)dWhichButton-1);
+			bool useOnOff;
+			err = script.GetField("on_off", NULL, &useOnOff,NULL);
+			ASSERT_MSG(!err, err);
+			bool dbl_click=false;
+			err = script.GetField("dbl", NULL, &dbl_click,NULL); //This one can be blank
+			err=NULL;  //don't return an error (assert for rest)
+
+			Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &set=Element.Specifics.Button;
+			set.WhichButton=WhichButton;
+			set.useOnOff=useOnOff;
+			set.dbl_click=dbl_click;
+			//joy.AddJoy_Button_Default( WhichButton,Eventname,useOnOff,dbl_click,ProductName.c_str());
+		}
+		else assert(false);
+		script.Pop();
+	}
+	return err;
+}
+
+void LUA_Controls_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+{
+	//This is a one-time operation... we may want to flush and let it succeed to allow tweaking of controls
+	if (m_ScriptLoaded) return;
+	m_ScriptLoaded=true;
+
+	const char* err=NULL;
+	//Note i is cardinal (more readable in LUA)
+	size_t i=1,j=0;
+	std::string Controls;
+	const char * Events;
+	char Buffer[4];
+	while ( Controls="Joystick_",Controls+=itoa(i++,Buffer,10) ,	(err = script.GetFieldTable(Controls.c_str()))==NULL)
+	{
+		Control_Props control;
+		//Wind River uses generic name, and AI tester uses product name
+		//control.Controller=Controls[i];
+		err=script.GetField("control", &control.Controller, NULL, NULL);
+		j=0;
+		while ( Events=m_pParent->LUA_Controls_GetEvents(j++) , Events)
+		{
+			Controller_Element_Properties element;
+			err=ExtractControllerElementProperties(element,Events,script);
+			if (!err)
+				control.EventList.push_back(element);
+		}
+		m_Controls.push_back(control);
+		script.Pop();
+	}
+}
+
+void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) const
+{
+	typedef GG_Framework::UI::JoyStick_Binder JoyStick_Binder;
+	JoyStick_Binder *p_joy=(JoyStick_Binder *)joy;
+	const Controls_List &controls=Get_Controls();
+	for (size_t i=0;i<controls.size();i++)
+	{
+		const Control_Props &control=controls[i];
+
+		for (size_t j=0;j<control.EventList.size();j++)
+		{
+			const Controller_Element_Properties &element=control.EventList[j];
+			switch (element.Type)
+			{
+			case Controller_Element_Properties::eJoystickAnalog:
+				if (Bind)
+				{
+					const Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
+					//Note the cast... these are not going to change, but there is dup code to on axis enum to avoid dependency issues
+					p_joy->AddJoy_Analog_Default((JoyStick_Binder::JoyAxis_enum)analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
+						analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
+				}
+				//TODO unbind
+				break;
+			case Controller_Element_Properties::eJoystickButton:
+				if (Bind)
+				{
+					const Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
+					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
+				}
+				//TODO unbind
+				break;
+			}
+		}
+	}
+}
 
   /***********************************************************************************************************************************/
  /*															Tank_Steering															*/
