@@ -25,7 +25,7 @@ Drive_WeightBias=1.0-Kicker_WeightBias
 Kicker_MaxAccel=Kicker_CoF_Omni_Radial * Kicker_WeightBias * Mass * Gravity / Mass  --does not change
 Drive_MaxAccel=  Drive_CoF_Omni_Radial * Drive_WeightBias  * Mass * Gravity / Mass  --does not change
 MaxCentripetalTraverse=20 --The maximum amount of centripetal force that can be allowed (may want to be higher for better drive)
-inv_skid=1.0/math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
+skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
 
 TestShip = {
 
@@ -40,7 +40,7 @@ TestShip = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * inv_skid,
+	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches These are ignored
