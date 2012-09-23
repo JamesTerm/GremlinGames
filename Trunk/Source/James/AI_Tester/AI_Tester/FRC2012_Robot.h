@@ -68,13 +68,6 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetFlipperProps() const {return m_FlipperProps;}
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
-		//struct Control_Props
-		//{
-		//	std::vector<UI_Controller::Controller_Element_Properties> EventList;
-		//	std::string Controller;
-		//};
-		//typedef std::vector<Control_Props> Controls_List;
-		//const Controls_List &Get_RobotControls() const {return m_RobotControls;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
@@ -88,7 +81,6 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 				virtual const char *LUA_Controls_GetEvents(size_t index) const; 
 		};
 		static ControlEvents s_ControlsEvents;
-		//Controls_List m_RobotControls;
 		LUA_Controls_Properties m_RobotControls;
 };
 
