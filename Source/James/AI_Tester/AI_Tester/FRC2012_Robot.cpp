@@ -945,6 +945,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 {
+	#if 0
 	GG_Framework::UI::JoyStick_Binder *p_joy=(GG_Framework::UI::JoyStick_Binder *)joy;
 	const FRC_2012_Robot_Properties::Controls_List &robot_controls=m_RobotProps.Get_RobotControls();
 	for (size_t i=0;i<robot_controls.size();i++)
@@ -972,6 +973,9 @@ void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 			}
 		}
 	}
+	#else
+	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
+	#endif
 }
 
   /***********************************************************************************************************************************/
@@ -1187,6 +1191,34 @@ const char *ProcessKeyCorrection(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scrip
 	return err;
 }
 
+//declared as global to avoid allocation on stack each iteration
+const char * const g_Events[] = 
+{
+	"Joystick_SetCurrentSpeed_2","Analog_Turn",
+	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
+	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
+	"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
+	"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
+	"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
+	"Flippers_Advance","Flippers_Retract",
+	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
+	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
+	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
+	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
+	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
+	//AI Tester events only
+#if 1
+	,"Ball_SlowWheel"
+#endif
+};
+
+const char *FRC_2012_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
+{
+	return (index<_countof(g_Events))?g_Events[index] : NULL;
+}
+FRC_2012_Robot_Properties::ControlEvents FRC_2012_Robot_Properties::s_ControlsEvents;
+LUA_Controls_Properties FRC_2012_Robot_Properties::s_RobotControls(&s_ControlsEvents);
+
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err=NULL;
@@ -1345,6 +1377,7 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.GetField("x_right_arc", NULL, NULL, &auton.XRightArc);
 			script.Pop();
 		}
+		#if 0
 		err = script.GetFieldTable("controls");
 		if (!err)
 		{
@@ -1397,6 +1430,14 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			}
 			script.Pop();
 		}
+		#endif
+		//This is the main robot settings pop
+		script.Pop();
+	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		s_RobotControls.LoadFromScript(script);
 		script.Pop();
 	}
 }
