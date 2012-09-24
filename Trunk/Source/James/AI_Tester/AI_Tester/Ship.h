@@ -70,9 +70,134 @@ struct Ship_Props
 		eFRC2012_Robot,
 	};
 	Ship_Type ShipType;
+};
 
-	double GetMaxAccelForward(double Velocity) const;
-	double GetMaxAccelReverse(double Velocity) const;
+class Physics_Tester : public Ship
+{
+	public:
+		Physics_Tester(const char EntityName[]) : Ship(EntityName) {}
+};
+
+class LUA_Controls_Properties_Interface
+{
+	public:
+		//The client properties class needs to have list of elements to check... return NULL when reaching the end
+		virtual const char *LUA_Controls_GetEvents(size_t index) const =0;
+};
+
+//This is a helper class that makes it easy to transfer LUA script to its own contained list (included within)
+class LUA_Controls_Properties
+{
+	public:
+		enum JoyAxis_enum
+		{
+			eX_Axis,
+			eY_Axis,
+			eZ_Axis,
+			eX_Rot,
+			eY_Rot,
+			eZ_Rot,
+			eSlider0,
+			eSlider1,
+			ePOV_0,
+			ePOV_1,
+			ePOV_2,
+			ePOV_3,
+			eNoJoyAxis_Entries
+		};
+
+		struct Controller_Element_Properties
+		{
+			std::string Event;
+			enum ElementType
+			{
+				eJoystickAnalog,
+				eJoystickButton
+			} Type;
+			union ElementTypeSpecific
+			{
+				struct AnalogSpecifics_rw
+				{
+					JoyAxis_enum JoyAxis;
+					bool IsFlipped;
+					double Multiplier;
+					double FilterRange;
+					double CurveIntensity;
+				} Analog;
+				struct ButtonSpecifics_rw
+				{
+					size_t WhichButton;
+					bool useOnOff;
+					bool dbl_click;
+				} Button;
+			} Specifics;
+		};
+
+		struct Control_Props
+		{
+			std::vector<Controller_Element_Properties> EventList;
+			std::string Controller;
+		};
+		typedef std::vector<Control_Props> Controls_List;
+	private:
+		//Return if element was successfully created (be sure to check as some may not be present)
+		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,GG_Framework::Logic::Scripting::Script& script);
+
+		Controls_List m_Controls;
+		LUA_Controls_Properties_Interface * const m_pParent;
+	public:
+		LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent);
+
+		const Controls_List &Get_Controls() const {return m_Controls;}
+		//call from within GetFieldTable controls
+		void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		//Just have the client (from ship) call this
+		void BindAdditionalUIControls(bool Bind,void *joy) const;
+		LUA_Controls_Properties &operator= (const LUA_Controls_Properties &CopyFrom);
+};
+
+class Ship_2D;
+class Ship_Properties : public Entity_Properties
+{
+	public:
+		Ship_Properties();
+		virtual ~Ship_Properties() {}
+		const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(Ship_2D *NewShip) const;
+		Ship_Props::Ship_Type GetShipType() const {return m_ShipProps.ShipType;}
+		double GetEngagedMaxSpeed() const {return m_ShipProps.ENGAGED_MAX_SPEED;}
+		//These methods are really more for the simulation... so using the high yields a better reading for testing
+		double GetMaxAccelForward() const {return m_ShipProps.MaxAccelForward_High;}
+		double GetMaxAccelReverse() const {return m_ShipProps.MaxAccelReverse_High;}
+
+		double GetMaxAccelForward(double Velocity) const;
+		double GetMaxAccelReverse(double Velocity) const;
+
+		const Ship_Props &GetShipProps() const {return m_ShipProps;}
+		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
+	private:
+		Ship_Props m_ShipProps;
+
+		class ControlEvents : public LUA_Controls_Properties_Interface
+		{
+			protected: //from LUA_Controls_Properties_Interface
+				virtual const char *LUA_Controls_GetEvents(size_t index) const; 
+		};
+		static ControlEvents s_ControlsEvents;
+		LUA_Controls_Properties m_ShipControls;
+};
+
+
+class UI_Ship_Properties : public Ship_Properties
+{
+	public:
+		UI_Ship_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void Initialize(const char **TextImage,osg::Vec2d &Dimension) const;
+	private:
+		std::string m_TextImage;
+		osg::Vec2d m_UI_Dimensions;
 };
 
 class Ship_2D : public Ship
@@ -140,7 +265,7 @@ class Ship_2D : public Ship
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		//Its possible that each ship may have its own specific controls
-		virtual void BindAdditionalUIControls(bool Bind, void *joy) {}
+		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 		//callback from UI_Controller for custom controls override if ship has specific controls... all outputs to be written are optional
 		//so derived classes can only write to things of interest
 		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,double dTime_s) {}
@@ -185,7 +310,7 @@ class Ship_2D : public Ship
 		virtual Vec2D Get_DriveTo_ForceDegradeScalar() const {return Vec2D(1.0,1.0);}
 
 		AI_Base_Controller* m_controller;
-		Ship_Props m_ShipProps;
+		Ship_Properties m_ShipProps;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
 
 		// Used in Keyboard acceleration and braking
@@ -241,11 +366,6 @@ class Ship_2D : public Ship
 
 };
 
-class Physics_Tester : public Ship
-{
-	public:
-		Physics_Tester(const char EntityName[]) : Ship(EntityName) {}
-};
 
 class Ship_Tester : public Ship_2D
 {
@@ -256,35 +376,4 @@ class Ship_Tester : public Ship_2D
 		virtual void SetAttitude(double radians);
 		Goal *ClearGoal();
 		void SetGoal(Goal *goal);
-};
-
-class Ship_Properties : public Entity_Properties
-{
-	public:
-		Ship_Properties();
-		virtual ~Ship_Properties() {}
-		const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script);
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		void Initialize(Ship_2D *NewShip) const;
-		Ship_Props::Ship_Type GetShipType() const {return m_ShipProps.ShipType;}
-		double GetEngagedMaxSpeed() const {return m_ShipProps.ENGAGED_MAX_SPEED;}
-		//These methods are really more for the simulation... so using the high yields a better reading for testing
-		double GetMaxAccelForward() const {return m_ShipProps.MaxAccelForward_High;}
-		double GetMaxAccelReverse() const {return m_ShipProps.MaxAccelReverse_High;}
-
-		const Ship_Props &GetShipProps() const {return m_ShipProps;}
-	private:
-		Ship_Props m_ShipProps;
-};
-
-
-class UI_Ship_Properties : public Ship_Properties
-{
-	public:
-		UI_Ship_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		void Initialize(const char **TextImage,osg::Vec2d &Dimension) const;
-	private:
-		std::string m_TextImage;
-		osg::Vec2d m_UI_Dimensions;
 };

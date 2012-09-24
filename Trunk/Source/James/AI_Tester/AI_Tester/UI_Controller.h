@@ -185,7 +185,7 @@ class UI_Controller
 
 		bool m_Ship_UseHeadingSpeed;
 		bool m_Test1,m_Test2; //Testing
-
+		bool m_IsBeingDestroyed; //Keep track of when destructor is called
 };
 
 

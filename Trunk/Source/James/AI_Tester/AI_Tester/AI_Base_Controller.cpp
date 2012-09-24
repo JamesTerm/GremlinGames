@@ -305,8 +305,8 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		Vec2d LocalMatchVel=GlobalToLocal(m_ship.GetAtt_r(),*matchVel);
 
 		const Vec2d ForceDegradeScalar=m_ship.Get_DriveTo_ForceDegradeScalar();
-		Vec2d ForceRestraintPositive(m_ship.MaxAccelRight*m_ship.Mass*ForceDegradeScalar[0],m_ship.m_ShipProps.MaxAccelForward_High*m_ship.Mass*ForceDegradeScalar[1]);
-		Vec2d ForceRestraintNegative(m_ship.MaxAccelLeft*m_ship.Mass*ForceDegradeScalar[0],m_ship.m_ShipProps.MaxAccelReverse_High*m_ship.Mass*ForceDegradeScalar[1]);
+		Vec2d ForceRestraintPositive(m_ship.MaxAccelRight*m_ship.Mass*ForceDegradeScalar[0],m_ship.m_ShipProps.GetMaxAccelForward()*m_ship.Mass*ForceDegradeScalar[1]);
+		Vec2d ForceRestraintNegative(m_ship.MaxAccelLeft*m_ship.Mass*ForceDegradeScalar[0],m_ship.m_ShipProps.GetMaxAccelReverse()*m_ship.Mass*ForceDegradeScalar[1]);
 		//Note: it is possible to overflow in extreme distances, if we challenge this then I should have an overflow check in physics
 		Vec2d LocalVelocity=m_ship.m_Physics.GetVelocityFromDistance_Linear(LocalVectorOffset,ForceRestraintPositive,ForceRestraintNegative,dTime_s, LocalMatchVel);
 
