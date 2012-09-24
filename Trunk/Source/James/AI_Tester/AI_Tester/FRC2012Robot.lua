@@ -172,8 +172,8 @@ MainRobot = {
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
 			{p=50, i=1, d=25 },
-			latency=0.300,
-			tolerance=1.0,					--we need decent precision (this will depend on ramp up time too)
+			latency=0.0,
+			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
 			voltage_multiply=-1.0,
 			curve_voltage=
@@ -273,7 +273,7 @@ MainRobot = {
 
 		Joystick_2 =
 		{
-			control = "logitech dual action",
+			control = "Joystick_2",
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			--Ball_Grip = {type="joystick_button", key=2, on_off=true},
@@ -333,6 +333,25 @@ MainRobot = {
 			PowerWheels_IsRunning = {type="joystick_button", key=5, on_off=true},
 			Ball_GripL = {type="joystick_button", key=1, on_off=true},
 			Ball_GripM = {type="joystick_button", key=2, on_off=true},
+			Ball_GripH = {type="joystick_button", key=4, on_off=true}
+		},
+		
+		Joystick_5 =
+		{
+			control = "logitech dual action",
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
+			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
+			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
+			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
+			Ball_Fire = {type="joystick_button", key=8, on_off=true},
+			PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
+			Ball_GripL = {type="joystick_button", key=2, on_off=true},
+			Ball_GripM = {type="joystick_button", key=3, on_off=true},
 			Ball_GripH = {type="joystick_button", key=4, on_off=true}
 		}
 

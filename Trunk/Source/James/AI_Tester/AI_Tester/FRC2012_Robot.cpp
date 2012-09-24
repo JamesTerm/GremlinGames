@@ -194,7 +194,7 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2012_Robot::PowerWheels::PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Angular("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_IsRunning(false)
+	Rotary_Angular("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_ManualVelocity(0.0),m_IsRunning(false)
 {
 }
 
@@ -217,33 +217,9 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
-	if (!IsTargeting)
-	{
-		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
-		{
-			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-			//first get the range from 0 - 1
-			double positive_range = (Velocity * 0.5) + 0.5;
-			positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=MAX_SPEED;
-			const double Scale=(maxRange-minRange) / MAX_SPEED;
-			const double Offset=minRange/MAX_SPEED;
-			Velocity=(positive_range * Scale) + Offset;
-			//DOUT5("%f",Velocity);
-			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2012RobotProps().PowerVelocity_DisplayRow;
-			if (DisplayRow!=(size_t)-1)
-			{
-				const double rps=(Velocity * MAX_SPEED) / Pi2;
-				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
-			}
-
-			__super::SetRequestedVelocity_FromNormalized(Velocity);
-		}
-		else
-			__super::SetRequestedVelocity_FromNormalized(0.0);
-	}
+	//bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	//This variable is dedicated to non-targeting mode
+	m_ManualVelocity=Velocity;
 }
 
 void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
@@ -261,6 +237,32 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 		}
 		else
 			SetRequestedVelocity(0);
+	}
+	else
+	{
+		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
+		{
+			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+			//first get the range from 0 - 1
+			double positive_range = (m_ManualVelocity * 0.5) + 0.5;
+			positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=GetMinRange();
+			const double maxRange=MAX_SPEED;
+			const double Scale=(maxRange-minRange) / MAX_SPEED;
+			const double Offset=minRange/MAX_SPEED;
+			const double Velocity=(positive_range * Scale) + Offset;
+			//DOUT5("%f",Velocity);
+			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2012RobotProps().PowerVelocity_DisplayRow;
+			if (DisplayRow!=(size_t)-1)
+			{
+				const double rps=(Velocity * MAX_SPEED) / Pi2;
+				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
+			}
+
+			Rotary_Angular::SetRequestedVelocity_FromNormalized(Velocity);
+		}
+		else
+			Rotary_Angular::SetRequestedVelocity_FromNormalized(0.0);
 	}
 	__super::TimeChange(dTime_s);
 }
