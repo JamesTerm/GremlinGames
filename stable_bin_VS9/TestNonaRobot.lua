@@ -25,7 +25,7 @@ Drive_WeightBias=1.0-Kicker_WeightBias
 Kicker_MaxAccel=Kicker_CoF_Omni_Radial * Kicker_WeightBias * Mass * Gravity / Mass  --does not change
 Drive_MaxAccel=  Drive_CoF_Omni_Radial * Drive_WeightBias  * Mass * Gravity / Mass  --does not change
 MaxCentripetalTraverse=20 --The maximum amount of centripetal force that can be allowed (may want to be higher for better drive)
-inv_skid=1.0/math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
+skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
 
 TestShip = {
 
@@ -40,7 +40,7 @@ TestShip = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * inv_skid,
+	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches These are ignored
@@ -76,6 +76,7 @@ TestShip = {
 		--curve_voltage_swivel=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
+		inv_max_force = 1/15.0  --solved empiracally
 	},
 
 	kicker =
@@ -97,9 +98,23 @@ TestShip = {
 		brake=10.0,
 		--These are low because of traction
 		max_accel_forward=Kicker_MaxAccel,
-		max_accel_reverse=Kicker_MaxAccel
+		max_accel_reverse=Kicker_MaxAccel,
+		inv_max_force = 1/15.0  --solved empiracally
 	},
-
+	
+	controls =
+	{
+		Joystick_1 =
+		{
+			control = "airflo",
+			--Use Arcade/FPS enable
+			Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
+			SlideHold = {type="joystick_button", key=6, on_off=true},
+		}
+	},
+		
 	UI =
 	{
 		Length=5, Width=5,

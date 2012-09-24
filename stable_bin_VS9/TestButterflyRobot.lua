@@ -8,9 +8,10 @@ Meters2Inches=39.3700787
 wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=19.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=27.5
+WheelTurningDiameter= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (427.68 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
-inv_skid=1.0/math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
+skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
 
 TestShip = {
 
@@ -24,7 +25,7 @@ TestShip = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2 * inv_skid,
+	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
@@ -60,6 +61,22 @@ TestShip = {
 		--curve_voltage_swivel=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
+		inv_max_force = 1/15.0  --solved empiracally
+	},
+
+	controls =
+	{
+		tank_steering_tolerance=0.07,
+		Joystick_1 =
+		{
+			control = "airflo",
+			--Use Arcade/FPS enable
+			--Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0}
+			--Use tank steering enable
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0}
+		}
 	},
 
 	UI =
