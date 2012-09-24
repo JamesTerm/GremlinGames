@@ -68,7 +68,7 @@ TestShip = {
 		tank_steering_tolerance=0.07,
 		Joystick_1 =
 		{
-			control = "airflo",
+			control = "any",
 			--Use Arcade/FPS enable
 			Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0}

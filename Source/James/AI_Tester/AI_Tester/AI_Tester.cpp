@@ -1177,8 +1177,8 @@ void CommandLineInterface(bool useUserPrefs=true)
 int main(int argc, char** argv)
 {
 	DisplayHelp();
-	bool useUserPrefs=true;
-	if ((argc==2)&&((argv[1])[0]=='0'))
-		useUserPrefs=false;
+	bool useUserPrefs=false;
+	if ((argc==2)&&((argv[1])[0]=='1'))
+		useUserPrefs=true;
 	CommandLineInterface(useUserPrefs);
 }
