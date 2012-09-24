@@ -49,6 +49,9 @@ public:
 	void SetControlledEventMap(GG_Framework::UI::EventMap* em);
 	//Event3<JoyStick_Binder*, GG_Framework::UI::EventMap*, GG_Framework::UI::EventMap*> EventMapChanged; //!< <this, old, new> fired before change
 
+	void RemoveJoy_Analog_Binding(const char eventName[],const char ProductName[]="any");
+	void RemoveJoy_Button_Binding(const char eventName[],const char ProductName[]="any");
+
 protected: // From config load save interface.
 	virtual void BindToPrefs(const XMLNode &userPrefsNode);
 	/// Only called when writing other settings
