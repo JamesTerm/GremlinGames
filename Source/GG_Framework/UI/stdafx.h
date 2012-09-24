@@ -15,6 +15,7 @@
 #include <direct.h>
 #include <queue>
 #include <list>
+#include <assert.h>
 
 ///////////////////
 // OSG and Producer
