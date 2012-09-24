@@ -184,6 +184,7 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2012_Robot * const m_pParent;
+				double m_ManualVelocity;
 				bool m_IsRunning;
 		};
 

@@ -233,7 +233,7 @@ double Encoder_Simulator::GetEncoderVelocity()
 	#if 0
 	return m_Physics.GetVelocity() * m_EncoderScalar;
 	#else
-	if (!m_GetEncoderFirstCall) return m_Latency();
+	//if (!m_GetEncoderFirstCall) return m_Latency();
 
 	double Voltage = m_Physics.GetVelocity() / m_EncoderProps.GetMaxSpeed();
 	double Direction=Voltage<0 ? -1.0 : 1.0;
