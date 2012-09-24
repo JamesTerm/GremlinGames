@@ -145,7 +145,8 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) cons
 					p_joy->AddJoy_Analog_Default((JoyStick_Binder::JoyAxis_enum)analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
 						analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
 				}
-				//TODO unbind
+				else
+					p_joy->RemoveJoy_Analog_Binding(element.Event.c_str(),control.Controller.c_str());
 				break;
 			case Controller_Element_Properties::eJoystickButton:
 				if (Bind)
@@ -153,7 +154,8 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) cons
 					const Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
 					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
 				}
-				//TODO unbind
+				else
+					p_joy->RemoveJoy_Button_Binding(element.Event.c_str(),control.Controller.c_str());
 				break;
 			}
 		}
