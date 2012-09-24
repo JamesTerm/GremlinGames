@@ -53,6 +53,7 @@ class GUIThread : public GG_Framework::Base::ThreadedClass
 			start();
 		}
 		Viewer *GetUI() {return m_Viewer;}
+		bool GetUseUserPrefs() const {return m_UseUserPrefs;}
 	protected:
 		void tryRun() 
 		{
@@ -668,7 +669,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestTankRobot.lua","TestRobot",Commands::eTank);
 			Entity2D *TestEntity=_command.AddRobot("TankRobot","TestRobot",str_3,str_4,str_5);
-			game.SetControlledEntity(TestEntity);
+			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
 		}
 		break;
 	case eSwerveRobot:
@@ -680,7 +681,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
 			Entity2D *TestEntity=_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5);
-			game.SetControlledEntity(TestEntity);
+			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
 		}
 		break;
 	case eButterflyRobot:
@@ -690,7 +691,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eButterfly);
 			Entity2D *TestEntity=_command.AddRobot("ButterflyRobot","TestButterflyRobot",str_3,str_4,str_5);
-			game.SetControlledEntity(TestEntity);
+			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
 		}
 		break;
 	case eNonaRobot:
@@ -701,7 +702,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eNona);
 			Entity2D *TestEntity=_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5);
-			game.SetControlledEntity(TestEntity);
+			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
 		}
 		break;
 	case eRobot2012:
@@ -725,7 +726,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("FRC2011Robot.lua","FRC2011Robot",Commands::e2011);
 			Entity2D *TestEntity=_command.AddRobot("Robot2011","FRC2011Robot",str_3,str_4,str_5);
-			game.SetControlledEntity(TestEntity);
+			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
 		}
 		break;
 	case eTestGoals_2011:

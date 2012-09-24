@@ -946,6 +946,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 {
 	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
+	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
 }
 
   /***********************************************************************************************************************************/
@@ -1163,9 +1164,8 @@ const char *ProcessKeyCorrection(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scrip
 }
 
 //declared as global to avoid allocation on stack each iteration
-const char * const g_Events[] = 
+const char * const g_FRC_2012_Controls_Events[] = 
 {
-	"Joystick_SetCurrentSpeed_2","Analog_Turn",
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
 	"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
@@ -1185,7 +1185,7 @@ const char * const g_Events[] =
 
 const char *FRC_2012_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
 {
-	return (index<_countof(g_Events))?g_Events[index] : NULL;
+	return (index<_countof(g_FRC_2012_Controls_Events))?g_FRC_2012_Controls_Events[index] : NULL;
 }
 FRC_2012_Robot_Properties::ControlEvents FRC_2012_Robot_Properties::s_ControlsEvents;
 

@@ -212,7 +212,7 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 	if (ship_props)
 	{
 		ship_props->Initialize(this);
-		m_ShipProps=ship_props->GetShipProps();
+		m_ShipProps=*ship_props;
 	}
 	else
 	{
@@ -673,24 +673,9 @@ void Ship_2D::DestroyEntity(bool shotDown, Vec3d collisionPt)
 }
 #endif
 
-  /***********************************************************************************************************************************/
- /*															Ship_Props																*/
-/***********************************************************************************************************************************/
-
-double Ship_Props::GetMaxAccelForward(double Velocity) const
+void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy)
 {
-	const double ratio = fabs(Velocity)/MAX_SPEED;
-	const double  &Low=MaxAccelForward;
-	const double &High=MaxAccelForward_High;
-	return (ratio * High) + ((1.0-ratio) * Low);
-}
-
-double Ship_Props::GetMaxAccelReverse(double Velocity) const
-{
-	const double ratio = fabs(Velocity)/MAX_SPEED;
-	const double  &Low=MaxAccelReverse;
-	const double &High=MaxAccelReverse_High;
-	return (ratio * High) + ((1.0-ratio) * Low);
+	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy);
 }
 
   /***********************************************************************************************************************************/
@@ -707,7 +692,7 @@ const char * const csz_RobotNames[] =
 	"Robot2012",
 };
 
-Ship_Properties::Ship_Properties()
+Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
 {
 	Ship_Props props;
 	memset(&props,0,sizeof(Ship_Props));
@@ -761,6 +746,20 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 	}
 	return err;
 }
+
+//declared as global to avoid allocation on stack each iteration
+const char * const g_Ship_Controls_Events[] = 
+{
+	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","Joystick_SetLeftVelocity","Joystick_SetRightVelocity",
+	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight"
+};
+
+const char *Ship_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
+{
+	return (index<_countof(g_Ship_Controls_Events))?g_Ship_Controls_Events[index] : NULL;
+}
+Ship_Properties::ControlEvents Ship_Properties::s_ControlsEvents;
+
 
 void Ship_Properties::LoadFromScript(Scripting::Script& script)
 {
@@ -827,6 +826,12 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		if (err)
 			props.ENGAGED_MAX_SPEED=props.MAX_SPEED;
 
+		err = script.GetFieldTable("controls");
+		if (!err)
+		{
+			m_ShipControls.LoadFromScript(script);
+			script.Pop();
+		}
 	}
 
 	// Let the base class finish things up
@@ -856,6 +861,24 @@ void Ship_Properties::Initialize(Ship_2D *NewShip) const
 	//NewShip->MaxAccelForward=props.MaxAccelForward;
 	//NewShip->MaxAccelReverse=props.MaxAccelReverse;
 	NewShip->MaxTorqueYaw=props.MaxTorqueYaw;
+}
+
+double Ship_Properties::GetMaxAccelForward(double Velocity) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Velocity)/props.MAX_SPEED;
+	const double  &Low=props.MaxAccelForward;
+	const double &High=props.MaxAccelForward_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+double Ship_Properties::GetMaxAccelReverse(double Velocity) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Velocity)/props.MAX_SPEED;
+	const double  &Low=props.MaxAccelReverse;
+	const double &High=props.MaxAccelReverse_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
 }
 
   /***********************************************************************************************************************************/

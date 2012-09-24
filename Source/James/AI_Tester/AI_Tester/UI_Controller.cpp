@@ -180,7 +180,7 @@ void UI_Controller::Init_AutoPilotControls()
 UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
 	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),
-	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true)
+	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true),m_IsBeingDestroyed(false)
 {
 	ResetPos();
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
@@ -320,6 +320,7 @@ void UI_Controller::Flush_AI_BaseResources()
 
 UI_Controller::~UI_Controller()
 {
+	m_IsBeingDestroyed=true;
 	Set_AI_Base_Controller(NULL); //this will unbind the events and flush the AI resources
 }
 
@@ -360,6 +361,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 		m_ship->BindAdditionalEventControls(false);
+		if (!m_IsBeingDestroyed)
+			m_ship->BindAdditionalUIControls(false,&GetJoyStickBinder());
 		Flush_AI_BaseResources();
 	}
 	m_Base=controller;
