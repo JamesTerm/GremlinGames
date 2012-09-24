@@ -8,3 +8,10 @@ Major bugfix to how Nona deals with centripetal forces... where now circle straf
 Fixed autonomous for all drives by applying a strafe scaler in the DriveToLocation
 Fixed dHeading by adding inverse skid scaler (added mathlib in lua to support math functions)
 
+9/23/2012
+Significant 80ms latency eliminated by using the force with voltage (use the force James) :)
+Finally sorted out the heading rates as they were incorrectly too high
+Fixed swerve drive by eliminating the condition to bypass swivel (since the close-loop is so well tuned)
+Added tank steering support
+All drives now of control support in lua, and you can switch between robots with different controls
+	-As proof of concept the butterfly drive uses tank steering
