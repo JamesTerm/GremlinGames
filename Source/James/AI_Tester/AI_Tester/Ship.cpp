@@ -751,7 +751,7 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 const char * const g_Ship_Controls_Events[] = 
 {
 	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","Joystick_SetLeftVelocity","Joystick_SetRightVelocity",
-	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight"
+	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None"
 };
 
 const char *Ship_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
