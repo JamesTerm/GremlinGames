@@ -22,7 +22,7 @@ class Entity1D_Properties
 		bool m_IsAngular;
 };
 
-class Ship_Properties;
+struct Ship_Props;
 class Ship_1D;
 class Ship_1D_Properties : public Entity1D_Properties
 {
@@ -67,7 +67,7 @@ class Ship_1D_Properties : public Entity1D_Properties
 		void SetMaxRange(double MaxRange) {m_MaxRange=MaxRange;}
 		void SetUsingRange(bool UsingRange) {m_UsingRange=UsingRange;}
 		//copy constructor that can interpret the other type
-		void SetFromShip_Properties(const Ship_Properties & NewValue);
+		void SetFromShip_Properties(const Ship_Props & NewValue);
 };
 
 class Entity2D;

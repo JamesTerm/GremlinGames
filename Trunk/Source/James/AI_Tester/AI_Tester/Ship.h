@@ -164,7 +164,9 @@ class Ship_Properties : public Entity_Properties
 		virtual ~Ship_Properties() {}
 		const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script);
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		void Initialize(Ship_2D *NewShip) const;
+		//This is depreciated (may need to review game use-case)
+		//void Initialize(Ship_2D *NewShip) const;
+		void UpdateShipProperties(const Ship_Props &props);  //explicitly allow updating of ship props here
 		Ship_Props::Ship_Type GetShipType() const {return m_ShipProps.ShipType;}
 		double GetEngagedMaxSpeed() const {return m_ShipProps.ENGAGED_MAX_SPEED;}
 		//These methods are really more for the simulation... so using the high yields a better reading for testing
@@ -206,6 +208,8 @@ class Ship_2D : public Ship
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 		Ship_2D(const char EntityName[]);
+		//Give ability to change ship properties 
+		void UpdateShipProperties(const Ship_Props &props);
 		virtual void Initialize(Entity2D::EventMap& em,const Entity_Properties *props=NULL);
 		virtual ~Ship_2D();
 

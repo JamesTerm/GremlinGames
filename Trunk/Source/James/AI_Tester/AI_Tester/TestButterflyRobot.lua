@@ -9,14 +9,15 @@ wheel_diameter_in=6   --This will determine the correct distance try to make acc
 WheelBase_Width_In=19.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=27.5
 WheelTurningDiameter= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-HighGearSpeed = (427.68 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (167.06 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
+HighGearSpeed = (492.83 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
+LowGearSpeed  = (184.81 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
+MaxCentripetalTraverse=20 --The maximum amount of centripetal force that can be allowed (may want to be higher for better drive)
 skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
 
 TestShip = {
 
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 20, MaxAccelRight = 20, 
+	MaxAccelLeft = MaxCentripetalTraverse, MaxAccelRight = MaxCentripetalTraverse, 
 	MaxAccelForward = 4, MaxAccelReverse = 4, 
 	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
 	MaxTorqueYaw = 25, 
@@ -62,6 +63,29 @@ TestShip = {
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
 		inv_max_force = 1/15.0  --solved empiracally
+	},
+
+	low_gear = 
+	{
+		--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
+		--cause slipping if driver "high sticks" to start or stop quickly.
+		MaxAccelLeft = MaxCentripetalTraverse, MaxAccelRight = MaxCentripetalTraverse, 
+		MaxAccelForward = 10, MaxAccelReverse = 10, 
+		MaxAccelForward_High = 20, MaxAccelReverse_High = 20, 
+		MaxTorqueYaw = 25 * 2, 
+		
+		MAX_SPEED = LowGearSpeed,
+		ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
+		BRAKE = ACCEL, 
+		-- Turn Rates (deg/sec) This is always correct do not change
+		--heading_rad = (LowGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
+		heading_rad = 0,  --No turning for traction mode
+		
+		swerve_drive =
+		{
+			is_closed=0,						--TODO turn on once simulation can support it properly
+			inv_max_force = 0.0  --solved empiracally
+		}
 	},
 
 	controls =

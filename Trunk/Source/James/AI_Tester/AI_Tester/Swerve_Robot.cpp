@@ -704,7 +704,7 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	}
 
 	__super::LoadFromScript(script);
-	m_DriveProps.SetFromShip_Properties(*this);
+	m_DriveProps.SetFromShip_Properties(GetShipProps());
 }
 
   /***********************************************************************************************************************************/
