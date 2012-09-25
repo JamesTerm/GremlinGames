@@ -203,6 +203,29 @@ AI_Base_Controller *Ship_2D::Create_Controller()
 	return new AI_Base_Controller(*this);
 }
 
+void Ship_2D::UpdateShipProperties(const Ship_Props &props)
+{
+	m_ShipProps.UpdateShipProperties(props);
+	dHeading=props.dHeading;
+	MAX_SPEED=props.MAX_SPEED;
+	ENGAGED_MAX_SPEED=props.ENGAGED_MAX_SPEED;
+	ACCEL=props.ACCEL;
+	BRAKE=props.BRAKE;
+	STRAFE=props.STRAFE;
+	AFTERBURNER_ACCEL=props.AFTERBURNER_ACCEL;
+	AFTERBURNER_BRAKE=props.AFTERBURNER_BRAKE;
+
+	EngineRampAfterBurner=props.EngineRampAfterBurner;
+	EngineRampForward=props.EngineRampForward;
+	EngineRampReverse=props.EngineRampReverse;
+	EngineRampStrafe=props.EngineRampStrafe;
+	EngineDeceleration=props.EngineDeceleration;
+
+	MaxAccelLeft=props.MaxAccelLeft;
+	MaxAccelRight=props.MaxAccelRight;
+	MaxTorqueYaw=props.MaxTorqueYaw;
+}
+
 void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 {
 	if (!m_controller)
@@ -211,7 +234,7 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
 	if (ship_props)
 	{
-		ship_props->Initialize(this);
+		UpdateShipProperties(ship_props->GetShipProps());
 		m_ShipProps=*ship_props;
 	}
 	else
@@ -838,6 +861,8 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 }
 
+//This is depreciated... may need to review game use-case
+#if 0
 void Ship_Properties::Initialize(Ship_2D *NewShip) const
 {
 	const Ship_Props &props=m_ShipProps;
@@ -861,6 +886,12 @@ void Ship_Properties::Initialize(Ship_2D *NewShip) const
 	//NewShip->MaxAccelForward=props.MaxAccelForward;
 	//NewShip->MaxAccelReverse=props.MaxAccelReverse;
 	NewShip->MaxTorqueYaw=props.MaxTorqueYaw;
+}
+#endif
+
+void Ship_Properties::UpdateShipProperties(const Ship_Props &props)
+{
+	m_ShipProps=props;
 }
 
 double Ship_Properties::GetMaxAccelForward(double Velocity) const
