@@ -284,7 +284,7 @@ Nona_Robot_Properties::Nona_Robot_Properties() : m_KickerWheelProps(
 	//Make these as fast as possible without damaging chain or motor
 	//These must be fast enough to handle rotation angular acceleration
 	4.0,4.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eSimpleMotor,
+	Ship_1D_Props::eSimpleMotor,
 	false	//No limit ever!
 	)
 {

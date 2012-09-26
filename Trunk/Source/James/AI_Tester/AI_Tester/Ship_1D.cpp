@@ -78,13 +78,27 @@ void Ship_1D::SetRequestedVelocity_FromNormalized(double Velocity)
 	}
 }
 
+void Ship_1D::UpdateShip1DProperties(const Ship_1D_Props &props)
+{
+	//m_ShipProps.UpdateShipProperties(props);
+	MAX_SPEED=props.MAX_SPEED;
+	ACCEL=props.ACCEL;
+	BRAKE=props.BRAKE;
+	MaxAccelForward=props.MaxAccelForward;
+	MaxAccelReverse=props.MaxAccelReverse;
+	m_MinRange=props.MinRange;
+	m_MaxRange=props.MaxRange;
+	m_UsingRange=props.UsingRange;
+}
+
 void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 {
 	__super::Initialize(em,props);
 	const Ship_1D_Properties *ship_props=dynamic_cast<const Ship_1D_Properties *>(props);
 	if (ship_props)
 	{
-		ship_props->Initialize(this);
+		UpdateShip1DProperties(ship_props->GetShip_1D_Props());
+		//m_ShipProps=*ship_props;  //if we support it
 	}
 	else
 	{

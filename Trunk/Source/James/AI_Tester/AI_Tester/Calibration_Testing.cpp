@@ -43,7 +43,7 @@ Potentiometer_Tester::Potentiometer_Tester() : m_PotentiometerProps(
 	c_Potentiometer_TestRate,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	c_Potentiometer_TestRate,c_Potentiometer_TestRate,
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
 	DEG_2_RAD(-135.0),DEG_2_RAD(135.0)
 	),Ship_1D("Potentiometer")
@@ -119,7 +119,7 @@ Potentiometer_Tester2::Potentiometer_Tester2() : m_PotentiometerProps(
 	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0,
-	Ship_1D_Properties::eSwivel,
+	Ship_1D_Props::eSwivel,
 	true,	//Using the range
 	DEG_2_RAD(-180.0),DEG_2_RAD(180.0)
 	),Ship_1D("Potentiometer2")
@@ -187,7 +187,7 @@ Encoder_Simulator::Encoder_Simulator(const char EntityName[]) : m_Time_s(0.0),m_
 	c_Encoder_TestRate,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	false	//Not using the range
 	),Ship_1D(EntityName),m_Latency(0.300),
 	m_EncoderScalar(1.0),m_GetEncoderFirstCall(false)
@@ -360,7 +360,7 @@ Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),
 	c_Encoder_TestRate,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	false	//Not using the range
 	),
 	m_EncoderScalar(1.0)

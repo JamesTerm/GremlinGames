@@ -1,3 +1,54 @@
+struct Ship_1D_Props
+{
+	double MAX_SPEED;
+	double ACCEL, BRAKE;
+
+	double MaxAccelForward,MaxAccelReverse;
+	double MinRange,MaxRange;
+	//TODO these are somewhat specific, we may want to move subclass them or have more generic meaning
+	enum Ship_Type
+	{
+		eDefault,
+		eRobotArm,
+		eSimpleMotor,
+		eSwivel,
+	};
+	Ship_Type ShipType;
+	bool UsingRange;
+};
+
+
+struct Ship_Props;
+class Ship_1D;
+class Ship_1D_Properties : public Entity1D_Properties
+{
+	private:
+		Ship_1D_Props m_Ship_1D_Props;
+	public:
+		typedef Ship_1D_Props::Ship_Type Ship_Type;
+
+		Ship_1D_Properties();
+		//Allow to construct props in constructor instead of using script
+		Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
+			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
+			Ship_Type ShipType=Ship_1D_Props::eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
+			bool IsAngular=false);
+
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		//This is depreciated (may need to review game use-case)
+		//void Initialize(Ship_1D *NewShip) const;
+		void UpdateShip1DProperties(const Ship_1D_Props &props);  //explicitly allow updating of ship props here
+		Ship_Type GetShipType() const {return m_Ship_1D_Props.ShipType;}
+		double GetMaxSpeed() const {return m_Ship_1D_Props.MAX_SPEED;}
+		const Ship_1D_Props &GetShip_1D_Props() const {return m_Ship_1D_Props;}
+	public:
+		//These are for testing purposes only (do not use)
+		void SetMinRange(double MinRange) {m_Ship_1D_Props.MinRange=MinRange;}
+		void SetMaxRange(double MaxRange) {m_Ship_1D_Props.MaxRange=MaxRange;}
+		void SetUsingRange(bool UsingRange) {m_Ship_1D_Props.UsingRange=UsingRange;}
+		//copy constructor that can interpret the other type
+		void SetFromShip_Properties(const Ship_Props & NewValue);
+};
 
 ///This is really stripped down from the Ship_2D.  Not only is their one dimension (given), but there is also no controller.  This class is intended
 ///To be controlled directly from a parent class which has controller support.
@@ -5,6 +56,7 @@ class Ship_1D : public Entity1D
 {
 	public:
 		Ship_1D(const char EntityName[]);
+		void UpdateShip1DProperties(const Ship_1D_Props &props);
 		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual ~Ship_1D();
 
