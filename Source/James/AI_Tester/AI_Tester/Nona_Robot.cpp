@@ -496,12 +496,20 @@ void Nona_Robot_UI::TimeChange(double dTime_s)
 
 void Nona_Robot_UI::DriveModeManager_SetMode_Callback(DriveMode Mode)
 {
-	for (size_t i=0;i<4;i++)
+	for (size_t i=0;i<5;i++)
 	{
 		if (Mode==Butterfly_Robot::eTractionDrive)
 		{
-			m_Wheel[i].SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Wheel_UI::eFront);
-			m_Wheel[i].SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Wheel_UI::eBack);
+			if (i!=4)
+			{
+				m_Wheel[i].SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Wheel_UI::eFront);
+				m_Wheel[i].SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Wheel_UI::eBack);
+			}
+			else
+			{
+				m_Wheel[i].SetWheelColor(osg::Vec4(0.2,0.2,0.2,1.0),Wheel_UI::eFront);
+				m_Wheel[i].SetWheelColor(osg::Vec4(0.2,0.2,0.2,1.0),Wheel_UI::eBack);
+			}
 		}
 		else
 		{
