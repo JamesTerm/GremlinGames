@@ -40,12 +40,18 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
 		props.InverseMaxForce=m_TractionModeProps.InverseMaxForce;
 		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
+		props.PID[0]=m_TractionModeProps.PID[0];
+		props.PID[1]=m_TractionModeProps.PID[1];
+		props.PID[2]=m_TractionModeProps.PID[2];
 		Ship_1D_Props ship_props=m_ButterflyProps.GetDriveProps().GetShip_1D_Props();
 		ship_props.SetFromShip_Properties(PropsToUse->ShipProperties.GetShipProps());
 
 		//Now for the hand-picked swerve properties
 		for (size_t i=0;i<4;i++)
+		{
+			props.PID_Console_Dump=m_ButterflyProps.GetSwerveRobotProps().PID_Console_Dump_Wheel[i];
 			m_pParent->UpdateDriveProps(props,ship_props,i);
+		}
 
 		m_CurrentMode=Mode;
 		//Notify parent for further processing
@@ -188,6 +194,18 @@ void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err = script.GetFieldTable("swerve_drive");
 		if (!err) 
 		{
+			err = script.GetFieldTable("pid");
+			if (!err)
+			{
+				err = script.GetField("p", NULL, NULL,&m_TractionModePropsProps.PID[0]);
+				ASSERT_MSG(!err, err);
+				err = script.GetField("i", NULL, NULL,&m_TractionModePropsProps.PID[1]);
+				ASSERT_MSG(!err, err);
+				err = script.GetField("d", NULL, NULL,&m_TractionModePropsProps.PID[2]);
+				ASSERT_MSG(!err, err);
+				script.Pop();
+			}
+
 			string sTest;
 			err = script.GetField("is_closed",&sTest,NULL,NULL);
 			if (!err)
