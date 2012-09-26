@@ -91,6 +91,7 @@ class Drive_Train_Characteristics
 		__inline double GetTorqueFromVoltage(double Voltage);
 		__inline double GetTorqueFromVelocity(double AngularVelocity);
 		const DriveTrainProps &GetDriveTrainProps() const {return m_Props;}
+		void SetGearReduction(double NewGearing) {m_Props.GearReduction=NewGearing;}
 	private:
 		DriveTrainProps m_Props;
 };
@@ -110,6 +111,7 @@ class Encoder_Simulator2
 		void SetEncoderScalar(double value) {m_EncoderScalar=value;}  //This helps to simulate differences between sides
 		void SetFriction(double StaticFriction,double KineticFriction) {m_Physics.SetFriction(StaticFriction,KineticFriction);}
 		void ResetPos();
+		void SetGearReduction(double NewGearing) {m_DriveTrain.SetGearReduction(NewGearing);}
 	protected:
 	private:
 		double m_Time_s;

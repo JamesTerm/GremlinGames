@@ -160,13 +160,13 @@ void Ship_1D_Properties::Initialize(Ship_1D *NewShip) const
 }
 #endif
 
-void Ship_1D_Properties::SetFromShip_Properties (const Ship_Props & NewValue)
+void Ship_1D_Props::SetFromShip_Properties (const Ship_Props & NewValue)
 {
-	m_Ship_1D_Props.MAX_SPEED=NewValue.MAX_SPEED;
-	m_Ship_1D_Props.ACCEL=NewValue.ACCEL;
-	m_Ship_1D_Props.BRAKE=NewValue.BRAKE;
-	m_Ship_1D_Props.MaxAccelForward=NewValue.MaxAccelForward_High;
-	m_Ship_1D_Props.MaxAccelReverse=NewValue.MaxAccelReverse_High;
+	MAX_SPEED=NewValue.MAX_SPEED;
+	ACCEL=NewValue.ACCEL;
+	BRAKE=NewValue.BRAKE;
+	MaxAccelForward=NewValue.MaxAccelForward_High;
+	MaxAccelReverse=NewValue.MaxAccelReverse_High;
 }
 
 void Ship_1D_Properties::UpdateShip1DProperties(const Ship_1D_Props &props)

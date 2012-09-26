@@ -40,9 +40,13 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
 		props.InverseMaxForce=m_TractionModeProps.InverseMaxForce;
 		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
+		Ship_1D_Props ship_props=m_ButterflyProps.GetDriveProps().GetShip_1D_Props();
+		ship_props.SetFromShip_Properties(PropsToUse->ShipProperties.GetShipProps());
+
 		//Now for the hand-picked swerve properties
 		for (size_t i=0;i<4;i++)
-			m_pParent->UpdateDriveProps(props,i);
+			m_pParent->UpdateDriveProps(props,ship_props,i);
+
 		m_CurrentMode=Mode;
 		//Notify parent for further processing
 		m_pParent->DriveModeManager_SetMode_Callback(Mode);
@@ -145,6 +149,11 @@ void Butterfly_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
 }
 
+void Butterfly_Robot::DriveModeManager_SetMode_Callback(DriveMode Mode) 
+{
+	m_RobotControl->CloseSolenoid(eUseLowGear,Mode==Butterfly_Robot::eTractionDrive);
+}
+
   /***********************************************************************************************************/
  /*											Butterfly_Robot_Properties										*/
 /***********************************************************************************************************/
@@ -198,6 +207,36 @@ void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	{
 		m_RobotControls.LoadFromScript(script);
 		script.Pop();
+	}
+}
+
+  /***********************************************************************************************************/
+ /*											Butterfly_Robot_Control											*/
+/***********************************************************************************************************/
+
+void Butterfly_Robot_Control::Initialize(const Entity_Properties *props)
+{
+	__super::Initialize(props);
+	const Butterfly_Robot_Properties *robot_props=dynamic_cast<const Butterfly_Robot_Properties *>(props);
+
+	//For now robot_props can be NULL since the swerve robot is borrowing it
+	if (robot_props)
+	{
+		m_ButterflyProps=*robot_props;  //cache both drive modes
+	}
+	CloseSolenoid(Butterfly_Robot::eUseLowGear,false); //set up the gear reduction to omni wheel drive
+}
+
+void Butterfly_Robot_Control::CloseSolenoid(size_t index,bool Close)
+{
+	//printf("CloseSolenoid[%d] = %d \n",index,Close);
+	Rotary_Properties props=m_ButterflyProps.GetDriveProps();
+	props.SetFromShip_Properties(Close?m_ButterflyProps.GetTractionModeProps().ShipProperties.GetShipProps():m_ButterflyProps.GetShipProps());
+	double GearRatio=Close? 5310.0/184.81 : 5310.0/492.83;
+	for (size_t i=0;i<4;i++)
+	{
+		m_Encoders[i].Initialize(&props);
+		m_Encoders[i].SetGearReduction(GearRatio);
 	}
 }
 
