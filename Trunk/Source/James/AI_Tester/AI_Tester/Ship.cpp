@@ -223,7 +223,7 @@ void Ship_2D::UpdateShipProperties(const Ship_Props &props)
 
 	MaxAccelLeft=props.MaxAccelLeft;
 	MaxAccelRight=props.MaxAccelRight;
-	MaxTorqueYaw=props.MaxTorqueYaw;
+	MaxTorqueYaw=props.MaxTorqueYaw * m_Physics.GetMass();
 }
 
 void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
@@ -266,7 +266,6 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 
 	Camera_Restraint=G_Dampener=1.0;
 	Mass  = m_Physics.GetMass();
-	MaxTorqueYaw*= Mass;  //TODO fix
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
