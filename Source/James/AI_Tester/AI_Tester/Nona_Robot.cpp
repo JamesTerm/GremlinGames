@@ -31,15 +31,28 @@ Butterfly_Robot::DriveModeManager::DriveModeManager(Butterfly_Robot *parent) : m
 
 void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 {
-	const TractionModeProps *PropsToUse=(Mode==eTractionDrive)?&m_TractionModeProps:&m_OmniModeProps;
-	m_pParent->UpdateShipProperties(PropsToUse->ShipProperties.GetShipProps());
-	//init the props (more of a pedantic step to avoid corrupt data)
-	Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
-	props.InverseMaxForce=m_TractionModeProps.InverseMaxForce;
-	props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
-	//Now for the hand-picked swerve properties
-	for (size_t i=0;i<4;i++)
-		m_pParent->UpdateDriveProps(props,i);
+	//flood control
+	if (m_CurrentMode!=Mode)
+	{
+		const TractionModeProps *PropsToUse=(Mode==eTractionDrive)?&m_TractionModeProps:&m_OmniModeProps;
+		m_pParent->UpdateShipProperties(PropsToUse->ShipProperties.GetShipProps());
+		//init the props (more of a pedantic step to avoid corrupt data)
+		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
+		props.InverseMaxForce=m_TractionModeProps.InverseMaxForce;
+		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
+		//Now for the hand-picked swerve properties
+		for (size_t i=0;i<4;i++)
+			m_pParent->UpdateDriveProps(props,i);
+		m_CurrentMode=Mode;
+
+		if (Mode==eTractionDrive)
+			printf("Now in LowGear Traction Drive\n");
+		else
+		{
+			assert(Mode==eOmniWheelDrive);
+			printf("Now in HighGear Omni Drive\n");
+		}
+	}
 }
 
 void Butterfly_Robot::DriveModeManager::Initialize(const Butterfly_Robot_Properties &props)
@@ -49,6 +62,51 @@ void Butterfly_Robot::DriveModeManager::Initialize(const Butterfly_Robot_Propert
 	m_OmniModeProps.ShipProperties=m_pParent->m_ShipProps;
 	m_OmniModeProps.IsOpen=m_pParent->GetSwerveRobotProps().IsOpen_Wheel;
 	m_OmniModeProps.InverseMaxForce=m_pParent->GetSwerveRobotProps().InverseMaxForce;
+}
+
+void Butterfly_Robot::DriveModeManager::SetLowGear(bool on)
+{
+	SetMode(on?DriveModeManager::eTractionDrive:DriveModeManager::eOmniWheelDrive);
+}
+
+void Butterfly_Robot::DriveModeManager::SetLowGearValue(double Value)
+{
+	if (m_pParent->m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
+	//printf("\r%f       ",Value);
+	if (Value > 0.0)
+	{
+		if (GetMode()==DriveModeManager::eTractionDrive)
+			SetLowGear(false);
+	}
+	else
+	{
+		if (GetMode()==DriveModeManager::eOmniWheelDrive)
+			SetLowGear(true);
+	}
+}
+
+void Butterfly_Robot::DriveModeManager::BindAdditionalEventControls(bool Bind)
+{
+	Entity2D::EventMap *em=m_pParent->GetEventMap(); 
+	if (Bind)
+	{
+		em->EventOnOff_Map["Butterfly_SetLowGear"].Subscribe(m_pParent->ehl, *this, &Butterfly_Robot::DriveModeManager::SetLowGear);
+		em->Event_Map["Butterfly_SetLowGearOn"].Subscribe(m_pParent->ehl, *this, &Butterfly_Robot::DriveModeManager::SetLowGearOn);
+		em->Event_Map["Butterfly_SetLowGearOff"].Subscribe(m_pParent->ehl, *this, &Butterfly_Robot::DriveModeManager::SetLowGearOff);
+		em->EventValue_Map["Butterfly_SetLowGearValue"].Subscribe(m_pParent->ehl,*this, &Butterfly_Robot::DriveModeManager::SetLowGearValue);
+	}
+	else
+	{
+		em->EventOnOff_Map["Butterfly_SetLowGear"]  .Remove(*this, &Butterfly_Robot::DriveModeManager::SetLowGear);
+		em->Event_Map["Butterfly_SetLowGearOn"]  .Remove(*this, &Butterfly_Robot::DriveModeManager::SetLowGearOn);
+		em->Event_Map["Butterfly_SetLowGearOff"]  .Remove(*this, &Butterfly_Robot::DriveModeManager::SetLowGearOff);
+		em->EventValue_Map["Butterfly_SetLowGearValue"].Remove(*this, &Butterfly_Robot::DriveModeManager::SetLowGearValue);
+	}
+}
+
+void Butterfly_Robot::DriveModeManager::BindAdditionalUIControls(bool Bind,void *joy)
+{
+	m_ButterflyProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
 }
 
   /***********************************************************************************************************/
@@ -74,14 +132,38 @@ void Butterfly_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties
 		m_DriveModeManager.Initialize(*RobotProps);
 }
 
+void Butterfly_Robot::BindAdditionalEventControls(bool Bind)
+{
+	__super::BindAdditionalEventControls(Bind);
+	m_DriveModeManager.BindAdditionalEventControls(Bind);
+}
+
+void Butterfly_Robot::BindAdditionalUIControls(bool Bind,void *joy)
+{
+	m_DriveModeManager.BindAdditionalUIControls(Bind,joy);
+	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
+}
+
   /***********************************************************************************************************/
  /*											Butterfly_Robot_Properties										*/
 /***********************************************************************************************************/
 
-Butterfly_Robot_Properties::Butterfly_Robot_Properties()
+Butterfly_Robot_Properties::Butterfly_Robot_Properties() : m_RobotControls(&s_ControlsEvents)
 {
 	memset(&m_TractionModePropsProps,0,sizeof(TractionModeProps));
 }
+
+//declared as global to avoid allocation on stack each iteration
+const char * const g_Butterfly_Controls_Events[] = 
+{
+	"Butterfly_SetLowGear","Butterfly_SetLowGearOn","Butterfly_SetLowGearOff","Butterfly_SetLowGearValue"
+};
+
+const char *Butterfly_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
+{
+	return (index<_countof(g_Butterfly_Controls_Events))?g_Butterfly_Controls_Events[index] : NULL;
+}
+Butterfly_Robot_Properties::ControlEvents Butterfly_Robot_Properties::s_ControlsEvents;
 
 void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
@@ -108,6 +190,12 @@ void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			err = script.GetField("inv_max_force", NULL, NULL, &m_TractionModePropsProps.InverseMaxForce);
 			script.Pop();
 		}
+		script.Pop();
+	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		m_RobotControls.LoadFromScript(script);
 		script.Pop();
 	}
 }
