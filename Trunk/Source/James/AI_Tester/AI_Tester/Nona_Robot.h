@@ -37,6 +37,10 @@ class Butterfly_Robot : public Swerve_Robot
 			eOmniWheelDrive,
 			eTractionDrive
 		};
+		enum SolenoidDevices
+		{
+			eUseLowGear
+		};
 
 		Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 		~Butterfly_Robot();
@@ -47,7 +51,7 @@ class Butterfly_Robot : public Swerve_Robot
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 
-		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode) {}
+		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode);
 		DriveMode GetDriveMode() const {return m_DriveModeManager.GetMode();}
 		virtual bool IsTractionMode() const {return (GetDriveMode()==eTractionDrive);}
 	private:
@@ -77,6 +81,16 @@ class Butterfly_Robot : public Swerve_Robot
 			TractionModeProps m_OmniModeProps;
 			DriveMode m_CurrentMode;
 		} m_DriveModeManager;
+};
+
+class Butterfly_Robot_Control : public Swerve_Robot_Control
+{
+	protected:
+		virtual void Initialize(const Entity_Properties *props);
+		virtual void CloseSolenoid(size_t index,bool Close);
+		virtual void OpenSolenoid(size_t index,bool Open) {CloseSolenoid(index,!Open);}
+	private:
+		Butterfly_Robot_Properties m_ButterflyProps; //cache to obtain drive props
 };
 
 class Omni_Wheel_UI : public Wheel_UI
@@ -168,7 +182,7 @@ class Nona_Robot_Properties : public Butterfly_Robot_Properties
 		Rotary_Properties m_KickerWheelProps;
 };
 
-class Nona_Robot_Control : public Swerve_Robot_Control
+class Nona_Robot_Control : public Butterfly_Robot_Control
 {
 	public:
 		Nona_Robot_Control();

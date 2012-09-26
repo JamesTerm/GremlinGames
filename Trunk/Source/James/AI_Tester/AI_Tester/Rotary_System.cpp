@@ -349,6 +349,7 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 void Rotary_Angular::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 {
 	m_Rotary_Props=RotaryProps;
+	m_CalibratedScaler=MAX_SPEED;
 	switch (m_Rotary_Props.LoopState)
 	{
 	case Rotary_Props::eNone:

@@ -110,6 +110,7 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 			drive.RoteryProps().PID_Console_Dump=m_SwerveRobotProps.PID_Console_Dump_Wheel[i];
 			swivel.RoteryProps().PID_Console_Dump=m_SwerveRobotProps.PID_Console_Dump_Swivel[i];
 			drive.RoteryProps().InverseMaxForce=m_SwerveRobotProps.InverseMaxForce;
+			drive.RoteryProps().UseAggressiveStop=true;
 			//TODO drive.RoteryProps().EncoderReversed
 			m_DrivingModule[i]->Initialize(em,&props);
 		}
@@ -119,8 +120,9 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 	}
 }
 
-void Swerve_Robot::UpdateDriveProps(const Rotary_Props &DriveProps,size_t index)
+void Swerve_Robot::UpdateDriveProps(const Rotary_Props &DriveProps,const Ship_1D_Props &ShipProps,size_t index)
 {
+	m_DrivingModule[index]->Drive().UpdateShip1DProperties(ShipProps); //this needs to be first
 	m_DrivingModule[index]->Drive().UpdateRotaryProps(DriveProps);
 }
 

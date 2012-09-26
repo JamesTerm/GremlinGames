@@ -1,7 +1,8 @@
 #pragma once
 
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
-class Swerve_Drive_Control_Interface : public Rotary_Control_Interface
+class Swerve_Drive_Control_Interface : public Rotary_Control_Interface,
+									   public Robot_Control_Interface
 {
 	public:
 		//This is primarily used for updates to dashboard and driver station during a test build
@@ -88,7 +89,7 @@ class Swerve_Robot : public Ship_Tester,
 		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
 		const Swerve_Drive_Control_Interface &GetRobotControl() const {return *m_RobotControl;}
 		//Give ability to change properties
-		void UpdateDriveProps(const Rotary_Props &DriveProps,size_t index);
+		void UpdateDriveProps(const Rotary_Props &DriveProps,const Ship_1D_Props &ShipProps,size_t index);
 	protected:
 		friend Swerve_Robot_UI;
 

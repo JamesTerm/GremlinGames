@@ -1,5 +1,8 @@
+struct Ship_Props;
 struct Ship_1D_Props
 {
+	void SetFromShip_Properties(const Ship_Props & NewValue);
+
 	double MAX_SPEED;
 	double ACCEL, BRAKE;
 
@@ -18,7 +21,6 @@ struct Ship_1D_Props
 };
 
 
-struct Ship_Props;
 class Ship_1D;
 class Ship_1D_Properties : public Entity1D_Properties
 {
@@ -47,7 +49,7 @@ class Ship_1D_Properties : public Entity1D_Properties
 		void SetMaxRange(double MaxRange) {m_Ship_1D_Props.MaxRange=MaxRange;}
 		void SetUsingRange(bool UsingRange) {m_Ship_1D_Props.UsingRange=UsingRange;}
 		//copy constructor that can interpret the other type
-		void SetFromShip_Properties(const Ship_Props & NewValue);
+		void SetFromShip_Properties(const Ship_Props & NewValue) {m_Ship_1D_Props.SetFromShip_Properties(NewValue);}
 };
 
 ///This is really stripped down from the Ship_2D.  Not only is their one dimension (given), but there is also no controller.  This class is intended
