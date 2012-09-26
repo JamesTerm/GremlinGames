@@ -7,6 +7,9 @@ After driving around with it you can later do
 
 Which shows a "godship" and both tank and nona drive autonomous abilities to pursue a waypoint.
 
+you can either fly the god ship... or control one of the other drives by typing
+control nonarobot (or tankrobot, swerverobot)
+
 
 To control the robot use the following keys:
 a, d    to control yaw rotation
@@ -29,8 +32,12 @@ There are a list of some other commands... if you use the zoom command, just bew
 The only other thing to point out is the lua and xml scripts... When using the nona robot it will read the TestNonaRobot.lua script during runtime...
 
 The LUA allows you to tweak the ramping functions by limiting the maximum amount of force or torque you may apply to the robot at any time.  It also allows you to specify dimensions turning speeds etc.  
-Use the the userPrefs.xml to change the actual controls, and to see/change other keyboard assignments. 
+The LUA also allows you to reassign all the controls to different buttons and axis.
 
+This is depreciated, but can still be available if needed by providing a '1' in the argument
+--Use the the userPrefs.xml to change the actual controls, and to see/change other keyboard assignments. 
+
+Traction Mode:  The R1 and R2 buttons can be used to switch into traction wheels mode
 
 Slide Mode:
 This is really a simpler and first iteration of dealing with the fundemental workings of basic physics as if the "ship is in space" where when you apply a force to an entity body it will travel in that direction until an opposing force says otherwise.  It now supports a button held down (currently set to button 5)... so say the driver pushes forward while holding down the button... the robot moves in that direction and then the driver can use the yaw control to rotate the robot while still traveling in the same direction until he releases the button.  

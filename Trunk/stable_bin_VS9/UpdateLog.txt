@@ -15,3 +15,11 @@ Fixed swerve drive by eliminating the condition to bypass swivel (since the clos
 Added tank steering support
 All drives now of control support in lua, and you can switch between robots with different controls
 	-As proof of concept the butterfly drive uses tank steering
+
+9/26/2012
+Added traction mode using the R1 and R2 buttons... the wheels will turn red when you are in traction mode
+and the kicker wheel and rotation are disabled.  Also fixed bug in gear reduction simulated encoders now
+the robot will travel at its real top speed (so it will be faster than it was before).
+
+This should be feature complete! (for the drive that is)
+

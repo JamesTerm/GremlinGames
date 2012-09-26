@@ -102,6 +102,30 @@ TestShip = {
 		inv_max_force = 1/15.0  --solved empiracally
 	},
 	
+	low_gear = 
+	{
+		--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
+		--cause slipping if driver "high sticks" to start or stop quickly.
+		MaxAccelLeft = MaxCentripetalTraverse, MaxAccelRight = MaxCentripetalTraverse, 
+		MaxAccelForward = 10, MaxAccelReverse = 10, 
+		MaxAccelForward_High = 20, MaxAccelReverse_High = 20, 
+		MaxTorqueYaw = 25 * 2, 
+		
+		MAX_SPEED = LowGearSpeed,
+		ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
+		BRAKE = ACCEL, 
+		-- Turn Rates (deg/sec) This is always correct do not change
+		--heading_rad = (LowGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
+		heading_rad = 0,  --No turning for traction mode
+		
+		swerve_drive =
+		{
+			is_closed=1,
+			pid={p=50, i=0, d=0},
+			inv_max_force = 1/38.0  --solved empiracally
+		}
+	},
+
 	controls =
 	{
 		Joystick_1 =
@@ -111,7 +135,9 @@ TestShip = {
 			Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
-			SlideHold = {type="joystick_button", key=6, on_off=true},
+			SlideHold = {type="joystick_button", key=5, on_off=true},
+			Butterfly_SetLowGearOn = {type="joystick_button", key=8, on_off=false},
+			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false}
 		},
 		Joystick_2 =
 		{
@@ -119,7 +145,6 @@ TestShip = {
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
-			SlideHold = {type="joystick_button", key=6, on_off=true},
 			None = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0}
 		}
 
