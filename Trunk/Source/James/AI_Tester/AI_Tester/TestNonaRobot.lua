@@ -120,8 +120,9 @@ TestShip = {
 		
 		swerve_drive =
 		{
-			is_closed=0,						--TODO turn on once simulation can support it properly
-			inv_max_force = 0.0  --solved empiracally
+			is_closed=1,
+			pid={p=50, i=0, d=0},
+			inv_max_force = 1/38.0  --solved empiracally
 		}
 	},
 
