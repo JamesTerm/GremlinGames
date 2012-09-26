@@ -1,12 +1,54 @@
 #pragma once
 
+struct TractionModeProps
+{
+	Ship_Properties ShipProperties;
+	double InverseMaxForce;  //This is used to solve voltage at the acceleration level where the acceleration / force gets scaled down to voltage
+	bool IsOpen;  //give ability to open or close loop for traction system  
+};
+
+class Butterfly_Robot_Properties : public Swerve_Robot_Properties
+{
+	public:
+		Butterfly_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+
+		const TractionModeProps &GetTractionModeProps() const {return m_TractionModePropsProps;}
+	private:
+		//Everything needed to switch to traction mode here
+		TractionModeProps m_TractionModePropsProps;
+};
+
 class Butterfly_Robot : public Swerve_Robot
 {
 	public:
 			Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 			~Butterfly_Robot();
+			virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 	protected:
 		virtual Swerve_Drive *CreateDrive() {return new Butterfly_Drive(this);}
+	private:
+		//This will change between omni wheel mode and traction drive
+		class DriveModeManager
+		{
+		public:
+			enum DriveMode
+			{
+				eOmniWheelDrive,
+				eTractionDrive
+			};
+			DriveModeManager(Butterfly_Robot *parent);
+
+			//Cache the low gear properties
+			void Initialize(const Butterfly_Robot_Properties &props);
+
+			void SetMode(DriveMode Mode);
+		private:
+			Butterfly_Robot *m_pParent;
+			Butterfly_Robot_Properties m_ButterflyProps; //cache to obtain drive props
+			TractionModeProps m_TractionModeProps;
+			TractionModeProps m_OmniModeProps;
+		} m_DriveModeManager;
 };
 
 class Omni_Wheel_UI : public Wheel_UI
@@ -79,7 +121,7 @@ class Nona_Robot : public Butterfly_Robot
 		Nona_Drive * const m_NonaDrive; //cache, avoid needing to dynamic cast each iteration
 };
 
-class Nona_Robot_Properties : public Swerve_Robot_Properties
+class Nona_Robot_Properties : public Butterfly_Robot_Properties
 {
 	public:
 		Nona_Robot_Properties();

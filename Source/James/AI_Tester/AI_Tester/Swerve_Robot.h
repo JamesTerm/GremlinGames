@@ -87,7 +87,8 @@ class Swerve_Robot : public Ship_Tester,
 
 		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
 		const Swerve_Drive_Control_Interface &GetRobotControl() const {return *m_RobotControl;}
-		//Accessors needed for setting goals
+		//Give ability to change properties
+		void UpdateDriveProps(const Rotary_Props &DriveProps,size_t index);
 	protected:
 		friend Swerve_Robot_UI;
 
@@ -149,7 +150,8 @@ class Swerve_Robot : public Ship_Tester,
 				//I have no problem exposing read-only access to these :)
 				const Rotary_Linear &GetSwivel() const {return m_Swivel;}
 				const Rotary_Angular &GetDrive() const {return m_Drive;}
-
+				//Get and Set the Drive properties
+				Rotary_Angular &Drive() {return m_Drive;}
 				void ResetPos() {m_Drive.ResetPos(),m_Swivel.ResetPos();}
 				
 			private:

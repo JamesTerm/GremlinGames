@@ -346,6 +346,23 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
+void Rotary_Angular::UpdateRotaryProps(const Rotary_Props &RotaryProps)
+{
+	m_Rotary_Props=RotaryProps;
+	switch (m_Rotary_Props.LoopState)
+	{
+	case Rotary_Props::eNone:
+		SetEncoderSafety(true);
+		break;
+	case Rotary_Props::eOpen:
+		m_EncoderState=ePassive;
+		break;
+	case Rotary_Props::eClosed:
+		m_EncoderState=eActive;
+		break;
+	}
+}
+
 void Rotary_Angular::TimeChange(double dTime_s)
 {
 	#ifdef __Rotary_UseInducedLatency__

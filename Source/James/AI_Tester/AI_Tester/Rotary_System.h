@@ -151,6 +151,8 @@ class Rotary_Angular : public Rotary_System
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
 		//This is optionally used to lock to another ship (e.g. drive using rotary system)
 		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
+		//Give ability to change properties
+		void UpdateRotaryProps(const Rotary_Props &RotaryProps);
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);

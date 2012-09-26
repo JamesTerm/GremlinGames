@@ -119,6 +119,11 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 	}
 }
 
+void Swerve_Robot::UpdateDriveProps(const Rotary_Props &DriveProps,size_t index)
+{
+	m_DrivingModule[index]->Drive().UpdateRotaryProps(DriveProps);
+}
+
 void Swerve_Robot::ResetPos()
 {
 	m_Heading=0.0;
