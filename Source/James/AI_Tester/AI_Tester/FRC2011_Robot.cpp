@@ -704,7 +704,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	18.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	c_UsingArmLimits,	//Using the range
 	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
 	),
@@ -717,7 +717,7 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	28,   //Max Speed (rounded as we need not have precision)
 	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eSimpleMotor,
+	Ship_1D_Props::eSimpleMotor,
 	false	//No limit ever!
 	)
 {

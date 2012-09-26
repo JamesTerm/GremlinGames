@@ -396,7 +396,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	18.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	60.0,60.0, //Max Acceleration Forward/Reverse (try to tune to the average turning speed to minimize error on PID)
-	Ship_1D_Properties::eSwivel,
+	Ship_1D_Props::eSwivel,
 	//true,	//Using the range:  for now assuming a 1:1 using a potentiometer with 270 degrees and 10 degrees of padding = 130 degrees each way
 	false,  //Or not use the range... it appears it is possible to have unlimited range using the Vishear encoders
 	-DEG_2_RAD(130.0),DEG_2_RAD(130.0),
@@ -413,7 +413,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	//Make these as fast as possible without damaging chain or motor
 	//These must be fast enough to handle rotation angular acceleration
 	60.0,60.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eSimpleMotor,
+	Ship_1D_Props::eSimpleMotor,
 	false	//No limit ever!
 	)
 {

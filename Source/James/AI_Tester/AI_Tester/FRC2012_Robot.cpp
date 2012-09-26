@@ -965,7 +965,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eSwivel,
+	Ship_1D_Props::eSwivel,
 	true,	//Using the range
 	-Pi,Pi
 	),
@@ -976,7 +976,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
 	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
 	),
@@ -987,7 +987,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	(5000.0/60.0) * Pi2,   //Max Speed (This is clocked at 5000 rpm) 
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eSimpleMotor,
+	Ship_1D_Props::eSimpleMotor,
 	false,28.0 * Pi2,0.0,	//No limit ever!  (but we are using the min range as a way to set minimum speed)
 	true //This is angular
 	),
@@ -1000,7 +1000,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	28,   //Max Speed (rounded as we need not have precision)
 	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eSimpleMotor,
+	Ship_1D_Props::eSimpleMotor,
 	false,0.0,0.0,	//No limit ever!
 	true //This is angular
 	),
@@ -1011,7 +1011,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	1.4 * Pi2,   //Max Speed  (Parker gave this one, should be good)
 	10.0,10.0, //ACCEL, BRAKE  (should be relatively quick)
 	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
 	-PI_2,PI_2 //TODO
 	),
