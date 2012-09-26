@@ -105,6 +105,8 @@ class Swerve_Drive_Interface : public Vehicle_Drive_Common_Interface
 {
 	public:
 	virtual const SwerveVelocities &GetSwerveVelocities() const =0;
+	//This is really for butterfly and nona drive, but put here to greatly simplify the code
+	virtual bool IsTractionMode() const {return false;}
 };
 
 class Swerve_Drive : public Vehicle_Drive_Common

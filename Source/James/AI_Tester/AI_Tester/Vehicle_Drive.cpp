@@ -492,13 +492,18 @@ Nona_Drive::Nona_Drive(Swerve_Drive_Interface *Parent) : Butterfly_Drive(Parent)
 
 void Nona_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	const double Mass=PhysicsToUse.GetMass();
-	const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
-	Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration_2D(dTime_s));
-	//DOUT5("%f, %f, %f",CentripetalAcceleration[0],CentripetalAcceleration[1], PhysicsToUse.GetCentripetalAcceleration_Magnitude(dTime_s));
+	if (!m_pParent->IsTractionMode())
+	{
+		const double Mass=PhysicsToUse.GetMass();
+		const double Heading=m_pParent->Vehicle_Drive_GetAtt_r();
+		Vec2d CentripetalAcceleration=GlobalToLocal(Heading,PhysicsToUse.GetCentripetalAcceleration_2D(dTime_s));
+		//DOUT5("%f, %f, %f",CentripetalAcceleration[0],CentripetalAcceleration[1], PhysicsToUse.GetCentripetalAcceleration_Magnitude(dTime_s));
 
-	Vec2d CurrentVelocity=GlobalToLocal(Heading,PhysicsToUse.GetLinearVelocity());
-	m_KickerWheel=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0] - CentripetalAcceleration[0];
+		Vec2d CurrentVelocity=GlobalToLocal(Heading,PhysicsToUse.GetLinearVelocity());
+		m_KickerWheel=((LocalForce[0]/Mass)*dTime_s)+CurrentVelocity[0] - CentripetalAcceleration[0];
+	}
+	else
+		m_KickerWheel=0.0;
 
 	//DOUT5("%f %f",CurrentVelocity[0],m_KickerWheel);
 	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
@@ -514,3 +519,4 @@ void Nona_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &Loca
 	//bypass butterfly implementation
 	Swerve_Drive::Vehicle_Drive_Common_ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
+

@@ -25,7 +25,7 @@ const double Pi_Half=1.57079632679489661923;
   /***********************************************************************************************************/
  /*										Butterfly_Robot::DriveModeManager 									*/
 /***********************************************************************************************************/
-Butterfly_Robot::DriveModeManager::DriveModeManager(Butterfly_Robot *parent) : m_pParent(parent)
+Butterfly_Robot::DriveModeManager::DriveModeManager(Butterfly_Robot *parent) : m_pParent(parent),m_CurrentMode(eOmniWheelDrive)
 {
 }
 
@@ -44,7 +44,8 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		for (size_t i=0;i<4;i++)
 			m_pParent->UpdateDriveProps(props,i);
 		m_CurrentMode=Mode;
-
+		//Notify parent for further processing
+		m_pParent->DriveModeManager_SetMode_Callback(Mode);
 		if (Mode==eTractionDrive)
 			printf("Now in LowGear Traction Drive\n");
 		else
@@ -66,7 +67,7 @@ void Butterfly_Robot::DriveModeManager::Initialize(const Butterfly_Robot_Propert
 
 void Butterfly_Robot::DriveModeManager::SetLowGear(bool on)
 {
-	SetMode(on?DriveModeManager::eTractionDrive:DriveModeManager::eOmniWheelDrive);
+	SetMode(on?eTractionDrive:eOmniWheelDrive);
 }
 
 void Butterfly_Robot::DriveModeManager::SetLowGearValue(double Value)
@@ -75,12 +76,12 @@ void Butterfly_Robot::DriveModeManager::SetLowGearValue(double Value)
 	//printf("\r%f       ",Value);
 	if (Value > 0.0)
 	{
-		if (GetMode()==DriveModeManager::eTractionDrive)
+		if (GetMode()==eTractionDrive)
 			SetLowGear(false);
 	}
 	else
 	{
-		if (GetMode()==DriveModeManager::eOmniWheelDrive)
+		if (GetMode()==eOmniWheelDrive)
 			SetLowGear(true);
 	}
 }
@@ -239,6 +240,12 @@ void Nona_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	m_NonaDrive->SetKickerWheelVelocity(IntendedVelocity);
 	m_KickerWheel.SetRequestedVelocity(IntendedVelocity);
 	m_KickerWheel.AsEntity1D().TimeChange(dTime_s);
+}
+
+void Nona_Robot::DriveModeManager_SetMode_Callback(DriveMode Mode) 
+{
+	m_KickerWheel.Stop();
+	__super::DriveModeManager_SetMode_Callback(Mode);
 }
 
   /***********************************************************************************************************/

@@ -39,16 +39,22 @@ class Butterfly_Robot : public Swerve_Robot
 
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+
+		//Since the DriveModeManager intercepts events internally... it will send a callback for further processing
+		enum DriveMode
+		{
+			eOmniWheelDrive,
+			eTractionDrive
+		};
+		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode) {}
+		DriveMode GetDriveMode() const {return m_DriveModeManager.GetMode();}
+		virtual bool IsTractionMode() const {return (GetDriveMode()==eTractionDrive);}
 	private:
 		//This will change between omni wheel mode and traction drive
 		class DriveModeManager
 		{
 		public:
-			enum DriveMode
-			{
-				eOmniWheelDrive,
-				eTractionDrive
-			};
+			typedef Butterfly_Robot::DriveMode DriveMode;
 			DriveModeManager(Butterfly_Robot *parent);
 
 			//Cache the low gear properties
@@ -57,8 +63,8 @@ class Butterfly_Robot : public Swerve_Robot
 			void SetMode(DriveMode Mode);
 			void BindAdditionalEventControls(bool Bind);
 			void BindAdditionalUIControls(bool Bind, void *joy);
-		protected:
 			DriveMode GetMode() const {return m_CurrentMode;}
+		protected:
 			void SetLowGear(bool on);
 			void SetLowGearOn() {SetLowGear(true);}
 			void SetLowGearOff() {SetLowGear(false);}
@@ -137,6 +143,8 @@ class Nona_Robot : public Butterfly_Robot
 	protected:
 		virtual Swerve_Drive *CreateDrive();
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
+
+		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode);
 	private:
 		Rotary_Angular m_KickerWheel;  //apply control to kicker wheel
 		Nona_Drive * const m_NonaDrive; //cache, avoid needing to dynamic cast each iteration
