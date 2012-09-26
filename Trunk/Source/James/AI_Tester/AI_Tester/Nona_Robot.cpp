@@ -22,13 +22,41 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 const double Pi2=M_PI*2.0;
 const double Pi_Half=1.57079632679489661923;
 
+  /***********************************************************************************************************/
+ /*										Butterfly_Robot::DriveModeManager 									*/
+/***********************************************************************************************************/
+Butterfly_Robot::DriveModeManager::DriveModeManager(Butterfly_Robot *parent) : m_pParent(parent)
+{
+}
+
+void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
+{
+	const TractionModeProps *PropsToUse=(Mode==eTractionDrive)?&m_TractionModeProps:&m_OmniModeProps;
+	m_pParent->UpdateShipProperties(PropsToUse->ShipProperties.GetShipProps());
+	//init the props (more of a pedantic step to avoid corrupt data)
+	Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
+	props.InverseMaxForce=m_TractionModeProps.InverseMaxForce;
+	props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
+	//Now for the hand-picked swerve properties
+	for (size_t i=0;i<4;i++)
+		m_pParent->UpdateDriveProps(props,i);
+}
+
+void Butterfly_Robot::DriveModeManager::Initialize(const Butterfly_Robot_Properties &props)
+{
+	m_ButterflyProps=props;
+	m_TractionModeProps=props.GetTractionModeProps();
+	m_OmniModeProps.ShipProperties=m_pParent->m_ShipProps;
+	m_OmniModeProps.IsOpen=m_pParent->GetSwerveRobotProps().IsOpen_Wheel;
+	m_OmniModeProps.InverseMaxForce=m_pParent->GetSwerveRobotProps().InverseMaxForce;
+}
 
   /***********************************************************************************************************/
  /*												Butterfly_Robot												*/
 /***********************************************************************************************************/
 
 Butterfly_Robot::Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
-	Swerve_Robot(EntityName,robot_control,IsAutonomous)
+	Swerve_Robot(EntityName,robot_control,IsAutonomous),m_DriveModeManager(this)
 {
 
 }
@@ -36,6 +64,52 @@ Butterfly_Robot::Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_In
 Butterfly_Robot::~Butterfly_Robot()
 {
 
+}
+
+void Butterfly_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+{
+	__super::Initialize(em,props);
+	const Butterfly_Robot_Properties *RobotProps=dynamic_cast<const Butterfly_Robot_Properties *>(props);
+	if (RobotProps)
+		m_DriveModeManager.Initialize(*RobotProps);
+}
+
+  /***********************************************************************************************************/
+ /*											Butterfly_Robot_Properties										*/
+/***********************************************************************************************************/
+
+Butterfly_Robot_Properties::Butterfly_Robot_Properties()
+{
+	memset(&m_TractionModePropsProps,0,sizeof(TractionModeProps));
+}
+
+void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	__super::LoadFromScript(script);
+	m_TractionModePropsProps.ShipProperties=*this;
+	const char* err=NULL;
+	err = script.GetFieldTable("low_gear");
+	if (!err)
+	{
+		m_TractionModePropsProps.ShipProperties.LoadFromScript(script);
+
+		err = script.GetFieldTable("swerve_drive");
+		if (!err) 
+		{
+			string sTest;
+			err = script.GetField("is_closed",&sTest,NULL,NULL);
+			if (!err)
+			{
+				if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+					m_TractionModePropsProps.IsOpen=true;
+				else
+					m_TractionModePropsProps.IsOpen=false;
+			}
+			err = script.GetField("inv_max_force", NULL, NULL, &m_TractionModePropsProps.InverseMaxForce);
+			script.Pop();
+		}
+		script.Pop();
+	}
 }
 
   /***********************************************************************************************************/

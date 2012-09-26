@@ -286,6 +286,8 @@ private:
 	RobotMap Robot_Database;
 	typedef map<string ,Swerve_Robot_Properties,greater<string>> SwerveRobotMap;
 	SwerveRobotMap SwerveRobot_Database;
+	typedef map<string ,Butterfly_Robot_Properties,greater<string>> ButterflyRobotMap;
+	ButterflyRobotMap ButterflyRobot_Database;
 	typedef map<string ,Nona_Robot_Properties,greater<string>> NonaRobotMap;
 	NonaRobotMap NonaRobot_Database;
 
@@ -366,7 +368,6 @@ public:
 				}
 				break;
 			case eSwerve:
-			case eButterfly:
 				{
 					SwerveRobotMap::iterator iter=SwerveRobot_Database.find(RobotName);
 					if (iter==SwerveRobot_Database.end())
@@ -374,6 +375,17 @@ public:
 						//New entry
 						SwerveRobot_Database[RobotName]=Swerve_Robot_Properties();
 						new_entry=&SwerveRobot_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
+			case eButterfly:
+				{
+					ButterflyRobotMap::iterator iter=ButterflyRobot_Database.find(RobotName);
+					if (iter==ButterflyRobot_Database.end())
+					{
+						//New entry
+						ButterflyRobot_Database[RobotName]=Butterfly_Robot_Properties();
+						new_entry=&ButterflyRobot_Database[RobotName];  //reference to avoid copy
 					}
 				}
 				break;
@@ -436,6 +448,13 @@ public:
 		{
 			SwerveRobotMap::iterator iter=SwerveRobot_Database.find(str_2);
 			if (iter!=SwerveRobot_Database.end())
+				props=&((*iter).second);
+		}
+
+		if (props==NULL)
+		{
+			ButterflyRobotMap::iterator iter=ButterflyRobot_Database.find(str_2);
+			if (iter!=ButterflyRobot_Database.end())
 				props=&((*iter).second);
 		}
 
