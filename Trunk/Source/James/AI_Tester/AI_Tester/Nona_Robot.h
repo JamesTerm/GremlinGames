@@ -14,9 +14,18 @@ class Butterfly_Robot_Properties : public Swerve_Robot_Properties
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 
 		const TractionModeProps &GetTractionModeProps() const {return m_TractionModePropsProps;}
+		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//Everything needed to switch to traction mode here
 		TractionModeProps m_TractionModePropsProps;
+
+		class ControlEvents : public LUA_Controls_Properties_Interface
+		{
+			protected: //from LUA_Controls_Properties_Interface
+				virtual const char *LUA_Controls_GetEvents(size_t index) const; 
+		};
+		static ControlEvents s_ControlsEvents;
+		LUA_Controls_Properties m_RobotControls;
 };
 
 class Butterfly_Robot : public Swerve_Robot
@@ -27,6 +36,9 @@ class Butterfly_Robot : public Swerve_Robot
 			virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 	protected:
 		virtual Swerve_Drive *CreateDrive() {return new Butterfly_Drive(this);}
+
+		virtual void BindAdditionalEventControls(bool Bind);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 	private:
 		//This will change between omni wheel mode and traction drive
 		class DriveModeManager
@@ -43,11 +55,20 @@ class Butterfly_Robot : public Swerve_Robot
 			void Initialize(const Butterfly_Robot_Properties &props);
 
 			void SetMode(DriveMode Mode);
+			void BindAdditionalEventControls(bool Bind);
+			void BindAdditionalUIControls(bool Bind, void *joy);
+		protected:
+			DriveMode GetMode() const {return m_CurrentMode;}
+			void SetLowGear(bool on);
+			void SetLowGearOn() {SetLowGear(true);}
+			void SetLowGearOff() {SetLowGear(false);}
+			void SetLowGearValue(double Value);
 		private:
 			Butterfly_Robot *m_pParent;
 			Butterfly_Robot_Properties m_ButterflyProps; //cache to obtain drive props
 			TractionModeProps m_TractionModeProps;
 			TractionModeProps m_OmniModeProps;
+			DriveMode m_CurrentMode;
 		} m_DriveModeManager;
 };
 

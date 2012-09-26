@@ -99,7 +99,10 @@ TestShip = {
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0}
 			--Use tank steering enable
 			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0}
+			Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			
+			Butterfly_SetLowGearOn = {type="joystick_button", key=8, on_off=false},
+			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false}
 		},
 		Joystick_2 =
 		{
