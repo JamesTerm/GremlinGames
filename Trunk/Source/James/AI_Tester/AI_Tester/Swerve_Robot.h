@@ -257,7 +257,12 @@ class Wheel_UI
 		//This will add to the existing rotation and normalize
 		void AddRotation(double RadiansToAdd);
 		double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
-	protected:
+		enum WheelEnum
+		{
+			eFront, eBack, eTread
+		};
+		void SetWheelColor(osg::Vec4 Color, WheelEnum Wheel);
+
 		virtual osg::Vec4 GetFrontWheelColor() const {return osg::Vec4(0.0,1.0,0.0,1.0);}
 		virtual osg::Vec4 GetBackWheelColor() const {return osg::Vec4(1.0,0.0,0.0,1.0);}
 	private:
@@ -291,9 +296,10 @@ class Swerve_Robot_UI
 		virtual void CloseSolenoid(size_t index,bool Close) {}
 		virtual Wheel_UI *Create_WheelUI() {return new Wheel_UI;}
 		virtual void Destroy_WheelUI(Wheel_UI *wheel_ui) {delete wheel_ui;}
+		//Allow subclasses to change wheels look
+		Wheel_UI *m_Wheel[4];
 	private:
 		Swerve_Robot * const m_SwerveRobot;
-		Wheel_UI *m_Wheel[4];
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control

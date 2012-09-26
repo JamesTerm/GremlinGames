@@ -202,6 +202,27 @@ void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 }
 
   /***********************************************************************************************************/
+ /*												Butterfly_Robot_UI											*/
+/***********************************************************************************************************/
+
+void Butterfly_Robot_UI::DriveModeManager_SetMode_Callback(DriveMode Mode)
+{
+	for (size_t i=0;i<4;i++)
+	{
+		if (Mode==Butterfly_Robot::eTractionDrive)
+		{
+			m_Wheel[i]->SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Wheel_UI::eFront);
+			m_Wheel[i]->SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Wheel_UI::eBack);
+		}
+		else
+		{
+			m_Wheel[i]->SetWheelColor(m_Wheel[i]->GetFrontWheelColor(),Wheel_UI::eFront);
+			m_Wheel[i]->SetWheelColor(m_Wheel[i]->GetBackWheelColor(),Wheel_UI::eBack);
+		}
+	}
+}
+
+  /***********************************************************************************************************/
  /*													Nona_Robot												*/
 /***********************************************************************************************************/
 
@@ -432,4 +453,21 @@ void Nona_Robot_UI::TimeChange(double dTime_s)
 	const double RPS=LinearVelocity /  (PI * _.GetSwerveRobotProps().WheelDiameter * PixelHackScale);
 	const double AngularVelocity=RPS * Pi2;
 	m_Wheel[4].AddRotation(AngularVelocity*dTime_s);
+}
+
+void Nona_Robot_UI::DriveModeManager_SetMode_Callback(DriveMode Mode)
+{
+	for (size_t i=0;i<4;i++)
+	{
+		if (Mode==Butterfly_Robot::eTractionDrive)
+		{
+			m_Wheel[i].SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Wheel_UI::eFront);
+			m_Wheel[i].SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Wheel_UI::eBack);
+		}
+		else
+		{
+			m_Wheel[i].SetWheelColor(m_Wheel[i].GetFrontWheelColor(),Wheel_UI::eFront);
+			m_Wheel[i].SetWheelColor(m_Wheel[i].GetBackWheelColor(),Wheel_UI::eBack);
+		}
+	}
 }

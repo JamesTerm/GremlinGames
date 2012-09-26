@@ -894,6 +894,23 @@ void Wheel_UI::UI_Init(Actor_Text *parent)
 
 }
 
+void Wheel_UI::SetWheelColor(osg::Vec4 Color, WheelEnum Wheel)
+{
+	switch (Wheel)
+	{
+	case eFront:
+		m_Front->setColor(Color);
+		break;
+	case eBack:
+		m_Back->setColor(Color);
+		break;
+	case eTread:
+		//all though this is in-effective its added for completion
+		m_Tread->setColor(Color);
+		break;
+	}
+}
+
 void Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 {
 	if (AddOrRemove)

@@ -31,21 +31,22 @@ class Butterfly_Robot_Properties : public Swerve_Robot_Properties
 class Butterfly_Robot : public Swerve_Robot
 {
 	public:
-			Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
-			~Butterfly_Robot();
-			virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
-	protected:
-		virtual Swerve_Drive *CreateDrive() {return new Butterfly_Drive(this);}
-
-		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
-
 		//Since the DriveModeManager intercepts events internally... it will send a callback for further processing
 		enum DriveMode
 		{
 			eOmniWheelDrive,
 			eTractionDrive
 		};
+
+		Butterfly_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
+		~Butterfly_Robot();
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+	protected:
+		virtual Swerve_Drive *CreateDrive() {return new Butterfly_Drive(this);}
+
+		virtual void BindAdditionalEventControls(bool Bind);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+
 		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode) {}
 		DriveMode GetDriveMode() const {return m_DriveModeManager.GetMode();}
 		virtual bool IsTractionMode() const {return (GetDriveMode()==eTractionDrive);}
@@ -88,8 +89,9 @@ public:
 class Butterfly_Robot_UI : public Swerve_Robot_UI
 {
 	public:
+		typedef Butterfly_Robot::DriveMode DriveMode;
 		Butterfly_Robot_UI(Swerve_Robot *SwerveRobot) : Swerve_Robot_UI(SwerveRobot) {}
-
+		void DriveModeManager_SetMode_Callback(DriveMode Mode);
 	protected:
 		virtual Wheel_UI *Create_WheelUI() {return new Omni_Wheel_UI;}
 };
@@ -119,6 +121,10 @@ class Butterfly_Robot_UI_Control : public Butterfly_Robot, public Swerve_Robot_C
 			{m_ButterflyUI.custom_update(nv,draw,parent_pos);}
 		virtual void Text_SizeToUse(double SizeToUse) {m_ButterflyUI.Text_SizeToUse(SizeToUse);}
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_ButterflyUI.UpdateScene(geode,AddOrRemove);}
+		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode) 
+		{	__super::DriveModeManager_SetMode_Callback(Mode);
+			m_ButterflyUI.DriveModeManager_SetMode_Callback(Mode);
+		}
 
 	private:
 		Butterfly_Robot_UI m_ButterflyUI;
@@ -194,6 +200,7 @@ class Nona_Robot_UI
 
 		Nona_Robot_UI(Nona_Robot *NonaRobot) : m_NonaRobot(NonaRobot) {}
 	public:
+		typedef Butterfly_Robot::DriveMode DriveMode;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 
 		virtual void UI_Init(Actor_Text *parent);
@@ -204,6 +211,7 @@ class Nona_Robot_UI
 
 		virtual void TimeChange(double dTime_s);
 
+		void DriveModeManager_SetMode_Callback(DriveMode Mode);
 	protected:
 		virtual void UpdateVoltage(size_t index,double Voltage) {}
 		virtual void CloseSolenoid(size_t index,bool Close) {}
@@ -239,6 +247,10 @@ class Nona_Robot_UI_Control : public Nona_Robot, public Nona_Robot_Control
 		virtual void Text_SizeToUse(double SizeToUse) {m_NonaUI.Text_SizeToUse(SizeToUse);}
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_NonaUI.UpdateScene(geode,AddOrRemove);}
 
+		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode) 
+		{	__super::DriveModeManager_SetMode_Callback(Mode);
+			m_NonaUI.DriveModeManager_SetMode_Callback(Mode);
+		}
 	private:
 		Nona_Robot_UI m_NonaUI;
 };
