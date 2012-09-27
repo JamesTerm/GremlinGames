@@ -30,6 +30,9 @@ class UI_Controller
 			//Reversed from game since the 2D world uses the topview axis
 			Dir_Left = -1,
 			Dir_Right = 1,
+			Dir_90Left,
+			Dir_90Right,
+			Dir_180
 		};
 
 		UI_Controller(AI_Base_Controller *base_controller=NULL,bool AddJoystickDefaults=true);
@@ -51,6 +54,7 @@ class UI_Controller
 		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedVelocity(speed);}
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
+		void Turn_180() {if (AreControlsDisabled()) return; Ship_Turn(Dir_180);}
 		virtual void ResetPos();
 		void UserResetPos();
 		void SlideHold(bool holdslide) {if (AreControlsDisabled()) return; m_ship->SetSimFlightMode(!holdslide);}
@@ -131,6 +135,7 @@ class UI_Controller
 		void JoyStick_Ship_Turn(double dir);
 
 		void Ship_Turn(Directions dir);
+		void Ship_Turn90_POV (double value);
 
 		void Ship_AfterBurner_Thrust(bool on);
 		void Ship_Thrust(bool on);
@@ -186,6 +191,7 @@ class UI_Controller
 		bool m_Ship_UseHeadingSpeed;
 		bool m_Test1,m_Test2; //Testing
 		bool m_IsBeingDestroyed; //Keep track of when destructor is called
+		bool m_POVSetValve;
 };
 
 

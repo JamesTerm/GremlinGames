@@ -143,6 +143,19 @@ void Ship_2D::SetRequestedVelocity(Vec2D Velocity)
 	//DOUT5("%f %f",m_RequestedVelocity[0],m_RequestedVelocity[1]);
 }
 
+void Ship_2D::SetIntendedOrientation(double IntendedOrientation,bool Absolute)
+{
+	m_LockShipHeadingToOrientation=false; //this must be false for this to work (if not already)
+	m_IntendedOrientation=Absolute?IntendedOrientation: NormalizeRotation2(m_IntendedOrientation+IntendedOrientation);
+}
+
+void Ship_2D::SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation) 
+{	
+	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation;
+	m_rotAccel_rad_s=Acceleration;
+}
+
+
 #if 0
 Vec3d Ship_2D::GetArtificialHorizonComponent() const
 {
@@ -328,12 +341,6 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 		m_IntendedOrientationPhysics.TimeChangeUpdate(dTime_s,PositionDisplacement,RotationDisplacement);
 		m_IntendedOrientation+=RotationDisplacement*YawResistance;
 	}
-}
-
-void Ship_2D::SetIntendedOrientation(double IntendedOrientation) 
-{
-	m_LockShipHeadingToOrientation=false; //this must be false for this to work (if not already)
-	m_IntendedOrientation=IntendedOrientation;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -772,7 +779,8 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 //declared as global to avoid allocation on stack each iteration
 const char * const g_Ship_Controls_Events[] = 
 {
-	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","Joystick_SetLeftVelocity","Joystick_SetRightVelocity",
+	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","POV_Turn","Turn_180",
+	"Joystick_SetLeftVelocity","Joystick_SetRightVelocity",
 	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None"
 };
 

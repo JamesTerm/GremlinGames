@@ -279,9 +279,15 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 
 	if (!LockOrientation)
 	{
+		//I have kept the older method for reference... both will work identical, but the later avoids duplicate distance work
+		#if 0
 		double AngularDistance=m_ship.m_IntendedOrientationPhysics.ComputeAngularDistance(VectorOffset);
 		//printf("\r %f          ",RAD_2_DEG(AngularDistance));
 		m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
+		#else
+		double lookDir_radians= atan2(VectorOffset[0],VectorOffset[1]);
+		m_ship.SetIntendedOrientation(lookDir_radians);
+		#endif
 	}
 
 	//first negotiate the max speed given the power

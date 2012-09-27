@@ -224,9 +224,10 @@ class Ship_2D : public Ship
 		/// \param LockShipHeadingToOrientation for this given time slice if this is true the intended orientation is restrained
 		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
 		/// is not restrained and the ship applies its restraints to catch up to the orientation
-		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation) 
-		{	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation,m_rotAccel_rad_s=Acceleration;
-		}
+		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation);
+		///This is used by AI controller (this will have LockShipHeadingToOrientation set to false)
+		///This allows setting the desired heading directly either relative to the current heading or absolute
+		void SetIntendedOrientation(double IntendedOrientation,bool Absolute=true);
 
 		/// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
@@ -304,9 +305,6 @@ class Ship_2D : public Ship
 
 		friend class AI_Base_Controller;
 		friend class Ship_Properties;
-
-		///This is to only be used by AI controller (this will have LockShipHeadingToOrientation set to false)
-		void SetIntendedOrientation(double IntendedOrientation);
 
 		///This allows subclass to evaluate the requested velocity when it is in use
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s) {}

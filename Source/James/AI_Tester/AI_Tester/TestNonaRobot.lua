@@ -40,7 +40,7 @@ TestShip = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter_In * Inches2Meters)) * Pi2 * skid,
+	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In)  * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches These are ignored
@@ -132,6 +132,7 @@ TestShip = {
 		{
 			control = "any",
 			--Use Arcade/FPS enable
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
@@ -145,7 +146,8 @@ TestShip = {
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
-			None = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0}
+			None = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Turn_180 = {type="joystick_button", key=7, on_off=false},
 		}
 
 	},
