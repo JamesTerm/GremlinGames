@@ -112,10 +112,10 @@ class Butterfly_Robot_UI : public Swerve_Robot_UI
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Butterfly_Robot_UI_Control : public Butterfly_Robot, public Swerve_Robot_Control
+class Butterfly_Robot_UI_Control : public Butterfly_Robot, public Butterfly_Robot_Control
 {
 	public:
-		Butterfly_Robot_UI_Control(const char EntityName[]) : Butterfly_Robot(EntityName,this),Swerve_Robot_Control(),
+		Butterfly_Robot_UI_Control(const char EntityName[]) : Butterfly_Robot(EntityName,this),Butterfly_Robot_Control(),
 			m_ButterflyUI(this) {}
 
 	protected:
