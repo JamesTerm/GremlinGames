@@ -40,9 +40,10 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
 		props.InverseMaxForce=m_TractionModeProps.InverseMaxForce;
 		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
-		props.PID[0]=m_TractionModeProps.PID[0];
-		props.PID[1]=m_TractionModeProps.PID[1];
-		props.PID[2]=m_TractionModeProps.PID[2];
+		double *PID=(Mode==eTractionDrive)?m_TractionModeProps.PID : m_OmniModeProps.PID;
+		props.PID[0]=PID[0];
+		props.PID[1]=PID[1];
+		props.PID[2]=PID[2];
 		Ship_1D_Props ship_props=m_ButterflyProps.GetDriveProps().GetShip_1D_Props();
 		ship_props.SetFromShip_Properties(PropsToUse->ShipProperties.GetShipProps());
 
@@ -73,6 +74,9 @@ void Butterfly_Robot::DriveModeManager::Initialize(const Butterfly_Robot_Propert
 	m_OmniModeProps.ShipProperties=m_pParent->m_ShipProps;
 	m_OmniModeProps.IsOpen=m_pParent->GetSwerveRobotProps().IsOpen_Wheel;
 	m_OmniModeProps.InverseMaxForce=m_pParent->GetSwerveRobotProps().InverseMaxForce;
+	m_OmniModeProps.PID[0]=m_pParent->GetSwerveRobotProps().Wheel_PID[0];
+	m_OmniModeProps.PID[1]=m_pParent->GetSwerveRobotProps().Wheel_PID[1];
+	m_OmniModeProps.PID[2]=m_pParent->GetSwerveRobotProps().Wheel_PID[2];
 }
 
 void Butterfly_Robot::DriveModeManager::SetLowGear(bool on)
