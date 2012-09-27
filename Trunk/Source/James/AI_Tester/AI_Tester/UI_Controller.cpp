@@ -11,6 +11,8 @@ using namespace GG_Framework::UI;
 using namespace osg;
 bool g_UseMouse=false;
 
+const double Half_Pi=M_PI/2.0;
+const double Pi=PI;
 
 namespace Scripting=GG_Framework::Logic::Scripting;
 
@@ -180,7 +182,8 @@ void UI_Controller::Init_AutoPilotControls()
 UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
 	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),
-	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true),m_IsBeingDestroyed(false)
+	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true),m_IsBeingDestroyed(false),
+	m_POVSetValve(false)
 {
 	ResetPos();
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
@@ -342,6 +345,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["Stop"].Remove(*this, &UI_Controller::Stop);
 		em->EventOnOff_Map["Turn_R"].Remove(*this, &UI_Controller::Turn_R);
 		em->EventOnOff_Map["Turn_L"].Remove(*this, &UI_Controller::Turn_L);
+		em->Event_Map["Turn_180"].Remove(*this, &UI_Controller::Turn_180);
 		em->Event_Map["UserResetPos"].Remove(*this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Remove(*this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Remove(*this, &UI_Controller::ToggleSlide);
@@ -355,6 +359,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventOnOff_Map["Test2"].Remove(*this, &UI_Controller::Test2);
 		//em->Event_Map["ShowHUD"].Remove(*m_HUD_UI.get(), &HUD_PDCB::ToggleEnabled);
 		em->EventValue_Map["BLACKOUT"].Remove(*this, &UI_Controller::BlackoutHandler);
+
+		em->EventValue_Map["POV_Turn"].Remove(*this, &UI_Controller::Ship_Turn90_POV);
 		em->EventValue_Map["Analog_Turn"].Remove(*this, &UI_Controller::JoyStick_Ship_Turn);
 		em->EventValue_Map["Analog_StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->EventValue_Map["Analog_Slider_Accel"].Remove(*this, &UI_Controller::Slider_Accel);
@@ -378,6 +384,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["Stop"].Subscribe(ehl, *this, &UI_Controller::Stop);
 		em->EventOnOff_Map["Turn_R"].Subscribe(ehl, *this, &UI_Controller::Turn_R);
 		em->EventOnOff_Map["Turn_L"].Subscribe(ehl, *this, &UI_Controller::Turn_L);
+		em->Event_Map["Turn_180"].Subscribe(ehl, *this, &UI_Controller::Turn_180);
 		em->Event_Map["UserResetPos"].Subscribe(ehl, *this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Subscribe(ehl, *this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Subscribe(ehl, *this, &UI_Controller::ToggleSlide);
@@ -397,6 +404,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		// Listen for blackout
 		em->EventValue_Map["BLACKOUT"].Subscribe(ehl, *this, &UI_Controller::BlackoutHandler);
 
+		em->EventValue_Map["POV_Turn"].Subscribe(ehl,*this, &UI_Controller::Ship_Turn90_POV);
 		em->EventValue_Map["Analog_Turn"].Subscribe(ehl,*this, &UI_Controller::JoyStick_Ship_Turn);
 		em->EventValue_Map["Analog_StrafeRight"].Subscribe(ehl,*this, &UI_Controller::StrafeRight);
 		em->EventValue_Map["Analog_Slider_Accel"].Subscribe(ehl,*this, &UI_Controller::Slider_Accel);
@@ -496,8 +504,43 @@ void UI_Controller::Ship_Turn(double dir,bool UseHeadingSpeed)
 
 void UI_Controller::Ship_Turn(Directions dir)
 {
-	m_Ship_Keyboard_rotAcc_rad_s=(double)dir*m_ship->GetHeadingSpeed()*m_ship->GetCameraRestraintScaler();
-	m_Ship_UseHeadingSpeed=true;
+	switch (dir)
+	{
+		case Dir_None:
+		case Dir_Left:
+		case Dir_Right:
+			m_Ship_Keyboard_rotAcc_rad_s=(double)dir*m_ship->GetHeadingSpeed()*m_ship->GetCameraRestraintScaler();
+			m_Ship_UseHeadingSpeed=true;
+			break;
+		case Dir_90Left:
+			m_ship->SetIntendedOrientation(-Half_Pi,false);
+			m_Ship_UseHeadingSpeed=false;
+			break;
+		case Dir_90Right:
+			m_ship->SetIntendedOrientation(Half_Pi,false);
+			m_Ship_UseHeadingSpeed=false;
+			break;
+		case Dir_180:
+			m_ship->SetIntendedOrientation(Pi,false);
+			m_Ship_UseHeadingSpeed=false;
+			break;
+	}
+}
+
+void UI_Controller::Ship_Turn90_POV (double value)
+{
+	//We put the typical case first (save the amount of branching)
+	if (value!=-1)
+	{
+		if (!m_POVSetValve)
+		{
+			m_POVSetValve=true;
+			m_ship->SetIntendedOrientation(DEG_2_RAD(value),false);
+			m_Ship_UseHeadingSpeed=false;
+		}
+	}
+	else 
+		m_POVSetValve=false;
 }
 
 
