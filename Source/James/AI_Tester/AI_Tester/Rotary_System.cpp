@@ -350,6 +350,7 @@ void Rotary_Angular::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 {
 	m_Rotary_Props=RotaryProps;
 	m_CalibratedScaler=MAX_SPEED;
+	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 	switch (m_Rotary_Props.LoopState)
 	{
 	case Rotary_Props::eNone:
