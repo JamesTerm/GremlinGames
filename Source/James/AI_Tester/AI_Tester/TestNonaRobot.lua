@@ -10,7 +10,7 @@ wheel_diameter_in=6   --This will determine the correct distance try to make acc
 --TODO where length is in 5 inches in, and width is 3 on each side
 WheelBase_Width_In=19.5	  --These determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=27.5
-WheelTurningDiameter= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
+WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (492.83 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (184.81 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
 KickerSpeed = (307.13 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
@@ -34,13 +34,13 @@ TestShip = {
 	--MaxAccelForward = 4, MaxAccelReverse = 4, 
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
-	MaxTorqueYaw = 25, 
+	MaxTorqueYaw = 2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In, 
 	
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * skid,
+	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter_In * Inches2Meters)) * Pi2 * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches These are ignored
