@@ -23,3 +23,7 @@ the robot will travel at its real top speed (so it will be faster than it was be
 
 This should be feature complete! (for the drive that is)
 
+9/27/2012
+Fixed some bugs with the PID settings working in both modes, butterfly also now using correct control
+The inv_max_force is re-tuned now that the gear ratios are correct in the encoder simulation
+
