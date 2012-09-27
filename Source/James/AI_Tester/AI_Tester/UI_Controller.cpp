@@ -200,6 +200,7 @@ UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystic
 	kbm.AddKeyBindingR(false, "Stop", 'x');
 	kbm.AddKeyBindingR(true, "Turn_R", 'd');
 	kbm.AddKeyBindingR(true, "Turn_L", 'a');
+	kbm.AddKeyBindingR(false, "Turn_180", '`');
 	kbm.AddKeyBindingR(false, "UseMouse", '/');
 	//I would like to keep this macro case to easily populate my defaults
 	#if 0
