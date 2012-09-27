@@ -65,7 +65,7 @@ TestShip = {
 		swivel_pid=
 		{p=100, i=0, d=50},
 		latency=0.0,
-		heading_latency=0.50,
+		heading_latency=0.00,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		strafe_to_scale=Kicker_MaxAccel/MaxCentripetalTraverse,  --In autonomous we need the max for to be seta kicker max accel
 		--This is obtained from stage 2 in the general gear ratios
