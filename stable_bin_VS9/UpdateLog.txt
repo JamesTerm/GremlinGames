@@ -27,3 +27,4 @@ This should be feature complete! (for the drive that is)
 Fixed some bugs with the PID settings working in both modes, butterfly also now using correct control
 The inv_max_force is re-tuned now that the gear ratios are correct in the encoder simulation
 
+Added POV turning
