@@ -8,7 +8,7 @@ Meters2Inches=39.3700787
 wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=19.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=27.5
-WheelTurningDiameter= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
+WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (492.83 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (184.81 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
 MaxCentripetalTraverse=20 --The maximum amount of centripetal force that can be allowed (may want to be higher for better drive)
@@ -20,13 +20,14 @@ TestShip = {
 	MaxAccelLeft = MaxCentripetalTraverse, MaxAccelRight = MaxCentripetalTraverse, 
 	MaxAccelForward = 4, MaxAccelReverse = 4, 
 	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
-	MaxTorqueYaw = 25, 
+	MaxTorqueYaw = 2 * 4 * Meters2Inches / WheelTurningDiameter_In, 
+	rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * skid,
+	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
@@ -52,7 +53,7 @@ TestShip = {
 		swivel_pid=
 		{p=100, i=0, d=50},
 		latency=0.0,
-		heading_latency=0.50,
+		heading_latency=0.0,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -96,14 +97,16 @@ TestShip = {
 		{
 			control = "any",
 			--Use Arcade/FPS enable
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0}
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--Use tank steering enable
 			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			
 			Butterfly_SetLowGearOn = {type="joystick_button", key=8, on_off=false},
-			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false}
+			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
 		Joystick_2 =
 		{
