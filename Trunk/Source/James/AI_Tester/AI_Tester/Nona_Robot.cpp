@@ -371,7 +371,6 @@ void Nona_Robot_Properties::LoadFromScript(Scripting::Script& script)
 
 Nona_Robot_Control::Nona_Robot_Control() : m_KickerWheelVoltage(0.0)
 {
-	SetDisplayVoltage(false);  //override so we can display it here
 }
 
 void Nona_Robot_Control::Reset_Rotary(size_t index)
@@ -426,16 +425,19 @@ void Nona_Robot_Control::Reset_Encoders()
 	__super::Reset_Encoders();
 }
 
-void Nona_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
+void Nona_Robot_Control::DisplayVoltage()
 {
-	m_KickerWheelEncoder.SetTimeDelta(dTime_s);
-	//would need to have a condition override here if this class is subclassed
-	if (true)
+	if (m_DisplayVoltage)
 	{
 		//display voltages
 		DOUT2("fl=%.2f fr=%.2f rl=%.2f rr=%.2f kw=%.2f\n",m_EncoderVoltage[Swerve_Robot::eWheel_FL],m_EncoderVoltage[Swerve_Robot::eWheel_FR],
 			m_EncoderVoltage[Swerve_Robot::eWheel_RL],m_EncoderVoltage[Swerve_Robot::eWheel_RR],m_KickerWheelVoltage);
 	}
+}
+
+void Nona_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
+{
+	m_KickerWheelEncoder.SetTimeDelta(dTime_s);
 	__super::Swerve_Drive_Control_TimeChange(dTime_s);
 }
 
