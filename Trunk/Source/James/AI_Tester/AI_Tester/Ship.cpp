@@ -15,7 +15,7 @@ bool g_DisableEngineRampUp2=false;
 namespace Scripting=GG_Framework::Logic::Scripting;
 //namespace Scripting=Framework::Scripting;
 
-const double PI=M_PI;
+const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 const double Half_Pi=M_PI/2.0;
 
@@ -362,7 +362,6 @@ void Ship_2D::TimeChange(double dTime_s)
 	//const FlightCharacteristics& currFC((afterBurnerOn||afterBurnerBrakeOn) ? Afterburner_Characteristics : GetFlightCharacteristics());
 
 	Vec2d ForceToApply;
-
 	//Enable to monitor current speed
 	#if 0
 	{
@@ -606,7 +605,8 @@ void Ship_2D::TimeChange(double dTime_s)
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
+			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint * m_ShipProps.GetRotateToScaler(DistanceToUse),
+				dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
 		else
 			rotVel=m_rotDisplacement_rad;
@@ -750,6 +750,7 @@ Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
 	props.EngineRampReverse= props.BRAKE/RAMP_UP_DUR;
 	props.EngineRampStrafe= props.STRAFE/RAMP_UP_DUR;
 	props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
+	props.RotateTo_TorqueDegradeScalar=props.RotateTo_TorqueDegradeScalar_High=1.0;
 	m_ShipProps=props;
 };
 
@@ -850,6 +851,10 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 			props.MaxAccelReverse_High=props.MaxAccelReverse;
 
 		script.GetField("MaxTorqueYaw", NULL, NULL, &props.MaxTorqueYaw);
+		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
+		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
+		if (err)
+			props.MaxAccelForward_High=props.MaxAccelForward;
 
 		err = script.GetField("MAX_SPEED", NULL, NULL, &props.MAX_SPEED);
 		err = script.GetField("ENGAGED_MAX_SPEED", NULL, NULL, &props.ENGAGED_MAX_SPEED);
@@ -916,6 +921,15 @@ double Ship_Properties::GetMaxAccelReverse(double Velocity) const
 	const double ratio = fabs(Velocity)/props.MAX_SPEED;
 	const double  &Low=props.MaxAccelReverse;
 	const double &High=props.MaxAccelReverse_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+double Ship_Properties::GetRotateToScaler(double Distance) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Distance)/Pi;
+	const double  &Low=props.RotateTo_TorqueDegradeScalar;
+	const double &High=props.RotateTo_TorqueDegradeScalar_High;
 	return (ratio * High) + ((1.0-ratio) * Low);
 }
 
