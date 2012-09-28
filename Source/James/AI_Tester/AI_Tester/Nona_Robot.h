@@ -123,6 +123,7 @@ class Butterfly_Robot_UI_Control : public Butterfly_Robot, public Butterfly_Robo
 		{
 			__super::TimeChange(dTime_s);
 			m_ButterflyUI.TimeChange(dTime_s);
+			SetDisplayVoltage(m_controller->GetUIController()?true:false);
 		}
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
 		{
@@ -195,6 +196,8 @@ class Nona_Robot_Control : public Butterfly_Robot_Control
 		virtual void Swerve_Drive_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void Reset_Encoders();
+	protected:
+		virtual void DisplayVoltage();
 	private:
 		Encoder_Simulator2 m_KickerWheelEncoder;
 		double m_KickerWheelVoltage;
@@ -248,6 +251,7 @@ class Nona_Robot_UI_Control : public Nona_Robot, public Nona_Robot_Control
 		{
 			__super::TimeChange(dTime_s);
 			m_NonaUI.TimeChange(dTime_s);
+			SetDisplayVoltage(m_controller->GetUIController()?true:false);
 		}
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
 		{

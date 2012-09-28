@@ -221,6 +221,7 @@ class Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 		virtual void Reset_Encoders();
 
 		double RPS_To_LinearVelocity(double RPS);
+		virtual void DisplayVoltage();  //allow to override
 	protected:
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		Potentiometer_Tester2 m_Potentiometers[4]; //simulate a real potentiometer for calibration testing
@@ -315,6 +316,7 @@ class Swerve_Robot_UI_Control : public Swerve_Robot, public Swerve_Robot_Control
 		{
 			__super::TimeChange(dTime_s);
 			m_SwerveUI.TimeChange(dTime_s);
+			SetDisplayVoltage(m_controller->GetUIController()?true:false);
 		}
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
 		{

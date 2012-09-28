@@ -758,13 +758,8 @@ void Swerve_Robot_Control::Reset_Encoders()
 		Reset_Rotary(i);
 }
 
-void Swerve_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
+void Swerve_Robot_Control::DisplayVoltage()
 {
-	for (size_t i=0;i<4;i++)
-	{
-		m_Encoders[i].SetTimeDelta(dTime_s);
-		m_Potentiometers[i].SetTimeDelta(dTime_s);
-	}
 	if (m_DisplayVoltage)
 	{
 		//display voltages
@@ -775,6 +770,17 @@ void Swerve_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
 			m_PotentiometerVoltage[Swerve_Robot::eWheel_RL],m_PotentiometerVoltage[Swerve_Robot::eWheel_RR]);
 	}
 }
+
+void Swerve_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
+{
+	for (size_t i=0;i<4;i++)
+	{
+		m_Encoders[i].SetTimeDelta(dTime_s);
+		m_Potentiometers[i].SetTimeDelta(dTime_s);
+	}
+	DisplayVoltage();
+}
+
 void Swerve_Robot_Control::Reset_Rotary(size_t index)
 {
 	switch (index)

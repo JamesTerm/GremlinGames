@@ -249,6 +249,7 @@ class Tank_Robot_UI_Control : public Tank_Robot, public Tank_Robot_Control
 		{
 			__super::TimeChange(dTime_s);
 			m_TankUI.TimeChange(dTime_s);
+			SetDisplayVoltage(m_controller->GetUIController()?true:false);
 		}
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
 		{
