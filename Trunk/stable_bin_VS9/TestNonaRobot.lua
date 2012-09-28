@@ -10,7 +10,7 @@ wheel_diameter_in=6   --This will determine the correct distance try to make acc
 --TODO where length is in 5 inches in, and width is 3 on each side
 WheelBase_Width_In=19.5	  --These determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=27.5
-WheelTurningDiameter= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
+WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (492.83 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (184.81 / 60.0) * Pi * wheel_diameter_in * Inches2Meters
 KickerSpeed = (307.13 / 60.0) * Pi * wheel_diameter_in * Inches2Meters  --RPM's from Parker
@@ -34,13 +34,14 @@ TestShip = {
 	--MaxAccelForward = 4, MaxAccelReverse = 4, 
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
-	MaxTorqueYaw = 25, 
+	MaxTorqueYaw = 2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In, 
+	rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelTurningDiameter * Inches2Meters)) * Pi2 * skid,
+	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In)  * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches These are ignored
@@ -65,7 +66,7 @@ TestShip = {
 		swivel_pid=
 		{p=100, i=0, d=50},
 		latency=0.0,
-		heading_latency=0.50,
+		heading_latency=0.00,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		strafe_to_scale=Kicker_MaxAccel/MaxCentripetalTraverse,  --In autonomous we need the max for to be seta kicker max accel
 		--This is obtained from stage 2 in the general gear ratios
@@ -132,12 +133,14 @@ TestShip = {
 		{
 			control = "any",
 			--Use Arcade/FPS enable
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
 			SlideHold = {type="joystick_button", key=5, on_off=true},
 			Butterfly_SetLowGearOn = {type="joystick_button", key=8, on_off=false},
-			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false}
+			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
 		Joystick_2 =
 		{
