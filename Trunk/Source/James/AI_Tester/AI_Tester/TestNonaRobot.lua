@@ -35,6 +35,7 @@ TestShip = {
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxTorqueYaw = 2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In, 
+	rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
