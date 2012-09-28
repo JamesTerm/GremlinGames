@@ -139,7 +139,8 @@ TestShip = {
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
 			SlideHold = {type="joystick_button", key=5, on_off=true},
 			Butterfly_SetLowGearOn = {type="joystick_button", key=8, on_off=false},
-			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false}
+			Butterfly_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
 		Joystick_2 =
 		{
@@ -147,8 +148,7 @@ TestShip = {
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
-			None = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false},
+			None = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0}
 		}
 
 	},
