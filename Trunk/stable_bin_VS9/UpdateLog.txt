@@ -28,3 +28,6 @@ Fixed some bugs with the PID settings working in both modes, butterfly also now 
 The inv_max_force is re-tuned now that the gear ratios are correct in the encoder simulation
 
 Added POV turning
+
+9/28/2012
+Fixed god mode to not program joystick defaults... and tuned the lua for nona to feel right on the turns
