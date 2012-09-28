@@ -930,7 +930,7 @@ double Ship_Properties::GetRotateToScaler(double Distance) const
 	double DistanceMagnitude=fabs(Distance);
 	while (DistanceMagnitude>M_PI)
 		DistanceMagnitude-=Pi2;
-	const double ratio = DistanceMagnitude/Pi;
+	const double ratio = fabs(DistanceMagnitude)/Pi;
 	const double  &Low=props.RotateTo_TorqueDegradeScalar;
 	const double &High=props.RotateTo_TorqueDegradeScalar_High;
 	return (ratio * High) + ((1.0-ratio) * Low);
