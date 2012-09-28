@@ -170,7 +170,7 @@ Tank_Steering::Tank_Steering() : m_LeftVelocity(0.0),m_RightVelocity(0.0),m_Stra
 {
 }
 
-void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,double dTime_s)
+void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s)
 {
 	if (ship.GetAlterTrajectory())
 		AuxVelocity=((m_LeftVelocity + m_RightVelocity) * 0.5) * ship.GetEngaged_Max_Speed();
@@ -182,6 +182,8 @@ void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAccelerati
 	const double difference=(m_LeftVelocity + -m_RightVelocity);
 	const double omega = (fabs(difference)>m_StraightDeadZone_Tolerance)? difference * 0.5 : 0;
 	AngularAcceleration=omega*ship.GetHeadingSpeed();
+	if (!IsZero(omega))
+		LockShipHeadingToOrientation=true;
 	//DOUT4("%f %f %f",m_LeftVelocity,m_RightVelocity,difference);
 }
 

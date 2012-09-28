@@ -91,8 +91,8 @@ class Tank_Robot : public Ship_Tester,
 		virtual void DestroyDrive();
 		virtual void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 		virtual void ResetPos();
-		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,double dTime_s) 
-			{m_TankSteering.UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,*this,dTime_s);
+		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s) 
+			{m_TankSteering.UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,*this,LockShipHeadingToOrientation,dTime_s);
 			}
 		virtual void BindAdditionalEventControls(bool Bind) 
 			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
