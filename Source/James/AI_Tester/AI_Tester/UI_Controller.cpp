@@ -720,7 +720,7 @@ void UI_Controller::UpdateController(double dTime_s)
 			{
 				Vec2d AuxLinearAcceleration=Vec2d(0.0,0.0);
 				double AuxAngularAcceleration=0.0;
-				m_ship->UpdateController(AuxiliaryVelocity,AuxLinearAcceleration,AuxAngularAcceleration,dTime_s);
+				m_ship->UpdateController(AuxiliaryVelocity,AuxLinearAcceleration,AuxAngularAcceleration,m_Ship_UseHeadingSpeed,dTime_s);
 				m_Ship_JoyMouse_currAccel+=AuxLinearAcceleration;
 				m_Ship_JoyMouse_rotAcc_rad_s+=AuxAngularAcceleration;
 			}

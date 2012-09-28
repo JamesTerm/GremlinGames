@@ -16,7 +16,7 @@ class Tank_Steering
 		void SetAreControlsDisabled(bool AreControlsDisabled) {m_AreControlsDisabled=AreControlsDisabled;}
 		//This is the ui controllers time change callback update... client code must handle initializing as this will only write to those
 		//that need to be written to
-		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,double dTime_s);
+		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s);
 		void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
 
 		//range 0-1 the higher this is the lower turning precision, but easier to drive straight

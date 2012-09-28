@@ -276,7 +276,7 @@ class Ship_2D : public Ship
 		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 		//callback from UI_Controller for custom controls override if ship has specific controls... all outputs to be written are optional
 		//so derived classes can only write to things of interest
-		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,double dTime_s) {}
+		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s) {}
 		//Override to get sensor/encoder's real velocity
 		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),GetPhysics().GetLinearVelocity());}
 		virtual double GetAngularVelocity_ToDisplay() {return GetPhysics().GetAngularVelocity();}

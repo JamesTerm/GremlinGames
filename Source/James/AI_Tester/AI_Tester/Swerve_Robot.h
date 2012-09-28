@@ -113,8 +113,8 @@ class Swerve_Robot : public Ship_Tester,
 		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),m_EncoderGlobalVelocity);}
 		virtual double GetAngularVelocity_ToDisplay() {return m_EncoderAngularVelocity;}
 
-		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,double dTime_s) 
-			{m_TankSteering.UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,*this,dTime_s);
+		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s) 
+			{m_TankSteering.UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,*this,LockShipHeadingToOrientation,dTime_s);
 			}
 		virtual void BindAdditionalEventControls(bool Bind) 
 			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
