@@ -877,7 +877,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			_.ShipFollowShip(SwerveShip,Followship,-1.0,-1.0,5.0);
 			_.ShipFollowShip(NonaShip,Followship,1.0,-1.0,5.0);
 			_.GiveRobotSquareWayPointGoal(Followship);
-			game.SetControlledEntity(Followship);
+			game.SetControlledEntity(Followship,UI_thread->GetUseUserPrefs());
 		}
 		break;
 	case eTestLUAShip:
