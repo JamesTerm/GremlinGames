@@ -415,6 +415,8 @@ void Nona_Robot_Control::Initialize(const Entity_Properties *props)
 	if (robot_props)
 	{
 		m_KickerWheelEncoder.Initialize(&robot_props->GetKickerWheelProps());
+		//TODO
+		//m_KickerWheelEncoder.SetGearReduction(13000.0/307.13);
 	}
 	__super::Initialize(props);
 }
