@@ -220,6 +220,20 @@ void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 					m_TractionModePropsProps.IsOpen=false;
 			}
 			err = script.GetField("inv_max_force", NULL, NULL, &m_TractionModePropsProps.InverseMaxForce);
+			#ifdef AI_TesterCode
+			err = script.GetFieldTable("motor_specs");
+			if (!err)
+			{
+				double test;
+				err = script.GetField("gear_reduction", NULL, NULL, &test);
+				if (!err) m_TractionModePropsProps.GearReduction=test;
+				else 
+					m_TractionModePropsProps.GearReduction=12.4158;  //a good default
+				script.Pop();
+			}
+			else 
+				m_TractionModePropsProps.GearReduction=12.4158;  //a good default
+			#endif
 			script.Pop();
 		}
 		script.Pop();
@@ -253,8 +267,10 @@ void Butterfly_Robot_Control::CloseSolenoid(size_t index,bool Close)
 {
 	//printf("CloseSolenoid[%d] = %d \n",index,Close);
 	Rotary_Properties props=m_ButterflyProps.GetDriveProps();
-	props.SetFromShip_Properties(Close?m_ButterflyProps.GetTractionModeProps().ShipProperties.GetShipProps():m_ButterflyProps.GetShipProps());
-	double GearRatio=Close? 5310.0/184.81 : 5310.0/492.83;
+	const TractionModeProps &traction_props=m_ButterflyProps.GetTractionModeProps();
+	props.SetFromShip_Properties(Close?traction_props.ShipProperties.GetShipProps():m_ButterflyProps.GetShipProps());
+	//double GearRatio=Close? 5310.0/184.81 : 5310.0/492.83;
+	double GearRatio=Close ? traction_props.GearReduction : m_ButterflyProps.GetEncoderSimulationProps().GearReduction;
 	for (size_t i=0;i<4;i++)
 	{
 		m_Encoders[i].Initialize(&props);
