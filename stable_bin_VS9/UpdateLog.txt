@@ -31,3 +31,6 @@ Added POV turning
 
 9/28/2012
 Fixed god mode to not program joystick defaults... and tuned the lua for nona to feel right on the turns
+
+9/29/2012
+Motor properties are in LUA, as the kicker wheel is now using the correct motor and gearing ratios
