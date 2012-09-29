@@ -675,7 +675,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		}
 		script.GetField("inv_max_force", NULL, NULL, &m_RoteryProps.InverseMaxForce);
 		#ifdef AI_TesterCode
-		err = script.GetFieldTable("motor_spec");
+		err = script.GetFieldTable("motor_specs");
 		if (!err)
 		{
 			m_EncoderSimulation.LoadFromScript(script);

@@ -294,17 +294,30 @@ EncoderSimulation_Properties::EncoderSimulation_Properties()
 void EncoderSimulation_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
 {
 	EncoderSimulation_Props &props=m_EncoderSimulation_Props;
-	script.GetField("wheel_mass", NULL, NULL, &props.Wheel_Mass);
-	script.GetField("cof_efficiency", NULL, NULL, &props.COF_Efficiency);
-	script.GetField("gear_reduction", NULL, NULL, &props.GearReduction);
-	script.GetField("torque_on_wheel_radius", NULL, NULL, &props.TorqueAppliedOnWheelRadius);
-	script.GetField("drive_wheel_radius", NULL, NULL, &props.DriveWheelRadius);
-	script.GetField("number_of_motors", NULL, NULL, &props.NoMotors);
+	double test;
+	const char* err=NULL;
 
-	script.GetField("free_speed_rpm", NULL, NULL, &props.motor.FreeSpeed_RPM);
-	script.GetField("stall_torque", NULL, NULL, &props.motor.Stall_Torque_NM);
-	script.GetField("stall_current_amp", NULL, NULL, &props.motor.Stall_Current_Amp);
-	script.GetField("free_current_amp", NULL, NULL, &props.motor.Free_Current_Amp);
+	err = script.GetField("wheel_mass", NULL, NULL, &test);
+	if (!err) props.Wheel_Mass=test;
+	err = script.GetField("cof_efficiency", NULL, NULL, &test);
+	if (!err) props.COF_Efficiency=test;
+	err = script.GetField("gear_reduction", NULL, NULL, &test);
+	if (!err) props.GearReduction=test;
+	err = script.GetField("torque_on_wheel_radius", NULL, NULL, &test);
+	if (!err) props.TorqueAppliedOnWheelRadius=test;
+	err = script.GetField("drive_wheel_radius", NULL, NULL, &test);
+	if (!err) props.DriveWheelRadius=test;
+	err = script.GetField("number_of_motors", NULL, NULL, &test);
+	if (!err) props.NoMotors=test;
+
+	err = script.GetField("free_speed_rpm", NULL, NULL, &test);
+	if (!err) props.motor.FreeSpeed_RPM=test;
+	err = script.GetField("stall_torque", NULL, NULL, &test);
+	if (!err) props.motor.Stall_Torque_NM=test;
+	err = script.GetField("stall_current_amp", NULL, NULL, &test);
+	if (!err) props.motor.Stall_Current_Amp=test;
+	err = script.GetField("free_current_amp", NULL, NULL, &test);
+	if (!err) props.motor.Free_Current_Amp=test;
 }
 
 

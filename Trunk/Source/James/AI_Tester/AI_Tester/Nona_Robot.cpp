@@ -413,11 +413,7 @@ void Nona_Robot_Control::Initialize(const Entity_Properties *props)
 
 	//For now robot_props can be NULL since the swerve robot is borrowing it
 	if (robot_props)
-	{
 		m_KickerWheelEncoder.Initialize(&robot_props->GetKickerWheelProps());
-		//TODO
-		//m_KickerWheelEncoder.SetGearReduction(13000.0/307.13);
-	}
 	__super::Initialize(props);
 }
 
