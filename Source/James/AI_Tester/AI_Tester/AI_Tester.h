@@ -4,6 +4,8 @@
 #include "../../../GG_Framework/UI/GG_Framework.UI.h"
 #include "../../../GG_Framework/Logic/Scripting/GG_Framework.Logic.Scripting.h"
 
+#define AI_TesterCode  //used to branch AI test code from wind-river code
+
 //local includes
 namespace AI_Tester
 {
