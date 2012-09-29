@@ -63,7 +63,12 @@ TestShip = {
 		--curve_voltage_swivel=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
-		inv_max_force = 1/12  --solved empiracally
+		inv_max_force = 1/12,  --solved empiracally
+		motor_specs =
+		{
+			gear_reduction=5310.0/492.83,
+		}
+
 	},
 
 	low_gear = 
@@ -86,8 +91,12 @@ TestShip = {
 		{
 			is_closed=1,
 			pid={p=50, i=0, d=0},
-			inv_max_force = 1/38.0  --solved empiracally
-		}
+			inv_max_force = 1/38.0,  --solved empiracally
+			motor_specs =
+			{
+				gear_reduction=5310.0/184.81,
+			}
+		},
 	},
 
 	controls =
