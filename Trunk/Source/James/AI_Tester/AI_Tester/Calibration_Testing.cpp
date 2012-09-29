@@ -265,11 +265,53 @@ void Encoder_Simulator::TimeChange()
 	m_GetEncoderFirstCall=true;
 	__super::TimeChange(m_Time_s);
 }
+  /***************************************************************************************************************/
+ /*											EncoderSimulation_Properties										*/
+/***************************************************************************************************************/
+
+const double c_OunceInchToNewton=0.00706155183333;
+
+EncoderSimulation_Properties::EncoderSimulation_Properties()
+{
+	EncoderSimulation_Props props;
+	memset(&props,0,sizeof(EncoderSimulation_Props));
+
+	props.Wheel_Mass=1.5;
+	props.COF_Efficiency=1.0;
+	props.GearReduction=12.4158;
+	props.TorqueAppliedOnWheelRadius=0.0508;
+	props.DriveWheelRadius=0.0762;
+	props.NoMotors=1.0;
+
+	props.motor.FreeSpeed_RPM=5310;
+	props.motor.Stall_Torque_NM=343.4 * c_OunceInchToNewton;
+	props.motor.Stall_Current_Amp=133.0;
+	props.motor.Free_Current_Amp=2.7;
+
+	m_EncoderSimulation_Props=props;
+}
+
+void EncoderSimulation_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+{
+	EncoderSimulation_Props &props=m_EncoderSimulation_Props;
+	script.GetField("wheel_mass", NULL, NULL, &props.Wheel_Mass);
+	script.GetField("cof_efficiency", NULL, NULL, &props.COF_Efficiency);
+	script.GetField("gear_reduction", NULL, NULL, &props.GearReduction);
+	script.GetField("torque_on_wheel_radius", NULL, NULL, &props.TorqueAppliedOnWheelRadius);
+	script.GetField("drive_wheel_radius", NULL, NULL, &props.DriveWheelRadius);
+	script.GetField("number_of_motors", NULL, NULL, &props.NoMotors);
+
+	script.GetField("free_speed_rpm", NULL, NULL, &props.motor.FreeSpeed_RPM);
+	script.GetField("stall_torque", NULL, NULL, &props.motor.Stall_Torque_NM);
+	script.GetField("stall_current_amp", NULL, NULL, &props.motor.Stall_Current_Amp);
+	script.GetField("free_current_amp", NULL, NULL, &props.motor.Free_Current_Amp);
+}
+
 
   /***************************************************************************************************************/
- /*												Encoder_Simulator2												*/
+ /*											Drive_Train_Characteristics											*/
 /***************************************************************************************************************/
-const double c_OunceInchToNewton=0.00706155183333;
+
 const double c_CIM_Amp_To_Torque_oz=(1.0/(133.0-2.7)) * 343.3;
 const double c_CIM_Amp_To_Torque_nm=c_CIM_Amp_To_Torque_oz*c_OunceInchToNewton;
 const double c_CIM_Vel_To_Torque_oz=(1.0/(5310/60.0)) * 343.4;
@@ -278,30 +320,33 @@ const double c_CIM_Torque_to_Vel_nm=1.0 / c_CIM_Vel_To_Torque_nm;
 
 __inline double Drive_Train_Characteristics::GetAmp_To_Torque_nm(double Amps)
 {
-	return max ((Amps-2.7) * c_CIM_Amp_To_Torque_nm,0.0);
+	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
+	const double c_Amp_To_Torque_nm=(1.0/(_.Stall_Current_Amp-_.Free_Current_Amp)) * _.Stall_Torque_NM;
+	return max ((Amps-_.Free_Current_Amp) * c_Amp_To_Torque_nm,0.0);
 }
 __inline double Drive_Train_Characteristics::GetVel_To_Torque_nm(double Vel_rps)
 {
-	return (Vel_rps * c_CIM_Vel_To_Torque_nm);
+	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
+	const double c_Vel_To_Torque_nm=(1.0/(_.FreeSpeed_RPM/60.0)) * _.Stall_Torque_NM;
+	return (Vel_rps * c_Vel_To_Torque_nm);
 }
 __inline double Drive_Train_Characteristics::GetTorque_To_Vel_nm(double Vel_rps)
 {
-	return (Vel_rps * c_CIM_Torque_to_Vel_nm);
+	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
+	const double c_Vel_To_Torque_nm=(1.0/(_.FreeSpeed_RPM/60.0)) * _.Stall_Torque_NM;
+	const double c_Torque_to_Vel_nm=1.0 / c_Vel_To_Torque_nm;
+	return (Vel_rps * c_Torque_to_Vel_nm);
 }
 //gear reduction (5310/60.0) / (427.68 / 60.0) = 12.415824915824915824915824915825
 //TODO compute gear reduction from max speed and pass into props here
-Drive_Train_Characteristics::Drive_Train_Characteristics() : 
-m_Props(3.0, //Wheel Mass
-		1.0,  //Drive train efficiency
-		12.4158,  //Gear reduction
-		0.0508,   //Torque applied on wheel radius
-		0.0762,	  //Wheel radius
-		2.0)	  //No motors
+Drive_Train_Characteristics::Drive_Train_Characteristics()
 {
+	EncoderSimulation_Properties default_props;
+	m_Props=default_props.GetEncoderSimulationProps();
 }
 __inline double Drive_Train_Characteristics::GetWheelStallTorque(double Torque)
 {
-	return Torque * m_Props.GearReduction * m_Props.DriveTrain_Efficiency;
+	return Torque * m_Props.GearReduction * m_Props.COF_Efficiency;
 }
 __inline double Drive_Train_Characteristics::GetTorqueAtWheel(double Torque)
 {
@@ -353,24 +398,22 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double Angula
 	return GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
 }
 
-Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),m_EncoderProps(
-	EntityName,
-	68.0,    //Mass (150 pounds)
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	c_Encoder_TestRate,   //Max Speed
-	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	c_Encoder_MaxAccel,c_Encoder_MaxAccel,
-	Ship_1D_Props::eRobotArm,
-	false	//Not using the range
-	),
-	m_EncoderScalar(1.0)
+
+  /***************************************************************************************************************/
+ /*												Encoder_Simulator2												*/
+/***************************************************************************************************************/
+
+
+Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),m_EncoderScalar(1.0)
 {
 }
 
 void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 {
-	if (props)
-		m_EncoderProps=*props;
+	const Rotary_Properties *rotary_props=dynamic_cast<const Rotary_Properties *>(props);
+	if (rotary_props)
+		m_DriveTrain.UpdateProps(rotary_props->GetEncoderSimulationProps());
+
 	#if 0
 	//m_Physics.SetMass(68);  //(about 150 pounds)
 	m_Physics.SetMass(50);  //adjust this to match latency we observe

@@ -62,24 +62,50 @@ class Encoder_Simulator : public Ship_1D
 		bool m_GetEncoderFirstCall;  //allows GetEncoderVelocity to know when a new set of calls occur within a time slice
 };
 
+
+struct EncoderSimulation_Props
+{
+	double Wheel_Mass;  //This is a total mass of all the wheels and gears for one side
+	double COF_Efficiency;
+	double GearReduction;  //In reciprocal form of spread sheet
+	double TorqueAppliedOnWheelRadius; //in meters
+	double DriveWheelRadius; //in meters
+	double NoMotors;  //Used to get total torque
+
+	struct Motor_Specs
+	{
+		double FreeSpeed_RPM;
+		double Stall_Torque_NM;
+		double Stall_Current_Amp;
+		double Free_Current_Amp;
+	} motor;
+};
+
+//This is used in calibration testing to simulate encoder readings
+class EncoderSimulation_Properties
+{
+	public:
+		EncoderSimulation_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation_Props;}
+		//Get and Set the properties
+		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation_Props;}
+
+	protected:
+		EncoderSimulation_Props m_EncoderSimulation_Props;
+};
+
+
 class Drive_Train_Characteristics
 {
 	public:
-		__inline static double GetAmp_To_Torque_nm(double Amps);
-		__inline static double GetVel_To_Torque_nm(double Vel_rps);
-		__inline static double GetTorque_To_Vel_nm(double Vel_rps);
-		struct DriveTrainProps
-		{
-			DriveTrainProps(double wm,double dt,double gr,double taowr,double dwr,double mc) :  Wheel_Mass(wm), 
-			DriveTrain_Efficiency(dt),GearReduction(gr),DriveWheelRadius(dwr),NoMotors(mc),TorqueAppliedOnWheelRadius(taowr) {}
-			double Wheel_Mass;  //This is a total mass of all the wheels and gears for one side
-			double DriveTrain_Efficiency;
-			double GearReduction;  //In reciprocal form of spread sheet
-			double TorqueAppliedOnWheelRadius; //in meters
-			double DriveWheelRadius; //in meters
-			double NoMotors;  //Used to get total torque
-		};
 		Drive_Train_Characteristics();
+		void UpdateProps(const EncoderSimulation_Props &props) {m_Props=props;}
+
+		__inline double GetAmp_To_Torque_nm(double Amps);
+		__inline double GetVel_To_Torque_nm(double Vel_rps);
+		__inline double GetTorque_To_Vel_nm(double Vel_rps);
+
 		__inline double GetWheelStallTorque(double Torque);
 		__inline double GetTorqueAtWheel(double Torque);
 		__inline double GetWheelRPS(double LinearVelocity);
@@ -90,10 +116,10 @@ class Drive_Train_Characteristics
 		__inline double GetWheelTorqueFromVoltage(double Voltage);
 		__inline double GetTorqueFromVoltage(double Voltage);
 		__inline double GetTorqueFromVelocity(double AngularVelocity);
-		const DriveTrainProps &GetDriveTrainProps() const {return m_Props;}
+		const EncoderSimulation_Props &GetDriveTrainProps() const {return m_Props;}
 		void SetGearReduction(double NewGearing) {m_Props.GearReduction=NewGearing;}
 	private:
-		DriveTrainProps m_Props;
+		EncoderSimulation_Props m_Props;
 };
 
 class Encoder_Simulator2
@@ -115,7 +141,6 @@ class Encoder_Simulator2
 	protected:
 	private:
 		double m_Time_s;
-		Ship_1D_Properties m_EncoderProps;
 		PhysicsEntity_1D m_Physics;
 		double m_EncoderScalar; //used to implement reverse
 		Drive_Train_Characteristics m_DriveTrain;
