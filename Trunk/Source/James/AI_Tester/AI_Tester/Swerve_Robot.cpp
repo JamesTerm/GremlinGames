@@ -111,6 +111,9 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 			swivel.RoteryProps().PID_Console_Dump=m_SwerveRobotProps.PID_Console_Dump_Swivel[i];
 			drive.RoteryProps().InverseMaxForce=m_SwerveRobotProps.InverseMaxForce;
 			drive.RoteryProps().UseAggressiveStop=true;
+			#ifdef AI_TesterCode
+			drive.EncoderSimulationProps()=RobotProps->GetEncoderSimulationProps();
+			#endif
 			//TODO drive.RoteryProps().EncoderReversed
 			m_DrivingModule[i]->Initialize(em,&props);
 		}
@@ -699,6 +702,14 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		script.GetField("inv_max_force", NULL, NULL, &m_SwerveRobotProps.InverseMaxForce);
+		#ifdef AI_TesterCode
+		err = script.GetFieldTable("motor_specs");
+		if (!err)
+		{
+			m_EncoderSimulation.LoadFromScript(script);
+			script.Pop();
+		}
+		#endif
 		//The main script pop of swerve_drive field table
 		script.Pop(); 
 	}

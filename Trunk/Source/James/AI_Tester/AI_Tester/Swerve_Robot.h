@@ -195,10 +195,16 @@ class Swerve_Robot_Properties : public UI_Ship_Properties
 		//the width is a measurement of the the center of the wheel width to the other wheel
 		const Vec2D &GetWheelDimensions() const {return m_SwerveRobotProps.WheelDimensions;}
 		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
+		#ifdef AI_TesterCode
+		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
+		#endif
 	private:
 		//Note the drive properties is a measurement of linear movement (not angular velocity)
 		Rotary_Properties m_SwivelProps,m_DriveProps;
 		Swerve_Robot_Props m_SwerveRobotProps;
+		#ifdef AI_TesterCode
+		EncoderSimulation_Properties m_EncoderSimulation;
+		#endif
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values

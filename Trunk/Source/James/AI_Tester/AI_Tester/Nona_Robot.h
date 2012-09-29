@@ -6,6 +6,9 @@ struct TractionModeProps
 	Ship_Properties ShipProperties;
 	double InverseMaxForce;  //This is used to solve voltage at the acceleration level where the acceleration / force gets scaled down to voltage
 	bool IsOpen;  //give ability to open or close loop for traction system  
+	#ifdef AI_TesterCode
+	double GearReduction;  //In reciprocal form of spread sheet
+	#endif
 };
 
 class Butterfly_Robot_Properties : public Swerve_Robot_Properties

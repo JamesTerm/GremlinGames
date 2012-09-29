@@ -184,6 +184,7 @@ class Rotary_Properties : public Ship_1D_Properties
 		Rotary_Props &RoteryProps() {return m_RoteryProps;}
 		#ifdef AI_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
+		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
 	protected:
 		Rotary_Props m_RoteryProps;
