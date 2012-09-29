@@ -86,7 +86,7 @@ TestShip = {
 		show_pid_dump='no',
 		ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 		pid=
-		{p=200, i=0, d=50 },
+		{p=100, i=0, d=50 },
 		latency=0.0,
 		encoder_to_wheel_ratio=0.7,     --Just use the gearing ratios here
 		voltage_multiply=1.0,
@@ -100,7 +100,15 @@ TestShip = {
 		--These are low because of traction
 		max_accel_forward=Kicker_MaxAccel,
 		max_accel_reverse=Kicker_MaxAccel,
-		inv_max_force = 1/15.0  --solved empiracally
+		inv_max_force = 1/23,  --solved empiracally
+		motor_specs =
+		{
+			gear_reduction=13000.0/307.13,
+			free_speed_rpm=13000.0 * (12/18),
+			stall_torque=0.783333333333333,
+			stall_current_amp=86.6666666666667,
+			free_current_amp=1.8
+		}
 	},
 	
 	low_gear = 
