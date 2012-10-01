@@ -47,8 +47,9 @@ class Rotary_System : public Ship_1D
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
-///It currently has a single PID (Dual PID may either be integrated or a new class)... to manage voltage error
-class Rotary_Linear : public Rotary_System
+///It currently has a single PID (Dual PID may either be integrated or a new class)... to manage voltage error.  This is used for fixed point
+/// position setting... like a turret or arm
+class Rotary_Position_Control : public Rotary_System
 {
 	private:
 		//typedef Rotary_System __super;
@@ -82,7 +83,7 @@ class Rotary_Linear : public Rotary_System
 		bool m_VoltageOverride;  //when true will kill voltage
 		#endif
 	public:
-		Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
+		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
 		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
@@ -102,8 +103,9 @@ class Rotary_Linear : public Rotary_System
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
-///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate
-class Rotary_Angular : public Rotary_System
+///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate.
+///This is a kind of speed control system that manages the velocity and does not need to keep track of position (like the drive or a shooter)
+class Rotary_Velocity_Control : public Rotary_System
 {
 	public:
 		enum EncoderUsage
@@ -142,7 +144,7 @@ class Rotary_Angular : public Rotary_System
 		const EncoderUsage m_EncoderCachedState; //This is a fall-back state upon recovery of the safety state
 		double m_PreviousVelocity; //used to compute acceleration
 	public:
-		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
+		Rotary_Velocity_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
 		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);

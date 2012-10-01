@@ -149,16 +149,16 @@ class Swerve_Robot : public Ship_Tester,
 				void SetIntendedSwivelDirection(double direction) {m_IntendedSwivelDirection=direction;}
 				void SetIntendedDriveVelocity(double Velocity) {m_IntendedDriveVelocity=Velocity;}
 				//I have no problem exposing read-only access to these :)
-				const Rotary_Linear &GetSwivel() const {return m_Swivel;}
-				const Rotary_Angular &GetDrive() const {return m_Drive;}
+				const Rotary_Position_Control &GetSwivel() const {return m_Swivel;}
+				const Rotary_Velocity_Control &GetDrive() const {return m_Drive;}
 				//Get and Set the Drive properties
-				Rotary_Angular &Drive() {return m_Drive;}
+				Rotary_Velocity_Control &Drive() {return m_Drive;}
 				void ResetPos() {m_Drive.ResetPos(),m_Swivel.ResetPos();}
 				
 			private:
 				std::string m_ModuleName,m_SwivelName,m_DriveName;
-				Rotary_Linear m_Swivel;  //apply control to swivel mechanism
-				Rotary_Angular m_Drive;  //apply control to drive motor
+				Rotary_Position_Control m_Swivel;  //apply control to swivel mechanism
+				Rotary_Velocity_Control m_Drive;  //apply control to drive motor
 				//Pass along the intended swivel direction and drive velocity
 				double m_IntendedSwivelDirection,m_IntendedDriveVelocity;
 

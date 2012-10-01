@@ -48,7 +48,7 @@ double PositionToVelocity_Tweak(double Value)
 /***********************************************************************************************************************************/
 
 FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0),m_LastIntendedPosition(0.0)
+	Rotary_Position_Control("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0),m_LastIntendedPosition(0.0)
 {
 }
 
@@ -130,7 +130,7 @@ void FRC_2012_Robot::Turret::ResetPos()
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::PitchRamp::PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Linear("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
+	Rotary_Position_Control("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
 {
 }
 
@@ -194,7 +194,7 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2012_Robot::PowerWheels::PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Angular("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_ManualVelocity(0.0),m_IsRunning(false)
+	Rotary_Velocity_Control("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_ManualVelocity(0.0),m_IsRunning(false)
 {
 }
 
@@ -259,10 +259,10 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
 			}
 
-			Rotary_Angular::SetRequestedVelocity_FromNormalized(Velocity);
+			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(Velocity);
 		}
 		else
-			Rotary_Angular::SetRequestedVelocity_FromNormalized(0.0);
+			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(0.0);
 	}
 	__super::TimeChange(dTime_s);
 }
@@ -406,7 +406,7 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
  /*													FRC_2012_Robot::Flippers														*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::Flippers::Flippers(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-Rotary_Linear("Flippers",robot_control,eFlippers),m_pParent(pParent),m_Advance(false),m_Retract(false)
+Rotary_Position_Control("Flippers",robot_control,eFlippers),m_pParent(pParent),m_Advance(false),m_Retract(false)
 {
 }
 
