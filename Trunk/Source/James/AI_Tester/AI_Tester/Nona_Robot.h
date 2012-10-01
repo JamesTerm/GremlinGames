@@ -171,7 +171,7 @@ class Nona_Robot : public Butterfly_Robot
 
 		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode);
 	private:
-		Rotary_Angular m_KickerWheel;  //apply control to kicker wheel
+		Rotary_Velocity_Control m_KickerWheel;  //apply control to kicker wheel
 		Nona_Drive * const m_NonaDrive; //cache, avoid needing to dynamic cast each iteration
 };
 

@@ -21,10 +21,10 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity);
 
   /***********************************************************************************************************************************/
- /*															Rotary_Linear															*/
+ /*														Rotary_Position_Control														*/
 /***********************************************************************************************************************************/
 
-Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
+Rotary_Position_Control::Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_LastPosition(0.0),m_MatchVelocity(0.0),
@@ -42,7 +42,7 @@ Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *r
 {
 }
 
-void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	if (m_UsingPotentiometer)
 		m_LastPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
@@ -70,7 +70,7 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
-void Rotary_Linear::TimeChange(double dTime_s)
+void Rotary_Position_Control::TimeChange(double dTime_s)
 {
 	#ifdef __Rotary_UseInducedLatency__
 	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
@@ -232,7 +232,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 }
 
 #ifdef __Rotary_UseScalerPID__
-void Rotary_Linear::PosDisplacementCallback(double posDisplacement_m)
+void Rotary_Position_Control::PosDisplacementCallback(double posDisplacement_m)
 {
 	m_VoltageOverride=false;
 	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<m_Rotary_Props.PrecisionTolerance))
@@ -240,7 +240,7 @@ void Rotary_Linear::PosDisplacementCallback(double posDisplacement_m)
 }
 #endif
 
-void Rotary_Linear::ResetPos()
+void Rotary_Position_Control::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
 	if ((m_UsingPotentiometer)&&(!GetBypassPos_Update()))
@@ -254,7 +254,7 @@ void Rotary_Linear::ResetPos()
 	}
 }
 
-void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
+void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 {
 	//printf("\r%f       ",Value);
 	if (DisableFeedback)
@@ -297,10 +297,10 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 	}
 }
   /***********************************************************************************************************************************/
- /*															Rotary_Angular															*/
+ /*														Rotary_Velocity_Control														*/
 /***********************************************************************************************************************************/
 
-Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
+Rotary_Velocity_Control::Rotary_Velocity_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_MatchVelocity(0.0),m_CalibratedScaler(1.0),m_ErrorOffset(0.0),
@@ -309,7 +309,7 @@ Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface 
 {
 }
 
-void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 		m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
@@ -346,7 +346,7 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
-void Rotary_Angular::UpdateRotaryProps(const Rotary_Props &RotaryProps)
+void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 {
 	m_Rotary_Props=RotaryProps;
 	m_CalibratedScaler=MAX_SPEED;
@@ -365,7 +365,7 @@ void Rotary_Angular::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 	}
 }
 
-void Rotary_Angular::TimeChange(double dTime_s)
+void Rotary_Velocity_Control::TimeChange(double dTime_s)
 {
 	#ifdef __Rotary_UseInducedLatency__
 	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
@@ -492,7 +492,7 @@ void Rotary_Angular::TimeChange(double dTime_s)
 
 }
 
-bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDisplacement)
+bool Rotary_Velocity_Control::InjectDisplacement(double DeltaTime_s,double &PositionDisplacement)
 {
 	bool ret=false;
 	const bool UpdateDisplacement=((m_EncoderState==eActive)||(m_EncoderState==ePassive));
@@ -510,13 +510,13 @@ bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDispl
 	return ret;
 }
 
-void Rotary_Angular::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
+void Rotary_Velocity_Control::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 		m_RequestedVelocity_Difference=VelocityToUse-m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 }
 
-void Rotary_Angular::ResetPos()
+void Rotary_Velocity_Control::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
 
@@ -534,7 +534,7 @@ void Rotary_Angular::ResetPos()
 	m_RequestedVelocity_Difference=0.0;
 }
 
-void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
+void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 {
 	//printf("\r%f       ",Value);
 	if (DisableFeedback)
