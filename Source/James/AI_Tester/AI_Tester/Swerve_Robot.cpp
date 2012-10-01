@@ -109,7 +109,7 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 			//TODO max_offset support
 			drive.RoteryProps().PID_Console_Dump=m_SwerveRobotProps.PID_Console_Dump_Wheel[i];
 			swivel.RoteryProps().PID_Console_Dump=m_SwerveRobotProps.PID_Console_Dump_Swivel[i];
-			drive.RoteryProps().InverseMaxForce=m_SwerveRobotProps.InverseMaxForce;
+			drive.RoteryProps().InverseMaxAccel=m_SwerveRobotProps.InverseMaxAccel;
 			drive.RoteryProps().UseAggressiveStop=true;
 			#ifdef AI_TesterCode
 			drive.EncoderSimulationProps()=RobotProps->GetEncoderSimulationProps();
@@ -462,7 +462,7 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
 	props.SwivelRange=0.0;
 	props.TankSteering_Tolerance=0.05;
-	props.InverseMaxForce=0.0;
+	props.InverseMaxAccel=0.0;
 	m_SwerveRobotProps=props;
 	//Always use aggressive stop for driving
 	m_DriveProps.RoteryProps().UseAggressiveStop=true;
@@ -701,7 +701,7 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
-		script.GetField("inv_max_force", NULL, NULL, &m_SwerveRobotProps.InverseMaxForce);
+		script.GetField("inv_max_accel", NULL, NULL, &m_SwerveRobotProps.InverseMaxAccel);
 		#ifdef AI_TesterCode
 		err = script.GetFieldTable("motor_specs");
 		if (!err)

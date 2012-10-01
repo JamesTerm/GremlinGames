@@ -4,7 +4,7 @@ struct TractionModeProps
 {
 	double PID[3]; //p,i,d
 	Ship_Properties ShipProperties;
-	double InverseMaxForce;  //This is used to solve voltage at the acceleration level where the acceleration / force gets scaled down to voltage
+	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
 	bool IsOpen;  //give ability to open or close loop for traction system  
 	#ifdef AI_TesterCode
 	double GearReduction;  //In reciprocal form of spread sheet
