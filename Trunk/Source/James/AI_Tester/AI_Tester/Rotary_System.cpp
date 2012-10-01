@@ -427,7 +427,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 	//they both can be represented in the same equation
 	double Voltage=(Velocity+m_ErrorOffset)/m_CalibratedScaler;
 
-	Voltage+=Acceleration*m_Rotary_Props.InverseMaxForce;
+	Voltage+=Acceleration*m_Rotary_Props.InverseMaxAccel;
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousVelocity=Velocity;
 
@@ -594,7 +594,7 @@ void Rotary_Properties::Init()
 	props.Polynomial[2]=0.0;
 	props.Polynomial[3]=0.0;
 	props.Polynomial[4]=0.0;
-	props.InverseMaxForce=0.0;
+	props.InverseMaxAccel=0.0;
 	m_RoteryProps=props;
 }
 
@@ -673,7 +673,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
-		script.GetField("inv_max_force", NULL, NULL, &m_RoteryProps.InverseMaxForce);
+		script.GetField("inv_max_accel", NULL, NULL, &m_RoteryProps.InverseMaxAccel);
 		#ifdef AI_TesterCode
 		err = script.GetFieldTable("motor_specs");
 		if (!err)

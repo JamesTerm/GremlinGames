@@ -62,7 +62,7 @@ TestShip = {
 		--curve_voltage_swivel=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
-		inv_max_force = 1/15.0  --solved empiracally
+		inv_max_accel = 1/15.0  --solved empiracally
 	},
 	
 	controls =

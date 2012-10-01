@@ -17,7 +17,7 @@ struct Rotary_Props
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
-	double InverseMaxForce;  //This is used to solve voltage at the acceleration level where the acceleration / force gets scaled down to voltage
+	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
 	{
