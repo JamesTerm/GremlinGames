@@ -854,7 +854,7 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
 		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
 		if (err)
-			props.MaxAccelForward_High=props.MaxAccelForward;
+			props.RotateTo_TorqueDegradeScalar_High=props.RotateTo_TorqueDegradeScalar;
 
 		err = script.GetField("MAX_SPEED", NULL, NULL, &props.MAX_SPEED);
 		err = script.GetField("ENGAGED_MAX_SPEED", NULL, NULL, &props.ENGAGED_MAX_SPEED);
