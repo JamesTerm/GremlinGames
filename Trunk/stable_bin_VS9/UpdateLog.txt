@@ -34,3 +34,7 @@ Fixed god mode to not program joystick defaults... and tuned the lua for nona to
 
 9/29/2012
 Motor properties are in LUA, as the kicker wheel is now using the correct motor and gearing ratios
+
+10/04/2012
+Fixed rotate to scale bug that caused swerve to rotate when wheels were reversed on one side
+renamed inv_max_force to inv_max_accel as this is technically what it is since the mass is canceled out
