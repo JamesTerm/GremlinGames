@@ -55,10 +55,10 @@ void JoyStick_Binder::SetControlledEventMap(Framework::Base::EventMap* em)
 }
 
 void JoyStick_Binder::AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped,double Multiplier,
-															  double FilterRange,bool isSquared,const char ProductName[])
+															  double FilterRange,double CurveIntensity,const char ProductName[])
 {
 	
-	Analog_EventEntry key(WhichAxis,ProductName,IsFlipped,Multiplier,FilterRange,isSquared);
+	Analog_EventEntry key(WhichAxis,ProductName,IsFlipped,Multiplier,FilterRange,CurveIntensity);
 	std::vector<std::string> *eventNames = m_JoyAnalogBindings[key];
 	if (!eventNames)
 	{
@@ -92,6 +92,53 @@ void JoyStick_Binder::AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char ev
 			exists = (key == *pos);
 		if (!exists)
 			keys->push_back(key);
+	}
+}
+
+void JoyStick_Binder::RemoveJoy_Analog_Binding(const char eventName[],const char ProductName[])
+{
+	AssignedJoyAnalogs::iterator iter;
+	iter=m_AssignedJoyAnalogs.find(eventName);
+	if (iter!=m_AssignedJoyAnalogs.end())
+	{
+		std::vector<Analog_EventEntry> *keys = (*iter).second;
+
+		std::vector<Analog_EventEntry>::iterator pos;
+		//Check for duplicate entries of the same key (This may be a typical case)
+		for (pos = keys->begin(); pos != keys->end(); ++pos)
+		{
+			//find matching product
+			if (strcmp((*pos).ProductName.c_str(),ProductName)==0)
+			{
+				//Now to clean out the joy analog binding
+				{
+					JoyAnalogBindings::iterator b_iter=m_JoyAnalogBindings.find(*pos);
+					assert (b_iter!=m_JoyAnalogBindings.end());
+
+					std::vector<std::string> *eventNames = (*b_iter).second;
+					std::vector<std::string>::iterator pos;
+					for (pos = eventNames->begin(); pos != eventNames->end(); ++pos)
+					{
+						if (strcmp((*pos).c_str(),eventName)==0)
+						{
+							pos=eventNames->erase(pos);
+							//Note: it should only be one entry... but we'll let it go just in case its more
+							if (pos == eventNames->end())
+								break;
+						}
+					}
+					if (eventNames->empty())
+						m_JoyAnalogBindings.erase(b_iter);
+				}
+				pos=keys->erase(pos);
+				//Note: it should only be one entry... but we'll let it go just in case its more
+				if (pos == keys->end())
+					break;
+			}
+		}
+		//if list is empty delete event entry as well
+		if (keys->empty())
+			m_AssignedJoyAnalogs.erase(iter);
 	}
 }
 
@@ -134,18 +181,64 @@ void JoyStick_Binder::AddJoy_Button_Binding(size_t WhichButton,const char eventN
 	}
 }
 
+void JoyStick_Binder::RemoveJoy_Button_Binding(const char eventName[],const char ProductName[])
+{
+	AssignedJoyButtons::iterator iter;
+	iter=m_AssignedJoyButtons.find(eventName);
+	if (iter!=m_AssignedJoyButtons.end())
+	{
+		std::vector<Button_EventEntry> *keys = (*iter).second;
+
+		std::vector<Button_EventEntry>::iterator pos;
+		//Check for duplicate entries of the same key (This may be a typical case)
+		for (pos = keys->begin(); pos != keys->end(); ++pos)
+		{
+			//find matching product
+			if (strcmp((*pos).ProductName.c_str(),ProductName)==0)
+			{
+				//Now to clean out the joy button binding
+				{
+					JoyButtonBindings::iterator b_iter=m_JoyButtonBindings.find(*pos);
+					assert (b_iter!=m_JoyButtonBindings.end());
+
+					std::vector<std::string> *eventNames = (*b_iter).second;
+					std::vector<std::string>::iterator pos;
+					for (pos = eventNames->begin(); pos != eventNames->end(); ++pos)
+					{
+						if (strcmp((*pos).c_str(),eventName)==0)
+						{
+							pos=eventNames->erase(pos);
+							//Note: it should only be one entry... but we'll let it go just in case its more
+							if (pos == eventNames->end())
+								break;
+						}
+					}
+					if (eventNames->empty())
+						m_JoyButtonBindings.erase(b_iter);
+				}
+				pos=keys->erase(pos);
+				//Note: it should only be one entry... but we'll let it go just in case its more
+				if (pos == keys->end())
+					break;
+			}
+		}
+		//if list is empty delete event entry as well
+		if (keys->empty())
+			m_AssignedJoyButtons.erase(iter);
+	}
+}
 
 void JoyStick_Binder::AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped,double Multiplier,
-											double FilterRange,bool isSquared,const char ProductName[])
+											double FilterRange,double CurveIntensity,const char ProductName[])
 {
 	//removed intercept since we are not using a config manager
-	AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,isSquared,ProductName);
+		AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName);
 }
 
 void JoyStick_Binder::AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff,bool dbl_click,const char ProductName[])
 {
 	//removed intercept since we are not using a config manager
-	AddJoy_Button_Binding(WhichButton,eventName,useOnOff,dbl_click,ProductName);
+		AddJoy_Button_Binding(WhichButton,eventName,useOnOff,dbl_click,ProductName);
 }
 
 bool JoyStick_Binder::IsDoubleClicked(size_t i)
@@ -237,8 +330,11 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 								double Temp=fabs(Value); //take out the sign... put it back in the end
 								Temp=(Temp>=key.FilterRange) ? Temp-key.FilterRange:0.0; 
 
-								Temp=key.Multiplier*(Temp/(1.0-key.FilterRange)); //apply scale first then 
-								if (key.isSquared) Temp*=Temp;  //square it if it is squared
+								Temp=key.Multiplier*(Temp/(1.0-key.FilterRange)); //apply scale first then
+								if (key.CurveIntensity<=1.0)
+									Temp=key.CurveIntensity*pow(Temp,3) + (1.0-key.CurveIntensity)*Temp; //apply the curve intensity
+								else
+									Temp=pow(Temp,key.CurveIntensity); //apply the curve intensity
 
 								//Now to restore the sign
 								Value=(Value<0.0)?-Temp:Temp;

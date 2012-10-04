@@ -33,7 +33,7 @@ public:
 	///This binds all the axis, rotations, sliders to an event
 	/// \param IsFlipped this will simply multiply a -1.0 coefficient
 	void AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped=false,double Multiplier=1.0,double FilterRange=0.0,
-		bool isSquared=false,const char ProductName[]="any");
+		double CurveIntensity=0.0,const char ProductName[]="any");
 	/// \param WhichButton while in theory there are up to 128 buttons supported I'm only going to support the first 32 for now
 	/// Use the JoystickTest program to determine the numbers of the buttons
 	void AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff=true,bool dbl_click=false,const char ProductName[]="any");
@@ -49,10 +49,13 @@ public:
 	void SetControlledEventMap(Framework::Base::EventMap* em);
 	//Event3<JoyStick_Binder*, GG_Framework::UI::EventMap*, GG_Framework::UI::EventMap*> EventMapChanged; //!< <this, old, new> fired before change
 
+	void RemoveJoy_Analog_Binding(const char eventName[],const char ProductName[]="any");
+	void RemoveJoy_Button_Binding(const char eventName[],const char ProductName[]="any");
+
 private:
 
 	void AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped=false,double Multiplier=1.0,double FilterRange=0.0,
-		bool isSquared=false,const char ProductName[]="any");
+		double CurveIntensity=0.0,const char ProductName[]="any");
 	void AddJoy_Button_Binding(size_t WhichButton,const char eventName[],bool useOnOff=true,bool dbl_click=false,const char ProductName[]="any");
 
 	struct EventEntry_Base
@@ -65,15 +68,15 @@ private:
 	struct Analog_EventEntry : public EventEntry_Base
 	{
 		Analog_EventEntry(JoyAxis_enum _WhichAxis,const char _ProductName[]="any",bool _IsFlipped=false,double _Multiplier=1.0,
-			double _FilterRange=0.0,bool _isSquared=false) : 
+			double _FilterRange=0.0,double _CurveIntensity=false) : 
 		EventEntry_Base(_ProductName),WhichAxis(_WhichAxis),Multiplier(_Multiplier),
-			FilterRange(_FilterRange),isSquared(_isSquared),IsFlipped(_IsFlipped)
+			FilterRange(_FilterRange),CurveIntensity(_CurveIntensity),IsFlipped(_IsFlipped)
 		{}
 
 		JoyAxis_enum WhichAxis;
 		double Multiplier;
 		double FilterRange;
-		bool isSquared;
+		double CurveIntensity;
 		bool IsFlipped;
 		bool operator >  (const Analog_EventEntry& rhs) const { return ((WhichAxis == rhs.WhichAxis) ? (ProductName > rhs.ProductName) : (WhichAxis > rhs.WhichAxis)); }
 		bool operator == (const Analog_EventEntry& rhs) const { return (WhichAxis == rhs.WhichAxis) && (ProductName == rhs.ProductName); }
