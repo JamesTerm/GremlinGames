@@ -11,6 +11,8 @@ typedef std::map<std::string, std::string, std::greater<std::string> > StringMap
 #define _countof(x) sizeof(x)/sizeof(*x)
 #endif
 
+char *itoa(int value,char *string,int radix);
+
 namespace Framework
 {
 	namespace Base
