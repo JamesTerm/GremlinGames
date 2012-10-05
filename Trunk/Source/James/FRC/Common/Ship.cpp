@@ -23,6 +23,8 @@ using namespace Framework::Base;
 
 bool g_DisableEngineRampUp2=true;  //we need not use engine ramping for the robot
 
+//namespace Scripting=GG_Framework::Logic::Scripting;
+namespace Scripting=Framework::Scripting;
   /***************************************************************************************************************/
  /*													Ship_2D														*/
 /***************************************************************************************************************/
@@ -85,9 +87,9 @@ void Ship_2D::ResetPos()
 	//Setting this to true allows starting from an arbitrary position and it not auto adjust to the intended orientation
 	//for AI and Remote... they will implicitly clear this once the send the first intended orientation
 	m_LockShipHeadingToOrientation=true;
-	m_RequestedVelocity = 0.0;
+	m_RequestedVelocity[0]=m_RequestedVelocity[1] = 0.0;
 	//m_Last_AccDel = 0.0;
-	m_Last_RequestedVelocity=-1.0;
+	m_Last_RequestedVelocity[0]=m_Last_RequestedVelocity[1]=-1.0;
 	m_rotAccel_rad_s = m_rotDisplacement_rad = 0.0;
 	m_currAccel =	Vec2d(0,0);
 	m_IntendedOrientation=GetAtt_r();
@@ -104,10 +106,10 @@ void Ship_2D::SetSimFlightMode(bool SimFlightMode)
 	if (m_SimFlightMode!=SimFlightMode)
 	{
 		//Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
-		//m_RequestedVelocity=LocalVelocity[1];
+		//m_RequestedVelocity=LocalVelocity;
 		//unfortunately a slide turn maneuver requires this, but fortunately is is for UI.  This is not perfect if the user intended to go backwards
 		//but that would not be something desirable
-		m_RequestedVelocity=m_Physics.GetLinearVelocity().length(); 
+		m_RequestedVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity()); 
 		m_SimFlightMode=SimFlightMode;	
 		//DebugOutput("SimFlightMode=%d\n",SimFlightMode);
 	}
@@ -131,10 +133,30 @@ void Ship_2D::SetRequestedVelocity(double Velocity)
 	//assert(IsLocallyControlled());
 	SetSimFlightMode(true);
 	if (Velocity>0.0)
-		m_RequestedVelocity=MIN(Velocity,GetMaxSpeed());
+		m_RequestedVelocity[1]=MIN(Velocity,GetMaxSpeed());
 	else
-		m_RequestedVelocity=MAX(Velocity,-GetMaxSpeed());
+		m_RequestedVelocity[1]=MAX(Velocity,-GetMaxSpeed());
+	m_RequestedVelocity[0]=0;
+}
 
+void Ship_2D::SetRequestedVelocity(Vec2D Velocity)
+{
+	//Note: with 2D submissions we do not need to manually set sim mode 
+	//assert(IsLocallyControlled());
+	m_RequestedVelocity=Velocity;  //I'm not doing speed checking for this one (this will be checked later anyhow)
+	//DOUT5("%f %f",m_RequestedVelocity[0],m_RequestedVelocity[1]);
+}
+
+void Ship_2D::SetIntendedOrientation(double IntendedOrientation,bool Absolute)
+{
+	m_LockShipHeadingToOrientation=false; //this must be false for this to work (if not already)
+	m_IntendedOrientation=Absolute?IntendedOrientation: NormalizeRotation2(m_IntendedOrientation+IntendedOrientation);
+}
+
+void Ship_2D::SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation) 
+{	
+	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation;
+	m_rotAccel_rad_s=Acceleration;
 }
 
 
@@ -198,6 +220,29 @@ AI_Base_Controller *Ship_2D::Create_Controller()
 	return new AI_Base_Controller(*this);
 }
 
+void Ship_2D::UpdateShipProperties(const Ship_Props &props)
+{
+	m_ShipProps.UpdateShipProperties(props);
+	dHeading=props.dHeading;
+	MAX_SPEED=props.MAX_SPEED;
+	ENGAGED_MAX_SPEED=props.ENGAGED_MAX_SPEED;
+	ACCEL=props.ACCEL;
+	BRAKE=props.BRAKE;
+	STRAFE=props.STRAFE;
+	AFTERBURNER_ACCEL=props.AFTERBURNER_ACCEL;
+	AFTERBURNER_BRAKE=props.AFTERBURNER_BRAKE;
+
+	EngineRampAfterBurner=props.EngineRampAfterBurner;
+	EngineRampForward=props.EngineRampForward;
+	EngineRampReverse=props.EngineRampReverse;
+	EngineRampStrafe=props.EngineRampStrafe;
+	EngineDeceleration=props.EngineDeceleration;
+
+	MaxAccelLeft=props.MaxAccelLeft;
+	MaxAccelRight=props.MaxAccelRight;
+	MaxTorqueYaw=props.MaxTorqueYaw * m_Physics.GetMass();
+}
+
 void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *props)
 {
 	if (!m_controller)
@@ -206,7 +251,7 @@ void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *
 	const Ship_Properties *ship_props=dynamic_cast<const Ship_Properties *>(props);
 	if (ship_props)
 	{
-		ship_props->Initialize(this);
+		UpdateShipProperties(ship_props->GetShipProps());
 		m_ShipProps=*ship_props;
 	}
 	else
@@ -238,7 +283,6 @@ void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *
 
 	Camera_Restraint=G_Dampener=1.0;
 	Mass  = m_Physics.GetMass();
-	MaxTorqueYaw*= Mass;  //TODO fix
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
@@ -299,12 +343,6 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 	}
 }
 
-void Ship_2D::SetIntendedOrientation(double IntendedOrientation) 
-{
-	m_LockShipHeadingToOrientation=false; //this must be false for this to work (if not already)
-	m_IntendedOrientation=IntendedOrientation;
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 #undef _TestIndendedDirction_properties__
@@ -318,13 +356,12 @@ void Ship_2D::TimeChange(double dTime_s)
 	//Vec3d LocalVelocity(GetAtt_quat().conj() * m_Physics.GetLinearVelocity());
 	Vec2d LocalVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity());
 	double currVelocity = LocalVelocity[1];
-	bool manualMode = !((m_SimFlightMode)&&(m_currAccel[0]==0));
-	bool afterBurnerOn = (m_RequestedVelocity > GetEngaged_Max_Speed());
+	bool manualMode = !m_SimFlightMode;
+	bool afterBurnerOn = (m_RequestedVelocity[1] > GetEngaged_Max_Speed());
 	bool afterBurnerBrakeOn = (fabs(currVelocity) > GetEngaged_Max_Speed());
 	//const FlightCharacteristics& currFC((afterBurnerOn||afterBurnerBrakeOn) ? Afterburner_Characteristics : GetFlightCharacteristics());
 
 	Vec2d ForceToApply;
-
 	//Enable to monitor current speed
 	#if 0
 	{
@@ -394,16 +431,16 @@ void Ship_2D::TimeChange(double dTime_s)
 		//The most undesired effect is that when no delta is applied neither should any extra force be applied.  There is indeed a distinction
 		//between cruise control (e.g. slider) and using a Key button entry in this regard.  The else case here keeps these more separated where
 		//you are either using one mode or the other
-		double VelocityDelta=m_currAccel[1]*dTime_s;
+		Vec2d VelocityDelta=m_currAccel*dTime_s;
 
 		bool UsingRequestedVelocity=false;
 		bool YawPitchActive=(fabs(m_rotDisplacement_rad)>0.001);
 
 		//Note: m_RequestedVelocity is not altered with the velocity delta, but it will keep up to date
-		if (VelocityDelta!=0) //if user is changing his adjustments then reset the velocity to current velocity
+		if (VelocityDelta[1]!=0) //if user is changing his adjustments then reset the velocity to current velocity
 		{
 			if (!YawPitchActive)
-				m_RequestedVelocity=m_Last_RequestedVelocity=currVelocity+VelocityDelta;
+				m_RequestedVelocity=m_Last_RequestedVelocity=LocalVelocity+VelocityDelta;
 			else
 			{
 				//If speeding/braking during hard turns do not use currVelocity as the centripetal forces will lower it
@@ -420,7 +457,7 @@ void Ship_2D::TimeChange(double dTime_s)
 				//active the requested velocity mode by setting this to 0 (this will keep it on until a new velocity delta is used)
 				//TODO work out a new system for resetting this I cannot use zero, but -1 is not correct either since we can use
 				//negative direction
-				m_Last_RequestedVelocity=-1.0;  
+				m_Last_RequestedVelocity[0]=m_Last_RequestedVelocity[1]=-1.0;  
 				UsingRequestedVelocity=true;
 			}
 			else
@@ -428,7 +465,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		}
 
 		//Just transfer the acceleration directly into our velocity to use variable
-		double VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:currVelocity+VelocityDelta;
+		Vec2d VelocityToUse=(UsingRequestedVelocity)? m_RequestedVelocity:LocalVelocity+VelocityDelta;
 
 		#if 0
 		if (stricmp(GetName().c_str(),"Q33_2")==0)
@@ -443,18 +480,18 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			if (m_currAccel[1]<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
 			{
-				if ((VelocityToUse) < -ENGAGED_MAX_SPEED)
+				if ((VelocityToUse[1]) < -ENGAGED_MAX_SPEED)
 				{
-					m_RequestedVelocity = VelocityToUse = -ENGAGED_MAX_SPEED;
+					m_RequestedVelocity[1] = VelocityToUse[1] = -ENGAGED_MAX_SPEED;
 					m_currAccel[1]=0.0;
 				}
 			}
 			else 
 			{
 				double MaxSpeed=afterBurnerOn?MAX_SPEED:ENGAGED_MAX_SPEED;
-				if ((VelocityToUse) > MaxSpeed)
+				if ((VelocityToUse[1]) > MaxSpeed)
 				{
-					m_RequestedVelocity=VelocityToUse=MaxSpeed;
+					m_RequestedVelocity[1]=VelocityToUse[1]=MaxSpeed;
 					m_currAccel[1]=0.0;
 				}
 			}
@@ -464,9 +501,9 @@ void Ship_2D::TimeChange(double dTime_s)
 		Vec2d GlobalForce;
 		if (UsingRequestedVelocity)
 		{
-			GlobalForce=m_Physics.GetForceFromVelocity(GetDirection(GetAtt_r(),VelocityToUse),dTime_s);
+			GlobalForce=m_Physics.GetForceFromVelocity(LocalToGlobal(GetAtt_r(),VelocityToUse),dTime_s);
 			//Allow subclass to evaluate the requested velocity in use;
-			RequestedVelocityCallback(VelocityToUse,dTime_s);
+			RequestedVelocityCallback(VelocityToUse[1],dTime_s);
 		}
 		else
 		{
@@ -568,7 +605,8 @@ void Ship_2D::TimeChange(double dTime_s)
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint,dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
+			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint * m_ShipProps.GetRotateToScaler(DistanceToUse),
+				dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
 		else
 			rotVel=m_rotDisplacement_rad;
@@ -647,6 +685,236 @@ void Ship_2D::CancelAllControls()
 	//if (m_controller )
 	//	m_controller->CancelAllControls();
 }
+
+/***********************************************************************************************************************************/
+/*															Ship_Properties															*/
+/***********************************************************************************************************************************/
+//These must be in the same order as they are in Ship_Properties::Ship_Type
+const char * const csz_RobotNames[] =
+{
+	"RobotTank",
+	"RobotSwerve",
+	"RobotButterfly",
+	"RobotNona",
+	"Robot2011",
+	"Robot2012",
+};
+
+Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
+{
+	Ship_Props props;
+	memset(&props,0,sizeof(Ship_Props));
+
+	props.dHeading = DEG_2_RAD(270.0);
+
+	double Scale=0.2;  //we must scale everything down to see on the view
+	props.MAX_SPEED = 2000.0 * Scale;
+	props.ENGAGED_MAX_SPEED = 400.0 * Scale;
+	props.ACCEL = 60.0 * Scale;
+	props.BRAKE = 50.0 * Scale;
+	props.STRAFE = props.BRAKE; //could not find this one
+	props.AFTERBURNER_ACCEL = 107.0 * Scale;
+	props.AFTERBURNER_BRAKE = props.BRAKE;
+
+	props.MaxAccelLeft=40.0 * Scale;
+	props.MaxAccelRight=40.0 * Scale;
+	props.MaxAccelForward=props.MaxAccelForward_High=87.0 * Scale;
+	props.MaxAccelReverse=props.MaxAccelReverse_High=70.0 * Scale;
+	props.MaxTorqueYaw=2.5;
+
+	double RAMP_UP_DUR = 1.0;
+	double RAMP_DOWN_DUR = 1.0;
+	props.EngineRampAfterBurner= props.AFTERBURNER_ACCEL/RAMP_UP_DUR;
+	props.EngineRampForward= props.ACCEL/RAMP_UP_DUR;
+	props.EngineRampReverse= props.BRAKE/RAMP_UP_DUR;
+	props.EngineRampStrafe= props.STRAFE/RAMP_UP_DUR;
+	props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
+	props.RotateTo_TorqueDegradeScalar=props.RotateTo_TorqueDegradeScalar_High=1.0;
+	m_ShipProps=props;
+};
+
+const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
+{
+	Ship_Props &props=m_ShipProps;
+	const char* err;
+	props.ShipType=Ship_Props::eDefault;
+	m_EntityName="Ship";
+	err = script.GetGlobalTable("Ship");
+	if (err)
+	{
+		for (size_t i=0;i<_countof(csz_RobotNames);i++)
+		{
+			err = script.GetGlobalTable(csz_RobotNames[i]);
+			if (!err)
+			{
+				props.ShipType=(Ship_Props::Ship_Type)(i+1);
+				m_EntityName=csz_RobotNames[i];
+				break;
+			}
+		}
+	}
+	return err;
+}
+
+//declared as global to avoid allocation on stack each iteration
+const char * const g_Ship_Controls_Events[] = 
+{
+	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","POV_Turn","Turn_180",
+	"Joystick_SetLeftVelocity","Joystick_SetRightVelocity",
+	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None"
+};
+
+const char *Ship_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
+{
+	return (index<_countof(g_Ship_Controls_Events))?g_Ship_Controls_Events[index] : NULL;
+}
+Ship_Properties::ControlEvents Ship_Properties::s_ControlsEvents;
+
+
+void Ship_Properties::LoadFromScript(Scripting::Script& script)
+{
+	Ship_Props &props=m_ShipProps;
+	const char* err=NULL;
+	{
+		double dHeading;
+		err = script.GetField("dHeading", NULL, NULL, &dHeading);
+		if (!err)
+			props.dHeading=DEG_2_RAD(dHeading);
+		else
+			script.GetField("heading_rad", NULL, NULL, &props.dHeading);
+
+		err = script.GetField("ACCEL", NULL, NULL, &props.ACCEL);
+		err = script.GetField("BRAKE", NULL, NULL, &props.BRAKE);
+		err = script.GetField("STRAFE", NULL, NULL, &props.STRAFE);
+		if (err)
+			props.STRAFE=props.BRAKE; 		//Give strafe the default of the brake
+
+		props.AFTERBURNER_ACCEL=props.ACCEL;  //Give afterburner acceleration rate the same as thrusters for default
+		err = script.GetField("AFTERBURNER_ACCEL", NULL, NULL, &props.AFTERBURNER_ACCEL);
+
+		props.AFTERBURNER_BRAKE=props.BRAKE;  //Give afterburner brake rate the same as brakes for default
+		err = script.GetField("AFTERBURNER_ACCEL", NULL, NULL, &props.AFTERBURNER_BRAKE);
+
+		// By defaults, we want all of the engines to ramp up to full in this amount of time
+		double RAMP_UP_DUR = 1.0;
+		double RAMP_DOWN_DUR = 1.0;
+
+		err = script.GetField("RAMP_UP_DUR", NULL, NULL, &RAMP_UP_DUR);
+		err = script.GetField("RAMP_DOWN_DUR", NULL, NULL, &RAMP_DOWN_DUR);
+		const double MIN_RAMP = 0.00001;	// Avoid stupid numbers, div by 0 errors, etc.
+		if (RAMP_UP_DUR < MIN_RAMP) RAMP_UP_DUR = MIN_RAMP;	
+		if (RAMP_DOWN_DUR < MIN_RAMP) RAMP_DOWN_DUR = MIN_RAMP;
+
+		err = script.GetField("EngineDeceleration", NULL, NULL, &props.EngineDeceleration);
+		if (err) props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
+		err = script.GetField("EngineRampStrafe", NULL, NULL, &props.EngineRampStrafe);
+		if (err) props.EngineRampStrafe= props.STRAFE/RAMP_UP_DUR;
+		err = script.GetField("EngineRampForward", NULL, NULL, &props.EngineRampForward);
+		if (err) props.EngineRampForward= props.ACCEL/RAMP_UP_DUR;
+		err = script.GetField("EngineRampReverse", NULL, NULL, &props.EngineRampReverse);
+		if (err) props.EngineRampReverse= props.BRAKE/RAMP_UP_DUR;
+		err = script.GetField("EngineRampAfterBurner", NULL, NULL, &props.EngineRampAfterBurner);
+		if (err) props.EngineRampAfterBurner= props.AFTERBURNER_ACCEL/RAMP_UP_DUR;
+
+
+		script.GetField("MaxAccelLeft", NULL, NULL, &props.MaxAccelLeft);
+		script.GetField("MaxAccelRight", NULL, NULL, &props.MaxAccelRight);
+		script.GetField("MaxAccelForward", NULL, NULL, &props.MaxAccelForward);
+		err=script.GetField("MaxAccelForward_High", NULL, NULL, &props.MaxAccelForward_High);
+		if (err)
+			props.MaxAccelForward_High=props.MaxAccelForward;
+
+		script.GetField("MaxAccelReverse", NULL, NULL, &props.MaxAccelReverse);
+		err=script.GetField("MaxAccelReverse_High", NULL, NULL, &props.MaxAccelReverse_High);
+		if (err)
+			props.MaxAccelReverse_High=props.MaxAccelReverse;
+
+		script.GetField("MaxTorqueYaw", NULL, NULL, &props.MaxTorqueYaw);
+		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
+		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
+		if (err)
+			props.RotateTo_TorqueDegradeScalar_High=props.RotateTo_TorqueDegradeScalar;
+
+		err = script.GetField("MAX_SPEED", NULL, NULL, &props.MAX_SPEED);
+		err = script.GetField("ENGAGED_MAX_SPEED", NULL, NULL, &props.ENGAGED_MAX_SPEED);
+		if (err)
+			props.ENGAGED_MAX_SPEED=props.MAX_SPEED;
+
+		err = script.GetFieldTable("controls");
+		if (!err)
+		{
+			m_ShipControls.LoadFromScript(script);
+			script.Pop();
+		}
+	}
+
+	// Let the base class finish things up
+	__super::LoadFromScript(script);
+}
+
+//This is depreciated... may need to review game use-case
+#if 0
+void Ship_Properties::Initialize(Ship_2D *NewShip) const
+{
+	const Ship_Props &props=m_ShipProps;
+	NewShip->dHeading=props.dHeading;
+	NewShip->MAX_SPEED=props.MAX_SPEED;
+	NewShip->ENGAGED_MAX_SPEED=props.ENGAGED_MAX_SPEED;
+	NewShip->ACCEL=props.ACCEL;
+	NewShip->BRAKE=props.BRAKE;
+	NewShip->STRAFE=props.STRAFE;
+	NewShip->AFTERBURNER_ACCEL=props.AFTERBURNER_ACCEL;
+	NewShip->AFTERBURNER_BRAKE=props.AFTERBURNER_BRAKE;
+
+	NewShip->EngineRampAfterBurner=props.EngineRampAfterBurner;
+	NewShip->EngineRampForward=props.EngineRampForward;
+	NewShip->EngineRampReverse=props.EngineRampReverse;
+	NewShip->EngineRampStrafe=props.EngineRampStrafe;
+	NewShip->EngineDeceleration=props.EngineDeceleration;
+
+	NewShip->MaxAccelLeft=props.MaxAccelLeft;
+	NewShip->MaxAccelRight=props.MaxAccelRight;
+	//NewShip->MaxAccelForward=props.MaxAccelForward;
+	//NewShip->MaxAccelReverse=props.MaxAccelReverse;
+	NewShip->MaxTorqueYaw=props.MaxTorqueYaw;
+}
+#endif
+
+void Ship_Properties::UpdateShipProperties(const Ship_Props &props)
+{
+	m_ShipProps=props;
+}
+
+double Ship_Properties::GetMaxAccelForward(double Velocity) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Velocity)/props.MAX_SPEED;
+	const double  &Low=props.MaxAccelForward;
+	const double &High=props.MaxAccelForward_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+double Ship_Properties::GetMaxAccelReverse(double Velocity) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Velocity)/props.MAX_SPEED;
+	const double  &Low=props.MaxAccelReverse;
+	const double &High=props.MaxAccelReverse_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+double Ship_Properties::GetRotateToScaler(double Distance) const
+{
+	const Ship_Props &props=m_ShipProps;
+	double DistanceMagnitude=fabs(Distance);
+	while (DistanceMagnitude>M_PI)
+		DistanceMagnitude-=Pi2;
+	const double ratio = fabs(DistanceMagnitude)/Pi;
+	const double  &Low=props.RotateTo_TorqueDegradeScalar;
+	const double &High=props.RotateTo_TorqueDegradeScalar_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
 
   /***********************************************************************************************************************************/
  /*													Ship_Tester																		*/
