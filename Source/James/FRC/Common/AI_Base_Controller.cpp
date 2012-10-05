@@ -19,6 +19,217 @@
 
 using namespace Framework::Base;
 
+//namespace Scripting=GG_Framework::Logic::Scripting;
+namespace Scripting=Framework::Scripting;
+
+  /***********************************************************************************************************************************/
+ /*														LUA_Controls_Properties														*/
+/***********************************************************************************************************************************/
+
+LUA_Controls_Properties::LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent) : m_pParent(parent)
+{
+}
+
+LUA_Controls_Properties &LUA_Controls_Properties::operator= (const LUA_Controls_Properties &CopyFrom)
+{
+	m_Controls=CopyFrom.m_Controls;
+	//Note: this one probably requires a static interface
+	m_pParent=CopyFrom.m_pParent;
+	return *this;
+}
+
+const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script)
+{
+	const char *err=NULL;
+	err = script.GetFieldTable(Eventname);
+	if (!err)
+	{
+		Element.Event=Eventname;
+		std::string sType;
+		err = script.GetField("type",&sType,NULL,NULL);
+		ASSERT_MSG(!err, err);
+		
+		if (strcmp(sType.c_str(),"joystick_analog")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickAnalog;
+			JoyAxis_enum JoyAxis;
+			double dJoyAxis;
+			err = script.GetField("key", NULL, NULL,&dJoyAxis);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration
+			JoyAxis=(JoyAxis_enum)((int)dJoyAxis);
+			bool IsFlipped;
+			err = script.GetField("is_flipped", NULL, &IsFlipped,NULL);
+			ASSERT_MSG(!err, err);
+			double Multiplier;
+			err = script.GetField("multiplier", NULL, NULL,&Multiplier);
+			ASSERT_MSG(!err, err);
+			double FilterRange;
+			err = script.GetField("filter", NULL, NULL,&FilterRange);
+			ASSERT_MSG(!err, err);
+			double CurveIntensity;
+			err = script.GetField("curve_intensity", NULL, NULL, &CurveIntensity);
+			ASSERT_MSG(!err, err);
+
+			Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &set=Element.Specifics.Analog;
+			set.JoyAxis=JoyAxis;
+			set.IsFlipped=IsFlipped;
+			set.Multiplier=Multiplier;
+			set.FilterRange=FilterRange;
+			set.CurveIntensity=CurveIntensity;
+			//joy.AddJoy_Analog_Default(JoyAxis,Eventname,IsFlipped,Multiplier,FilterRange,IsSquared,ProductName.c_str());
+		}
+		else if (strcmp(sType.c_str(),"joystick_button")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickButton;
+			size_t WhichButton;
+			double dWhichButton;
+			err = script.GetField("key", NULL, NULL,&dWhichButton);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
+			WhichButton=(JoyAxis_enum)((int)dWhichButton-1);
+			bool useOnOff;
+			err = script.GetField("on_off", NULL, &useOnOff,NULL);
+			ASSERT_MSG(!err, err);
+			bool dbl_click=false;
+			err = script.GetField("dbl", NULL, &dbl_click,NULL); //This one can be blank
+			err=NULL;  //don't return an error (assert for rest)
+
+			Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &set=Element.Specifics.Button;
+			set.WhichButton=WhichButton;
+			set.useOnOff=useOnOff;
+			set.dbl_click=dbl_click;
+			//joy.AddJoy_Button_Default( WhichButton,Eventname,useOnOff,dbl_click,ProductName.c_str());
+		}
+		else assert(false);
+		script.Pop();
+	}
+	return err;
+}
+
+void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
+{
+	//ensure the list is clean (incase it gets called again)
+	m_Controls.clear();
+
+	const char* err=NULL;
+	//Note i is cardinal (more readable in LUA)
+	size_t i=1,j=0;
+	std::string Controls;
+	const char * Events;
+	char Buffer[4];
+	while ( Controls="Joystick_",Controls+=itoa(i++,Buffer,10) ,	(err = script.GetFieldTable(Controls.c_str()))==NULL)
+	{
+		Control_Props control;
+		//Wind River uses generic name, and AI tester uses product name
+		//control.Controller=Controls[i];
+		err=script.GetField("control", &control.Controller, NULL, NULL);
+		j=0;
+		while ( Events=m_pParent->LUA_Controls_GetEvents(j++) , Events)
+		{
+			Controller_Element_Properties element;
+			err=ExtractControllerElementProperties(element,Events,script);
+			if (!err)
+				control.EventList.push_back(element);
+		}
+		m_Controls.push_back(control);
+		script.Pop();
+	}
+}
+
+void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) const
+{
+	typedef Framework::UI::JoyStick_Binder JoyStick_Binder;
+	JoyStick_Binder *p_joy=(JoyStick_Binder *)joy;
+	const Controls_List &controls=Get_Controls();
+	for (size_t i=0;i<controls.size();i++)
+	{
+		const Control_Props &control=controls[i];
+
+		for (size_t j=0;j<control.EventList.size();j++)
+		{
+			const Controller_Element_Properties &element=control.EventList[j];
+			switch (element.Type)
+			{
+			case Controller_Element_Properties::eJoystickAnalog:
+				if (Bind)
+				{
+					const Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
+					//Note the cast... these are not going to change, but there is dup code to on axis enum to avoid dependency issues
+					p_joy->AddJoy_Analog_Default((JoyStick_Binder::JoyAxis_enum)analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
+						analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
+				}
+				else
+					p_joy->RemoveJoy_Analog_Binding(element.Event.c_str(),control.Controller.c_str());
+				break;
+			case Controller_Element_Properties::eJoystickButton:
+				if (Bind)
+				{
+					const Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
+					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
+				}
+				else
+					p_joy->RemoveJoy_Button_Binding(element.Event.c_str(),control.Controller.c_str());
+				break;
+			}
+		}
+	}
+}
+
+  /***********************************************************************************************************************************/
+ /*															Tank_Steering															*/
+/***********************************************************************************************************************************/
+
+Tank_Steering::Tank_Steering() : m_LeftVelocity(0.0),m_RightVelocity(0.0),m_StraightDeadZone_Tolerance(0.05),m_AreControlsDisabled(false)
+{
+}
+
+void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s)
+{
+	if (ship.GetAlterTrajectory())
+		AuxVelocity=((m_LeftVelocity + m_RightVelocity) * 0.5) * ship.GetEngaged_Max_Speed();
+	else
+	{
+		//Haha this is absolutely silly driving tank steering in slide mode, but it works
+		LinearAcceleration[1]+=((m_LeftVelocity + m_RightVelocity) * 0.5) * ship.GetAccelSpeed();
+	}
+	const double difference=(m_LeftVelocity + -m_RightVelocity);
+	const double omega = (fabs(difference)>m_StraightDeadZone_Tolerance)? difference * 0.5 : 0;
+	AngularAcceleration=omega*ship.GetHeadingSpeed();
+	if (!IsZero(omega))
+		LockShipHeadingToOrientation=true;
+	//DOUT4("%f %f %f",m_LeftVelocity,m_RightVelocity,difference);
+}
+
+void Tank_Steering::Joystick_SetLeftVelocity(double Velocity)
+{
+	if (!m_AreControlsDisabled)
+		m_LeftVelocity=Velocity;
+	else
+		m_LeftVelocity=0.0;
+}
+void Tank_Steering::Joystick_SetRightVelocity(double Velocity)
+{
+	if (!m_AreControlsDisabled)
+		m_RightVelocity=Velocity;
+	else
+		m_RightVelocity=0.0;
+}
+
+void Tank_Steering::BindAdditionalEventControls(bool Bind,Framework::Base::EventMap *em,IEvent::HandlerList &ehl)
+{
+	if (Bind)
+	{
+		em->EventValue_Map["Joystick_SetLeftVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetLeftVelocity);
+		em->EventValue_Map["Joystick_SetRightVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetRightVelocity);
+	}
+	else
+	{
+		em->EventValue_Map["Joystick_SetLeftVelocity"].Remove(*this, &Tank_Steering::Joystick_SetLeftVelocity);
+		em->EventValue_Map["Joystick_SetRightVelocity"].Remove(*this, &Tank_Steering::Joystick_SetRightVelocity);
+	}
+}
+
   /***********************************************************************************************************************************/
  /*														AI_Base_Controller															*/
 /***********************************************************************************************************************************/
@@ -84,9 +295,15 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 
 	if (!LockOrientation)
 	{
+		//I have kept the older method for reference... both will work identical, but the later avoids duplicate distance work
+		#if 0
 		double AngularDistance=m_ship.m_IntendedOrientationPhysics.ComputeAngularDistance(VectorOffset);
 		//printf("\r %f          ",RAD_2_DEG(AngularDistance));
 		m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
+		#else
+		double lookDir_radians= atan2(VectorOffset[0],VectorOffset[1]);
+		m_ship.SetIntendedOrientation(lookDir_radians);
+		#endif
 	}
 
 	//first negotiate the max speed given the power
@@ -111,9 +328,9 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		//Vec2d LocalMatchVel(m_ship.GetAtt_quat().conj() * (*matchVel));
 		Vec2d LocalMatchVel=GlobalToLocal(m_ship.GetAtt_r(),*matchVel);
 
-		const double ForceDegradeScalar=m_ship.Get_DriveTo_ForceDegradeScalar();
-		Vec2d ForceRestraintPositive(m_ship.MaxAccelRight*m_ship.Mass*ForceDegradeScalar,m_ship.m_ShipProps.GetMaxAccelForward()*m_ship.Mass*ForceDegradeScalar);
-		Vec2d ForceRestraintNegative(m_ship.MaxAccelLeft*m_ship.Mass*ForceDegradeScalar,m_ship.m_ShipProps.GetMaxAccelReverse()*m_ship.Mass*ForceDegradeScalar);
+		const Vec2d ForceDegradeScalar=m_ship.Get_DriveTo_ForceDegradeScalar();
+		Vec2d ForceRestraintPositive(m_ship.MaxAccelRight*m_ship.Mass*ForceDegradeScalar[0],m_ship.m_ShipProps.GetMaxAccelForward()*m_ship.Mass*ForceDegradeScalar[1]);
+		Vec2d ForceRestraintNegative(m_ship.MaxAccelLeft*m_ship.Mass*ForceDegradeScalar[0],m_ship.m_ShipProps.GetMaxAccelReverse()*m_ship.Mass*ForceDegradeScalar[1]);
 		//Note: it is possible to overflow in extreme distances, if we challenge this then I should have an overflow check in physics
 		Vec2d LocalVelocity=m_ship.m_Physics.GetVelocityFromDistance_Linear(LocalVectorOffset,ForceRestraintPositive,ForceRestraintNegative,dTime_s, LocalMatchVel);
 

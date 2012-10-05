@@ -1,6 +1,30 @@
 #pragma once
 
+//An aggregated type of control for robots that wish to use this kind of steering
+class Tank_Steering
+{
+	private:
+		double m_LeftVelocity, m_RightVelocity;  //for tank steering
+		double m_StraightDeadZone_Tolerance;  //used to help controls drive straight
+		bool m_AreControlsDisabled;
+	public:
+		typedef Framework::Base::Vec2d Vec2D;
+		//typedef osg::Vec2d Vec2D;
 
+		Tank_Steering();
+
+		void SetAreControlsDisabled(bool AreControlsDisabled) {m_AreControlsDisabled=AreControlsDisabled;}
+		//This is the ui controllers time change callback update... client code must handle initializing as this will only write to those
+		//that need to be written to
+		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s);
+		void BindAdditionalEventControls(bool Bind,Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+
+		//range 0-1 the higher this is the lower turning precision, but easier to drive straight
+		void SetStraightDeadZone_Tolerance(double Tolerance) {m_StraightDeadZone_Tolerance=Tolerance;}
+	protected:
+		void Joystick_SetLeftVelocity(double Velocity);
+		void Joystick_SetRightVelocity(double Velocity);
+};
 
 class AI_Base_Controller
 {
@@ -38,6 +62,7 @@ class AI_Base_Controller
 		void SetIntendedOrientation(double IntendedOrientation) {m_ship.SetIntendedOrientation(IntendedOrientation);}
 		
 		Ship_2D &GetShip() {return m_ship;}
+		const UI_Controller *GetUIController() const {return m_UI_Controller;}
 	protected:
 		friend class Ship_Tester;
 		Goal *m_Goal; //Dynamically set a goal for this controller

@@ -40,27 +40,190 @@ inline double SaturateRotation(double Rotation)
 	return Rotation;
 }
 
+struct Ship_Props
+{
+	//typedef Entity_Properties __super;
+	// This is the rate used by the keyboard
+	double dHeading;
+
+	//May need these later to simulate pilot error in the AI
+	//! G-Force limits
+	//double StructuralDmgGLimit, PilotGLimit, PilotTimeToPassOut, PilotTimeToRecover, PilotMaxTimeToRecover;
+
+	//! We can break this up even more if needed
+	double EngineRampForward,EngineRampReverse,EngineRampAfterBurner;
+	double EngineDeceleration,EngineRampStrafe;
+
+	//! Engaged max speed is basically the fastest speed prior to using after-burner.  For AI and auto pilot it is the trigger speed to
+	//! enable the afterburner
+	double MAX_SPEED,ENGAGED_MAX_SPEED;
+	double ACCEL, BRAKE, STRAFE, AFTERBURNER_ACCEL, AFTERBURNER_BRAKE;
+
+	double MaxAccelLeft,MaxAccelRight,MaxAccelForward,MaxAccelReverse;
+	double MaxAccelForward_High,MaxAccelReverse_High;
+	double MaxTorqueYaw;
+	//These are used to avoid overshoot when trying to rotate to a heading
+	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
+	enum Ship_Type
+	{
+		eDefault,
+		eRobotTank,
+		eSwerve_Robot,
+		eButterfly_Robot,
+		eNona_Robot,
+		eFRC2011_Robot,
+		eFRC2012_Robot,
+	};
+	Ship_Type ShipType;
+};
+
+class Physics_Tester : public Entity2D
+{
+	public:
+		Physics_Tester(const char EntityName[]) : Entity2D(EntityName) {}
+};
+
+class LUA_Controls_Properties_Interface
+{
+	public:
+		//The client properties class needs to have list of elements to check... return NULL when reaching the end
+		virtual const char *LUA_Controls_GetEvents(size_t index) const =0;
+};
+
+//This is a helper class that makes it easy to transfer LUA script to its own contained list (included within)
+class LUA_Controls_Properties
+{
+	public:
+		enum JoyAxis_enum
+		{
+			eX_Axis,
+			eY_Axis,
+			eZ_Axis,
+			eX_Rot,
+			eY_Rot,
+			eZ_Rot,
+			eSlider0,
+			eSlider1,
+			ePOV_0,
+			ePOV_1,
+			ePOV_2,
+			ePOV_3,
+			eNoJoyAxis_Entries
+		};
+
+		struct Controller_Element_Properties
+		{
+			std::string Event;
+			enum ElementType
+			{
+				eJoystickAnalog,
+				eJoystickButton
+			} Type;
+			union ElementTypeSpecific
+			{
+				struct AnalogSpecifics_rw
+				{
+					JoyAxis_enum JoyAxis;
+					bool IsFlipped;
+					double Multiplier;
+					double FilterRange;
+					double CurveIntensity;
+				} Analog;
+				struct ButtonSpecifics_rw
+				{
+					size_t WhichButton;
+					bool useOnOff;
+					bool dbl_click;
+				} Button;
+			} Specifics;
+		};
+
+		struct Control_Props
+		{
+			std::vector<Controller_Element_Properties> EventList;
+			std::string Controller;
+		};
+		typedef std::vector<Control_Props> Controls_List;
+	private:
+		//Return if element was successfully created (be sure to check as some may not be present)
+		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Framework::Scripting::Script& script);
+
+		Controls_List m_Controls;
+		LUA_Controls_Properties_Interface * m_pParent;
+	public:
+		LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent);
+
+		const Controls_List &Get_Controls() const {return m_Controls;}
+		//call from within GetFieldTable controls
+		void LoadFromScript(Framework::Scripting::Script& script);
+		//Just have the client (from ship) call this
+		void BindAdditionalUIControls(bool Bind,void *joy) const;
+		LUA_Controls_Properties &operator= (const LUA_Controls_Properties &CopyFrom);
+};
+
+class Ship_2D;
+class Ship_Properties : public Entity_Properties
+{
+	public:
+		Ship_Properties();
+		virtual ~Ship_Properties() {}
+		const char *SetUpGlobalTable(Framework::Scripting::Script& script);
+		virtual void LoadFromScript(Framework::Scripting::Script& script);
+		//This is depreciated (may need to review game use-case)
+		//void Initialize(Ship_2D *NewShip) const;
+		void UpdateShipProperties(const Ship_Props &props);  //explicitly allow updating of ship props here
+		Ship_Props::Ship_Type GetShipType() const {return m_ShipProps.ShipType;}
+		double GetEngagedMaxSpeed() const {return m_ShipProps.ENGAGED_MAX_SPEED;}
+		//These methods are really more for the simulation... so using the high yields a better reading for testing
+		double GetMaxAccelForward() const {return m_ShipProps.MaxAccelForward_High;}
+		double GetMaxAccelReverse() const {return m_ShipProps.MaxAccelReverse_High;}
+
+		double GetMaxAccelForward(double Velocity) const;
+		double GetMaxAccelReverse(double Velocity) const;
+		double GetRotateToScaler(double Distance) const;
+
+		const Ship_Props &GetShipProps() const {return m_ShipProps;}
+		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
+	private:
+		typedef Entity_Properties __super;
+		
+		Ship_Props m_ShipProps;
+
+		class ControlEvents : public LUA_Controls_Properties_Interface
+		{
+			protected: //from LUA_Controls_Properties_Interface
+				virtual const char *LUA_Controls_GetEvents(size_t index) const; 
+		};
+		static ControlEvents s_ControlsEvents;
+		LUA_Controls_Properties m_ShipControls;
+};
+
 class Ship_2D : public Entity2D
 {
 	public:
 		typedef Framework::Base::Vec2d Vec2D;
+		//typedef osg::Vec2d Vec2D;
 		Ship_2D(const char EntityName[]);
+		//Give ability to change ship properties 
+		void UpdateShipProperties(const Ship_Props &props);
 		virtual void Initialize(Framework::Base::EventMap& em,const Entity_Properties *props=NULL);
 		virtual ~Ship_2D();
 
 		///This implicitly will place back in auto mode with a speed of zero
 		void Stop(){SetRequestedVelocity(0.0);}
 		void SetRequestedVelocity(double Velocity);
-		double GetRequestedVelocity(){return m_RequestedVelocity;}
+		void SetRequestedVelocity(Vec2D Velocity);
+		double GetRequestedVelocity(){return m_RequestedVelocity[1];}
 		void FireAfterburner() {SetRequestedVelocity(GetMaxSpeed());}
 		void SetCurrentLinearAcceleration(const Vec2D &Acceleration) {m_currAccel=Acceleration;}
 
 		/// \param LockShipHeadingToOrientation for this given time slice if this is true the intended orientation is restrained
 		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
 		/// is not restrained and the ship applies its restraints to catch up to the orientation
-		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation) 
-		{	m_LockShipHeadingToOrientation=LockShipHeadingToOrientation,m_rotAccel_rad_s=Acceleration;
-		}
+		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation);
+		///This is used by AI controller (this will have LockShipHeadingToOrientation set to false)
+		///This allows setting the desired heading directly either relative to the current heading or absolute
+		void SetIntendedOrientation(double IntendedOrientation,bool Absolute=true);
 
 		/// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
@@ -103,7 +266,13 @@ class Ship_2D : public Entity2D
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		//Its possible that each ship may have its own specific controls
-		virtual void BindAdditionalUIControls(bool Bind, void *joy) {}
+		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		//callback from UI_Controller for custom controls override if ship has specific controls... all outputs to be written are optional
+		//so derived classes can only write to things of interest
+		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s) {}
+		//Override to get sensor/encoder's real velocity
+		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),GetPhysics().GetLinearVelocity());}
+		virtual double GetAngularVelocity_ToDisplay() {return GetPhysics().GetAngularVelocity();}
 	protected:
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
@@ -133,13 +302,10 @@ class Ship_2D : public Entity2D
 		friend class AI_Base_Controller;
 		friend class Ship_Properties;
 
-		///This is to only be used by AI controller (this will have LockShipHeadingToOrientation set to false)
-		void SetIntendedOrientation(double IntendedOrientation);
-
 		///This allows subclass to evaluate the requested velocity when it is in use
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s) {}
 		//override to manipulate a distance force degrade, which is used to compensate for deceleration inertia
-		virtual double Get_DriveTo_ForceDegradeScalar() const {return 1.0;}
+		virtual Vec2D Get_DriveTo_ForceDegradeScalar() const {return Vec2D(1.0,1.0);}
 
 		AI_Base_Controller* m_controller;
 		Ship_Properties m_ShipProps;
@@ -163,7 +329,7 @@ class Ship_2D : public Entity2D
 		double EngineDeceleration,EngineRampStrafe;
 	
 		//Use this technique when m_AlterTrajectory is true
-		double m_RequestedVelocity;
+		Vec2D m_RequestedVelocity;
 		double m_AutoLevelDelay; ///< The potential gimbal lock, and user rolling will trigger a delay for the autolevel (when enabled)
 		double m_HeadingSpeedScale; //used by auto pilot control to have slower turn speeds for way points
 		double m_rotAccel_rad_s;
@@ -187,18 +353,12 @@ class Ship_2D : public Entity2D
 		Threshold_Averager<eThrustState,5> m_thrustState_Average;
 		eThrustState m_thrustState;
 		//double m_Last_AccDel;  ///< This monitors a previous AccDec session to determine when to reset the speed
-		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
+		Vec2D m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
 
 	private:
 		typedef Entity2D __super;
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
 
-};
-
-class Physics_Tester : public Entity2D
-{
-	public:
-		Physics_Tester(const char EntityName[]) : Entity2D(EntityName) {}
 };
 
 class Ship_Tester : public Ship_2D
