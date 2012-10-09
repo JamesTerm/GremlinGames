@@ -11,6 +11,7 @@ FRC2012_wheel_diameter_in=6   --This will determine the correct distance try to 
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
 HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
+inv_skid=1.0/math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
 
 KeyDistance_in=144;
 KeyWidth_in=101;
@@ -19,7 +20,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0;
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1;
+	version = 2;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -31,7 +32,7 @@ MainRobot = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
+	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2 * inv_skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
@@ -42,7 +43,7 @@ MainRobot = {
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=27.5, width_in=WheelBase_Width_In},	--The length is not used but here for completion
+		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2012_wheel_diameter_in,
@@ -62,6 +63,7 @@ MainRobot = {
 		reverse_steering='yes',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='yes'
+		inv_max_force = 1/15.0  --solved empiracally
 	},
 	
 	robot_settings =
@@ -224,68 +226,73 @@ MainRobot = {
 				reverse_steering='yes',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='yes'
-			}
-		},
-		controls =
-		{
-			Joystick_1 =
-			{
-				control = "CH FLIGHTSTICK PRO",
-				Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, is_squared=true},
-				Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=0.8, filter=0.1, is_squared=false},
-				Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
-				Robot_Flippers_Solenoid = {type="joystick_button", key=2, on_off=true},
-				Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
-			},
-
-			Joystick_2 =
-			{
-				control = "Logitech Dual Action",
-				--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-				Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.5, filter=0.1, is_squared=false},
-				--Ball_Grip = {type="joystick_button", key=2, on_off=true},
-				Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-				--Ball_Fire = {type="joystick_button", key=4, on_off=true},
-				--PowerWheels_IsRunning = {type="joystick_button", key=3, on_off=true},
-				Robot_TurretSetTargetingOff = {type="joystick_button", key=6, on_off=true},
-				Robot_SetPreset1 = {type="joystick_button", key=5, on_off=false},
-				Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
-				Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
-				
-				--Until we have the ball sensors working we'll need to re-assign the aim and fire buttons below to use all three button for the grip
-				Ball_Fire = {type="joystick_button", key=8, on_off=true},
-				PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
-				Ball_GripL = {type="joystick_button", key=2, on_off=true},
-				Ball_GripM = {type="joystick_button", key=3, on_off=true},
-				Ball_GripH = {type="joystick_button", key=4, on_off=true}
-			},
-
-			Joystick_3 =
-			{	
-				control = "CH THROTTLE QUADRANT",
-				PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
-				Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, is_squared=false},
-				PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, is_squared=false},
-				--This top one is only for open loop mode, and works like the game pad
-				--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, is_squared=true},
-				--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, is_squared=false},
-				Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, is_squared=false},
-				
-				--Ball_Grip = {type="joystick_button", key=2, on_off=true},
-				Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-				--Ball_Fire = {type="joystick_button", key=6, on_off=true},
-				--PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
-				Robot_SetDefensiveKeyOn = {type="joystick_button", key=11, on_off=false},
-				Robot_SetDefensiveKeyOff = {type="joystick_button", key=12, on_off=false},
-				
-				Ball_GripL = {type="joystick_button", key=2, on_off=true},
-				Ball_GripM = {type="joystick_button", key=4, on_off=true},
-				Ball_GripH = {type="joystick_button", key=6, on_off=true},
-				PowerWheels_IsRunning = {type="joystick_button", key=8, on_off=true},
-				Ball_Fire = {type="joystick_button", key=10, on_off=true}
+				inv_max_force = 0.0  --solved empiracally
 			}
 		}
 	},
+
+	controls =
+	{
+		Joystick_1 =
+		{
+			control = "ch flightstick pro",
+			//control = "logitech attack 3",
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			Robot_Flippers_Solenoid = {type="joystick_button", key=2, on_off=true},
+			Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
+		},
+
+		Joystick_2 =
+		{
+			control = "logitech dual action",
+			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.5, filter=0.1, is_squared=false},
+			--Ball_Grip = {type="joystick_button", key=2, on_off=true},
+			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
+			--Ball_Fire = {type="joystick_button", key=4, on_off=true},
+			--PowerWheels_IsRunning = {type="joystick_button", key=3, on_off=true},
+			Robot_TurretSetTargetingOff = {type="joystick_button", key=6, on_off=true},
+			Robot_SetPreset1 = {type="joystick_button", key=5, on_off=false},
+			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
+			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
+			
+			--Until we have the ball sensors working we'll need to re-assign the aim and fire buttons below to use all three button for the grip
+			Ball_Fire = {type="joystick_button", key=8, on_off=true},
+			PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
+			Ball_GripL = {type="joystick_button", key=2, on_off=true},
+			Ball_GripM = {type="joystick_button", key=3, on_off=true},
+			Ball_GripH = {type="joystick_button", key=4, on_off=true}
+		},
+
+		Joystick_3 =
+		{	
+			control = "ch throttle quadrant",
+			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+			Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			--This top one is only for open loop mode, and works like the game pad
+			--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, curve_intensity=1.0},
+			--Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			
+			--Ball_Grip = {type="joystick_button", key=2, on_off=true},
+			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
+			--Ball_Fire = {type="joystick_button", key=6, on_off=true},
+			--PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
+			Robot_SetDefensiveKeyOn = {type="joystick_button", key=11, on_off=false},
+			Robot_SetDefensiveKeyOff = {type="joystick_button", key=12, on_off=false},
+			
+			Ball_GripL = {type="joystick_button", key=2, on_off=true},
+			Ball_GripM = {type="joystick_button", key=4, on_off=true},
+			Ball_GripH = {type="joystick_button", key=6, on_off=true},
+			PowerWheels_IsRunning = {type="joystick_button", key=8, on_off=true},
+			Ball_Fire = {type="joystick_button", key=10, on_off=true}
+		}
+
+	},
+	
 	--This is only used in the AI tester, can be ignored
 	UI =
 	{
