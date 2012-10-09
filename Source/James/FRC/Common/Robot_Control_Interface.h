@@ -1,22 +1,20 @@
 #pragma once
 
+//Note: On most (if not all) of these methods will have a size_t index as the first parameter.  This is enumerated to a specific robot's interpretation
+//defined within that robots class
+
 class Robot_Control_Interface
 {
 public:
-	//See FRC_2011_Robot for enumerations
-
-	/// \param The index is ordinal enumerated to specific robot's interpretation
-	/// \see subclass for enumeration specifics
 	virtual void UpdateVoltage(size_t index,double Voltage) {}
-	/// \param The index is ordinal enumerated to specific robot's interpretation
-	/// \see subclass for enumeration specifics
-	virtual void CloseSolenoid(size_t index,bool Close)  {}
-	virtual void OpenSolenoid(size_t index,bool Close)  {}
+	//Having both Open and Close makes it easier to make the desired call without applying the not operator
+	virtual void CloseSolenoid(size_t index,bool Close) {}
+	virtual void OpenSolenoid(size_t index,bool Open) {}
 	/// \ret true if contact is made 
 	virtual bool GetBoolSensorState(size_t index) {return false;}
 };
 
-///TODO this one is still tunes to 2011 needs... I'll need to work out a way to make it more generic
+///TODO this one is still tuned to 2011 needs... I'll need to work out a way to make it more generic
 class Arm_Control_Interface
 {
 public:
