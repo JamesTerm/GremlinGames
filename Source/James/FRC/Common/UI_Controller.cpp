@@ -27,6 +27,7 @@ namespace Scripting=Framework::Scripting;
   /***************************************************************************************************************/
  /*												UI_Controller													*/
 /***************************************************************************************************************/
+const double Half_Pi=M_PI/2.0;
 
 void UI_Controller::Init_AutoPilotControls()
 {
@@ -36,10 +37,9 @@ void UI_Controller::Init_AutoPilotControls()
 //! TODO: Use the script to grab the head position to provide the HUD
 UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_controller) : 
 	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
-	m_Base(NULL),m_JoyStick_Binder(joy),
-	m_SlideButtonToggle(false),m_isControlled(false),m_CruiseSpeed(0.0),m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),
-	/*m_hud_connected(false),*/
-	m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true)
+	m_Base(NULL),m_JoyStick_Binder(joy),m_isControlled(false),m_ShipKeyVelocity(0.0),m_SlideButtonToggle(false),m_CruiseSpeed(0.0),
+	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Ship_UseHeadingSpeed(true),m_Test1(false),m_Test2(false),m_IsBeingDestroyed(false),
+	m_POVSetValve(false)
 {
 	ResetPos();
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
@@ -87,8 +87,8 @@ const char *UI_Controller::ExtractControllerElementProperties(Controller_Element
 			double FilterRange;
 			err = script.GetField("filter", NULL, NULL,&FilterRange);
 			ASSERT_MSG(!err, err);
-			bool IsSquared;
-			err = script.GetField("is_squared", NULL, &IsSquared,NULL);
+			double CurveIntensity;
+			err = script.GetField("curve_intensity", NULL, NULL, &CurveIntensity);
 			ASSERT_MSG(!err, err);
 
 			Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &set=Element.Specifics.Analog;
@@ -96,7 +96,7 @@ const char *UI_Controller::ExtractControllerElementProperties(Controller_Element
 			set.IsFlipped=IsFlipped;
 			set.Multiplier=Multiplier;
 			set.FilterRange=FilterRange;
-			set.IsSquared=IsSquared;
+			set.CurveIntensity=CurveIntensity;
 			//joy.AddJoy_Analog_Default(JoyAxis,Eventname,IsFlipped,Multiplier,FilterRange,IsSquared,ProductName.c_str());
 		}
 		else if (strcmp(sType.c_str(),"joystick_button")==0)
@@ -148,15 +148,18 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 	if (m_Base)
 	{
 		Framework::Base::EventMap* em = m_ship->GetEventMap();
-		em->EventOnOff_Map["RequestAfterburner"].Remove(*this, &UI_Controller::AfterBurner_Thrust);
+		//disabled until it works
+		//em->EventOnOff_Map["RequestAfterburner"].Remove(*this, &UI_Controller::AfterBurner_Thrust);
 		em->EventOnOff_Map["Thrust"].Remove(*this, &UI_Controller::Thrust);
 		em->EventOnOff_Map["Brake"].Remove(*this, &UI_Controller::Brake);
 		em->Event_Map["Stop"].Remove(*this, &UI_Controller::Stop);
 		em->EventOnOff_Map["Turn_R"].Remove(*this, &UI_Controller::Turn_R);
 		em->EventOnOff_Map["Turn_L"].Remove(*this, &UI_Controller::Turn_L);
+		em->Event_Map["Turn_180"].Remove(*this, &UI_Controller::Turn_180);
 		em->Event_Map["UserResetPos"].Remove(*this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Remove(*this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Remove(*this, &UI_Controller::ToggleSlide);
+		em->EventOnOff_Map["SlideHold"].Remove(*this, &UI_Controller::SlideHold);
 		em->EventOnOff_Map["StrafeLeft"].Remove(*this, &UI_Controller::StrafeLeft);
 		em->EventOnOff_Map["StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->Event_Map["ToggleAutoPilot"].Remove(*this, &UI_Controller::TryToggleAutoPilot);
@@ -166,12 +169,16 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventOnOff_Map["Test2"].Remove(*this, &UI_Controller::Test2);
 		//em->Event_Map["ShowHUD"].Remove(*m_HUD_UI.get(), &HUD_PDCB::ToggleEnabled);
 		em->EventValue_Map["BLACKOUT"].Remove(*this, &UI_Controller::BlackoutHandler);
+
+		em->EventValue_Map["POV_Turn"].Remove(*this, &UI_Controller::Ship_Turn90_POV);
 		em->EventValue_Map["Analog_Turn"].Remove(*this, &UI_Controller::JoyStick_Ship_Turn);
 		em->EventValue_Map["Analog_StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->EventValue_Map["Analog_Slider_Accel"].Remove(*this, &UI_Controller::Slider_Accel);
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 		m_ship->BindAdditionalEventControls(false);
+		if (!m_IsBeingDestroyed)
+			m_ship->BindAdditionalUIControls(false,&GetJoyStickBinder());
 		Flush_AI_BaseResources();
 	}
 	m_Base=controller;
@@ -180,15 +187,18 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		m_ship=&m_Base->m_ship;
 		Framework::Base::EventMap* em = m_ship->GetEventMap();
 
-		em->EventOnOff_Map["RequestAfterburner"].Subscribe(ehl, *this, &UI_Controller::AfterBurner_Thrust);
+		//disabled until it works
+		//em->EventOnOff_Map["RequestAfterburner"].Subscribe(ehl, *this, &UI_Controller::AfterBurner_Thrust);
 		em->EventOnOff_Map["Thrust"].Subscribe(ehl, *this, &UI_Controller::Thrust);
 		em->EventOnOff_Map["Brake"].Subscribe(ehl, *this, &UI_Controller::Brake);
 		em->Event_Map["Stop"].Subscribe(ehl, *this, &UI_Controller::Stop);
 		em->EventOnOff_Map["Turn_R"].Subscribe(ehl, *this, &UI_Controller::Turn_R);
 		em->EventOnOff_Map["Turn_L"].Subscribe(ehl, *this, &UI_Controller::Turn_L);
+		em->Event_Map["Turn_180"].Subscribe(ehl, *this, &UI_Controller::Turn_180);
 		em->Event_Map["UserResetPos"].Subscribe(ehl, *this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Subscribe(ehl, *this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Subscribe(ehl, *this, &UI_Controller::ToggleSlide);
+		em->EventOnOff_Map["SlideHold"].Subscribe(ehl, *this, &UI_Controller::SlideHold);
 		em->EventOnOff_Map["StrafeLeft"].Subscribe(ehl, *this, &UI_Controller::StrafeLeft);
 		em->EventOnOff_Map["StrafeRight"].Subscribe(ehl, *this, &UI_Controller::StrafeRight);
 		em->Event_Map["ToggleAutoPilot"].Subscribe(ehl, *this, &UI_Controller::TryToggleAutoPilot);
@@ -204,6 +214,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		// Listen for blackout
 		em->EventValue_Map["BLACKOUT"].Subscribe(ehl, *this, &UI_Controller::BlackoutHandler);
 
+		em->EventValue_Map["POV_Turn"].Subscribe(ehl,*this, &UI_Controller::Ship_Turn90_POV);
 		em->EventValue_Map["Analog_Turn"].Subscribe(ehl,*this, &UI_Controller::JoyStick_Ship_Turn);
 		em->EventValue_Map["Analog_StrafeRight"].Subscribe(ehl,*this, &UI_Controller::StrafeRight);
 		em->EventValue_Map["Analog_Slider_Accel"].Subscribe(ehl,*this, &UI_Controller::Slider_Accel);
@@ -229,8 +240,9 @@ void UI_Controller::Test2(bool on)
 
 void UI_Controller::Ship_AfterBurner_Thrust(bool on)	
 {		
+	//Note this will happen implicitly
 	// Touching the Afterburner always places us back in SImFLight mode
-	m_ship->SetSimFlightMode(true);
+	//m_ship->SetSimFlightMode(true);
 
 	// Set the current requested speed for the ship based on whether we are turning afterburner on or off
 	if (on)
@@ -298,8 +310,43 @@ void UI_Controller::Ship_Turn(double dir,bool UseHeadingSpeed)
 
 void UI_Controller::Ship_Turn(Directions dir)
 {
-	m_Ship_Keyboard_rotAcc_rad_s=(double)dir*m_ship->GetHeadingSpeed()*m_ship->GetCameraRestraintScaler();
-	m_Ship_UseHeadingSpeed=true;
+	switch (dir)
+	{
+		case Dir_None:
+		case Dir_Left:
+		case Dir_Right:
+			m_Ship_Keyboard_rotAcc_rad_s=(double)dir*m_ship->GetHeadingSpeed()*m_ship->GetCameraRestraintScaler();
+			m_Ship_UseHeadingSpeed=true;
+			break;
+		case Dir_90Left:
+			m_ship->SetIntendedOrientation(-Half_Pi,false);
+			m_Ship_UseHeadingSpeed=false;
+			break;
+		case Dir_90Right:
+			m_ship->SetIntendedOrientation(Half_Pi,false);
+			m_Ship_UseHeadingSpeed=false;
+			break;
+		case Dir_180:
+			m_ship->SetIntendedOrientation(Pi,false);
+			m_Ship_UseHeadingSpeed=false;
+			break;
+	}
+}
+
+void UI_Controller::Ship_Turn90_POV (double value)
+{
+	//We put the typical case first (save the amount of branching)
+	if (value!=-1)
+	{
+		if (!m_POVSetValve)
+		{
+			m_POVSetValve=true;
+			m_ship->SetIntendedOrientation(DEG_2_RAD(value),false);
+			m_Ship_UseHeadingSpeed=false;
+		}
+	}
+	else 
+		m_POVSetValve=false;
 }
 
 
@@ -362,7 +409,7 @@ void UI_Controller::UserResetPos()
 
 void UI_Controller::ResetPos()
 {
-	m_Ship_Keyboard_rotAcc_rad_s =	m_Ship_JoyMouse_rotAcc_rad_s = 0.0;
+	m_Ship_Keyboard_rotAcc_rad_s =	m_Ship_JoyMouse_rotAcc_rad_s = m_ShipKeyVelocity = 0.0;
 	m_Ship_Keyboard_currAccel = m_Ship_JoyMouse_currAccel =	Vec2d(0,0);
 
 	//m_HUD_UI->Reset();
@@ -417,13 +464,13 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
 				{
-					m_ship->SetRequestedVelocity(SpeedCalibrated);
+					//m_ship->SetRequestedVelocity(SpeedCalibrated);
 					m_CruiseSpeed=SpeedCalibrated;
 				}
 			}
 		}
 		else
-			Ship_Thrust(0.0);
+			m_Ship_JoyMouse_currAccel[1]=Speed;
 	}
 }
 
@@ -433,24 +480,23 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
+			//Avoid jitter for slider controls by testing the tolerance of change
 			if ((fabs(Speed-m_LastSliderTime[1])>0.05)||(Speed==0))
 			{
 				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
-				//This works but I really did not like the feel of it
 				double SpeedCalibrated=Speed*SpeedToUse;
 				m_LastSliderTime[1]=Speed;
 				if (SpeedCalibrated!=m_CruiseSpeed)
 				{
-					m_ship->SetRequestedVelocity(SpeedCalibrated);
+					//m_ship->SetRequestedVelocity(SpeedCalibrated);
 					m_CruiseSpeed=SpeedCalibrated;
 				}
 			}
 		}
 		else
-			Ship_Thrust(0.0);
+			m_Ship_JoyMouse_currAccel[1]=Speed;
 	}
 }
-
 
 bool UI_Controller::AreControlsDisabled()
 {
@@ -474,11 +520,28 @@ void UI_Controller::UpdateController(double dTime_s)
 		//Now for the ship
 		if (!AreControlsDisabled())
 		{
+			//factor in the auxiliary control velocities
+			double AuxiliaryVelocity=0.0;
+			{
+				Vec2d AuxLinearAcceleration=Vec2d(0.0,0.0);
+				double AuxAngularAcceleration=0.0;
+				m_ship->UpdateController(AuxiliaryVelocity,AuxLinearAcceleration,AuxAngularAcceleration,m_Ship_UseHeadingSpeed,dTime_s);
+				m_Ship_JoyMouse_currAccel+=AuxLinearAcceleration;
+				m_Ship_JoyMouse_rotAcc_rad_s+=AuxAngularAcceleration;
+			}
+
 			// Normally we pass the the ship the addition of the keyboard and mouse accel
 			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
 
 			// apply various input sources to current acceleration
-			m_ship->SetCurrentLinearAcceleration(shipAccel); 
+			if (m_ship->GetAlterTrajectory())
+			{
+				m_ShipKeyVelocity+=(shipAccel[1]*dTime_s);
+				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+AuxiliaryVelocity+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
+			}
+			else
+				m_ship->SetCurrentLinearAcceleration(shipAccel); 
+
 			
 			//flush the JoyMouse current acceleration vec2 since it works on an additive nature
 			m_Ship_JoyMouse_currAccel=Vec2d(0.0,0.0);
@@ -523,8 +586,9 @@ void UI_Controller::UpdateUI(double dTime_s)
 	{
 		#if 1
 		Vec2d pos=m_ship->GetPos_m();
-		DOUT(1,"x=%f y=%f r=%f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
-		DOUT(3,"Speed=%f mode=%s",Meters2Feet(m_ship->GetPhysics().GetLinearVelocity().length()),m_ship->GetAlterTrajectory()?"Sim":"Slide");
+		DOUT(1,"x=%.2f y=%.2f r=%.2f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
+		Vec2d Velocity=m_ship->GetLinearVelocity_ToDisplay();
+		DOUT(3,"Vel[0]=%.2f Vel[1]=%.2f Rot=%.2f mode=%s",Meters2Feet(Velocity[0]),Meters2Feet(Velocity[1]),m_ship->GetAngularVelocity_ToDisplay(),m_ship->GetAlterTrajectory()?"Sim":"Slide");
 		#endif
 		#if 0
 		Vec2d pos=m_ship->GetPos_m();
@@ -562,4 +626,7 @@ void UI_Controller::OnSpawn(bool on)
 	// This is commented out for now so we can leave a ship in auto-pilot and it will return to auto-pilot after spawn
 	// SetAutoPilot(!m_isControlled || !m_Base->GetCanUserPilot());
 }
+
+
+
 

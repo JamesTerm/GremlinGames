@@ -9,6 +9,9 @@ class UI_Controller
 			//Reversed from game since the 2D world uses the topview axis
 			Dir_Left = -1,
 			Dir_Right = 1,
+			Dir_90Left,
+			Dir_90Right,
+			Dir_180
 		};
 
 		UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
@@ -26,12 +29,14 @@ class UI_Controller
 		void Thrust(bool on){if (AreControlsDisabled() && on) return; Ship_Thrust(on);}
 		void Slider_Accel(double Intensity);
 		void Brake(bool on){if (AreControlsDisabled() && on) return; Ship_Brake(on);}
-		void Stop() {if (AreControlsDisabled()) return; m_ship->Stop();}
+		void Stop() {if (AreControlsDisabled()) return; m_ShipKeyVelocity=0.0;m_ship->Stop();}
 		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedVelocity(speed);}
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
+		void Turn_180() {if (AreControlsDisabled()) return; Ship_Turn(Dir_180);}
 		virtual void ResetPos();
 		void UserResetPos();
+		void SlideHold(bool holdslide) {if (AreControlsDisabled()) return; m_ship->SetSimFlightMode(!holdslide);}
 		void ToggleSlide() {if (AreControlsDisabled()) return; m_ship->SetSimFlightMode(!m_ship->GetAlterTrajectory());}
 		void ToggleAutoLevel();
 		void StrafeLeft(bool on) {if (AreControlsDisabled() && on) return; Ship_StrafeLeft(on);}
@@ -78,7 +83,7 @@ class UI_Controller
 					bool IsFlipped;
 					double Multiplier;
 					double FilterRange;
-					bool IsSquared;
+					double CurveIntensity;
 				} Analog;
 				struct ButtonSpecifics_rw
 				{
@@ -107,6 +112,7 @@ class UI_Controller
 		void JoyStick_Ship_Turn(double dir);
 
 		void Ship_Turn(Directions dir);
+		void Ship_Turn90_POV (double value);
 
 		void Ship_AfterBurner_Thrust(bool on);
 		void Ship_Thrust(bool on);
@@ -133,7 +139,6 @@ class UI_Controller
 		Framework::UI::JoyStick_Binder &m_JoyStick_Binder;
 
 		double m_LastSliderTime[2]; //Keep track of the slider to help it stay smooth;
-		bool m_SlideButtonToggle;
 		bool m_isControlled;
 
 		///This is used exclusively for keyboard turn methods
@@ -141,10 +146,12 @@ class UI_Controller
 		///This one is used exclusively for the Joystick and Mouse turn methods
 		double m_Ship_JoyMouse_rotAcc_rad_s;
 		Framework::Base::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
-		double m_CruiseSpeed; ///< This is used with the Joystick control to only apply speed changes when a change occurs
+		double m_ShipKeyVelocity;
 
 		//I have to monitor when it is down then up
+		bool m_SlideButtonToggle;
 		bool m_FireButton;
+		double m_CruiseSpeed; ///< This is used with the Joystick control to only apply speed changes when a change occurs
 
 		// Are we flying in auto-pilot?
 		bool m_autoPilot;
@@ -153,7 +160,9 @@ class UI_Controller
 		// Are we disabling UI controls?
 		bool AreControlsDisabled();
 
-		bool m_Test1,m_Test2; //Testing
 		bool m_Ship_UseHeadingSpeed;
+		bool m_Test1,m_Test2; //Testing
+		bool m_IsBeingDestroyed; //Keep track of when destructor is called
+		bool m_POVSetValve;
 };
 
