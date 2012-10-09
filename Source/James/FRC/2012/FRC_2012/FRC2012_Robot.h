@@ -66,19 +66,20 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetFlipperProps() const {return m_FlipperProps;}
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
-		struct Control_Props
-		{
-			std::vector<UI_Controller::Controller_Element_Properties> EventList;
-			std::string Controller;
-		};
-		typedef std::vector<Control_Props> Controls_List;
-		const Controls_List &Get_RobotControls() const {return m_RobotControls;}
+		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		typedef Tank_Robot_Properties __super;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
-		Controls_List m_RobotControls;
+
+		class ControlEvents : public LUA_Controls_Properties_Interface
+		{
+			protected: //from LUA_Controls_Properties_Interface
+				virtual const char *LUA_Controls_GetEvents(size_t index) const; 
+		};
+		static ControlEvents s_ControlsEvents;
+		LUA_Controls_Properties m_RobotControls;
 };
 
 class FRC_2012_Robot : public Tank_Robot
@@ -127,7 +128,7 @@ class FRC_2012_Robot : public Tank_Robot
 		virtual void TimeChange(double dTime_s);
 
 	protected:
-		class Turret : public Rotary_Linear
+		class Turret : public Rotary_Position_Control
 		{
 			private:
 				FRC_2012_Robot * const m_pParent;
@@ -139,7 +140,7 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
 			protected:
-				typedef Rotary_Linear __super;
+				typedef Rotary_Position_Control __super;
 				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 				void SetIntendedPosition_Plus(double Position);
 
@@ -147,14 +148,14 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 		};
 
-		class PitchRamp : public Rotary_Linear
+		class PitchRamp : public Rotary_Position_Control
 		{
 			public:
 				PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
-				typedef Rotary_Linear __super;
+				typedef Rotary_Position_Control __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetIntendedPosition_Plus(double Position);
@@ -165,7 +166,7 @@ class FRC_2012_Robot : public Tank_Robot
 				FRC_2012_Robot * const m_pParent;
 		};
 
-		class PowerWheels : public Rotary_Angular
+		class PowerWheels : public Rotary_Velocity_Control
 		{
 			public:
 				PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
@@ -173,7 +174,7 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
 			protected:
-				typedef Rotary_Angular __super;
+				typedef Rotary_Velocity_Control __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
@@ -181,6 +182,7 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2012_Robot * const m_pParent;
+				double m_ManualVelocity;
 				bool m_IsRunning;
 		};
 
@@ -188,7 +190,7 @@ class FRC_2012_Robot : public Tank_Robot
 		{
 			private:
 				FRC_2012_Robot * const m_pParent;
-				Rotary_Angular m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
+				Rotary_Velocity_Control m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
 				double m_FireDelayTrigger_Time; //Time counter of the value remaining in the on-to-delay state
 				double m_FireStayOn_Time;  //Time counter of the value remaining in the on state
 				bool m_FireDelayTriggerOn; //A valve mechanism that must meet time requirement to disable the delay
@@ -229,10 +231,10 @@ class FRC_2012_Robot : public Tank_Robot
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
 
-		class Flippers : public Rotary_Linear
+		class Flippers : public Rotary_Position_Control
 		{
 			private:
-				typedef Rotary_Linear __super;
+				typedef Rotary_Position_Control __super;
 				FRC_2012_Robot * const m_pParent;
 				bool m_Advance,m_Retract;
 			public:
@@ -244,7 +246,7 @@ class FRC_2012_Robot : public Tank_Robot
 				void Advance(bool on) {m_Advance=on;}
 				void Retract(bool on) {m_Retract=on;}
 
-				//typedef Rotary_Linear __super;
+				typedef Rotary_Position_Control __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetIntendedPosition(double Position);

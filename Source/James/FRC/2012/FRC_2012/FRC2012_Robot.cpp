@@ -59,7 +59,7 @@ double PositionToVelocity_Tweak(double Value)
 /***********************************************************************************************************************************/
 
 FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Linear("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0),m_LastIntendedPosition(0.0)
+	Rotary_Position_Control("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0),m_LastIntendedPosition(0.0)
 {
 }
 
@@ -141,7 +141,7 @@ void FRC_2012_Robot::Turret::ResetPos()
  /*													FRC_2012_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::PitchRamp::PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Linear("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
+	Rotary_Position_Control("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
 {
 }
 
@@ -205,7 +205,7 @@ void FRC_2012_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2012_Robot::PowerWheels::PowerWheels(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Angular("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_IsRunning(false)
+	Rotary_Velocity_Control("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_ManualVelocity(0.0),m_IsRunning(false)
 {
 }
 
@@ -228,33 +228,9 @@ void FRC_2012_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
-	if (!IsTargeting)
-	{
-		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
-		{
-			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-			//first get the range from 0 - 1
-			double positive_range = (Velocity * 0.5) + 0.5;
-			positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=MAX_SPEED;
-			const double Scale=(maxRange-minRange) / MAX_SPEED;
-			const double Offset=minRange/MAX_SPEED;
-			Velocity=(positive_range * Scale) + Offset;
-			//DOUT5("%f",Velocity);
-			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2012RobotProps().PowerVelocity_DisplayRow;
-			if (DisplayRow!=(size_t)-1)
-			{
-				const double rps=(Velocity * MAX_SPEED) / Pi2;
-				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
-			}
-
-			__super::SetRequestedVelocity_FromNormalized(Velocity);
-		}
-		else
-			__super::SetRequestedVelocity_FromNormalized(0.0);
-	}
+	//bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	//This variable is dedicated to non-targeting mode
+	m_ManualVelocity=Velocity;
 }
 
 void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
@@ -272,6 +248,32 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 		}
 		else
 			SetRequestedVelocity(0);
+	}
+	else
+	{
+		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
+		{
+			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+			//first get the range from 0 - 1
+			double positive_range = (m_ManualVelocity * 0.5) + 0.5;
+			positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=GetMinRange();
+			const double maxRange=MAX_SPEED;
+			const double Scale=(maxRange-minRange) / MAX_SPEED;
+			const double Offset=minRange/MAX_SPEED;
+			const double Velocity=(positive_range * Scale) + Offset;
+			//DOUT5("%f",Velocity);
+			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2012RobotProps().PowerVelocity_DisplayRow;
+			if (DisplayRow!=(size_t)-1)
+			{
+				const double rps=(Velocity * MAX_SPEED) / Pi2;
+				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
+			}
+
+			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(Velocity);
+		}
+		else
+			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(0.0);
 	}
 	__super::TimeChange(dTime_s);
 }
@@ -415,7 +417,7 @@ void FRC_2012_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
  /*													FRC_2012_Robot::Flippers														*/
 /***********************************************************************************************************************************/
 FRC_2012_Robot::Flippers::Flippers(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-Rotary_Linear("Flippers",robot_control,eFlippers),m_pParent(pParent),m_Advance(false),m_Retract(false)
+Rotary_Position_Control("Flippers",robot_control,eFlippers),m_pParent(pParent),m_Advance(false),m_Retract(false)
 {
 }
 
@@ -954,33 +956,8 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 
 void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 {
-	Framework::UI::JoyStick_Binder *p_joy=(Framework::UI::JoyStick_Binder *)joy;
-	const FRC_2012_Robot_Properties::Controls_List &robot_controls=m_RobotProps.Get_RobotControls();
-	for (size_t i=0;i<robot_controls.size();i++)
-	{
-		const FRC_2012_Robot_Properties::Control_Props &control=robot_controls[i];
-
-		for (size_t j=0;j<control.EventList.size();j++)
-		{
-			const UI_Controller::Controller_Element_Properties &element=control.EventList[j];
-			switch (element.Type)
-			{
-			case UI_Controller::Controller_Element_Properties::eJoystickAnalog:
-				{
-					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::AnalogSpecifics_rw &analog=element.Specifics.Analog;
-					p_joy->AddJoy_Analog_Default(analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
-						analog.FilterRange,analog.IsSquared,control.Controller.c_str());
-				}
-				break;
-			case UI_Controller::Controller_Element_Properties::eJoystickButton:
-				{
-					const UI_Controller::Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
-					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
-				}
-				break;
-			}
-		}
-	}
+	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
+	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
 }
 
   /***********************************************************************************************************************************/
@@ -997,7 +974,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eSwivel,
+	Ship_1D_Props::eSwivel,
 	true,	//Using the range
 	-Pi,Pi
 	),
@@ -1008,7 +985,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	10.0,   //Max Speed
 	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
 	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
 	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
 	),
@@ -1019,7 +996,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	(5000.0/60.0) * Pi2,   //Max Speed (This is clocked at 5000 rpm) 
 	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eSimpleMotor,
+	Ship_1D_Props::eSimpleMotor,
 	false,28.0 * Pi2,0.0,	//No limit ever!  (but we are using the min range as a way to set minimum speed)
 	true //This is angular
 	),
@@ -1032,7 +1009,7 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	28,   //Max Speed (rounded as we need not have precision)
 	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Properties::eSimpleMotor,
+	Ship_1D_Props::eSimpleMotor,
 	false,0.0,0.0,	//No limit ever!
 	true //This is angular
 	),
@@ -1043,10 +1020,11 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 	1.4 * Pi2,   //Max Speed  (Parker gave this one, should be good)
 	10.0,10.0, //ACCEL, BRAKE  (should be relatively quick)
 	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Properties::eRobotArm,
+	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
 	-PI_2,PI_2 //TODO
-	)
+	),
+	m_RobotControls(&s_ControlsEvents)
 {
 	{
 		FRC_2012_Robot_Props props;
@@ -1195,6 +1173,32 @@ const char *ProcessKeyCorrection(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scrip
 	script.Pop();
 	return err;
 }
+
+//declared as global to avoid allocation on stack each iteration
+const char * const g_FRC_2012_Controls_Events[] = 
+{
+	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
+	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
+	"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
+	"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
+	"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
+	"Flippers_Advance","Flippers_Retract",
+	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
+	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
+	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
+	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
+	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
+	//AI Tester events only
+#if 1
+	,"Ball_SlowWheel"
+#endif
+};
+
+const char *FRC_2012_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
+{
+	return (index<_countof(g_FRC_2012_Controls_Events))?g_FRC_2012_Controls_Events[index] : NULL;
+}
+FRC_2012_Robot_Properties::ControlEvents FRC_2012_Robot_Properties::s_ControlsEvents;
 
 void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
@@ -1354,53 +1358,13 @@ void FRC_2012_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.GetField("x_right_arc", NULL, NULL, &auton.XRightArc);
 			script.Pop();
 		}
-		err = script.GetFieldTable("controls");
-		if (!err)
-		{
-			const char * const Events[] = 
-			{
-				"Joystick_SetCurrentSpeed_2","Analog_Turn",
-				"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
-				"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
-				"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
-				"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
-				"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
-				"Flippers_Advance","Flippers_Retract",
-				"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
-				"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
-				"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
-				"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
-				"Robot_SetCreepMode","Robot_Flippers_Solenoid"
-			};
-
-			//TODO we may use actual product names here, but this will be fine for wind river build
-			const char * const Controls[] =
-			{
-				"Joystick_1","Joystick_2","Joystick_3"
-			};
-
-			for (size_t i=0;i<_countof(Controls);i++)
-			{
-				err = script.GetFieldTable(Controls[i]);
-				if (!err)
-				{
-					Control_Props control;
-					//Wind River uses generic name, and AI tester uses product name
-					control.Controller=Controls[i];
-					//err=script.GetField("control", &control.Controller, NULL, NULL);
-
-					for (size_t j=0;j<_countof(Events);j++)
-					{
-						UI_Controller::Controller_Element_Properties element;
-						err=UI_Controller::ExtractControllerElementProperties(element,Events[j],script);
-						if (!err)
-							control.EventList.push_back(element);
-					}
-					m_RobotControls.push_back(control);
-					script.Pop();
-				}
-			}
-		}
+		//This is the main robot settings pop
+		script.Pop();
+	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		m_RobotControls.LoadFromScript(script);
 		script.Pop();
 	}
 }
