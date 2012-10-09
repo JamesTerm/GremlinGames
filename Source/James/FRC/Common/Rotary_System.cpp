@@ -30,13 +30,13 @@ namespace Scripting=Framework::Scripting;
 double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity);
 
   /***********************************************************************************************************************************/
- /*															Rotary_Linear															*/
+ /*														Rotary_Position_Control														*/
 /***********************************************************************************************************************************/
 
-Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
+Rotary_Position_Control::Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
-	m_LastPosition(0.0),
+	m_LastPosition(0.0),m_MatchVelocity(0.0),
 	#ifdef __Rotary_UseScalerPID__
 	m_CalibratedScaler(1.0),
 	#else
@@ -51,7 +51,7 @@ Rotary_Linear::Rotary_Linear(const char EntityName[],Rotary_Control_Interface *r
 {
 }
 
-void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	if (m_UsingPotentiometer)
 		m_LastPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
@@ -79,7 +79,7 @@ void Rotary_Linear::Initialize(Base::EventMap& em,const Entity1D_Properties *pro
 	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
-void Rotary_Linear::TimeChange(double dTime_s)
+void Rotary_Position_Control::TimeChange(double dTime_s)
 {
 	#ifdef __Rotary_UseInducedLatency__
 	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
@@ -173,7 +173,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 		double y=fabs(Voltage);
 		double *c=m_Rotary_Props.Polynomial;
-		double x2=y*Voltage;
+		double x2=y*y;
 		double x3=y*x2;
 		double x4=x2*x2;
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
@@ -241,7 +241,7 @@ void Rotary_Linear::TimeChange(double dTime_s)
 }
 
 #ifdef __Rotary_UseScalerPID__
-void Rotary_Linear::PosDisplacementCallback(double posDisplacement_m)
+void Rotary_Position_Control::PosDisplacementCallback(double posDisplacement_m)
 {
 	m_VoltageOverride=false;
 	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<m_Rotary_Props.PrecisionTolerance))
@@ -249,7 +249,7 @@ void Rotary_Linear::PosDisplacementCallback(double posDisplacement_m)
 }
 #endif
 
-void Rotary_Linear::ResetPos()
+void Rotary_Position_Control::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
 	if ((m_UsingPotentiometer)&&(!GetBypassPos_Update()))
@@ -263,7 +263,7 @@ void Rotary_Linear::ResetPos()
 	}
 }
 
-void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
+void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 {
 	//printf("\r%f       ",Value);
 	if (DisableFeedback)
@@ -306,19 +306,19 @@ void Rotary_Linear::SetPotentiometerSafety(bool DisableFeedback)
 	}
 }
   /***********************************************************************************************************************************/
- /*															Rotary_Angular															*/
+ /*														Rotary_Velocity_Control														*/
 /***********************************************************************************************************************************/
 
-Rotary_Angular::Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
+Rotary_Velocity_Control::Rotary_Velocity_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex,EncoderUsage EncoderState) : 
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
-	m_CalibratedScaler(1.0),m_ErrorOffset(0.0),
+	m_MatchVelocity(0.0),m_CalibratedScaler(1.0),m_ErrorOffset(0.0),
 	m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
-	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState)
+	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState),m_PreviousVelocity(0.0)
 {
 }
 
-void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
+void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 		m_EncoderVelocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
@@ -355,7 +355,26 @@ void Rotary_Angular::Initialize(Base::EventMap& em,const Entity1D_Properties *pr
 	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
-void Rotary_Angular::TimeChange(double dTime_s)
+void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
+{
+	m_Rotary_Props=RotaryProps;
+	m_CalibratedScaler=MAX_SPEED;
+	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
+	switch (m_Rotary_Props.LoopState)
+	{
+	case Rotary_Props::eNone:
+		SetEncoderSafety(true);
+		break;
+	case Rotary_Props::eOpen:
+		m_EncoderState=ePassive;
+		break;
+	case Rotary_Props::eClosed:
+		m_EncoderState=eActive;
+		break;
+	}
+}
+
+void Rotary_Velocity_Control::TimeChange(double dTime_s)
 {
 	#ifdef __Rotary_UseInducedLatency__
 	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
@@ -410,18 +429,23 @@ void Rotary_Angular::TimeChange(double dTime_s)
 		m_EncoderVelocity=Encoder_Velocity;
 	}
 	__super::TimeChange(dTime_s);
-
+	const double Velocity=m_Physics.GetVelocity();
+	const double Acceleration=(Velocity-m_PreviousVelocity)/dTime_s;
 	//CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
 	//Either error offset or calibrated scaler will be used depending on the aggressive stop property, we need not branch this as
 	//they both can be represented in the same equation
-	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/m_CalibratedScaler;
+	double Voltage=(Velocity+m_ErrorOffset)/m_CalibratedScaler;
+
+	Voltage+=Acceleration*m_Rotary_Props.InverseMaxAccel;
+	//Keep track of previous velocity to compute acceleration
+	m_PreviousVelocity=Velocity;
 
 	//Apply the polynomial equation to the voltage to linearize the curve
 	{
 		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 		double y=fabs(Voltage);
 		double *c=m_Rotary_Props.Polynomial;
-		double x2=y*Voltage;
+		double x2=y*y;
 		double x3=y*x2;
 		double x4=x2*x2;
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
@@ -463,7 +487,10 @@ void Rotary_Angular::TimeChange(double dTime_s)
 	if (m_Rotary_Props.PID_Console_Dump && (Encoder_Velocity!=0.0))
 	{
 		#ifndef __Rotary_ShowEncoderPrediction__
-		printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
+		if (m_Rotary_Props.UseAggressiveStop)
+			printf("v=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset);
+		else
+			printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
 		#else
 		printf("v=%.2f p=%.2f e=%.2f y=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,Predicted_Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
 		#endif
@@ -474,7 +501,7 @@ void Rotary_Angular::TimeChange(double dTime_s)
 
 }
 
-bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDisplacement)
+bool Rotary_Velocity_Control::InjectDisplacement(double DeltaTime_s,double &PositionDisplacement)
 {
 	bool ret=false;
 	const bool UpdateDisplacement=((m_EncoderState==eActive)||(m_EncoderState==ePassive));
@@ -492,13 +519,13 @@ bool Rotary_Angular::InjectDisplacement(double DeltaTime_s,double &PositionDispl
 	return ret;
 }
 
-void Rotary_Angular::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
+void Rotary_Velocity_Control::RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s)
 {
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 		m_RequestedVelocity_Difference=VelocityToUse-m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 }
 
-void Rotary_Angular::ResetPos()
+void Rotary_Velocity_Control::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
 
@@ -516,7 +543,7 @@ void Rotary_Angular::ResetPos()
 	m_RequestedVelocity_Difference=0.0;
 }
 
-void Rotary_Angular::SetEncoderSafety(bool DisableFeedback)
+void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 {
 	//printf("\r%f       ",Value);
 	if (DisableFeedback)
@@ -576,6 +603,7 @@ void Rotary_Properties::Init()
 	props.Polynomial[2]=0.0;
 	props.Polynomial[3]=0.0;
 	props.Polynomial[4]=0.0;
+	props.InverseMaxAccel=0.0;
 	m_RoteryProps=props;
 }
 
@@ -654,6 +682,15 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
+		script.GetField("inv_max_accel", NULL, NULL, &m_RoteryProps.InverseMaxAccel);
+		#ifdef AI_TesterCode
+		err = script.GetFieldTable("motor_specs");
+		if (!err)
+		{
+			m_EncoderSimulation.LoadFromScript(script);
+			script.Pop();
+		}
+		#endif
 	}
 	__super::LoadFromScript(script);
 }

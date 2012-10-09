@@ -15,6 +15,9 @@ struct Rotary_Props
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	//Currently supporting 4 terms in polynomial equation
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
+	//or alternatively solved empirically.  Using zero disables this feature
+	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
 	{
@@ -44,8 +47,9 @@ class Rotary_System : public Ship_1D
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
-///It currently has a single PID (Dual PID may either be integrated or a new class)... to manage voltage error
-class Rotary_Linear : public Rotary_System
+///It currently has a single PID (Dual PID may either be integrated or a new class)... to manage voltage error.  This is used for fixed point
+/// position setting... like a turret or arm
+class Rotary_Position_Control : public Rotary_System
 {
 	private:
 		typedef Rotary_System __super;
@@ -66,6 +70,7 @@ class Rotary_Linear : public Rotary_System
 		#endif
 
 		double m_LastPosition;  //used for calibration
+		double m_MatchVelocity;
 		#ifdef __UseScalerPID__
 		double m_CalibratedScaler; //used for calibration
 		#else
@@ -78,12 +83,14 @@ class Rotary_Linear : public Rotary_System
 		bool m_VoltageOverride;  //when true will kill voltage
 		#endif
 	public:
-		Rotary_Linear(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
+		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
 		virtual void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual void ResetPos();
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
+		//This is optionally used to lock to another ship (e.g. drive using rotary system)
+		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
@@ -92,11 +99,13 @@ class Rotary_Linear : public Rotary_System
 		#endif
 		virtual void SetPotentiometerSafety(bool DisableFeedback);
 		bool GetIsUsingPotentiometer() const {return m_UsingPotentiometer;}
+		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
-///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate
-class Rotary_Angular : public Rotary_System
+///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate.
+///This is a kind of speed control system that manages the velocity and does not need to keep track of position (like the drive or a shooter)
+class Rotary_Velocity_Control : public Rotary_System
 {
 	public:
 		enum EncoderUsage
@@ -124,6 +133,7 @@ class Rotary_Angular : public Rotary_System
 		#endif
 
 		//We have both ways to implement PID calibration depending on if we have aggressive stop property enabled
+		double m_MatchVelocity;
 		double m_CalibratedScaler; //used for calibration
 		double m_ErrorOffset; //used for calibration
 
@@ -132,14 +142,19 @@ class Rotary_Angular : public Rotary_System
 		double m_RequestedVelocity_Difference;
 		EncoderUsage m_EncoderState; //dynamically able to change state
 		const EncoderUsage m_EncoderCachedState; //This is a fall-back state upon recovery of the safety state
+		double m_PreviousVelocity; //used to compute acceleration
 	public:
-		Rotary_Angular(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
+		Rotary_Velocity_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
 		virtual void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual void ResetPos();
 		double GetRequestedVelocity_Difference() const {return m_RequestedVelocity_Difference;}
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
+		//This is optionally used to lock to another ship (e.g. drive using rotary system)
+		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
+		//Give ability to change properties
+		void UpdateRotaryProps(const Rotary_Props &RotaryProps);
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
@@ -148,6 +163,7 @@ class Rotary_Angular : public Rotary_System
 
 		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);
 		EncoderUsage GetEncoderUsage() const {return m_EncoderCachedState;}
+		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
 class Rotary_Properties : public Ship_1D_Properties
@@ -159,7 +175,7 @@ class Rotary_Properties : public Ship_1D_Properties
 		void Init();
 		Rotary_Properties(const char EntityName[], double Mass,double Dimension,
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
-			Ship_Type ShipType=eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
+			Ship_Type ShipType=Ship_1D_Props::eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
 			bool IsAngular=false) : Ship_1D_Properties(EntityName,Mass,Dimension,MAX_SPEED,ACCEL,BRAKE,MaxAccelForward,
 			MaxAccelReverse,ShipType,UsingRange,MinRange,MaxRange,IsAngular) {Init();}
 
@@ -168,8 +184,15 @@ class Rotary_Properties : public Ship_1D_Properties
 		const Rotary_Props &GetRoteryProps() const {return m_RoteryProps;}
 		//Get and Set the properties
 		Rotary_Props &RoteryProps() {return m_RoteryProps;}
+		#ifdef AI_TesterCode
+		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
+		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
+		#endif
 	protected:
 		Rotary_Props m_RoteryProps;
+		#ifdef AI_TesterCode
+		EncoderSimulation_Properties m_EncoderSimulation;
+		#endif
 	private:
 		typedef Ship_1D_Properties __super;
 };
