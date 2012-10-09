@@ -28,8 +28,8 @@ namespace Scripting=Framework::Scripting;
  /*																Tank_Robot															*/
 /***********************************************************************************************************************************/
 Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous) :
-	Tank_Drive(EntityName), 
-	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),
+	Ship_Tester(EntityName), 
+	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),m_VehicleDrive(NULL),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
 	#ifdef __Tank_UseScalerPID__
 	m_UsingEncoders(IsAutonomous),m_IsAutonomous(IsAutonomous),
@@ -38,7 +38,8 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
 	m_UsingEncoders(IsAutonomous),
 	#endif
-	m_UseDeadZoneSkip(true), m_Heading(0.0), m_HeadingUpdateTimer(0.0)
+	m_UseDeadZoneSkip(true), m_Heading(0.0), m_HeadingUpdateTimer(0.0),
+	m_PreviousLeftVelocity(0.0),m_PreviousRightVelocity(0.0)
 {
 	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
 	//m_UsingEncoders=true; //testing
@@ -47,8 +48,20 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	#endif
 }
 
+void Tank_Robot::DestroyDrive() 
+{
+	delete m_VehicleDrive;
+	m_VehicleDrive=NULL;
+}
+
+Tank_Robot::~Tank_Robot()
+{
+	DestroyDrive();
+}
+
 void Tank_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
 {
+	m_VehicleDrive=CreateDrive();
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
@@ -76,6 +89,7 @@ void Tank_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properti
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
 	m_PID_Input_Latency_Left.SetLatency(m_TankRobotProps.InputLatency);
 	m_PID_Input_Latency_Right.SetLatency(m_TankRobotProps.InputLatency);
+	m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetTankRobotProps().TankSteering_Tolerance);
 }
 void Tank_Robot::Reset(bool ResetPosition)
 {
@@ -94,6 +108,7 @@ void Tank_Robot::Reset(bool ResetPosition)
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	#endif
 	m_UseDeadZoneSkip=true;
+	m_PreviousLeftVelocity=m_PreviousRightVelocity=0.0;
 }
 
 void Tank_Robot::SetUseEncoders(bool UseEncoders,bool ResetPosition) 
@@ -160,8 +175,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	const double RightVelocity=m_PID_Input_Latency_Right(
 		min(max(GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED),dTime_s);
 	#else
-	const double LeftVelocity=min(max(GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
-	const double RightVelocity=min(max(GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
+	const double LeftVelocity=min(max(m_VehicleDrive->GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
+	const double RightVelocity=min(max(m_VehicleDrive->GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
 
 	const double Predicted_Encoder_LeftVelocity=m_PID_Input_Latency_Left(Encoder_LeftVelocity,LeftVelocity,dTime_s);
 	const double Predicted_Encoder_RightVelocity=m_PID_Input_Latency_Right(Encoder_RightVelocity,RightVelocity,dTime_s);
@@ -264,7 +279,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	//Update the physics with the actual velocity
 	Vec2d LocalVelocity;
 	double AngularVelocity;
-	InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
+	m_VehicleDrive->InterpolateVelocities(Encoder_LeftVelocity,Encoder_RightVelocity,LocalVelocity,AngularVelocity,dTime_s);
 	//TODO add gyro's yaw readings for Angular velocity here
 	//Store the value here to be picked up in GetOldVelocity()
 	m_EncoderGlobalVelocity=LocalToGlobal(GetAtt_r(),LocalVelocity);
@@ -272,7 +287,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	//printf("\rG[0]=%f G[1]=%f        ",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 	//printf("G[0]=%f G[1]=%f\n",m_EncoderGlobalVelocity[0],m_EncoderGlobalVelocity[1]);
 
-	__super::InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
+	m_VehicleDrive->InterpolateThrusterChanges(LocalForce,Torque,dTime_s);
 }
 
 void Tank_Robot::TimeChange(double dTime_s)
@@ -330,7 +345,7 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	else
 		m_Heading=GetAtt_r();
 	if (!ret)
-		ret=__super::InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
+		ret=m_VehicleDrive->InjectDisplacement(DeltaTime_s,PositionDisplacement,RotationDisplacement);
 	return ret;
 }
 
@@ -370,8 +385,8 @@ void Tank_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
 
 void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
-	__super::UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
-	double LeftVelocity=GetLeftVelocity(),RightVelocity=GetRightVelocity();
+	m_VehicleDrive->UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
+	double LeftVelocity=m_VehicleDrive->GetLeftVelocity(),RightVelocity=m_VehicleDrive->GetRightVelocity();
 	double LeftVoltage,RightVoltage;
 
 	#ifdef __Tank_UseScalerPID__
@@ -391,8 +406,29 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			//printf("\r%f %f           ",m_CalibratedScaler_Left,m_CalibratedScaler_Right);
 			LeftVoltage=LeftVelocity/m_CalibratedScaler_Left,RightVoltage=RightVelocity/m_CalibratedScaler_Right;
 			#else
+			#if 0
 			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
 			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+			#else
+			//compute acceleration
+			const double LeftAcceleration=(LeftVelocity-m_PreviousLeftVelocity)/dTime_s;
+			const double RightAcceleration=(RightVelocity-m_PreviousRightVelocity)/dTime_s;
+			//Since the mass is not dynamic (like it would be for an arm) we'll absorb the acceleration the final scalar
+			//This should be fine for speed control type of rotary systems
+			//compute force from the computed mass this is the sum of all moment and weight
+			//const double ComputedMass=1.0;
+			//const double LeftForce=LeftAcceleration*ComputedMass;
+			//const double RightForce=RightAcceleration*ComputedMass;
+
+			//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
+			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
+			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+			LeftVoltage+=LeftAcceleration*m_TankRobotProps.InverseMaxAccel;
+			RightVoltage+=RightAcceleration*m_TankRobotProps.InverseMaxAccel;
+
+			//Keep track of previous velocity to compute acceleration
+			m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
+			#endif
 			#endif
 
 			//Old legacy square method here (turned out to be pretty good)
@@ -462,6 +498,24 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 
+void Tank_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
+{
+	UpdateVelocities(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	m_VehicleDrive->ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	//We are not going to use these interpolated values in the control (it would corrupt it)... however we can monitor them here, or choose to
+	//view them here as needed
+	Vec2D force;
+	double torque;
+	InterpolateThrusterChanges(force,torque,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+}
+
+void Tank_Robot::ResetPos()
+{
+	m_VehicleDrive->ResetPos();
+	__super::ResetPos();
+}
+
 void Tank_Robot::SetAttitude(double radians)
 {
 	m_Heading=radians;
@@ -499,7 +553,9 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.Polynomial[4]=0.0;
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
-	props.DriveTo_ForceDegradeScalar=1.0;
+	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
+	props.TankSteering_Tolerance=0.05;
+	props.InverseMaxAccel=0.0;
 	m_TankRobotProps=props;
 }
 
@@ -564,8 +620,9 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TankRobotProps.HeadingLatency=m_TankRobotProps.InputLatency+0.100;  //Give a good default without needing to add this property
 		script.GetField("left_max_offset", NULL, NULL, &m_TankRobotProps.LeftMaxSpeedOffset);
 		script.GetField("right_max_offset", NULL, NULL, &m_TankRobotProps.RightMaxSpeedOffset);
-		script.GetField("drive_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar);
-		
+		script.GetField("drive_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar[1]);
+		script.GetField("strafe_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar[0]);
+
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
 		if (!err)
@@ -621,8 +678,16 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
+		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel);
 		script.Pop(); 
 	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		script.GetField("tank_steering_tolerance", NULL, NULL,&m_TankRobotProps.TankSteering_Tolerance);
+		script.Pop();
+	}
+
 	__super::LoadFromScript(script);
 }
 
