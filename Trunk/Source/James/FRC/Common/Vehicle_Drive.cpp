@@ -449,7 +449,7 @@ void Butterfly_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D 
 	m_PreviousGlobalVelocity=LocalToGlobal(Heading,Vec2d(LocalStrafeVelocity[0],m_LocalVelocity[1]));
 	//DOUT5 ("%f x=%f y=%f",LocalStrafeVelocity[0],Meters2Feet(m_LocalVelocity[0]),Meters2Feet(m_LocalVelocity[1]));
 	m_LocalVelocity[0]=LocalStrafeVelocity[0];
-	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	Swerve_Drive::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
 
 double Butterfly_Drive::GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const
