@@ -24,10 +24,13 @@ using namespace Framework::Base;
 using namespace Framework::UI;
 
 namespace Scripting=Framework::Scripting;
+const double Half_Pi=M_PI/2.0;
+
+
   /***************************************************************************************************************/
  /*												UI_Controller													*/
 /***************************************************************************************************************/
-const double Half_Pi=M_PI/2.0;
+
 
 void UI_Controller::Init_AutoPilotControls()
 {
