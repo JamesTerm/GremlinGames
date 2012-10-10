@@ -30,6 +30,7 @@
 #include "Debug.h"
 
 using namespace Framework::Base;
+#undef __DisableTankDrive__
 
   /***********************************************************************************************************************************/
  /*																Encoder2															*/
@@ -210,7 +211,12 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 
 	//For now leave this disabled... should not need to script this
 	Dout(2, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
-	//printf("l=%.1f r=%.1f\n", LeftVoltage,RightVoltage);
+	
+	#ifdef __DisableTankDrive__
+	m_RobotDrive.SetLeftRightMotorOutputs(0.0,0.0);  //pacify the watchdog
+	return;
+	#endif
+	
 	if (!m_TankRobotProps.ReverseSteering)
 	{
 		m_RobotDrive.SetLeftRightMotorOutputs(
