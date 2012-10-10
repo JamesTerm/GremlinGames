@@ -25,10 +25,12 @@ bool g_DisableEngineRampUp2=true;  //we need not use engine ramping for the robo
 
 //namespace Scripting=GG_Framework::Logic::Scripting;
 namespace Scripting=Framework::Scripting;
+const double Half_Pi=M_PI/2.0;
+
+
   /***************************************************************************************************************/
  /*													Ship_2D														*/
 /***************************************************************************************************************/
-const double Half_Pi=M_PI/2.0;
 
 
 inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
@@ -686,9 +688,17 @@ void Ship_2D::CancelAllControls()
 	//	m_controller->CancelAllControls();
 }
 
+void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy)
+{
+	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy);
+}
+
+
+  /***********************************************************************************************************************************/
+ /*															Ship_Properties															*/
 /***********************************************************************************************************************************/
-/*															Ship_Properties															*/
-/***********************************************************************************************************************************/
+
+
 //These must be in the same order as they are in Ship_Properties::Ship_Type
 const char * const csz_RobotNames[] =
 {
