@@ -122,8 +122,13 @@ void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 	{
 		Control_Props control;
 		//Wind River uses generic name, and AI tester uses product name
-		//control.Controller=Controls[i];
+		#ifndef AI_TesterCode
+		control.Controller=Controls[i];
+		#else
 		err=script.GetField("control", &control.Controller, NULL, NULL);
+		#endif
+		//ensure the controller is lower case
+		std::transform(control.Controller.begin(),control.Controller.end(),control.Controller.begin(),tolower);
 		j=0;
 		while ( Events=m_pParent->LUA_Controls_GetEvents(j++) , Events)
 		{
