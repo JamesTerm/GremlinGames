@@ -941,8 +941,9 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_BallConveyorSystem.BindAdditionalEventControls(Bind);
 	m_Flippers.BindAdditionalEventControls(Bind);
-	//Note: This is only for AITester
+	#ifdef AI_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
+	#endif
 }
 
 void FRC_2012_Robot::BindAdditionalUIControls(bool Bind,void *joy)

@@ -664,7 +664,7 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	// Now to run the time updates (displacement plus application of it)
 	GetPhysics().G_Dampener = G_Dampener;
-	Ship::TimeChange(dTime_s);
+	__super::TimeChange(dTime_s);
 
 	m_controller->UpdateUI(dTime_s);
 
@@ -707,9 +707,12 @@ void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy)
 	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy);
 }
 
+
   /***********************************************************************************************************************************/
  /*															Ship_Properties															*/
 /***********************************************************************************************************************************/
+
+
 //These must be in the same order as they are in Ship_Properties::Ship_Type
 const char * const csz_RobotNames[] =
 {

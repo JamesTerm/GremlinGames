@@ -25,6 +25,7 @@ class Ship_1D;
 class Ship_1D_Properties : public Entity1D_Properties
 {
 	private:
+		//typedef Entity1D_Properties __super;
 		Ship_1D_Props m_Ship_1D_Props;
 	public:
 		typedef Ship_1D_Props::Ship_Type Ship_Type;
