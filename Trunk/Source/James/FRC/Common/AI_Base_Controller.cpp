@@ -123,7 +123,7 @@ void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 		Control_Props control;
 		//Wind River uses generic name, and AI tester uses product name
 		#ifndef AI_TesterCode
-		control.Controller=Controls[i];
+		control.Controller=Controls.c_str();
 		#else
 		err=script.GetField("control", &control.Controller, NULL, NULL);
 		#endif
