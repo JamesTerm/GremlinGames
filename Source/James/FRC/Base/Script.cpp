@@ -59,8 +59,7 @@ const char* Script::LoadScript(const char* fileName_or_buff, bool file)
 
 	const char* ret = NULL;
 	m_lua_state = lua_open();
-	//Skip this for now TODO see if it is needed
-	//luaL_openlibs(m_lua_state);
+	luaL_openlibs(m_lua_state);
 	//I shouldn't need this for wind river
 	//Register_C_Function::RegisterAllFunctions(m_lua_state);
 
