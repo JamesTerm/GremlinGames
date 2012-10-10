@@ -109,7 +109,7 @@ void LUA_Controls_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Scr
 		Control_Props control;
 		//Wind River uses generic name, and AI tester uses product name
 		#ifndef AI_TesterCode
-		control.Controller=Controls[i];
+		control.Controller=Controls.c_str();
 		#else
 		err=script.GetField("control", &control.Controller, NULL, NULL);
 		#endif
