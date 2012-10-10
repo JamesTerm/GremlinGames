@@ -75,8 +75,8 @@ private:
 	{
 		Analog_EventEntry(JoyAxis_enum _WhichAxis,const char _ProductName[]="any",bool _IsFlipped=false,double _Multiplier=1.0,
 			double _FilterRange=0.0,double _CurveIntensity=false) : 
-		WhichAxis(_WhichAxis),IsFlipped(_IsFlipped),EventEntry_Base(_ProductName),Multiplier(_Multiplier),
-			FilterRange(_FilterRange),CurveIntensity(_CurveIntensity)
+		EventEntry_Base(_ProductName),WhichAxis(_WhichAxis),Multiplier(_Multiplier),
+			FilterRange(_FilterRange),CurveIntensity(_CurveIntensity),IsFlipped(_IsFlipped)
 		{}
 
 		JoyAxis_enum WhichAxis;
@@ -90,7 +90,7 @@ private:
 	struct Button_EventEntry : public EventEntry_Base
 	{
 		Button_EventEntry(size_t _WhichButton,const char _ProductName[]="any",bool _useOnOff=true,bool _dbl_click=false) : 
-	WhichButton(_WhichButton),EventEntry_Base(_ProductName),useOnOff(_useOnOff),dbl_click(_dbl_click)
+	EventEntry_Base(_ProductName),WhichButton(_WhichButton),useOnOff(_useOnOff),dbl_click(_dbl_click)
 	{}
 
 	size_t WhichButton;
