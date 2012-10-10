@@ -352,7 +352,7 @@ double Swerve_Drive::GetSwerveVelocitiesFromIndex(size_t index) const
 Butterfly_Drive::Butterfly_Drive(Swerve_Drive_Interface *Parent) : Swerve_Drive(Parent),m_GlobalStrafeVelocity(Vec2d(0.0,0.0)), 
 	m_LocalVelocity(Vec2d(0.0,0.0)),m_PreviousGlobalVelocity(Vec2d(0.0,0.0))
 {
-	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
+	//SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
 }
 
@@ -437,7 +437,7 @@ void Butterfly_Drive::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D 
 	//Cache this velocity in its global direction
 	m_GlobalStrafeVelocity=LocalToGlobal(Heading,LocalStrafeVelocity);
 	m_PreviousGlobalVelocity=LocalToGlobal(Heading,Vec2d(LocalStrafeVelocity[0],m_LocalVelocity[1]));
-	DOUT5 ("%f x=%f y=%f",LocalStrafeVelocity[0],Meters2Feet(m_LocalVelocity[0]),Meters2Feet(m_LocalVelocity[1]));
+	//DOUT5 ("%f x=%f y=%f",LocalStrafeVelocity[0],Meters2Feet(m_LocalVelocity[0]),Meters2Feet(m_LocalVelocity[1]));
 	m_LocalVelocity[0]=LocalStrafeVelocity[0];
 	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 }
@@ -464,7 +464,7 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 	const double FWD = (_.sFR+_.sFL+_.sRL+_.sRR)*0.25;
 
 	const double STR = GetStrafeVelocity(m_pParent->Vehicle_Drive_GetPhysics(),dTime_s);
-	const double HP=Pi/2;
+	//const double HP=Pi/2;
 	//const double HalfDimLength=GetWheelDimensions().length()/2;
 
 	//Here we go it is finally working I just needed to take out the last division
@@ -486,7 +486,7 @@ void Butterfly_Drive::InterpolateVelocities(const SwerveVelocities &Velocities,V
 
 Nona_Drive::Nona_Drive(Swerve_Drive_Interface *Parent) : Butterfly_Drive(Parent),m_KickerWheel(0.0)
 {
-	SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
+	//SwerveVelocities::uVelocity::Explicit &_=m_Velocities.Velocity.Named;
 	memset(&m_Velocities,0,sizeof(SwerveVelocities));
 }
 

@@ -28,7 +28,6 @@ inline double NormalizeRotation2(double Rotation)
 
 inline double SaturateRotation(double Rotation)
 {
-	const double Pi2=M_PI*2.0;
 	//Normalize the rotation
 	if (Rotation>M_PI)
 		Rotation=M_PI;
@@ -182,6 +181,8 @@ class Ship_Properties : public Entity_Properties
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}
 		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
 	private:
+		//typedef Entity_Properties __super;
+		
 		Ship_Props m_ShipProps;
 
 		class ControlEvents : public LUA_Controls_Properties_Interface
@@ -370,7 +371,6 @@ class Ship_2D : public Ship
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
 
 };
-
 
 class Ship_Tester : public Ship_2D
 {

@@ -33,7 +33,7 @@ Mouse_ShipDriver::Mouse_ShipDriver(Ship_2D& ship,UI_Controller *parent, unsigned
 
 	if (m_avgFrames)
 	{
-		m_mousePosHist = new osg::Vec2f[m_avgFrames];
+		m_mousePosHist = new Vec2f[m_avgFrames];
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ void Mouse_ShipDriver::DriveShip()
 		dY = m_lastMousePos[1];
 	}
 	// Reset for next time
-	m_lastMousePos = osg::Vec2f(0.0f, 0.0f);
+	m_lastMousePos = Vec2f(0.0f, 0.0f);
 
 	// Will be used eventually for sensitivity and mouse flip, store in script, etc.
 	static const float x_coeff = 0.004f;
@@ -180,7 +180,7 @@ void UI_Controller::Init_AutoPilotControls()
 
 //! TODO: Use the script to grab the head position to provide the HUD
 UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
-	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
+	/*m_HUD_UI(new HUD_PDCB(Vec3(0.0, 4.0, 0.5))), */
 	m_Base(NULL),m_mouseDriver(NULL),m_SlideButtonToggle(false),m_isControlled(false),m_ShipKeyVelocity(0.0),m_CruiseSpeed(0.0),
 	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Test1(false),m_Test2(false),m_Ship_UseHeadingSpeed(true),m_IsBeingDestroyed(false),
 	m_POVSetValve(false)
@@ -780,10 +780,10 @@ void UI_Controller::UpdateUI(double dTime_s)
 	//[2]  +Up -Down
 #ifdef __EnableTestKeys__
 	if (m_Test1)
-		m_ship->m_Physics.ApplyFractionalForce(osg::Vec3d(0,0,m_ship->Mass),osg::Vec3d(0,10,0),dTime_s);
+		m_ship->m_Physics.ApplyFractionalForce(Vec3d(0,0,m_ship->Mass),Vec3d(0,10,0),dTime_s);
 
 	else if (m_Test2)
-		m_ship->m_Physics.ApplyFractionalForce(osg::Vec3d(0,0,-m_ship->Mass),osg::Vec3d(0,10,0),dTime_s);
+		m_ship->m_Physics.ApplyFractionalForce(Vec3d(0,0,-m_ship->Mass),Vec3d(0,10,0),dTime_s);
 #endif
 	{
 		#if 1
@@ -800,7 +800,7 @@ void UI_Controller::UpdateUI(double dTime_s)
 		#if 0
 		{
 			GG_Framework::UI::MainWindow& mainWin = *GG_Framework::UI::MainWindow::GetMainWindow();
-			osg::Vec3 eye,center,up;
+			Vec3 eye,center,up;
 			mainWin.GetMainCamera()->GetCameraMatrix().getLookAt(eye,center,up);
 			//DOUT2("%f %f %f",eye[0],eye[1],eye[2]);
 			DOUT2("%f %f %f",eye[0]-pos[0],eye[1]-pos[1],eye[2]-pos[2]);

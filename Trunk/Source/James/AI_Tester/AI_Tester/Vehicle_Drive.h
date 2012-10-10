@@ -157,6 +157,7 @@ class Butterfly_Drive : public Swerve_Drive
 class Nona_Drive : public Butterfly_Drive
 {
 	private:
+		//typedef Butterfly_Drive __super;
 		double m_KickerWheel;
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -173,3 +174,4 @@ class Nona_Drive : public Butterfly_Drive
 		virtual double GetStrafeVelocity(const PhysicsEntity_2D &PhysicsToUse,double dTime_s) const;
 		void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 };
+

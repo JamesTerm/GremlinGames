@@ -99,6 +99,7 @@ struct WayPoint
 {
 	WayPoint() : Power(0.0), Position(0,0),TurnSpeedScaler(1.0) {}
 	double Power;
+	//Framework::Base::Vec2d Position;
 	osg::Vec2d Position;
 	double TurnSpeedScaler;  //This will have a default value if not in script
 };

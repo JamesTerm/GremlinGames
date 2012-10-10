@@ -11,8 +11,9 @@ public:
 	//We need to pass the properties to the Robot Control to be able to make proper conversions.
 	//The client code may cast the properties to obtain the specific data 
 	virtual void Initialize(const Entity_Properties *props)=0;
-	//Note: This is only for AI Tester
+	#ifdef AI_TesterCode
 	virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)=0;
+	#endif
 };
 
 struct FRC_2012_Robot_Props
