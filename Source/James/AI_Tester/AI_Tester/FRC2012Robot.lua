@@ -92,7 +92,7 @@ MainRobot = {
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_force = 1/15.0  --solved empiracally
+		inv_max_accel = 1/15.0  --solved empiracally
 	},
 	
 	robot_settings =
@@ -251,7 +251,7 @@ MainRobot = {
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
-				inv_max_force = 0.0  --solved empiracally
+				inv_max_accel = 0.0  --solved empiracally
 			}
 		}
 	},
