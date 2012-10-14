@@ -10,9 +10,11 @@ OunceInchToNewton=0.00706155183333
 FRC2012_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 --Parker claimed 20.38, but I've measured 22 5/16
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Width_In * WheelBase_Width_In) ) ^ 0.5
 HighGearSpeed = (427.68 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2012_wheel_diameter_in * Inches2Meters
-inv_skid=1.0/math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
+Drive_MaxAccel=4
+skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
 
 --CIM Motor torque
 CIM_StallTorque_OzIn=343.3
@@ -53,15 +55,16 @@ MainRobot = {
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
-	MaxAccelForward = 4, MaxAccelReverse = 4, 
+	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
-	MaxTorqueYaw = 25, 
+	MaxTorqueYaw =  2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In,
+	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (HighGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2 * inv_skid,
+	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
@@ -228,7 +231,7 @@ MainRobot = {
 			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
 			BRAKE = ACCEL, 
 			-- Turn Rates (deg/sec) This is always correct do not change
-			heading_rad = (LowGearSpeed / (Pi * WheelBase_Width_In * Inches2Meters)) * Pi2,
+			heading_rad = (2 * LowGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
 			
 			tank_drive =
 			{
@@ -333,7 +336,9 @@ MainRobot = {
 			PowerWheels_IsRunning = {type="joystick_button", key=5, on_off=true},
 			Ball_GripL = {type="joystick_button", key=1, on_off=true},
 			Ball_GripM = {type="joystick_button", key=2, on_off=true},
-			Ball_GripH = {type="joystick_button", key=4, on_off=true}
+			Ball_GripH = {type="joystick_button", key=4, on_off=true},
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
 		
 		Joystick_5 =
@@ -352,7 +357,9 @@ MainRobot = {
 			PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
 			Ball_GripL = {type="joystick_button", key=2, on_off=true},
 			Ball_GripM = {type="joystick_button", key=3, on_off=true},
-			Ball_GripH = {type="joystick_button", key=4, on_off=true}
+			Ball_GripH = {type="joystick_button", key=4, on_off=true},
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		}
 
 	},
