@@ -34,7 +34,7 @@ TestShip = {
 	--MaxAccelForward = 4, MaxAccelReverse = 4, 
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
-	MaxTorqueYaw = 2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In, 
+	MaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid, 
 	rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
