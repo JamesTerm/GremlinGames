@@ -57,7 +57,7 @@ MainRobot = {
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
-	MaxTorqueYaw =  2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In,
+	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
@@ -354,7 +354,7 @@ MainRobot = {
 			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
 			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
 			Ball_Fire = {type="joystick_button", key=8, on_off=true},
-			PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
+			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
 			Ball_GripL = {type="joystick_button", key=2, on_off=true},
 			Ball_GripM = {type="joystick_button", key=3, on_off=true},
 			Ball_GripH = {type="joystick_button", key=4, on_off=true},
