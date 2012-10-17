@@ -1,5 +1,5 @@
 #undef  __EncoderHack__
-#undef  __ShowPotentiometerReadings__
+#define  __ShowPotentiometerReadings__
 #undef  __ShowEncoderReadings__
 #undef  __ShowRollerReadings__
 
