@@ -411,8 +411,8 @@ public:
 		m_Manager.SetAutoPilot(true);  //we are not driving the robot
 		//Now to set up our goal
 		Ship_Tester *ship=m_Manager.GetRobot();  //we can always cast down
-		m_Manager.GetRobot()->SetUseEncoders(true);
-		//m_Manager.GetRobot()->SetUseEncoders(false);
+		//m_Manager.GetRobot()->SetUseEncoders(true);
+		m_Manager.GetRobot()->SetIsAutonomous(true);
 
 		//assert(ship);
 		size_t AutonomousValue=0;
@@ -484,7 +484,7 @@ public:
 		{
 			printf("Starting TeleOp Session\n");
 			m_Manager.ResetPos();  //This should avoid errors like the arm swinging backwards
-			m_Manager.GetRobot()->SetUseEncoders(false);
+			m_Manager.GetRobot()->SetIsAutonomous(false);
 			m_Manager.SetAutoPilot(false);  //we are driving the robot
 			double tm = GetTime();
 			m_Manager.SetSafety(true);
