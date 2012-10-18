@@ -269,7 +269,8 @@ public:
 				printf("failes to open\n");
 			#endif
 			m_Manager.ResetPos();  //This should avoid errors like the arm swinging backwards
-			m_Manager.GetRobot()->SetUseEncoders(false);
+			//m_Manager.GetRobot()->SetUseEncoders(false);
+			m_Manager.GetRobot()->SetIsAutonomous(false);
 			m_Manager.SetAutoPilot(false);  //we are driving the robot
 			double tm = GetTime();
 			m_Manager.SetSafety(true);
