@@ -16,7 +16,7 @@
 #include "Common/AI_Base_Controller.h"
 #include "Common/Vehicle_Drive.h"
 #include "Common/PIDController.h"
-#include "Common/Tank_Robot.h"
+#include "Drive/Tank_Robot.h"
 #include "Common/Robot_Control_Interface.h"
 #include "Common/Rotary_System.h"
 #include "Base/Joystick.h"
