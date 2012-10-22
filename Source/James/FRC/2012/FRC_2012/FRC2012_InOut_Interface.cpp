@@ -19,7 +19,7 @@
 #include "Common/Vehicle_Drive.h"
 #include "Common/PIDController.h"
 #include "Common/AI_Base_Controller.h"
-#include "Common/Tank_Robot.h"
+#include "Drive/Tank_Robot.h"
 #include "Common/Robot_Control_Interface.h"
 #include "Common/Rotary_System.h"
 #include "Base/Joystick.h"
@@ -36,7 +36,7 @@
 #define __ShowLCD__
 #endif
 
-#undef __DisableMotorControls__
+#define __DisableMotorControls__
 #undef  __EnablePrintfDumps__
 #undef __DisableCompressor__
 
