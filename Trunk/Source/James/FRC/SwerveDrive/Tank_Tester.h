@@ -1,73 +1,64 @@
-//This Tank_Robot.h version is stripped down to allow tank robot control to build
 #pragma once
-#define __SwerveDriveEnvironment__
 
-#undef __Tank_UseScalerPID__
-#undef __Tank_UseInducedLatency__
-#undef __Tank_ShowEncoderPrediction__
-
-///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
-class Tank_Drive_Control_Interface
+//This will test nona drive on a tank robot
+class Tank_Tester_Control : public Swerve_Drive_Control_Interface
 {
 	public:
-		//This is primarily used for updates to dashboard and driver station during a test build
-		virtual void Tank_Drive_Control_TimeChange(double dTime_s)=0;
-		//We need to pass the properties to the Robot Control to be able to make proper conversions.
-		//The client code may cast the properties to obtain the specific data 
-		virtual void Initialize(const Entity_Properties *props)=0;
-		virtual void Reset_Encoders()=0;
+		Tank_Tester_Control(bool UseSafety);
+		virtual ~Tank_Tester_Control(); 
+		void SetSafety(bool UseSafety);
+		
+	protected: //from Rotary_Control_Interface
+		virtual void Reset_Rotary(size_t index=0); 
+		virtual double GetRotaryCurrentPorV(size_t index=0);
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
 
-		//Encoders populate this with current velocity of motors
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)=0;  ///< in meters per second
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)=0;
-};
+		//from Swerve_Drive_Control_Interface
+		virtual void Swerve_Drive_Control_TimeChange(double dTime_s);
+		virtual void Initialize(const Entity_Properties *props);
+		virtual void Reset_Encoders();
 
-struct Tank_Robot_Props
-{
-	typedef Framework::Base::Vec2d Vec2D;
-	//typedef osg::Vec2d Vec2D;
-
-	//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
-	//the width is a measurement of the the center of the wheel width to the other wheel
-	Vec2D WheelDimensions;
-	double WheelDiameter;
-	double VoltageScalar;		//Used to handle reversed voltage wiring
-	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
-	double LeftPID[3]; //p,i,d
-	double RightPID[3]; //p,i,d
-	double InputLatency;  //Used with PID to help avoid oscillation in the error control (We can make one for each if needed)
-	double HeadingLatency; //Should be about 100ms + Input Latency... this will establish intervals to sync up the heading with entity
-	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
-	double LeftMaxSpeedOffset;	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
-	double RightMaxSpeedOffset;
-	double TankSteering_Tolerance; //used to help controls drive straight
-	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
-	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
-	bool IsOpen;  //This property only applies in teleop
-	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
-	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
-	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
-	//Currently supporting 4 terms in polynomial equation
-	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
-	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
-	//or alternatively solved empirically.  Using zero disables this feature
-	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
-	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
-	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
-	bool LeftEncoderReversed,RightEncoderReversed;
-};
-
-class Tank_Robot_Properties : public Ship_Properties
-{
-	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
-		Tank_Robot_Properties();
-		virtual void LoadFromScript(Framework::Scripting::Script& script);
-		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
+		double RPS_To_LinearVelocity(double RPS);
 	protected:
-		Tank_Robot_Props m_TankRobotProps;
+		Victor m_1,m_2,m_3,m_4;  //explicitly specify victor speed controllers for the robot drive
+		RobotDrive m_RobotDrive;
+		Encoder2 m_LeftEncoder,m_RightEncoder;
+
+		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
+		double m_ArmMaxSpeed;
+		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
+
+		Swerve_Robot_Props m_SwerveRobotProps; //cached in the Initialize from specific robot
 	private:
-		typedef Ship_Properties __super;
+		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
+		Averager<double,4> m_Averager_EncoderLeft, m_Averager_EncodeRight;
+	public:
+		double Get_dTime_s() const {return m_dTime_s;}
+		//Cache the left side to implement the right side in pairs
+		double m_LeftVelocity,m_LeftVoltage;
+};
+
+class Tank_Nona_Control : public Tank_Tester_Control
+{
+	public:
+	Tank_Nona_Control(bool UseSafety);
+		virtual ~Tank_Nona_Control(); 
+	protected: //from Rotary_Control_Interface
+		//virtual double GetRotaryCurrentPorV(size_t index=0);  //no control available on robot for kicker
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
+		
+		//from Swerve_Drive_Control_Interface
+		virtual void Initialize(const Entity_Properties *props);
+
+		//from Robot_Control_Interface
+		virtual void CloseSolenoid(size_t index,bool Close);
+		virtual void OpenSolenoid(size_t index,bool Open) {CloseSolenoid(index,!Open);}
+	protected:
+		Victor m_Kicker_Victor;
+		Solenoid m_OnLowGear,m_OffLowGear;
+		
+		Butterfly_Robot_Properties m_ButterflyProps; //cache to obtain drive props
+		Rotary_Props m_Kicker_Props;  //cache the rotary props for the kicker wheel
+	private:
+		typedef Tank_Tester_Control __super;
 };
