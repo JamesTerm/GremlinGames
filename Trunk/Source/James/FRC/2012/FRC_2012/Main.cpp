@@ -29,6 +29,7 @@
 #include "FRC2012_Camera.h"
 #include "FRC2012_Robot.h"
 #include "Common/InOut_Interface.h"
+#include "Drive/Tank_Robot_Control.h"
 #include "FRC2012_InOut_Interface.h"
 
 const bool c_UseDefaultControls=false;
