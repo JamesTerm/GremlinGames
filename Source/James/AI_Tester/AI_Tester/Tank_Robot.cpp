@@ -18,6 +18,7 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 
 const double Pi2=M_PI*2.0;
 
+double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity);
 
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/
@@ -138,17 +139,6 @@ void Tank_Robot::SetIsAutonomous(bool IsAutonomous)
 	//We only explicitly turn them on... not off (that will be configured else where)
 	if (IsAutonomous)
 		SetUseEncoders(true);
-}
-
-double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity)
-{
-	//see if velocity is in range
-	double ret=Velocity;
-	if ((PredictedEncoderVelocity>Velocity)&&(EncoderVelocity>Velocity))
-		ret=min(PredictedEncoderVelocity,EncoderVelocity);
-	if ((PredictedEncoderVelocity<Velocity)&&(EncoderVelocity<Velocity))
-		ret=max(PredictedEncoderVelocity,EncoderVelocity);
-	return ret;
 }
 
 void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
