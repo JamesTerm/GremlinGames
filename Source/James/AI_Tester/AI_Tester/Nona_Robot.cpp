@@ -310,7 +310,7 @@ Butterfly_Robot(EntityName,robot_control,IsAutonomous),m_KickerWheel("KickerWhee
 
 Swerve_Drive *Nona_Robot::CreateDrive() 
 {
-	const_cast<Nona_Drive *>(m_NonaDrive)=new Nona_Drive(this);
+	m_NonaDrive=new Nona_Drive(this);
 	return m_NonaDrive;
 }
 

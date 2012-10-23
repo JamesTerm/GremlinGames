@@ -20,6 +20,7 @@ class Butterfly_Robot_Properties : public Swerve_Robot_Properties
 		const TractionModeProps &GetTractionModeProps() const {return m_TractionModePropsProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
+		//typedef Swerve_Robot_Properties __super;
 		//Everything needed to switch to traction mode here
 		TractionModeProps m_TractionModePropsProps;
 
@@ -59,6 +60,7 @@ class Butterfly_Robot : public Swerve_Robot
 		DriveMode GetDriveMode() const {return m_DriveModeManager.GetMode();}
 		virtual bool IsTractionMode() const {return (GetDriveMode()==eTractionDrive);}
 	private:
+		//typedef Swerve_Robot __super;
 		//This will change between omni wheel mode and traction drive
 		class DriveModeManager
 		{
@@ -152,7 +154,6 @@ class Butterfly_Robot_UI_Control : public Butterfly_Robot, public Butterfly_Robo
 
 //----------------------------------------------------------Nona-----------------------------------------------------------
 
-
 class Nona_Robot : public Butterfly_Robot
 {
 	public:
@@ -171,8 +172,10 @@ class Nona_Robot : public Butterfly_Robot
 
 		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode);
 	private:
+		//typedef Butterfly_Robot __super;
+		
 		Rotary_Velocity_Control m_KickerWheel;  //apply control to kicker wheel
-		Nona_Drive * const m_NonaDrive; //cache, avoid needing to dynamic cast each iteration
+		Nona_Drive * m_NonaDrive; //cache, avoid needing to dynamic cast each iteration
 };
 
 class Nona_Robot_Properties : public Butterfly_Robot_Properties
@@ -183,6 +186,7 @@ class Nona_Robot_Properties : public Butterfly_Robot_Properties
 
 		const Rotary_Properties &GetKickerWheelProps() const {return m_KickerWheelProps;}
 	private:
+		//typedef Butterfly_Robot_Properties __super;
 		//Note the kicker wheel properties is a measurement of linear movement (not angular velocity)
 		Rotary_Properties m_KickerWheelProps;
 };
