@@ -126,12 +126,13 @@ class Swerve_Robot : public Ship_Tester,
 		virtual const PhysicsEntity_2D &Vehicle_Drive_GetPhysics() const {return GetPhysics();}
 		virtual PhysicsEntity_2D &Vehicle_Drive_GetPhysics_RW() {return GetPhysics();}
 
-		bool m_IsAutonomous;
 		Swerve_Drive_Control_Interface * const m_RobotControl;
+		bool m_IsAutonomous;
 	private:
-		Swerve_Drive * const m_VehicleDrive;
-		//typedef  Tank_Drive __super;
+		//typedef Ship_Tester __super;
 
+		Swerve_Drive * m_VehicleDrive;
+		
 		//The driving module consists of a swivel motor and the driving motor for a wheel.  It manages / converts the intended direction and speed to 
 		//actual direction and velocity (i.e. works in reverse) as well as working with sensor feedback (e.g. potentiometer, encoder) for error
 		//correction of voltage computation.
@@ -139,6 +140,8 @@ class Swerve_Robot : public Ship_Tester,
 		{
 			public:
 				DrivingModule(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t SectionOrder);
+				virtual ~DrivingModule() {}
+				
 				struct DrivingModule_Props
 				{
 					const  Rotary_Properties *Swivel_Props;
@@ -199,6 +202,8 @@ class Swerve_Robot_Properties : public UI_Ship_Properties
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		#endif
 	private:
+		//typedef Ship_Properties __super;
+		
 		//Note the drive properties is a measurement of linear movement (not angular velocity)
 		Rotary_Properties m_SwivelProps,m_DriveProps;
 		Swerve_Robot_Props m_SwerveRobotProps;

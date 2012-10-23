@@ -17,7 +17,8 @@ using namespace std;
 namespace Scripting=GG_Framework::Logic::Scripting;
 //namespace Scripting=Framework::Scripting;
 
-const double Pi2=M_PI*2.0;
+const double Pi=M_PI;
+const double Pi2=Pi*2.0;
 
   /***********************************************************************************************************************************/
  /*													Swerve_Robot::DrivingModule														*/
@@ -56,7 +57,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
 Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
-	Ship_Tester(EntityName), m_VehicleDrive(NULL), m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control), 
+	Ship_Tester(EntityName), m_RobotControl(robot_control), m_IsAutonomous(IsAutonomous), m_VehicleDrive(NULL),
 	m_UsingEncoders(IsAutonomous), //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 	m_Heading(0.0), m_HeadingUpdateTimer(0.0)
 {
@@ -72,7 +73,7 @@ Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interfac
 void Swerve_Robot::DestroyDrive() 
 {
 	delete m_VehicleDrive;
-	const_cast<Swerve_Drive *>(m_VehicleDrive)=NULL;
+	m_VehicleDrive=NULL;
 }
 
 Swerve_Robot::~Swerve_Robot()
@@ -87,7 +88,7 @@ Swerve_Robot::~Swerve_Robot()
 
 void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
-	const_cast<Swerve_Drive *>(m_VehicleDrive)=CreateDrive();
+	m_VehicleDrive=CreateDrive();
 	__super::Initialize(em,props);
 	m_RobotControl->Initialize(props);
 
@@ -229,15 +230,15 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 			 ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))) 
 			)
 		{
-			SwivelDirection=NormalizeRotation2(SwivelDirection+PI);
+			SwivelDirection=NormalizeRotation2(SwivelDirection+Pi);
 			if (Swivel.GetUsingRange())
 			{
-				double TestIntendedFlipped=NormalizeRotation2(IntendedDirection+PI);
+				double TestIntendedFlipped=NormalizeRotation2(IntendedDirection+Pi);
 				//If we flipped because of a huge delta check that the reverse position is in range... and flip it back if it exceed the range
 				if ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()) ||
 					(TestIntendedFlipped>Swivel.GetMaxRange()) || (TestIntendedFlipped<Swivel.GetMinRange()))
 				{
-					SwivelDirection+=PI;
+					SwivelDirection+=Pi;
 					NormalizeRotation(SwivelDirection);
 				}
 			}
