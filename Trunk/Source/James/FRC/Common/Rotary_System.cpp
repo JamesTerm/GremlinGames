@@ -26,7 +26,16 @@ namespace Base=Framework::Base;
 namespace Scripting=Framework::Scripting;
 
 
-double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity);
+double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity)
+{
+	//see if velocity is in range
+	double ret=Velocity;
+	if ((PredictedEncoderVelocity>Velocity)&&(EncoderVelocity>Velocity))
+		ret=min(PredictedEncoderVelocity,EncoderVelocity);
+	if ((PredictedEncoderVelocity<Velocity)&&(EncoderVelocity<Velocity))
+		ret=max(PredictedEncoderVelocity,EncoderVelocity);
+	return ret;
+}
 
   /***********************************************************************************************************************************/
  /*														Rotary_Position_Control														*/
