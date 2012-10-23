@@ -36,7 +36,7 @@ class Tank_Tester_Control : public Swerve_Drive_Control_Interface
 	public:
 		double Get_dTime_s() const {return m_dTime_s;}
 		//Cache the left side to implement the right side in pairs
-		double m_LeftVelocity,m_LeftVoltage;
+		double m_LeftVelocity,m_RightVelocity,m_LeftVoltage;
 };
 
 class Tank_Nona_Control : public Tank_Tester_Control
