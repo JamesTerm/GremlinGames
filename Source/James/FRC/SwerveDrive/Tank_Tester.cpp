@@ -63,7 +63,7 @@ Tank_Tester_Control::Tank_Tester_Control(bool UseSafety) :
 	m_1(1),m_2(2),m_3(3),m_4(4),
 	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
-	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0),m_LeftVelocity(0.0),m_LeftVoltage(0.0)
+	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0),m_LeftVelocity(0.0),m_RightVelocity(0.0),m_LeftVoltage(0.0)
 {
 	//ResetPos();  may need this later
 	SetSafety(UseSafety);
@@ -146,20 +146,22 @@ double Tank_Tester_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case Swerve_Robot::eWheel_FR:
 		{
-			double RightVelocity=0.0;
 			//double RightRate=m_RightEncoder.GetRate2(m_dTime_s);
 			double RightRate=m_RightEncoder.GetRate();
 			RightRate=m_KalFilter_EncodeRight(RightRate);
 			RightRate=m_Averager_EncodeRight.GetAverage(RightRate);
 			RightRate=IsZero(RightRate)?0.0:RightRate;
-			RightVelocity=RPS_To_LinearVelocity(RightRate);
-			Dout(m_SwerveRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", m_LeftVelocity,RightVelocity);
-			result=RightVelocity;
+			m_RightVelocity=RPS_To_LinearVelocity(RightRate);
+			Dout(m_SwerveRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", m_LeftVelocity,m_RightVelocity);
+			result=m_RightVelocity;
 		}
 			break;
-		//case Swerve_Robot::eWheel_RL:
-		//case Swerve_Robot::eWheel_RR:
-			//break;
+		case Swerve_Robot::eWheel_RL:
+			result=m_LeftVelocity;
+			break;
+		case Swerve_Robot::eWheel_RR:
+			result=m_RightVelocity;
+			break;
 		//case Swerve_Robot::eSwivel_FL:
 		//case Swerve_Robot::eSwivel_FR:
 		//case Swerve_Robot::eSwivel_RL:
