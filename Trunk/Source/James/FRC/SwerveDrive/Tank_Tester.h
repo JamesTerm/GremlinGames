@@ -8,6 +8,7 @@ class Tank_Tester_Control : public Swerve_Drive_Control_Interface
 		virtual ~Tank_Tester_Control(); 
 		void SetSafety(bool UseSafety);
 		
+		Swerve_Drive_Control_Interface &AsControlInterface() {return *this;}
 	protected: //from Rotary_Control_Interface
 		virtual void Reset_Rotary(size_t index=0); 
 		virtual double GetRotaryCurrentPorV(size_t index=0);
@@ -41,8 +42,11 @@ class Tank_Tester_Control : public Swerve_Drive_Control_Interface
 class Tank_Nona_Control : public Tank_Tester_Control
 {
 	public:
-	Tank_Nona_Control(bool UseSafety);
+		Tank_Nona_Control(bool UseSafety);
 		virtual ~Tank_Nona_Control(); 
+		
+		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
+		void ResetPos();
 	protected: //from Rotary_Control_Interface
 		//virtual double GetRotaryCurrentPorV(size_t index=0);  //no control available on robot for kicker
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
@@ -55,6 +59,7 @@ class Tank_Nona_Control : public Tank_Tester_Control
 		virtual void OpenSolenoid(size_t index,bool Open) {CloseSolenoid(index,!Open);}
 	protected:
 		Victor m_Kicker_Victor;
+		Compressor m_Compress;
 		Solenoid m_OnLowGear,m_OffLowGear;
 		
 		Butterfly_Robot_Properties m_ButterflyProps; //cache to obtain drive props
