@@ -38,6 +38,10 @@ namespace Scripting=Framework::Scripting;
 #define __ShowLCD__
 #endif
 
+#undef __DisableMotorControls__
+#undef __EnablePrintfDumps__
+#undef __DisableCompressor__
+
   /***********************************************************************************************************************************/
  /*														Tank_Tester_Control															*/
 /***********************************************************************************************************************************/
@@ -174,6 +178,10 @@ void Tank_Tester_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 		m_LeftVoltage=Voltage;
 		break;
 	case Swerve_Robot::eWheel_FR:
+		//For now leave this enabled... should not need to script this
+		Dout(2, "l=%.1f r=%.1f", m_LeftVoltage,Voltage);
+
+		#ifndef __DisableMotorControls__
 		if (!m_SwerveRobotProps.ReverseSteering)
 		{
 			m_RobotDrive.SetLeftRightMotorOutputs(
@@ -186,7 +194,7 @@ void Tank_Tester_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 					(float)(Voltage * m_SwerveRobotProps.VoltageScalar),
 					(float)(m_LeftVoltage * m_SwerveRobotProps.VoltageScalar));
 		}
-
+		#endif
 		break;
 	//case Swerve_Robot::eWheel_RL:
 	//case Swerve_Robot::eWheel_RR:
@@ -204,13 +212,31 @@ void Tank_Tester_Control::UpdateRotaryVoltage(size_t index,double Voltage)
  /*														Tank_Nona_Control															*/
 /***********************************************************************************************************************************/
 
-//Using the roller wheel and claw 
-Tank_Nona_Control::Tank_Nona_Control(bool UseSafety) : Tank_Tester_Control(UseSafety),m_Kicker_Victor(6),m_OnLowGear(3),m_OffLowGear(4)
+void Tank_Nona_Control::ResetPos()
 {
+	#ifndef __DisableCompressor__
+	//Enable this code if we have a compressor 
+	m_Compress.Stop();
+	//Allow driver station to control if they want to run the compressor
+	if (DriverStation::GetInstance()->GetDigitalIn(8))
+	{
+		printf("RobotControl reset compressor\n");
+		m_Compress.Start();
+	}
+	#endif
+}
+
+//Using the roller wheel and claw 
+Tank_Nona_Control::Tank_Nona_Control(bool UseSafety) : Tank_Tester_Control(UseSafety),m_Kicker_Victor(6),
+		m_Compress(5,2),
+		m_OnLowGear(3),m_OffLowGear(4)
+{
+	ResetPos();
 }
 
 Tank_Nona_Control::~Tank_Nona_Control()
 {
+	m_Compress.Stop();
 }
 
 //double Tank_Nona_Control::GetRotaryCurrentPorV(size_t index)
@@ -235,7 +261,9 @@ void Tank_Nona_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 {
 	if (index==Nona_Robot::eWheel_Kicker)
 	{
+		#ifndef __DisableMotorControls__
 		m_Kicker_Victor.Set((float)(Voltage * m_Kicker_Props.VoltageScalar));
+		#endif
 	}
 	else
 		__super::UpdateRotaryVoltage(index,Voltage);
@@ -244,9 +272,9 @@ void Tank_Nona_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 
 void Tank_Nona_Control::CloseSolenoid(size_t index,bool Close)
 {
+	printf("CloseSolenoid[%d] = %d \n",index,Close);
 	if (index==Butterfly_Robot::eUseLowGear)
 	{
-		printf("CloseSolenoid[%d] = %d \n",index,Close);
 		m_OnLowGear.Set(Close),m_OffLowGear.Set(!Close);
 		
 		//keeping code for read but enable for tank robot that has a real gear shifting mechanism 
