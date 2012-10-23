@@ -21,6 +21,9 @@
 #include "PIDController.h"
 #include "AI_Base_Controller.h"
 #include "../Drive/Tank_Robot.h"
+#ifdef  __SwerveDriveEnvironment__
+#include "../Drive/Tank_Tester.h"
+#endif
 #include "Robot_Control_Interface.h"
 #include "../Base/Joystick.h"
 #include "../Base/JoystickBinder.h"
