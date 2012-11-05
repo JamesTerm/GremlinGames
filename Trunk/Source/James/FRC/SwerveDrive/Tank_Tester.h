@@ -47,11 +47,13 @@ class Tank_Nona_Control : public Tank_Tester_Control
 		
 		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
 		void ResetPos();
+		void UpdateCompressor();
 	protected: //from Rotary_Control_Interface
 		//virtual double GetRotaryCurrentPorV(size_t index=0);  //no control available on robot for kicker
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
 		
 		//from Swerve_Drive_Control_Interface
+		virtual void Swerve_Drive_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
 
 		//from Robot_Control_Interface
@@ -66,4 +68,6 @@ class Tank_Nona_Control : public Tank_Tester_Control
 		Rotary_Props m_Kicker_Props;  //cache the rotary props for the kicker wheel
 	private:
 		typedef Tank_Tester_Control __super;
+		int m_Compressor_FloodCount;
+		bool m_CurrentCompressorState;
 };

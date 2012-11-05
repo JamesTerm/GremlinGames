@@ -214,13 +214,14 @@ void Tank_Tester_Control::UpdateRotaryVoltage(size_t index,double Voltage)
  /*														Tank_Nona_Control															*/
 /***********************************************************************************************************************************/
 
-void Tank_Nona_Control::ResetPos()
+void Tank_Nona_Control::UpdateCompressor()
 {
 	#ifndef __DisableCompressor__
 	//Enable this code if we have a compressor 
 	m_Compress.Stop();
+	m_CurrentCompressorState=DriverStation::GetInstance()->GetDigitalIn(8);
 	//Allow driver station to control if they want to run the compressor
-	if (DriverStation::GetInstance()->GetDigitalIn(8))
+	if (m_CurrentCompressorState)
 	{
 		printf("RobotControl reset compressor\n");
 		m_Compress.Start();
@@ -228,10 +229,15 @@ void Tank_Nona_Control::ResetPos()
 	#endif
 }
 
+void Tank_Nona_Control::ResetPos()
+{
+	UpdateCompressor();
+}
+
 //Using the roller wheel and claw 
 Tank_Nona_Control::Tank_Nona_Control(bool UseSafety) : Tank_Tester_Control(UseSafety),m_Kicker_Victor(6),
 		m_Compress(5,2),
-		m_OnLowGear(3),m_OffLowGear(4)
+		m_OnLowGear(3),m_OffLowGear(4),m_Compressor_FloodCount(0)
 {
 	ResetPos();
 }
@@ -245,6 +251,21 @@ Tank_Nona_Control::~Tank_Nona_Control()
 //{
 //	return __super::GetRotaryCurrentPorV(index);
 //}
+
+void Tank_Nona_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
+{
+	__super::Swerve_Drive_Control_TimeChange(dTime_s);
+	if (m_Compressor_FloodCount++>100)
+	{
+		bool CurrentCompressorState=DriverStation::GetInstance()->GetDigitalIn(8);
+		if (CurrentCompressorState!=m_CurrentCompressorState)
+		{
+			printf("New State=%d\n",CurrentCompressorState);
+			UpdateCompressor(); //this will implicitly assign m_CurrentCompressorState
+		}
+		m_Compressor_FloodCount=0;
+	}
+}
 
 void Tank_Nona_Control::Initialize(const Entity_Properties *props)
 {
