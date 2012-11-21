@@ -30,3 +30,21 @@ RECT SizeRectWithAspectRatio(const RECT &rcScreen, SIZE sizePicture, bool bCente
 
 	return rect;
 }
+
+RECT SizeRectWithAspectRatio(double AspectRatio,const RECT &CurrentWindow)
+{
+	RECT ret=CurrentWindow;
+	double width=CurrentWindow.right-CurrentWindow.left;
+	double height=CurrentWindow.bottom-CurrentWindow.top;
+	double newAr = (width / height); // the current aspect ratio
+
+	if (newAr > AspectRatio)		// fit to width.
+		height = (int) (width / AspectRatio);
+	else	// fit to height
+		width = (int) (height * AspectRatio);
+
+	//Now to translate back... we can do centering mode here if we wanted
+	ret.right=ret.left+(int)width;
+	ret.bottom=ret.top+(int)height;
+	return ret;
+}
