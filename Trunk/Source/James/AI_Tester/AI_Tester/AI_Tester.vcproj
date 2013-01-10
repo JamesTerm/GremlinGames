@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CommonUI.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Debug.cpp"
 				>
 			</File>
@@ -209,6 +213,10 @@
 			</File>
 			<File
 				RelativePath=".\FRC2012_Robot.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\FRC2013_Robot.cpp"
 				>
 			</File>
 			<File
@@ -310,6 +318,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CommonUI.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Debug.h"
 				>
 			</File>
@@ -334,6 +346,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FRC2013_Robot.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Goal.h"
 				>
 			</File>
@@ -355,6 +371,10 @@
 			</File>
 			<File
 				RelativePath=".\Robot_Control_Interface.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Robot_Tester.h"
 				>
 			</File>
 			<File
