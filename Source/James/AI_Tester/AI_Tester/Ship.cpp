@@ -722,6 +722,7 @@ const char * const csz_RobotNames[] =
 	"RobotNona",
 	"Robot2011",
 	"Robot2012",
+	"Robot2013"
 };
 
 Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)

@@ -1,17 +1,6 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
-namespace AI_Tester
-{
-	#include "PIDController.h"
-	#include "Calibration_Testing.h"
-	#include "Tank_Robot.h"
-	#include "Robot_Control_Interface.h"
-	#include "Rotary_System.h"
-	#include "FRC2011_Robot.h"
-	#include "FRC2012_Robot.h"
-	#include "Swerve_Robot.h"
-	#include "Nona_Robot.h"
-}
+#include "Robot_Tester.h"
 
 using namespace AI_Tester;
 using namespace std;
@@ -353,6 +342,9 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 				break;
 			case Ship_Props::eFRC2012_Robot:
 				NewShip=new FRC_2012_Robot_UI(EntityName);
+				break;
+			case Ship_Props::eFRC2013_Robot:
+				NewShip=new FRC_2013_Robot_UI(EntityName);
 				break;
 		}
 		assert(NewShip);

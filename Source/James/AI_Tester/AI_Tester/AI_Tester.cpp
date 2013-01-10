@@ -6,16 +6,8 @@
 namespace AI_Tester
 {
 	#include "Viewer.h"
-	#include "PIDController.h"
-	#include "Calibration_Testing.h"
-	#include "Tank_Robot.h"
-	#include "Robot_Control_Interface.h"
-	#include "Rotary_System.h"
-	#include "FRC2011_Robot.h"
-	#include "FRC2012_Robot.h"
-	#include "Swerve_Robot.h"
-	#include "Nona_Robot.h"
 }
+#include "Robot_Tester.h"
 
 void cls(void *hConsole=NULL);
 extern double g_WorldScaleFactor;
@@ -295,6 +287,8 @@ private:
 	Robot2011Map Robot2011_Database;
 	typedef map<string ,FRC_2012_Robot_Properties,greater<string>> Robot2012Map;
 	Robot2012Map Robot2012_Database;
+	typedef map<string ,FRC_2013_Robot_Properties,greater<string>> Robot2013Map;
+	Robot2013Map Robot2013_Database;
 
 	UI_Controller_GameClient &game;
 
@@ -349,7 +343,8 @@ public:
 		eButterfly,
 		eNona,
 		e2011,
-		e2012
+		e2012,
+		e2013
 	};
 	void LoadRobot(const char *FileName,const char *RobotName,RobotType type)
 	{
@@ -422,6 +417,17 @@ public:
 					}
 				}
 				break;
+			case e2013:
+				{
+					Robot2013Map::iterator iter=Robot2013_Database.find(RobotName);
+					if (iter==Robot2013_Database.end())
+					{
+						//New entry
+						Robot2013_Database[RobotName]=FRC_2013_Robot_Properties();
+						new_entry=&Robot2013_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
 		}
 		if (new_entry)
 		{
@@ -476,6 +482,12 @@ public:
 		{
 			Robot2012Map::iterator iter=Robot2012_Database.find(str_2);
 			if (iter!=Robot2012_Database.end())
+				props=&((*iter).second);
+		}
+		if (props==NULL)
+		{
+			Robot2013Map::iterator iter=Robot2013_Database.find(str_2);
+			if (iter!=Robot2013_Database.end())
 				props=&((*iter).second);
 		}
 
@@ -621,10 +633,12 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eSwerveRobot,
 		eButterflyRobot,
 		eNonaRobot,
-		eRobot2012,
 		eRobot2011,
 		eTestGoals_2011,
+		eRobot2012,
 		eTestGoals_2012,
+		eRobot2013,
+		eTestGoals_2013,
 		eTestFollowGod,
 		eTestLUAShip,
 		eControlABomber,
@@ -641,10 +655,12 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"SwerveRobot",
 		"ButterflyRobot",
 		"NonaRobot",
-		"Robot2012",
 		"Robot2011",
 		"Goals2011",
+		"Robot2012",
 		"Goals2012",
+		"Robot2013",
+		"Goals2013",
 		"FollowGod",
 		"GodShip",
 		"bomber",
@@ -714,7 +730,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 		break;
 	case eNonaRobot:
-	case eCurrent:
 		{
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			g_WorldScaleFactor=100.0;
@@ -722,18 +737,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eNona);
 			Entity2D *TestEntity=_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
-		}
-		break;
-	case eRobot2012:
-		{
-			#ifdef _DEBUG
-			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
-			#endif
-			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
-			_command.LoadRobot("FRC2012Robot.lua","FRC2012Robot",Commands::e2012);
-			Entity2D *TestEntity=_command.AddRobot("Robot2012","FRC2012Robot",str_3,str_4,str_5);
-			game.SetControlledEntity(TestEntity,false);
 		}
 		break;
 	case eRobot2011:
@@ -774,6 +777,18 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 			break;
 		}
+	case eRobot2012:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("FRC2012Robot.lua","FRC2012Robot",Commands::e2012);
+			Entity2D *TestEntity=_command.AddRobot("Robot2012","FRC2012Robot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity,false);
+		}
+		break;
 	case eTestGoals_2012:
 		{
 			FRC_2012_Robot *Robot=dynamic_cast<FRC_2012_Robot *>(game.GetEntity("Robot2012"));
@@ -826,6 +841,22 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 			break;
 		}
+	case eRobot2013:
+	case eCurrent:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			game.SetDisableEngineRampUp2(true);
+			_command.LoadRobot("FRC2013Robot.lua","FRC2013Robot",Commands::e2013);
+			Entity2D *TestEntity=_command.AddRobot("Robot2013","FRC2013Robot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity,false);
+		}
+		break;
+	case eTestGoals_2013:
+		//TODO
+		break;
 	case eTestFollowGod:
 		{
 			#ifdef _DEBUG
