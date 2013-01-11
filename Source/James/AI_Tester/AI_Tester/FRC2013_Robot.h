@@ -90,28 +90,20 @@ class FRC_2013_Robot : public Tank_Robot
 	public:
 		enum SpeedControllerDevices
 		{
-			eTurret,
 			ePitchRamp,
 			ePowerWheels,
-			eLowerConveyor,
-			eMiddleConveyor,
-			eFireConveyor,
-			eFlippers
+			eFireConveyor
 		};
 
 		enum BoolSensorDevices
 		{
-			eLowerConveyor_Sensor,
-			eMiddleConveyor_Sensor,
 			eFireConveyor_Sensor
 		};
 
 		enum SolenoidDevices
 		{
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
-			eFlipperDown,		//If true flipper is down
-			eUseBreakDrive,		//OpenSolenoid() is called with true then its in break mode (default is coast) This is really a digital output
-			eRampDeployment
+			eFlipperDown		//If true flipper is down
 		};
 
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -131,25 +123,6 @@ class FRC_2013_Robot : public Tank_Robot
 		virtual void TimeChange(double dTime_s);
 
 	protected:
-		class Turret : public Rotary_Position_Control
-		{
-			private:
-				FRC_2013_Robot * const m_pParent;
-				double m_Velocity; //adds all axis velocities then assigns on the time change
-				double m_LastIntendedPosition;
-			public:
-				Turret(FRC_2013_Robot *parent,Rotary_Control_Interface *robot_control);
-				IEvent::HandlerList ehl;
-				virtual void BindAdditionalEventControls(bool Bind);
-				virtual void ResetPos();
-			protected:
-				//typedef Rotary_Position_Control __super;
-				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
-				void SetIntendedPosition_Plus(double Position);
-
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
-				virtual void TimeChange(double dTime_s);
-		};
 
 		class PitchRamp : public Rotary_Position_Control
 		{
@@ -193,7 +166,7 @@ class FRC_2013_Robot : public Tank_Robot
 		{
 			private:
 				FRC_2013_Robot * const m_pParent;
-				Rotary_Velocity_Control m_LowerConveyor,m_MiddleConveyor,m_FireConveyor;
+				Rotary_Velocity_Control m_FireConveyor;
 				double m_FireDelayTrigger_Time; //Time counter of the value remaining in the on-to-delay state
 				double m_FireStayOn_Time;  //Time counter of the value remaining in the on state
 				bool m_FireDelayTriggerOn; //A valve mechanism that must meet time requirement to disable the delay
@@ -205,8 +178,6 @@ class FRC_2013_Robot : public Tank_Robot
 						unsigned char Grip   : 1;
 						unsigned char Squirt : 1;
 						unsigned char Fire   : 1;
-						unsigned char GripL  : 1;	//Manual grip low, medium, and high
-						unsigned char GripM  : 1;
 						unsigned char GripH  : 1;
 					} bits;
 					unsigned char raw;
@@ -227,42 +198,14 @@ class FRC_2013_Robot : public Tank_Robot
 			protected:
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
-				void GripL(bool on) {m_ControlSignals.bits.GripL=on;}
-				void GripM(bool on) {m_ControlSignals.bits.GripM=on;}
 				void GripH(bool on) {m_ControlSignals.bits.GripH=on;}
 
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
 
-		class Flippers : public Rotary_Position_Control
-		{
-			private:
-				//typedef Rotary_Position_Control __super;
-				FRC_2013_Robot * const m_pParent;
-				bool m_Advance,m_Retract;
-			public:
-				Flippers(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
-				IEvent::HandlerList ehl;
-				virtual void BindAdditionalEventControls(bool Bind);
-			protected:
-
-				void Advance(bool on) {m_Advance=on;}
-				void Retract(bool on) {m_Retract=on;}
-
-				//typedef Rotary_Position_Control __super;
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				void SetIntendedPosition(double Position);
-
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
-				virtual void TimeChange(double dTime_s);
-		};
-
 	public: //Autonomous public access (wind river has problems with friend technique)
 		BallConveyorSystem &GetBallConveyorSystem();
 		PowerWheels &GetPowerWheels();
-		void SetPresetPosition(size_t index,bool IgnoreOrientation=false);
-		void Set_Auton_PresetPosition(size_t index);
 		void SetTarget(Targets target);
 		const FRC_2013_Robot_Properties &GetRobotProps() const;
 		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
@@ -274,11 +217,9 @@ class FRC_2013_Robot : public Tank_Robot
 		void ApplyErrorCorrection();
 		//typedef  Tank_Robot __super;
 		FRC_2013_Control_Interface * const m_RobotControl;
-		Turret m_Turret;
 		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
 		BallConveyorSystem m_BallConveyorSystem;
-		Flippers m_Flippers;
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Targets m_Target;		//This allows us to change our target
 		Vec2D m_DefensiveKeyPosition;
@@ -310,9 +251,6 @@ class FRC_2013_Robot : public Tank_Robot
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
 		
-		void SetPreset1() {SetPresetPosition(0);}
-		void SetPreset2() {SetPresetPosition(1);}
-		void SetPreset3() {SetPresetPosition(2);}
 		void SetPresetPOV (double value);
 
 		void SetDefensiveKeyPosition(double NormalizedDistance) {m_DefensiveKeyNormalizedDistance=NormalizedDistance;}
@@ -326,7 +264,6 @@ class FRC_2013_Goals
 {
 	public:
 		static Goal *Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt=false);
-		static Goal *Get_ShootBalls_WithPreset(FRC_2013_Robot *Robot,size_t KeyIndex);
 		static Goal *Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
 	private:
 		class Fire : public AtomicGoal
@@ -398,8 +335,6 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		//Note: This is only for AI Tester
 		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
 
-		void TriggerLower(bool on) {m_LowerSensor=on;}
-		void TriggerMiddle(bool on) {m_MiddleSensor=on;}
 		void TriggerFire(bool on) {m_FireSensor=on;}
 		void SlowWheel(bool on) {m_SlowWheel=on;}
 
@@ -407,39 +342,14 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester2 m_Turret_Pot,m_Pitch_Pot,m_Flippers_Pot; //simulate the potentiometer and motor
-		Encoder_Simulator m_PowerWheel_Enc,m_LowerConveyor_Enc,m_MiddleConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
+		Potentiometer_Tester2 m_Pitch_Pot; //simulate the potentiometer and motor
+		Encoder_Simulator m_PowerWheel_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
-		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
-		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
-		bool m_LowerSensor,m_MiddleSensor,m_FireSensor;
+		double m_PitchRampVoltage,m_PowerWheelVoltage;
+		double m_FireConveyorVoltage;
+		bool m_FireSensor;
 		bool m_SlowWheel;
-};
-
-class FRC_2013_Turret_UI
-{
-	public:
-		typedef osg::Vec2d Vec2D;
-
-		struct Turret_Properties
-		{
-			double YOffset;
-		};
-
-		FRC_2013_Turret_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
-		virtual void Initialize(Entity2D::EventMap& em, const Turret_Properties *props=NULL);
-
-		virtual void UI_Init(Actor_Text *parent);
-		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
-		virtual void Text_SizeToUse(double SizeToUse);
-
-		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
-	private:
-		FRC_2013_Robot_Control * const m_RobotControl;
-		Actor_Text *m_UIParent;
-		Turret_Properties m_props;
-		osg::ref_ptr<osgText::Text> m_Turret; 
 };
 
 class FRC_2013_Power_Wheel_UI : public Side_Wheel_UI
@@ -504,9 +414,6 @@ class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
 
 	private:
 		Tank_Robot_UI m_TankUI;
-		FRC_2013_Turret_UI m_TurretUI;
 		FRC_2013_Power_Wheel_UI m_PowerWheelUI;
-		FRC_2013_Lower_Conveyor_UI m_LowerConveyor;
-		FRC_2013_Middle_Conveyor_UI m_MiddleConveyor;
 		FRC_2013_Fire_Conveyor_UI m_FireConveyor;
 };
