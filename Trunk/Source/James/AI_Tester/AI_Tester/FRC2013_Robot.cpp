@@ -44,88 +44,6 @@ static double PositionToVelocity_Tweak(double Value)
 	return Value;
 }
 
-  /***********************************************************************************************************************************/
- /*														FRC_2013_Robot::Turret														*/
-/***********************************************************************************************************************************/
-
-FRC_2013_Robot::Turret::Turret(FRC_2013_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0),m_LastIntendedPosition(0.0)
-{
-}
-
-void FRC_2013_Robot::Turret::SetIntendedPosition_Plus(double Position)
-{
-	if (GetIsUsingPotentiometer())
-	{
-		if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
-			return;
-		bool IsTargeting=(m_pParent->m_IsTargeting);
-		if ((!IsTargeting) || m_pParent->m_DisableTurretTargetingValue)
-		{
-			m_LastIntendedPosition=Position; //grab it before all the conversions
-			Position=-Position; 
-			//By default this goes from -1 to 1.0 
-			//first get the range from 0 - 1
-			double positive_range = (Position * 0.5) + 0.5;
-			//positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=GetMaxRange();
-			const double Scale=(maxRange-minRange);
-			Position=(positive_range * Scale) + minRange;
-			//DOUT5("Test=%f",RAD_2_DEG(Position));
-			SetIntendedPosition(Position);
-		}
-	}
-	else
-		Turret_SetRequestedVelocity(PositionToVelocity_Tweak(Position));   //allow manual use of same control
-}
-
-void FRC_2013_Robot::Turret::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
-	if (Bind)
-	{
-		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::Turret::Turret_SetRequestedVelocity);
-		em->EventValue_Map["Turret_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2013_Robot::Turret::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::Turret::SetPotentiometerSafety);
-	}
-	else
-	{
-		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::Turret::Turret_SetRequestedVelocity);
-		em->EventValue_Map["Turret_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::Turret::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Remove(*this, &FRC_2013_Robot::Turret::SetPotentiometerSafety);
-	}
-}
-
-void FRC_2013_Robot::Turret::TimeChange(double dTime_s)
-{
-	SetRequestedVelocity_FromNormalized(m_Velocity);
-	m_Velocity=0.0;
-
-	#ifndef __DisableTurretTargeting__
-	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
-	{
-		Vec2D Target=m_pParent->m_TargetOffset;
-		Target-=m_pParent->GetPos_m();
-		const double Angle=atan2(Target[1],Target[0]);
-		double AngleToUse=-(Angle-PI_2);
-		AngleToUse-=m_pParent->GetAtt_r();
-		SetIntendedPosition(NormalizeRotation2(AngleToUse) * m_pParent->m_YawErrorCorrection);
-		//TODO factor in velocity once we have our ball velocity (to solve for time)
-	}
-	#endif
-
-	__super::TimeChange(dTime_s);
-	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	#endif
-}
-
-void FRC_2013_Robot::Turret::ResetPos()
-{
-	__super::ResetPos();
-	SetPos_m(-Pi);  //It starts out backwards
-}
 
   /***********************************************************************************************************************************/
  /*													FRC_2013_Robot::PitchRamp														*/
@@ -279,7 +197,6 @@ void FRC_2013_Robot::PowerWheels::ResetPos()
 /***********************************************************************************************************************************/
 
 FRC_2013_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
-	m_LowerConveyor("LowerConveyor",robot_control,eLowerConveyor),m_MiddleConveyor("MiddleConveyor",robot_control,eMiddleConveyor),
 	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
 	m_FireDelayTrigger_Time(0.0),m_FireStayOn_Time(0.0),
 	m_FireDelayTriggerOn(false),m_FireStayOn(false)
@@ -291,20 +208,16 @@ FRC_2013_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2013_Robot *pParent,R
 void FRC_2013_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	//These share the same props and fire is scaled from this level
-	m_LowerConveyor.Initialize(em,props);
-	m_MiddleConveyor.Initialize(em,props);
 	m_FireConveyor.Initialize(em,props);
 }
 void FRC_2013_Robot::BallConveyorSystem::ResetPos() 
 {
-	m_LowerConveyor.ResetPos(),m_MiddleConveyor.ResetPos(),m_FireConveyor.ResetPos();
+	m_FireConveyor.ResetPos();
 	m_ControlSignals.raw=0;
 }
 
 void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 {
-	const bool LowerSensor=m_pParent->m_RobotControl->GetBoolSensorState(eLowerConveyor_Sensor);
-	const bool MiddleSensor=m_pParent->m_RobotControl->GetBoolSensorState(eMiddleConveyor_Sensor);
 	const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
 	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
 	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetRequestedVelocity()!=0.0) &&
@@ -312,8 +225,6 @@ void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	//Only fire when the wheel has reached its aiming speed
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
 	bool Grip=m_ControlSignals.bits.Grip==1;
-	bool GripL=m_ControlSignals.bits.GripL==1;
-	bool GripM=m_ControlSignals.bits.GripM==1;
 	bool GripH=m_ControlSignals.bits.GripH==1;
 	bool Squirt=m_ControlSignals.bits.Squirt==1;
 
@@ -352,42 +263,29 @@ void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 	}
 
 	//This assumes the motors are in the same orientation: 
-	double LowerAcceleration=((Grip & (!LowerSensor)) || (LowerSensor & (!MiddleSensor))) | GripL | Squirt | Fire ?
-		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
-	m_LowerConveyor.SetCurrentLinearAcceleration(LowerAcceleration);
-
-	double MiddleAcceleration= ((LowerSensor & (!MiddleSensor)) || (MiddleSensor & (!FireSensor))) | GripM | Squirt | Fire  ?
-		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
-	m_MiddleConveyor.SetCurrentLinearAcceleration(MiddleAcceleration);
-
-	double FireAcceleration= (MiddleSensor & (!FireSensor)) | GripH | Squirt | Fire | m_FireStayOn ?
-		((Squirt)?m_MiddleConveyor.GetACCEL():-m_MiddleConveyor.GetBRAKE()):0.0;
+	//Note: FireSensor works different for now since the lower middle converyors are removed... we'll need to work out how this will work
+	double FireAcceleration= FireSensor | GripH | Squirt | Fire | m_FireStayOn ?
+		((Squirt)?m_FireConveyor.GetACCEL():-m_FireConveyor.GetBRAKE()):0.0;
 	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
 
-	m_LowerConveyor.AsEntity1D().TimeChange(dTime_s);
-	m_MiddleConveyor.AsEntity1D().TimeChange(dTime_s);
 	m_FireConveyor.AsEntity1D().TimeChange(dTime_s);
 }
 
 //This is the manual override, but probably not used if we use spike as it would be wasteful to have a analog control for this
 void FRC_2013_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized(double Velocity)
 {
-	m_LowerConveyor.SetRequestedVelocity_FromNormalized(Velocity);
-	m_MiddleConveyor.SetRequestedVelocity_FromNormalized(Velocity);
 	m_FireConveyor.SetRequestedVelocity_FromNormalized(Velocity);
 }
 
 void FRC_2013_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 {
-	Base::EventMap *em=m_MiddleConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=m_FireConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		//Ball_SetCurrentVelocity is the manual override
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Ball_Fire"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::Fire);
 		em->EventOnOff_Map["Ball_Grip"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::Grip);
-		em->EventOnOff_Map["Ball_GripL"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::GripL);
-		em->EventOnOff_Map["Ball_GripM"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::GripM);
 		em->EventOnOff_Map["Ball_GripH"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::GripH);
 		em->EventOnOff_Map["Ball_Squirt"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::Squirt);
 	}
@@ -396,59 +294,11 @@ void FRC_2013_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Ball_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Ball_Fire"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::Fire);
 		em->EventOnOff_Map["Ball_Grip"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::Grip);
-		em->EventOnOff_Map["Ball_GripL"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::GripL);
-		em->EventOnOff_Map["Ball_GripM"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::GripM);
 		em->EventOnOff_Map["Ball_GripH"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::GripH);
 		em->EventOnOff_Map["Ball_Squirt"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::Squirt);
 	}
 }
 
-  /***********************************************************************************************************************************/
- /*													FRC_2013_Robot::Flippers														*/
-/***********************************************************************************************************************************/
-FRC_2013_Robot::Flippers::Flippers(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-Rotary_Position_Control("Flippers",robot_control,eFlippers),m_pParent(pParent),m_Advance(false),m_Retract(false)
-{
-}
-
-void FRC_2013_Robot::Flippers::SetIntendedPosition(double Position)
-{
-	//DOUT5("Test=%f",RAD_2_DEG(Position));
-	__super::SetIntendedPosition(Position);
-}
-
-void FRC_2013_Robot::Flippers::TimeChange(double dTime_s)
-{
-	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
-	if (m_Advance ^ m_Retract)
-		SetCurrentLinearAcceleration(m_Advance?ACCEL:-BRAKE);
-
-	__super::TimeChange(dTime_s);
-	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	#endif
-}
-
-void FRC_2013_Robot::Flippers::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
-	if (Bind)
-	{
-		em->EventValue_Map["Flippers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::Flippers::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["Flippers_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2013_Robot::Flippers::SetIntendedPosition);
-		em->EventOnOff_Map["Flippers_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::Flippers::SetPotentiometerSafety);
-		em->EventOnOff_Map["Flippers_Advance"].Subscribe(ehl,*this, &FRC_2013_Robot::Flippers::Advance);
-		em->EventOnOff_Map["Flippers_Retract"].Subscribe(ehl,*this, &FRC_2013_Robot::Flippers::Retract);
-	}
-	else
-	{
-		em->EventValue_Map["Flippers_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::Flippers::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["Flippers_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::Flippers::SetIntendedPosition);
-		em->EventOnOff_Map["Flippers_SetPotentiometerSafety"].Remove(*this, &FRC_2013_Robot::Flippers::SetPotentiometerSafety);
-		em->EventOnOff_Map["Flippers_Advance"].Remove(*this, &FRC_2013_Robot::Flippers::Advance);
-		em->EventOnOff_Map["Flippers_Retract"].Remove(*this, &FRC_2013_Robot::Flippers::Retract);
-	}
-}
 
   /***********************************************************************************************************************************/
  /*															FRC_2013_Robot															*/
@@ -480,8 +330,8 @@ const double c_BankShot_V_SatHieght=Inches2Meters(2.57111110379327);
 const double c_BankShot_Initial_V_Hieght=Inches2Meters(12.86)-c_BankShot_V_SatHieght; //about 10.288 inches to the point of the V
 
 FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous) : 
-	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),m_Flippers(this,robot_control),
+	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control),
+		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
@@ -495,11 +345,9 @@ void FRC_2013_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 
 	const FRC_2013_Robot_Properties *RobotProps=dynamic_cast<const FRC_2013_Robot_Properties *>(props);
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
-	m_Turret.Initialize(em,RobotProps?&RobotProps->GetTurretProps():NULL);
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 	m_BallConveyorSystem.Initialize(em,RobotProps?&RobotProps->GetConveyorProps():NULL);
-	m_Flippers.Initialize(em,RobotProps?&RobotProps->GetFlipperProps():NULL);
 
 	//set to the default key position
 	const FRC_2013_Robot_Props &robot2013props=RobotProps->GetFRC2013RobotProps();
@@ -514,11 +362,9 @@ void FRC_2013_Robot::ResetPos()
 
 	//This should be false to avoid any conflicts during a reset
 	m_IsTargeting=false;
-	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_BallConveyorSystem.ResetPos();
-	m_Flippers.ResetPos();
 }
 
 FRC_2013_Robot::BallConveyorSystem &FRC_2013_Robot::GetBallConveyorSystem()
@@ -686,17 +532,15 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		m_HangTime = ta+tb;
 		{
 			DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
-			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.2f %.1f",RAD_2_DEG(m_Turret.GetPos_m()) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity));
+			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.1f",RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity));
 		}
 	}
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
-	m_Turret.AsEntity1D().TimeChange(dTime_s);
 	m_PitchRamp.AsEntity1D().TimeChange(dTime_s);
 	m_PowerWheels.AsEntity1D().TimeChange(dTime_s);
 	m_BallConveyorSystem.TimeChange(dTime_s);
-	m_Flippers.AsEntity1D().TimeChange(dTime_s);
 }
 
 const double c_rMotorDriveForward_DeadZone=0.02;
@@ -756,13 +600,11 @@ void FRC_2013_Robot::SetLowGear(bool on)
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
 	m_SetLowGear=on;
 	SetBypassPosAtt_Update(true);
-	m_Turret.SetBypassPos_Update(true);
 	m_PitchRamp.SetBypassPos_Update(true);
 
 	//Now for some real magic with the properties!
 	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
 	SetBypassPosAtt_Update(false);
-	m_Turret.SetBypassPos_Update(false);
 	m_PitchRamp.SetBypassPos_Update(false);
 
 	m_RobotControl->OpenSolenoid(eUseLowGear,on);
@@ -790,39 +632,25 @@ void FRC_2013_Robot::SetLowGearValue(double Value)
 	}
 }
 
-void FRC_2013_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
-{
-	Vec2D position=m_RobotProps.GetFRC2013RobotProps().PresetPositions[index];
-	SetPosition(position[0],position[1]);
+//void FRC_2013_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
+//{
+//	Vec2D position=m_RobotProps.GetFRC2013RobotProps().PresetPositions[index];
+//	SetPosition(position[0],position[1]);
+//
+//	if (!IgnoreOrientation)
+//	{	
+//		//with no turret assume its always in the zero position
+//		SetAttitude(0.0);
+//	}
+//}
 
-	#ifndef __DisableTurretTargeting__
-	if (!IgnoreOrientation)
-	{	
-		Vec2D Target=m_TargetOffset;
-		Target-=GetPos_m();
-		const double Angle=atan2(Target[1],Target[0]);
-		double AngleToUse=-(Angle-PI_2);
-
-		double TurretPos=NormalizeRotation2(AngleToUse)-m_Turret.GetPos_m();
-		SetAttitude(TurretPos);
-	}
-	#else
-	if (!IgnoreOrientation)
-	{	
-		//with turret not working assume its always in the zero position
-		SetAttitude(0.0);
-	}
-	#endif
-}
-
-void FRC_2013_Robot::Set_Auton_PresetPosition(size_t index)
-{
-	m_AutonPresetIndex=index;
-	m_IsTargeting=true;  //This is just in case the pitch is in wrong position or if it is missing
-	SetPresetPosition(index,true);
-	SetAttitude(Pi);
-	m_Turret.SetPos_m(-Pi);
-}
+//void FRC_2013_Robot::Set_Auton_PresetPosition(size_t index)
+//{
+//	m_AutonPresetIndex=index;
+//	m_IsTargeting=true;  //This is just in case the pitch is in wrong position or if it is missing
+//	SetPresetPosition(index,true);
+//	SetAttitude(Pi);
+//}
 
 void FRC_2013_Robot::SetTarget(Targets target)
 {
@@ -834,12 +662,7 @@ void FRC_2013_Robot::SetDefensiveKeyOn()
 	//We'll simply plot the coordinates of the key based on position and orientation of the turret
 	//This is really a scale of 0 - 1 multiplied against 40 feet, but simplified to 0 - 2 * 20
 	const double Distance=Feet2Meters((m_DefensiveKeyNormalizedDistance + 1.0) * 20.0);
-	//determine our turret direction 
-	#ifndef __DisableTurretTargeting__
-	double Direction=NormalizeRotation2(GetAtt_r() + m_Turret.GetPos_m());
-	#else
 	double Direction=0.0;
-	#endif
 	double Y=(sin(Direction+PI_2) * Distance) + GetPos_m()[1];
 	double X=(cos(-Direction+PI_2) * Distance) + GetPos_m()[0];
 	printf("Direction=%f Distance=%f x=%f y=%f\n",RAD_2_DEG(Direction),Meters2Feet(Distance),Meters2Feet(X),Meters2Feet(Y));
@@ -866,12 +689,12 @@ void FRC_2013_Robot::SetPresetPOV (double value)
 			//6 = left
 			//7 = left up
 			size_t index=(size_t)(value/45.0);
-			switch (index)
-			{
-				case 0:	SetPresetPosition(0);	break;
-				case 2: SetPresetPosition(2);	break;
-				case 6: SetPresetPosition(1);	break;
-			}
+			//switch (index)
+			//{
+			//	case 0:	SetPresetPosition(0);	break;
+			//	case 2: SetPresetPosition(2);	break;
+			//	case 6: SetPresetPosition(1);	break;
+			//}
 		}
 	}
 	else 
@@ -880,11 +703,8 @@ void FRC_2013_Robot::SetPresetPOV (double value)
 
 void FRC_2013_Robot::Robot_SetCreepMode(bool on) 
 {
-	SetUseEncoders(on,false);  //High gear can use them
-	if (m_SetLowGear)
-	{
-		m_RobotControl->OpenSolenoid(eUseBreakDrive,on);
-	}
+	//TODO this may be omitted
+	//SetUseEncoders(on,false);  //High gear can use them
 }
 
 void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
@@ -907,9 +727,6 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetLowGearValue);
 
-		em->Event_Map["Robot_SetPreset1"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPreset1);
-		em->Event_Map["Robot_SetPreset2"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPreset2);
-		em->Event_Map["Robot_SetPreset3"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPreset3);
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"].Subscribe(ehl, *this, &FRC_2013_Robot::Robot_SetCreepMode);
 	}
@@ -930,18 +747,13 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2013_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2013_Robot::SetLowGearValue);
 
-		em->Event_Map["Robot_SetPreset1"]  .Remove(*this, &FRC_2013_Robot::SetPreset1);
-		em->Event_Map["Robot_SetPreset2"]  .Remove(*this, &FRC_2013_Robot::SetPreset2);
-		em->Event_Map["Robot_SetPreset3"]  .Remove(*this, &FRC_2013_Robot::SetPreset3);
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"]  .Remove(*this, &FRC_2013_Robot::Robot_SetCreepMode);
 	}
 
-	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_BallConveyorSystem.BindAdditionalEventControls(Bind);
-	m_Flippers.BindAdditionalEventControls(Bind);
 	#ifdef AI_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
@@ -1442,8 +1254,6 @@ FRC_2013_Goals::OperateSolenoid::Goal_Status FRC_2013_Goals::OperateSolenoid::Pr
 			m_Robot.SetFlipperPneumatic(m_IsOpen);
 			break;
 		case FRC_2013_Robot::eUseLowGear:
-		case FRC_2013_Robot::eUseBreakDrive:
-		case FRC_2013_Robot::eRampDeployment:
 			assert(false);
 			break;
 	}
@@ -1472,16 +1282,10 @@ Goal *FRC_2013_Goals::Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt)
 	return MainGoal;
 }
 
-Goal *FRC_2013_Goals::Get_ShootBalls_WithPreset(FRC_2013_Robot *Robot,size_t KeyIndex)
-{
-	Robot->Set_Auton_PresetPosition(KeyIndex);
-	return Get_ShootBalls(Robot);
-}
-
 Goal *FRC_2013_Goals::Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex)
 {
 	const FRC_2013_Robot_Props::Autonomous_Properties &auton=Robot->GetRobotProps().GetFRC2013RobotProps().Autonomous_Props;
-	Robot->Set_Auton_PresetPosition(KeyIndex);
+	//Robot->Set_Auton_PresetPosition(KeyIndex);
 	Robot->SetTarget((FRC_2013_Robot::Targets)TargetIndex);
 	Fire *FireOn=new Fire(*Robot,true);
 	#if 0
@@ -1632,15 +1436,6 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 
 	switch (index)
 	{
-		case FRC_2013_Robot::eTurret:
-			{
-				//	printf("Turret=%f\n",Voltage);
-				//DOUT3("Turret Voltage=%f",Voltage);
-				m_TurretVoltage=Voltage;
-				m_Turret_Pot.UpdatePotentiometerVoltage(Voltage);
-				m_Turret_Pot.TimeChange();  //have this velocity immediately take effect
-			}
-			break;
 		case FRC_2013_Robot::ePitchRamp:
 			{
 				//	printf("Pitch=%f\n",Voltage);
@@ -1650,31 +1445,12 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_Pitch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
-		case FRC_2013_Robot::eFlippers:
-			{
-				//	printf("Flippers=%f\n",Voltage);
-				//DOUT3("Flippers Voltage=%f",Voltage);
-				m_FlipperVoltage=Voltage;
-				m_Flippers_Pot.UpdatePotentiometerVoltage(Voltage);
-				m_Flippers_Pot.TimeChange();  //have this velocity immediately take effect
-			}
-			break;
 		case FRC_2013_Robot::ePowerWheels:
 			if (m_SlowWheel) Voltage=0.0;
 			m_PowerWheelVoltage=Voltage;
 			m_PowerWheel_Enc.UpdateEncoderVoltage(Voltage);
 			m_PowerWheel_Enc.TimeChange();
 			//DOUT3("Arm Voltage=%f",Voltage);
-			break;
-		case FRC_2013_Robot::eLowerConveyor:
-			m_LowerConveyorVoltage=Voltage;
-			m_LowerConveyor_Enc.UpdateEncoderVoltage(Voltage);
-			m_LowerConveyor_Enc.TimeChange();
-			break;
-		case FRC_2013_Robot::eMiddleConveyor:
-			m_MiddleConveyorVoltage=Voltage;
-			m_MiddleConveyor_Enc.UpdateEncoderVoltage(Voltage);
-			m_MiddleConveyor_Enc.TimeChange();
 			break;
 		case FRC_2013_Robot::eFireConveyor:
 			m_FireConveyorVoltage=Voltage;
@@ -1686,17 +1462,11 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-	case FRC_2013_Robot::eTurret:
-		Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,1,"t=%.2f",Voltage);
-		break;
 	case FRC_2013_Robot::ePitchRamp:
 		Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::ePowerWheels:
 		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
-		break;
-	case FRC_2013_Robot::eFlippers:
-		Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
 		break;
 	}
 	#endif
@@ -1707,12 +1477,6 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	bool ret;
 	switch (index)
 	{
-	case FRC_2013_Robot::eLowerConveyor_Sensor:
-		ret=m_LowerSensor;
-		break;
-	case FRC_2013_Robot::eMiddleConveyor_Sensor:
-		ret=m_MiddleSensor;
-		break;
 	case FRC_2013_Robot::eFireConveyor_Sensor:
 		ret=m_FireSensor;
 		break;
@@ -1722,8 +1486,8 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	return ret;
 }
 
-FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_TurretVoltage(0.0),m_PowerWheelVoltage(0.0),
-	m_LowerSensor(false),m_MiddleSensor(false),m_FireSensor(false),m_SlowWheel(false)
+FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),
+	m_FireSensor(false),m_SlowWheel(false)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
@@ -1739,26 +1503,14 @@ void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
 {
 	switch (index)
 	{
-		case FRC_2013_Robot::eTurret:
-			m_Turret_Pot.ResetPos();
-			break;
 		case FRC_2013_Robot::ePitchRamp:
 			m_Pitch_Pot.ResetPos();
 			//We may want this for more accurate simulation
 			//m_Pitch_Pot.SetPos_m((m_Pitch_Pot.GetMinRange()+m_Pitch_Pot.GetMaxRange()) / 2.0);
 			break;
-		case FRC_2013_Robot::eFlippers:
-			m_Flippers_Pot.ResetPos();
-			break;
 		case FRC_2013_Robot::ePowerWheels:
 			m_PowerWheel_Enc.ResetPos();
 			//DOUT3("Arm Voltage=%f",Voltage);
-			break;
-		case FRC_2013_Robot::eLowerConveyor:
-			m_LowerConveyor_Enc.ResetPos();
-			break;
-		case FRC_2013_Robot::eMiddleConveyor:
-			m_MiddleConveyor_Enc.ResetPos();
 			break;
 		case FRC_2013_Robot::eFireConveyor:
 			m_FireConveyor_Enc.ResetPos();
@@ -1771,15 +1523,11 @@ void FRC_2013_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMa
 {
 	if (Bind)
 	{
-		em->EventOnOff_Map["Ball_LowerSensor"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::TriggerLower);
-		em->EventOnOff_Map["Ball_MiddleSensor"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::TriggerMiddle);
 		em->EventOnOff_Map["Ball_FireSensor"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::TriggerFire);
 		em->EventOnOff_Map["Ball_SlowWheel"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::SlowWheel);
 	}
 	else
 	{
-		em->EventOnOff_Map["Ball_LowerSensor"]  .Remove(*this, &FRC_2013_Robot_Control::TriggerLower);
-		em->EventOnOff_Map["Ball_MiddleSensor"]  .Remove(*this, &FRC_2013_Robot_Control::TriggerMiddle);
 		em->EventOnOff_Map["Ball_FireSensor"]  .Remove(*this, &FRC_2013_Robot_Control::TriggerFire);
 		em->EventOnOff_Map["Ball_SlowWheel"]  .Remove(*this, &FRC_2013_Robot_Control::SlowWheel);
 	}
@@ -1799,28 +1547,20 @@ void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
 		//turret_props.SetMinRange(0);
 		//turret_props.SetMaxRange(Pi2);
 		turret_props.SetUsingRange(false);
-		m_Turret_Pot.Initialize(&turret_props);
 		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
-		m_Flippers_Pot.Initialize(&robot_props->GetFlipperProps());
 		m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
-		m_LowerConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
-		m_MiddleConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
 		m_FireConveyor_Enc.Initialize(&robot_props->GetConveyorProps());
 	}
 }
 
 void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
-	m_Turret_Pot.SetTimeDelta(dTime_s);
 	m_Pitch_Pot.SetTimeDelta(dTime_s);
-	m_Flippers_Pot.SetTimeDelta(dTime_s);
 	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
-	m_LowerConveyor_Enc.SetTimeDelta(dTime_s);
-	m_MiddleConveyor_Enc.SetTimeDelta(dTime_s);
 	m_FireConveyor_Enc.SetTimeDelta(dTime_s);
 	//display voltages
-	DOUT(2,"l=%.2f r=%.2f t=%.2f pi=%.2f pw=%.2f lc=%.2f mc=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
-		m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage);
+	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
+		m_PitchRampVoltage,m_PowerWheelVoltage,m_FireConveyorVoltage);
 }
 
 
@@ -1830,28 +1570,13 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 	switch (index)
 	{
-		case FRC_2013_Robot::eTurret:
-		
-			result=NormalizeRotation2(m_Turret_Pot.GetPotentiometerCurrentPosition() - Pi);
-			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			break;
 		case FRC_2013_Robot::ePitchRamp:
 
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
-			DOUT (4,"pitch=%f flippers=%f",RAD_2_DEG(result),RAD_2_DEG(m_Flippers_Pot.GetPotentiometerCurrentPosition()));
-			break;
-		case FRC_2013_Robot::eFlippers:
-			result=m_Flippers_Pot.GetPotentiometerCurrentPosition();
+			DOUT (4,"pitch=%f ",RAD_2_DEG(result));
 			break;
 		case FRC_2013_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
-			break;
-		case FRC_2013_Robot::eLowerConveyor:
-			result=m_LowerConveyor_Enc.GetEncoderVelocity();
-			break;
-		case FRC_2013_Robot::eMiddleConveyor:
-			result=m_MiddleConveyor_Enc.GetEncoderVelocity();
-			//DOUT4 ("vel=%f",result);
 			break;
 		case FRC_2013_Robot::eFireConveyor:
 			result=m_FireConveyor_Enc.GetEncoderVelocity();
@@ -1862,17 +1587,11 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-		case FRC_2013_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
-			break;
 		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2013_Robot::ePowerWheels:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
-			break;
-		case FRC_2013_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
 			break;
 	}
 	#endif
@@ -1891,79 +1610,7 @@ void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	case FRC_2013_Robot::eFlipperDown:
 		printf("FlipperDown=%d\n",Open);
 		break;
-	case FRC_2013_Robot::eUseBreakDrive:
-		printf("UseBreakDrive=%d\n",Open);
-		break;
-	case FRC_2013_Robot::eRampDeployment:
-		printf("RampDeployment=%d\n",Open);
-		//m_RampDeployment=Open;
-		break;
 	}
-}
-  /***********************************************************************************************************************************/
- /*														FRC_2013_Turret_UI															*/
-/***********************************************************************************************************************************/
-
-void FRC_2013_Turret_UI::Initialize(Entity2D::EventMap& em, const Turret_Properties *props)
-{
-	if (props)
-		m_props=*props;
-	else
-		m_props.YOffset=3.0;
-}
-void FRC_2013_Turret_UI::UI_Init(Actor_Text *parent)
-{
-	m_UIParent=parent;
-
-	osg::Vec3 position(0.5*c_Scene_XRes_InPixels,0.5*c_Scene_YRes_InPixels,0.0f);
-
-	m_Turret= new osgText::Text;
-	m_Turret->setColor(osg::Vec4(0.0,1.0,0.0,1.0));
-	m_Turret->setCharacterSize(m_UIParent->GetFontSize());
-	m_Turret->setFontResolution(10,10);
-	m_Turret->setPosition(position);
-	m_Turret->setAlignment(osgText::Text::CENTER_CENTER);
-	m_Turret->setText(L"\\/\n|\n( )");
-	m_Turret->setUpdateCallback(m_UIParent);
-}
-void FRC_2013_Turret_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
-{
-	FRC_2013_Control_Interface *turret_access=m_RobotControl;
-	double Swivel=(-turret_access->GetRotaryCurrentPorV(FRC_2013_Robot::eTurret));
-	double HeadingToUse=Heading+Swivel;
-	const double FS=m_UIParent->GetFontSize();
-
-	const double TurretLength=1.0;
-	Vec2d TurretOffset(0,TurretLength);
-	TurretOffset=GlobalToLocal(Swivel ,TurretOffset);
-	TurretOffset[1]+=(m_props.YOffset-TurretLength);
-
-	const Vec2d TurretLocalOffset=GlobalToLocal(Heading ,TurretOffset);
-	const osg::Vec3 TurretPos (parent_pos[0]+( TurretLocalOffset[0]*FS),parent_pos[1]+( TurretLocalOffset[1]*FS),parent_pos[2]);
-
-	//const char *TeamName=m_UIParent->GetEntityProperties_Interface()->GetTeamName();
-	//if (strcmp(TeamName,"red")==0)
-	//	m_Turret->setColor(osg::Vec4(1.0f,0.0f,0.5f,1.0f));  //This is almost magenta (easier to see)
-	//else if (strcmp(TeamName,"blue")==0)
-	//	m_Turret->setColor(osg::Vec4(0.0f,0.5f,1.0f,1.0f));  //This is almost cyan (easier to see too)
-
-	if (m_Turret.valid())
-	{
-		m_Turret->setPosition(TurretPos);
-		m_Turret->setRotation(FromLW_Rot_Radians(HeadingToUse,0.0,0.0));
-	}
-
-}
-void FRC_2013_Turret_UI::Text_SizeToUse(double SizeToUse)
-{
-	if (m_Turret.valid()) m_Turret->setCharacterSize(SizeToUse);
-}
-void FRC_2013_Turret_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
-{
-	if (AddOrRemove)
-		if (m_Turret.valid()) geode->addDrawable(m_Turret);
-	else
-		if (m_Turret.valid()) geode->removeDrawable(m_Turret);
 }
 
   /***************************************************************************************************************/
@@ -1992,47 +1639,7 @@ void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 	//Scale down the rotation to something easy to gauge in UI
 	AddRotation((NormalizedVelocity * 18) * dTime_s);
 }
-  /***************************************************************************************************************/
- /*											FRC_2013_Lower_Conveyor_UI											*/
-/***************************************************************************************************************/
 
-void FRC_2013_Lower_Conveyor_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
-{
-	Wheel_Properties Myprops;
-	Myprops.m_Offset=Vec2d(0.0,-1.5);
-	Myprops.m_Color=osg::Vec4(0.5,1.0,1.0,1.0);
-	Myprops.m_TextDisplay=L"-";
-
-	__super::Initialize(em,&Myprops);
-}
-
-void FRC_2013_Lower_Conveyor_UI::TimeChange(double dTime_s)
-{
-	FRC_2013_Control_Interface *pw_access=m_RobotControl;
-	double Velocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eLowerConveyor);
-	AddRotation(Velocity* 0.5 * dTime_s);
-}
-
-  /***************************************************************************************************************/
- /*											FRC_2013_Middle_Conveyor_UI											*/
-/***************************************************************************************************************/
-
-void FRC_2013_Middle_Conveyor_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
-{
-	Wheel_Properties Myprops;
-	Myprops.m_Offset=Vec2d(0.30,-0.5);
-	Myprops.m_Color=osg::Vec4(1.0,1.0,0.5,1.0);
-	Myprops.m_TextDisplay=L"-";
-
-	__super::Initialize(em,&Myprops);
-}
-
-void FRC_2013_Middle_Conveyor_UI::TimeChange(double dTime_s)
-{
-	FRC_2013_Control_Interface *pw_access=m_RobotControl;
-	double Velocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eMiddleConveyor);
-	AddRotation(Velocity* 0.5 * dTime_s);
-}
 
   /***************************************************************************************************************/
  /*											FRC_2013_Fire_Conveyor_UI											*/
@@ -2060,7 +1667,7 @@ void FRC_2013_Fire_Conveyor_UI::TimeChange(double dTime_s)
 /***************************************************************************************************************/
 
 FRC_2013_Robot_UI::FRC_2013_Robot_UI(const char EntityName[]) : FRC_2013_Robot(EntityName,this),FRC_2013_Robot_Control(),
-		m_TankUI(this),m_TurretUI(this),m_PowerWheelUI(this),m_LowerConveyor(this),m_MiddleConveyor(this),m_FireConveyor(this)
+		m_TankUI(this),m_PowerWheelUI(this),m_FireConveyor(this)
 {
 }
 
@@ -2069,54 +1676,37 @@ void FRC_2013_Robot_UI::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_TankUI.TimeChange(dTime_s);
 	m_PowerWheelUI.TimeChange(dTime_s);
-	m_LowerConveyor.TimeChange(dTime_s);
-	m_MiddleConveyor.TimeChange(dTime_s);
 	m_FireConveyor.TimeChange(dTime_s);
 }
 void FRC_2013_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	m_TankUI.Initialize(em,props);
-	m_TurretUI.Initialize(em);
 	m_PowerWheelUI.Initialize(em);
-	m_LowerConveyor.Initialize(em);
-	m_MiddleConveyor.Initialize(em);
 	m_FireConveyor.Initialize(em);
 }
 
 void FRC_2013_Robot_UI::UI_Init(Actor_Text *parent) 
 {
 	m_TankUI.UI_Init(parent);
-	m_TurretUI.UI_Init(parent);
 	m_PowerWheelUI.UI_Init(parent);
-	m_LowerConveyor.UI_Init(parent);
-	m_MiddleConveyor.UI_Init(parent);
 	m_FireConveyor.UI_Init(parent);
 }
 void FRC_2013_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
 {
 	m_TankUI.custom_update(nv,draw,parent_pos);
-	m_TurretUI.update(nv,draw,parent_pos,-GetAtt_r());
 	m_PowerWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
-	m_LowerConveyor.update(nv,draw,parent_pos,-GetAtt_r());
-	m_MiddleConveyor.update(nv,draw,parent_pos,-GetAtt_r());
 	m_FireConveyor.update(nv,draw,parent_pos,-GetAtt_r());
 }
 void FRC_2013_Robot_UI::Text_SizeToUse(double SizeToUse) 
 {
 	m_TankUI.Text_SizeToUse(SizeToUse);
-	m_TurretUI.Text_SizeToUse(SizeToUse);
 	m_PowerWheelUI.Text_SizeToUse(SizeToUse);
-	m_LowerConveyor.Text_SizeToUse(SizeToUse);
-	m_MiddleConveyor.Text_SizeToUse(SizeToUse);
 	m_FireConveyor.Text_SizeToUse(SizeToUse);
 }
 void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
 {
 	m_TankUI.UpdateScene(geode,AddOrRemove);
-	m_TurretUI.UpdateScene(geode,AddOrRemove);
 	m_PowerWheelUI.UpdateScene(geode,AddOrRemove);
-	m_LowerConveyor.UpdateScene(geode,AddOrRemove);
-	m_MiddleConveyor.UpdateScene(geode,AddOrRemove);
 	m_FireConveyor.UpdateScene(geode,AddOrRemove);
 }
