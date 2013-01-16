@@ -334,7 +334,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
+		m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
 
@@ -349,19 +349,22 @@ void FRC_2013_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 	m_BallConveyorSystem.Initialize(em,RobotProps?&RobotProps->GetConveyorProps():NULL);
 
+	//TODO see if this is still needed
+	#if 0
 	//set to the default key position
 	const FRC_2013_Robot_Props &robot2013props=RobotProps->GetFRC2013RobotProps();
 	SetDefaultPosition(robot2013props.PresetPositions[m_DefaultPresetIndex]);
+	#endif
 }
 void FRC_2013_Robot::ResetPos()
 {
-	//We cannot reset position between auton and telop
-	SetBypassPosAtt_Update(true);
+	//TODO determine if we need to worry about resetting position
+	//SetBypassPosAtt_Update(true);
 	__super::ResetPos();
-	SetBypassPosAtt_Update(false);
+	//SetBypassPosAtt_Update(false);
 
 	//This should be false to avoid any conflicts during a reset
-	m_IsTargeting=false;
+	//m_IsTargeting=false;
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_BallConveyorSystem.ResetPos();
@@ -581,7 +584,7 @@ void FRC_2013_Robot::SetTargetingValue(double Value)
 	{
 		if (m_IsTargeting)
 		{
-			m_IsTargeting=false;
+			SetTargeting(false);
 			printf("Disabling Targeting\n");
 		}
 	}
@@ -589,7 +592,7 @@ void FRC_2013_Robot::SetTargetingValue(double Value)
 	{
 		if (!m_IsTargeting)
 		{
-			m_IsTargeting=true;
+			SetTargeting(true);
 			printf("Enabling Targeting\n");
 		}
 	}
@@ -712,10 +715,10 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	Entity2D::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
-		em->EventOnOff_Map["Robot_IsTargeting"].Subscribe(ehl, *this, &FRC_2013_Robot::IsTargeting);
+		em->EventOnOff_Map["Robot_SetTargeting"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargeting);
 		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOff);
-		em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTurretTargetingOff);
+		//em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTargetingValue);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOn);
@@ -732,10 +735,10 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	}
 	else
 	{
-		em->EventOnOff_Map["Robot_IsTargeting"]  .Remove(*this, &FRC_2013_Robot::IsTargeting);
+		em->EventOnOff_Map["Robot_SetTargeting"]  .Remove(*this, &FRC_2013_Robot::SetTargeting);
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOff);
-		em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Remove(*this, &FRC_2013_Robot::SetTurretTargetingOff);
+		//em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Remove(*this, &FRC_2013_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2013_Robot::SetTargetingValue);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOn);

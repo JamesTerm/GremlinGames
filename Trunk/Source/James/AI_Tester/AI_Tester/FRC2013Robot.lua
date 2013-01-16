@@ -112,24 +112,6 @@ MainRobot = {
 			c31={p=1.7, x=1.0}, c32={p=1.7, x=1.0}, c33={p=1.7, x=1.0},
 		},
 	
-		turret =
-		{
-			is_closed='yes',				--It is closed loop when feedback has been properly calibrated
-			show_pid_dump='no',				--Only turn on if you want to analyze the PID dump (only one at a time, and it must be closed loop)
-			ds_display_row=-1,				--Assign to a row (e.g. 0-4) when trying to calibrate the potentiometer
-			pid=
-			{p=1, i=0, d=0},
-			tolerance=0.001,				--we need high precision
-			encoder_to_wheel_ratio=1.0,		--Used to calibrate encoder to physical turret angles should match readings 
-			voltage_multiply=-1.0,			--May be reversed using -1.0
-			max_speed=10,
-			accel=1.0,						--These are only needed if we bind keys for turret
-			brake=1.0,
-			max_accel_forward=10,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=10,
-			min_range_deg=-180,				--These are probably good to go, but may need to be smaller
-			max_range_deg= 180
-		},
 		pitch =
 		{
 			is_closed='yes',
@@ -139,11 +121,11 @@ MainRobot = {
 			{p=1, i=0, d=0},
 			tolerance=0.001,				--we need high precision
 
-			max_speed=10,
-			max_accel_forward=10,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=10,
-			min_range_deg=45-3,				--These should be good to go
-			max_range_deg=70+3
+			max_speed=5,
+			max_accel_forward=5,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=5,
+			min_range_deg=0,				--These should be good to go
+			max_range_deg=85
 		},
 		power =
 		{
@@ -214,7 +196,8 @@ MainRobot = {
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			Ball_Squirt = {type="joystick_button", key=3, on_off=true},
 			Ball_SlowWheel = {type="joystick_button", key=6, on_off=true},
 			Robot_SetPreset1 = {type="joystick_button", key=11, on_off=false},
@@ -234,8 +217,8 @@ MainRobot = {
 			control = "logitech dual action",
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},

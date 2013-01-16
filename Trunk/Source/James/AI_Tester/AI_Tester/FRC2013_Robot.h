@@ -235,14 +235,13 @@ class FRC_2013_Robot : public Tank_Robot
 		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
 		size_t m_AutonPresetIndex;  //used only because encoder tracking is disabled
-		bool m_DisableTurretTargetingValue;
 		bool m_POVSetValve;
 
 		bool m_IsTargeting;
-		void IsTargeting(bool on) {m_IsTargeting=on;}
-		void SetTargetingOn() {IsTargeting(true);}
-		void SetTargetingOff() {IsTargeting(false);}
-		void SetTurretTargetingOff(bool on) {m_DisableTurretTargetingValue=on;}
+		bool IsTargeting() const {return m_IsTargeting;}
+		void SetTargeting(bool on) {m_IsTargeting=on;}
+		void SetTargetingOn() {SetTargeting(true);}
+		void SetTargetingOff() {SetTargeting(false);}
 		void SetTargetingValue(double Value);
 
 		bool m_SetLowGear;
