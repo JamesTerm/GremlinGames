@@ -116,6 +116,7 @@ class FRC_2013_Robot : public Tank_Robot
 			eDefensiveKey
 		};
 		FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous=false);
+		virtual~FRC_2013_Robot();
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
@@ -222,6 +223,7 @@ class FRC_2013_Robot : public Tank_Robot
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Targets m_Target;		//This allows us to change our target
 		Vec2D m_DefensiveKeyPosition;
+		void *m_UDP_Listener;
 
 		//This is adjusted depending on location for correct bank-shot angle trajectory, note: the coordinate system is based where 0,0 is the 
 		//middle of the game playing field
