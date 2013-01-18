@@ -82,7 +82,7 @@ void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
 	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer());
 	if (IsTargeting)
 	{
-		__super::SetIntendedPosition(m_pParent->m_PitchAngle);
+		__super::SetIntendedPosition(m_pParent->m_PitchAngle * m_pParent->m_PitchErrorCorrection);
 	}
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
@@ -320,7 +320,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
+		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
 }
@@ -379,6 +379,7 @@ void FRC_2013_Robot::ApplyErrorCorrection()
 	//These offsets are offsets added to the array indexes 
 	const size_t XOffset=(Pos_m[0]>(robot_props.KeyGrid[1][1])[0]) ? 1 : 0;
 	const double YCenterKey=(robot_props.KeyGrid[1][1])[1];
+	//TODO figure out y coordinate system offset for 6 rows vs 3
 	//The coordinate system is backwards for Y 
 	const size_t YOffset=(Pos_m[1] < YCenterKey) ? 1 : 0;
 	//Find our normalized targeted coordinates; saturate as needed
@@ -402,14 +403,14 @@ void FRC_2013_Robot::ApplyErrorCorrection()
 	const double pc_BottomHalf= (x * c11.PowerCorrection) + ((1.0-x)*c10.PowerCorrection);
 	const double pc = (y * pc_BottomHalf) + ((1.0-y) * pc_TopHalf);
 
-	const double yc_TopHalf=    (x * c01.YawCorrection) + ((1.0-x)*c00.YawCorrection);
-	const double yc_BottomHalf= (x * c11.YawCorrection) + ((1.0-x)*c10.YawCorrection);
+	const double yc_TopHalf=    (x * c01.PitchCorrection) + ((1.0-x)*c00.PitchCorrection);
+	const double yc_BottomHalf= (x * c11.PitchCorrection) + ((1.0-x)*c10.PitchCorrection);
 	const double yc = (y * yc_TopHalf) + ((1.0-y) * yc_BottomHalf);
 
 	//Now to apply correction... for now we'll apply to the easiest pieces possible and change if needed
-	m_YawErrorCorrection=yc;
+	m_PitchErrorCorrection=yc;
 	m_PowerErrorCorrection=pc;
-	//DOUT(5,"pc=%f yc=%f x=%f y=%f",pc,yc,x,y);
+	//DOUT(5,"pc=%.2f yc=%.2f x=%.2f y=%.2f xo=%d yo=%d",pc,yc,x,y,XOffset,YOffset);
 	//We can use the error grid cells directly by simply positioning the robot at the right place
 	size_t HackedIndex;
 	switch (m_Target)
@@ -478,7 +479,8 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//Where y = height displacement (or goal - player)
 		//	[theta=atan(sqrt(y^2+x^2)/x+y/x)]
 		//This is equation 8 solving theta
-		m_PitchAngle=atan(sqrt(y2+x2)/x+y/x);
+		//m_PitchAngle=atan(sqrt(y2+x2)/x+y/x);
+		m_PitchAngle=atan2(y,x);
 
 		//Be sure G is in the same units as x and y!  (all in meters in code)
 		//	V=sqrt(G(sqrt(y^2+x^2)+y))
@@ -736,17 +738,7 @@ void FRC_2013_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 const double c_WheelDiameter=Inches2Meters(6);
 const double c_MotorToWheelGearRatio=12.0/36.0;
 
-FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  : m_TurretProps(
-	"Turret",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	10.0,   //Max Speed
-	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Props::eSwivel,
-	true,	//Using the range
-	-Pi,Pi
-	),
+FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  : 
 	m_PitchRampProps(
 	"Pitch",
 	2.0,    //Mass
@@ -811,7 +803,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  : m_TurretProps(
 		props.TargetVars_DisplayRow=(size_t)-1;
 		props.PowerVelocity_DisplayRow=(size_t)-1;
 
-		for (size_t row=0;row<3;row++)
+		for (size_t row=0;row<6;row++)
 		{
 			for (size_t column=0;column<3;column++)
 			{
@@ -821,7 +813,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  : m_TurretProps(
 				const double y=(spread * ((double)row-1.0)) + DefaultY;
 				cell=Vec2D(x,y);
 				props.KeyCorrections[row][column].PowerCorrection=1.0;
-				props.KeyCorrections[row][column].YawCorrection=1.0;
+				props.KeyCorrections[row][column].PitchCorrection=1.0;
 			}
 		}
 
@@ -853,12 +845,6 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  : m_TurretProps(
 		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
 		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
 		m_TankRobotProps=props;
-	}
-	{
-		Rotary_Props props=m_TurretProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.001; //we need high precision
-		m_TurretProps.RoteryProps()=props;
 	}
 	{
 		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
@@ -937,7 +923,7 @@ const char *ProcessKeyCorrection(FRC_2013_Robot_Props &m_FRC2013RobotProps,Scrip
 	err = script.GetFieldTable(CellName);
 
 	err = script.GetField("p", NULL, NULL,&m_FRC2013RobotProps.KeyCorrections[row][column].PowerCorrection);
-	err = script.GetField("x", NULL, NULL,&m_FRC2013RobotProps.KeyCorrections[row][column].YawCorrection);
+	err = script.GetField("y", NULL, NULL,&m_FRC2013RobotProps.KeyCorrections[row][column].PitchCorrection);
 
 	script.Pop();
 	return err;
@@ -983,12 +969,6 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	err = script.GetFieldTable("robot_settings");
 	if (!err) 
 	{
-		err = script.GetFieldTable("turret");
-		if (!err)
-		{
-			m_TurretProps.LoadFromScript(script);
-			script.Pop();
-		}
 		err = script.GetFieldTable("pitch");
 		if (!err)
 		{
@@ -1050,7 +1030,7 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err = script.GetFieldTable("grid_corrections");
 		if (!err)
 		{
-			for (size_t row=0;row<3;row++)
+			for (size_t row=0;row<6;row++)
 			{
 				for (size_t column=0;column<3;column++)
 				{
@@ -1507,10 +1487,6 @@ void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
 	{
 		m_RobotProps=*robot_props;  //save a copy
 
-		Rotary_Properties turret_props=robot_props->GetTurretProps();
-		//turret_props.SetMinRange(0);
-		//turret_props.SetMaxRange(Pi2);
-		turret_props.SetUsingRange(false);
 		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
 		m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
 		m_FireConveyor_Enc.Initialize(&robot_props->GetConveyorProps());

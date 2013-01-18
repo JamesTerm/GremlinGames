@@ -23,13 +23,13 @@ public:
 	typedef osg::Vec2d Vec2D;
 	
 	Vec2D PresetPositions[3];
-	Vec2D KeyGrid[3][3];
+	Vec2D KeyGrid[6][3];
 	struct DeliveryCorrectionFields
 	{
 		double PowerCorrection;
-		double YawCorrection;
+		double PitchCorrection;
 	};
-	DeliveryCorrectionFields KeyCorrections[3][3];
+	DeliveryCorrectionFields KeyCorrections[6][3];
 	double FireTriggerDelay;		//Time for stable signal before triggering the fire
 	double FireButtonStayOn_Time;   //Time to stay on before stopping the conveyors
 	size_t Coordinates_DiplayRow;
@@ -62,7 +62,6 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		FRC_2013_Robot_Properties();
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 
-		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
@@ -72,7 +71,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
+		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
 
@@ -231,7 +230,7 @@ class FRC_2013_Robot : public Tank_Robot
 		double m_TargetHeight;  //1d z height (front view) of the target
 		//cached during robot time change and applied to other systems when targeting is true
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
-		double m_YawErrorCorrection,m_PowerErrorCorrection;
+		double m_PitchErrorCorrection,m_PowerErrorCorrection;
 		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
 		size_t m_AutonPresetIndex;  //used only because encoder tracking is disabled
