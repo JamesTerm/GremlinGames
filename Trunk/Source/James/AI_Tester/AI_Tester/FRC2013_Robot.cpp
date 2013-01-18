@@ -434,6 +434,54 @@ void FRC_2013_Robot::ApplyErrorCorrection()
 
 }
 
+namespace VisionConversion
+{
+	const double c_X_Image_Res=640.0;		//X Image resolution in pixels, should be 160, 320 or 640
+	const double c_ViewAngle=43.5;  //Axis M1011 camera
+	const double c_HalfViewAngle=c_ViewAngle/2.0;
+
+	__inline double Get_Ez()
+	{
+		const double ez=1.0/(tan(DEG_2_RAD(c_ViewAngle)/2.0));
+		return ez;
+	}
+
+	void GetYawAndDistance(double bx,double by,double &dx,double dy,double &dz)
+	{
+		const double ez=Get_Ez();
+		dz = (dy * ez) / by;
+		dx = (bx * dz) / ez;
+	}
+
+	//This transform is simplified to only works with pitch
+	void CameraTransform(double ThetaY,double dx, double dy, double dz, double &ax, double &ay, double &az)
+	{
+		ax=sin(ThetaY)*dz + cos(ThetaY)*dx;
+		ay=dy;
+		az=cos(ThetaY)*dz - sin(ThetaY)*dx;
+	}
+
+	double computeDistance (double Ax1,double Ay1,double currentPitch) 
+	{
+		
+		//Now to input the aiming system for the d (x,y,z) equations prior to camera transformation
+		const double dy = c_TargetBaseHeight;
+		double dx,dz;
+		GetYawAndDistance(Ax1,Ay1,dx,dy,dz);
+		double ax1, ay1, az1;
+		CameraTransform(currentPitch,dx,dy,dz,ax1,ay1,az1);
+		//TODO see if we want kalman
+		//printf("\r x=%.2f y=%.2f dx=%.2f dz=%.2f       ",m_Dx(Ax1),m_Dz(Ay1),m_Ax(dx),m_Az(dz));
+		//printf("\r dx=%.2f dz=%.2f ax=%.2f az=%.2f       ",m_Dx(dx),m_Dz(dz),m_Ax(ax1),m_Az(az1));
+
+		printf("x=%.2f y=%.2f dx=%.2f dz=%.2f ax=%.2f az=%.2f\n",Ax1,Ay1,dx,dz,ax1,az1);
+
+		return az1;
+		//return c_X_Image_Res * c_TargetBaseHeight / (height * 12 * 2 * tan(DEG_2_RAD(c_ViewAngle)));
+	}
+
+}
+
 void FRC_2013_Robot::TimeChange(double dTime_s)
 {
 	coodinate_manager_Interface *listener=(coodinate_manager_Interface *)m_UDP_Listener;
@@ -442,7 +490,10 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	//TODO process distance from offset here
 	#if 0
 	if (listener->IsUpdated())
-		printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
+	{
+		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
+		VisionConversion::computeDistance(listener->GetXpos(),listener->GetYpos(),m_PitchAngle);
+	}
 	#endif
 
 	const FRC_2013_Robot_Props &robot_props=m_RobotProps.GetFRC2013RobotProps();
