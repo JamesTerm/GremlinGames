@@ -12,6 +12,8 @@ namespace AI_Tester
 	#include "FRC2013_Robot.h"
 }
 
+#include "UDP_Listener.h"
+
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
@@ -319,10 +321,16 @@ const double c_Target_MiddleHoop_XOffset=Inches2Meters(27+3/8);
 FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
-		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
+		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
 {
+	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
+}
+
+FRC_2013_Robot::~FRC_2013_Robot()
+{
+	coodinate_manager_Interface::DestroyInstance((coodinate_manager_Interface *)m_UDP_Listener);
 }
 
 void FRC_2013_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
@@ -428,6 +436,15 @@ void FRC_2013_Robot::ApplyErrorCorrection()
 
 void FRC_2013_Robot::TimeChange(double dTime_s)
 {
+	coodinate_manager_Interface *listener=(coodinate_manager_Interface *)m_UDP_Listener;
+	listener->TimeChange(dTime_s);
+
+	//TODO process distance from offset here
+	#if 0
+	if (listener->IsUpdated())
+		printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
+	#endif
+
 	const FRC_2013_Robot_Props &robot_props=m_RobotProps.GetFRC2013RobotProps();
 	#ifndef __DisableEncoderTracking__
 	const Vec2d &Pos_m=GetPos_m();

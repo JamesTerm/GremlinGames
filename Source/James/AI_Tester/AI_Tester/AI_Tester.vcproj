@@ -284,6 +284,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UDP_Listener.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UI_Controller.cpp"
 				>
 			</File>
@@ -403,6 +407,10 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UDP_Listener.h"
 				>
 			</File>
 			<File
