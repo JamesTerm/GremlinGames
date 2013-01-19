@@ -440,28 +440,34 @@ namespace VisionConversion
 	const double c_ViewAngle=43.5;  //Axis M1011 camera
 	const double c_HalfViewAngle=c_ViewAngle/2.0;
 
-	__inline double Get_Ez()
-	{
-		const double ez=1.0/(tan(DEG_2_RAD(c_ViewAngle)/2.0));
-		return ez;
-	}
+	//__inline double Get_Ez()
+	//{
+	//	const double ez=1.0/(tan(DEG_2_RAD(c_ViewAngle)/2.0));
+	//	return ez;
+	//}
 
-	void GetYawAndDistance(double bx,double by,double &dx,double dy,double &dz)
+	//doing it this way is faster since it never changes
+	const double c_ez=1.0/(tan(DEG_2_RAD(c_ViewAngle)/2.0));
+
+	//For example if the target height is 22.16 feet the distance would be 50, or 10 foot height would be around 22 feet for distance
+	//this constant is used to check my pitch math below (typically will be disabled)
+	const double c_DistanceCheck=c_TargetBaseHeight*c_ez;
+
+	__inline void GetYawAndDistance(double bx,double by,double &dx,double dy,double &dz)
 	{
-		const double ez=Get_Ez();
-		dz = (dy * ez) / by;
-		dx = (bx * dz) / ez;
+		dz = (dy * c_ez) / by;
+		dx = (bx * dz) / c_ez;
 	}
 
 	//This transform is simplified to only works with pitch
-	void CameraTransform(double ThetaY,double dx, double dy, double dz, double &ax, double &ay, double &az)
+	__inline void CameraTransform(double ThetaY,double dx, double dy, double dz, double &ax, double &ay, double &az)
 	{
 		ax=sin(ThetaY)*dz + cos(ThetaY)*dx;
 		ay=dy;
 		az=cos(ThetaY)*dz - sin(ThetaY)*dx;
 	}
 
-	double computeDistance (double Ax1,double Ay1,double currentPitch) 
+	__inline double computeDistance (double Ax1,double Ay1,double currentPitch) 
 	{
 		assert(Ay1!=0.0);  //avoid division by zero
 		//Now to input the aiming system for the d (x,y,z) equations prior to camera transformation
@@ -482,27 +488,39 @@ namespace VisionConversion
 
 }
 
+
+
 void FRC_2013_Robot::TimeChange(double dTime_s)
 {
 	coodinate_manager_Interface *listener=(coodinate_manager_Interface *)m_UDP_Listener;
 	listener->TimeChange(dTime_s);
 
-	//TODO process distance from offset here
+	//Leave the macro enable for ease of disabling the corrections (in case it goes horribly wrong) :)
 	#if 1
 	if (listener->IsUpdated())
 	{
+		//TODO see if we want a positive Y for up... for now we can convert it here
+		const double  YOffset=-listener->GetYpos();
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
-		if (!IsZero(listener->GetYpos()))
+		//Fortunately for us... we'll have error correction because of gravity... so for the game it should be impossible for this to happen except for the rare
+		//graze across to get to the final targeting point... point being... the final target point should rest above the target.
+		if (!IsZero(YOffset))
 		{
 			//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
-			double distance=VisionConversion::computeDistance(listener->GetXpos(),listener->GetYpos(),m_RobotControl->GetRotaryCurrentPorV(ePitchRamp));
+			const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
+			const double distance=VisionConversion::computeDistance(listener->GetXpos(),YOffset,CurrentPitch);
 			 //monitor where it should be against where it actually is
-			//printf("p=%.2f a=%.2f\n",m_PitchAngle,m_RobotControl->GetRotaryCurrentPorV(ePitchRamp));
+			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
 			//printf("d=%.2f\n",Meters2Feet(distance));
 			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
 			const Vec2d &Pos_m=GetPos_m();
 			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
+			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
+			#if 0
+			const double PredictedOffset=tan(CurrentPitch)*VisionConversion::c_DistanceCheck;
+			DOUT (4,"p=%.2f y=%.2f test=%.2f error=%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
+			#endif
 		}
 	}
 	#endif
@@ -1592,7 +1610,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
-			DOUT (4,"pitch=%f ",RAD_2_DEG(result));
+			DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
 			break;
 		case FRC_2013_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
