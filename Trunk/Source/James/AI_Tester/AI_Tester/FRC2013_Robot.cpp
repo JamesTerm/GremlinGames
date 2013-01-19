@@ -323,8 +323,9 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(true),m_SetLowGear(false)
+		m_POVSetValve(false),m_IsTargeting(true),m_EnableYawTargeting(false),m_SetLowGear(false)
 {
+	m_EnableYawTargeting=true; //for testing until button is implemented (leave on now for servo tests)
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -467,14 +468,14 @@ namespace VisionConversion
 		az=cos(ThetaY)*dz - sin(ThetaY)*dx;
 	}
 
-	__inline double computeDistance (double Ax1,double Ay1,double currentPitch) 
+	__inline bool computeDistanceAndYaw (double Ax1,double Ay1,double currentPitch,double &ax1,double &az1) 
 	{
-		assert(Ay1!=0.0);  //avoid division by zero
+		if (IsZero(Ay1)) return false;  //avoid division by zero
 		//Now to input the aiming system for the d (x,y,z) equations prior to camera transformation
 		const double dy = c_TargetBaseHeight;
 		double dx,dz;
 		GetYawAndDistance(Ax1,Ay1,dx,dy,dz);
-		double ax1, ay1, az1;
+		double ay1;
 		CameraTransform(currentPitch,dx,dy,dz,ax1,ay1,az1);
 		//TODO see if we want kalman
 		//printf("\r x=%.2f y=%.2f dx=%.2f dz=%.2f       ",m_Dx(Ax1),m_Dz(Ay1),m_Ax(dx),m_Az(dz));
@@ -482,7 +483,7 @@ namespace VisionConversion
 
 		//printf("x=%.2f y=%.2f dx=%.2f dz=%.2f ax=%.2f az=%.2f\n",Ax1,Ay1,dx,dz,ax1,az1);
 
-		return az1;
+		return true;
 		//return c_X_Image_Res * c_TargetBaseHeight / (height * 12 * 2 * tan(DEG_2_RAD(c_ViewAngle)));
 	}
 
@@ -505,23 +506,38 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
 		//Fortunately for us... we'll have error correction because of gravity... so for the game it should be impossible for this to happen except for the rare
 		//graze across to get to the final targeting point... point being... the final target point should rest above the target.
-		if (!IsZero(YOffset))
+
+		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
+		const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
+		double distance,yaw;
+		if (VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance))
 		{
-			//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
-			const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
-			const double distance=VisionConversion::computeDistance(listener->GetXpos(),YOffset,CurrentPitch);
 			 //monitor where it should be against where it actually is
 			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
 			//printf("d=%.2f\n",Meters2Feet(distance));
-			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
-			const Vec2d &Pos_m=GetPos_m();
-			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
 			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
-			#if 0
+			#define __DisablePitchDisplay__
+			#ifdef __DisablePitchDisplay__
 			const double PredictedOffset=tan(CurrentPitch)*VisionConversion::c_DistanceCheck;
 			DOUT (4,"p=%.2f y=%.2f test=%.2f error=%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
 			#endif
+
+			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
+			//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
+			//we can just adjust for Y and use the POV turning calls for yaw correction
+			const Vec2d &Pos_m=GetPos_m();
+			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
+
+			if (m_EnableYawTargeting)
+			{
+				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
+				double value=atan2(-yaw,distance);
+				//We set this through the controller so that it goes through the same path and ensures that its in the right mode (just as it is for POV turns)
+				m_controller->GetUIController_RW()->Turn_RelativeOffset(value);
+			}
 		}
+		else
+			printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
 	}
 	#endif
 
@@ -1610,7 +1626,9 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
+			#ifndef __DisablePitchDisplay__
 			DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
+			#endif
 			break;
 		case FRC_2013_Robot::ePowerWheels:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
