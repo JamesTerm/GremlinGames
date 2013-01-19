@@ -496,7 +496,9 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		if (!IsZero(listener->GetYpos()))
 		{
 			//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
-			double distance=VisionConversion::computeDistance(listener->GetXpos(),listener->GetYpos(),m_PitchAngle);
+			double distance=VisionConversion::computeDistance(listener->GetXpos(),listener->GetYpos(),m_RobotControl->GetRotaryCurrentPorV(ePitchRamp));
+			 //monitor where it should be against where it actually is
+			//printf("p=%.2f a=%.2f\n",m_PitchAngle,m_RobotControl->GetRotaryCurrentPorV(ePitchRamp));
 			//printf("d=%.2f\n",Meters2Feet(distance));
 			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
 			const Vec2d &Pos_m=GetPos_m();
