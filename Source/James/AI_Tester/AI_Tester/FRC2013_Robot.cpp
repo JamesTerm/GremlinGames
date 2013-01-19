@@ -463,7 +463,7 @@ namespace VisionConversion
 
 	double computeDistance (double Ax1,double Ay1,double currentPitch) 
 	{
-		
+		assert(Ay1!=0.0);  //avoid division by zero
 		//Now to input the aiming system for the d (x,y,z) equations prior to camera transformation
 		const double dy = c_TargetBaseHeight;
 		double dx,dz;
@@ -474,7 +474,7 @@ namespace VisionConversion
 		//printf("\r x=%.2f y=%.2f dx=%.2f dz=%.2f       ",m_Dx(Ax1),m_Dz(Ay1),m_Ax(dx),m_Az(dz));
 		//printf("\r dx=%.2f dz=%.2f ax=%.2f az=%.2f       ",m_Dx(dx),m_Dz(dz),m_Ax(ax1),m_Az(az1));
 
-		printf("x=%.2f y=%.2f dx=%.2f dz=%.2f ax=%.2f az=%.2f\n",Ax1,Ay1,dx,dz,ax1,az1);
+		//printf("x=%.2f y=%.2f dx=%.2f dz=%.2f ax=%.2f az=%.2f\n",Ax1,Ay1,dx,dz,ax1,az1);
 
 		return az1;
 		//return c_X_Image_Res * c_TargetBaseHeight / (height * 12 * 2 * tan(DEG_2_RAD(c_ViewAngle)));
@@ -488,11 +488,20 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	listener->TimeChange(dTime_s);
 
 	//TODO process distance from offset here
-	#if 0
+	#if 1
 	if (listener->IsUpdated())
 	{
-		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
-		VisionConversion::computeDistance(listener->GetXpos(),listener->GetYpos(),m_PitchAngle);
+		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
+		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
+		if (!IsZero(listener->GetYpos()))
+		{
+			//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
+			double distance=VisionConversion::computeDistance(listener->GetXpos(),listener->GetYpos(),m_PitchAngle);
+			//printf("d=%.2f\n",Meters2Feet(distance));
+			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
+			const Vec2d &Pos_m=GetPos_m();
+			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
+		}
 	}
 	#endif
 
