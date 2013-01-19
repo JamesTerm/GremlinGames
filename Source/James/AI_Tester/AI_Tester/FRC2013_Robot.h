@@ -245,6 +245,8 @@ class FRC_2013_Robot : public Tank_Robot
 		void SetTargetingOff() {SetTargeting(false);}
 		void SetTargetingValue(double Value);
 
+		bool m_EnableYawTargeting;
+
 		bool m_SetLowGear;
 		void SetLowGear(bool on);
 		void SetLowGearOn() {SetLowGear(true);}
