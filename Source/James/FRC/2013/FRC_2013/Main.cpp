@@ -40,9 +40,9 @@ class SetUp_Manager
 		//Note: The order of the members are critical, as they are instantiated in the constructor
 		Driver_Station_Joystick m_Joystick;  
 		Framework::UI::JoyStick_Binder m_JoyBinder;
-		FRC_2012_Robot_Properties m_RobotProps;
-		FRC_2012_Robot_Control m_Control; // robot drive system
-		FRC_2012_Robot *m_pRobot; //This is a scoped pointer with late binding
+		FRC_2013_Robot_Properties m_RobotProps;
+		FRC_2013_Robot_Control m_Control; // robot drive system
+		FRC_2013_Robot *m_pRobot; //This is a scoped pointer with late binding
 		UI_Controller *m_pUI;
 		Framework::Base::EventMap m_EventMap;
 		IEvent::HandlerList ehl;
@@ -57,10 +57,10 @@ class SetUp_Manager
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
 			m_Control.AsControlInterface().Initialize(&m_RobotProps);
-			m_pRobot = new FRC_2012_Robot("FRC2012_Robot",&m_Control,UseEncoders);
+			m_pRobot = new FRC_2013_Robot("FRC2013_Robot",&m_Control,UseEncoders);
 			{
 				Framework::Scripting::Script script;
-				script.LoadScript("/FRC2012Robot.lua",true);
+				script.LoadScript("/FRC2013Robot.lua",true);
 				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 				m_RobotProps.SetUpGlobalTable(script);
 				m_RobotProps.LoadFromScript(script);
@@ -119,7 +119,7 @@ class SetUp_Manager
 		}
 
 		void SetAutoPilot(bool autoPilot) {m_pUI->SetAutoPilot(autoPilot);}
-		FRC_2012_Robot *GetRobot() const {return m_pRobot;}
+		FRC_2013_Robot *GetRobot() const {return m_pRobot;}
 		void SetSafety(bool UseSafety) {m_Control.SetSafety(UseSafety);}
 		void ResetPos() 
 		{	
@@ -127,7 +127,7 @@ class SetUp_Manager
 			#ifdef  __DebugLUA__
 			{
 				Framework::Scripting::Script script;
-				script.LoadScript("/FRC2012Robot.lua",true);
+				script.LoadScript("/FRC2013Robot.lua",true);
 				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 
 				m_RobotProps.SetUpGlobalTable(script);
@@ -160,7 +160,7 @@ public:
 		m_Manager.SetSafety(false);
 		m_Manager.SetAutoPilot(true);  //we are not driving the robot
 		//Now to set up our goal
-		FRC_2012_Robot *Robot=m_Manager.GetRobot();  //we can always cast down
+		FRC_2013_Robot *Robot=m_Manager.GetRobot();  //we can always cast down
 		Robot->SetIsAutonomous(true);
 		//m_Manager.GetRobot()->SetUseEncoders(false);
 
@@ -201,7 +201,7 @@ public:
 				if (Key!=(size_t)-1)
 				{
 					Goal *goal=NULL;
-					goal=FRC_2012_Goals::Get_FRC2012_Autonomous(Robot,Key,Target,Ramp);
+					goal=FRC_2013_Goals::Get_FRC2013_Autonomous(Robot,Key,Target,Ramp);
 					if (goal)
 						goal->Activate(); //now with the goal(s) loaded activate it
 					Robot->SetGoal(goal);
@@ -210,7 +210,7 @@ public:
 			else
 			{
 				Goal *goal=NULL;
-				goal=FRC_2012_Goals::Get_ShootBalls(Robot,true);
+				goal=FRC_2013_Goals::Get_ShootBalls(Robot,true);
 				if (goal)
 					goal->Activate(); //now with the goal(s) loaded activate it
 				Robot->SetGoal(goal);				
@@ -257,7 +257,7 @@ public:
 		{
 			#if 0
 			printf("Starting TeleOp Session\n");
-			FILE *test=fopen("/FRC2012Robot.lua","r");
+			FILE *test=fopen("/FRC2013Robot.lua","r");
 			if (test)
 			{
 				char buffer[80];

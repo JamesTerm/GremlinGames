@@ -41,10 +41,10 @@
 #undef __DisableCompressor__
 
   /***********************************************************************************************************************************/
- /*													FRC_2012_Robot_Control															*/
+ /*													FRC_2013_Robot_Control															*/
 /***********************************************************************************************************************************/
 
-void FRC_2012_Robot_Control::ResetPos()
+void FRC_2013_Robot_Control::ResetPos()
 {
 	#ifndef __DisableCompressor__
 	//Enable this code if we have a compressor 
@@ -113,7 +113,7 @@ enum SolenoidSlotList
 
 //Note: the order of the initialization list must match the way they are in the class declaration, so if the slots need to change, simply
 //change them in the enumerations
-FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
+FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
 	m_Turret_Victor(eVictor_Turret),m_PowerWheel_Victor(eVictor_PowerWheel),m_Flipper_Victor(eVictor_Flipper),
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
@@ -139,19 +139,19 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_PowerWheelFilter.Reset();
 }
 
-FRC_2012_Robot_Control::~FRC_2012_Robot_Control() 
+FRC_2013_Robot_Control::~FRC_2013_Robot_Control() 
 {
 	//m_Compress.Stop();
 	m_Turret_Encoder.Stop(),m_PowerWheel_Encoder.Stop();
 }
 
-void FRC_2012_Robot_Control::Reset_Rotary(size_t index)
+void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
 {
 	//we probably will not need Kalman filters
 	//m_KalFilter_Arm.Reset();
 }
 
-void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	#ifdef __ShowLCD__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
@@ -162,13 +162,13 @@ void FRC_2012_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#endif
 }
 
-void FRC_2012_Robot_Control::Initialize(const Entity_Properties *props)
+void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
 {
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
 	
 	//Note: this will be NULL when Low Gear comes through here!
-	const FRC_2012_Robot_Properties *robot_props=dynamic_cast<const FRC_2012_Robot_Properties *>(props);
+	const FRC_2013_Robot_Properties *robot_props=dynamic_cast<const FRC_2013_Robot_Properties *>(props);
 	if (robot_props)
 	{
 		m_RobotProps=*robot_props;  //save a copy
@@ -190,24 +190,24 @@ Relay::Value TranslateToRelay(double Voltage)
 	return ret;
 }
 
-void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
+void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	#ifndef __DisableMotorControls__
 	switch (index)
 	{
-	case FRC_2012_Robot::eTurret:			m_Turret_Victor.Set((float)(Voltage * m_RobotProps.GetTurretProps().GetRoteryProps().VoltageScalar));		break;
-	case FRC_2012_Robot::ePowerWheels:		
+	case FRC_2013_Robot::eTurret:			m_Turret_Victor.Set((float)(Voltage * m_RobotProps.GetTurretProps().GetRoteryProps().VoltageScalar));		break;
+	case FRC_2013_Robot::ePowerWheels:		
 		m_PowerWheel_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRoteryProps().VoltageScalar));	
 		break;
-	case FRC_2012_Robot::eFlippers:			m_Flipper_Victor.Set((float)(Voltage * m_RobotProps.GetFlipperProps().GetRoteryProps().VoltageScalar));		break;
-	case FRC_2012_Robot::eLowerConveyor:	
+	case FRC_2013_Robot::eFlippers:			m_Flipper_Victor.Set((float)(Voltage * m_RobotProps.GetFlipperProps().GetRoteryProps().VoltageScalar));		break;
+	case FRC_2013_Robot::eLowerConveyor:	
 		m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	
 		break;
-	case FRC_2012_Robot::eMiddleConveyor:	
+	case FRC_2013_Robot::eMiddleConveyor:	
 		m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	break;
-	case FRC_2012_Robot::eFireConveyor:		
+	case FRC_2013_Robot::eFireConveyor:		
 		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	break;
-	case FRC_2012_Robot::ePitchRamp:
+	case FRC_2013_Robot::ePitchRamp:
 		//TODO research i2c's
 		break;
 	}
@@ -231,7 +231,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		//	DOUT(4, "ArmVolt=%f ", Voltage);
 		//}
 
-		case FRC_2012_Robot::eTurret:
+		case FRC_2013_Robot::eTurret:
 			//m_Turret.Set(Voltage);
 			if (m_TurretVoltage!=Voltage)
 			{
@@ -239,7 +239,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_TurretVoltage=Voltage;
 			}
 			break;
-		case FRC_2012_Robot::ePitchRamp:
+		case FRC_2013_Robot::ePitchRamp:
 			//m_PitchRamp.Set(Voltage);   Not sure what this will be... might not be a victor!  could be i2c
 			if (m_PitchRampVoltage!=Voltage)
 			{
@@ -247,7 +247,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_PitchRampVoltage=Voltage;
 			}
 			break;
-		case FRC_2012_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheels:
 			//m_PowerWheels.Set(Voltage);
 			if (m_PowerWheelVoltage!=Voltage)
 			{
@@ -258,14 +258,14 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			//Example 2... another way to display readings
 			//DOUT(4, "RollerVolt=%f ", Voltage);
 			break;
-		case FRC_2012_Robot::eFlippers:
+		case FRC_2013_Robot::eFlippers:
 			if (m_FlipperVoltage!=Voltage)
 			{
 				printf("Flippers=%f\n",Voltage);
 				m_FlipperVoltage=Voltage;
 			}
 			break;
-		case FRC_2012_Robot::eLowerConveyor:
+		case FRC_2013_Robot::eLowerConveyor:
 			//m_LowerConveyor.Set(TranslateToRelay(Voltage));  //will be easy to switch to victor
 			if (m_LowerConveyorVoltage!=Voltage)
 			{
@@ -273,14 +273,14 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_LowerConveyorVoltage=Voltage;
 			}
 			break;
-		case FRC_2012_Robot::eMiddleConveyor:
+		case FRC_2013_Robot::eMiddleConveyor:
 			if (m_MiddleConveyorVoltage!=Voltage)
 			{
 				printf("Middle=%f\n",Voltage);
 				m_MiddleConveyorVoltage=Voltage;
 			}
 			break;
-		case FRC_2012_Robot::eFireConveyor:
+		case FRC_2013_Robot::eFireConveyor:
 			if (m_FireConveyorVoltage=Voltage)
 			{
 				printf("FireConveyor=%f\n",Voltage);
@@ -292,36 +292,23 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-		case FRC_2012_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,1,"t=%.2f",Voltage);
-			break;
-		case FRC_2012_Robot::ePitchRamp:
+		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
 			break;
-		case FRC_2012_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheels:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
-			break;
-		case FRC_2012_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
 			break;
 	}
 	#endif
 }
 
-bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
+bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 {
 	return false; //remove once we have this working
 	bool ret=false;
 	switch (index)
 	{
-	case FRC_2012_Robot::eLowerConveyor_Sensor:
-		//ret=GetDigitalIn();... TODO I believe its a digital in with a get that returns a value
-		ret = m_Intake_Limit.Get()!=0;
-		break;
-	case FRC_2012_Robot::eMiddleConveyor_Sensor:
-		ret= m_Middle_Limit.Get()!=0;
-		break;
-	case FRC_2012_Robot::eFireConveyor_Sensor:
+	case FRC_2013_Robot::eFireConveyor_Sensor:
 		ret= m_Fire_Limit.Get()!=0;
 		break;
 	default:
@@ -330,23 +317,16 @@ bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
 	return ret;
 }
 
-double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
+double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 {
 	double result=0.0;
 
 	switch (index)
 	{
-		case FRC_2012_Robot::eTurret:
-			//We start out wound around so we'll add Pi to get correct reading
-			//In may tests the threshold favors being wound counter-clockwise (not sure why) so it's -Pi
-			//result=m_Turret_Encoder.GetDistance();
-			result=m_Turret_Encoder.GetDistance() * m_RobotProps.GetTurretProps().GetRoteryProps().EncoderToRS_Ratio;
-			result=NormalizeRotation2(result - Pi);
-			break;
-		case FRC_2012_Robot::ePitchRamp:
+		case FRC_2013_Robot::ePitchRamp:
 			//TODO research i2c's
 			break;
-		case FRC_2012_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheels:
 			#ifndef __DisableMotorControls__
 			
 			//Here we use the new GetRate2 which should offer better precision
@@ -383,18 +363,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();
 			#endif
 			break;
-		case FRC_2012_Robot::eFlippers:
-			//This is like a potentiometer analog in... I've included how I did it last year below, but it may not work the same way
-			//I never applied kalman filter, but we can if we need to... I found it to have some strange quirks
-
-			//double raw_value = (double)m_Potentiometer.GetAverageValue();
-			////raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
-			////Note the value is inverted with the negative operator
-			//double ret=-FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
-			break;
-		case FRC_2012_Robot::eLowerConveyor:
-		case FRC_2012_Robot::eMiddleConveyor:
-		case FRC_2012_Robot::eFireConveyor:
+		case FRC_2013_Robot::eFireConveyor:
 			assert(false);  //These should be disabled as there is no encoder for them
 			break;
 	}
@@ -402,17 +371,11 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-		case FRC_2012_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
-			break;
-		case FRC_2012_Robot::ePitchRamp:
+		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
-		case FRC_2012_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheels:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
-			break;
-		case FRC_2012_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
 			break;
 	}
 	#endif
@@ -420,26 +383,13 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	return result;
 }
 
-void FRC_2012_Robot_Control::OpenSolenoid(size_t index,bool Open)
+void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 {
 	switch (index)
 	{
-	case FRC_2012_Robot::eUseLowGear:
+	case FRC_2013_Robot::eUseLowGear:
 		printf("UseLowGear=%d\n",Open);
 		m_OnLowGear.Set(Open),m_OffLowGear.Set(!Open);
-		break;
-	case FRC_2012_Robot::eFlipperDown:
-		printf("FlipperDown=%d\n",Open);
-		m_FlipperDown.Set(Open),m_FlipperUp.Set(!Open);
-		break;
-	case FRC_2012_Robot::eUseBreakDrive:
-		printf("UseBreakDrive=%d\n",Open);
-		m_UseBreakDrive_A.Set(Open?1:0);
-		m_UseBreakDrive_B.Set(Open?1:0);
-		break;
-	case FRC_2012_Robot::eRampDeployment:
-		printf("RampDeployment=%d\n",Open);
-		m_OnRampDeployment.Set(Open),m_OnRampDeployment.Set(!Open);
 		break;
 	}
 }
