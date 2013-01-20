@@ -65,14 +65,13 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
-		const Rotary_Properties &GetFlipperProps() const {return m_FlipperProps;}
-		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
+		const Tank_Robot_Properties &GetClimbGearProps() const {return m_ClimbGearProps;}
 		const FRC_2013_Robot_Props &GetFRC2013RobotProps() const {return m_FRC2013RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
-		Tank_Robot_Properties m_LowGearProps;
+		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		Tank_Robot_Properties m_ClimbGearProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
 
 		class ControlEvents : public LUA_Controls_Properties_Interface
@@ -101,7 +100,7 @@ class FRC_2013_Robot : public Tank_Robot
 
 		enum SolenoidDevices
 		{
-			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
+			eUseClimbGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
 			eFlipperDown		//If true flipper is down
 		};
 
@@ -247,11 +246,11 @@ class FRC_2013_Robot : public Tank_Robot
 
 		bool m_EnableYawTargeting;
 
-		bool m_SetLowGear;
-		void SetLowGear(bool on);
-		void SetLowGearOn() {SetLowGear(true);}
-		void SetLowGearOff() {SetLowGear(false);}
-		void SetLowGearValue(double Value);
+		bool m_SetClimbGear;
+		void SetClimbGear(bool on);
+		void SetClimbGearOn() {SetClimbGear(true);}
+		void SetClimbGearOff() {SetClimbGear(false);}
+		void SetClimbGearValue(double Value);
 		
 		void SetPresetPOV (double value);
 
