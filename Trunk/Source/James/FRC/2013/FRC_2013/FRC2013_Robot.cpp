@@ -332,7 +332,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(true),m_EnableYawTargeting(false),m_SetLowGear(false)
+		m_POVSetValve(false),m_IsTargeting(true),m_EnableYawTargeting(false),m_SetClimbGear(false)
 {
 	m_EnableYawTargeting=true; //for testing until button is implemented (leave on now for servo tests)
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
@@ -683,39 +683,39 @@ void FRC_2013_Robot::SetTargetingValue(double Value)
 	}
 }
 
-void FRC_2013_Robot::SetLowGear(bool on) 
+void FRC_2013_Robot::SetClimbGear(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	m_SetLowGear=on;
+	m_SetClimbGear=on;
 	SetBypassPosAtt_Update(true);
 	m_PitchRamp.SetBypassPos_Update(true);
 
 	//Now for some real magic with the properties!
-	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
+	__super::Initialize(*GetEventMap(),m_SetClimbGear?&m_RobotProps.GetClimbGearProps():&m_RobotProps);
 	SetBypassPosAtt_Update(false);
 	m_PitchRamp.SetBypassPos_Update(false);
 
-	m_RobotControl->OpenSolenoid(eUseLowGear,on);
+	m_RobotControl->OpenSolenoid(eUseClimbGear,on);
 }
 
-void FRC_2013_Robot::SetLowGearValue(double Value)
+void FRC_2013_Robot::SetClimbGearValue(double Value)
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
 	//printf("\r%f       ",Value);
 	if (Value > 0.0)
 	{
-		if (m_SetLowGear)
+		if (m_SetClimbGear)
 		{
-			SetLowGear(false);
+			SetClimbGear(false);
 			printf("Now in HighGear\n");
 		}
 	}
 	else
 	{
-		if (!m_SetLowGear)
+		if (!m_SetClimbGear)
 		{
-			SetLowGear(true);
-			printf("Now in LowGear\n");
+			SetClimbGear(true);
+			printf("Now in ClimbGear\n");
 		}
 	}
 }
@@ -810,10 +810,10 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOff);
 		em->EventOnOff_Map["Robot_Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
-		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetLowGear);
-		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetLowGearOn);
-		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetLowGearOff);
-		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetLowGearValue);
+		em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
+		em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
+		em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
+		em->EventValue_Map["Robot_SetClimbGearValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetClimbGearValue);
 
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"].Subscribe(ehl, *this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -830,10 +830,10 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOff);
 		em->EventOnOff_Map["Robot_Flippers_Solenoid"]  .Remove(*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
-		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &FRC_2013_Robot::SetLowGear);
-		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2013_Robot::SetLowGearOn);
-		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2013_Robot::SetLowGearOff);
-		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2013_Robot::SetLowGearValue);
+		em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
+		em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
+		em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
+		em->EventValue_Map["Robot_SetClimbGearValue"].Remove(*this, &FRC_2013_Robot::SetClimbGearValue);
 
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"]  .Remove(*this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -895,17 +895,6 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	Ship_1D_Props::eSimpleMotor,
 	false,0.0,0.0,	//No limit ever!
 	true //This is angular
-	),
-	m_FlipperProps(
-	"Flippers",
-	2.0,    //Mass
-	Inches2Meters(12),   //Dimension  (this should be correct)
-	1.4 * Pi2,   //Max Speed  (Parker gave this one, should be good)
-	10.0,10.0, //ACCEL, BRAKE  (should be relatively quick)
-	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Props::eRobotArm,
-	true,	//Using the range
-	-PI_2,PI_2 //TODO
 	),
 	m_RobotControls(&s_ControlsEvents)
 {
@@ -1061,7 +1050,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
 	"Flippers_Advance","Flippers_Retract",
 	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
-	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
+	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff","Robot_SetClimbGearValue",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
 	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
@@ -1109,18 +1098,12 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_ConveyorProps.LoadFromScript(script);
 			script.Pop();
 		}
-		err = script.GetFieldTable("flippers");
-		if (!err)
-		{
-			m_FlipperProps.LoadFromScript(script);
-			script.Pop();
-		}
 
-		m_LowGearProps=*this;  //copy redundant data first
-		err = script.GetFieldTable("low_gear");
+		m_ClimbGearProps=*this;  //copy redundant data first
+		err = script.GetFieldTable("climb_gear");
 		if (!err)
 		{
-			m_LowGearProps.LoadFromScript(script);
+			m_ClimbGearProps.LoadFromScript(script);
 			script.Pop();
 		}
 
@@ -1319,7 +1302,7 @@ FRC_2013_Goals::OperateSolenoid::Goal_Status FRC_2013_Goals::OperateSolenoid::Pr
 		case FRC_2013_Robot::eFlipperDown:
 			m_Robot.SetFlipperPneumatic(m_IsOpen);
 			break;
-		case FRC_2013_Robot::eUseLowGear:
+		case FRC_2013_Robot::eUseClimbGear:
 			assert(false);
 			break;
 	}

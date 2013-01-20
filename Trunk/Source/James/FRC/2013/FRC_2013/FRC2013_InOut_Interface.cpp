@@ -387,8 +387,8 @@ void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 {
 	switch (index)
 	{
-	case FRC_2013_Robot::eUseLowGear:
-		printf("UseLowGear=%d\n",Open);
+	case FRC_2013_Robot::eUseClimbGear:
+		printf("UseClimbGear=%d\n",Open);
 		m_OnLowGear.Set(Open),m_OffLowGear.Set(!Open);
 		break;
 	}
