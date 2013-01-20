@@ -11,7 +11,7 @@ g_wheel_diameter_in=6   --This will determine the correct distance try to make a
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Width_In * WheelBase_Width_In) ) ^ 0.5
 HighGearSpeed = (427.68 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+ClimbGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
 Drive_MaxAccel=4
 skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
 
@@ -37,7 +37,7 @@ DriveTrain_MaxForce = DriveTrain_MaxAccel_linear * DriveTrain_PayloadMass
 
 --extra computations
 DriveTrain_MaxWheelRPS_High = HighGearSpeed / (Pi * DriveTrain_WheelDiameter)  --The fastest RPS of the wheels
-DriveTrain_MaxWheelRPS_Low  = LowGearSpeed  / (Pi * DriveTrain_WheelDiameter)
+DriveTrain_MaxWheelRPS_Low  = ClimbGearSpeed  / (Pi * DriveTrain_WheelDiameter)
 DriveTrain_MotorRPS = DriveTrain_MaxWheelRPS_High * DriveTrain_GearReduction
 DriveTrain_MaxAngularVelocity_High = DriveTrain_MaxWheelRPS_High * 2.0 * Pi --In radians
 
@@ -152,18 +152,18 @@ MainRobot = {
 			max_accel_reverse=200,			--The wheel may some time to ramp up
 			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
-		low_gear = 
+		climb_gear = 
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
 			--cause slipping if driver "high sticks" to start or stop quickly.
 			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
 			MaxTorqueYaw = 25 * 2, 
 			
-			MAX_SPEED = LowGearSpeed,
+			MAX_SPEED = ClimbGearSpeed,
 			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
 			BRAKE = ACCEL, 
 			-- Turn Rates (deg/sec) This is always correct do not change
-			heading_rad = (2 * LowGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
+			heading_rad = 0,  --No turning for climbing mode
 			
 			tank_drive =
 			{
@@ -204,8 +204,8 @@ MainRobot = {
 			Ball_Squirt = {type="joystick_button", key=3, on_off=true},
 			Ball_SlowWheel = {type="joystick_button", key=6, on_off=true},
 			Robot_SetPreset1 = {type="joystick_button", key=11, on_off=false},
-			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
-			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
+			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
+			Robot_SetClimbGearOn = {type="joystick_button", key=10, on_off=false},
 			Ball_Fire = {type="joystick_button", key=6, on_off=true},
 			PowerWheels_IsRunning = {type="joystick_button", key=5, on_off=true},
 			Ball_GripL = {type="joystick_button", key=1, on_off=true},
@@ -223,8 +223,8 @@ MainRobot = {
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
+			Robot_SetClimbGearOff = {type="joystick_button", key=6, on_off=false},
+			Robot_SetClimbGearOn = {type="joystick_button", key=5, on_off=false},
 			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
 			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
 			Ball_Fire = {type="joystick_button", key=8, on_off=true},
