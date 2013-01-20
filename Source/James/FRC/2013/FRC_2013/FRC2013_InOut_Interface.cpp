@@ -103,8 +103,8 @@ enum DigitalIO_SlotList
 enum SolenoidSlotList
 {
 	eSolenoid_NoZeroUsed,
-	eSolenoid_UseLowGear_On,
-	eSolenoid_UseLowGear_Off,
+	eSolenoid_UseClimbGear_On,
+	eSolenoid_UseClimbGear_Off,
 	eSolenoid_FlipperDown,
 	eSolenoid_FlipperUp,
 	eSolenoid_RampDeployment_On,
@@ -115,11 +115,9 @@ enum SolenoidSlotList
 //change them in the enumerations
 FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
-	m_Turret_Victor(eVictor_Turret),m_PowerWheel_Victor(eVictor_PowerWheel),m_Flipper_Victor(eVictor_Flipper),
+	m_PowerWheel_Victor(eVictor_PowerWheel),
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
-	m_OnLowGear(eSolenoid_UseLowGear_On),m_OffLowGear(eSolenoid_UseLowGear_Off),
-	m_FlipperDown(eSolenoid_FlipperDown),m_FlipperUp(eSolenoid_FlipperUp),
-	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off),
+	m_OnClimbGear(eSolenoid_UseClimbGear_On),m_OffClimbGear(eSolenoid_UseClimbGear_Off),
 	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor),
 	//Sensors
 	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
@@ -156,9 +154,6 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifdef __ShowLCD__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->UpdateLCD();
-	#endif
-	#ifndef __DisableCamera__
-	m_Camera.CameraProcessing_TimeChange(dTime_s);
 	#endif
 }
 
@@ -389,7 +384,7 @@ void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	{
 	case FRC_2013_Robot::eUseClimbGear:
 		printf("UseClimbGear=%d\n",Open);
-		m_OnLowGear.Set(Open),m_OffLowGear.Set(!Open);
+		m_OnClimbGear.Set(Open),m_OffClimbGear.Set(!Open);
 		break;
 	}
 }
