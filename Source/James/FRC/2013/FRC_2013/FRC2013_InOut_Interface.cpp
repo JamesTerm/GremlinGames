@@ -29,6 +29,7 @@
 #include "FRC2013_Robot.h"
 #include "Common/InOut_Interface.h"
 #include "Drive/Tank_Robot_Control.h"
+#include "Drive/Servo_Robot_Control.h"
 #include "Common/Debug.h"
 #include "FRC2013_InOut_Interface.h"
 
@@ -36,7 +37,7 @@
 #define __ShowLCD__
 #endif
 
-#define __DisableMotorControls__
+#undef __DisableMotorControls__
 #undef  __EnablePrintfDumps__
 #undef __DisableCompressor__
 
@@ -114,7 +115,11 @@ enum SolenoidSlotList
 //Note: the order of the initialization list must match the way they are in the class declaration, so if the slots need to change, simply
 //change them in the enumerations
 FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
-	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
+	m_TankRobotControl(UseSafety),
+	#ifdef __UsingTestingKit__
+	m_PitchAxis(1),
+	#endif
+	m_pTankRobotControl(&m_TankRobotControl),
 	m_PowerWheel_Victor(eVictor_PowerWheel),
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
 	m_OnClimbGear(eSolenoid_UseClimbGear_On),m_OffClimbGear(eSolenoid_UseClimbGear_Off),
@@ -190,20 +195,23 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifndef __DisableMotorControls__
 	switch (index)
 	{
-	case FRC_2013_Robot::eTurret:			m_Turret_Victor.Set((float)(Voltage * m_RobotProps.GetTurretProps().GetRoteryProps().VoltageScalar));		break;
 	case FRC_2013_Robot::ePowerWheels:		
 		m_PowerWheel_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRoteryProps().VoltageScalar));	
 		break;
-	case FRC_2013_Robot::eFlippers:			m_Flipper_Victor.Set((float)(Voltage * m_RobotProps.GetFlipperProps().GetRoteryProps().VoltageScalar));		break;
-	case FRC_2013_Robot::eLowerConveyor:	
-		m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	
-		break;
-	case FRC_2013_Robot::eMiddleConveyor:	
-		m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	break;
 	case FRC_2013_Robot::eFireConveyor:		
 		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	break;
 	case FRC_2013_Robot::ePitchRamp:
-		//TODO research i2c's
+		#ifdef __UsingTestingKit__
+		//we can stay in degrees here
+		double NewAngle=m_PitchAxis.GetAngle()+(Voltage * m_RobotProps.GetPitchRampProps().GetRoteryProps().VoltageScalar);
+		if (NewAngle>Servo::GetMaxAngle())
+			NewAngle=Servo::GetMaxAngle();
+		else if (NewAngle<Servo::GetMinAngle())
+			NewAngle=Servo::GetMinAngle();
+
+		m_PitchAxis.SetAngle(NewAngle);
+		#else
+		#endif
 		break;
 	}
 	#endif
@@ -319,7 +327,11 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			//TODO research i2c's
+			#ifdef __UsingTestingKit__
+			//convert the angle into radians and scale it to represent the physical angle
+			result= DEG_2_RAD(m_PitchAxis.GetAngle()) * m_RobotProps.GetPitchRampProps().GetRoteryProps().EncoderToRS_Ratio;
+			#else
+			#endif
 			break;
 		case FRC_2013_Robot::ePowerWheels:
 			#ifndef __DisableMotorControls__

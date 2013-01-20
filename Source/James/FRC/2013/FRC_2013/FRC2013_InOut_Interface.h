@@ -1,11 +1,17 @@
 #pragma once
-#define __UsingTestingKit__
 
 class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 {
 	protected: //from Robot_Control_Interface
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
+		
+		#ifdef __UsingTestingKit__
+		Servo_Robot_Control m_TankRobotControl;  //for x-axis control
+		Servo m_PitchAxis;
+		#else
 		Tank_Robot_Control m_TankRobotControl;
+		#endif
+		
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 
 		Victor m_PowerWheel_Victor;
