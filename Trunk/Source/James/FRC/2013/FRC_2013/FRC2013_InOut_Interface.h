@@ -1,10 +1,10 @@
 #pragma once
 #define __DisableCamera__
 
-class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
+class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 {
 	protected: //from Robot_Control_Interface
-		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
+		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 
@@ -40,15 +40,15 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
 		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 	public:
-		FRC_2012_Robot_Control(bool UseSafety);
-		virtual ~FRC_2012_Robot_Control();
+		FRC_2013_Robot_Control(bool UseSafety);
+		virtual ~FRC_2013_Robot_Control();
 		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
 		void ResetPos();
 		void SetSafety(bool UseSafety) {m_TankRobotControl.SetSafety(UseSafety);}
 
-		FRC_2012_Control_Interface &AsControlInterface() {return *this;}
+		FRC_2013_Control_Interface &AsControlInterface() {return *this;}
 
-		const FRC_2012_Robot_Properties &GetRobotProps() {return m_RobotProps;}
+		const FRC_2013_Robot_Properties &GetRobotProps() {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual bool GetBoolSensorState(size_t index);
