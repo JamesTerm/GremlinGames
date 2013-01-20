@@ -8,13 +8,9 @@ class Servo_Robot_Control : public Tank_Drive_Control_Interface
 	public:
 		Servo_Robot_Control(bool UseSafety);
 		virtual ~Servo_Robot_Control(); 
-		void SetSafety(bool UseSafety);
 
 		//This is only needed for simulation
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s);
-		//double GetLeftVoltage() const {return m_LeftVoltage;}
-		//double GetRightVoltage() const {return m_RightVoltage;}
-		//void SetDisplayVoltage(bool display) {m_DisplayVoltage=display;}
 	protected: //from Robot_Control_Interface
 		virtual void Reset_Encoders();
 		virtual void Initialize(const Entity_Properties *props);
@@ -23,18 +19,11 @@ class Servo_Robot_Control : public Tank_Drive_Control_Interface
 		double RPS_To_LinearVelocity(double RPS);
 	protected:
 		
-		Victor m_1,m_2,m_3,m_4;  //explicitly specify victor speed controllers for the robot drive
-		RobotDrive m_RobotDrive;
-		Encoder2 m_LeftEncoder,m_RightEncoder;
-
+		Servo m_YawControl;
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
-		double m_ArmMaxSpeed;
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
-	private:
-		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
-		Averager<double,4> m_Averager_EncoderLeft, m_Averager_EncodeRight;
 	public:
 		double Get_dTime_s() const {return m_dTime_s;}
 };
