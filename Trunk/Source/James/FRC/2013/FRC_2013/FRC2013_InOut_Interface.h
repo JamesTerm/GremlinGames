@@ -1,5 +1,5 @@
 #pragma once
-#define __DisableCamera__
+#define __UsingTestingKit__
 
 class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 {
@@ -8,12 +8,10 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 
-		Victor m_Turret_Victor,m_PowerWheel_Victor,m_Flipper_Victor;
+		Victor m_PowerWheel_Victor;
 		//pitch ramp is using i2c
 		Compressor m_Compress;
-		Solenoid m_OnLowGear,m_OffLowGear;
-		Solenoid m_FlipperDown,m_FlipperUp;
-		Solenoid m_OnRampDeployment,m_OffRampDeployment;
+		Solenoid m_OnClimbGear,m_OffClimbGear;
 		Relay m_LowerConveyor_Relay,m_MiddleConveyor_Relay,m_FireConveyor_Relay;
 		
 		Encoder2 m_Turret_Encoder, m_PowerWheel_Encoder;
@@ -24,10 +22,6 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		//AnalogChannel m_Potentiometer;
 		//Cached from properties
 		//double m_ArmMaxSpeed;
-
-		#ifndef __DisableCamera__
-		FRC_2012_CameraProcessing m_Camera;
-		#endif
 		
 	private:
 		//probably will not need these
