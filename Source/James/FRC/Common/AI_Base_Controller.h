@@ -63,6 +63,8 @@ class AI_Base_Controller
 		
 		Ship_2D &GetShip() {return m_ship;}
 		const UI_Controller *GetUIController() const {return m_UI_Controller;}
+		//I want it to be clear when we intend to write
+		UI_Controller *GetUIController_RW() {return m_UI_Controller;}
 	protected:
 		friend class Ship_Tester;
 		Goal *m_Goal; //Dynamically set a goal for this controller
