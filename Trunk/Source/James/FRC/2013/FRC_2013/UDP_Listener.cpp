@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h> 
+#include <ioLib.h>
 #include "UDP_Listener.h"
 
 unsigned long _byteswap_ulong(unsigned long i)
@@ -34,6 +35,12 @@ class UDP_Listener
 			 m_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 			 if (m_sockfd < 0)	
 				 throw 0;
+			 
+			unsigned long mode = 1;
+			int test=ioctl(m_sockfd, FIONBIO,(int) &mode);
+			if (test!=0)
+				printf("Warning unable to set socket to non-blocking");
+
 			 bzero((char *) &serv_addr, sizeof(serv_addr));
 			 serv_addr.sin_family = AF_INET;
 			 serv_addr.sin_addr.s_addr = INADDR_ANY;
