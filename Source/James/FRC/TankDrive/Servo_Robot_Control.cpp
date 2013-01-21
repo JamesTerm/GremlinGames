@@ -41,7 +41,7 @@ using namespace Framework::Base;
 
 
 Servo_Robot_Control::Servo_Robot_Control(bool UseSafety) :
-	m_YawControl(0),
+	m_YawControl(1),
 	m_dTime_s(0.0)
 {
 	//ResetPos();  may need this later
