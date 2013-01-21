@@ -8,6 +8,7 @@ class Servo_Robot_Control : public Tank_Drive_Control_Interface
 	public:
 		Servo_Robot_Control(bool UseSafety);
 		virtual ~Servo_Robot_Control(); 
+		void SetSafety(bool UseSafety) {}
 
 		//This is only needed for simulation
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s);
