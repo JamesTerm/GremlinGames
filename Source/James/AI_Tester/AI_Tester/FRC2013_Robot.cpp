@@ -227,7 +227,7 @@ void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
-	bool Grip=m_ControlSignals.bits.Grip==1;
+	//bool Grip=m_ControlSignals.bits.Grip==1;
 	bool GripH=m_ControlSignals.bits.GripH==1;
 	bool Squirt=m_ControlSignals.bits.Squirt==1;
 
@@ -327,7 +327,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PitchAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(true),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
+		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
 {
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
@@ -774,7 +774,7 @@ void FRC_2013_Robot::SetPresetPOV (double value)
 			//5 = down left
 			//6 = left
 			//7 = left up
-			size_t index=(size_t)(value/45.0);
+			//size_t index=(size_t)(value/45.0);
 			//switch (index)
 			//{
 			//	case 0:	SetPresetPosition(0);	break;
