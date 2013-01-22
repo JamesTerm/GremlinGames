@@ -124,8 +124,8 @@ class coodinate_manager : public coodinate_manager_Interface
 						m_Xpos=(double)XInt / 10000000.0;
 						m_Ypos=(double)YInt / 10000000.0;
 						//printf("New coordinates %f , %f\n",m_Xpos,m_Ypos);
-						//SmartDashboard::PutNumber("X Position",m_Xpos);
-						//SmartDashboard::PutNumber("Y Position",m_Ypos);
+						SmartDashboard::PutNumber("X Position",m_Xpos);
+						SmartDashboard::PutNumber("Y Position",m_Ypos);
 					}
 					else
 						printf("%d + %d != %d\n",(int)XInt,(int)YInt,(int)checksum);
