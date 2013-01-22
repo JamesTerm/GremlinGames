@@ -27,6 +27,8 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 
 
 #undef __DisableEncoderTracking__
+//Perhaps off season we can experiment with being field aware (some code in place for this)
+#define __NotFieldAware__
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -322,10 +324,12 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control),
 		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
+		m_PitchAngle(0.0),
+		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(true),m_EnableYawTargeting(false),m_SetClimbGear(false)
+		m_POVSetValve(false),m_IsTargeting(true),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
 {
-	m_EnableYawTargeting=true; //for testing until button is implemented (leave on now for servo tests)
+	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -501,7 +505,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	if (listener->IsUpdated())
 	{
 		//TODO see if we want a positive Y for up... for now we can convert it here
-		const double  YOffset=-listener->GetYpos();
+		const double  YOffset=listener->GetYpos();
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
 		//Fortunately for us... we'll have error correction because of gravity... so for the game it should be impossible for this to happen except for the rare
@@ -522,13 +526,18 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			DOUT (4,"p=%.2f y=%.2f test=%.2f error=%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
 			#endif
 
+			#ifndef __NotFieldAware__
 			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
 			//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
 			//we can just adjust for Y and use the POV turning calls for yaw correction
 			const Vec2d &Pos_m=GetPos_m();
 			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
+			#else
+			//printf("\rD=%.2f      ",distance);
+			m_PitchAngle=atan2(m_TargetHeight,distance);
+			#endif
 
-			if (m_EnableYawTargeting)
+			if (m_DriveTargetSelection==eDrive_Goal_Yaw)
 			{
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
 				double value=atan2(-yaw,distance);
@@ -578,7 +587,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 
 	const double x=Vec2D(Pos_m-m_TargetOffset).length();
 
-	//TODO tweak adjustments based off my position in the field here
+	//TODO clean this up... mostly obsolete
 	//
 	//Now to compute my pitch, power, and hang time
 	{
@@ -589,11 +598,9 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		const double g=9.80665;
 		//These equations come from here http://www.lightingsciences.ca/pdf/BNEWSEM2.PDF
 
-		//Where y = height displacement (or goal - player)
-		//	[theta=atan(sqrt(y^2+x^2)/x+y/x)]
-		//This is equation 8 solving theta
-		//m_PitchAngle=atan(sqrt(y2+x2)/x+y/x);
+		#ifndef __NotFieldAware__
 		m_PitchAngle=atan2(y,x);
+		#endif
 
 		//Be sure G is in the same units as x and y!  (all in meters in code)
 		//	V=sqrt(G(sqrt(y^2+x^2)+y))
