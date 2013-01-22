@@ -339,6 +339,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
 {
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
+	m_IsTargeting=true;
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -514,7 +515,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	if (listener->IsUpdated())
 	{
 		//TODO see if we want a positive Y for up... for now we can convert it here
-		const double  YOffset=listener->GetYpos();
+		const double  YOffset=-listener->GetYpos();
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
 		//Fortunately for us... we'll have error correction because of gravity... so for the game it should be impossible for this to happen except for the rare
@@ -544,6 +545,11 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			#else
 			//printf("\rD=%.2f      ",distance);
 			m_PitchAngle=atan2(m_TargetHeight,distance);
+			//ensure we do not have some crazy computation of pitch
+			if (m_PitchAngle>DEG_2_RAD(80))
+				m_PitchAngle=DEG_2_RAD(80);
+			else if (m_PitchAngle<0)
+				m_PitchAngle=0;
 			#endif
 
 			if (m_DriveTargetSelection==eDrive_Goal_Yaw)
