@@ -47,6 +47,7 @@
 
 void FRC_2013_Robot_Control::ResetPos()
 {
+	m_LastAxisSetting=32;
 	#ifndef __DisableCompressor__
 	//Enable this code if we have a compressor 
 	m_Compress.Stop();
@@ -210,7 +211,7 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			NewAngle=Servo::GetMinAngle();
 
 		m_LastAxisSetting=NewAngle;
-		Dout(4,1,"a=%.2f v=%.2f",NewAngle,Voltage);
+		//Dout(4,1,"a=%.2f v=%.2f",NewAngle,Voltage);
 
 		m_PitchAxis.SetAngle(NewAngle);
 		#else
@@ -332,7 +333,10 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 			#ifdef __UsingTestingKit__
 			//convert the angle into radians and scale it to represent the physical angle
-			result= DEG_2_RAD(m_PitchAxis.GetAngle()) * m_RobotProps.GetPitchRampProps().GetRoteryProps().EncoderToRS_Ratio;
+			result= DEG_2_RAD(m_PitchAxis.GetAngle() - 32) * m_RobotProps.GetPitchRampProps().GetRoteryProps().EncoderToRS_Ratio;
+			//if we are close enough return the finer precision to avoid oscillation
+			//if (fabs(result-DEG_2_RAD(m_LastAxisSetting))<DEG_2_RAD(5.0))
+				result=DEG_2_RAD(m_LastAxisSetting-32);
 			#else
 			#endif
 			break;
