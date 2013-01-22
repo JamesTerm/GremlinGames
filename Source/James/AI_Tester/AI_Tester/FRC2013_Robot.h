@@ -244,7 +244,13 @@ class FRC_2013_Robot : public Tank_Robot
 		void SetTargetingOff() {SetTargeting(false);}
 		void SetTargetingValue(double Value);
 
-		bool m_EnableYawTargeting;
+		enum DriveTargetSelection
+		{
+			eDrive_NoTarget,
+			eDrive_Goal_Yaw,  //as name implies this only rotates (for now)
+			eDrive_Frisbee
+		};
+		DriveTargetSelection m_DriveTargetSelection;
 
 		bool m_SetClimbGear;
 		void SetClimbGear(bool on);
