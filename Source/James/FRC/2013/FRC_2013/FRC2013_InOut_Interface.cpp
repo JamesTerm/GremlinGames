@@ -117,7 +117,7 @@ enum SolenoidSlotList
 FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	m_TankRobotControl(UseSafety),
 	#ifdef __UsingTestingKit__
-	m_PitchAxis(3),
+	m_PitchAxis(2),
 	#endif
 	m_pTankRobotControl(&m_TankRobotControl),
 	m_PowerWheel_Victor(eVictor_PowerWheel),
@@ -209,7 +209,7 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		else if (NewAngle<Servo::GetMinAngle())
 			NewAngle=Servo::GetMinAngle();
 
-		Dout(4,1,"a=%.2f",NewAngle);
+		Dout(4,1,"a=%.2f v=%.2f",NewAngle,Voltage);
 
 		m_PitchAxis.SetAngle(NewAngle);
 		#else
