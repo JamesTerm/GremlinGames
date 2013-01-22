@@ -8,6 +8,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		#ifdef __UsingTestingKit__
 		Servo_Robot_Control m_TankRobotControl;  //for x-axis control
 		Servo m_PitchAxis;
+		double m_LastAxisSetting;  //needed to creep up the angle to position smoothly
 		#else
 		Tank_Robot_Control m_TankRobotControl;
 		#endif
