@@ -510,12 +510,12 @@ namespace VisionConversion
 void FRC_2013_Robot::TimeChange(double dTime_s)
 {
 	coodinate_manager_Interface *listener=(coodinate_manager_Interface *)m_UDP_Listener;
-	listener->TimeChange(dTime_s);
 
 	//Leave the macro enable for ease of disabling the corrections (in case it goes horribly wrong) :)
 	#if 1
 	if (listener->IsUpdated())
 	{
+		listener->ResetUpdate();
 		//TODO see if we want a positive Y for up... for now we can convert it here
 		const double  YOffset=-listener->GetYpos();
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too

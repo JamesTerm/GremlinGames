@@ -15,7 +15,7 @@ class coodinate_manager_Interface : public UDP_Listener_Interface
 	public:
 		static coodinate_manager_Interface *CreateInstance();
 		static void DestroyInstance(coodinate_manager_Interface *instance);
-		virtual void TimeChange(double dTime_s)=0;
+		void ResetUpdate() {m_Updated=false;}
 
 		__inline double GetXpos() const {return m_Xpos;}
 		__inline double GetYpos() const {return m_Ypos;}
