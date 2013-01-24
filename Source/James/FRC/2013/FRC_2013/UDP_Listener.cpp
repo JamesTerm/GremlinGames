@@ -35,11 +35,13 @@ class UDP_Listener
 			 m_sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 			 if (m_sockfd < 0)	
 				 throw 0;
-			 
+
+			#if 1
 			unsigned long mode = 1;
 			int test=ioctl(m_sockfd, FIONBIO,(int) &mode);
 			if (test!=0)
 				printf("Warning unable to set socket to non-blocking");
+			#endif
 
 			 bzero((char *) &serv_addr, sizeof(serv_addr));
 			 serv_addr.sin_family = AF_INET;

@@ -453,6 +453,8 @@ namespace VisionConversion
 {
 	const double c_X_Image_Res=640.0;		//X Image resolution in pixels, should be 160, 320 or 640
 	const double c_ViewAngle=43.5;  //Axis M1011 camera
+	//const double c_ViewAngle=47;  //Axis M1011 camera
+	//const double c_ViewAngle=40;  //Axis M1011 camera
 	const double c_HalfViewAngle=c_ViewAngle/2.0;
 
 	//__inline double Get_Ez()
@@ -524,16 +526,16 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
 		const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
 		double distance,yaw;
-		if (VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance))
+		if ((YOffset!=0)&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
 		{
 			 //monitor where it should be against where it actually is
 			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
 			//printf("d=%.2f\n",Meters2Feet(distance));
 			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
-			#undef __DisablePitchDisplay__
+			#define __DisablePitchDisplay__
 			#ifdef __DisablePitchDisplay__
 			const double PredictedOffset=tan(CurrentPitch)*VisionConversion::c_DistanceCheck;
-			DOUT (4,"p=%.2f y=%.2f test=%.2f error=%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
+			Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(atan(m_TargetHeight/distance)),YOffset,PredictedOffset,PredictedOffset-YOffset);
 			#endif
 
 			#ifndef __NotFieldAware__
@@ -544,7 +546,8 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
 			#else
 			//printf("\rD=%.2f      ",distance);
-			m_PitchAngle=atan2(m_TargetHeight,distance);
+			m_PitchAngle=CurrentPitch+atan(m_TargetHeight/distance);
+			//m_PitchAngle=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
 			//ensure we do not have some crazy computation of pitch
 			if (m_PitchAngle>DEG_2_RAD(80))
 				m_PitchAngle=DEG_2_RAD(80);
@@ -560,8 +563,8 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				m_controller->GetUIController_RW()->Turn_RelativeOffset(value);
 			}
 		}
-		else
-			printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
+		//else
+			//printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
 	}
 	#endif
 
