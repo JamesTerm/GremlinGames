@@ -41,7 +41,8 @@ using namespace Framework::Base;
 
 
 Servo_Robot_Control::Servo_Robot_Control(bool UseSafety) :
-	m_YawControl(1),
+	m_YawControl(1),m_LastYawAxisSetting(0.0),
+	 m_LastLeftVelocity(0.0),m_LastRightVelocity(0.0),
 	m_dTime_s(0.0)
 {
 	//ResetPos();  may need this later
@@ -74,12 +75,7 @@ double Servo_Robot_Control::RPS_To_LinearVelocity(double RPS)
 
 void Servo_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
-	LeftVelocity=0.0,RightVelocity=0.0;
-	double LeftRate=0.0;
-	double RightRate=0.0;
-	
-	LeftVelocity=RPS_To_LinearVelocity(LeftRate);
-	RightVelocity=RPS_To_LinearVelocity(RightRate);
+	LeftVelocity=m_LastLeftVelocity,RightVelocity=m_LastRightVelocity;
 	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 	//Dout(m_TankRobotProps.Feedback_DiplayRow, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);
 }
@@ -90,7 +86,41 @@ void Servo_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Right
 	//For now leave this disabled... should not need to script this
 	Dout(2, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
 	
-	//if (!m_TankRobotProps.ReverseSteering)
+	//first interpolate the angular velocity
+	const Tank_Robot_Props &props=m_TankRobotProps;
+	const double D=props.WheelDimensions.length();
+	//Here we go it is finally working I just needed to take out the last division
+	const Vec2d &WheelDimensions=props.WheelDimensions;
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+	const double skid=cos(atan2(W,L));
+	const double MaxSpeed=m_RobotMaxSpeed;
+	const double omega = ((LeftVoltage*MaxSpeed*skid) + (RightVoltage*MaxSpeed*-skid)) * 0.5;
+
+	double AngularVelocity=(omega / (Pi * D)) * Pi2;
+	if (m_TankRobotProps.ReverseSteering)
+		AngularVelocity*=-1.0;
+	
+	double NewAngle=m_LastYawAxisSetting+AngularVelocity;
+	if (NewAngle>Servo::GetMaxAngle())
+		NewAngle=Servo::GetMaxAngle();
+	else if (NewAngle<Servo::GetMinAngle())
+		NewAngle=Servo::GetMinAngle();
+
+	m_LastYawAxisSetting=NewAngle;
+	//Dout(4, "a=%.2f av=%.2f",NewAngle,AngularVelocity);
+
+	m_YawControl.SetAngle(NewAngle);
+	
+	const double inv_skid=1.0/cos(atan2(W,L));
+	double RCW=AngularVelocity;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (Pi * D) * inv_skid;  //D is the turning diameter
+
+	m_LastLeftVelocity = + RCW;
+	m_LastRightVelocity = - RCW;
 }
 
 void Servo_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)

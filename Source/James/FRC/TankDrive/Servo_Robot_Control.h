@@ -21,6 +21,9 @@ class Servo_Robot_Control : public Tank_Drive_Control_Interface
 	protected:
 		
 		Servo m_YawControl;
+		double m_LastYawAxisSetting;  //needed to creep up the angle to position smoothly when testing servo code
+		double m_LastLeftVelocity,m_LastRightVelocity;
+
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 
