@@ -316,6 +316,7 @@ class FRC_2013_Goals
 		};
 };
 
+#undef __TestXAxisServoDump__
 class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 {
 	public:
@@ -328,8 +329,15 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		virtual void OpenSolenoid(size_t index,bool Open);
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
+
+		#ifndef __TestXAxisServoDump__
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
+		#else
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
+		#endif
+
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
 	protected: //from Rotary Interface
 		virtual void Reset_Rotary(size_t index=0); 
@@ -353,6 +361,9 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Potentiometer_Tester2 m_Pitch_Pot; //simulate the potentiometer and motor
 		Encoder_Simulator m_PowerWheel_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
+		#ifdef __TestXAxisServoDump__
+		double m_LastYawAxisSetting;  //needed to creep up the angle to position smoothly when testing servo code
+		#endif
 		//cache voltage values for display
 		double m_PitchRampVoltage,m_PowerWheelVoltage;
 		double m_FireConveyorVoltage;
