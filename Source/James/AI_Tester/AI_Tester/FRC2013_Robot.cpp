@@ -443,32 +443,32 @@ void FRC_2013_Robot::ApplyErrorCorrection()
 namespace VisionConversion
 {
 	const double c_X_Image_Res=640.0;		//X Image resolution in pixels, should be 160, 320 or 640
-	const double c_ViewAngle=43.5;  //Axis M1011 camera
-	const double c_HalfViewAngle=c_ViewAngle/2.0;
-
-	//__inline double Get_Ez()
-	//{
-	//	const double ez=1.0/(tan(DEG_2_RAD(c_ViewAngle)/2.0));
-	//	return ez;
-	//}
+	//const double c_ViewAngle=43.5;  //Axis M1011 camera (in code sample)
+	const double c_ViewAngle_x=47;		//These are the angles I've measured
+	const double c_ViewAngle_y=40;
+	const double c_HalfViewAngle_y=c_ViewAngle_y/2.0;
 
 	//doing it this way is faster since it never changes
-	const double c_ez=1.0/(tan(DEG_2_RAD(c_ViewAngle)/2.0));
+	const double c_ez_y=1.0/(tan(DEG_2_RAD(c_ViewAngle_y)/2.0));
+	const double c_ez_x=(tan(DEG_2_RAD(c_ViewAngle_x)/2.0));
 
 	//For example if the target height is 22.16 feet the distance would be 50, or 10 foot height would be around 22 feet for distance
 	//this constant is used to check my pitch math below (typically will be disabled)
-	const double c_DistanceCheck=c_TargetBaseHeight*c_ez;
+	const double c_DistanceCheck=c_TargetBaseHeight*c_ez_y;
 
 	__inline void GetYawAndDistance(double bx,double by,double &dx,double dy,double &dz)
 	{
-		dz = (dy * c_ez) / by;
-		dx = (bx * dz) / c_ez;
+		//Note: the camera angle for x is different than for y... thus for example we have 4:3 aspect ratio
+		dz = (dy * c_ez_y) / by;
+		dx = (bx * dz) * c_ez_x;
 	}
 
 	//This transform is simplified to only works with pitch
 	__inline void CameraTransform(double ThetaY,double dx, double dy, double dz, double &ax, double &ay, double &az)
 	{
-		ax=sin(ThetaY)*dz + cos(ThetaY)*dx;
+		//assert(ThetaY<PI);
+		//ax=(dz*sin(ThetaY) + dx) / cos(ThetaY);
+		ax=dx;  //I suspect that I may be interpreting the equation wrong... it seems to go in the wrong direction, but may need to retest 
 		ay=dy;
 		az=cos(ThetaY)*dz - sin(ThetaY)*dx;
 	}
@@ -507,6 +507,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	{
 		//TODO see if we want a positive Y for up... for now we can convert it here
 		const double  YOffset=-listener->GetYpos();
+		const double XOffset=listener->GetXpos();
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
 		//Fortunately for us... we'll have error correction because of gravity... so for the game it should be impossible for this to happen except for the rare
@@ -515,7 +516,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
 		const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
 		double distance,yaw;
-		if (VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance))
+		if ((YOffset!=0)&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
 		{
 			 //monitor where it should be against where it actually is
 			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
@@ -523,8 +524,15 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
 			#define __DisablePitchDisplay__
 			#ifdef __DisablePitchDisplay__
-			const double PredictedOffset=tan(CurrentPitch)*VisionConversion::c_DistanceCheck;
-			DOUT (4,"p=%.2f y=%.2f test=%.2f error=%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
+			#if 0
+			const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
+			Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
+			#endif
+			#if 0
+			const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
+			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
+			//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
+			#endif
 			#endif
 
 			#ifndef __NotFieldAware__
@@ -535,7 +543,17 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
 			#else
 			//printf("\rD=%.2f      ",distance);
-			m_PitchAngle=atan2(m_TargetHeight,distance);
+			//m_PitchAngle=CurrentPitch+atan(m_TargetHeight/distance);
+			#if 1
+			const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
+			#else
+			//Enable this for playback of file since it cannot really cannot control the pitch
+			const double NewPitch=atan(m_TargetHeight/distance);
+			#endif
+
+			//Use precision tolerance asset to determine whether to make the change
+			m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetRoteryProps().PrecisionTolerance)?NewPitch:CurrentPitch;
+
 			//ensure we do not have some crazy computation of pitch
 			if (m_PitchAngle>DEG_2_RAD(80))
 				m_PitchAngle=DEG_2_RAD(80);
@@ -546,13 +564,16 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			if (m_DriveTargetSelection==eDrive_Goal_Yaw)
 			{
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
-				double value=atan2(-yaw,distance);
-				//We set this through the controller so that it goes through the same path and ensures that its in the right mode (just as it is for POV turns)
-				m_controller->GetUIController_RW()->Turn_RelativeOffset(value);
+				double value=atan(yaw/distance);
+				if (fabs(value)>m_RobotProps.GetFRC2013RobotProps().YawTolerance)
+				{
+					//We set this through the controller so that it goes through the same path and ensures that its in the right mode (just as it is for POV turns)
+					m_controller->GetUIController_RW()->Turn_RelativeOffset(value);
+				}
 			}
 		}
-		else
-			printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
+		//else
+			//printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
 	}
 	#endif
 
@@ -917,6 +938,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		props.Coordinates_DiplayRow=(size_t)-1;
 		props.TargetVars_DisplayRow=(size_t)-1;
 		props.PowerVelocity_DisplayRow=(size_t)-1;
+		props.YawTolerance=0.001; //give a good high precision for default
 
 		for (size_t row=0;row<6;row++)
 		{
@@ -1132,6 +1154,8 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("ds_power_velocity_row", NULL, NULL, &fDisplayRow);
 		if (!err)
 			m_FRC2013RobotProps.PowerVelocity_DisplayRow=(size_t)fDisplayRow;
+
+		script.GetField("yaw_tolerance", NULL, NULL, &m_FRC2013RobotProps.YawTolerance);
 
 		script.GetField("fire_trigger_delay", NULL, NULL, &m_FRC2013RobotProps.FireTriggerDelay);
 		script.GetField("fire_stay_on_time", NULL, NULL, &m_FRC2013RobotProps.FireButtonStayOn_Time);
