@@ -104,7 +104,8 @@ MainRobot = {
 		ds_power_velocity_row=-1,			--Only used during keying the grid
 		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
 		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
-		
+		yaw_tolerance=0.001,				--Used for drive yaw targeting (the drive is the turret) to avoid oscillation
+
 		grid_corrections =
 		{
 			c11={p=1.0, y=1.0}, c12={p=1.0, y=1.0}, c13={p=1.0, y=1.0},
