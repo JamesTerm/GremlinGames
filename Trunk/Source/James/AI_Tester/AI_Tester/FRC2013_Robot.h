@@ -35,6 +35,7 @@ public:
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
 	size_t PowerVelocity_DisplayRow;
+	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
 
 	struct Autonomous_Properties
 	{
