@@ -1549,6 +1549,48 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#endif
 }
 
+#ifdef __TestXAxisServoDump__
+void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) 
+{
+	m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+}
+
+void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
+{
+	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+
+	//first interpolate the angular velocity
+	const Tank_Robot_Props &props=m_RobotProps.GetTankRobotProps();
+	const double D=props.WheelDimensions.length();
+	//Here we go it is finally working I just needed to take out the last division
+	const Vec2d &WheelDimensions=props.WheelDimensions;
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+	const double skid=cos(atan2(W,L));
+	const double MaxSpeed=m_RobotProps.GetShipProps().MAX_SPEED;
+	const double omega = ((LeftVoltage*MaxSpeed*skid) + (RightVoltage*MaxSpeed*-skid)) * 0.5;
+
+	double AngularVelocity=(omega / (Pi * D)) * Pi2;
+
+	double NewAngle=m_LastYawAxisSetting+AngularVelocity;
+	if (NewAngle>170)
+		NewAngle=170;
+	else if (NewAngle<0)
+		NewAngle=0;
+
+	m_LastYawAxisSetting=NewAngle;
+
+	const double inv_skid=1.0/cos(atan2(W,L));
+	double RCW=AngularVelocity;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (Pi * D) * inv_skid;  //D is the turning diameter
+
+	Dout (4,"av=%.2f rot%.2f RCW=%.2f\n",AngularVelocity,m_LastYawAxisSetting,RCW);
+}
+#endif
+
 bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 {
 	bool ret;
@@ -1566,6 +1608,9 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),
 	m_FireSensor(false),m_SlowWheel(false)
 {
+	#ifdef __TestXAxisServoDump__
+	m_LastYawAxisSetting=0.0;
+	#endif
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
 	Dout(1,"");
