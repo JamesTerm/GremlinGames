@@ -338,8 +338,9 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
 {
-	m_IsTargeting=true;
+	m_IsTargeting=false;
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
+	//m_DriveTargetSelection=eDrive_NoTarget;
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -516,7 +517,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		listener->ResetUpdate();
 		//TODO see if we want a positive Y for up... for now we can convert it here
 		const double  YOffset=-listener->GetYpos();
-		//const double XOffset=listener->GetXpos();
+		const double XOffset=listener->GetXpos();
 		
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
@@ -526,6 +527,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
 		const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
 		double distance,yaw;
+		//TODO remove the YOffset check here as it should be redundant but check pitch is working when this is done
 		if ((YOffset!=0)&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
 		{
 			 //monitor where it should be against where it actually is
@@ -538,9 +540,9 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
 			Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
 			#endif
-			#if 0
+			#if 1
 			const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
-			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
+			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(GetAtt_r()),XOffset,PredictedOffset,PredictedOffset-XOffset);
 			//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
 			#endif
 			#endif

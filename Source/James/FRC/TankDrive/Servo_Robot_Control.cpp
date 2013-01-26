@@ -103,16 +103,19 @@ void Servo_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Right
 	if (m_TankRobotProps.ReverseSteering)
 		AngularVelocity*=-1.0;
 	
-	double NewAngle=m_LastYawAxisSetting+AngularVelocity;
+	double NewAngle=m_LastYawAxisSetting+(AngularVelocity * m_TankRobotProps.MotorToWheelGearRatio);
 	if (NewAngle>Servo::GetMaxAngle())
 		NewAngle=Servo::GetMaxAngle();
 	else if (NewAngle<Servo::GetMinAngle())
 		NewAngle=Servo::GetMinAngle();
 
+	//Ensure the angle deltas of angular velocity are calibrated to servo's angles
 	m_LastYawAxisSetting=NewAngle;
-	//Dout(4, "a=%.2f av=%.2f",NewAngle,AngularVelocity);
+	//Dout(4, "a=%.2f av=%.2f",m_LastYawAxisSetting,AngularVelocity);
+	//if (!IsZero(AngularVelocity))
+	//	printf("a=%.2f av=%.2f\n",m_LastYawAxisSetting,AngularVelocity);
 
-	m_YawControl.SetAngle(NewAngle);
+	m_YawControl.SetAngle(m_LastYawAxisSetting);
 	
 	const double inv_skid=1.0/cos(atan2(W,L));
 	double RCW=AngularVelocity;
