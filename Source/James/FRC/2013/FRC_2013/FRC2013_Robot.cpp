@@ -338,7 +338,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
 {
-	m_IsTargeting=false;
+	m_IsTargeting=true;
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
 	//m_DriveTargetSelection=eDrive_NoTarget;
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
