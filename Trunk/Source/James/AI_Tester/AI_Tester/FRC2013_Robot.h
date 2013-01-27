@@ -316,7 +316,7 @@ class FRC_2013_Goals
 		};
 };
 
-#define __TestXAxisServoDump__
+#undef __TestXAxisServoDump__
 class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 {
 	public:
@@ -368,6 +368,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		//cache voltage values for display
 		double m_PitchRampVoltage,m_PowerWheelVoltage;
 		double m_FireConveyorVoltage;
+		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 		bool m_FireSensor;
 		bool m_SlowWheel;
 };

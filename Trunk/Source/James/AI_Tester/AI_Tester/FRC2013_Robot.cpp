@@ -1578,8 +1578,8 @@ void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Ri
 	if (props.ReverseSteering)
 		AngularVelocity*=-1.0;
 
-	//double NewAngle=m_LastYawAxisSetting+(AngularVelocity * props.MotorToWheelGearRatio);
-	double NewAngle=m_LastYawAxisSetting+(AngularVelocity );
+	double NewAngle=m_LastYawAxisSetting+(RAD_2_DEG(AngularVelocity * m_dTime_s) * props.MotorToWheelGearRatio);
+	//double NewAngle=m_LastYawAxisSetting+RAD_2_DEG(AngularVelocity * m_dTime_s);
 	if (NewAngle>170)
 		NewAngle=170;
 	else if (NewAngle<0)
@@ -1617,7 +1617,7 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	return ret;
 }
 
-FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),
+FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),m_dTime_s(0.0),
 	m_FireSensor(false),m_SlowWheel(false)
 {
 	#ifdef __TestXAxisServoDump__
@@ -1691,6 +1691,7 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	//display voltages
 	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
 		m_PitchRampVoltage,m_PowerWheelVoltage,m_FireConveyorVoltage);
+	m_dTime_s=dTime_s;
 }
 
 
