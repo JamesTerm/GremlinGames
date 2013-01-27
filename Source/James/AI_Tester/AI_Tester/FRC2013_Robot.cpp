@@ -1552,12 +1552,14 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 #ifdef __TestXAxisServoDump__
 void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) 
 {
-	m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	LeftVelocity=m_LastLeftVelocity,RightVelocity=m_LastRightVelocity;
+	//Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 }
 
 void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
 {
-	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+	//For now leave this disabled... should not need to script this
+	Dout(2, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
 
 	//first interpolate the angular velocity
 	const Tank_Robot_Props &props=m_RobotProps.GetTankRobotProps();
@@ -1573,21 +1575,31 @@ void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Ri
 	const double omega = ((LeftVoltage*MaxSpeed*skid) + (RightVoltage*MaxSpeed*-skid)) * 0.5;
 
 	double AngularVelocity=(omega / (Pi * D)) * Pi2;
+	if (props.ReverseSteering)
+		AngularVelocity*=-1.0;
 
-	double NewAngle=m_LastYawAxisSetting+AngularVelocity;
+	//double NewAngle=m_LastYawAxisSetting+(AngularVelocity * props.MotorToWheelGearRatio);
+	double NewAngle=m_LastYawAxisSetting+(AngularVelocity );
 	if (NewAngle>170)
 		NewAngle=170;
 	else if (NewAngle<0)
 		NewAngle=0;
 
+	//Ensure the angle deltas of angular velocity are calibrated to servo's angles
 	m_LastYawAxisSetting=NewAngle;
+	Dout(4, "a=%.2f av=%.2f",m_LastYawAxisSetting,AngularVelocity);
+	//if (!IsZero(AngularVelocity))
+	//	printf("a=%.2f av=%.2f\n",m_LastYawAxisSetting,AngularVelocity);
+
+	//m_YawControl.SetAngle(m_LastYawAxisSetting);
 
 	const double inv_skid=1.0/cos(atan2(W,L));
 	double RCW=AngularVelocity;
 	double RPS=RCW / Pi2;
 	RCW=RPS * (Pi * D) * inv_skid;  //D is the turning diameter
 
-	Dout (4,"av=%.2f rot%.2f RCW=%.2f\n",AngularVelocity,m_LastYawAxisSetting,RCW);
+	m_LastLeftVelocity = + RCW;
+	m_LastRightVelocity = - RCW;
 }
 #endif
 
@@ -1609,7 +1621,7 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRo
 	m_FireSensor(false),m_SlowWheel(false)
 {
 	#ifdef __TestXAxisServoDump__
-	m_LastYawAxisSetting=0.0;
+	m_LastYawAxisSetting=m_LastLeftVelocity=m_LastRightVelocity=0.0;
 	#endif
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
