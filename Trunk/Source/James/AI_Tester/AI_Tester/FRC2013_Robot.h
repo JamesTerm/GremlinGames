@@ -316,7 +316,7 @@ class FRC_2013_Goals
 		};
 };
 
-#undef __TestXAxisServoDump__
+#define __TestXAxisServoDump__
 class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 {
 	public:
@@ -363,6 +363,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		KalmanFilter m_KalFilter_Arm;
 		#ifdef __TestXAxisServoDump__
 		double m_LastYawAxisSetting;  //needed to creep up the angle to position smoothly when testing servo code
+		double m_LastLeftVelocity,m_LastRightVelocity;
 		#endif
 		//cache voltage values for display
 		double m_PitchRampVoltage,m_PowerWheelVoltage;
