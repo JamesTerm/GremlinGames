@@ -103,7 +103,8 @@ void Servo_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Right
 	if (m_TankRobotProps.ReverseSteering)
 		AngularVelocity*=-1.0;
 	
-	double NewAngle=m_LastYawAxisSetting+(AngularVelocity * m_TankRobotProps.MotorToWheelGearRatio);
+	double NewAngle=m_LastYawAxisSetting+(RAD_2_DEG(AngularVelocity * m_dTime_s) * m_TankRobotProps.MotorToWheelGearRatio);
+
 	if (NewAngle>Servo::GetMaxAngle())
 		NewAngle=Servo::GetMaxAngle();
 	else if (NewAngle<Servo::GetMinAngle())
