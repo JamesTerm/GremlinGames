@@ -1,5 +1,5 @@
 #pragma once
-#define __UsingTestingKit__
+#undef __UsingTestingKit__
 
 #ifdef __UsingTestingKit__
 
