@@ -47,7 +47,9 @@
 
 void FRC_2013_Robot_Control::ResetPos()
 {
+	#ifdef __UsingTestingKit__
 	m_LastAxisSetting=32;
+	#endif
 	#ifndef __DisableCompressor__
 	//Enable this code if we have a compressor 
 	m_Compress.Stop();
