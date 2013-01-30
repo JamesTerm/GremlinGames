@@ -855,7 +855,28 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 		break;
 	case eTestGoals_2013:
-		//TODO
+		{
+			FRC_2013_Robot *Robot=dynamic_cast<FRC_2013_Robot *>(game.GetEntity("Robot2013"));
+			if (Robot)
+			{
+				const int AutonomousValue=str_2[0]?atoi(str_2):2;
+				const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
+				Goal *oldgoal=Robot->ClearGoal();
+				if (oldgoal)
+					delete oldgoal;
+
+				if (DoAutonomous)
+				{
+					Goal *goal=NULL;
+					goal=FRC_2013_Goals::Climb(Robot);
+					if (goal)
+						goal->Activate(); //now with the goal(s) loaded activate it
+					Robot->SetGoal(goal);
+				}
+			}
+			else
+				printf("Robot not found\n");
+		}
 		break;
 	case eTestFollowGod:
 		{

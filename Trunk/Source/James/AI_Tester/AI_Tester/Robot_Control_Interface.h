@@ -8,8 +8,8 @@ class Robot_Control_Interface
 public:
 	virtual void UpdateVoltage(size_t index,double Voltage) {}
 	//Having both Open and Close makes it easier to make the desired call without applying the not operator
-	virtual void CloseSolenoid(size_t index,bool Close) {}
-	virtual void OpenSolenoid(size_t index,bool Open) {}
+	virtual void CloseSolenoid(size_t index,bool Close=true) {}
+	virtual void OpenSolenoid(size_t index,bool Open=true) {}
 	/// \ret true if contact is made 
 	virtual bool GetBoolSensorState(size_t index) {return false;}
 };

@@ -748,6 +748,38 @@ void FRC_2013_Robot::SetClimbGearValue(double Value)
 	}
 }
 #endif
+
+void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
+{
+	//Note: the order of each of these will disengage others before engage... as a fall back precaution, but the client code
+	//really needs to set state to neutral with a wait time before going into the next state so that there is never a time when
+	//multiple gears are engaged at any moment
+	switch (climb_state)
+	{
+	case eClimbState_Neutral:
+		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
+		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
+		m_RobotControl->CloseSolenoid(eEngageDropWinch);
+		break;
+	case eClimbState_Drive:
+		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
+		m_RobotControl->CloseSolenoid(eEngageDropWinch);
+		m_RobotControl->OpenSolenoid(eEngageDriveTrain);
+		break;
+	case eClimbState_RaiseLift:
+		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
+		m_RobotControl->CloseSolenoid(eEngageDropWinch);
+		m_RobotControl->OpenSolenoid(eEngageLiftWinch);
+		break;
+	case eClimbState_DropLift:
+		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
+		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
+		m_RobotControl->OpenSolenoid(eEngageDropWinch);
+		break;
+	}
+}
+
+
 //void FRC_2013_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 //{
 //	Vec2D position=m_RobotProps.GetFRC2013RobotProps().PresetPositions[index];
@@ -1310,17 +1342,23 @@ Goal::Goal_Status FRC_2013_Goals::WaitForBall::Process(double dTime_s)
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2013_Goals::OperateSolenoid													*/
+ /*													FRC_2013_Goals::ChangeClimbState												*/
 /***********************************************************************************************************************************/
-//TODO omit
-#if 0
-FRC_2013_Goals::OperateSolenoid::OperateSolenoid(FRC_2013_Robot &robot,FRC_2013_Robot::SolenoidDevices SolenoidDevice,bool Open) : m_Robot(robot),
-m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsOpen(Open) 
+
+FRC_2013_Goals::ChangeClimbState::ChangeClimbState(FRC_2013_Robot &robot,FRC_2013_Robot::ClimbState climb_state,double TimeToTakeEffect_s) : m_Robot(robot),
+m_ClimbState(climb_state),m_TimeToWait(TimeToTakeEffect_s),m_Terminate(false)
 {	
 	m_Status=eInactive;
+	m_TimeAccrued=0.0;
 }
 
-FRC_2013_Goals::OperateSolenoid::Goal_Status FRC_2013_Goals::OperateSolenoid::Process(double dTime_s)
+void FRC_2013_Goals::ChangeClimbState::Activate() 
+{
+	m_Robot.SetClimbState(m_ClimbState);
+	m_Status=eActive;
+}
+
+FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ChangeClimbState::Process(double dTime_s)
 {
 	if (m_Terminate)
 	{
@@ -1329,19 +1367,11 @@ FRC_2013_Goals::OperateSolenoid::Goal_Status FRC_2013_Goals::OperateSolenoid::Pr
 		return m_Status;
 	}
 	ActivateIfInactive();
-	switch (m_SolenoidDevice)
-	{
-		case FRC_2013_Robot::eFlipperDown:
-			m_Robot.SetFlipperPneumatic(m_IsOpen);
-			break;
-		case FRC_2013_Robot::eUseClimbGear:
-			assert(false);
-			break;
-	}
-	m_Status=eCompleted;
+	m_TimeAccrued+=dTime_s;
+	if (m_TimeAccrued>m_TimeToWait)
+		m_Status=eCompleted;
 	return m_Status;
 }
-#endif
 
   /***********************************************************************************************************************************/
  /*															FRC_2013_Goals															*/
@@ -1361,6 +1391,44 @@ Goal *FRC_2013_Goals::Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt)
 	MainGoal->AddSubgoal(FireOn);
 	MainGoal->AddSubgoal(goal_waitforballs1);
 	//MainGoal->AddSubgoal(goal_waitforturret);
+	return MainGoal;
+}
+
+Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
+{
+	// reset the coordinates to use way points
+	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
+	ChangeClimbState *goal_decouple_drive_1=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);		   //de-couple the drive via pneumatic 1
+	ChangeClimbState *goal_couple_elevator_UP=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);  //couple the elevator UP winch via pneumatic 2
+	float position=1.0;  //TODO determine distance
+	//Construct a way point
+	WayPoint wp;
+	wp.Position[0]=0.0;
+	wp.Position[1]=position;
+	wp.Power=1.0;
+	Goal_Ship_MoveToPosition *goal_spool_lift_winch_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+
+	//de-couple elevator UP winch, and engage elevator DOWN winch
+	ChangeClimbState *goal_decouple_drive_2=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);
+	ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);
+
+	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
+	Goal_Ship_MoveToPosition *goal_spool_lift_winch_2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+
+	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
+	ChangeClimbState *goal_couple_drive=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Drive);   //TODO see if this is what this means
+
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(goal_couple_drive);
+	MainGoal->AddSubgoal(goal_spool_lift_winch_2);
+	MainGoal->AddSubgoal(goal_reset_2);
+	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
+	MainGoal->AddSubgoal(goal_decouple_drive_2);
+	MainGoal->AddSubgoal(goal_spool_lift_winch_1);
+	MainGoal->AddSubgoal(goal_couple_elevator_UP);
+	MainGoal->AddSubgoal(goal_decouple_drive_1);
+	MainGoal->AddSubgoal(goal_reset_1);
 	return MainGoal;
 }
 

@@ -126,7 +126,7 @@ class FRC_2013_Robot : public Tank_Robot
 		//1 = neutral
 		//2 = neutral
 		//3= engaged
-		enum ClimbStates
+		enum ClimbState
 		{
 			eClimbState_Neutral,
 			eClimbState_Drive,
@@ -239,6 +239,7 @@ class FRC_2013_Robot : public Tank_Robot
 		const FRC_2013_Robot_Properties &GetRobotProps() const;
 		//TODO Omit
 		//void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
+		void SetClimbState(ClimbState climb_state);
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -303,6 +304,7 @@ class FRC_2013_Goals
 	public:
 		static Goal *Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt=false);
 		static Goal *Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
+		static Goal *Climb(FRC_2013_Robot *Robot);
 	private:
 		class Fire : public AtomicGoal
 		{
@@ -331,20 +333,32 @@ class FRC_2013_Goals
 			virtual void Terminate() {m_Terminate=true;}
 		};
 
-		//Most of this will be replaced with setting the climb state.. we'll need to see if there are any outstanding solenoids for autonomous (probably not)
-		//class OperateSolenoid : public AtomicGoal
-		//{
-		//private:
-		//	FRC_2013_Robot &m_Robot;
-		//	const FRC_2013_Robot::SolenoidDevices m_SolenoidDevice;
-		//	bool m_Terminate;
-		//	bool m_IsOpen;
-		//public:
-		//	OperateSolenoid(FRC_2013_Robot &robot,FRC_2013_Robot::SolenoidDevices SolenoidDevice,bool Open);
-		//	virtual void Activate() {m_Status=eActive;}
-		//	virtual Goal_Status Process(double dTime_s);
-		//	virtual void Terminate() {m_Terminate=true;}
-		//};
+		class ResetPosition : public AtomicGoal
+		{
+		private:
+			FRC_2013_Robot &m_Robot;
+			bool m_Terminate;
+		public:
+			ResetPosition(FRC_2013_Robot &robot): m_Robot(robot) {m_Status=eInactive;}
+			virtual void Activate() {m_Status=eActive;m_Robot.ResetPos();}
+			virtual Goal_Status Process(double dTime_s) {ActivateIfInactive();m_Status=eCompleted;return eCompleted;}
+			virtual void Terminate() {m_Terminate=true;}
+		};
+
+		class ChangeClimbState : public AtomicGoal
+		{
+		private:
+			FRC_2013_Robot &m_Robot;
+			const FRC_2013_Robot::ClimbState m_ClimbState;
+			double m_TimeAccrued;
+			double m_TimeToWait;
+			bool m_Terminate;
+		public:
+			ChangeClimbState(FRC_2013_Robot &robot,FRC_2013_Robot::ClimbState climb_state,double TimeToTakeEffect_s=1.00);
+			virtual void Activate();
+			virtual Goal_Status Process(double dTime_s);
+			virtual void Terminate() {m_Terminate=true;}
+		};
 };
 
 #undef __TestXAxisServoDump__
