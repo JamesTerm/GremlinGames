@@ -99,10 +99,39 @@ class FRC_2013_Robot : public Tank_Robot
 			eFireConveyor_Sensor
 		};
 
+		//Note: these shouldn't be written to directly but instead set the climb state which then will write to these
+		//This will guarantee that they will be preserved in a mutually exclusive state
 		enum SolenoidDevices
 		{
-			eUseClimbGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
-			eFlipperDown		//If true flipper is down
+			//These 3 cylinders work together:
+			//neutral state is when all all neutral, and will be a transitional state; otherwise these are mutually exclusive
+			eEngageDriveTrain,		//Cylinder 1 is on the drive train gear box
+			eEngageLiftWinch,		//Cylinder 2 is on the lift winch
+			eEngageDropWinch		//Cylinder 3 is on the drop winch
+		};
+
+		//You use a variation of selected states to do things
+		//so driving would be:
+
+		//cylinder 1 = drive
+		//2 = neutral
+		//3 = neutral
+
+		//raising lift is
+		//1 = neutral
+		//2 = engaged
+		//3 = neutral
+
+		//dropping lift for climb
+		//1 = neutral
+		//2 = neutral
+		//3= engaged
+		enum ClimbStates
+		{
+			eClimbState_Neutral,
+			eClimbState_Drive,
+			eClimbState_RaiseLift,
+			eClimbState_DropLift,
 		};
 
 		//typedef Framework::Base::Vec2d Vec2D;
@@ -208,7 +237,8 @@ class FRC_2013_Robot : public Tank_Robot
 		PowerWheels &GetPowerWheels();
 		void SetTarget(Targets target);
 		const FRC_2013_Robot_Properties &GetRobotProps() const;
-		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
+		//TODO Omit
+		//void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -253,11 +283,11 @@ class FRC_2013_Robot : public Tank_Robot
 		};
 		DriveTargetSelection m_DriveTargetSelection;
 
-		bool m_SetClimbGear;
-		void SetClimbGear(bool on);
-		void SetClimbGearOn() {SetClimbGear(true);}
-		void SetClimbGearOff() {SetClimbGear(false);}
-		void SetClimbGearValue(double Value);
+		//bool m_SetClimbGear;
+		//void SetClimbGear(bool on);
+		//void SetClimbGearOn() {SetClimbGear(true);}
+		//void SetClimbGearOff() {SetClimbGear(false);}
+		//void SetClimbGearValue(double Value);
 		
 		void SetPresetPOV (double value);
 
@@ -301,19 +331,20 @@ class FRC_2013_Goals
 			virtual void Terminate() {m_Terminate=true;}
 		};
 
-		class OperateSolenoid : public AtomicGoal
-		{
-		private:
-			FRC_2013_Robot &m_Robot;
-			const FRC_2013_Robot::SolenoidDevices m_SolenoidDevice;
-			bool m_Terminate;
-			bool m_IsOpen;
-		public:
-			OperateSolenoid(FRC_2013_Robot &robot,FRC_2013_Robot::SolenoidDevices SolenoidDevice,bool Open);
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s);
-			virtual void Terminate() {m_Terminate=true;}
-		};
+		//Most of this will be replaced with setting the climb state.. we'll need to see if there are any outstanding solenoids for autonomous (probably not)
+		//class OperateSolenoid : public AtomicGoal
+		//{
+		//private:
+		//	FRC_2013_Robot &m_Robot;
+		//	const FRC_2013_Robot::SolenoidDevices m_SolenoidDevice;
+		//	bool m_Terminate;
+		//	bool m_IsOpen;
+		//public:
+		//	OperateSolenoid(FRC_2013_Robot &robot,FRC_2013_Robot::SolenoidDevices SolenoidDevice,bool Open);
+		//	virtual void Activate() {m_Status=eActive;}
+		//	virtual Goal_Status Process(double dTime_s);
+		//	virtual void Terminate() {m_Terminate=true;}
+		//};
 };
 
 #undef __TestXAxisServoDump__
