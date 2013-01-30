@@ -327,7 +327,8 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PitchAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
+		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget)
+		//m_SetClimbGear(false)  //omit
 {
 	m_IsTargeting=true;
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
@@ -708,6 +709,8 @@ void FRC_2013_Robot::SetTargetingValue(double Value)
 	}
 }
 
+//TODO omit
+#if 0
 void FRC_2013_Robot::SetClimbGear(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
@@ -744,7 +747,7 @@ void FRC_2013_Robot::SetClimbGearValue(double Value)
 		}
 	}
 }
-
+#endif
 //void FRC_2013_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 //{
 //	Vec2D position=m_RobotProps.GetFRC2013RobotProps().PresetPositions[index];
@@ -833,12 +836,12 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOff);
-		em->EventOnOff_Map["Robot_Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2013_Robot::SetFlipperPneumatic);
+		//em->EventOnOff_Map["Robot_Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
-		em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
-		em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
-		em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
-		em->EventValue_Map["Robot_SetClimbGearValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetClimbGearValue);
+		//em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
+		//em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
+		//em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
+		//em->EventValue_Map["Robot_SetClimbGearValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetClimbGearValue);
 
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"].Subscribe(ehl, *this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -853,12 +856,12 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOff);
-		em->EventOnOff_Map["Robot_Flippers_Solenoid"]  .Remove(*this, &FRC_2013_Robot::SetFlipperPneumatic);
+		//em->EventOnOff_Map["Robot_Flippers_Solenoid"]  .Remove(*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
-		em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
-		em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
-		em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
-		em->EventValue_Map["Robot_SetClimbGearValue"].Remove(*this, &FRC_2013_Robot::SetClimbGearValue);
+		//em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
+		//em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
+		//em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
+		//em->EventValue_Map["Robot_SetClimbGearValue"].Remove(*this, &FRC_2013_Robot::SetClimbGearValue);
 
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"]  .Remove(*this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -1309,7 +1312,8 @@ Goal::Goal_Status FRC_2013_Goals::WaitForBall::Process(double dTime_s)
   /***********************************************************************************************************************************/
  /*													FRC_2013_Goals::OperateSolenoid													*/
 /***********************************************************************************************************************************/
-
+//TODO omit
+#if 0
 FRC_2013_Goals::OperateSolenoid::OperateSolenoid(FRC_2013_Robot &robot,FRC_2013_Robot::SolenoidDevices SolenoidDevice,bool Open) : m_Robot(robot),
 m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsOpen(Open) 
 {	
@@ -1337,6 +1341,7 @@ FRC_2013_Goals::OperateSolenoid::Goal_Status FRC_2013_Goals::OperateSolenoid::Pr
 	m_Status=eCompleted;
 	return m_Status;
 }
+#endif
 
   /***********************************************************************************************************************************/
  /*															FRC_2013_Goals															*/
@@ -1433,13 +1438,13 @@ Goal *FRC_2013_Goals::Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyInd
 
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
 	Goal_Ship_MoveToPosition *goal_drive_2=NULL;
-	OperateSolenoid *DeployFlipper=NULL;
+	//OperateSolenoid *DeployFlipper=NULL;
 	Fire *EndSomeFire_On=NULL;
 	Goal_Wait *goal_waitEndFire=NULL;
 	Fire *EndSomeFire_Off=NULL;
 	if (RampIndex != (size_t)-1)
 	{
-		DeployFlipper=new OperateSolenoid(*Robot,FRC_2013_Robot::eFlipperDown,true);
+		//DeployFlipper=new OperateSolenoid(*Robot,FRC_2013_Robot::eFlipperDown,true);
 		const double YPad=Inches2Meters(5); //establish our Y being 5 inches from the ramp
 		double Y = (c_BridgeDimensions[1] / 2.0) + YPad;
 		double X;
@@ -1491,7 +1496,7 @@ Goal *FRC_2013_Goals::Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyInd
 		if (RampIndex==0)
 			MainGoal->AddSubgoal(EndSomeFire_On);
 		MainGoal->AddSubgoal(goal_drive_1);
-		MainGoal->AddSubgoal(DeployFlipper);
+		//MainGoal->AddSubgoal(DeployFlipper);
 	}
 	MainGoal->AddSubgoal(FireOff);
 	MainGoal->AddSubgoal(goal_waitforballs);
@@ -1734,14 +1739,18 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 {
+	const char * const SolenoidState=Open?"Engaged":"Disengaged";
 	switch (index)
 	{
-	case FRC_2013_Robot::eUseClimbGear:
-		printf("UseClimbGear=%d\n",Open);
+	case FRC_2013_Robot::eEngageDriveTrain:
+		printf("Drive Train Gear = %s\n",SolenoidState);
 		//m_UseClimbGear=Open;
 		break;
-	case FRC_2013_Robot::eFlipperDown:
-		printf("FlipperDown=%d\n",Open);
+	case FRC_2013_Robot::eEngageLiftWinch:
+		printf("Lift Winch = %s\n",SolenoidState);
+		break;
+	case FRC_2013_Robot::eEngageDropWinch:
+		printf("Drop Winch = %s\n",SolenoidState);
 		break;
 	}
 }
