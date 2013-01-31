@@ -131,7 +131,9 @@ class FRC_2013_Robot : public Tank_Robot
 			eClimbState_Neutral,
 			eClimbState_Drive,
 			eClimbState_RaiseLift,
+			//Drop lift has been divided into two phases... we'll want to give time for it to engage which the lift winch is still engaged, before releasing the lift winch
 			eClimbState_DropLift,
+			eClimbState_DropLift2
 		};
 
 		//typedef Framework::Base::Vec2d Vec2D;
