@@ -772,9 +772,11 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		m_RobotControl->OpenSolenoid(eEngageLiftWinch);
 		break;
 	case eClimbState_DropLift:
+		m_RobotControl->OpenSolenoid(eEngageDropWinch);
+		break;
+	case eClimbState_DropLift2:
 		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
 		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
-		m_RobotControl->OpenSolenoid(eEngageDropWinch);
 		break;
 	}
 }
@@ -1409,22 +1411,22 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	Goal_Ship_MoveToPosition *goal_spool_lift_winch_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
 
 	//de-couple elevator UP winch, and engage elevator DOWN winch
-	ChangeClimbState *goal_decouple_drive_2=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);
-	ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);
+	ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift);
+	ChangeClimbState *goal_couple_elevator_DOWN_releaseLiftWinch=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift2);
 
 	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
 	Goal_Ship_MoveToPosition *goal_spool_lift_winch_2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
 
 	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
-	ChangeClimbState *goal_couple_drive=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Drive);   //TODO see if this is what this means
+	//For now this is just a backup plan that would need a rotary system
 
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
-	MainGoal->AddSubgoal(goal_couple_drive);
+	//MainGoal->AddSubgoal(goal_JamGear);
 	MainGoal->AddSubgoal(goal_spool_lift_winch_2);
 	MainGoal->AddSubgoal(goal_reset_2);
+	MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
-	MainGoal->AddSubgoal(goal_decouple_drive_2);
 	MainGoal->AddSubgoal(goal_spool_lift_winch_1);
 	MainGoal->AddSubgoal(goal_couple_elevator_UP);
 	MainGoal->AddSubgoal(goal_decouple_drive_1);
