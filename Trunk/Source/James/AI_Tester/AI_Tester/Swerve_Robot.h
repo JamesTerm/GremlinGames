@@ -41,6 +41,7 @@ struct Swerve_Robot_Props
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
+	double InverseMaxDecel;  //used for deceleration case
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen_Wheel,IsOpen_Swivel;  //give ability to open or close loop for wheel or swivel system  
 	//This will dump the console PID info (Only active if __DebugLUA__ is defined)
