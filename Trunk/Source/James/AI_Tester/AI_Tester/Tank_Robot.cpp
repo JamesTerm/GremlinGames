@@ -408,8 +408,9 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
 			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
 			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
-			LeftVoltage+=LeftAcceleration*m_TankRobotProps.InverseMaxAccel;
-			RightVoltage+=RightAcceleration*m_TankRobotProps.InverseMaxAccel;
+			//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
+			LeftVoltage+=LeftAcceleration*((LeftAcceleration * LeftVelocity > 0)? m_TankRobotProps.InverseMaxAccel : m_TankRobotProps.InverseMaxDecel);
+			RightVoltage+=RightAcceleration*((RightAcceleration * RightVelocity > 0) ? m_TankRobotProps.InverseMaxAccel : m_TankRobotProps.InverseMaxDecel);
 
 			//Keep track of previous velocity to compute acceleration
 			m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
@@ -540,7 +541,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
 	props.TankSteering_Tolerance=0.05;
-	props.InverseMaxAccel=0.0;
+	props.InverseMaxAccel=props.InverseMaxDecel=0.0;
 	m_TankRobotProps=props;
 }
 
@@ -664,6 +665,8 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		}
 
 		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel);
+		m_TankRobotProps.InverseMaxDecel=m_TankRobotProps.InverseMaxAccel;  //set up deceleration to be the same value by default
+		script.GetField("inv_max_decel", NULL, NULL, &m_TankRobotProps.InverseMaxDecel);
 		script.Pop(); 
 	}
 	err = script.GetFieldTable("controls");
