@@ -39,6 +39,7 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		//init the props (more of a pedantic step to avoid corrupt data)
 		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
 		props.InverseMaxAccel=m_TractionModeProps.InverseMaxAccel;
+		props.InverseMaxDecel=m_TractionModeProps.InverseMaxDecel;
 		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
 		double *PID=(Mode==eTractionDrive)?m_TractionModeProps.PID : m_OmniModeProps.PID;
 		props.PID[0]=PID[0];
@@ -74,6 +75,7 @@ void Butterfly_Robot::DriveModeManager::Initialize(const Butterfly_Robot_Propert
 	m_OmniModeProps.ShipProperties=m_pParent->m_ShipProps;
 	m_OmniModeProps.IsOpen=m_pParent->GetSwerveRobotProps().IsOpen_Wheel;
 	m_OmniModeProps.InverseMaxAccel=m_pParent->GetSwerveRobotProps().InverseMaxAccel;
+	m_OmniModeProps.InverseMaxDecel=m_pParent->GetSwerveRobotProps().InverseMaxDecel;
 	m_OmniModeProps.PID[0]=m_pParent->GetSwerveRobotProps().Wheel_PID[0];
 	m_OmniModeProps.PID[1]=m_pParent->GetSwerveRobotProps().Wheel_PID[1];
 	m_OmniModeProps.PID[2]=m_pParent->GetSwerveRobotProps().Wheel_PID[2];
@@ -220,6 +222,9 @@ void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 					m_TractionModePropsProps.IsOpen=false;
 			}
 			err = script.GetField("inv_max_accel", NULL, NULL, &m_TractionModePropsProps.InverseMaxAccel);
+			m_TractionModePropsProps.InverseMaxDecel=m_TractionModePropsProps.InverseMaxAccel;	//set up deceleration to be the same value by default
+			script.GetField("inv_max_decel", NULL, NULL, &m_TractionModePropsProps.InverseMaxDecel);
+
 			#ifdef AI_TesterCode
 			err = script.GetFieldTable("motor_specs");
 			if (!err)
