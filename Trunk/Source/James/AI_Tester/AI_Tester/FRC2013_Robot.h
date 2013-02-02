@@ -37,6 +37,12 @@ public:
 	size_t PowerVelocity_DisplayRow;
 	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
 
+	struct Climb_Properties
+	{
+		//In theory lift and drop should be the same they can be negative in direction as well.  They may work where lift goes in one directions and the drop goes in the opposite
+		double LiftDistance;
+		double DropDistance;
+	} Climb_Props;
 	struct Autonomous_Properties
 	{
 		Vec2D RampLeft_ErrorCorrection_Offset;

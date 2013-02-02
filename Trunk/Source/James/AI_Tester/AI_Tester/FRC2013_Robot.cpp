@@ -1025,6 +1025,9 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		ball_2.InitialWait=4.0;
 		ball_2.TimeOutWait=-1.0;
 		ball_2.ToleranceThreshold=0.0;
+		FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
+		climb_props.LiftDistance=1.0;
+		climb_props.DropDistance=-1.0;
 		m_FRC2013RobotProps=props;
 	}
 	{
@@ -1296,6 +1299,23 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.GetField("x_right_arc", NULL, NULL, &auton.XRightArc);
 			script.Pop();
 		}
+
+		err = script.GetFieldTable("climb");
+		if (!err)
+		{
+			struct FRC_2013_Robot_Props::Climb_Properties &climb=m_FRC2013RobotProps.Climb_Props;
+			{
+				double length;
+				err = script.GetField("lift_ft", NULL, NULL,&length);
+				if (!err)
+					climb.LiftDistance=Feet2Meters(length);
+				err = script.GetField("drop_ft", NULL, NULL,&length);
+				if (!err)
+					climb.DropDistance=Feet2Meters(length);
+			}
+			script.Pop();
+		}
+
 		//This is the main robot settings pop
 		script.Pop();
 	}
@@ -1417,24 +1437,26 @@ Goal *FRC_2013_Goals::Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt)
 
 Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 {
+	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
+	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
 	// reset the coordinates to use way points
 	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
 	ChangeClimbState *goal_decouple_drive_1=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);		   //de-couple the drive via pneumatic 1
 	ChangeClimbState *goal_couple_elevator_UP=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);  //couple the elevator UP winch via pneumatic 2
-	float position=1.0;  //TODO determine distance
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
-	wp.Position[1]=position;
+	wp.Position[1]=climb_props.LiftDistance;
 	wp.Power=1.0;
-	Goal_Ship_MoveToPosition *goal_spool_lift_winch_1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+	Goal_Ship_MoveToPosition *goal_spool_lift_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
 
 	//de-couple elevator UP winch, and engage elevator DOWN winch
 	ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift);
 	ChangeClimbState *goal_couple_elevator_DOWN_releaseLiftWinch=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift2);
 
 	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
-	Goal_Ship_MoveToPosition *goal_spool_lift_winch_2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+	wp.Position[1]=climb_props.DropDistance;
+	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
 
 	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
 	//For now this is just a backup plan that would need a rotary system
@@ -1442,11 +1464,11 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	//MainGoal->AddSubgoal(goal_JamGear);
-	MainGoal->AddSubgoal(goal_spool_lift_winch_2);
+	MainGoal->AddSubgoal(goal_spool_drop_winch);
 	MainGoal->AddSubgoal(goal_reset_2);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
-	MainGoal->AddSubgoal(goal_spool_lift_winch_1);
+	MainGoal->AddSubgoal(goal_spool_lift_winch);
 	MainGoal->AddSubgoal(goal_couple_elevator_UP);
 	MainGoal->AddSubgoal(goal_decouple_drive_1);
 	MainGoal->AddSubgoal(goal_reset_1);
