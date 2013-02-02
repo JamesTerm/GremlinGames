@@ -286,11 +286,10 @@ class FRC_2013_Robot : public Tank_Robot
 		};
 		DriveTargetSelection m_DriveTargetSelection;
 
-		//bool m_SetClimbGear;
-		//void SetClimbGear(bool on);
-		//void SetClimbGearOn() {SetClimbGear(true);}
-		//void SetClimbGearOff() {SetClimbGear(false);}
-		//void SetClimbGearValue(double Value);
+		bool m_SetClimbGear;
+		void SetClimbGear(bool on);
+		void SetClimbGearOn() {SetClimbGear(true);}
+		void SetClimbGearOff() {SetClimbGear(false);}
 		
 		void SetPresetPOV (double value);
 

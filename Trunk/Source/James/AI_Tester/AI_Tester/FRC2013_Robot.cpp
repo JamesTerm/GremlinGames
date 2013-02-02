@@ -327,8 +327,8 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PitchAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget)
-		//m_SetClimbGear(false)  //omit
+		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
+		m_SetClimbGear(false)
 {
 	m_IsTargeting=true;
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
@@ -370,6 +370,11 @@ void FRC_2013_Robot::ResetPos()
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_BallConveyorSystem.ResetPos();
+	if (!m_SetClimbGear)
+	{
+		//ensure pneumatics are in drive
+		SetClimbState(eClimbState_Drive);
+	}
 }
 
 FRC_2013_Robot::BallConveyorSystem &FRC_2013_Robot::GetBallConveyorSystem()
@@ -709,45 +714,61 @@ void FRC_2013_Robot::SetTargetingValue(double Value)
 	}
 }
 
-//TODO omit
-#if 0
 void FRC_2013_Robot::SetClimbGear(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	m_SetClimbGear=on;
-	SetBypassPosAtt_Update(true);
-	m_PitchRamp.SetBypassPos_Update(true);
-
-	//Now for some real magic with the properties!
-	__super::Initialize(*GetEventMap(),m_SetClimbGear?&m_RobotProps.GetClimbGearProps():&m_RobotProps);
-	SetBypassPosAtt_Update(false);
-	m_PitchRamp.SetBypassPos_Update(false);
-
-	m_RobotControl->OpenSolenoid(eUseClimbGear,on);
-}
-
-void FRC_2013_Robot::SetClimbGearValue(double Value)
-{
-	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	//printf("\r%f       ",Value);
-	if (Value > 0.0)
+	bool ClimbAgain=false;
+	if (on)  //check to see if we are done with previous climb
 	{
-		if (m_SetClimbGear)
+		const Goal *goal=GetGoal();
+		if ((!goal) || (goal->GetStatus()==Goal::eCompleted) || (goal->GetStatus()==Goal::eInactive))
+			ClimbAgain=true;
+	}
+	if ((!m_SetClimbGear)||(ClimbAgain))
+	{
+		if (on)
 		{
-			SetClimbGear(false);
-			printf("Now in HighGear\n");
+			printf("Now in ClimbGear\n");
+			UpdateShipProperties(m_RobotProps.GetClimbGearProps().GetShipProps());
+			m_SetClimbGear=true;
+
+			Goal *oldgoal=ClearGoal();
+			if (oldgoal)
+				delete oldgoal;
+
+			Goal *goal=NULL;
+			goal=FRC_2013_Goals::Climb(this);
+			if (goal)
+				goal->Activate(); //now with the goal(s) loaded activate it
+			SetGoal(goal);
+
+			//Now to turn on auto pilot (disabling controls)
+			GetController()->GetUIController_RW()->SetAutoPilot(true);
 		}
 	}
 	else
 	{
-		if (!m_SetClimbGear)
+		if (!on)
 		{
-			SetClimbGear(true);
-			printf("Now in ClimbGear\n");
+			printf("Now in DriveGear\n");
+			UpdateShipProperties(m_RobotProps.GetShipProps());
+			m_SetClimbGear=false;
+			Goal *oldgoal=ClearGoal();
+			if (oldgoal)
+				delete oldgoal;
+			SetGoal(NULL);
+			//Note: may want this to be a goal that waits... it will probably be ok though
+			GetController()->GetUIController_RW()->Stop();  //make sure nothing is moving!
+			//Now to turn off auto pilot (regain controls)
+			//Note: for the robot this acts like a kill switch, so we'll want to leave controls disabled
+			//for the simulation this will restore it back to drive (since it doesn't matter what state the pneumatics are in
+			#ifdef AI_TesterCode
+			GetController()->GetUIController_RW()->SetAutoPilot(false);
+			#endif
 		}
 	}
 }
-#endif
+
 
 void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 {
@@ -872,11 +893,10 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOff);
 		//em->EventOnOff_Map["Robot_Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
-		//em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
-		//em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
-		//em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
-		//em->EventValue_Map["Robot_SetClimbGearValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetClimbGearValue);
-
+		em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
+		em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
+		em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
+		
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"].Subscribe(ehl, *this, &FRC_2013_Robot::Robot_SetCreepMode);
 	}
@@ -892,10 +912,9 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOff);
 		//em->EventOnOff_Map["Robot_Flippers_Solenoid"]  .Remove(*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
-		//em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
-		//em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
-		//em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
-		//em->EventValue_Map["Robot_SetClimbGearValue"].Remove(*this, &FRC_2013_Robot::SetClimbGearValue);
+		em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
+		em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
+		em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
 
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"]  .Remove(*this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -1113,7 +1132,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
 	"Flippers_Advance","Flippers_Retract",
 	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
-	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff","Robot_SetClimbGearValue",
+	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
 	"Robot_SetCreepMode","Robot_Flippers_Solenoid"

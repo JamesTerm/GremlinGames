@@ -168,15 +168,13 @@ MainRobot = {
 			
 			tank_drive =
 			{
-				is_closed=0,						--By default false, and can be turned on dynamically
+				is_closed=1,						--Must be on
 				show_pid_dump='no',
 				ds_display_row=-1,
-				--We must NOT use I or D for low gear, we must keep it very responsive
-				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
 				left_pid=
-				{p=25, i=0, d=5},
+				{p=200, i=0, d=50},
 				right_pid=
-				{p=25, i=0, d=5},					--These should always match, but able to be made different
+				{p=200, i=0, d=50},					--These should always match, but able to be made different
 				latency=0.300,
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
@@ -185,7 +183,7 @@ MainRobot = {
 				curve_voltage=
 				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 				reverse_steering='no',
-				 left_encoder_reversed='no',
+				left_encoder_reversed='no',
 				right_encoder_reversed='no',
 				inv_max_accel = 0.0  --solved empiracally
 			}

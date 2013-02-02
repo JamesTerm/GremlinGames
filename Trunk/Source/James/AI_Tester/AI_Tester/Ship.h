@@ -268,7 +268,7 @@ class Ship_2D : public Ship
 		// Turn off all thruster controls
 		virtual void CancelAllControls();
 
-		AI_Base_Controller *GetController() {return m_controller;}
+		AI_Base_Controller *GetController() const {return m_controller;}
 
 		//The UI controller will call this when attaching or detaching control.  The Bind parameter will either bind or unbind.  Since these are 
 		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there
@@ -381,5 +381,6 @@ class Ship_Tester : public Ship_2D
 		void SetPosition(double x,double y);
 		virtual void SetAttitude(double radians);
 		Goal *ClearGoal();
+		const Goal *GetGoal() const;
 		void SetGoal(Goal *goal);
 };
