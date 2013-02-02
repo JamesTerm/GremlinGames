@@ -165,6 +165,11 @@ void Ship_Tester::SetAttitude(double radians)
 	UpdatePosAtt();
 }
 
+const Goal *Ship_Tester::GetGoal() const 
+{
+	return GetController()->m_Goal;
+}
+
 Goal *Ship_Tester::ClearGoal()
 {
 	//Ensure there the current goal is clear
