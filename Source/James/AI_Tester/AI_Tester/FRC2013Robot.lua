@@ -116,6 +116,11 @@ MainRobot = {
 			c61={p=1.0, y=1.0}, c62={p=1.0, y=1.0}, c63={p=1.0, y=1.0},
 		},
 	
+		climb =
+		{
+			lift_ft=5,
+			drop_ft=-5
+		},
 		pitch =
 		{
 			is_closed='yes',
