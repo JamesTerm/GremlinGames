@@ -18,17 +18,6 @@ namespace Base=GG_Framework::Base;
 namespace Scripting=GG_Framework::Logic::Scripting;
 
 
-double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity)
-{
-	//see if velocity is in range
-	double ret=Velocity;
-	if ((PredictedEncoderVelocity>Velocity)&&(EncoderVelocity>Velocity))
-		ret=min(PredictedEncoderVelocity,EncoderVelocity);
-	if ((PredictedEncoderVelocity<Velocity)&&(EncoderVelocity<Velocity))
-		ret=max(PredictedEncoderVelocity,EncoderVelocity);
-	return ret;
-}
-
   /***********************************************************************************************************************************/
  /*														Rotary_Position_Control														*/
 /***********************************************************************************************************************************/
@@ -76,17 +65,11 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 		SetPotentiometerSafety(true);
 	else
 		m_UsingPotentiometer=true;
-	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
 void Rotary_Position_Control::TimeChange(double dTime_s)
 {
-	#ifdef __Rotary_UseInducedLatency__
-	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
-	#else
 	const double CurrentVelocity=m_Physics.GetVelocity();
-	double Predicted_Pot_Velocity=0.0;
-	#endif
 
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
@@ -115,13 +98,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 				m_CalibratedScaler=MAX_SPEED+control;
 			}
 			#else
-			#ifdef __Rotary_UseInducedLatency__
 			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity,dTime_s);
-			#else
-			Predicted_Pot_Velocity=m_PID_Input_Latency(PotentiometerVelocity,CurrentVelocity,dTime_s);
-			const double PotentiometerVelocity_ToUse=ComputeVelocityWithTolerance(PotentiometerVelocity,Predicted_Pot_Velocity,CurrentVelocity);
-			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity_ToUse,dTime_s);
-			#endif
 			//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 			m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
 			#endif
@@ -227,11 +204,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	if ((m_Rotary_Props.PID_Console_Dump)&&(PotentiometerVelocity!=0.0))
 	{
 		double PosY=m_LastPosition;
-		#ifndef __Rotary_ShowEncoderPrediction__
 		printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
-		#else
-		printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,Predicted_Pot_Velocity,m_ErrorOffset);
-		#endif
 	}
 	#endif
 
@@ -352,7 +325,6 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 		m_EncoderState=eActive;
 		break;
 	}
-	m_PID_Input_Latency.SetLatency(m_Rotary_Props.InputLatency);
 }
 
 void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
@@ -376,20 +348,12 @@ void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 
 void Rotary_Velocity_Control::TimeChange(double dTime_s)
 {
-	#ifdef __Rotary_UseInducedLatency__
-	const double CurrentVelocity=m_PID_Input_Latency(m_Physics.GetVelocity(),dTime_s);
-	#else
 	const double CurrentVelocity=m_Physics.GetVelocity();
-	double Predicted_Encoder_Velocity=0.0;
-	#endif
 
 	double Encoder_Velocity=0.0;
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
 	{
 		Encoder_Velocity=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
-		#ifndef __Rotary_UseInducedLatency__
-		Predicted_Encoder_Velocity=m_PID_Input_Latency(Encoder_Velocity,CurrentVelocity,dTime_s);
-		#endif
 
 		//Unlike linear there is no displacement measurement therefore no need to check GetLockShipToPosition()
 		if (m_EncoderState==eActive)
@@ -401,23 +365,13 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 				//allow the scaler to normalize if it need to start up again.
 				if (((CurrentVelocity * Encoder_Velocity) > 0.0) || IsZero(Encoder_Velocity) )
 				{
-					#ifdef __Rotary_UseInducedLatency__
 					control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_Velocity),dTime_s);
-					#else
-					const double Encoder_ToUse=ComputeVelocityWithTolerance(Encoder_Velocity,Predicted_Encoder_Velocity,CurrentVelocity);
-					control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_ToUse),dTime_s);
-					#endif
 					m_CalibratedScaler=MAX_SPEED+control;
 				}
 			}
 			else
 			{
-				#ifdef __Rotary_UseInducedLatency__
 				m_ErrorOffset=m_PIDController(CurrentVelocity,Encoder_Velocity,dTime_s);
-				#else
-				const double Encoder_ToUse=ComputeVelocityWithTolerance(Encoder_Velocity,Predicted_Encoder_Velocity,CurrentVelocity);
-				m_ErrorOffset=m_PIDController(CurrentVelocity,Encoder_ToUse,dTime_s);
-				#endif
 				//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 				m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
 			}
@@ -487,14 +441,8 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 	#ifdef __DebugLUA__
 	if (m_Rotary_Props.PID_Console_Dump && (Encoder_Velocity!=0.0))
 	{
-		#ifndef __Rotary_ShowEncoderPrediction__
 		if (m_Rotary_Props.UseAggressiveStop)
 			printf("v=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset);
-		else
-			printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
-		#else
-		printf("v=%.2f p=%.2f e=%.2f y=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,Predicted_Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
-		#endif
 	}
 	#endif
 
@@ -593,7 +541,6 @@ void Rotary_Properties::Init()
 	props.EncoderToRS_Ratio=1.0;
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
-	props.InputLatency=0.0;
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
@@ -638,7 +585,6 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		script.GetField("tolerance", NULL, NULL, &m_RoteryProps.PrecisionTolerance);
-		script.GetField("latency", NULL, NULL, &m_RoteryProps.InputLatency);
 
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);

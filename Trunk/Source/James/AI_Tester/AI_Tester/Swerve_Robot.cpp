@@ -539,9 +539,6 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		m_DriveProps.RoteryProps().PrecisionTolerance=m_SwerveRobotProps.PrecisionTolerance;
 		//TODO see if we want this for swivel
 
-		script.GetField("latency", NULL, NULL, &m_SwerveRobotProps.InputLatency);
-		m_DriveProps.RoteryProps().InputLatency=m_SwerveRobotProps.InputLatency;
-
 		err = script.GetField("heading_latency", NULL, NULL, &m_SwerveRobotProps.HeadingLatency);
 		if (err)
 			m_SwerveRobotProps.HeadingLatency=m_SwerveRobotProps.InputLatency+0.100;  //Give a good default without needing to add this property
