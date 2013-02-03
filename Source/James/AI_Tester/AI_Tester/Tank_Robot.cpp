@@ -508,6 +508,32 @@ void Tank_Robot::SetAttitude(double radians)
 	__super::SetAttitude(radians);
 }
 
+void Tank_Robot::UpdateTankProps(const Tank_Robot_Props &TankProps)
+{
+	//This is very similar to Initialize() but only for things we are interested in changing safely dynamically
+	m_TankRobotProps=TankProps;
+	m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
+	m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
+
+	const double OutputRange=MAX_SPEED*0.875;  //create a small range
+	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
+	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Left.SetOutputRange(-InputRange,OutputRange);
+	m_PIDController_Left.Enable();
+	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
+	m_PIDController_Right.Enable();
+	#ifdef __Tank_UseScalerPID__
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
+	#else
+	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
+	#endif
+	//This can be dynamically called so we always call it
+	SetUseEncoders(!m_TankRobotProps.IsOpen);
+	m_PID_Input_Latency_Left.SetLatency(m_TankRobotProps.InputLatency);
+	m_PID_Input_Latency_Right.SetLatency(m_TankRobotProps.InputLatency);
+}
+
   /***********************************************************************************************************************************/
  /*													Tank_Robot_Properties															*/
 /***********************************************************************************************************************************/

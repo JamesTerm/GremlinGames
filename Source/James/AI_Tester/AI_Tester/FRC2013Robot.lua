@@ -158,7 +158,42 @@ MainRobot = {
 			max_accel_reverse=200,			--The wheel may some time to ramp up
 			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
-		climb_gear = 
+		climb_gear_lift = 
+		{
+			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
+			--cause slipping if driver "high sticks" to start or stop quickly.
+			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
+			MaxTorqueYaw = 25 * 2, 
+			
+			MAX_SPEED = ClimbGearSpeed,
+			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
+			BRAKE = ACCEL, 
+			-- Turn Rates (deg/sec) This is always correct do not change
+			heading_rad = 0,  --No turning for climbing mode
+			
+			tank_drive =
+			{
+				is_closed=1,						--Must be on
+				show_pid_dump='no',
+				ds_display_row=-1,
+				left_pid=
+				{p=200, i=0, d=50},
+				right_pid=
+				{p=200, i=0, d=50},					--These should always match, but able to be made different
+				latency=0.300,
+				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
+				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
+				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+				voltage_multiply=1.0,				--May be reversed using -1.0
+				curve_voltage=
+				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+				reverse_steering='no',
+				left_encoder_reversed='no',
+				right_encoder_reversed='no',
+				inv_max_accel = 0.0  --solved empiracally
+			}
+		},
+		climb_gear_drop = 
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
 			--cause slipping if driver "high sticks" to start or stop quickly.
