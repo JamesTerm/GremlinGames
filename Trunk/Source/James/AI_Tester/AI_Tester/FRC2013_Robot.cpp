@@ -328,7 +328,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
-		m_SetClimbGear(false)
+		m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
 	m_IsTargeting=true;
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
@@ -769,6 +769,19 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 	}
 }
 
+void FRC_2013_Robot::SetClimbGear_LeftButton(bool on)
+{
+	m_SetClimbLeft=on;
+	if (m_SetClimbLeft&&m_SetClimbRight)
+		SetClimbGear(true);
+}
+void FRC_2013_Robot::SetClimbGear_RightButton(bool on)
+{
+	m_SetClimbRight=on;
+	if (m_SetClimbLeft&&m_SetClimbRight)
+		SetClimbGear(true);
+}
+
 
 void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 {
@@ -896,6 +909,8 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
 		em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
 		em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
+		em->EventOnOff_Map["Robot_SetClimbGear_LeftButton"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear_LeftButton);
+		em->EventOnOff_Map["Robot_SetClimbGear_RightButton"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear_RightButton);
 		
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"].Subscribe(ehl, *this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -915,6 +930,8 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
 		em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
 		em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
+		em->EventOnOff_Map["Robot_SetClimbGear_LeftButton"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear_LeftButton);
+		em->EventOnOff_Map["Robot_SetClimbGear_RightButton"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear_RightButton);
 
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"]  .Remove(*this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -1136,6 +1153,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Flippers_Advance","Flippers_Retract",
 	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
 	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
+	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
 	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
