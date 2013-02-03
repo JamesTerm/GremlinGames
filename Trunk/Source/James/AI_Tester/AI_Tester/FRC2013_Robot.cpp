@@ -729,7 +729,6 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 		if (on)
 		{
 			printf("Now in ClimbGear\n");
-			UpdateShipProperties(m_RobotProps.GetClimbGearProps().GetShipProps());
 			m_SetClimbGear=true;
 
 			Goal *oldgoal=ClearGoal();
@@ -751,7 +750,10 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 		if (!on)
 		{
 			printf("Now in DriveGear\n");
+			//Ship first then tank  (so PID settings have correct ship props)
 			UpdateShipProperties(m_RobotProps.GetShipProps());
+			UpdateTankProps(m_RobotProps.GetTankRobotProps());
+
 			m_SetClimbGear=false;
 			Goal *oldgoal=ClearGoal();
 			if (oldgoal)
@@ -799,14 +801,23 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
 		m_RobotControl->CloseSolenoid(eEngageDropWinch);
 		m_RobotControl->OpenSolenoid(eEngageDriveTrain);
+		//Ship first then tank  (so PID settings have correct ship props)
+		UpdateShipProperties(m_RobotProps.GetShipProps());
+		UpdateTankProps(m_RobotProps.GetTankRobotProps());
 		break;
 	case eClimbState_RaiseLift:
 		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
 		m_RobotControl->CloseSolenoid(eEngageDropWinch);
 		m_RobotControl->OpenSolenoid(eEngageLiftWinch);
+		//Ship first then tank  (so PID settings have correct ship props)
+		UpdateShipProperties(m_RobotProps.GetClimbGearLiftProps().GetShipProps());
+		UpdateTankProps(m_RobotProps.GetClimbGearLiftProps().GetTankRobotProps());
 		break;
 	case eClimbState_DropLift:
 		m_RobotControl->OpenSolenoid(eEngageDropWinch);
+		//Ship first then tank  (so PID settings have correct ship props)
+		UpdateShipProperties(m_RobotProps.GetClimbGearDropProps().GetShipProps());
+		UpdateTankProps(m_RobotProps.GetClimbGearDropProps().GetTankRobotProps());
 		break;
 	case eClimbState_DropLift2:
 		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
@@ -1202,14 +1213,21 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		m_ClimbGearProps=*this;  //copy redundant data first
-		err = script.GetFieldTable("climb_gear");
+		m_ClimbGearLiftProps=*this;  //copy redundant data first
+		err = script.GetFieldTable("climb_gear_lift");
 		if (!err)
 		{
-			m_ClimbGearProps.LoadFromScript(script);
+			m_ClimbGearLiftProps.LoadFromScript(script);
 			script.Pop();
 		}
 
+		m_ClimbGearDropProps=*this;  //copy redundant data first
+		err = script.GetFieldTable("climb_gear_drop");
+		if (!err)
+		{
+			m_ClimbGearDropProps.LoadFromScript(script);
+			script.Pop();
+		}
 		
 		err = script.GetFieldTable("key_1");
 		if (!err) ProcessKey(m_FRC2013RobotProps,script,0);

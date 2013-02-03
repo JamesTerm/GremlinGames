@@ -75,6 +75,8 @@ class Tank_Robot : public Ship_Tester,
 		void SetIsAutonomous(bool IsAutonomous);
 		virtual void TimeChange(double dTime_s);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
+		//Give ability to change properties
+		void UpdateTankProps(const Tank_Robot_Props &TankProps);
 	protected:
 		friend Tank_Robot_UI;
 

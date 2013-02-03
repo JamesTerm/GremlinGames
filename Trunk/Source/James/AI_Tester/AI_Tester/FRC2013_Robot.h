@@ -72,13 +72,15 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
-		const Tank_Robot_Properties &GetClimbGearProps() const {return m_ClimbGearProps;}
+		const Tank_Robot_Properties &GetClimbGearLiftProps() const {return m_ClimbGearLiftProps;}
+		const Tank_Robot_Properties &GetClimbGearDropProps() const {return m_ClimbGearDropProps;}
 		const FRC_2013_Robot_Props &GetFRC2013RobotProps() const {return m_FRC2013RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
 		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
-		Tank_Robot_Properties m_ClimbGearProps;
+		Tank_Robot_Properties m_ClimbGearLiftProps;
+		Tank_Robot_Properties m_ClimbGearDropProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
 
 		class ControlEvents : public LUA_Controls_Properties_Interface
