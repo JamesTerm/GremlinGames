@@ -570,7 +570,9 @@ void Ship_2D::TimeChange(double dTime_s)
 	if (afterBurnerOn || afterBurnerBrakeOn)
 	{
 		// Set the maximum restraint values based on Burning or Braking afterburners
-		AccRestraintPositive[1]= afterBurnerOn ? AFTERBURNER_ACCEL : AFTERBURNER_BRAKE;
+		//TODO this property should be the MaxAcceleration type of property where AFTERBURNER_ACCEL is used for keyboard acceleration
+		//AccRestraintPositive[1]= afterBurnerOn ? AFTERBURNER_ACCEL : AFTERBURNER_BRAKE;
+
 		//This is not perfect in that all the accelerated and deceleration vector elements need to have this ramp value for non-sliding mode
 		//We may alternately consider putting it in slide mode when using afterburner
 		m_Physics.GetLinearAccelerationRates().AccDeltaPos=Vec2d(EngineRampAfterBurner,EngineRampAfterBurner);
@@ -958,6 +960,11 @@ void Ship_Tester::SetAttitude(double radians)
 	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
 	writePtr->m_att_r=radians;
 	UpdatePosAtt();
+}
+
+const Goal *Ship_Tester::GetGoal() const 
+{
+	return GetController()->m_Goal;
 }
 
 Goal *Ship_Tester::ClearGoal()
