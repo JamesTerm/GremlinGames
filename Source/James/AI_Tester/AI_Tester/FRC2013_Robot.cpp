@@ -826,6 +826,15 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 	}
 }
 
+bool FRC_2013_Robot::IsStopped() const
+{
+	double EncoderLeftVelocity,EncoderRightVelocity;
+	m_RobotControl->GetLeftRightVelocity(EncoderLeftVelocity,EncoderRightVelocity);
+	//It was very tempting to add these, but they could cancel each other out in a perfect turn case
+	return (IsZero(EncoderLeftVelocity)&&IsZero(EncoderRightVelocity));
+}
+
+//Keep around as a fall back template if the targeting is not working
 
 //void FRC_2013_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 //{
@@ -1451,6 +1460,56 @@ FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ChangeClimbState::
 }
 
   /***********************************************************************************************************************************/
+ /*													FRC_2013_Goals::ResetPosition													*/
+/***********************************************************************************************************************************/
+
+FRC_2013_Goals::ResetPosition::ResetPosition(FRC_2013_Robot &robot): m_Robot(robot),m_Timer(0.0),m_TimeStopped(-1.0) 
+{
+	m_Status=eInactive;
+}
+
+void FRC_2013_Goals::ResetPosition::Activate() 
+{
+	m_Status=eActive;
+	m_Robot.GetController()->GetUIController_RW()->Stop();  //ensure the robot is stopped
+}
+
+FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ResetPosition::Process(double dTime_s) 
+{
+	ActivateIfInactive();
+	if (m_Timer<0.500)
+	{
+		if (!m_Robot.IsStopped()) 
+			m_TimeStopped=-1.0;
+		else //It is stopped this iteration
+		{
+			//Check first run case... reset to zero
+			if (m_TimeStopped==-1.0)
+				m_TimeStopped=0.0;
+			m_TimeStopped+=dTime_s;  //count how much time its been at zero
+		}
+		//If we've been stopped long enough... reset position and complete goal
+		if (m_TimeStopped>0.100)
+		{
+			//before resetting the position... ensure there is no movement
+			m_Robot.ResetPos();
+			m_Status=eCompleted;
+		}
+	}
+	else
+	{
+		m_Status=eFailed;
+		printf("  ***ResetPosition::Process time exceeded- sending failed status\n");
+		//For robot code... do not assert here let code run its course perhaps a kill switch or a reattempt could happen
+		//simulation code should fix problem right away if this happens
+		#ifdef AI_TesterCode
+		assert(false);
+		#endif
+	}
+	return m_Status;
+}
+
+  /***********************************************************************************************************************************/
  /*															FRC_2013_Goals															*/
 /***********************************************************************************************************************************/
 
@@ -1475,7 +1534,7 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 {
 	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
 	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
-	// reset the coordinates to use way points
+	// reset the coordinates to use way points.  This will also ensure there is no movement
 	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
 	ChangeClimbState *goal_decouple_drive_1=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);		   //de-couple the drive via pneumatic 1
 	ChangeClimbState *goal_couple_elevator_UP=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);  //couple the elevator UP winch via pneumatic 2
@@ -1486,11 +1545,13 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	wp.Power=1.0;
 	Goal_Ship_MoveToPosition *goal_spool_lift_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
 
+	//This also takes care of ... engage your control loop 'brake mode'.  By ensuring that there is no movement before resetting the position
+	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
+
 	//de-couple elevator UP winch, and engage elevator DOWN winch
 	ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift);
 	ChangeClimbState *goal_couple_elevator_DOWN_releaseLiftWinch=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift2);
 
-	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
 	wp.Position[1]=climb_props.DropDistance;
 	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
 
@@ -1501,9 +1562,9 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	//Inserted in reverse since this is LIFO stack list
 	//MainGoal->AddSubgoal(goal_JamGear);
 	MainGoal->AddSubgoal(goal_spool_drop_winch);
-	MainGoal->AddSubgoal(goal_reset_2);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
+	MainGoal->AddSubgoal(goal_reset_2);
 	MainGoal->AddSubgoal(goal_spool_lift_winch);
 	MainGoal->AddSubgoal(goal_couple_elevator_UP);
 	MainGoal->AddSubgoal(goal_decouple_drive_1);

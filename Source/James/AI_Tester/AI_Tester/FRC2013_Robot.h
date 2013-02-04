@@ -247,9 +247,8 @@ class FRC_2013_Robot : public Tank_Robot
 		PowerWheels &GetPowerWheels();
 		void SetTarget(Targets target);
 		const FRC_2013_Robot_Properties &GetRobotProps() const;
-		//TODO Omit
-		//void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
 		void SetClimbState(ClimbState climb_state);
+		bool IsStopped() const;  //returns true if both encoders read zero on this iteration
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -349,11 +348,13 @@ class FRC_2013_Goals
 		{
 		private:
 			FRC_2013_Robot &m_Robot;
+			double m_Timer;  //keep track of how much time has elapsed
+			double m_TimeStopped;  //keep track of how much *consecutive* time it has been stopped
 			bool m_Terminate;
 		public:
-			ResetPosition(FRC_2013_Robot &robot): m_Robot(robot) {m_Status=eInactive;}
-			virtual void Activate() {m_Status=eActive;m_Robot.ResetPos();}
-			virtual Goal_Status Process(double dTime_s) {ActivateIfInactive();m_Status=eCompleted;return eCompleted;}
+			ResetPosition(FRC_2013_Robot &robot);
+			virtual void Activate();
+			virtual Goal_Status Process(double dTime_s);
 			virtual void Terminate() {m_Terminate=true;}
 		};
 
