@@ -23,7 +23,6 @@ using namespace std;
 //namespace Scripting=GG_Framework::Logic::Scripting;
 namespace Scripting=Framework::Scripting;
 
-double ComputeVelocityWithTolerance(double EncoderVelocity,double PredictedEncoderVelocity,double Velocity);
 
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/
@@ -88,8 +87,6 @@ void Tank_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properti
 	#endif
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
-	m_PID_Input_Latency_Left.SetLatency(m_TankRobotProps.InputLatency);
-	m_PID_Input_Latency_Right.SetLatency(m_TankRobotProps.InputLatency);
 	m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetTankRobotProps().TankSteering_Tolerance);
 }
 void Tank_Robot::Reset(bool ResetPosition)
@@ -159,18 +156,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	//(looked like a critical dampening recovery).
 	//  [7/27/2012 JamesK]
 
-	#ifdef __Tank_UseInducedLatency__
-	const double LeftVelocity=m_PID_Input_Latency_Left(
-		min(max(GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED),dTime_s);
-	const double RightVelocity=m_PID_Input_Latency_Right(
-		min(max(GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED),dTime_s);
-	#else
 	const double LeftVelocity=min(max(m_VehicleDrive->GetLeftVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
 	const double RightVelocity=min(max(m_VehicleDrive->GetRightVelocity(),-ENGAGED_MAX_SPEED),ENGAGED_MAX_SPEED);
-
-	const double Predicted_Encoder_LeftVelocity=m_PID_Input_Latency_Left(Encoder_LeftVelocity,LeftVelocity,dTime_s);
-	const double Predicted_Encoder_RightVelocity=m_PID_Input_Latency_Right(Encoder_RightVelocity,RightVelocity,dTime_s);
-	#endif
 
 	if (m_UsingEncoders)
 	{
@@ -190,15 +177,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		}
 		#else
 
-		#ifdef __Tank_UseInducedLatency__
 		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
 		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
-		#else
-		const double Encoder_Left_ToUse=ComputeVelocityWithTolerance(Encoder_LeftVelocity,Predicted_Encoder_LeftVelocity,LeftVelocity);
-		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_Left_ToUse,dTime_s);
-		const double Encoder_Right_ToUse=ComputeVelocityWithTolerance(Encoder_RightVelocity,Predicted_Encoder_RightVelocity,RightVelocity);
-		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_Right_ToUse,dTime_s);
-		#endif
 
 		//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 		m_ErrorOffset_Left=fabs(m_ErrorOffset_Left)>m_TankRobotProps.PrecisionTolerance?m_ErrorOffset_Left:0.0;
@@ -228,11 +208,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump &&  ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			#ifndef __Tank_ShowEncoderPrediction__
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
-			#else
-			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Predicted_Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Predicted_Encoder_RightVelocity,m_ErrorOffset_Right);
-			#endif
 		}
 		#endif
 
@@ -257,11 +233,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump && ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			#ifndef __Tank_ShowEncoderPrediction__
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
-			#else
-			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Predicted_Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Predicted_Encoder_RightVelocity,m_ErrorOffset_Right);
-			#endif
 		}
 		#endif
 	}
@@ -413,8 +385,9 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
 			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
 			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
-			LeftVoltage+=LeftAcceleration*m_TankRobotProps.InverseMaxAccel;
-			RightVoltage+=RightAcceleration*m_TankRobotProps.InverseMaxAccel;
+			//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
+			LeftVoltage+=LeftAcceleration*((LeftAcceleration * LeftVelocity > 0)? m_TankRobotProps.InverseMaxAccel : m_TankRobotProps.InverseMaxDecel);
+			RightVoltage+=RightAcceleration*((RightAcceleration * RightVelocity > 0) ? m_TankRobotProps.InverseMaxAccel : m_TankRobotProps.InverseMaxDecel);
 
 			//Keep track of previous velocity to compute acceleration
 			m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
@@ -512,6 +485,30 @@ void Tank_Robot::SetAttitude(double radians)
 	__super::SetAttitude(radians);
 }
 
+void Tank_Robot::UpdateTankProps(const Tank_Robot_Props &TankProps)
+{
+	//This is very similar to Initialize() but only for things we are interested in changing safely dynamically
+	m_TankRobotProps=TankProps;
+	m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
+	m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
+
+	const double OutputRange=MAX_SPEED*0.875;  //create a small range
+	const double InputRange=20.0;  //create a large enough number that can divide out the voltage and small enough to recover quickly
+	m_PIDController_Left.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Left.SetOutputRange(-InputRange,OutputRange);
+	m_PIDController_Left.Enable();
+	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
+	m_PIDController_Right.Enable();
+	#ifdef __Tank_UseScalerPID__
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
+	#else
+	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
+	#endif
+	//This can be dynamically called so we always call it
+	SetUseEncoders(!m_TankRobotProps.IsOpen);
+}
+
   /***********************************************************************************************************************************/
  /*													Tank_Robot_Properties															*/
 /***********************************************************************************************************************************/
@@ -526,7 +523,6 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	const double c_WheelDiameter=0.1524;  //6 inches
 	props.WheelDiameter=c_WheelDiameter;
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
-	props.InputLatency=0.0;
 	props.HeadingLatency=0.0;
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
 	props.VoltageScalar=1.0;  //May need to be reversed
@@ -545,7 +541,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
 	props.TankSteering_Tolerance=0.05;
-	props.InverseMaxAccel=0.0;
+	props.InverseMaxAccel=props.InverseMaxDecel=0.0;
 	m_TankRobotProps=props;
 }
 
@@ -604,10 +600,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		script.GetField("tolerance", NULL, NULL, &m_TankRobotProps.PrecisionTolerance);
-		script.GetField("latency", NULL, NULL, &m_TankRobotProps.InputLatency);
 		err = script.GetField("heading_latency", NULL, NULL, &m_TankRobotProps.HeadingLatency);
-		if (err)
-			m_TankRobotProps.HeadingLatency=m_TankRobotProps.InputLatency+0.100;  //Give a good default without needing to add this property
 		script.GetField("left_max_offset", NULL, NULL, &m_TankRobotProps.LeftMaxSpeedOffset);
 		script.GetField("right_max_offset", NULL, NULL, &m_TankRobotProps.RightMaxSpeedOffset);
 		script.GetField("drive_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar[1]);
@@ -669,6 +662,8 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		}
 
 		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel);
+		m_TankRobotProps.InverseMaxDecel=m_TankRobotProps.InverseMaxAccel;  //set up deceleration to be the same value by default
+		script.GetField("inv_max_decel", NULL, NULL, &m_TankRobotProps.InverseMaxDecel);
 		script.Pop(); 
 	}
 	err = script.GetFieldTable("controls");
