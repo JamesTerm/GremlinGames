@@ -11,13 +11,13 @@ struct Rotary_Props
 	//Note: This is not necessarily the multiply to match the motor speed as there may be some gearing to the system as well
 	double EncoderToRS_Ratio;
 	double PID[3]; //p,i,d
-	double InputLatency;  //Used with PID to help avoid oscillation in the error control (We can make one for each if needed)
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	//Currently supporting 4 terms in polynomial equation
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
+	double InverseMaxDecel;  //used for deceleration case
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
 	{
