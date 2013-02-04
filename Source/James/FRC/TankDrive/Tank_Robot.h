@@ -1,7 +1,5 @@
 #pragma once
 #undef __Tank_UseScalerPID__
-#undef __Tank_UseInducedLatency__
-#undef __Tank_ShowEncoderPrediction__
 
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
 class Tank_Drive_Control_Interface
@@ -32,7 +30,6 @@ struct Tank_Robot_Props
 	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
 	double LeftPID[3]; //p,i,d
 	double RightPID[3]; //p,i,d
-	double InputLatency;  //Used with PID to help avoid oscillation in the error control (We can make one for each if needed)
 	double HeadingLatency; //Should be about 100ms + Input Latency... this will establish intervals to sync up the heading with entity
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	double LeftMaxSpeedOffset;	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
@@ -49,6 +46,7 @@ struct Tank_Robot_Props
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
+	double InverseMaxDecel;  //used for deceleration case
 	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
 	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
 	bool LeftEncoderReversed,RightEncoderReversed;
@@ -74,6 +72,8 @@ class Tank_Robot : public Ship_Tester,
 		void SetIsAutonomous(bool IsAutonomous);
 		virtual void TimeChange(double dTime_s);
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
+		//Give ability to change properties
+		void UpdateTankProps(const Tank_Robot_Props &TankProps);
 	protected:
 		//friend Tank_Robot_UI;
 
@@ -125,11 +125,6 @@ class Tank_Robot : public Ship_Tester,
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderAngularVelocity;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
-		#ifdef __Tank_UseInducedLatency__
-		LatencyFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
-		#else
-		LatencyPredictionFilter m_PID_Input_Latency_Left,m_PID_Input_Latency_Right;
-		#endif
 		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
 		double m_Heading;  //We take over the heading from physics
 		double m_HeadingUpdateTimer;
