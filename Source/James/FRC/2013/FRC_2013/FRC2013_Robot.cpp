@@ -336,11 +336,11 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PitchAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),m_SetClimbGear(false)
+		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
+		m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
 	m_IsTargeting=true;
 	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
-	//m_DriveTargetSelection=eDrive_NoTarget;
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -379,6 +379,11 @@ void FRC_2013_Robot::ResetPos()
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_BallConveyorSystem.ResetPos();
+	if (!m_SetClimbGear)
+	{
+		//ensure pneumatics are in drive
+		SetClimbState(eClimbState_Drive);
+	}
 }
 
 FRC_2013_Robot::BallConveyorSystem &FRC_2013_Robot::GetBallConveyorSystem()
@@ -723,39 +728,124 @@ void FRC_2013_Robot::SetTargetingValue(double Value)
 void FRC_2013_Robot::SetClimbGear(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	m_SetClimbGear=on;
-	SetBypassPosAtt_Update(true);
-	m_PitchRamp.SetBypassPos_Update(true);
-
-	//Now for some real magic with the properties!
-	__super::Initialize(*GetEventMap(),m_SetClimbGear?&m_RobotProps.GetClimbGearProps():&m_RobotProps);
-	SetBypassPosAtt_Update(false);
-	m_PitchRamp.SetBypassPos_Update(false);
-
-	m_RobotControl->OpenSolenoid(eUseClimbGear,on);
-}
-
-void FRC_2013_Robot::SetClimbGearValue(double Value)
-{
-	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	//printf("\r%f       ",Value);
-	if (Value > 0.0)
+	bool ClimbAgain=false;
+	if (on)  //check to see if we are done with previous climb
 	{
-		if (m_SetClimbGear)
+		const Goal *goal=GetGoal();
+		if ((!goal) || (goal->GetStatus()==Goal::eCompleted) || (goal->GetStatus()==Goal::eInactive))
+			ClimbAgain=true;
+	}
+	if ((!m_SetClimbGear)||(ClimbAgain))
+	{
+		if (on)
 		{
-			SetClimbGear(false);
-			printf("Now in HighGear\n");
+			printf("Now in ClimbGear\n");
+			m_SetClimbGear=true;
+
+			Goal *oldgoal=ClearGoal();
+			if (oldgoal)
+				delete oldgoal;
+
+			Goal *goal=NULL;
+			goal=FRC_2013_Goals::Climb(this);
+			if (goal)
+				goal->Activate(); //now with the goal(s) loaded activate it
+			SetGoal(goal);
+
+			//Now to turn on auto pilot (disabling controls)
+			GetController()->GetUIController_RW()->SetAutoPilot(true);
 		}
 	}
 	else
 	{
-		if (!m_SetClimbGear)
+		if (!on)
 		{
-			SetClimbGear(true);
-			printf("Now in ClimbGear\n");
+			printf("Now in DriveGear\n");
+			//Ship first then tank  (so PID settings have correct ship props)
+			UpdateShipProperties(m_RobotProps.GetShipProps());
+			UpdateTankProps(m_RobotProps.GetTankRobotProps());
+
+			m_SetClimbGear=false;
+			Goal *oldgoal=ClearGoal();
+			if (oldgoal)
+				delete oldgoal;
+			SetGoal(NULL);
+			//Note: may want this to be a goal that waits... it will probably be ok though
+			GetController()->GetUIController_RW()->Stop();  //make sure nothing is moving!
+			//Now to turn off auto pilot (regain controls)
+			//Note: for the robot this acts like a kill switch, so we'll want to leave controls disabled
+			//for the simulation this will restore it back to drive (since it doesn't matter what state the pneumatics are in
+			#ifdef AI_TesterCode
+			GetController()->GetUIController_RW()->SetAutoPilot(false);
+			#endif
 		}
 	}
 }
+
+void FRC_2013_Robot::SetClimbGear_LeftButton(bool on)
+{
+	m_SetClimbLeft=on;
+	if (m_SetClimbLeft&&m_SetClimbRight)
+		SetClimbGear(true);
+}
+void FRC_2013_Robot::SetClimbGear_RightButton(bool on)
+{
+	m_SetClimbRight=on;
+	if (m_SetClimbLeft&&m_SetClimbRight)
+		SetClimbGear(true);
+}
+
+
+void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
+{
+	//Note: the order of each of these will disengage others before engage... as a fall back precaution, but the client code
+	//really needs to set state to neutral with a wait time before going into the next state so that there is never a time when
+	//multiple gears are engaged at any moment
+	switch (climb_state)
+	{
+	case eClimbState_Neutral:
+		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
+		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
+		m_RobotControl->CloseSolenoid(eEngageDropWinch);
+		break;
+	case eClimbState_Drive:
+		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
+		m_RobotControl->CloseSolenoid(eEngageDropWinch);
+		m_RobotControl->OpenSolenoid(eEngageDriveTrain);
+		//Ship first then tank  (so PID settings have correct ship props)
+		UpdateShipProperties(m_RobotProps.GetShipProps());
+		UpdateTankProps(m_RobotProps.GetTankRobotProps());
+		break;
+	case eClimbState_RaiseLift:
+		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
+		m_RobotControl->CloseSolenoid(eEngageDropWinch);
+		m_RobotControl->OpenSolenoid(eEngageLiftWinch);
+		//Ship first then tank  (so PID settings have correct ship props)
+		UpdateShipProperties(m_RobotProps.GetClimbGearLiftProps().GetShipProps());
+		UpdateTankProps(m_RobotProps.GetClimbGearLiftProps().GetTankRobotProps());
+		break;
+	case eClimbState_DropLift:
+		m_RobotControl->OpenSolenoid(eEngageDropWinch);
+		//Ship first then tank  (so PID settings have correct ship props)
+		UpdateShipProperties(m_RobotProps.GetClimbGearDropProps().GetShipProps());
+		UpdateTankProps(m_RobotProps.GetClimbGearDropProps().GetTankRobotProps());
+		break;
+	case eClimbState_DropLift2:
+		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
+		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
+		break;
+	}
+}
+
+bool FRC_2013_Robot::IsStopped() const
+{
+	double EncoderLeftVelocity,EncoderRightVelocity;
+	m_RobotControl->GetLeftRightVelocity(EncoderLeftVelocity,EncoderRightVelocity);
+	//It was very tempting to add these, but they could cancel each other out in a perfect turn case
+	return (IsZero(EncoderLeftVelocity)&&IsZero(EncoderRightVelocity));
+}
+
+//Keep around as a fall back template if the targeting is not working
 
 //void FRC_2013_Robot::SetPresetPosition(size_t index,bool IgnoreOrientation)
 //{
@@ -845,13 +935,14 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOff);
-		em->EventOnOff_Map["Robot_Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2013_Robot::SetFlipperPneumatic);
+		//em->EventOnOff_Map["Robot_Flippers_Solenoid"].Subscribe(ehl,*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
 		em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
 		em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
 		em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
-		em->EventValue_Map["Robot_SetClimbGearValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetClimbGearValue);
-
+		em->EventOnOff_Map["Robot_SetClimbGear_LeftButton"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear_LeftButton);
+		em->EventOnOff_Map["Robot_SetClimbGear_RightButton"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear_RightButton);
+		
 		em->EventValue_Map["Robot_SetPresetPOV"].Subscribe(ehl, *this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"].Subscribe(ehl, *this, &FRC_2013_Robot::Robot_SetCreepMode);
 	}
@@ -865,12 +956,13 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOff);
-		em->EventOnOff_Map["Robot_Flippers_Solenoid"]  .Remove(*this, &FRC_2013_Robot::SetFlipperPneumatic);
+		//em->EventOnOff_Map["Robot_Flippers_Solenoid"]  .Remove(*this, &FRC_2013_Robot::SetFlipperPneumatic);
 
 		em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
 		em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
 		em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
-		em->EventValue_Map["Robot_SetClimbGearValue"].Remove(*this, &FRC_2013_Robot::SetClimbGearValue);
+		em->EventOnOff_Map["Robot_SetClimbGear_LeftButton"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear_LeftButton);
+		em->EventOnOff_Map["Robot_SetClimbGear_RightButton"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear_RightButton);
 
 		em->EventValue_Map["Robot_SetPresetPOV"]  .Remove(*this, &FRC_2013_Robot::SetPresetPOV);
 		em->EventOnOff_Map["Robot_SetCreepMode"]  .Remove(*this, &FRC_2013_Robot::Robot_SetCreepMode);
@@ -981,6 +1073,9 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		ball_2.InitialWait=4.0;
 		ball_2.TimeOutWait=-1.0;
 		ball_2.ToleranceThreshold=0.0;
+		FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
+		climb_props.LiftDistance=1.0;
+		climb_props.DropDistance=-1.0;
 		m_FRC2013RobotProps=props;
 	}
 	{
@@ -1088,7 +1183,8 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
 	"Flippers_Advance","Flippers_Retract",
 	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
-	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff","Robot_SetClimbGearValue",
+	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
+	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
 	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
@@ -1137,14 +1233,21 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		m_ClimbGearProps=*this;  //copy redundant data first
-		err = script.GetFieldTable("climb_gear");
+		m_ClimbGearLiftProps=*this;  //copy redundant data first
+		err = script.GetFieldTable("climb_gear_lift");
 		if (!err)
 		{
-			m_ClimbGearProps.LoadFromScript(script);
+			m_ClimbGearLiftProps.LoadFromScript(script);
 			script.Pop();
 		}
 
+		m_ClimbGearDropProps=*this;  //copy redundant data first
+		err = script.GetFieldTable("climb_gear_drop");
+		if (!err)
+		{
+			m_ClimbGearDropProps.LoadFromScript(script);
+			script.Pop();
+		}
 		
 		err = script.GetFieldTable("key_1");
 		if (!err) ProcessKey(m_FRC2013RobotProps,script,0);
@@ -1252,6 +1355,23 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.GetField("x_right_arc", NULL, NULL, &auton.XRightArc);
 			script.Pop();
 		}
+
+		err = script.GetFieldTable("climb");
+		if (!err)
+		{
+			struct FRC_2013_Robot_Props::Climb_Properties &climb=m_FRC2013RobotProps.Climb_Props;
+			{
+				double length;
+				err = script.GetField("lift_ft", NULL, NULL,&length);
+				if (!err)
+					climb.LiftDistance=Feet2Meters(length);
+				err = script.GetField("drop_ft", NULL, NULL,&length);
+				if (!err)
+					climb.DropDistance=Feet2Meters(length);
+			}
+			script.Pop();
+		}
+
 		//This is the main robot settings pop
 		script.Pop();
 	}
@@ -1319,16 +1439,23 @@ Goal::Goal_Status FRC_2013_Goals::WaitForBall::Process(double dTime_s)
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2013_Goals::OperateSolenoid													*/
+ /*													FRC_2013_Goals::ChangeClimbState												*/
 /***********************************************************************************************************************************/
 
-FRC_2013_Goals::OperateSolenoid::OperateSolenoid(FRC_2013_Robot &robot,FRC_2013_Robot::SolenoidDevices SolenoidDevice,bool Open) : m_Robot(robot),
-m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsOpen(Open) 
+FRC_2013_Goals::ChangeClimbState::ChangeClimbState(FRC_2013_Robot &robot,FRC_2013_Robot::ClimbState climb_state,double TimeToTakeEffect_s) : m_Robot(robot),
+m_ClimbState(climb_state),m_TimeToWait(TimeToTakeEffect_s),m_Terminate(false)
 {	
 	m_Status=eInactive;
+	m_TimeAccrued=0.0;
 }
 
-FRC_2013_Goals::OperateSolenoid::Goal_Status FRC_2013_Goals::OperateSolenoid::Process(double dTime_s)
+void FRC_2013_Goals::ChangeClimbState::Activate() 
+{
+	m_Robot.SetClimbState(m_ClimbState);
+	m_Status=eActive;
+}
+
+FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ChangeClimbState::Process(double dTime_s)
 {
 	if (m_Terminate)
 	{
@@ -1337,16 +1464,59 @@ FRC_2013_Goals::OperateSolenoid::Goal_Status FRC_2013_Goals::OperateSolenoid::Pr
 		return m_Status;
 	}
 	ActivateIfInactive();
-	switch (m_SolenoidDevice)
+	m_TimeAccrued+=dTime_s;
+	if (m_TimeAccrued>m_TimeToWait)
+		m_Status=eCompleted;
+	return m_Status;
+}
+
+  /***********************************************************************************************************************************/
+ /*													FRC_2013_Goals::ResetPosition													*/
+/***********************************************************************************************************************************/
+
+FRC_2013_Goals::ResetPosition::ResetPosition(FRC_2013_Robot &robot): m_Robot(robot),m_Timer(0.0),m_TimeStopped(-1.0) 
+{
+	m_Status=eInactive;
+}
+
+void FRC_2013_Goals::ResetPosition::Activate() 
+{
+	m_Status=eActive;
+	m_Robot.GetController()->GetUIController_RW()->Stop();  //ensure the robot is stopped
+}
+
+FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ResetPosition::Process(double dTime_s) 
+{
+	ActivateIfInactive();
+	if (m_Timer<0.500)
 	{
-		case FRC_2013_Robot::eFlipperDown:
-			m_Robot.SetFlipperPneumatic(m_IsOpen);
-			break;
-		case FRC_2013_Robot::eUseClimbGear:
-			assert(false);
-			break;
+		if (!m_Robot.IsStopped()) 
+			m_TimeStopped=-1.0;
+		else //It is stopped this iteration
+		{
+			//Check first run case... reset to zero
+			if (m_TimeStopped==-1.0)
+				m_TimeStopped=0.0;
+			m_TimeStopped+=dTime_s;  //count how much time its been at zero
+		}
+		//If we've been stopped long enough... reset position and complete goal
+		if (m_TimeStopped>0.100)
+		{
+			//before resetting the position... ensure there is no movement
+			m_Robot.ResetPos();
+			m_Status=eCompleted;
+		}
 	}
-	m_Status=eCompleted;
+	else
+	{
+		m_Status=eFailed;
+		printf("  ***ResetPosition::Process time exceeded- sending failed status\n");
+		//For robot code... do not assert here let code run its course perhaps a kill switch or a reattempt could happen
+		//simulation code should fix problem right away if this happens
+		#ifdef AI_TesterCode
+		assert(false);
+		#endif
+	}
 	return m_Status;
 }
 
@@ -1368,6 +1538,48 @@ Goal *FRC_2013_Goals::Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt)
 	MainGoal->AddSubgoal(FireOn);
 	MainGoal->AddSubgoal(goal_waitforballs1);
 	//MainGoal->AddSubgoal(goal_waitforturret);
+	return MainGoal;
+}
+
+Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
+{
+	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
+	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
+	// reset the coordinates to use way points.  This will also ensure there is no movement
+	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
+	ChangeClimbState *goal_decouple_drive_1=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);		   //de-couple the drive via pneumatic 1
+	ChangeClimbState *goal_couple_elevator_UP=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);  //couple the elevator UP winch via pneumatic 2
+	//Construct a way point
+	WayPoint wp;
+	wp.Position[0]=0.0;
+	wp.Position[1]=climb_props.LiftDistance;
+	wp.Power=1.0;
+	Goal_Ship_MoveToPosition *goal_spool_lift_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+
+	//This also takes care of ... engage your control loop 'brake mode'.  By ensuring that there is no movement before resetting the position
+	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
+
+	//de-couple elevator UP winch, and engage elevator DOWN winch
+	ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift);
+	ChangeClimbState *goal_couple_elevator_DOWN_releaseLiftWinch=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift2);
+
+	wp.Position[1]=climb_props.DropDistance;
+	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+
+	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
+	//For now this is just a backup plan that would need a rotary system
+
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	//MainGoal->AddSubgoal(goal_JamGear);
+	MainGoal->AddSubgoal(goal_spool_drop_winch);
+	MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
+	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
+	MainGoal->AddSubgoal(goal_reset_2);
+	MainGoal->AddSubgoal(goal_spool_lift_winch);
+	MainGoal->AddSubgoal(goal_couple_elevator_UP);
+	MainGoal->AddSubgoal(goal_decouple_drive_1);
+	MainGoal->AddSubgoal(goal_reset_1);
 	return MainGoal;
 }
 
@@ -1445,13 +1657,13 @@ Goal *FRC_2013_Goals::Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyInd
 
 	Goal_Ship_MoveToPosition *goal_drive_1=NULL;
 	Goal_Ship_MoveToPosition *goal_drive_2=NULL;
-	OperateSolenoid *DeployFlipper=NULL;
+	//OperateSolenoid *DeployFlipper=NULL;
 	Fire *EndSomeFire_On=NULL;
 	Goal_Wait *goal_waitEndFire=NULL;
 	Fire *EndSomeFire_Off=NULL;
 	if (RampIndex != (size_t)-1)
 	{
-		DeployFlipper=new OperateSolenoid(*Robot,FRC_2013_Robot::eFlipperDown,true);
+		//DeployFlipper=new OperateSolenoid(*Robot,FRC_2013_Robot::eFlipperDown,true);
 		const double YPad=Inches2Meters(5); //establish our Y being 5 inches from the ramp
 		double Y = (c_BridgeDimensions[1] / 2.0) + YPad;
 		double X;
@@ -1503,7 +1715,7 @@ Goal *FRC_2013_Goals::Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyInd
 		if (RampIndex==0)
 			MainGoal->AddSubgoal(EndSomeFire_On);
 		MainGoal->AddSubgoal(goal_drive_1);
-		MainGoal->AddSubgoal(DeployFlipper);
+		//MainGoal->AddSubgoal(DeployFlipper);
 	}
 	MainGoal->AddSubgoal(FireOff);
 	MainGoal->AddSubgoal(goal_waitforballs);
