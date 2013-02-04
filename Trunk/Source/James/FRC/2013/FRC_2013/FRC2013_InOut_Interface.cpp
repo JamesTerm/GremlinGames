@@ -107,12 +107,12 @@ enum DigitalIO_SlotList
 enum SolenoidSlotList
 {
 	eSolenoid_NoZeroUsed,
-	eSolenoid_UseClimbGear_On,
-	eSolenoid_UseClimbGear_Off,
-	eSolenoid_FlipperDown,
-	eSolenoid_FlipperUp,
-	eSolenoid_RampDeployment_On,
-	eSolenoid_RampDeployment_Off,
+	eSolenoid_EngageDrive_On,
+	eSolenoid_EngageDrive_Off,
+	eSolenoid_EngageLiftWinch_On,
+	eSolenoid_EngageLiftWinch_Off,
+	eSolenoid_EngageDropWinch_On,
+	eSolenoid_EngageDropWinch_Off
 };
 
 //Note: the order of the initialization list must match the way they are in the class declaration, so if the slots need to change, simply
@@ -125,7 +125,9 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	m_pTankRobotControl(&m_TankRobotControl),
 	m_PowerWheel_Victor(eVictor_PowerWheel),
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
-	m_OnClimbGear(eSolenoid_UseClimbGear_On),m_OffClimbGear(eSolenoid_UseClimbGear_Off),
+	m_EngageDrive(eSolenoid_EngageDrive_On,eSolenoid_EngageDrive_Off),
+	m_EngageLiftWinch(eSolenoid_EngageLiftWinch_On,eSolenoid_EngageLiftWinch_Off),
+	m_EngageDropWinch(eSolenoid_EngageDropWinch_On,eSolenoid_EngageDropWinch_Off),
 	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor),
 	//Sensors
 	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
@@ -401,11 +403,22 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 {
+	const char * const SolenoidState=Open?"Engaged":"Disengaged";
+	//Translate the open state into a value for double solenoid
+	DoubleSolenoid::Value value=Open ? DoubleSolenoid::kForward : DoubleSolenoid::kReverse;
 	switch (index)
 	{
-	case FRC_2013_Robot::eUseClimbGear:
-		printf("UseClimbGear=%d\n",Open);
-		m_OnClimbGear.Set(Open),m_OffClimbGear.Set(!Open);
+	case FRC_2013_Robot::eEngageDriveTrain:
+		printf("Drive Train Gear = %s\n",SolenoidState);
+		m_EngageDrive.Set(value);
+		break;
+	case FRC_2013_Robot::eEngageLiftWinch:
+		printf("Lift Winch = %s\n",SolenoidState);
+		m_EngageLiftWinch.Set(value);
+		break;
+	case FRC_2013_Robot::eEngageDropWinch:
+		printf("Drop Winch = %s\n",SolenoidState);
+		m_EngageDropWinch.Set(value);
 		break;
 	}
 }

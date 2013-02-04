@@ -37,6 +37,12 @@ public:
 	size_t PowerVelocity_DisplayRow;
 	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
 
+	struct Climb_Properties
+	{
+		//In theory lift and drop should be the same they can be negative in direction as well.  They may work where lift goes in one directions and the drop goes in the opposite
+		double LiftDistance;
+		double DropDistance;
+	} Climb_Props;
 	struct Autonomous_Properties
 	{
 		Vec2D RampLeft_ErrorCorrection_Offset;
@@ -66,13 +72,15 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
-		const Tank_Robot_Properties &GetClimbGearProps() const {return m_ClimbGearProps;}
+		const Tank_Robot_Properties &GetClimbGearLiftProps() const {return m_ClimbGearLiftProps;}
+		const Tank_Robot_Properties &GetClimbGearDropProps() const {return m_ClimbGearDropProps;}
 		const FRC_2013_Robot_Props &GetFRC2013RobotProps() const {return m_FRC2013RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		typedef Tank_Robot_Properties __super;
 		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
-		Tank_Robot_Properties m_ClimbGearProps;
+		Tank_Robot_Properties m_ClimbGearLiftProps;
+		Tank_Robot_Properties m_ClimbGearDropProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
 
 		class ControlEvents : public LUA_Controls_Properties_Interface
@@ -99,10 +107,41 @@ class FRC_2013_Robot : public Tank_Robot
 			eFireConveyor_Sensor
 		};
 
+		//Note: these shouldn't be written to directly but instead set the climb state which then will write to these
+		//This will guarantee that they will be preserved in a mutually exclusive state
 		enum SolenoidDevices
 		{
-			eUseClimbGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
-			eFlipperDown		//If true flipper is down
+			//These 3 cylinders work together:
+			//neutral state is when all all neutral, and will be a transitional state; otherwise these are mutually exclusive
+			eEngageDriveTrain,		//Cylinder 1 is on the drive train gear box
+			eEngageLiftWinch,		//Cylinder 2 is on the lift winch
+			eEngageDropWinch		//Cylinder 3 is on the drop winch
+		};
+
+		//You use a variation of selected states to do things
+		//so driving would be:
+
+		//cylinder 1 = drive
+		//2 = neutral
+		//3 = neutral
+
+		//raising lift is
+		//1 = neutral
+		//2 = engaged
+		//3 = neutral
+
+		//dropping lift for climb
+		//1 = neutral
+		//2 = neutral
+		//3= engaged
+		enum ClimbState
+		{
+			eClimbState_Neutral,
+			eClimbState_Drive,
+			eClimbState_RaiseLift,
+			//Drop lift has been divided into two phases... we'll want to give time for it to engage which the lift winch is still engaged, before releasing the lift winch
+			eClimbState_DropLift,
+			eClimbState_DropLift2
 		};
 
 		typedef Framework::Base::Vec2d Vec2D;
@@ -208,7 +247,8 @@ class FRC_2013_Robot : public Tank_Robot
 		PowerWheels &GetPowerWheels();
 		void SetTarget(Targets target);
 		const FRC_2013_Robot_Properties &GetRobotProps() const;
-		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
+		void SetClimbState(ClimbState climb_state);
+		bool IsStopped() const;  //returns true if both encoders read zero on this iteration
 	protected:
 		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
@@ -254,10 +294,12 @@ class FRC_2013_Robot : public Tank_Robot
 		DriveTargetSelection m_DriveTargetSelection;
 
 		bool m_SetClimbGear;
+		bool m_SetClimbLeft,m_SetClimbRight;
 		void SetClimbGear(bool on);
+		void SetClimbGear_LeftButton(bool on);
+		void SetClimbGear_RightButton(bool on);
 		void SetClimbGearOn() {SetClimbGear(true);}
 		void SetClimbGearOff() {SetClimbGear(false);}
-		void SetClimbGearValue(double Value);
 		
 		void SetPresetPOV (double value);
 
@@ -273,6 +315,7 @@ class FRC_2013_Goals
 	public:
 		static Goal *Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt=false);
 		static Goal *Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
+		static Goal *Climb(FRC_2013_Robot *Robot);
 	private:
 		class Fire : public AtomicGoal
 		{
@@ -301,16 +344,31 @@ class FRC_2013_Goals
 			virtual void Terminate() {m_Terminate=true;}
 		};
 
-		class OperateSolenoid : public AtomicGoal
+		class ResetPosition : public AtomicGoal
 		{
 		private:
 			FRC_2013_Robot &m_Robot;
-			const FRC_2013_Robot::SolenoidDevices m_SolenoidDevice;
+			double m_Timer;  //keep track of how much time has elapsed
+			double m_TimeStopped;  //keep track of how much *consecutive* time it has been stopped
 			bool m_Terminate;
-			bool m_IsOpen;
 		public:
-			OperateSolenoid(FRC_2013_Robot &robot,FRC_2013_Robot::SolenoidDevices SolenoidDevice,bool Open);
-			virtual void Activate() {m_Status=eActive;}
+			ResetPosition(FRC_2013_Robot &robot);
+			virtual void Activate();
+			virtual Goal_Status Process(double dTime_s);
+			virtual void Terminate() {m_Terminate=true;}
+		};
+
+		class ChangeClimbState : public AtomicGoal
+		{
+		private:
+			FRC_2013_Robot &m_Robot;
+			const FRC_2013_Robot::ClimbState m_ClimbState;
+			double m_TimeAccrued;
+			double m_TimeToWait;
+			bool m_Terminate;
+		public:
+			ChangeClimbState(FRC_2013_Robot &robot,FRC_2013_Robot::ClimbState climb_state,double TimeToTakeEffect_s=1.00);
+			virtual void Activate();
 			virtual Goal_Status Process(double dTime_s);
 			virtual void Terminate() {m_Terminate=true;}
 		};

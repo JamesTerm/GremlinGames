@@ -18,7 +18,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Victor m_PowerWheel_Victor;
 		//pitch ramp is using i2c
 		Compressor m_Compress;
-		Solenoid m_OnClimbGear,m_OffClimbGear;
+		DoubleSolenoid m_EngageDrive,m_EngageLiftWinch,m_EngageDropWinch;
 		Relay m_LowerConveyor_Relay,m_MiddleConveyor_Relay,m_FireConveyor_Relay;
 		
 		Encoder2 m_Turret_Encoder, m_PowerWheel_Encoder;
