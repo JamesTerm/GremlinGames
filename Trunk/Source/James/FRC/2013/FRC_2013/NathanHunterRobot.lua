@@ -82,9 +82,8 @@ MainRobot = {
 		{p=200, i=0, d=50},
 		right_pid=
 		{p=200, i=0, d=50},					--These should always match, but able to be made different
-		latency=0.220,
-		heading_latency=60.0,
-		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
+		heading_latency=0.6,
+		drive_to_scale=0.80,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.20 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -94,8 +93,9 @@ MainRobot = {
 		reverse_steering='yes',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1/8.0  --solved empiracally
-		--inv_max_accel =0.0;
+		inv_max_accel = 1/7.0,  --When driving
+		inv_max_decel = 1/8.0
+		--inv_max_accel = 1/16.0,  --on bench
 	},
 	
 	robot_settings =
@@ -117,6 +117,11 @@ MainRobot = {
 			c61={p=1.0, y=1.0}, c62={p=1.0, y=1.0}, c63={p=1.0, y=1.0},
 		},
 	
+		climb =
+		{
+			lift_ft=1,
+			drop_ft=-1
+		},
 		pitch =
 		{
 			is_closed='yes',
@@ -154,42 +159,34 @@ MainRobot = {
 			max_accel_reverse=200,			--The wheel may some time to ramp up
 			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
-		climb_gear = 
+		climb_gear_lift = 
 		{
-			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
-			--cause slipping if driver "high sticks" to start or stop quickly.
-			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
-			MaxTorqueYaw = 25 * 2, 
-			
-			MAX_SPEED = ClimbGearSpeed,
-			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
-			BRAKE = ACCEL, 
 			-- Turn Rates (deg/sec) This is always correct do not change
-			heading_rad = 0,  --No turning for climbing mode
+			--heading_rad = 0,  --No turning for climbing mode
 			
 			tank_drive =
 			{
 				is_closed=0,						--By default false, and can be turned on dynamically
-				show_pid_dump='no',
-				ds_display_row=-1,
-				--We must NOT use I or D for low gear, we must keep it very responsive
-				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
+				show_pid_dump='yes',
 				left_pid=
-				{p=100, i=0, d=50},
+				{p=200, i=0, d=50},
 				right_pid=
-				{p=100, i=0, d=50},					--These should always match, but able to be made different
-				latency=0.220,
-				left_max_offset=0.05 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
-				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
-				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=-1.0,				--May be reversed using -1.0
-				curve_voltage=
-				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-				reverse_steering='yes',
-				 left_encoder_reversed='no',
-				right_encoder_reversed='yes',
-				inv_max_accel = 0.0  --solved empiracally
+				{p=200, i=0, d=50}					--These should always match, but able to be made different
+			}
+		},
+		climb_gear_drop = 
+		{
+			-- Turn Rates (deg/sec) This is always correct do not change
+			--heading_rad = 0,  --No turning for climbing mode
+			
+			tank_drive =
+			{
+				is_closed=0,						--Must be on
+				show_pid_dump='yes',
+				left_pid=
+				{p=200, i=0, d=50},
+				right_pid=
+				{p=200, i=0, d=50}					--These should always match, but able to be made different
 			}
 		}
 	},
@@ -204,10 +201,11 @@ MainRobot = {
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-			Robot_SetClimbGearOff = {type="joystick_button", key=6, on_off=false},
-			Robot_SetClimbGearOn = {type="joystick_button", key=5, on_off=false},
-			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
-			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
+			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
+			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
+			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
+			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
+			Robot_SetClimbGearOn = {type="joystick_button", key=10, on_off=false},
 			Ball_Fire = {type="joystick_button", key=8, on_off=true},
 			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
 			Ball_GripL = {type="joystick_button", key=2, on_off=true},
@@ -217,17 +215,17 @@ MainRobot = {
 			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
 
-		Joystick_1 =
+		Joystick_2 =
 		{
 			control = "airflo",
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
-			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			Ball_Squirt = {type="joystick_button", key=3, on_off=true},
-			Ball_SlowWheel = {type="joystick_button", key=6, on_off=true},
-			Robot_SetPreset1 = {type="joystick_button", key=11, on_off=false},
+			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
+			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
+			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbGearOn = {type="joystick_button", key=10, on_off=false},
 			Ball_Fire = {type="joystick_button", key=6, on_off=true},
@@ -238,7 +236,6 @@ MainRobot = {
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		}
-
 	},
 	
 	--This is only used in the AI tester, can be ignored
