@@ -50,12 +50,12 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1;
+	version = 1.3;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
-	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
+	MaxAccelForward_High = Drive_MaxAccel, MaxAccelReverse_High = Drive_MaxAccel, 
 	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	
@@ -70,8 +70,8 @@ MainRobot = {
 	
 	tank_drive =
 	{
-		is_closed=1,
-		show_pid_dump='no',
+		is_closed=0,
+		show_pid_dump='yes',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
@@ -87,14 +87,15 @@ MainRobot = {
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.20 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=1.0,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=-1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-		reverse_steering=yes',
+		reverse_steering='yes',
 		 left_encoder_reversed='no',
-		right_encoder_reversed='yes',
-		inv_max_accel = 1/15.0  --solved empiracally
+		right_encoder_reversed='no',
+		inv_max_accel = 1/8.0  --solved empiracally
+		--inv_max_accel =0.0;
 	},
 	
 	robot_settings =
@@ -187,7 +188,7 @@ MainRobot = {
 				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 				reverse_steering='yes',
 				 left_encoder_reversed='no',
-				right_encoder_reversed='yes'
+				right_encoder_reversed='yes',
 				inv_max_accel = 0.0  --solved empiracally
 			}
 		}
