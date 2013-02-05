@@ -339,8 +339,8 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
 		m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
-	m_IsTargeting=true;
-	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
+	//m_IsTargeting=true;
+	//m_DriveTargetSelection=eDrive_Goal_Yaw;  //Do not turn on for robot... must be explicitly pressed
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -522,7 +522,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		listener->ResetUpdate();
 		//TODO see if we want a positive Y for up... for now we can convert it here
 		const double  YOffset=-listener->GetYpos();
-		const double XOffset=listener->GetXpos();
+		//const double XOffset=listener->GetXpos();
 		
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
@@ -545,7 +545,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
 			Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
 			#endif
-			#if 1
+			#if 0
 			const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
 			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(GetAtt_r()),XOffset,PredictedOffset,PredictedOffset-XOffset);
 			//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
