@@ -227,8 +227,8 @@ void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
-	//bool Grip=m_ControlSignals.bits.Grip==1;
-	bool GripH=m_ControlSignals.bits.GripH==1;
+	bool Grip=m_ControlSignals.bits.Grip==1;
+	//bool GripH=m_ControlSignals.bits.GripH==1;
 	bool Squirt=m_ControlSignals.bits.Squirt==1;
 
 	if (Fire)
@@ -267,7 +267,7 @@ void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 
 	//This assumes the motors are in the same orientation: 
 	//Note: FireSensor works different for now since the lower middle converyors are removed... we'll need to work out how this will work
-	double FireAcceleration= FireSensor | GripH | Squirt | Fire | m_FireStayOn ?
+	double FireAcceleration= FireSensor | Grip | Squirt | Fire | m_FireStayOn ?
 		((Squirt)?m_FireConveyor.GetACCEL():-m_FireConveyor.GetBRAKE()):0.0;
 	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
 
@@ -330,8 +330,8 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
 		m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
-	m_IsTargeting=true;
-	m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented (leave on now for servo tests)
+	//m_IsTargeting=true;
+	//m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -528,7 +528,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
 			//printf("d=%.2f\n",Meters2Feet(distance));
 			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
-			#define __DisablePitchDisplay__
+			#undef __DisablePitchDisplay__
 			#ifdef __DisablePitchDisplay__
 			#if 0
 			const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
