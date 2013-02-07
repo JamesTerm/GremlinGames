@@ -45,8 +45,8 @@ struct Tank_Robot_Props
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
-	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
-	double InverseMaxDecel;  //used for deceleration case
+	double InverseMaxAccel_Left,InverseMaxAccel_Right;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
+	double InverseMaxDecel_Left,InverseMaxDecel_Right;  //used for deceleration case
 	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
 	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
 	bool LeftEncoderReversed,RightEncoderReversed;
