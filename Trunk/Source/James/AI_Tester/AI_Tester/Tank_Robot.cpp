@@ -28,7 +28,7 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
 	m_UsingEncoders(IsAutonomous),
-	m_UseDeadZoneSkip(true), m_Heading(0.0), m_HeadingUpdateTimer(0.0),
+	m_Heading(0.0), m_HeadingUpdateTimer(0.0),
 	m_PreviousLeftVelocity(0.0),m_PreviousRightVelocity(0.0)
 {
 	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
@@ -84,7 +84,6 @@ void Tank_Robot::Reset(bool ResetPosition)
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
-	m_UseDeadZoneSkip=true;
 	m_PreviousLeftVelocity=m_PreviousRightVelocity=0.0;
 }
 
@@ -126,6 +125,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 {
 	double Encoder_LeftVelocity,Encoder_RightVelocity;
 	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+	m_Encoder_LeftVelocity=Encoder_LeftVelocity,m_Encoder_RightVelocity=Encoder_RightVelocity;  //cache for later
 
 	//Note: the capping for the velocities interpreted, this can occur easily when going full speed while starting to turn, the ship's velocity
 	//does not count against the velocity if it is turning, and what ends up happening is that we cap off max voltage for one side and the rate of turn
@@ -161,9 +161,6 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
 		}
 		#endif
-
-		//For most cases we do not need the dead zone skip
-		m_UseDeadZoneSkip=false;
 	}	
 	else
 	{
@@ -260,18 +257,12 @@ const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
 const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
 const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
 
-void Tank_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
+static void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double NegativeDeadZone)
 {
-	//Eliminate the deadzone
-	if (LeftVoltage>0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
-	else if (LeftVoltage < 0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
-
-	if (RightVoltage>0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
-	else if (RightVoltage < 0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
+	if ((Voltage > 0.0) && (Voltage<PositiveDeadZone))
+		Voltage=PositiveDeadZone;
+	else if ((Voltage < 0.0 ) && (Voltage>NegativeDeadZone))
+		Voltage=NegativeDeadZone;
 }
 
 void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
@@ -280,66 +271,75 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	double LeftVelocity=m_VehicleDrive->GetLeftVelocity(),RightVelocity=m_VehicleDrive->GetRightVelocity();
 	double LeftVoltage,RightVoltage;
 
+	
+		
+	#if 0
+	double Encoder_LeftVelocity,Encoder_RightVelocity;
+	m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
+	DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
+	#endif
+
+	//This shows the simpler computation without the force
+	#if 0
+	LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
+	RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+	#else
+	//compute acceleration
+	const double LeftAcceleration=(LeftVelocity-m_PreviousLeftVelocity)/dTime_s;
+	const double RightAcceleration=(RightVelocity-m_PreviousRightVelocity)/dTime_s;
+	//Since the mass is not dynamic (like it would be for an arm) we'll absorb the acceleration the final scalar
+	//This should be fine for speed control type of rotary systems
+	//compute force from the computed mass this is the sum of all moment and weight
+	//const double ComputedMass=1.0;
+	//const double LeftForce=LeftAcceleration*ComputedMass;
+	//const double RightForce=RightAcceleration*ComputedMass;
+
+	//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
+	LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
+	RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+	//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
+	const bool LeftAccel=(LeftAcceleration * LeftVelocity > 0);
+	LeftVoltage+=LeftAcceleration*(LeftAccel? m_TankRobotProps.InverseMaxAccel_Left : m_TankRobotProps.InverseMaxDecel_Left);
+	const bool RightAccel=(RightAcceleration * RightVelocity > 0);
+	RightVoltage+=RightAcceleration*(RightAccel ? m_TankRobotProps.InverseMaxAccel_Right : m_TankRobotProps.InverseMaxDecel_Right);
+
+	//Keep track of previous velocity to compute acceleration
+	m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
+	#endif
+
+	//Apply the polynomial equation to the voltage to linearize the curve
+	//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 	{
-		{
-			#if 0
-			double Encoder_LeftVelocity,Encoder_RightVelocity;
-			m_RobotControl->GetLeftRightVelocity(Encoder_LeftVelocity,Encoder_RightVelocity);
-			DOUT5("left=%f %f Right=%f %f",Encoder_LeftVelocity,LeftVelocity,Encoder_RightVelocity,RightVelocity);
-			#endif
+		double Voltage=fabs(LeftVoltage);
+		double *c=m_TankRobotProps.Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
+		LeftVoltage=(LeftVoltage<0)?-Voltage:Voltage; //restore sign
 
-			//This shows the simpler computation without the force
-			#if 0
-			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
-			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
-			#else
-			//compute acceleration
-			const double LeftAcceleration=(LeftVelocity-m_PreviousLeftVelocity)/dTime_s;
-			const double RightAcceleration=(RightVelocity-m_PreviousRightVelocity)/dTime_s;
-			//Since the mass is not dynamic (like it would be for an arm) we'll absorb the acceleration the final scalar
-			//This should be fine for speed control type of rotary systems
-			//compute force from the computed mass this is the sum of all moment and weight
-			//const double ComputedMass=1.0;
-			//const double LeftForce=LeftAcceleration*ComputedMass;
-			//const double RightForce=RightAcceleration*ComputedMass;
+		Voltage=fabs(RightVoltage);
+		x2=Voltage*Voltage;
+		x3=Voltage*x2;
+		x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
+		RightVoltage=(RightVoltage<0)?-Voltage:Voltage; //restore sign
+	}
+	
+	{  //Dead zone management
+		//The dead zone is only used when accelerating and the encoder reads no movement it does not skew the rest of the values like
+		//a typical dead zone adjustment since all other values are assumed to be calibrated in the polynomial equation above tested against
+		//a steady state of many points.  The dead zone is something that should found empirically and is easy to determine in a PID dump
+		//when using no dead zone when looking at the very beginning of acceleration
 
-			//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
-			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
-			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
-			//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
-			LeftVoltage+=LeftAcceleration*((LeftAcceleration * LeftVelocity > 0)? m_TankRobotProps.InverseMaxAccel_Left : m_TankRobotProps.InverseMaxDecel_Left);
-			RightVoltage+=RightAcceleration*((RightAcceleration * RightVelocity > 0) ? m_TankRobotProps.InverseMaxAccel_Right : m_TankRobotProps.InverseMaxDecel_Right);
-
-			//Keep track of previous velocity to compute acceleration
-			m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
-			#endif
-
-			//Apply the polynomial equation to the voltage to linearize the curve
-			//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
-			{
-				double Voltage=fabs(LeftVoltage);
-				double *c=m_TankRobotProps.Polynomial;
-				double x2=Voltage*Voltage;
-				double x3=Voltage*x2;
-				double x4=x2*x2;
-				Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-				Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
-				LeftVoltage=(LeftVoltage<0)?-Voltage:Voltage; //restore sign
-
-				Voltage=fabs(RightVoltage);
-				x2=Voltage*Voltage;
-				x3=Voltage*x2;
-				x4=x2*x2;
-				Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-				Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
-				RightVoltage=(RightVoltage<0)?-Voltage:Voltage; //restore sign
-			}
-		}
-		// m_UseDeadZoneSkip,  When true this is ideal for telop, and for acceleration in autonomous as it always starts movement
-		// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
-		// linear distribution of voltage will help avoid over-compensation, especially as it gets closer to stopping
-		if (m_UseDeadZoneSkip)
-			ComputeDeadZone(LeftVoltage,RightVoltage);
+		//left side
+		if ((IsZero(m_Encoder_LeftVelocity)) && LeftAccel)
+			ComputeDeadZone(LeftVoltage,m_TankRobotProps.Positive_DeadZone_Left,m_TankRobotProps.Negative_DeadZone_Left);
+		//right side
+		if ((IsZero(m_Encoder_RightVelocity)) && RightAccel)
+			ComputeDeadZone(RightVoltage,m_TankRobotProps.Positive_DeadZone_Right,m_TankRobotProps.Negative_DeadZone_Right);
 	}
 
 	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
@@ -430,6 +430,8 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.TankSteering_Tolerance=0.05;
 	props.InverseMaxAccel_Left=props.InverseMaxDecel_Left=0.0;
 	props.InverseMaxAccel_Right=props.InverseMaxDecel_Right=0.0;
+	props.Positive_DeadZone_Left=props.Positive_DeadZone_Right=0.0;
+	props.Negative_DeadZone_Left=props.Negative_DeadZone_Right=0.0;
 	m_TankRobotProps=props;
 }
 
@@ -568,7 +570,16 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	err = script.GetFieldTable("controls");
 	if (!err)
 	{
-		script.GetField("tank_steering_tolerance", NULL, NULL,&m_TankRobotProps.TankSteering_Tolerance);
+		script.GetField("forward_deadzone_left", NULL, NULL,&m_TankRobotProps.Positive_DeadZone_Left);
+		script.GetField("forward_deadzone_right", NULL, NULL,&m_TankRobotProps.Positive_DeadZone_Right);
+		script.GetField("reverse_deadzone_left", NULL, NULL,&m_TankRobotProps.Negative_DeadZone_Left);
+		script.GetField("reverse_deadzone_right", NULL, NULL,&m_TankRobotProps.Negative_DeadZone_Right);
+		//Ensure the negative settings are negative
+		if (m_TankRobotProps.Negative_DeadZone_Left>0.0)
+			m_TankRobotProps.Negative_DeadZone_Left=-m_TankRobotProps.Negative_DeadZone_Left;
+		if (m_TankRobotProps.Negative_DeadZone_Right>0.0)
+			m_TankRobotProps.Negative_DeadZone_Right=-m_TankRobotProps.Negative_DeadZone_Right;
+		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 		script.Pop();
 	}
 

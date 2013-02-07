@@ -49,6 +49,8 @@ struct Tank_Robot_Props
 	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
 	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
 	bool LeftEncoderReversed,RightEncoderReversed;
+	double Positive_DeadZone_Left,Positive_DeadZone_Right;
+	double Negative_DeadZone_Left,Negative_DeadZone_Right;  //These must be in negative form
 };
 
 class Tank_Robot_UI;
@@ -76,7 +78,6 @@ class Tank_Robot : public Ship_Tester,
 	protected:
 		friend Tank_Robot_UI;
 
-		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		#ifdef __UseScalerPID__
@@ -113,9 +114,10 @@ class Tank_Robot : public Ship_Tester,
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
 		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration
 		bool m_UsingEncoders;
-		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderAngularVelocity;
+		//cache in their native form (I don't want to assume lower level is caching)
+		double m_Encoder_LeftVelocity,m_Encoder_RightVelocity;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
 		double m_Heading;  //We take over the heading from physics
