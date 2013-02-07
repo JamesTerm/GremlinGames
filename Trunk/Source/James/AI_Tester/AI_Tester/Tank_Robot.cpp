@@ -381,41 +381,13 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
 			RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
 			//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
-			LeftVoltage+=LeftAcceleration*((LeftAcceleration * LeftVelocity > 0)? m_TankRobotProps.InverseMaxAccel : m_TankRobotProps.InverseMaxDecel);
-			RightVoltage+=RightAcceleration*((RightAcceleration * RightVelocity > 0) ? m_TankRobotProps.InverseMaxAccel : m_TankRobotProps.InverseMaxDecel);
+			LeftVoltage+=LeftAcceleration*((LeftAcceleration * LeftVelocity > 0)? m_TankRobotProps.InverseMaxAccel_Left : m_TankRobotProps.InverseMaxDecel_Left);
+			RightVoltage+=RightAcceleration*((RightAcceleration * RightVelocity > 0) ? m_TankRobotProps.InverseMaxAccel_Right : m_TankRobotProps.InverseMaxDecel_Right);
 
 			//Keep track of previous velocity to compute acceleration
 			m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
 			#endif
 			#endif
-
-			//Old legacy square method here (turned out to be pretty good)
-			#if 0	
-			//In teleop always square as it feels right and gives more control to the user
-
-			#ifdef __Tank_UseScalerPID__
-			//for autonomous (i.e. using encoders) the natural distribution on acceleration will give the best results
-			//we can use the m_UseDeadZoneSkip to determine if we are accelerating, more important we must square on
-			//deceleration to improve our chance to not overshoot!
-			if ((!m_UsingEncoders) || (!m_UseDeadZoneSkip))
-			#else
-			//Once the new PID system is working the deceleration does not need to worry about overshooting
-			if (!m_UsingEncoders)
-			#endif
-			{
-				LeftVoltage*=LeftVoltage,RightVoltage*=RightVoltage;  //square them for more give
-				//Clip the voltage as it can become really high values when squaring
-				if (LeftVoltage>1.0)
-					LeftVoltage=1.0;
-				if (RightVoltage>1.0)
-					RightVoltage=1.0;
-				//restore the sign
-				if (LeftVelocity<0)
-					LeftVoltage=-LeftVoltage;
-				if (RightVelocity<0)
-					RightVoltage=-RightVoltage;
-			}
-			#else
 			//Apply the polynomial equation to the voltage to linearize the curve
 			//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 			{
@@ -436,8 +408,6 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 				Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
 				RightVoltage=(RightVoltage<0)?-Voltage:Voltage; //restore sign
 			}
-
-			#endif
 		}
 		// m_UseDeadZoneSkip,  When true this is ideal for telop, and for acceleration in autonomous as it always starts movement
 		// equally on both sides, and avoids stalls.  For deceleration in autonomous, set to false as using the correct 
@@ -536,7 +506,8 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
 	props.TankSteering_Tolerance=0.05;
-	props.InverseMaxAccel=props.InverseMaxDecel=0.0;
+	props.InverseMaxAccel_Left=props.InverseMaxDecel_Left=0.0;
+	props.InverseMaxAccel_Right=props.InverseMaxDecel_Right=0.0;
 	m_TankRobotProps=props;
 }
 
@@ -656,9 +627,20 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel);
-		m_TankRobotProps.InverseMaxDecel=m_TankRobotProps.InverseMaxAccel;  //set up deceleration to be the same value by default
-		script.GetField("inv_max_decel", NULL, NULL, &m_TankRobotProps.InverseMaxDecel);
+		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel_Left);
+		m_TankRobotProps.InverseMaxAccel_Right=m_TankRobotProps.InverseMaxAccel_Left;
+		//set up deceleration to be the same value by default
+		m_TankRobotProps.InverseMaxDecel_Left=m_TankRobotProps.InverseMaxDecel_Right=m_TankRobotProps.InverseMaxAccel_Left;  
+		err = script.GetField("inv_max_decel", NULL, NULL, &m_TankRobotProps.InverseMaxDecel_Left);
+		if (!err)
+			m_TankRobotProps.InverseMaxDecel_Right=m_TankRobotProps.InverseMaxDecel_Left;
+
+		//and now for the specific cases
+		script.GetField("inv_max_accel_left", NULL, NULL, &m_TankRobotProps.InverseMaxAccel_Left);
+		script.GetField("inv_max_accel_right", NULL, NULL, &m_TankRobotProps.InverseMaxAccel_Right);
+		script.GetField("inv_max_decel_left", NULL, NULL, &m_TankRobotProps.InverseMaxDecel_Left);
+		script.GetField("inv_max_decel_right", NULL, NULL, &m_TankRobotProps.InverseMaxDecel_Right);
+
 		script.Pop(); 
 	}
 	err = script.GetFieldTable("controls");
