@@ -25,6 +25,7 @@ public:
 	virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
 	//This will add to the existing rotation and normalize
 	void AddRotation(double RadiansToAdd);
+	void UpdatePosition(double x,double y) {m_props.m_Offset[0]=x,m_props.m_Offset[1]=y;}
 	double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
 private:
 	Actor_Text *m_UIParent;

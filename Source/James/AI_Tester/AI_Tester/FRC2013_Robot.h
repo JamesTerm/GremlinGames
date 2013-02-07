@@ -99,12 +99,13 @@ class FRC_2013_Robot : public Tank_Robot
 		{
 			ePitchRamp,
 			ePowerWheels,
-			eFireConveyor
+			eHelix
 		};
 
+		//Most likely will not need IR sensors
 		enum BoolSensorDevices
 		{
-			eFireConveyor_Sensor
+			eTest_Sensor
 		};
 
 		//Note: these shouldn't be written to directly but instead set the climb state which then will write to these
@@ -115,7 +116,8 @@ class FRC_2013_Robot : public Tank_Robot
 			//neutral state is when all all neutral, and will be a transitional state; otherwise these are mutually exclusive
 			eEngageDriveTrain,		//Cylinder 1 is on the drive train gear box
 			eEngageLiftWinch,		//Cylinder 2 is on the lift winch
-			eEngageDropWinch		//Cylinder 3 is on the drop winch
+			eEngageDropWinch,		//Cylinder 3 is on the drop winch
+			eFirePiston				//pneumatic 4... will engage on fire button per press
 		};
 
 		//You use a variation of selected states to do things
@@ -201,11 +203,11 @@ class FRC_2013_Robot : public Tank_Robot
 				bool m_IsRunning;
 		};
 
-		class BallConveyorSystem
+		class IntakeSystem
 		{
 			private:
 				FRC_2013_Robot * const m_pParent;
-				Rotary_Velocity_Control m_FireConveyor;
+				Rotary_Velocity_Control m_Helix;
 				double m_FireDelayTrigger_Time; //Time counter of the value remaining in the on-to-delay state
 				double m_FireStayOn_Time;  //Time counter of the value remaining in the on state
 				bool m_FireDelayTriggerOn; //A valve mechanism that must meet time requirement to disable the delay
@@ -222,7 +224,7 @@ class FRC_2013_Robot : public Tank_Robot
 					unsigned char raw;
 				} m_ControlSignals;
 			public:
-				BallConveyorSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
+				IntakeSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
 				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
@@ -237,13 +239,12 @@ class FRC_2013_Robot : public Tank_Robot
 			protected:
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
-				void GripH(bool on) {m_ControlSignals.bits.GripH=on;}
 
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
 
 	public: //Autonomous public access (wind river has problems with friend technique)
-		BallConveyorSystem &GetBallConveyorSystem();
+		IntakeSystem &GetIntakeSystem();
 		PowerWheels &GetPowerWheels();
 		void SetTarget(Targets target);
 		const FRC_2013_Robot_Properties &GetRobotProps() const;
@@ -259,7 +260,7 @@ class FRC_2013_Robot : public Tank_Robot
 		FRC_2013_Control_Interface * const m_RobotControl;
 		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
-		BallConveyorSystem m_BallConveyorSystem;
+		IntakeSystem m_IntakeSystem;
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Targets m_Target;		//This allows us to change our target
 		Vec2D m_DefensiveKeyPosition;
@@ -383,8 +384,8 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual bool GetBoolSensorState(size_t index);
-		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
 		virtual void OpenSolenoid(size_t index,bool Open);
+		virtual bool GetIsSolenoidOpen(size_t index) const;
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 
@@ -417,7 +418,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		Potentiometer_Tester2 m_Pitch_Pot; //simulate the potentiometer and motor
-		Encoder_Simulator m_PowerWheel_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
+		Encoder_Simulator m_PowerWheel_Enc,m_Helix_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		#ifdef __TestXAxisServoDump__
 		double m_LastYawAxisSetting;  //needed to creep up the angle to position smoothly when testing servo code
@@ -425,10 +426,11 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		#endif
 		//cache voltage values for display
 		double m_PitchRampVoltage,m_PowerWheelVoltage;
-		double m_FireConveyorVoltage;
+		double m_HelixVoltage;
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 		bool m_FireSensor;
 		bool m_SlowWheel;
+		bool m_FirePiston;
 };
 
 class FRC_2013_Power_Wheel_UI : public Side_Wheel_UI
@@ -494,5 +496,5 @@ class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
 	private:
 		Tank_Robot_UI m_TankUI;
 		FRC_2013_Power_Wheel_UI m_PowerWheelUI;
-		FRC_2013_Fire_Conveyor_UI m_FireConveyor;
+		FRC_2013_Fire_Conveyor_UI m_Helix;
 };
