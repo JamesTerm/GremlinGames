@@ -126,7 +126,7 @@ FRC_2013_Robot::PowerWheels::PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_
 void FRC_2013_Robot::PowerWheels::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
 {
 	m_SecondStage.Initialize(em,props);
-	m_FirstStage.Initialize(em,props);
+	m_FirstStage.Initialize(em,&m_pParent->GetRobotProps().GetPowerSlowWheelProps());
 }
 
 void FRC_2013_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
@@ -1111,6 +1111,17 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	false,28.0 * Pi2,0.0,	//No limit ever!  (but we are using the min range as a way to set minimum speed)
 	true //This is angular
 	),
+	m_PowerSlowWheelProps(
+	"PowerWheels",
+	2.0,    //Mass
+	Inches2Meters(6),   //Dimension  (needed to convert linear to angular velocity)
+	(5000.0/60.0) * Pi2,   //Max Speed (This is clocked at 5000 rpm) 
+	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Props::eSimpleMotor,
+	false,28.0 * Pi2,0.0,	//No limit ever!  (but we are using the min range as a way to set minimum speed)
+	true //This is angular
+	),
 	m_HelixProps(
 	"Helix",
 	2.0,    //Mass
@@ -1203,15 +1214,18 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	}
 	{
 		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.001; //we need high precision
 		m_PitchRampProps.RoteryProps()=props;
 	}
 	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
 		m_PowerWheelProps.RoteryProps()=props;
+	}
+	{
+		Rotary_Props props=m_PowerSlowWheelProps.RoteryProps(); //start with super class settings
+		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
+		m_PowerSlowWheelProps.RoteryProps()=props;
 	}
 }
 
@@ -1334,6 +1348,12 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_PowerWheelProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("power_first_stage");
+		if (!err)
+		{
+			m_PowerSlowWheelProps.LoadFromScript(script);
 			script.Pop();
 		}
 		err = script.GetFieldTable("helix");
