@@ -153,14 +153,14 @@ class Rotary_Velocity_Control : public Rotary_System
 		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
 		//Give ability to change properties
 		void UpdateRotaryProps(const Rotary_Props &RotaryProps);
+		virtual void SetEncoderSafety(bool DisableFeedback);
+		EncoderUsage GetEncoderUsage() const {return m_EncoderCachedState;}
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
 		virtual void RequestedVelocityCallback(double VelocityToUse,double DeltaTime_s);
-		virtual void SetEncoderSafety(bool DisableFeedback);
 
 		virtual bool InjectDisplacement(double DeltaTime_s,double &PositionDisplacement);
-		EncoderUsage GetEncoderUsage() const {return m_EncoderCachedState;}
 		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
