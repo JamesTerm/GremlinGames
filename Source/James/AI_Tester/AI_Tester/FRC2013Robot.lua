@@ -158,6 +158,37 @@ MainRobot = {
 			max_accel_reverse=200,			--The wheel may some time to ramp up
 			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
+		intake_deployment =
+		{
+			is_closed=1,
+			show_pid_dump='no',
+			ds_display_row=-1,
+			pid=
+			{p=200, i=0, d=50},
+			tolerance=0.01,					--should not matter much
+			
+			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=10,			--These are in radians, just go with what feels right
+			max_accel_reverse=10,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			min_range_deg=0,				--TODO find out what these are
+			max_range_deg= 90
+		},
+		helix =
+		{
+			--Note: there are no encoders here so is_closed is ignored
+			tolerance=0.01,					--we need good precision
+			voltage_multiply=1.0,			--May be reversed
+			
+			max_speed=28,
+			accel=112,						--These are needed and should be high enough to grip without slip
+			brake=112,
+			max_accel_forward=112,
+			max_accel_reverse=112
+		},
+
 		climb_gear_lift = 
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
@@ -249,6 +280,8 @@ MainRobot = {
 			PowerWheels_IsRunning = {type="joystick_button", key=2, on_off=true},
 			Ball_Grip = {type="joystick_button", key=1, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=3, on_off=true},
+			Intake_Deployment_Retract = {type="joystick_button", key=13, on_off=false},
+			Intake_Deployment_Advance = {type="joystick_button", key=12, on_off=false},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
