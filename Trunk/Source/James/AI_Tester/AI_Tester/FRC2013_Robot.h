@@ -203,13 +203,14 @@ class FRC_2013_Robot : public Tank_Robot
 			protected:
 				//typedef Rotary_Velocity_Control __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity);
+				void SetRequestedVelocity_FromNormalized(double Velocity) {m_ManualVelocity=Velocity;}
+				void Set_FirstStage_RequestedVelocity_FromNormalized(double Velocity) {m_FirstStageManualVelocity=Velocity;}
 				void SetEncoderSafety(bool DisableFeedback);
 				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
 			private:
 				FRC_2013_Robot * const m_pParent;
 				Rotary_Velocity_Control m_SecondStage,m_FirstStage;
-				double m_ManualVelocity;
+				double m_ManualVelocity,m_FirstStageManualVelocity;
 				bool m_IsRunning;
 		};
 
