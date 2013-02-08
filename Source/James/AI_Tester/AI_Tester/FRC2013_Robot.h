@@ -99,7 +99,8 @@ class FRC_2013_Robot : public Tank_Robot
 		enum SpeedControllerDevices
 		{
 			ePitchRamp,
-			ePowerWheels,
+			ePowerWheelFirstStage,
+			ePowerWheelSecondStage,
 			eHelix,
 			eIntake_Deployment,
 			eRollers
@@ -186,22 +187,27 @@ class FRC_2013_Robot : public Tank_Robot
 				FRC_2013_Robot * const m_pParent;
 		};
 
-		class PowerWheels : public Rotary_Velocity_Control
+		class PowerWheels
 		{
 			public:
 				PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
+				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
+				const Rotary_Velocity_Control &GetFirstStageShooter() const {return m_FirstStage;}
+				const Rotary_Velocity_Control &GetSecondStageShooter() const {return m_SecondStage;}
+				void TimeChange(double dTime_s);
 			protected:
 				//typedef Rotary_Velocity_Control __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity);
-				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
+				void SetEncoderSafety(bool DisableFeedback);
 				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
-				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2013_Robot * const m_pParent;
+				Rotary_Velocity_Control m_SecondStage,m_FirstStage;
 				double m_ManualVelocity;
 				bool m_IsRunning;
 		};
@@ -446,14 +452,14 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		Potentiometer_Tester2 m_Pitch_Pot,m_IntakeDeployment_Pot; //simulate the potentiometer and motor
-		Encoder_Simulator m_PowerWheel_Enc,m_Helix_Enc,m_Rollers_Enc;  //simulate the encoder and motor
+		Encoder_Simulator m_PowerWheel_Enc,m_PowerSlowWheel_Enc,m_Helix_Enc,m_Rollers_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		#ifdef __TestXAxisServoDump__
 		double m_LastYawAxisSetting;  //needed to creep up the angle to position smoothly when testing servo code
 		double m_LastLeftVelocity,m_LastRightVelocity;
 		#endif
 		//cache voltage values for display
-		double m_PitchRampVoltage,m_PowerWheelVoltage,m_IntakeDeploymentVoltage;
+		double m_PitchRampVoltage,m_PowerWheelVoltage,m_PowerSlowWheelVoltage,m_IntakeDeploymentVoltage;
 		double m_HelixVoltage,m_RollersVoltage;
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 		bool m_FireSensor;
@@ -470,7 +476,19 @@ class FRC_2013_Power_Wheel_UI : public Side_Wheel_UI
 		virtual void TimeChange(double dTime_s);
 	private:
 		FRC_2013_Robot_Control * const m_RobotControl;
-		double m_PowerWheelMaxSpeed;  //cache to avoid all the hoops of getting it (its constant)
+		double m_PowerWheelMaxSpeed;  //cache to avoid all the hoops of getting it (it's constant)
+};
+
+class FRC_2013_Power_Slow_Wheel_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2013_Power_Slow_Wheel_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2013_Robot_Control * const m_RobotControl;
+		double m_PowerWheelMaxSpeed;  //cache to avoid all the hoops of getting it (it's constant)
 };
 
 class FRC_2013_Rollers_UI : public Side_Wheel_UI
@@ -513,6 +531,7 @@ class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
 	private:
 		Tank_Robot_UI m_TankUI;
 		FRC_2013_Power_Wheel_UI m_PowerWheelUI;
+		FRC_2013_Power_Slow_Wheel_UI m_PowerSlowWheelUI;
 		FRC_2013_Rollers_UI m_Rollers;
 		FRC_2013_Fire_Conveyor_UI m_Helix;
 };

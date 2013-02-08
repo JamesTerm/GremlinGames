@@ -118,13 +118,20 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2013_Robot::PowerWheels::PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Velocity_Control("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_ManualVelocity(0.0),m_IsRunning(false)
+	m_pParent(pParent),m_SecondStage("SecondStage",robot_control,ePowerWheelSecondStage,Rotary_Velocity_Control::eActive),
+	m_FirstStage("FirstStage",robot_control,ePowerWheelFirstStage,Rotary_Velocity_Control::eActive),m_ManualVelocity(0.0),m_IsRunning(false)
 {
+}
+
+void FRC_2013_Robot::PowerWheels::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
+{
+	m_SecondStage.Initialize(em,props);
+	m_FirstStage.Initialize(em,props);
 }
 
 void FRC_2013_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 {
-	Base::EventMap *em=GetEventMap(); 
+	Base::EventMap *em=m_SecondStage.GetEventMap(); 
 	if (Bind)
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
@@ -146,21 +153,32 @@ void FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Vel
 	m_ManualVelocity=Velocity;
 }
 
+void FRC_2013_Robot::PowerWheels::SetEncoderSafety(bool DisableFeedback) 
+{
+	m_SecondStage.SetEncoderSafety(DisableFeedback);
+	m_FirstStage.SetEncoderSafety(DisableFeedback);
+}
+
 void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	bool IsTargeting=((m_pParent->m_IsTargeting) && m_SecondStage.GetEncoderUsage()==Rotary_Velocity_Control::eActive);
 	if (  IsTargeting )
 	{
 		if ((m_IsRunning)||(m_pParent->m_IntakeSystem.GetIsFireRequested())) 
 		{
 			//convert linear velocity to angular velocity
-			double RPS=m_pParent->m_LinearVelocity / (Pi * GetDimension());
+			double RPS=m_pParent->m_LinearVelocity / (Pi * m_SecondStage.GetDimension());
 			RPS*=(2.0 * m_pParent->m_PowerErrorCorrection);  //For hooded shoot we'll have to move twice as fast
-			SetRequestedVelocity(RPS * Pi2);
+			m_SecondStage.SetRequestedVelocity(RPS * Pi2);
+			const double FirstStageScalar=0.5;  //TODO properties
+			m_FirstStage.SetRequestedVelocity(RPS * FirstStageScalar * Pi2);
 			//DOUT5("rps=%f rad=%f",RPS,RPS*Pi2);
 		}
 		else
-			SetRequestedVelocity(0);
+		{
+			m_SecondStage.SetRequestedVelocity(0);
+			m_FirstStage.SetRequestedVelocity(0);
+		}
 	}
 	else
 	{
@@ -170,31 +188,40 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 			//first get the range from 0 - 1
 			double positive_range = (m_ManualVelocity * 0.5) + 0.5;
 			positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=MAX_SPEED;
-			const double Scale=(maxRange-minRange) / MAX_SPEED;
-			const double Offset=minRange/MAX_SPEED;
+			const double MaxSpeed=m_SecondStage.GetMaxSpeed();
+			const double minRange=m_SecondStage.GetMinRange();
+			//Note: this may want to be MaxRange to be consistent
+			const double maxRange=m_SecondStage.GetMaxSpeed();
+			const double Scale=(maxRange-minRange) / MaxSpeed;
+			const double Offset=minRange / MaxSpeed;
 			const double Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
 			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().PowerVelocity_DisplayRow;
 			if (DisplayRow!=(size_t)-1)
 			{
-				const double rps=(Velocity * MAX_SPEED) / Pi2;
-				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
+				const double rps=(Velocity * MaxSpeed) / Pi2;
+				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * m_SecondStage.GetDimension()));
 			}
 
-			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(Velocity);
+			m_SecondStage.SetRequestedVelocity_FromNormalized(Velocity);
+			const double FirstStageScalar=0.5;  //TODO properties
+			m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity * FirstStageScalar);
 		}
 		else
-			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(0.0);
+		{
+			m_SecondStage.SetRequestedVelocity_FromNormalized(0.0);
+			m_FirstStage.SetRequestedVelocity_FromNormalized(0.0);
+		}
 	}
-	__super::TimeChange(dTime_s);
+	m_SecondStage.AsEntity1D().TimeChange(dTime_s);
+	m_FirstStage.AsEntity1D().TimeChange(dTime_s);
 }
 
 void FRC_2013_Robot::PowerWheels::ResetPos()
 {
 	m_IsRunning=false;
-	__super::ResetPos();
+	m_SecondStage.ResetPos();
+	m_FirstStage.ResetPos();
 }
 
 
@@ -285,9 +312,9 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	const FRC_2013_Robot_Props &props=properties.GetFRC2013RobotProps();
 
 	//const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
-	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
-	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetRequestedVelocity()!=0.0) &&
-		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance);
+	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity_Difference();
+	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity()!=0.0) &&
+		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetSecondStageShooter().GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
 	bool Grip=m_ControlSignals.bits.Grip==1;
@@ -741,7 +768,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 	m_PitchRamp.AsEntity1D().TimeChange(dTime_s);
-	m_PowerWheels.AsEntity1D().TimeChange(dTime_s);
+	m_PowerWheels.TimeChange(dTime_s);
 	m_IntakeSystem.TimeChange(dTime_s);
 }
 
@@ -1517,7 +1544,7 @@ Goal::Goal_Status FRC_2013_Goals::WaitForBall::Process(double dTime_s)
 	}
 	ActivateIfInactive();
 	//Keep simple... if we have noisy artifacts that yield false positives then we may need to consider blend and / or Kalman
-	const double PowerWheelSpeedDifference=m_Robot.GetPowerWheels().GetRequestedVelocity_Difference();
+	const double PowerWheelSpeedDifference=m_Robot.GetPowerWheels().GetSecondStageShooter().GetRequestedVelocity_Difference();
 	//when we encounter the tolerance dip in speed we are done
 	if (fabs(PowerWheelSpeedDifference)>m_Tolerance)
 	{
@@ -1835,11 +1862,18 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_Pitch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
-		case FRC_2013_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheelSecondStage:
 			if (m_SlowWheel) Voltage=0.0;
 			m_PowerWheelVoltage=Voltage;
 			m_PowerWheel_Enc.UpdateEncoderVoltage(Voltage);
 			m_PowerWheel_Enc.TimeChange();
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			if (m_SlowWheel) Voltage=0.0;
+			m_PowerSlowWheelVoltage=Voltage;
+			m_PowerSlowWheel_Enc.UpdateEncoderVoltage(Voltage);
+			m_PowerSlowWheel_Enc.TimeChange();
 			//DOUT3("Arm Voltage=%f",Voltage);
 			break;
 		case FRC_2013_Robot::eHelix:
@@ -1869,7 +1903,8 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	case FRC_2013_Robot::ePitchRamp:
 		Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
 		break;
-	case FRC_2013_Robot::ePowerWheels:
+	case FRC_2013_Robot::ePowerWheelSecondStage:
+		//Only display second stage
 		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::eIntake_Deployment:
@@ -1947,7 +1982,7 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	return ret;
 }
 
-FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),m_dTime_s(0.0),
+FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),m_PowerSlowWheelVoltage(0.0),m_dTime_s(0.0),
 	m_FireSensor(false),m_SlowWheel(false),m_FirePiston(false)
 {
 	#ifdef __TestXAxisServoDump__
@@ -1972,8 +2007,12 @@ void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
 			//We may want this for more accurate simulation
 			//m_Pitch_Pot.SetPos_m((m_Pitch_Pot.GetMinRange()+m_Pitch_Pot.GetMaxRange()) / 2.0);
 			break;
-		case FRC_2013_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheelSecondStage:
 			m_PowerWheel_Enc.ResetPos();
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			m_PowerSlowWheel_Enc.ResetPos();
 			//DOUT3("Arm Voltage=%f",Voltage);
 			break;
 		case FRC_2013_Robot::eHelix:
@@ -2015,6 +2054,7 @@ void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
 
 		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
 		m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
+		m_PowerSlowWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
 		m_Helix_Enc.Initialize(&robot_props->GetHelixProps());
 		m_IntakeDeployment_Pot.Initialize(&robot_props->GetIntakeDeploymentProps());
 		m_Rollers_Enc.Initialize(&robot_props->GetHelixProps());  //borrow helix... these are like conveyor
@@ -2025,6 +2065,7 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Pitch_Pot.SetTimeDelta(dTime_s);
 	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
+	m_PowerSlowWheel_Enc.SetTimeDelta(dTime_s);
 	m_Helix_Enc.SetTimeDelta(dTime_s);
 	m_IntakeDeployment_Pot.SetTimeDelta(dTime_s);
 	m_Rollers_Enc.SetTimeDelta(dTime_s);
@@ -2049,8 +2090,11 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),RAD_2_DEG(m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition()));
 			#endif
 			break;
-		case FRC_2013_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheelSecondStage:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			result=m_PowerSlowWheel_Enc.GetEncoderVelocity();
 			break;
 		case FRC_2013_Robot::eHelix:
 			result=m_Helix_Enc.GetEncoderVelocity();
@@ -2070,7 +2114,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
-		case FRC_2013_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheelSecondStage:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
@@ -2129,7 +2173,7 @@ bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
 void FRC_2013_Power_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
 {
 	Wheel_Properties Myprops;
-	Myprops.m_Offset=Vec2d(0.0,-2.0);
+	Myprops.m_Offset=Vec2d(0.6,-2.0);
 	Myprops.m_Color=osg::Vec4(1.0,0.0,0.5,1.0);
 	Myprops.m_TextDisplay=L"|";
 
@@ -2140,10 +2184,34 @@ void FRC_2013_Power_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Pro
 void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 {
 	FRC_2013_Control_Interface *pw_access=m_RobotControl;
-	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::ePowerWheels) / m_PowerWheelMaxSpeed;
+	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::ePowerWheelSecondStage) / m_PowerWheelMaxSpeed;
 	//NormalizedVelocity-=0.2;
 	//if (NormalizedVelocity<0.0)
 	//	NormalizedVelocity=0.0;
+
+	//Scale down the rotation to something easy to gauge in UI
+	AddRotation((NormalizedVelocity * 18) * dTime_s);
+}
+
+  /***************************************************************************************************************/
+ /*											FRC_2013_Power_Wheel_UI												*/
+/***************************************************************************************************************/
+
+void FRC_2013_Power_Slow_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	Wheel_Properties Myprops;
+	Myprops.m_Offset=Vec2d(-0.6,-2.0);
+	Myprops.m_Color=osg::Vec4(1.0,1.0,0.0,1.0);
+	Myprops.m_TextDisplay=L"|";
+
+	__super::Initialize(em,&Myprops);
+	m_PowerWheelMaxSpeed=m_RobotControl->GetRobotProps().GetPowerWheelProps().GetMaxSpeed();
+}
+
+void FRC_2013_Power_Slow_Wheel_UI::TimeChange(double dTime_s)
+{
+	FRC_2013_Control_Interface *pw_access=m_RobotControl;
+	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::ePowerWheelFirstStage) / m_PowerWheelMaxSpeed;
 
 	//Scale down the rotation to something easy to gauge in UI
 	AddRotation((NormalizedVelocity * 18) * dTime_s);
@@ -2206,7 +2274,7 @@ void FRC_2013_Fire_Conveyor_UI::TimeChange(double dTime_s)
 /***************************************************************************************************************/
 
 FRC_2013_Robot_UI::FRC_2013_Robot_UI(const char EntityName[]) : FRC_2013_Robot(EntityName,this),FRC_2013_Robot_Control(),
-		m_TankUI(this),m_PowerWheelUI(this),m_Helix(this),m_Rollers(this)
+		m_TankUI(this),m_PowerWheelUI(this),m_PowerSlowWheelUI(this),m_Helix(this),m_Rollers(this)
 {
 }
 
@@ -2215,6 +2283,7 @@ void FRC_2013_Robot_UI::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_TankUI.TimeChange(dTime_s);
 	m_PowerWheelUI.TimeChange(dTime_s);
+	m_PowerSlowWheelUI.TimeChange(dTime_s);
 	m_Helix.TimeChange(dTime_s);
 	m_Rollers.TimeChange(dTime_s);
 }
@@ -2223,6 +2292,7 @@ void FRC_2013_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properti
 	__super::Initialize(em,props);
 	m_TankUI.Initialize(em,props);
 	m_PowerWheelUI.Initialize(em);
+	m_PowerSlowWheelUI.Initialize(em);
 	m_Helix.Initialize(em);
 	m_Rollers.Initialize(em);
 }
@@ -2231,6 +2301,7 @@ void FRC_2013_Robot_UI::UI_Init(Actor_Text *parent)
 {
 	m_TankUI.UI_Init(parent);
 	m_PowerWheelUI.UI_Init(parent);
+	m_PowerSlowWheelUI.UI_Init(parent);
 	m_Helix.UI_Init(parent);
 	m_Rollers.UI_Init(parent);
 }
@@ -2238,6 +2309,7 @@ void FRC_2013_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,
 {
 	m_TankUI.custom_update(nv,draw,parent_pos);
 	m_PowerWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
+	m_PowerSlowWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
 	m_Helix.update(nv,draw,parent_pos,-GetAtt_r());
 	m_Rollers.update(nv,draw,parent_pos,-GetAtt_r());
 }
@@ -2245,6 +2317,7 @@ void FRC_2013_Robot_UI::Text_SizeToUse(double SizeToUse)
 {
 	m_TankUI.Text_SizeToUse(SizeToUse);
 	m_PowerWheelUI.Text_SizeToUse(SizeToUse);
+	m_PowerSlowWheelUI.Text_SizeToUse(SizeToUse);
 	m_Helix.Text_SizeToUse(SizeToUse);
 	m_Rollers.Text_SizeToUse(SizeToUse);
 }
@@ -2252,6 +2325,7 @@ void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 {
 	m_TankUI.UpdateScene(geode,AddOrRemove);
 	m_PowerWheelUI.UpdateScene(geode,AddOrRemove);
+	m_PowerSlowWheelUI.UpdateScene(geode,AddOrRemove);
 	m_Helix.UpdateScene(geode,AddOrRemove);
 	m_Rollers.UpdateScene(geode,AddOrRemove);
 }

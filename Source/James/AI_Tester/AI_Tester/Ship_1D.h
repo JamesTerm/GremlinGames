@@ -68,7 +68,7 @@ class Ship_1D : public Entity1D
 		void SetRequestedVelocity(double Velocity);
 		//This will scale the velocity by max speed and also handle flood control
 		void SetRequestedVelocity_FromNormalized(double Normalized_Velocity);
-		double GetRequestedVelocity(){return m_RequestedVelocity;}
+		double GetRequestedVelocity() const {return m_RequestedVelocity;}
 
 		/// \param LockShipHeadingToPosition for this given time slice if this is true the intended orientation is restrained
 		/// to the ships restraints and the ship is locked to the orientation (Joy/Key mode).  If false (Mouse/AI) the intended orientation
