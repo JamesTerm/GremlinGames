@@ -255,7 +255,8 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::BindAdditionalEventControl
 /***********************************************************************************************************************************/
 
 FRC_2013_Robot::IntakeSystem::IntakeSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
-	m_Helix("Helix",robot_control,eHelix),m_IntakeDeployment(pParent,robot_control),
+	m_Helix("Helix",robot_control,eHelix),m_Rollers("Rollers",robot_control,eRollers),
+	m_IntakeDeployment(pParent,robot_control),
 	m_FireDelayTrigger_Time(0.0),m_FireStayOn_Time(0.0),
 	m_FireDelayTriggerOn(false),m_FireStayOn(false)
 {
@@ -267,16 +268,22 @@ void FRC_2013_Robot::IntakeSystem::Initialize(Base::EventMap& em,const Entity1D_
 {
 	//These share the same props and fire is scaled from this level
 	m_Helix.Initialize(em,props);
+	m_Rollers.Initialize(em,props);  //borrowing helix props as it is simple (like we did for conveyor)
 	m_IntakeDeployment.Initialize(em,&m_pParent->GetRobotProps().GetIntakeDeploymentProps());
 }
 void FRC_2013_Robot::IntakeSystem::ResetPos() 
 {
 	m_Helix.ResetPos();
+	m_Rollers.ResetPos();
+	m_IntakeDeployment.ResetPos();
 	m_ControlSignals.raw=0;
 }
 
 void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 {
+	const FRC_2013_Robot_Properties &properties=m_pParent->m_RobotProps;
+	const FRC_2013_Robot_Props &props=properties.GetFRC2013RobotProps();
+
 	//const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
 	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
 	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetRequestedVelocity()!=0.0) &&
@@ -293,7 +300,7 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 		{
 			m_FireDelayTrigger_Time+=dTime_s;
 			//printf("Fire delaying =%f\n",m_FireDelayTrigger_Time);
-			if (m_FireDelayTrigger_Time>m_pParent->m_RobotProps.GetFRC2013RobotProps().FireTriggerDelay)
+			if (m_FireDelayTrigger_Time>props.FireTriggerDelay)
 				m_FireDelayTriggerOn=false;
 		}
 	}
@@ -316,7 +323,7 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 		{
 			m_FireStayOn_Time+=dTime_s;
 			//printf("Fire Staying on=%f\n",m_FireStayOn_Time);
-			if (m_FireStayOn_Time>m_pParent->m_RobotProps.GetFRC2013RobotProps().FireButtonStayOn_Time)
+			if (m_FireStayOn_Time>props.FireButtonStayOn_Time)
 				m_FireStayOn=false;
 		}
 	}
@@ -337,12 +344,19 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 
 	//This assumes the motors are in the same orientation: 
 	//Note: we may want to spin helix during fire, but for now... assume operator will load them all in hopper before firing
-	double HelixAcceleration= Grip | Squirt ?
+	const double HelixAcceleration= Grip | Squirt ?
 		((Squirt)?m_Helix.GetACCEL():-m_Helix.GetBRAKE()):0.0;
 	m_Helix.SetCurrentLinearAcceleration(HelixAcceleration);
 
+	//manage rollers... just like helix except that it is off it it is stowed
+	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
+	const bool IsStowed=(fabs(Intake_Position-properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange) < properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance);
+	const double RollerAcceleration= (!IsStowed || Squirt) ? HelixAcceleration : 0.0;
+	m_Rollers.SetCurrentLinearAcceleration(RollerAcceleration);
+
 	m_Helix.AsEntity1D().TimeChange(dTime_s);
 	m_IntakeDeployment.AsEntity1D().TimeChange(dTime_s);
+	m_Rollers.AsEntity1D().TimeChange(dTime_s);
 }
 
 //This is the manual override, but probably not used if we use spike as it would be wasteful to have a analog control for this
@@ -1842,6 +1856,11 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_IntakeDeployment_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
+		case FRC_2013_Robot::eRollers:
+			m_RollersVoltage=Voltage;
+			m_Rollers_Enc.UpdateEncoderVoltage(Voltage);
+			m_Rollers_Enc.TimeChange();
+			break;
 	}
 
 	#ifdef __DebugLUA__
@@ -1963,6 +1982,9 @@ void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
 		case FRC_2013_Robot::eIntake_Deployment:
 			m_IntakeDeployment_Pot.ResetPos();
 			break;
+		case FRC_2013_Robot::eRollers:
+			m_Rollers_Enc.ResetPos();
+			break;
 	}
 }
 
@@ -1995,6 +2017,7 @@ void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
 		m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
 		m_Helix_Enc.Initialize(&robot_props->GetHelixProps());
 		m_IntakeDeployment_Pot.Initialize(&robot_props->GetIntakeDeploymentProps());
+		m_Rollers_Enc.Initialize(&robot_props->GetHelixProps());  //borrow helix... these are like conveyor
 	}
 }
 
@@ -2004,8 +2027,9 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
 	m_Helix_Enc.SetTimeDelta(dTime_s);
 	m_IntakeDeployment_Pot.SetTimeDelta(dTime_s);
+	m_Rollers_Enc.SetTimeDelta(dTime_s);
 	//display voltages
-	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
+	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f hx=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
 		m_PitchRampVoltage,m_PowerWheelVoltage,m_HelixVoltage);
 	m_dTime_s=dTime_s;
 }
@@ -2034,6 +2058,9 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
 			result=m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition();
+			break;
+		case FRC_2013_Robot::eRollers:
+			result=m_Rollers_Enc.GetEncoderVelocity();
 			break;
 	}
 
@@ -2102,7 +2129,7 @@ bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
 void FRC_2013_Power_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
 {
 	Wheel_Properties Myprops;
-	Myprops.m_Offset=Vec2d(0.0,2.0);
+	Myprops.m_Offset=Vec2d(0.0,-2.0);
 	Myprops.m_Color=osg::Vec4(1.0,0.0,0.5,1.0);
 	Myprops.m_TextDisplay=L"|";
 
@@ -2122,6 +2149,34 @@ void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 	AddRotation((NormalizedVelocity * 18) * dTime_s);
 }
 
+  /***************************************************************************************************************/
+ /*												FRC_2013_Rollers_UI												*/
+/***************************************************************************************************************/
+
+void FRC_2013_Rollers_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	Wheel_Properties Myprops;
+	Myprops.m_Offset=Vec2d(0.0,2.0);
+	Myprops.m_Color=osg::Vec4(0.75,0.75,0.75,1.0);
+	Myprops.m_TextDisplay=L"|";
+
+	__super::Initialize(em,&Myprops);
+}
+
+void FRC_2013_Rollers_UI::TimeChange(double dTime_s)
+{
+	FRC_2013_Control_Interface *pw_access=m_RobotControl;
+	double Velocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eRollers);
+	AddRotation(Velocity* 0.5 * dTime_s);
+	double y_offset=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eIntake_Deployment);
+	//normalize
+	const Ship_1D_Props &props=m_RobotControl->GetRobotProps().GetIntakeDeploymentProps().GetShip_1D_Props();
+	y_offset-=props.MinRange;
+	y_offset/=fabs(props.MaxRange-props.MinRange);
+	//printf("\rTest=%.2f     ",y_offset);
+	UpdatePosition(0.0,2.0+y_offset);
+}
+
 
   /***************************************************************************************************************/
  /*											FRC_2013_Fire_Conveyor_UI											*/
@@ -2130,7 +2185,7 @@ void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 void FRC_2013_Fire_Conveyor_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
 {
 	Wheel_Properties Myprops;
-	Myprops.m_Offset=Vec2d(0.0,-1.8);
+	Myprops.m_Offset=Vec2d(0.0,1.0);
 	Myprops.m_Color=osg::Vec4(0.0,1.0,0.5,1.0);
 	Myprops.m_TextDisplay=L"-";
 
@@ -2142,7 +2197,7 @@ void FRC_2013_Fire_Conveyor_UI::TimeChange(double dTime_s)
 	FRC_2013_Control_Interface *pw_access=m_RobotControl;
 	double Velocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eHelix);
 	AddRotation(Velocity* 0.5 * dTime_s);
-	double y_offset=pw_access->GetIsSolenoidOpen(FRC_2013_Robot::eFirePiston)==true?0.5:-1.8;
+	double y_offset=pw_access->GetIsSolenoidOpen(FRC_2013_Robot::eFirePiston)==true?-1.8:1.0;
 	UpdatePosition(0.0,y_offset);
 }
 
@@ -2151,7 +2206,7 @@ void FRC_2013_Fire_Conveyor_UI::TimeChange(double dTime_s)
 /***************************************************************************************************************/
 
 FRC_2013_Robot_UI::FRC_2013_Robot_UI(const char EntityName[]) : FRC_2013_Robot(EntityName,this),FRC_2013_Robot_Control(),
-		m_TankUI(this),m_PowerWheelUI(this),m_Helix(this)
+		m_TankUI(this),m_PowerWheelUI(this),m_Helix(this),m_Rollers(this)
 {
 }
 
@@ -2161,6 +2216,7 @@ void FRC_2013_Robot_UI::TimeChange(double dTime_s)
 	m_TankUI.TimeChange(dTime_s);
 	m_PowerWheelUI.TimeChange(dTime_s);
 	m_Helix.TimeChange(dTime_s);
+	m_Rollers.TimeChange(dTime_s);
 }
 void FRC_2013_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
@@ -2168,6 +2224,7 @@ void FRC_2013_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properti
 	m_TankUI.Initialize(em,props);
 	m_PowerWheelUI.Initialize(em);
 	m_Helix.Initialize(em);
+	m_Rollers.Initialize(em);
 }
 
 void FRC_2013_Robot_UI::UI_Init(Actor_Text *parent) 
@@ -2175,22 +2232,26 @@ void FRC_2013_Robot_UI::UI_Init(Actor_Text *parent)
 	m_TankUI.UI_Init(parent);
 	m_PowerWheelUI.UI_Init(parent);
 	m_Helix.UI_Init(parent);
+	m_Rollers.UI_Init(parent);
 }
 void FRC_2013_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
 {
 	m_TankUI.custom_update(nv,draw,parent_pos);
 	m_PowerWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
 	m_Helix.update(nv,draw,parent_pos,-GetAtt_r());
+	m_Rollers.update(nv,draw,parent_pos,-GetAtt_r());
 }
 void FRC_2013_Robot_UI::Text_SizeToUse(double SizeToUse) 
 {
 	m_TankUI.Text_SizeToUse(SizeToUse);
 	m_PowerWheelUI.Text_SizeToUse(SizeToUse);
 	m_Helix.Text_SizeToUse(SizeToUse);
+	m_Rollers.Text_SizeToUse(SizeToUse);
 }
 void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
 {
 	m_TankUI.UpdateScene(geode,AddOrRemove);
 	m_PowerWheelUI.UpdateScene(geode,AddOrRemove);
 	m_Helix.UpdateScene(geode,AddOrRemove);
+	m_Rollers.UpdateScene(geode,AddOrRemove);
 }
