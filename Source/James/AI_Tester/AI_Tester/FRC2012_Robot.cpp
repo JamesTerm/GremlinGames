@@ -1182,9 +1182,9 @@ const char * const g_FRC_2012_Controls_Events[] =
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
 	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
 	//AI Tester events only
-#if 1
+	#ifdef AI_TesterCode
 	,"Ball_SlowWheel"
-#endif
+	#endif
 };
 
 const char *FRC_2012_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
