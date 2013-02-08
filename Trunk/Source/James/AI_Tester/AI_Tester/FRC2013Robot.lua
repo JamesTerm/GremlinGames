@@ -142,8 +142,28 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=50, i=1, d=25 },
-			latency=0.0,
+			{p=200, i=0, d=50 },
+			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
+			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
+			voltage_multiply=-1.0,
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+
+			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
+			accel=200.0,						--These are only needed if we bind keys for power in meters per second
+			brake=200.0,
+			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=200,			--The wheel may some time to ramp up
+			min_range=28 * Pi2				--We borrow the min range to represent the min speed
+		},
+		power_first_stage =
+		{
+			is_closed='no',
+			show_pid_dump='no',
+			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
+			pid=
+			{p=0, i=0, d=0 },
 			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
 			voltage_multiply=-1.0,
