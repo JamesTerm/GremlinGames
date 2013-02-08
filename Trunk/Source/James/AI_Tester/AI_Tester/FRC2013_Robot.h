@@ -71,14 +71,15 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+		const Rotary_Properties &GetHelixProps() const {return m_HelixProps;}
+		const Rotary_Properties &GetIntakeDeploymentProps() const {return m_IntakeDeploymentProps;}
 		const Tank_Robot_Properties &GetClimbGearLiftProps() const {return m_ClimbGearLiftProps;}
 		const Tank_Robot_Properties &GetClimbGearDropProps() const {return m_ClimbGearDropProps;}
 		const FRC_2013_Robot_Props &GetFRC2013RobotProps() const {return m_FRC2013RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_HelixProps,m_IntakeDeploymentProps;
 		Tank_Robot_Properties m_ClimbGearLiftProps;
 		Tank_Robot_Properties m_ClimbGearDropProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
@@ -99,7 +100,8 @@ class FRC_2013_Robot : public Tank_Robot
 		{
 			ePitchRamp,
 			ePowerWheels,
-			eHelix
+			eHelix,
+			eIntake_Deployment
 		};
 
 		//Most likely will not need IR sensors
@@ -208,6 +210,30 @@ class FRC_2013_Robot : public Tank_Robot
 			private:
 				FRC_2013_Robot * const m_pParent;
 				Rotary_Velocity_Control m_Helix;
+				class Intake_Deployment : public Rotary_Position_Control
+				{
+				private:
+					//typedef Rotary_Position_Control __super;
+					FRC_2013_Robot * const m_pParent;
+					bool m_Advance,m_Retract;
+				public:
+					Intake_Deployment(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
+					IEvent::HandlerList ehl;
+					virtual void BindAdditionalEventControls(bool Bind);
+				protected:
+
+					void Advance();
+					void Retract();
+
+					//typedef Rotary_Position_Control __super;
+					//events are a bit picky on what to subscribe so we'll just wrap from here
+					void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+					void SetIntendedPosition(double Position);
+
+					void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+					virtual void TimeChange(double dTime_s);
+				} m_IntakeDeployment;
+
 				double m_FireDelayTrigger_Time; //Time counter of the value remaining in the on-to-delay state
 				double m_FireStayOn_Time;  //Time counter of the value remaining in the on state
 				bool m_FireDelayTriggerOn; //A valve mechanism that must meet time requirement to disable the delay
@@ -236,6 +262,7 @@ class FRC_2013_Robot : public Tank_Robot
 				//Expose for goals
 				void Fire(bool on) {m_ControlSignals.bits.Fire=on;}
 				void Squirt(bool on) {m_ControlSignals.bits.Squirt=on;}
+
 			protected:
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
@@ -417,7 +444,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester2 m_Pitch_Pot; //simulate the potentiometer and motor
+		Potentiometer_Tester2 m_Pitch_Pot,m_IntakeDeployment_Pot; //simulate the potentiometer and motor
 		Encoder_Simulator m_PowerWheel_Enc,m_Helix_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		#ifdef __TestXAxisServoDump__
@@ -425,7 +452,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		double m_LastLeftVelocity,m_LastRightVelocity;
 		#endif
 		//cache voltage values for display
-		double m_PitchRampVoltage,m_PowerWheelVoltage;
+		double m_PitchRampVoltage,m_PowerWheelVoltage,m_IntakeDeploymentVoltage;
 		double m_HelixVoltage;
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 		bool m_FireSensor;
