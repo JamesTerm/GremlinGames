@@ -119,7 +119,8 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 
 FRC_2013_Robot::PowerWheels::PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
 	m_pParent(pParent),m_SecondStage("SecondStage",robot_control,ePowerWheelSecondStage,Rotary_Velocity_Control::eActive),
-	m_FirstStage("FirstStage",robot_control,ePowerWheelFirstStage,Rotary_Velocity_Control::eActive),m_ManualVelocity(0.0),m_IsRunning(false)
+	m_FirstStage("FirstStage",robot_control,ePowerWheelFirstStage,Rotary_Velocity_Control::eActive),m_ManualVelocity(0.0),m_FirstStageManualVelocity(0.0),
+	m_IsRunning(false)
 {
 }
 
@@ -135,22 +136,17 @@ void FRC_2013_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PowerWheels_FirstStage_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::Set_FirstStage_RequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetIsRunning);
 	}
 	else
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PowerWheels_FirstStage_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PowerWheels::Set_FirstStage_RequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetIsRunning);
 	}
-}
-
-void FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
-{
-	//bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
-	//This variable is dedicated to non-targeting mode
-	m_ManualVelocity=Velocity;
 }
 
 void FRC_2013_Robot::PowerWheels::SetEncoderSafety(bool DisableFeedback) 
@@ -204,8 +200,28 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 			}
 
 			m_SecondStage.SetRequestedVelocity_FromNormalized(Velocity);
-			const double FirstStageScalar=0.5;  //TODO properties
-			m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity * FirstStageScalar);
+			if (IsZero(m_FirstStageManualVelocity))  //typical case...no pot connected for first stage we latch to second stage velocity
+			{
+				const double FirstStageScalar=0.5;  //TODO properties
+				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity * FirstStageScalar);
+			}
+			else	//This should only be used during calibration as it will be difficult to control two pots otherwise
+			{
+				double positive_range = (m_FirstStageManualVelocity * 0.5) + 0.5;
+				positive_range=positive_range>0.01?positive_range:0.0;
+				const double MaxSpeed=m_FirstStage.GetMaxSpeed();
+				const double minRange=m_FirstStage.GetMinRange();
+				//Note: this may want to be MaxRange to be consistent
+				const double maxRange=m_FirstStage.GetMaxSpeed();
+				const double Scale=(maxRange-minRange) / MaxSpeed;
+				const double Offset=minRange / MaxSpeed;
+				const double Velocity=(positive_range * Scale) + Offset;
+				#if 0
+				const double rps=(Velocity * MaxSpeed) / Pi2;
+				DOUT4("fs rps=%.2f dv=%.2f",rps,m_FirstStageManualVelocity);
+				#endif
+				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity);
+			}
 		}
 		else
 		{
@@ -1303,7 +1319,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 {
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
-	"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
+	"PowerWheels_SetCurrentVelocity","PowerWheels_FirstStage_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
 	"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
 	"Intake_Deployment_SetCurrentVelocity","Intake_Deployment_SetIntendedPosition","Intake_Deployment_SetPotentiometerSafety",
 	"Intake_Deployment_Advance","Intake_Deployment_Retract",
