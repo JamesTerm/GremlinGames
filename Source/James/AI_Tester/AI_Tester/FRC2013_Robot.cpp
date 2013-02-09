@@ -120,7 +120,7 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 FRC_2013_Robot::PowerWheels::PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
 	m_pParent(pParent),m_SecondStage("SecondStage",robot_control,ePowerWheelSecondStage,Rotary_Velocity_Control::eActive),
 	m_FirstStage("FirstStage",robot_control,ePowerWheelFirstStage,Rotary_Velocity_Control::eActive),m_ManualVelocity(0.0),m_FirstStageManualVelocity(0.0),
-	m_IsRunning(false)
+	m_ManualAcceleration(0.0),m_IsRunning(false)
 {
 }
 
@@ -136,6 +136,7 @@ void FRC_2013_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PowerWheels_SetCurrentVelocity_Axis"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_Axis_FromNormalized);
 		em->EventValue_Map["PowerWheels_FirstStage_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::Set_FirstStage_RequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetIsRunning);
@@ -143,6 +144,7 @@ void FRC_2013_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 	else
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PowerWheels_SetCurrentVelocity_Axis"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_Axis_FromNormalized);
 		em->EventValue_Map["PowerWheels_FirstStage_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PowerWheels::Set_FirstStage_RequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetIsRunning);
@@ -157,6 +159,17 @@ void FRC_2013_Robot::PowerWheels::SetEncoderSafety(bool DisableFeedback)
 
 void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 {
+	//additive with a smoothing rate
+	m_ManualVelocity+=(m_ManualAcceleration*dTime_s);
+	//clamp bounds
+	if (m_ManualVelocity>1.0)
+		m_ManualVelocity=1.0;
+	else if (m_ManualVelocity<-1.0)
+		m_ManualVelocity=-1.0;
+
+	//TODO We'll need this on the smart dashboard for axis use
+	//DOUT5 ("vel=%f",m_ManualVelocity);
+
 	bool IsTargeting=((m_pParent->m_IsTargeting) && m_SecondStage.GetEncoderUsage()==Rotary_Velocity_Control::eActive);
 	if (  IsTargeting )
 	{
@@ -1359,7 +1372,8 @@ const char * const g_FRC_2013_Controls_Events[] =
 {
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
-	"PowerWheels_SetCurrentVelocity","PowerWheels_FirstStage_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
+	"PowerWheels_SetCurrentVelocity","PowerWheels_SetCurrentVelocity_Axis","PowerWheels_FirstStage_SetCurrentVelocity",
+	"PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
 	"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
 	"Intake_Deployment_SetCurrentVelocity","Intake_Deployment_SetIntendedPosition","Intake_Deployment_SetPotentiometerSafety",
 	"Intake_Deployment_Advance","Intake_Deployment_Retract",
@@ -2178,6 +2192,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
+			//DOUT5 ("vel=%f",result);
 			break;
 		case FRC_2013_Robot::ePowerWheelFirstStage:
 			result=m_PowerSlowWheel_Enc.GetEncoderVelocity();
