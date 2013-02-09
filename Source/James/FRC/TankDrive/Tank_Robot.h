@@ -1,5 +1,4 @@
 #pragma once
-#undef __Tank_UseScalerPID__
 
 ///This is the interface to control the robot.  It is presented in a generic way that is easily compatible to the ship and robot tank
 class Tank_Drive_Control_Interface
@@ -45,11 +44,13 @@ struct Tank_Robot_Props
 	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
-	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
-	double InverseMaxDecel;  //used for deceleration case
+	double InverseMaxAccel_Left,InverseMaxAccel_Right;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
+	double InverseMaxDecel_Left,InverseMaxDecel_Right;  //used for deceleration case
 	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
 	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
 	bool LeftEncoderReversed,RightEncoderReversed;
+	double Positive_DeadZone_Left,Positive_DeadZone_Right;
+	double Negative_DeadZone_Left,Negative_DeadZone_Right;  //These must be in negative form
 };
 
 class Tank_Robot_UI;
@@ -77,7 +78,6 @@ class Tank_Robot : public Ship_Tester,
 	protected:
 		//friend Tank_Robot_UI;
 
-		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		#ifdef __UseScalerPID__
@@ -112,18 +112,12 @@ class Tank_Robot : public Ship_Tester,
 		Tank_Drive_Control_Interface * const m_RobotControl;
 		Tank_Drive * m_VehicleDrive;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
-		#ifdef __UseScalerPID__
-		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration
-		#else
 		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration
-		#endif
 		bool m_UsingEncoders;
-		#ifdef __UseScalerPID__
-		bool m_VoltageOverride;  //when true will kill voltage
-		#endif
-		bool m_UseDeadZoneSkip; //Manages when to use the deadzone (mainly false during autonomous deceleration)
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderAngularVelocity;
+		//cache in their native form (I don't want to assume lower level is caching)
+		double m_Encoder_LeftVelocity,m_Encoder_RightVelocity;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
 		double m_Heading;  //We take over the heading from physics
