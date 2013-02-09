@@ -198,15 +198,32 @@ MainRobot = {
 		},
 		helix =
 		{
-			--Note: there are no encoders here so is_closed is ignored
+			--Note: there are no encoders here so is_closed is ignored and can not show pid dump
 			tolerance=0.01,					--we need good precision
 			voltage_multiply=1.0,			--May be reversed
-			
 			max_speed=28,
 			accel=112,						--These are needed and should be high enough to grip without slip
 			brake=112,
 			max_accel_forward=112,
 			max_accel_reverse=112
+		},
+
+		rollers =
+		{
+			--Note: there are no encoders here so is_closed is ignored and can not show pid dump
+			tolerance=0.01,					--we need good precision
+			voltage_multiply=1.0,			--May be reversed
+			--For open loop, and using limit... the curve will help achieve proper velocity
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			max_speed=28,
+			accel=112,						--These are needed and should be high enough to grip without slip
+			brake=112,
+			max_accel_forward=112,
+			max_accel_reverse=112,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			min_range=-10,				--TODO find out what these are
+			max_range= 10
 		},
 
 		climb_gear_lift = 

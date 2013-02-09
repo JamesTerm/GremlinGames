@@ -298,7 +298,7 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::BindAdditionalEventControl
 /***********************************************************************************************************************************/
 
 FRC_2013_Robot::IntakeSystem::IntakeSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
-	m_Helix("Helix",robot_control,eHelix),m_Rollers("Rollers",robot_control,eRollers),
+	m_Helix("Helix",robot_control,eHelix),m_Rollers("Rollers",robot_control,eRollers),  //Note: default parameter 4 is no encoder as these will not have them
 	m_IntakeDeployment(pParent,robot_control),
 	m_FireDelayTrigger_Time(0.0),m_FireStayOn_Time(0.0),
 	m_FireDelayTriggerOn(false),m_FireStayOn(false)
@@ -311,7 +311,7 @@ void FRC_2013_Robot::IntakeSystem::Initialize(Base::EventMap& em,const Entity1D_
 {
 	//These share the same props and fire is scaled from this level
 	m_Helix.Initialize(em,props);
-	m_Rollers.Initialize(em,props);  //borrowing helix props as it is simple (like we did for conveyor)
+	m_Rollers.Initialize(em,&m_pParent->GetRobotProps().GetRollersProps());  //borrowing helix props as it is simple (like we did for conveyor)
 	m_IntakeDeployment.Initialize(em,&m_pParent->GetRobotProps().GetIntakeDeploymentProps());
 }
 void FRC_2013_Robot::IntakeSystem::ResetPos() 
@@ -776,7 +776,10 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
 		{
+			//Note: this is not as important as it use to be
+			#if 0
 			DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+			#endif
 			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.1f",RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity));
 		}
 	}
@@ -1151,6 +1154,19 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	false,0.0,0.0,	//No limit ever!
 	true //This is angular
 	),
+	m_RollersProps(
+	"Rollers",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
+	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
+	28,   //Max Speed (rounded as we need not have precision)
+	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Props::eSimpleMotor,
+	false,0.0,0.0,	//No limit ever!
+	true //This is angular
+	),
 	m_IntakeDeploymentProps(
 	"IntakeDeployment",
 	2.0,    //Mass
@@ -1376,6 +1392,12 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_HelixProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("rollers");
+		if (!err)
+		{
+			m_RollersProps.LoadFromScript(script);
 			script.Pop();
 		}
 		err = script.GetFieldTable("intake_deployment");
@@ -2141,6 +2163,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2013_Robot::eRollers:
 			result=m_Rollers_Enc.GetEncoderVelocity();
+			//DOUT5 ("vel=%f",result);
 			break;
 	}
 

@@ -73,6 +73,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetPowerSlowWheelProps() const {return m_PowerSlowWheelProps;}
 		const Rotary_Properties &GetHelixProps() const {return m_HelixProps;}
+		const Rotary_Properties &GetRollersProps() const {return m_RollersProps;}
 		const Rotary_Properties &GetIntakeDeploymentProps() const {return m_IntakeDeploymentProps;}
 		const Tank_Robot_Properties &GetClimbGearLiftProps() const {return m_ClimbGearLiftProps;}
 		const Tank_Robot_Properties &GetClimbGearDropProps() const {return m_ClimbGearDropProps;}
@@ -80,7 +81,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_IntakeDeploymentProps;
+		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
 		Tank_Robot_Properties m_ClimbGearLiftProps;
 		Tank_Robot_Properties m_ClimbGearDropProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;

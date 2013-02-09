@@ -229,17 +229,26 @@ void Ship_1D::TimeChange(double dTime_s)
 			#ifndef __DisableSpeedControl__
 			{
 				{
+					double MaxSpeed_Forward=MAX_SPEED;
+					double MaxSpeed_Reverse=-MAX_SPEED;
+					if ((m_UsingRange)&&(m_IsAngular))
+					{
+						MaxSpeed_Forward=m_MaxRange;
+						MaxSpeed_Reverse=m_MinRange;
+					}
 					double VelocityDelta=m_currAccel*dTime_s;
-					if ((LocalVelocity+VelocityDelta>MAX_SPEED)&&(m_currAccel>0))
+					if ((LocalVelocity+VelocityDelta>MaxSpeed_Forward)&&(m_currAccel>0))
 							m_currAccel=0.0;
-					else if ((LocalVelocity+VelocityDelta<-MAX_SPEED)&&(m_currAccel<0))
+					else if ((LocalVelocity+VelocityDelta<MaxSpeed_Reverse)&&(m_currAccel<0))
 						m_currAccel=0.0;
 				}
 			}
 			#endif
 			ForceToApply=m_currAccel*Mass;
 
-			if (m_UsingRange)
+			//Note: in this case lock to position should not have set point operations when it is angular... this logic should be sound, as it has no effect with position
+			//This will be managed in the speed control section
+			if ((m_UsingRange)&&(!m_IsAngular))
 			{
 				double Position=GetPos_m();
 				double Vel;
