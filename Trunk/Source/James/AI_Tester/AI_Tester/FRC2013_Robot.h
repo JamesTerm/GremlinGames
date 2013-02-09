@@ -205,8 +205,8 @@ class FRC_2013_Robot : public Tank_Robot
 				bool GetIsRunning() const {return m_IsRunning;}
 			protected:
 				//typedef Rotary_Velocity_Control __super;
-				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {m_ManualVelocity=Velocity;}
+				void SetRequestedVelocity_Axis_FromNormalized(double Velocity) {m_ManualAcceleration=Velocity;}
 				void Set_FirstStage_RequestedVelocity_FromNormalized(double Velocity) {m_FirstStageManualVelocity=Velocity;}
 				void SetEncoderSafety(bool DisableFeedback);
 				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
@@ -214,6 +214,7 @@ class FRC_2013_Robot : public Tank_Robot
 				FRC_2013_Robot * const m_pParent;
 				Rotary_Velocity_Control m_SecondStage,m_FirstStage;
 				double m_ManualVelocity,m_FirstStageManualVelocity;
+				double m_ManualAcceleration;
 				bool m_IsRunning;
 		};
 
