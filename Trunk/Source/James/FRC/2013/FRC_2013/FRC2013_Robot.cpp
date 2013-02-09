@@ -38,6 +38,8 @@ namespace Scripting=Framework::Scripting;
 #undef __DisableEncoderTracking__
 //Perhaps off season we can experiment with being field aware (some code in place for this)
 #define __NotFieldAware__
+#define __EnablePitchDisplay__
+#undef __EnableTargetingDisplay__
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -125,91 +127,203 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2013_Robot::PowerWheels::PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Velocity_Control("PowerWheels",robot_control,ePowerWheels,eActive),m_pParent(pParent),m_ManualVelocity(0.0),m_IsRunning(false)
+	m_pParent(pParent),m_SecondStage("SecondStage",robot_control,ePowerWheelSecondStage,Rotary_Velocity_Control::eActive),
+	m_FirstStage("FirstStage",robot_control,ePowerWheelFirstStage,Rotary_Velocity_Control::eActive),m_ManualVelocity(0.0),m_FirstStageManualVelocity(0.0),
+	m_ManualAcceleration(0.0),m_IsRunning(false)
 {
+}
+
+void FRC_2013_Robot::PowerWheels::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
+{
+	m_SecondStage.Initialize(em,props);
+	m_FirstStage.Initialize(em,&m_pParent->GetRobotProps().GetPowerSlowWheelProps());
 }
 
 void FRC_2013_Robot::PowerWheels::BindAdditionalEventControls(bool Bind)
 {
-	Base::EventMap *em=GetEventMap(); 
+	Base::EventMap *em=m_SecondStage.GetEventMap(); 
 	if (Bind)
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PowerWheels_SetCurrentVelocity_Axis"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_Axis_FromNormalized);
+		em->EventValue_Map["PowerWheels_FirstStage_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::Set_FirstStage_RequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Subscribe(ehl,*this, &FRC_2013_Robot::PowerWheels::SetIsRunning);
 	}
 	else
 	{
 		em->EventValue_Map["PowerWheels_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["PowerWheels_SetCurrentVelocity_Axis"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetRequestedVelocity_Axis_FromNormalized);
+		em->EventValue_Map["PowerWheels_FirstStage_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PowerWheels::Set_FirstStage_RequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["PowerWheels_SetEncoderSafety"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetEncoderSafety);
 		em->EventOnOff_Map["PowerWheels_IsRunning"].Remove(*this, &FRC_2013_Robot::PowerWheels::SetIsRunning);
 	}
 }
 
-void FRC_2013_Robot::PowerWheels::SetRequestedVelocity_FromNormalized(double Velocity) 
+void FRC_2013_Robot::PowerWheels::SetEncoderSafety(bool DisableFeedback) 
 {
-	//bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
-	//This variable is dedicated to non-targeting mode
-	m_ManualVelocity=Velocity;
+	m_SecondStage.SetEncoderSafety(DisableFeedback);
+	m_FirstStage.SetEncoderSafety(DisableFeedback);
 }
 
 void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && GetEncoderUsage()==eActive);
+	//additive with a smoothing rate
+	m_ManualVelocity+=(m_ManualAcceleration*dTime_s);
+	//clamp bounds
+	if (m_ManualVelocity>1.0)
+		m_ManualVelocity=1.0;
+	else if (m_ManualVelocity<-1.0)
+		m_ManualVelocity=-1.0;
+
+	//TODO We'll need this on the smart dashboard for axis use
+	//DOUT5 ("vel=%f",m_ManualVelocity);
+
+	bool IsTargeting=((m_pParent->m_IsTargeting) && m_SecondStage.GetEncoderUsage()==Rotary_Velocity_Control::eActive);
 	if (  IsTargeting )
 	{
-		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested())) 
+		if ((m_IsRunning)||(m_pParent->m_IntakeSystem.GetIsFireRequested())) 
 		{
 			//convert linear velocity to angular velocity
-			double RPS=m_pParent->m_LinearVelocity / (Pi * GetDimension());
+			double RPS=m_pParent->m_LinearVelocity / (Pi * m_SecondStage.GetDimension());
 			RPS*=(2.0 * m_pParent->m_PowerErrorCorrection);  //For hooded shoot we'll have to move twice as fast
-			SetRequestedVelocity(RPS * Pi2);
+			m_SecondStage.SetRequestedVelocity(RPS * Pi2);
+			const double FirstStageScalar=0.5;  //TODO properties
+			m_FirstStage.SetRequestedVelocity(RPS * FirstStageScalar * Pi2);
 			//DOUT5("rps=%f rad=%f",RPS,RPS*Pi2);
 		}
 		else
-			SetRequestedVelocity(0);
+		{
+			m_SecondStage.SetRequestedVelocity(0);
+			m_FirstStage.SetRequestedVelocity(0);
+		}
 	}
 	else
 	{
-		if ((m_IsRunning)||(m_pParent->m_BallConveyorSystem.GetIsFireRequested()))
+		if ((m_IsRunning)||(m_pParent->m_IntakeSystem.GetIsFireRequested()))
 		{
 			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
 			//first get the range from 0 - 1
 			double positive_range = (m_ManualVelocity * 0.5) + 0.5;
 			positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=MAX_SPEED;
-			const double Scale=(maxRange-minRange) / MAX_SPEED;
-			const double Offset=minRange/MAX_SPEED;
+			const double MaxSpeed=m_SecondStage.GetMaxSpeed();
+			const double minRange=m_SecondStage.GetMinRange();
+			//Note: this may want to be MaxRange to be consistent
+			const double maxRange=m_SecondStage.GetMaxSpeed();
+			const double Scale=(maxRange-minRange) / MaxSpeed;
+			const double Offset=minRange / MaxSpeed;
 			const double Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
 			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().PowerVelocity_DisplayRow;
 			if (DisplayRow!=(size_t)-1)
 			{
-				const double rps=(Velocity * MAX_SPEED) / Pi2;
-				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
+				const double rps=(Velocity * MaxSpeed) / Pi2;
+				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * m_SecondStage.GetDimension()));
 			}
 
-			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(Velocity);
+			m_SecondStage.SetRequestedVelocity_FromNormalized(Velocity);
+			if (IsZero(m_FirstStageManualVelocity))  //typical case...no pot connected for first stage we latch to second stage velocity
+			{
+				const double FirstStageScalar=0.5;  //TODO properties
+				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity * FirstStageScalar);
+			}
+			else	//This should only be used during calibration as it will be difficult to control two pots otherwise
+			{
+				double positive_range = (m_FirstStageManualVelocity * 0.5) + 0.5;
+				positive_range=positive_range>0.01?positive_range:0.0;
+				const double MaxSpeed=m_FirstStage.GetMaxSpeed();
+				const double minRange=m_FirstStage.GetMinRange();
+				//Note: this may want to be MaxRange to be consistent
+				const double maxRange=m_FirstStage.GetMaxSpeed();
+				const double Scale=(maxRange-minRange) / MaxSpeed;
+				const double Offset=minRange / MaxSpeed;
+				const double Velocity=(positive_range * Scale) + Offset;
+				#if 0
+				const double rps=(Velocity * MaxSpeed) / Pi2;
+				DOUT4("fs rps=%.2f dv=%.2f",rps,m_FirstStageManualVelocity);
+				#endif
+				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity);
+			}
 		}
 		else
-			Rotary_Velocity_Control::SetRequestedVelocity_FromNormalized(0.0);
+		{
+			m_SecondStage.SetRequestedVelocity_FromNormalized(0.0);
+			m_FirstStage.SetRequestedVelocity_FromNormalized(0.0);
+		}
 	}
-	__super::TimeChange(dTime_s);
+	m_SecondStage.AsEntity1D().TimeChange(dTime_s);
+	m_FirstStage.AsEntity1D().TimeChange(dTime_s);
 }
 
 void FRC_2013_Robot::PowerWheels::ResetPos()
 {
 	m_IsRunning=false;
-	__super::ResetPos();
+	m_SecondStage.ResetPos();
+	m_FirstStage.ResetPos();
+}
+
+
+  /***********************************************************************************************************************************/
+ /*											FRC_2013_Robot::IntakeSystem::Intake_Deployment											*/
+/***********************************************************************************************************************************/
+FRC_2013_Robot::IntakeSystem::Intake_Deployment::Intake_Deployment(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
+Rotary_Position_Control("Intake_Deployment",robot_control,eIntake_Deployment),m_pParent(pParent),m_Advance(false),m_Retract(false),m_ChooseDropped(false)
+{
+}
+
+void FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetIntendedPosition(double Position)
+{
+	//DOUT5("Test=%f",RAD_2_DEG(Position));
+	__super::SetIntendedPosition(Position);
+}
+
+void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Advance()
+{
+	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange);
+	m_ChooseDropped=true;
+}
+void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Retract()
+{
+	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange);
+	m_ChooseDropped=false;
+}
+
+void FRC_2013_Robot::IntakeSystem::Intake_Deployment::TimeChange(double dTime_s)
+{
+	__super::TimeChange(dTime_s);
+	#ifdef __DebugLUA__
+	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	#endif
+}
+
+void FRC_2013_Robot::IntakeSystem::Intake_Deployment::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["Intake_Deployment_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Intake_Deployment_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetIntendedPosition);
+		em->EventOnOff_Map["Intake_Deployment_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetPotentiometerSafety);
+		em->Event_Map["Intake_Deployment_Advance"].Subscribe(ehl,*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::Advance);
+		em->Event_Map["Intake_Deployment_Retract"].Subscribe(ehl,*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::Retract);
+	}
+	else
+	{
+		em->EventValue_Map["Intake_Deployment_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Intake_Deployment_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetIntendedPosition);
+		em->EventOnOff_Map["Intake_Deployment_SetPotentiometerSafety"].Remove(*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetPotentiometerSafety);
+		em->Event_Map["Intake_Deployment_Advance"].Remove(*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::Advance);
+		em->Event_Map["Intake_Deployment_Retract"].Remove(*this, &FRC_2013_Robot::IntakeSystem::Intake_Deployment::Retract);
+	}
 }
 
   /***********************************************************************************************************************************/
- /*												FRC_2013_Robot::BallConveyorSystem													*/
+ /*												FRC_2013_Robot::IntakeSystem														*/
 /***********************************************************************************************************************************/
 
-FRC_2013_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
-	m_FireConveyor("FireConveyor",robot_control,eFireConveyor),
+FRC_2013_Robot::IntakeSystem::IntakeSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),
+	m_Helix("Helix",robot_control,eHelix),m_Rollers("Rollers",robot_control,eRollers),  //Note: default parameter 4 is no encoder as these will not have them
+	m_IntakeDeployment(pParent,robot_control),
 	m_FireDelayTrigger_Time(0.0),m_FireStayOn_Time(0.0),
 	m_FireDelayTriggerOn(false),m_FireStayOn(false)
 {
@@ -217,27 +331,57 @@ FRC_2013_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2013_Robot *pParent,R
 	//This are always open loop as there is no encoder and this is specified by default
 }
 
-void FRC_2013_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
+void FRC_2013_Robot::IntakeSystem::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	//These share the same props and fire is scaled from this level
-	m_FireConveyor.Initialize(em,props);
+	m_Helix.Initialize(em,props);
+	m_Rollers.Initialize(em,&m_pParent->GetRobotProps().GetRollersProps());  //borrowing helix props as it is simple (like we did for conveyor)
+	m_IntakeDeployment.Initialize(em,&m_pParent->GetRobotProps().GetIntakeDeploymentProps());
 }
-void FRC_2013_Robot::BallConveyorSystem::ResetPos() 
+void FRC_2013_Robot::IntakeSystem::ResetPos() 
 {
-	m_FireConveyor.ResetPos();
+	m_Helix.ResetPos();
+	m_Rollers.ResetPos();
+	m_IntakeDeployment.ResetPos();
 	m_ControlSignals.raw=0;
 }
 
-void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
+void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 {
-	const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
-	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetRequestedVelocity_Difference();
-	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetRequestedVelocity()!=0.0) &&
-		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetRotary_Properties().PrecisionTolerance);
+	const FRC_2013_Robot_Properties &properties=m_pParent->m_RobotProps;
+	const FRC_2013_Robot_Props &props=properties.GetFRC2013RobotProps();
+
+	//const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
+	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity_Difference();
+	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity()!=0.0) &&
+		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetSecondStageShooter().GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
-	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
-	//bool Grip=m_ControlSignals.bits.Grip==1;
-	bool GripH=m_ControlSignals.bits.GripH==1;
+
+	//And ensure the intake has dropped low enough to not block shooter
+	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
+	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
+	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance;
+	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
+	const bool IsStowed=(fabs(Intake_Position-IntakeMinRange) < IntakeTolerance);
+	//The intake must be low enough to not block the shooter
+	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) > props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
+	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
+
+	if (m_pParent->m_PowerWheels.GetIsRunning() || (m_ControlSignals.bits.Fire==1))
+	{
+		//If this fails we'll keep issuing the min dropped position until it finally reaches it
+		if (!IsIntakeMinimumDropped)
+			m_IntakeDeployment.SetIntendedPosition(props.Min_IntakeDrop);
+	}
+	else
+	{
+		//Check to see if we used the minimum drop... if so put it back into stowed position
+		if 	((!IsStowed) && (!m_IntakeDeployment.GetChooseDropped()) )
+			m_IntakeDeployment.SetIntendedPosition(IntakeMinRange);
+	}
+
+	bool Grip=m_ControlSignals.bits.Grip==1;
+	//bool GripH=m_ControlSignals.bits.GripH==1;
 	bool Squirt=m_ControlSignals.bits.Squirt==1;
 
 	if (Fire)
@@ -246,7 +390,7 @@ void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 		{
 			m_FireDelayTrigger_Time+=dTime_s;
 			//printf("Fire delaying =%f\n",m_FireDelayTrigger_Time);
-			if (m_FireDelayTrigger_Time>m_pParent->m_RobotProps.GetFRC2013RobotProps().FireTriggerDelay)
+			if (m_FireDelayTrigger_Time>props.FireTriggerDelay)
 				m_FireDelayTriggerOn=false;
 		}
 	}
@@ -269,46 +413,65 @@ void FRC_2013_Robot::BallConveyorSystem::TimeChange(double dTime_s)
 		{
 			m_FireStayOn_Time+=dTime_s;
 			//printf("Fire Staying on=%f\n",m_FireStayOn_Time);
-			if (m_FireStayOn_Time>m_pParent->m_RobotProps.GetFRC2013RobotProps().FireButtonStayOn_Time)
+			if (m_FireStayOn_Time>props.FireButtonStayOn_Time)
 				m_FireStayOn=false;
 		}
 	}
 
-	//This assumes the motors are in the same orientation: 
-	//Note: FireSensor works different for now since the lower middle converyors are removed... we'll need to work out how this will work
-	double FireAcceleration= FireSensor | GripH | Squirt | Fire | m_FireStayOn ?
-		((Squirt)?m_FireConveyor.GetACCEL():-m_FireConveyor.GetBRAKE()):0.0;
-	m_FireConveyor.SetCurrentLinearAcceleration(FireAcceleration);
-
-	m_FireConveyor.AsEntity1D().TimeChange(dTime_s);
-}
-
-//This is the manual override, but probably not used if we use spike as it would be wasteful to have a analog control for this
-void FRC_2013_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized(double Velocity)
-{
-	m_FireConveyor.SetRequestedVelocity_FromNormalized(Velocity);
-}
-
-void FRC_2013_Robot::BallConveyorSystem::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=m_FireConveyor.GetEventMap(); //grrr had to explicitly specify which EventMap
-	if (Bind)
+	//manage fire piston
+	if (m_pParent->m_RobotControl->GetIsSolenoidOpen(eFirePiston))
 	{
-		//Ball_SetCurrentVelocity is the manual override
-		em->EventValue_Map["Ball_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Ball_Fire"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::Fire);
-		em->EventOnOff_Map["Ball_Grip"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::Grip);
-		em->EventOnOff_Map["Ball_GripH"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::GripH);
-		em->EventOnOff_Map["Ball_Squirt"].Subscribe(ehl, *this, &FRC_2013_Robot::BallConveyorSystem::Squirt);
+		//manage if when to release
+		if ((!Fire)&&(!m_FireStayOn))
+			m_pParent->m_RobotControl->CloseSolenoid(eFirePiston);
 	}
 	else
 	{
-		em->EventValue_Map["Ball_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::BallConveyorSystem::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Ball_Fire"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::Fire);
-		em->EventOnOff_Map["Ball_Grip"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::Grip);
-		em->EventOnOff_Map["Ball_GripH"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::GripH);
-		em->EventOnOff_Map["Ball_Squirt"]  .Remove(*this, &FRC_2013_Robot::BallConveyorSystem::Squirt);
+		//manage when to fire
+		if (Fire)
+			m_pParent->m_RobotControl->OpenSolenoid(eFirePiston);
 	}
+
+	//This assumes the motors are in the same orientation: 
+	//Note: we may want to spin helix during fire, but for now... assume operator will load them all in hopper before firing
+	const double HelixAcceleration= Grip | Squirt ?
+		((Squirt)?m_Helix.GetACCEL():-m_Helix.GetBRAKE()):0.0;
+	m_Helix.SetCurrentLinearAcceleration(HelixAcceleration);
+
+	//manage rollers... just like helix except that it is off it it is stowed
+	const double RollerAcceleration= (!IsStowed || Squirt) ? HelixAcceleration : 0.0;
+	m_Rollers.SetCurrentLinearAcceleration(RollerAcceleration);
+
+	m_Helix.AsEntity1D().TimeChange(dTime_s);
+	m_IntakeDeployment.AsEntity1D().TimeChange(dTime_s);
+	m_Rollers.AsEntity1D().TimeChange(dTime_s);
+}
+
+//This is the manual override, but probably not used if we use spike as it would be wasteful to have a analog control for this
+void FRC_2013_Robot::IntakeSystem::SetRequestedVelocity_FromNormalized(double Velocity)
+{
+	m_Helix.SetRequestedVelocity_FromNormalized(Velocity);
+}
+
+void FRC_2013_Robot::IntakeSystem::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=m_Helix.GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		//Ball_SetCurrentVelocity is the manual override
+		em->EventValue_Map["Ball_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::IntakeSystem::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Ball_Fire"].Subscribe(ehl, *this, &FRC_2013_Robot::IntakeSystem::Fire);
+		em->EventOnOff_Map["Ball_Grip"].Subscribe(ehl, *this, &FRC_2013_Robot::IntakeSystem::Grip);
+		em->EventOnOff_Map["Ball_Squirt"].Subscribe(ehl, *this, &FRC_2013_Robot::IntakeSystem::Squirt);
+	}
+	else
+	{
+		em->EventValue_Map["Ball_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::IntakeSystem::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Ball_Fire"]  .Remove(*this, &FRC_2013_Robot::IntakeSystem::Fire);
+		em->EventOnOff_Map["Ball_Grip"]  .Remove(*this, &FRC_2013_Robot::IntakeSystem::Grip);
+		em->EventOnOff_Map["Ball_Squirt"]  .Remove(*this, &FRC_2013_Robot::IntakeSystem::Squirt);
+	}
+	m_IntakeDeployment.BindAdditionalEventControls(Bind);
 }
 
 
@@ -331,7 +494,7 @@ const double c_Target_MiddleHoop_XOffset=Inches2Meters(27+3/8);
 
 FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control),
-		m_PowerWheels(this,robot_control),m_BallConveyorSystem(this,robot_control),
+		m_PowerWheels(this,robot_control),m_IntakeSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
 		m_PitchAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
@@ -340,7 +503,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
 	//m_IsTargeting=true;
-	//m_DriveTargetSelection=eDrive_Goal_Yaw;  //Do not turn on for robot... must be explicitly pressed
+	//m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -358,7 +521,7 @@ void FRC_2013_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
-	m_BallConveyorSystem.Initialize(em,RobotProps?&RobotProps->GetConveyorProps():NULL);
+	m_IntakeSystem.Initialize(em,RobotProps?&RobotProps->GetHelixProps():NULL);
 
 	//TODO see if this is still needed
 	#if 0
@@ -378,7 +541,7 @@ void FRC_2013_Robot::ResetPos()
 	//m_IsTargeting=false;
 	m_PitchRamp.ResetPos();
 	m_PowerWheels.ResetPos();
-	m_BallConveyorSystem.ResetPos();
+	m_IntakeSystem.ResetPos();
 	if (!m_SetClimbGear)
 	{
 		//ensure pneumatics are in drive
@@ -386,9 +549,9 @@ void FRC_2013_Robot::ResetPos()
 	}
 }
 
-FRC_2013_Robot::BallConveyorSystem &FRC_2013_Robot::GetBallConveyorSystem()
+FRC_2013_Robot::IntakeSystem &FRC_2013_Robot::GetIntakeSystem()
 {
-	return m_BallConveyorSystem;
+	return m_IntakeSystem;
 }
 
 FRC_2013_Robot::PowerWheels &FRC_2013_Robot::GetPowerWheels()
@@ -539,15 +702,14 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
 			//printf("d=%.2f\n",Meters2Feet(distance));
 			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
-			#define __DisablePitchDisplay__
-			#ifdef __DisablePitchDisplay__
+			#ifdef __EnableTargetingDisplay__
 			#if 0
 			const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
 			Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
 			#endif
 			#if 0
 			const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
-			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(GetAtt_r()),XOffset,PredictedOffset,PredictedOffset-XOffset);
+			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
 			//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
 			#endif
 			#endif
@@ -661,7 +823,10 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		tb=(x-ta*cos(m_PitchAngle)*m_LinearVelocity)/(cos(m_PitchAngle)*m_LinearVelocity);
 		m_HangTime = ta+tb;
 		{
+			//Note: this is not as important as it use to be
+			#if 0
 			DOUT(5,"d=%f p=%f v=%f ht=%f",Meters2Feet(x) ,RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity),m_HangTime);
+			#endif
 			Dout(robot_props.TargetVars_DisplayRow,"%.2f %.1f",RAD_2_DEG(m_PitchAngle),Meters2Feet(m_LinearVelocity));
 		}
 	}
@@ -669,8 +834,8 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 	m_PitchRamp.AsEntity1D().TimeChange(dTime_s);
-	m_PowerWheels.AsEntity1D().TimeChange(dTime_s);
-	m_BallConveyorSystem.TimeChange(dTime_s);
+	m_PowerWheels.TimeChange(dTime_s);
+	m_IntakeSystem.TimeChange(dTime_s);
 }
 
 const double c_rMotorDriveForward_DeadZone=0.02;
@@ -970,7 +1135,7 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 
 	m_PitchRamp.BindAdditionalEventControls(Bind);
 	m_PowerWheels.BindAdditionalEventControls(Bind);
-	m_BallConveyorSystem.BindAdditionalEventControls(Bind);
+	m_IntakeSystem.BindAdditionalEventControls(Bind);
 	#ifdef AI_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
@@ -1012,8 +1177,19 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	false,28.0 * Pi2,0.0,	//No limit ever!  (but we are using the min range as a way to set minimum speed)
 	true //This is angular
 	),
-	m_ConveyorProps(
-	"Conveyor",
+	m_PowerSlowWheelProps(
+	"PowerWheels",
+	2.0,    //Mass
+	Inches2Meters(6),   //Dimension  (needed to convert linear to angular velocity)
+	(5000.0/60.0) * Pi2,   //Max Speed (This is clocked at 5000 rpm) 
+	60.0,60.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	60.0,60.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Props::eSimpleMotor,
+	false,28.0 * Pi2,0.0,	//No limit ever!  (but we are using the min range as a way to set minimum speed)
+	true //This is angular
+	),
+	m_HelixProps(
+	"Helix",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
 	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
@@ -1025,6 +1201,31 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	false,0.0,0.0,	//No limit ever!
 	true //This is angular
 	),
+	m_RollersProps(
+	"Rollers",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
+	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
+	28,   //Max Speed (rounded as we need not have precision)
+	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Props::eSimpleMotor,
+	false,0.0,0.0,	//No limit ever!
+	true //This is angular
+	),
+	m_IntakeDeploymentProps(
+	"IntakeDeployment",
+	2.0,    //Mass
+	Inches2Meters(12),   //Dimension  (this should be correct)
+	1.4 * Pi2,   //Max Speed  (Parker gave this one, should be good)
+	10.0,10.0, //ACCEL, BRAKE  (should be relatively quick)
+	10.0,10.0, //Max Acceleration Forward/Reverse 
+	Ship_1D_Props::eRobotArm,
+	true,	//Using the range
+	0,PI_2 //solve in script
+	),
+
 	m_RobotControls(&s_ControlsEvents)
 {
 	{
@@ -1043,6 +1244,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		props.TargetVars_DisplayRow=(size_t)-1;
 		props.PowerVelocity_DisplayRow=(size_t)-1;
 		props.YawTolerance=0.001; //give a good high precision for default
+		props.Min_IntakeDrop=DEG_2_RAD(90.0);  //full drop default
 
 		for (size_t row=0;row<6;row++)
 		{
@@ -1092,15 +1294,18 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	}
 	{
 		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.001; //we need high precision
 		m_PitchRampProps.RoteryProps()=props;
 	}
 	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
-		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
 		m_PowerWheelProps.RoteryProps()=props;
+	}
+	{
+		Rotary_Props props=m_PowerSlowWheelProps.RoteryProps(); //start with super class settings
+		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
+		m_PowerSlowWheelProps.RoteryProps()=props;
 	}
 }
 
@@ -1178,20 +1383,20 @@ const char * const g_FRC_2013_Controls_Events[] =
 {
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
-	"PowerWheels_SetCurrentVelocity","PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
+	"PowerWheels_SetCurrentVelocity","PowerWheels_SetCurrentVelocity_Axis","PowerWheels_FirstStage_SetCurrentVelocity",
+	"PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
 	"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
-	"Flippers_SetCurrentVelocity","Flippers_SetIntendedPosition","Flippers_SetPotentiometerSafety",
-	"Flippers_Advance","Flippers_Retract",
+	"Intake_Deployment_SetCurrentVelocity","Intake_Deployment_SetIntendedPosition","Intake_Deployment_SetPotentiometerSafety",
+	"Intake_Deployment_Advance","Intake_Deployment_Retract",
 	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
 	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
 	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
-	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
-	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
+	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff"
 	//AI Tester events only
-#if 1
+	#ifdef AI_TesterCode
 	,"Ball_SlowWheel"
-#endif
+	#endif
 };
 
 const char *FRC_2013_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
@@ -1226,10 +1431,32 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_PowerWheelProps.LoadFromScript(script);
 			script.Pop();
 		}
-		err = script.GetFieldTable("conveyor");
+		err = script.GetFieldTable("power_first_stage");
 		if (!err)
 		{
-			m_ConveyorProps.LoadFromScript(script);
+			m_PowerSlowWheelProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("helix");
+		if (!err)
+		{
+			m_HelixProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("rollers");
+		if (!err)
+		{
+			m_RollersProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("intake_deployment");
+		if (!err)
+		{
+			m_IntakeDeploymentProps.LoadFromScript(script);
+			double fDegrees;
+			err = script.GetField("min_drop_deg", NULL, NULL, &fDegrees);
+			if (!err)
+				m_FRC2013RobotProps.Min_IntakeDrop=DEG_2_RAD(fDegrees);
 			script.Pop();
 		}
 
@@ -1402,9 +1629,9 @@ FRC_2013_Goals::Fire::Goal_Status FRC_2013_Goals::Fire::Process(double dTime_s)
 	}
 	ActivateIfInactive();
 	if (!m_DoSquirt)
-		m_Robot.GetBallConveyorSystem().Fire(m_IsOn);
+		m_Robot.GetIntakeSystem().Fire(m_IsOn);
 	else
-		m_Robot.GetBallConveyorSystem().Squirt(m_IsOn);
+		m_Robot.GetIntakeSystem().Squirt(m_IsOn);
 		
 	m_Status=eCompleted;
 	return m_Status;
@@ -1428,7 +1655,7 @@ Goal::Goal_Status FRC_2013_Goals::WaitForBall::Process(double dTime_s)
 	}
 	ActivateIfInactive();
 	//Keep simple... if we have noisy artifacts that yield false positives then we may need to consider blend and / or Kalman
-	const double PowerWheelSpeedDifference=m_Robot.GetPowerWheels().GetRequestedVelocity_Difference();
+	const double PowerWheelSpeedDifference=m_Robot.GetPowerWheels().GetSecondStageShooter().GetRequestedVelocity_Difference();
 	//when we encounter the tolerance dip in speed we are done
 	if (fabs(PowerWheelSpeedDifference)>m_Tolerance)
 	{

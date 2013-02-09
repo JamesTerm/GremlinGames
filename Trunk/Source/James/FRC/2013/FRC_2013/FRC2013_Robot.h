@@ -36,6 +36,7 @@ public:
 	size_t TargetVars_DisplayRow;
 	size_t PowerVelocity_DisplayRow;
 	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
+	double Min_IntakeDrop;			//Used to determine the minimum drop of the intake during a fire operation
 
 	struct Climb_Properties
 	{
@@ -71,14 +72,17 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
-		const Rotary_Properties &GetConveyorProps() const {return m_ConveyorProps;}
+		const Rotary_Properties &GetPowerSlowWheelProps() const {return m_PowerSlowWheelProps;}
+		const Rotary_Properties &GetHelixProps() const {return m_HelixProps;}
+		const Rotary_Properties &GetRollersProps() const {return m_RollersProps;}
+		const Rotary_Properties &GetIntakeDeploymentProps() const {return m_IntakeDeploymentProps;}
 		const Tank_Robot_Properties &GetClimbGearLiftProps() const {return m_ClimbGearLiftProps;}
 		const Tank_Robot_Properties &GetClimbGearDropProps() const {return m_ClimbGearDropProps;}
 		const FRC_2013_Robot_Props &GetFRC2013RobotProps() const {return m_FRC2013RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps;
+		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
 		Tank_Robot_Properties m_ClimbGearLiftProps;
 		Tank_Robot_Properties m_ClimbGearDropProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
@@ -98,13 +102,17 @@ class FRC_2013_Robot : public Tank_Robot
 		enum SpeedControllerDevices
 		{
 			ePitchRamp,
-			ePowerWheels,
-			eFireConveyor
+			ePowerWheelFirstStage,
+			ePowerWheelSecondStage,
+			eHelix,
+			eIntake_Deployment,
+			eRollers
 		};
 
+		//Most likely will not need IR sensors
 		enum BoolSensorDevices
 		{
-			eFireConveyor_Sensor
+			eTest_Sensor
 		};
 
 		//Note: these shouldn't be written to directly but instead set the climb state which then will write to these
@@ -115,7 +123,8 @@ class FRC_2013_Robot : public Tank_Robot
 			//neutral state is when all all neutral, and will be a transitional state; otherwise these are mutually exclusive
 			eEngageDriveTrain,		//Cylinder 1 is on the drive train gear box
 			eEngageLiftWinch,		//Cylinder 2 is on the lift winch
-			eEngageDropWinch		//Cylinder 3 is on the drop winch
+			eEngageDropWinch,		//Cylinder 3 is on the drop winch
+			eFirePiston				//pneumatic 4... will engage on fire button per press
 		};
 
 		//You use a variation of selected states to do things
@@ -181,31 +190,63 @@ class FRC_2013_Robot : public Tank_Robot
 				FRC_2013_Robot * const m_pParent;
 		};
 
-		class PowerWheels : public Rotary_Velocity_Control
+		class PowerWheels
 		{
 			public:
 				PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
-				virtual void BindAdditionalEventControls(bool Bind);
-				virtual void ResetPos();
+				void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+
+				void BindAdditionalEventControls(bool Bind);
+				void ResetPos();
+				const Rotary_Velocity_Control &GetFirstStageShooter() const {return m_FirstStage;}
+				const Rotary_Velocity_Control &GetSecondStageShooter() const {return m_SecondStage;}
+				void TimeChange(double dTime_s);
+				bool GetIsRunning() const {return m_IsRunning;}
 			protected:
-				typedef Rotary_Velocity_Control __super;
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity);
-				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
+				void SetRequestedVelocity_FromNormalized(double Velocity) {m_ManualVelocity=Velocity;}
+				void SetRequestedVelocity_Axis_FromNormalized(double Velocity) {m_ManualAcceleration=Velocity;}
+				void Set_FirstStage_RequestedVelocity_FromNormalized(double Velocity) {m_FirstStageManualVelocity=Velocity;}
+				void SetEncoderSafety(bool DisableFeedback);
 				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
-				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2013_Robot * const m_pParent;
-				double m_ManualVelocity;
+				Rotary_Velocity_Control m_SecondStage,m_FirstStage;
+				double m_ManualVelocity,m_FirstStageManualVelocity;
+				double m_ManualAcceleration;
 				bool m_IsRunning;
 		};
 
-		class BallConveyorSystem
+		class IntakeSystem
 		{
 			private:
 				FRC_2013_Robot * const m_pParent;
-				Rotary_Velocity_Control m_FireConveyor;
+				Rotary_Velocity_Control m_Helix,m_Rollers;
+				class Intake_Deployment : public Rotary_Position_Control
+				{
+				private:
+					//typedef Rotary_Position_Control __super;
+					FRC_2013_Robot * const m_pParent;
+					bool m_Advance,m_Retract;
+					bool m_ChooseDropped; //cache last state that was used
+				public:
+					Intake_Deployment(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
+					IEvent::HandlerList ehl;
+					virtual void BindAdditionalEventControls(bool Bind);
+					void SetIntendedPosition(double Position);
+					bool GetChooseDropped() const {return m_ChooseDropped;}
+				protected:
+					void Advance();
+					void Retract();
+
+					typedef Rotary_Position_Control __super;
+					//events are a bit picky on what to subscribe so we'll just wrap from here
+					void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+
+					void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+					virtual void TimeChange(double dTime_s);
+				} m_IntakeDeployment;
+
 				double m_FireDelayTrigger_Time; //Time counter of the value remaining in the on-to-delay state
 				double m_FireStayOn_Time;  //Time counter of the value remaining in the on state
 				bool m_FireDelayTriggerOn; //A valve mechanism that must meet time requirement to disable the delay
@@ -222,7 +263,7 @@ class FRC_2013_Robot : public Tank_Robot
 					unsigned char raw;
 				} m_ControlSignals;
 			public:
-				BallConveyorSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
+				IntakeSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
 				void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
@@ -234,16 +275,16 @@ class FRC_2013_Robot : public Tank_Robot
 				//Expose for goals
 				void Fire(bool on) {m_ControlSignals.bits.Fire=on;}
 				void Squirt(bool on) {m_ControlSignals.bits.Squirt=on;}
+
 			protected:
 				//Using meaningful terms to assert the correct direction at this level
 				void Grip(bool on) {m_ControlSignals.bits.Grip=on;}
-				void GripH(bool on) {m_ControlSignals.bits.GripH=on;}
 
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 		};
 
 	public: //Autonomous public access (wind river has problems with friend technique)
-		BallConveyorSystem &GetBallConveyorSystem();
+		IntakeSystem &GetIntakeSystem();
 		PowerWheels &GetPowerWheels();
 		void SetTarget(Targets target);
 		const FRC_2013_Robot_Properties &GetRobotProps() const;
@@ -259,7 +300,7 @@ class FRC_2013_Robot : public Tank_Robot
 		FRC_2013_Control_Interface * const m_RobotControl;
 		PitchRamp m_PitchRamp;
 		PowerWheels m_PowerWheels;
-		BallConveyorSystem m_BallConveyorSystem;
+		IntakeSystem m_IntakeSystem;
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Targets m_Target;		//This allows us to change our target
 		Vec2D m_DefensiveKeyPosition;
