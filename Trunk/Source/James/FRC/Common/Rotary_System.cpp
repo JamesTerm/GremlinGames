@@ -451,6 +451,8 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 	{
 		if (m_Rotary_Props.UseAggressiveStop)
 			printf("v=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset);
+		else
+			printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
 	}
 	#endif
 
