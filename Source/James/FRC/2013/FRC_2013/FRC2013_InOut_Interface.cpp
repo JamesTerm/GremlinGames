@@ -200,11 +200,11 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifndef __DisableMotorControls__
 	switch (index)
 	{
-	case FRC_2013_Robot::ePowerWheels:		
+	case FRC_2013_Robot::ePowerWheelSecondStage:		
 		m_PowerWheel_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRoteryProps().VoltageScalar));	
 		break;
-	case FRC_2013_Robot::eFireConveyor:		
-		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	break;
+	case FRC_2013_Robot::eHelix:		
+		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetHelixProps().GetRoteryProps().VoltageScalar));	break;
 	case FRC_2013_Robot::ePitchRamp:
 		#ifdef __UsingTestingKit__
 		//we can stay in degrees here
@@ -306,7 +306,7 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
 			break;
-		case FRC_2013_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheelSecondStage:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
 			break;
 	}
@@ -319,7 +319,7 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	bool ret=false;
 	switch (index)
 	{
-	case FRC_2013_Robot::eFireConveyor_Sensor:
+	case FRC_2013_Robot::eTest_Sensor:
 		ret= m_Fire_Limit.Get()!=0;
 		break;
 	default:
@@ -344,7 +344,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#else
 			#endif
 			break;
-		case FRC_2013_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheelSecondStage:
 			#ifndef __DisableMotorControls__
 			
 			//Here we use the new GetRate2 which should offer better precision
@@ -381,7 +381,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();
 			#endif
 			break;
-		case FRC_2013_Robot::eFireConveyor:
+		case FRC_2013_Robot::eHelix:
 			assert(false);  //These should be disabled as there is no encoder for them
 			break;
 	}
@@ -392,7 +392,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
-		case FRC_2013_Robot::ePowerWheels:
+		case FRC_2013_Robot::ePowerWheelSecondStage:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
 			break;
 	}
