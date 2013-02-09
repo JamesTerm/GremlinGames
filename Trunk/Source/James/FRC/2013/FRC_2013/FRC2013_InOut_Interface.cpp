@@ -69,7 +69,7 @@ enum VictorSlotList
 	eVictor_RightMotor2,	//Used in InOut_Interface
 	eVictor_LeftMotor1,		//Used in InOut_Interface
 	eVictor_LeftMotor2,		//Used in InOut_Interface
-	eVictor_Turret,
+	eVictor_Helix,
 	eVictor_PowerWheel,
 	eVictor_Flipper
 	//Currently only two more victors available
@@ -77,9 +77,6 @@ enum VictorSlotList
 enum RelaySlotList
 {
 	eRelay_NoZeroUsed,
-	eRelay_LowerConveyor,
-	eRelay_MiddleConveyor,
-	eRelay_FireConveyor,
 	eRelay_Compressor=8  //put at the end
 };
 
@@ -124,16 +121,14 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	#endif
 	m_pTankRobotControl(&m_TankRobotControl),
 	m_PowerWheel_Victor(eVictor_PowerWheel),
+	m_Helix_Victor(eVictor_Helix),
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
 	m_EngageDrive(eSolenoid_EngageDrive_On,eSolenoid_EngageDrive_Off),
 	m_EngageLiftWinch(eSolenoid_EngageLiftWinch_On,eSolenoid_EngageLiftWinch_Off),
 	m_EngageDropWinch(eSolenoid_EngageDropWinch_On,eSolenoid_EngageDropWinch_Off),
-	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor),
 	//Sensors
-	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
+	m_IntakeDeployment_Encoder(eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
 	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
-	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
-	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B),
 	//m_PowerWheelAverager(0.5),
 	m_PowerWheel_PriorityAverager(10,0.30)
 
@@ -142,15 +137,15 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	//TODO set the SetDistancePerPulse() for turret
 	ResetPos();
 	const double EncoderPulseRate=(1.0/360.0);
-	m_Turret_Encoder.SetDistancePerPulse(EncoderPulseRate),m_PowerWheel_Encoder.SetDistancePerPulse(EncoderPulseRate);
-	m_Turret_Encoder.Start(),m_PowerWheel_Encoder.Start();
+	m_IntakeDeployment_Encoder.SetDistancePerPulse(EncoderPulseRate),m_PowerWheel_Encoder.SetDistancePerPulse(EncoderPulseRate);
+	m_IntakeDeployment_Encoder.Start(),m_PowerWheel_Encoder.Start();
 	m_PowerWheelFilter.Reset();
 }
 
 FRC_2013_Robot_Control::~FRC_2013_Robot_Control() 
 {
 	//m_Compress.Stop();
-	m_Turret_Encoder.Stop(),m_PowerWheel_Encoder.Stop();
+	m_IntakeDeployment_Encoder.Stop(),m_PowerWheel_Encoder.Stop();
 }
 
 void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
@@ -204,7 +199,8 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		m_PowerWheel_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRoteryProps().VoltageScalar));	
 		break;
 	case FRC_2013_Robot::eHelix:		
-		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetHelixProps().GetRoteryProps().VoltageScalar));	break;
+		m_Helix_Victor.Set((float)(Voltage * m_RobotProps.GetHelixProps().GetRoteryProps().VoltageScalar));
+		break;
 	case FRC_2013_Robot::ePitchRamp:
 		#ifdef __UsingTestingKit__
 		//we can stay in degrees here
@@ -320,7 +316,7 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	switch (index)
 	{
 	case FRC_2013_Robot::eTest_Sensor:
-		ret= m_Fire_Limit.Get()!=0;
+		//ret= m_Fire_Limit.Get()!=0;
 		break;
 	default:
 		assert (false);
@@ -381,6 +377,10 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();
 			#endif
 			break;
+		case FRC_2013_Robot::eIntake_Deployment:
+			result= m_IntakeDeployment_Encoder.GetRate();
+			result= result * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
+			break;
 		case FRC_2013_Robot::eHelix:
 			assert(false);  //These should be disabled as there is no encoder for them
 			break;
@@ -394,6 +394,9 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
+			break;
+		case FRC_2013_Robot::eIntake_Deployment:
+			Dout(m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,14,"id=%.1f",RAD_2_DEG(result));
 			break;
 	}
 	#endif

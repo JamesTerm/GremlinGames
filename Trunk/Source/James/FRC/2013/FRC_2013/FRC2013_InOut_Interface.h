@@ -15,17 +15,12 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 
-		Victor m_PowerWheel_Victor;
+		Victor m_PowerWheel_Victor,m_Helix_Victor;
 		//pitch ramp is using i2c
 		Compressor m_Compress;
 		DoubleSolenoid m_EngageDrive,m_EngageLiftWinch,m_EngageDropWinch;
-		Relay m_LowerConveyor_Relay,m_MiddleConveyor_Relay,m_FireConveyor_Relay;
 		
-		Encoder2 m_Turret_Encoder, m_PowerWheel_Encoder;
-		DigitalInput m_Intake_Limit,m_Middle_Limit,m_Fire_Limit;
-		DigitalOutput m_UseBreakDrive_A,m_UseBreakDrive_B;  //It does not matter which side these are on
-		//TODO see if we will need limit switches for the turret or pitch
-		//TODO see if we'll have pot for flippers
+		Encoder2 m_IntakeDeployment_Encoder, m_PowerWheel_Encoder;
 		//AnalogChannel m_Potentiometer;
 		//Cached from properties
 		//double m_ArmMaxSpeed;
