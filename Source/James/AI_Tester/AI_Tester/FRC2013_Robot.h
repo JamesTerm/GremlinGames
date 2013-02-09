@@ -36,6 +36,7 @@ public:
 	size_t TargetVars_DisplayRow;
 	size_t PowerVelocity_DisplayRow;
 	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
+	double Min_IntakeDrop;			//Used to determine the minimum drop of the intake during a fire operation
 
 	struct Climb_Properties
 	{
@@ -201,6 +202,7 @@ class FRC_2013_Robot : public Tank_Robot
 				const Rotary_Velocity_Control &GetFirstStageShooter() const {return m_FirstStage;}
 				const Rotary_Velocity_Control &GetSecondStageShooter() const {return m_SecondStage;}
 				void TimeChange(double dTime_s);
+				bool GetIsRunning() const {return m_IsRunning;}
 			protected:
 				//typedef Rotary_Velocity_Control __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
@@ -226,19 +228,20 @@ class FRC_2013_Robot : public Tank_Robot
 					//typedef Rotary_Position_Control __super;
 					FRC_2013_Robot * const m_pParent;
 					bool m_Advance,m_Retract;
+					bool m_ChooseDropped; //cache last state that was used
 				public:
 					Intake_Deployment(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
 					IEvent::HandlerList ehl;
 					virtual void BindAdditionalEventControls(bool Bind);
+					void SetIntendedPosition(double Position);
+					bool GetChooseDropped() const {return m_ChooseDropped;}
 				protected:
-
 					void Advance();
 					void Retract();
 
 					//typedef Rotary_Position_Control __super;
 					//events are a bit picky on what to subscribe so we'll just wrap from here
 					void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-					void SetIntendedPosition(double Position);
 
 					void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 					virtual void TimeChange(double dTime_s);

@@ -193,8 +193,9 @@ MainRobot = {
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
-			min_range_deg=0,				--TODO find out what these are
-			max_range_deg= 90
+			min_range_deg=0,				--Stowed position where 0 degrees is vertical up
+			min_drop_deg=45,				--The minimum amount of intake drop to occur to be able to fire shots
+			max_range_deg= 90				--Dropped position where 90 degrees is horizontal
 		},
 		helix =
 		{

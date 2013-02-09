@@ -245,7 +245,7 @@ void FRC_2013_Robot::PowerWheels::ResetPos()
  /*											FRC_2013_Robot::IntakeSystem::Intake_Deployment											*/
 /***********************************************************************************************************************************/
 FRC_2013_Robot::IntakeSystem::Intake_Deployment::Intake_Deployment(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-Rotary_Position_Control("Intake_Deployment",robot_control,eIntake_Deployment),m_pParent(pParent),m_Advance(false),m_Retract(false)
+Rotary_Position_Control("Intake_Deployment",robot_control,eIntake_Deployment),m_pParent(pParent),m_Advance(false),m_Retract(false),m_ChooseDropped(false)
 {
 }
 
@@ -258,10 +258,12 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetIntendedPosition(double
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Advance()
 {
 	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange);
+	m_ChooseDropped=true;
 }
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Retract()
 {
 	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange);
+	m_ChooseDropped=false;
 }
 
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::TimeChange(double dTime_s)
@@ -332,7 +334,30 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity()!=0.0) &&
 		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetSecondStageShooter().GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
-	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
+
+	//And ensure the intake has dropped low enough to not block shooter
+	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
+	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
+	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance;
+	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
+	const bool IsStowed=(fabs(Intake_Position-IntakeMinRange) < IntakeTolerance);
+	//The intake must be low enough to not block the shooter
+	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) > props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
+	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
+
+	if (m_pParent->m_PowerWheels.GetIsRunning() || (m_ControlSignals.bits.Fire==1))
+	{
+		//If this fails we'll keep issuing the min dropped position until it finally reaches it
+		if (!IsIntakeMinimumDropped)
+			m_IntakeDeployment.SetIntendedPosition(props.Min_IntakeDrop);
+	}
+	else
+	{
+		//Check to see if we used the minimum drop... if so put it back into stowed position
+		if 	((!IsStowed) && (!m_IntakeDeployment.GetChooseDropped()) )
+			m_IntakeDeployment.SetIntendedPosition(IntakeMinRange);
+	}
+
 	bool Grip=m_ControlSignals.bits.Grip==1;
 	//bool GripH=m_ControlSignals.bits.GripH==1;
 	bool Squirt=m_ControlSignals.bits.Squirt==1;
@@ -392,8 +417,6 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	m_Helix.SetCurrentLinearAcceleration(HelixAcceleration);
 
 	//manage rollers... just like helix except that it is off it it is stowed
-	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
-	const bool IsStowed=(fabs(Intake_Position-properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange) < properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance);
 	const double RollerAcceleration= (!IsStowed || Squirt) ? HelixAcceleration : 0.0;
 	m_Rollers.SetCurrentLinearAcceleration(RollerAcceleration);
 
@@ -1197,6 +1220,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		props.TargetVars_DisplayRow=(size_t)-1;
 		props.PowerVelocity_DisplayRow=(size_t)-1;
 		props.YawTolerance=0.001; //give a good high precision for default
+		props.Min_IntakeDrop=DEG_2_RAD(90.0);  //full drop default
 
 		for (size_t row=0;row<6;row++)
 		{
@@ -1404,6 +1428,10 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_IntakeDeploymentProps.LoadFromScript(script);
+			double fDegrees;
+			err = script.GetField("min_drop_deg", NULL, NULL, &fDegrees);
+			if (!err)
+				m_FRC2013RobotProps.Min_IntakeDrop=DEG_2_RAD(fDegrees);
 			script.Pop();
 		}
 
@@ -2250,6 +2278,13 @@ void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 
 	//Scale down the rotation to something easy to gauge in UI
 	AddRotation((NormalizedVelocity * 18) * dTime_s);
+	double y_offset=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::ePitchRamp);
+	//normalize
+	const Ship_1D_Props &props=m_RobotControl->GetRobotProps().GetPitchRampProps().GetShip_1D_Props();
+	y_offset-=props.MinRange;
+	y_offset/=fabs(props.MaxRange-props.MinRange);
+	//printf("\rTest=%.2f     ",y_offset);
+	UpdatePosition(0.6,-2.0-y_offset);
 }
 
   /***************************************************************************************************************/
