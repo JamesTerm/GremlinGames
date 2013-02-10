@@ -26,17 +26,9 @@ Rotary_Position_Control::Rotary_Position_Control(const char EntityName[],Rotary_
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_LastPosition(0.0),m_MatchVelocity(0.0),
-	#ifdef __Rotary_UseScalerPID__
-	m_CalibratedScaler(1.0),
-	#else
 	m_ErrorOffset(0.0),
-	#endif
 	m_LastTime(0.0),m_MaxSpeedReference(0.0),
 	m_UsingPotentiometer(false) //to be safe
-	#ifdef __Rotary_UseScalerPID__
-	,  
-	m_VoltageOverride(false)
-	#endif
 {
 }
 
@@ -56,11 +48,7 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
-	#ifdef __Rotary_UseScalerPID__
-	m_CalibratedScaler=MAX_SPEED;
-	#else
 	m_ErrorOffset=0.0;
-	#endif
 	if ((m_Rotary_Props.LoopState==Rotary_Props::eNone)||(m_Rotary_Props.LoopState==Rotary_Props::eOpen))
 		SetPotentiometerSafety(true);
 	else
@@ -86,22 +74,9 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			double Displacement=NewPosition-m_LastPosition;
 			PotentiometerVelocity=Displacement/m_LastTime;
 
-			#ifdef __Rotary_UseScalerPID__
-			double LastSpeed=fabs(CurrentVelocity);  //This is last because the time change has not happened yet
-			double PotentiometerSpeed=fabs(PotentiometerVelocity);
-			double control=0.0;
-			//only adjust calibration when both velocities are in the same direction, or in the case where the potentiometer is stopped which will
-			//allow the scaler to normalize if it need to start up again.
-			if (((CurrentVelocity * PotentiometerVelocity) > 0.0) || IsZero(PotentiometerSpeed) )
-			{
-				control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-				m_CalibratedScaler=MAX_SPEED+control;
-			}
-			#else
 			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity,dTime_s);
 			//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 			m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
-			#endif
 
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
 			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
@@ -116,11 +91,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		//is to seamlessly transfer between manual and auto
 		if (m_UsingPotentiometer)
 		{
-			#ifdef __Rotary_UseScalerPID__
-			m_CalibratedScaler=MAX_SPEED;
-			#else
 			m_ErrorOffset=0.0;
-			#endif
 			//double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
 			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 
@@ -139,11 +110,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 
 	__super::TimeChange(dTime_s);
 	//Note: CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
-	#ifdef __Rotary_UseScalerPID__
-	double Voltage=m_Physics.GetVelocity()/m_CalibratedScaler;
-	#else
 	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/MAX_SPEED;
-	#endif
 
 	//Apply the polynomial equation to the voltage to linearize the curve
 	{
@@ -181,25 +148,6 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		m_PIDController.ResetI(m_MaxSpeedReference * -0.99);  //clear error for I for better transition back
 	}
 
-	#if 0
-	Voltage*=Voltage;  //square them for more give
-	//restore the sign
-	if (CurrentVelocity<0)
-		Voltage=-Voltage;
-	#endif
-
-	#ifdef __Rotary_UseScalerPID__
-	#ifdef __DebugLUA__
-	if ((m_Rotary_Props.PID_Console_Dump)&&(Voltage!=0.0))
-	{
-		double PosY=m_LastPosition;
-		if (!m_VoltageOverride)
-			printf("v=%f y=%f p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler-MAX_SPEED);
-		else
-			printf("v=%f y=%f VO p=%f e=%f d=%f cs=%f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,fabs(CurrentVelocity)-fabs(PotentiometerVelocity),m_CalibratedScaler-MAX_SPEED);
-	}
-	#endif
-	#else
 	#ifdef __DebugLUA__
 	if ((m_Rotary_Props.PID_Console_Dump)&&(PotentiometerVelocity!=0.0))
 	{
@@ -208,19 +156,9 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	}
 	#endif
 
-	#endif
-
 	m_RobotControl->UpdateRotaryVoltage(m_InstanceIndex,Voltage);
 }
 
-#ifdef __Rotary_UseScalerPID__
-void Rotary_Position_Control::PosDisplacementCallback(double posDisplacement_m)
-{
-	m_VoltageOverride=false;
-	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<m_Rotary_Props.PrecisionTolerance))
-		m_VoltageOverride=true;
-}
-#endif
 
 void Rotary_Position_Control::ResetPos()
 {
@@ -252,11 +190,7 @@ void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 			//This is no longer necessary
 			//MAX_SPEED=m_MaxSpeedReference;
 			m_LastPosition=0.0;
-			#ifdef __Rotary_UseScalerPID__
-			m_CalibratedScaler=MAX_SPEED;
-			#else
 			m_ErrorOffset=0.0;
-			#endif
 			m_LastTime=0.0;
 			m_UsingRange=false;
 		}
@@ -270,11 +204,7 @@ void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 			printf("Enabling potentiometer for %s\n",GetName().c_str());
 			ResetPos();
 			m_UsingRange=GetUsingRange_Props();
-			#ifdef __Rotary_UseScalerPID__
-			m_CalibratedScaler=MAX_SPEED;
-			#else
 			m_ErrorOffset=0.0;
-			#endif
 		}
 	}
 }
