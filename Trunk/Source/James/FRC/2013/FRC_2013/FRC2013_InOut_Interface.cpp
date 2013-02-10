@@ -243,90 +243,26 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 	#endif
 
-	#ifdef __EnablePrintfDumps__
-	switch (index)
-	{
-		//Example... if we want to show readings
-
-		//case FRC_2011_Robot::eArm:
-		//{
-		//	#if 0
-		//	float ToUse=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
-		//	m_ArmMotor.Set(ToUse);
-		//	return;
-		//	#endif
-		//	
-		//	//Note: client code needs to check the levels are correct!
-		//	m_ArmMotor.Set(Voltage);  //always the same velocity for both!
-		//	DOUT(4, "ArmVolt=%f ", Voltage);
-		//}
-
-		case FRC_2013_Robot::eTurret:
-			//m_Turret.Set(Voltage);
-			if (m_TurretVoltage!=Voltage)
-			{
-				printf("TurretVoltage=%f\n",Voltage);
-				m_TurretVoltage=Voltage;
-			}
-			break;
-		case FRC_2013_Robot::ePitchRamp:
-			//m_PitchRamp.Set(Voltage);   Not sure what this will be... might not be a victor!  could be i2c
-			if (m_PitchRampVoltage!=Voltage)
-			{
-				printf("PitchRamp=%f\n",Voltage);
-				m_PitchRampVoltage=Voltage;
-			}
-			break;
-		case FRC_2013_Robot::ePowerWheels:
-			//m_PowerWheels.Set(Voltage);
-			if (m_PowerWheelVoltage!=Voltage)
-			{
-				printf("PowerWheels=%f\n",Voltage);
-				m_PowerWheelVoltage=Voltage;
-			}
-
-			//Example 2... another way to display readings
-			//DOUT(4, "RollerVolt=%f ", Voltage);
-			break;
-		case FRC_2013_Robot::eFlippers:
-			if (m_FlipperVoltage!=Voltage)
-			{
-				printf("Flippers=%f\n",Voltage);
-				m_FlipperVoltage=Voltage;
-			}
-			break;
-		case FRC_2013_Robot::eLowerConveyor:
-			//m_LowerConveyor.Set(TranslateToRelay(Voltage));  //will be easy to switch to victor
-			if (m_LowerConveyorVoltage!=Voltage)
-			{
-				printf("Lower=%f\n",Voltage);
-				m_LowerConveyorVoltage=Voltage;
-			}
-			break;
-		case FRC_2013_Robot::eMiddleConveyor:
-			if (m_MiddleConveyorVoltage!=Voltage)
-			{
-				printf("Middle=%f\n",Voltage);
-				m_MiddleConveyorVoltage=Voltage;
-			}
-			break;
-		case FRC_2013_Robot::eFireConveyor:
-			if (m_FireConveyorVoltage=Voltage)
-			{
-				printf("FireConveyor=%f\n",Voltage);
-				m_FireConveyorVoltage=Voltage;
-			}
-			break;
-	}
-	#endif
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-		case FRC_2013_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
+		case FRC_2013_Robot::ePowerWheelFirstStage:		
+			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage);
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"p2_v=%.2f",Voltage);
+			break;
+		case FRC_2013_Robot::eHelix:		
+			Dout(m_RobotProps.GetHelixProps().GetRoteryProps().Feedback_DiplayRow,1,"h_v=%.2f",Voltage);
+			break;
+		case FRC_2013_Robot::eRollers:		
+			Dout(m_RobotProps.GetRollersProps().GetRoteryProps().Feedback_DiplayRow,1,"r_v=%.2f",Voltage);
+			break;
+		case FRC_2013_Robot::eIntake_Deployment:		
+			Dout(m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,1,"id_v=%.2f",Voltage);
+			break;
+		case FRC_2013_Robot::ePitchRamp:
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"pr=%.2f",Voltage);
 			break;
 	}
 	#endif
@@ -417,10 +353,13 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"pr=%.1f",RAD_2_DEG(result));
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"p1=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"p2=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
 			Dout(m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,14,"id=%.1f",RAD_2_DEG(result));
