@@ -15,12 +15,13 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 
-		Victor m_PowerWheel_Victor,m_Helix_Victor;
+		Victor m_PowerWheel_First_Victor,m_PowerWheel_Second_Victor,m_Helix_Victor;
+		Victor m_IntakeMotor_Victor,m_Rollers_Victor,m_IntakeDeployment_Victor;
 		//pitch ramp is using i2c
 		Compressor m_Compress;
-		DoubleSolenoid m_EngageDrive,m_EngageLiftWinch,m_EngageDropWinch;
+		DoubleSolenoid m_EngageDrive,m_EngageLiftWinch,m_EngageDropWinch,m_EngageFirePiston;
 		
-		Encoder2 m_IntakeDeployment_Encoder, m_PowerWheel_Encoder;
+		Encoder2 m_IntakeDeployment_Encoder, m_PowerWheel_First_Encoder,m_PowerWheel_Second_Encoder;
 		//AnalogChannel m_Potentiometer;
 		//Cached from properties
 		//double m_ArmMaxSpeed;

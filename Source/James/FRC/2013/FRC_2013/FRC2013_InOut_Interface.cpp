@@ -69,10 +69,12 @@ enum VictorSlotList
 	eVictor_RightMotor2,	//Used in InOut_Interface
 	eVictor_LeftMotor1,		//Used in InOut_Interface
 	eVictor_LeftMotor2,		//Used in InOut_Interface
+	eVictor_PowerWheel_First,	//The slower wheel
+	eVictor_PowerWheel_Second,
 	eVictor_Helix,
-	eVictor_PowerWheel,
-	eVictor_Flipper
-	//Currently only two more victors available
+	eVictor_IntakeMotor,    //The transitional motor (tied to rollers)
+	eVictor_Rollers,
+	eVictor_IntakeDeployment  //aka flippers 
 };
 enum RelaySlotList
 {
@@ -80,7 +82,7 @@ enum RelaySlotList
 	eRelay_Compressor=8  //put at the end
 };
 
-//No more than 14!
+//No more than 14 cardinal!
 enum DigitalIO_SlotList
 {
 	eDigitalIO_NoZeroUsed,
@@ -88,16 +90,13 @@ enum DigitalIO_SlotList
 	eEncoder_DriveRight_B,
 	eEncoder_DriveLeft_A,
 	eEncoder_DriveLeft_B,
-	eEncoder_Turret_A,
-	eEncoder_Turret_B,
-	eEncoder_PowerWheel_A,
-	eEncoder_PowerWheel_B,
-	eSensor_IntakeConveyor,
-	eSensor_MiddleConveyor,
-	eSensor_FireConveyor,
-	eDigitalOut_BreakDrive_A,  
-	eDigitalOut_BreakDrive_B,
-	eLimit_Compressor
+	eEncoder_PowerWheel_First_A,
+	eEncoder_PowerWheel_First_B,
+	eEncoder_PowerWheel_Second_A,
+	eEncoder_PowerWheel_Second_B,
+	eEncoder_IntakeDeployment_A,
+	eEncoder_IntakeDeployment_B,
+	eLimit_Compressor=14
 };
 
 //Note: If any of these are backwards simply switch the on/off order here only!
@@ -109,7 +108,9 @@ enum SolenoidSlotList
 	eSolenoid_EngageLiftWinch_On,
 	eSolenoid_EngageLiftWinch_Off,
 	eSolenoid_EngageDropWinch_On,
-	eSolenoid_EngageDropWinch_Off
+	eSolenoid_EngageDropWinch_Off,
+	eSolenoid_EngageFirePiston_On,
+	eSolenoid_EngageFirePiston_Off,
 };
 
 //Note: the order of the initialization list must match the way they are in the class declaration, so if the slots need to change, simply
@@ -120,15 +121,20 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	m_PitchAxis(2),m_LastAxisSetting(32),
 	#endif
 	m_pTankRobotControl(&m_TankRobotControl),
-	m_PowerWheel_Victor(eVictor_PowerWheel),
+	//Victors--------------------------------
+	m_PowerWheel_First_Victor(eVictor_PowerWheel_First),m_PowerWheel_Second_Victor(eVictor_PowerWheel_Second),
 	m_Helix_Victor(eVictor_Helix),
+	m_IntakeMotor_Victor(eVictor_IntakeMotor),m_Rollers_Victor(eVictor_Rollers),m_IntakeDeployment_Victor(eVictor_IntakeDeployment),
 	m_Compress(eLimit_Compressor,eRelay_Compressor),
+	//Solenoids------------------------------
 	m_EngageDrive(eSolenoid_EngageDrive_On,eSolenoid_EngageDrive_Off),
 	m_EngageLiftWinch(eSolenoid_EngageLiftWinch_On,eSolenoid_EngageLiftWinch_Off),
 	m_EngageDropWinch(eSolenoid_EngageDropWinch_On,eSolenoid_EngageDropWinch_Off),
-	//Sensors
-	m_IntakeDeployment_Encoder(eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
-	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
+	m_EngageFirePiston(eSolenoid_EngageFirePiston_On,eSolenoid_EngageFirePiston_Off),
+	//Sensors----------------------------------
+	m_IntakeDeployment_Encoder(eEncoder_IntakeDeployment_A,eEncoder_IntakeDeployment_B,false,CounterBase::k4X),
+	m_PowerWheel_First_Encoder(eEncoder_PowerWheel_First_A,eEncoder_PowerWheel_First_B),
+	m_PowerWheel_Second_Encoder(eEncoder_PowerWheel_Second_A,eEncoder_PowerWheel_Second_B),
 	//m_PowerWheelAverager(0.5),
 	m_PowerWheel_PriorityAverager(10,0.30)
 
@@ -137,15 +143,21 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	//TODO set the SetDistancePerPulse() for turret
 	ResetPos();
 	const double EncoderPulseRate=(1.0/360.0);
-	m_IntakeDeployment_Encoder.SetDistancePerPulse(EncoderPulseRate),m_PowerWheel_Encoder.SetDistancePerPulse(EncoderPulseRate);
-	m_IntakeDeployment_Encoder.Start(),m_PowerWheel_Encoder.Start();
+	m_IntakeDeployment_Encoder.SetDistancePerPulse(EncoderPulseRate);
+	m_PowerWheel_First_Encoder.SetDistancePerPulse(EncoderPulseRate);
+	m_PowerWheel_Second_Encoder.SetDistancePerPulse(EncoderPulseRate);
+	m_IntakeDeployment_Encoder.Start();
+	m_PowerWheel_First_Encoder.Start();
+	m_PowerWheel_Second_Encoder.Start();
 	m_PowerWheelFilter.Reset();
 }
 
 FRC_2013_Robot_Control::~FRC_2013_Robot_Control() 
 {
 	//m_Compress.Stop();
-	m_IntakeDeployment_Encoder.Stop(),m_PowerWheel_Encoder.Stop();
+	m_IntakeDeployment_Encoder.Stop();
+	m_PowerWheel_First_Encoder.Stop();
+	m_PowerWheel_Second_Encoder.Stop();
 }
 
 void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
@@ -195,12 +207,23 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifndef __DisableMotorControls__
 	switch (index)
 	{
+	case FRC_2013_Robot::ePowerWheelFirstStage:		
+		m_PowerWheel_First_Victor.Set((float)(Voltage *m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().VoltageScalar));	
+		break;
 	case FRC_2013_Robot::ePowerWheelSecondStage:		
-		m_PowerWheel_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRoteryProps().VoltageScalar));	
+		m_PowerWheel_Second_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRoteryProps().VoltageScalar));	
 		break;
 	case FRC_2013_Robot::eHelix:		
 		m_Helix_Victor.Set((float)(Voltage * m_RobotProps.GetHelixProps().GetRoteryProps().VoltageScalar));
 		break;
+	case FRC_2013_Robot::eRollers:		
+		m_Rollers_Victor.Set((float)(Voltage * m_RobotProps.GetRollersProps().GetRoteryProps().VoltageScalar));
+		m_IntakeMotor_Victor.Set((float)(Voltage * m_RobotProps.GetRollersProps().GetRoteryProps().VoltageScalar));
+		break;
+	case FRC_2013_Robot::eIntake_Deployment:		
+		m_IntakeDeployment_Victor.Set((float)(Voltage * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().VoltageScalar));
+		break;
+	
 	case FRC_2013_Robot::ePitchRamp:
 		#ifdef __UsingTestingKit__
 		//we can stay in degrees here
@@ -345,7 +368,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			
 			//Here we use the new GetRate2 which should offer better precision
 			
-			result= m_PowerWheel_Encoder.GetRate();
+			result= m_PowerWheel_Second_Encoder.GetRate();
 			//result= m_PowerWheel_Encoder.GetRate2(m_TankRobotControl.Get_dTime_s());
 			#if 0
 			if (result!=0.0)
@@ -376,6 +399,10 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//This is temporary code to pacify using a closed loop, remove once we have real implementation
 			result= m_PowerWheelVoltage*m_RobotProps.GetPowerWheelProps().GetMaxSpeed();
 			#endif
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			result= m_PowerWheel_First_Encoder.GetRate();
+			result= result * m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
 			result= m_IntakeDeployment_Encoder.GetRate();
@@ -422,6 +449,10 @@ void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	case FRC_2013_Robot::eEngageDropWinch:
 		printf("Drop Winch = %s\n",SolenoidState);
 		m_EngageDropWinch.Set(value);
+		break;
+	case FRC_2013_Robot::eFirePiston:
+		printf("Fire Piston = %s\n",SolenoidState);
+		m_EngageFirePiston.Set(value);
 		break;
 	}
 }
