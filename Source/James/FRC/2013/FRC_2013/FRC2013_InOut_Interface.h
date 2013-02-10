@@ -33,9 +33,6 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Averager<double,5> m_PowerWheelAverager;
 		Priority_Averager m_PowerWheel_PriorityAverager;
 		
-		//Note these are temporary to avoid flooding, and should be removed once they are no longer needed
-		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
-		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 	public:
 		FRC_2013_Robot_Control(bool UseSafety);
 		virtual ~FRC_2013_Robot_Control();
