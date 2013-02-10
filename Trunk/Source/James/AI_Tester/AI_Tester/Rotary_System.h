@@ -1,7 +1,5 @@
 #pragma once
 
-#undef __Rotary_UseScalerPID__
-
 struct Rotary_Props
 {
 	double VoltageScalar;		//Used to handle reversed voltage wiring
@@ -61,25 +59,13 @@ class Rotary_Position_Control : public Rotary_System
 		const size_t m_InstanceIndex;
 		PIDController2 m_PIDController;
 		Rotary_Props m_Rotary_Props;
-		#ifdef __Rotary_UseInducedLatency__
-		LatencyFilter m_PID_Input_Latency;
-		#else
-		LatencyPredictionFilter m_PID_Input_Latency;
-		#endif
 
 		double m_LastPosition;  //used for calibration
 		double m_MatchVelocity;
-		#ifdef __UseScalerPID__
-		double m_CalibratedScaler; //used for calibration
-		#else
 		double m_ErrorOffset;
-		#endif
 		double m_LastTime; //used for calibration
 		double m_MaxSpeedReference; //used for calibration
 		bool m_UsingPotentiometer; //dynamically able to turn off (e.g. panic button)
-		#ifdef __UseScalerPID__
-		bool m_VoltageOverride;  //when true will kill voltage
-		#endif
 	public:
 		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;
@@ -92,9 +78,6 @@ class Rotary_Position_Control : public Rotary_System
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
-		#ifdef __UseScalerPID__
-		virtual void PosDisplacementCallback(double posDisplacement_m);
-		#endif
 		virtual void SetPotentiometerSafety(bool DisableFeedback);
 		bool GetIsUsingPotentiometer() const {return m_UsingPotentiometer;}
 		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
