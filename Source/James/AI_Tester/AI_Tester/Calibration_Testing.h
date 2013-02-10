@@ -129,7 +129,9 @@ class Encoder_Simulator2
 		virtual void Initialize(const Ship_1D_Properties *props=NULL);
 
 		void UpdateEncoderVoltage(double Voltage);
-		virtual double GetEncoderVelocity() const;
+		double GetEncoderVelocity() const;
+		double GetDistance() const;
+
 		//This is broken up so that the real interface does not have to pass time
 		void SetTimeDelta(double dTime_s) {m_Time_s=dTime_s;}
 		void TimeChange();
@@ -141,8 +143,10 @@ class Encoder_Simulator2
 	protected:
 	private:
 		double m_Time_s;
+		double m_Position;  //also keep track of position to simulate distance use case (i.e. used as a potentiometer)
 		PhysicsEntity_1D m_Physics;
-		double m_EncoderScalar; //used to implement reverse
+		double m_EncoderScalar; //used for position updates
+		double m_ReverseMultiply; //used to implement set reverse direction
 		Drive_Train_Characteristics m_DriveTrain;
 };
 

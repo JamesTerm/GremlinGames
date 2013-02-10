@@ -65,6 +65,7 @@ class Rotary_Position_Control : public Rotary_System
 		double m_ErrorOffset;
 		double m_LastTime; //used for calibration
 		double m_MaxSpeedReference; //used for calibration
+		double m_PreviousVelocity; //used to compute acceleration
 		bool m_UsingPotentiometer; //dynamically able to turn off (e.g. panic button)
 	public:
 		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);

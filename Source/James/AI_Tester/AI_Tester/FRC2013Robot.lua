@@ -127,14 +127,21 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,
 			pid=
-			{p=1, i=0, d=0},
+			{p=200, i=0, d=50},
 			tolerance=0.001,				--we need high precision
+			encoder_to_wheel_ratio=0.5,
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
-			max_speed=5,
-			max_accel_forward=5,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=5,
+			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=10,			--These are in radians, just go with what feels right
+			max_accel_reverse=10,
+
 			min_range_deg=0,				--These should be good to go
-			max_range_deg=85
+			max_range_deg=85,
+			inv_max_accel = 1.0/36.0
 		},
 		power =
 		{
@@ -186,6 +193,9 @@ MainRobot = {
 			pid=
 			{p=200, i=0, d=50},
 			tolerance=0.01,					--should not matter much
+			encoder_to_wheel_ratio=0.5,
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
 			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
@@ -195,12 +205,13 @@ MainRobot = {
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			min_range_deg=0,				--Stowed position where 0 degrees is vertical up
 			min_drop_deg=45,				--The minimum amount of intake drop to occur to be able to fire shots
-			max_range_deg= 90				--Dropped position where 90 degrees is horizontal
+			max_range_deg= 90,				--Dropped position where 90 degrees is horizontal
+			inv_max_accel = 1.0/36.0
 		},
 		helix =
 		{
 			--Note: there are no encoders here so is_closed is ignored and can not show pid dump
-			tolerance=0.01,					--we need good precision
+			tolerance=0.01,					--should not matter much
 			voltage_multiply=1.0,			--May be reversed
 			max_speed=28,
 			accel=112,						--These are needed and should be high enough to grip without slip
