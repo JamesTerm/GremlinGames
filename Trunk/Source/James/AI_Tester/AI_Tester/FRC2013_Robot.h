@@ -197,8 +197,8 @@ class FRC_2013_Robot : public Tank_Robot
 				IEvent::HandlerList ehl;
 				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 
-				virtual void BindAdditionalEventControls(bool Bind);
-				virtual void ResetPos();
+				void BindAdditionalEventControls(bool Bind);
+				void ResetPos();
 				const Rotary_Velocity_Control &GetFirstStageShooter() const {return m_FirstStage;}
 				const Rotary_Velocity_Control &GetSecondStageShooter() const {return m_SecondStage;}
 				void TimeChange(double dTime_s);
