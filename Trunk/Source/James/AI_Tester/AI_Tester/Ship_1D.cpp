@@ -304,7 +304,7 @@ void Ship_1D::TimeChange(double dTime_s)
 		}
 		#endif
 
-		ForceToApply=m_Physics.GetForceFromVelocity(Vel,dTime_s);
+		ForceToApply=m_Physics.ComputeRestrainedForce(m_Physics.GetForceFromVelocity(Vel,dTime_s),AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 	}
 
 

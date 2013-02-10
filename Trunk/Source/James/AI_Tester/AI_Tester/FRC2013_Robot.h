@@ -417,6 +417,7 @@ class FRC_2013_Goals
 };
 
 #undef __TestXAxisServoDump__
+#define __TestPotsOnEncoder__
 class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 {
 	public:
@@ -458,7 +459,11 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
+		#ifndef __TestPotsOnEncoder__
 		Potentiometer_Tester2 m_Pitch_Pot,m_IntakeDeployment_Pot; //simulate the potentiometer and motor
+		#else
+		Encoder_Simulator2 m_Pitch_Pot,m_IntakeDeployment_Pot;
+		#endif
 		Encoder_Simulator m_PowerWheel_Enc,m_PowerSlowWheel_Enc,m_Helix_Enc,m_Rollers_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		#ifdef __TestXAxisServoDump__

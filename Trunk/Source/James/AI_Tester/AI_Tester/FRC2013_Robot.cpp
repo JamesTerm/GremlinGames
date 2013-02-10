@@ -1958,7 +1958,11 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				//	printf("Pitch=%f\n",Voltage);
 				//DOUT3("Pitch Voltage=%f",Voltage);
 				m_PitchRampVoltage=Voltage;
+				#ifndef __TestPotsOnEncoder__
 				m_Pitch_Pot.UpdatePotentiometerVoltage(Voltage);
+				#else
+				m_Pitch_Pot.UpdateEncoderVoltage(Voltage);
+				#endif
 				m_Pitch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
@@ -1986,7 +1990,11 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				//	printf("IntakeDeployment=%f\n",Voltage);
 				//DOUT3("IntakeDeployment Voltage=%f",Voltage);
 				m_IntakeDeploymentVoltage=Voltage;
+				#ifndef __TestPotsOnEncoder__
 				m_IntakeDeployment_Pot.UpdatePotentiometerVoltage(Voltage);
+				#else
+				m_IntakeDeployment_Pot.UpdateEncoderVoltage(Voltage);
+				#endif
 				m_IntakeDeployment_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
@@ -2184,10 +2192,19 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
 
+			#ifndef __TestPotsOnEncoder__
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
+			#else
+			result=m_Pitch_Pot.GetDistance() * m_RobotProps.GetPitchRampProps().GetRoteryProps().EncoderToRS_Ratio;
+			#endif
 			#ifdef __EnablePitchDisplay__
 			//DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
+
+			#ifndef __TestPotsOnEncoder__
 			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),RAD_2_DEG(m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition()));
+			#else
+			#endif
+			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio));
 			#endif
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
@@ -2202,7 +2219,11 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//DOUT5 ("vel=%f",result);
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
+			#ifndef __TestPotsOnEncoder__
 			result=m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition();
+			#else
+			result=m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio;
+			#endif
 			break;
 		case FRC_2013_Robot::eRollers:
 			result=m_Rollers_Enc.GetEncoderVelocity();

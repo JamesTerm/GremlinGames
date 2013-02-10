@@ -27,7 +27,7 @@ Rotary_Position_Control::Rotary_Position_Control(const char EntityName[],Rotary_
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_LastPosition(0.0),m_MatchVelocity(0.0),
 	m_ErrorOffset(0.0),
-	m_LastTime(0.0),m_MaxSpeedReference(0.0),
+	m_LastTime(0.0),m_PreviousVelocity(0.0),
 	m_UsingPotentiometer(false) //to be safe
 {
 }
@@ -43,10 +43,10 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	m_Rotary_Props=Props->GetRoteryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 
-	m_MaxSpeedReference=Props->GetMaxSpeed();
-	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
+	const double MaxSpeedReference=Props->GetMaxSpeed();
+	m_PIDController.SetInputRange(-MaxSpeedReference,MaxSpeedReference);
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
-	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
+	m_PIDController.SetOutputRange(-MaxSpeedReference*tolerance,MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
 	m_ErrorOffset=0.0;
 	if ((m_Rotary_Props.LoopState==Rotary_Props::eNone)||(m_Rotary_Props.LoopState==Rotary_Props::eOpen))
@@ -61,56 +61,55 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
-	double PotentiometerVelocity=0.0; //increased scope for debugging dump
-	
-	//Update the position to where the potentiometer says where it actually is
-	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition()))
+	if (!m_LastTime) 
 	{
-		if (m_LastTime!=0.0)
+		m_LastTime=dTime_s;
+		#ifdef AI_TesterCode
+		assert(dTime_s!=0.0);
+		#endif
+	}
+
+	const double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	const double Displacement=NewPosition-m_LastPosition;
+	const double PotentiometerVelocity=Displacement/m_LastTime;
+
+	//Update the position to where the potentiometer says where it actually is
+	if (m_UsingPotentiometer)
+	{
+		//For now we'll keep it this way until we have tested it thoroughly... for manual control using the force should help with latency and clear the 'I' if it gets messed up
+		//We may however be able to omit the else case as in theory it should all work fine... if we don't use 'I' then it would probably be safe to make the change now
+		//We can tune without I if possible to have for manual control
+		//  [2/10/2013 James]
+		if ((m_PIDController.GetI()==0.0) || (!GetLockShipToPosition()))
 		{
-			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
-
-			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
-			double Displacement=NewPosition-m_LastPosition;
-			PotentiometerVelocity=Displacement/m_LastTime;
-
 			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity,dTime_s);
 			//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 			m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
-
-			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
-			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
-
-			SetPos_m(NewPosition);
-			m_LastPosition=NewPosition;
-		}
-	}
-	else
-	{
-		//If we are manually controlling, we should still update displacement to properly work with limits and maintain where the position really
-		//is to seamlessly transfer between manual and auto
-		if (m_UsingPotentiometer)
-		{
-			m_ErrorOffset=0.0;
-			//double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
-			double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
-
-			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
-			double Displacement=NewPosition-m_LastPosition;
-			PotentiometerVelocity=Displacement/m_LastTime;
-			m_PIDController.ResetI();
-			SetPos_m(NewPosition);
-			m_LastPosition=NewPosition;
 		}
 		else
-			m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);  //For ease of debugging the controls (no harm to read)
+		{
+			//If we are manually controlling, we should still update displacement to properly work with limits and maintain where the position really
+			//is to seamlessly transfer between manual and auto
+			m_ErrorOffset=0.0;
+			m_PIDController.ResetI();
+		}
+		SetPos_m(NewPosition);
 	}
 
+	m_LastPosition=NewPosition;
 	m_LastTime=dTime_s;
 
 	__super::TimeChange(dTime_s);
-	//Note: CurrentVelocity is retained before the time change (for proper debugging of PID) we use the new velocity here for voltage
-	double Voltage=(m_Physics.GetVelocity()+m_ErrorOffset)/MAX_SPEED;
+
+	//Note: CurrentVelocity variable is retained before the time change (for proper debugging of PID) we use the new velocity (called Velocity) here for voltage
+	const double Velocity=m_Physics.GetVelocity();
+	const double Acceleration=(Velocity-m_PreviousVelocity)/dTime_s;
+
+	double Voltage=(Velocity+m_ErrorOffset)/MAX_SPEED;
+	Voltage+=Acceleration*((Acceleration * Velocity > 0)? m_Rotary_Props.InverseMaxAccel : m_Rotary_Props.InverseMaxDecel);
+
+	//Keep track of previous velocity to compute acceleration
+	m_PreviousVelocity=Velocity;
 
 	//Apply the polynomial equation to the voltage to linearize the curve
 	{
@@ -124,9 +123,6 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		Voltage=(Voltage<0)?-y:y;
 	}
 
-	//Keep voltage override disabled for simulation to test precision stability
-	//if (!m_VoltageOverride)
-	if (true)
 	{
 		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
 		if (Voltage>0.0)
@@ -142,16 +138,12 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		else
 			Voltage=0.0;  //is nan case
 	}
-	else
-	{
-		Voltage=0.0;
-		m_PIDController.ResetI(m_MaxSpeedReference * -0.99);  //clear error for I for better transition back
-	}
 
 	#ifdef __DebugLUA__
 	if ((m_Rotary_Props.PID_Console_Dump)&&(PotentiometerVelocity!=0.0))
 	{
 		double PosY=m_LastPosition;
+		//double PosY=RAD_2_DEG(m_LastPosition);
 		printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
 	}
 	#endif
@@ -188,7 +180,6 @@ void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
-			//MAX_SPEED=m_MaxSpeedReference;
 			m_LastPosition=0.0;
 			m_ErrorOffset=0.0;
 			m_LastTime=0.0;

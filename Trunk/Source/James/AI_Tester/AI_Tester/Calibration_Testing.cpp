@@ -408,7 +408,7 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double Angula
 /***************************************************************************************************************/
 
 
-Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),m_EncoderScalar(1.0)
+Encoder_Simulator2::Encoder_Simulator2(const char EntityName[]) : m_Time_s(0.0),m_EncoderScalar(1.0),m_ReverseMultiply(1.0),m_Position(0.0)
 {
 }
 
@@ -416,7 +416,10 @@ void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 {
 	const Rotary_Properties *rotary_props=dynamic_cast<const Rotary_Properties *>(props);
 	if (rotary_props)
+	{
 		m_DriveTrain.UpdateProps(rotary_props->GetEncoderSimulationProps());
+		m_EncoderScalar=rotary_props->GetRoteryProps().EncoderToRS_Ratio;
+	}
 
 	#if 0
 	//m_Physics.SetMass(68);  //(about 150 pounds)
@@ -471,13 +474,18 @@ double Encoder_Simulator2::GetEncoderVelocity() const
 	return 0.0;
 	#else
 	//return m_Physics.GetVelocity();
-	return m_Physics.GetVelocity() *  m_DriveTrain.GetDriveTrainProps().DriveWheelRadius;
+	return m_Physics.GetVelocity() *  m_DriveTrain.GetDriveTrainProps().DriveWheelRadius * m_ReverseMultiply;
 	#endif
+}
+
+double Encoder_Simulator2::GetDistance() const
+{
+	return m_Position;
 }
 
 void Encoder_Simulator2::SetReverseDirection(bool reverseDirection)
 {
-	m_EncoderScalar= reverseDirection? -1.0 : 1.0;
+	m_ReverseMultiply= reverseDirection? -1.0 : 1.0;
 }
 
 void Encoder_Simulator2::TimeChange()
@@ -486,11 +494,15 @@ void Encoder_Simulator2::TimeChange()
 	const double Ground=0.0;  //ground in radians
 	double FrictionForce=m_Physics.GetFrictionalForce(m_Time_s,Ground);
 	m_Physics.ApplyFractionalForce(FrictionForce,m_Time_s);  //apply the friction
+	double PositionDisplacement;
+	m_Physics.TimeChangeUpdate(m_Time_s,PositionDisplacement);
+	m_Position+= PositionDisplacement * m_EncoderScalar * m_ReverseMultiply;
 }
 
 void Encoder_Simulator2::ResetPos()
 {
 	m_Physics.ResetVectors();
+	m_Position=0;
 }
 
   /***************************************************************************************************************/
