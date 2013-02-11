@@ -251,17 +251,6 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	return ret;
 }
 
-//I'm leaving this as a template for derived classes... doing it this way is efficient in that it can use all constants
-const double c_rMotorDriveForward_DeadZone=0.0;
-const double c_rMotorDriveReverse_DeadZone=0.0;
-const double c_lMotorDriveForward_DeadZone=0.0;
-const double c_lMotorDriveReverse_DeadZone=0.0;
-
-const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
-const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
-const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
-const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
-
 static void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double NegativeDeadZone)
 {
 	if ((Voltage > 0.0) && (Voltage<PositiveDeadZone))
