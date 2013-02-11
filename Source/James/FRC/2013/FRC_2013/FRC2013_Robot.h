@@ -291,7 +291,6 @@ class FRC_2013_Robot : public Tank_Robot
 		void SetClimbState(ClimbState climb_state);
 		bool IsStopped() const;  //returns true if both encoders read zero on this iteration
 	protected:
-		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 	private:

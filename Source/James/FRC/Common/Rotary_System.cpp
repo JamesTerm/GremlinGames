@@ -114,7 +114,9 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	const double Acceleration=(Velocity-m_PreviousVelocity)/dTime_s;
 
 	double Voltage=(Velocity+m_ErrorOffset)/MAX_SPEED;
-	Voltage+=Acceleration*((Acceleration * Velocity > 0)? m_Rotary_Props.InverseMaxAccel : m_Rotary_Props.InverseMaxDecel);
+
+	bool IsAccel=(Acceleration * Velocity > 0);
+	Voltage+=Acceleration*(IsAccel? m_Rotary_Props.InverseMaxAccel : m_Rotary_Props.InverseMaxDecel);
 
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousVelocity=Velocity;
@@ -130,6 +132,9 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
 		Voltage=(Voltage<0)?-y:y;
 	}
+
+	if ((IsZero(PotentiometerVelocity)) && IsAccel)
+		ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone);
 
 	{
 		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
@@ -319,7 +324,8 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 	//they both can be represented in the same equation
 	double Voltage=(Velocity+m_ErrorOffset)/m_CalibratedScaler;
 
-	Voltage+=Acceleration*((Acceleration * Velocity > 0)? m_Rotary_Props.InverseMaxAccel : m_Rotary_Props.InverseMaxDecel);
+	bool IsAccel=(Acceleration * Velocity > 0);
+	Voltage+=Acceleration*(IsAccel? m_Rotary_Props.InverseMaxAccel : m_Rotary_Props.InverseMaxDecel);
 
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousVelocity=Velocity;
@@ -335,6 +341,9 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
 		Voltage=(Voltage<0)?-y:y;
 	}
+
+	if ((IsZero(m_EncoderVelocity)) && IsAccel)
+		ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone);
 
 	//Keep voltage override disabled for simulation to test precision stability
 	//if (!m_VoltageOverride)
@@ -483,6 +492,7 @@ void Rotary_Properties::Init()
 	props.Polynomial[3]=0.0;
 	props.Polynomial[4]=0.0;
 	props.InverseMaxAccel=props.InverseMaxAccel=0.0;
+	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
 	m_RoteryProps=props;
 }
 
@@ -563,6 +573,13 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("inv_max_accel", NULL, NULL, &m_RoteryProps.InverseMaxAccel);
 		m_RoteryProps.InverseMaxDecel=m_RoteryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
 		script.GetField("inv_max_decel", NULL, NULL, &m_RoteryProps.InverseMaxDecel);
+
+		script.GetField("forward_deadzone", NULL, NULL,&m_RoteryProps.Positive_DeadZone);
+		script.GetField("reverse_deadzone", NULL, NULL,&m_RoteryProps.Negative_DeadZone);
+		//Ensure the negative settings are negative
+		if (m_RoteryProps.Negative_DeadZone>0.0)
+			m_RoteryProps.Negative_DeadZone=-m_RoteryProps.Negative_DeadZone;
+		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 
 		#ifdef AI_TesterCode
 		err = script.GetFieldTable("motor_specs");

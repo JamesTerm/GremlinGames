@@ -251,14 +251,6 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 	return ret;
 }
 
-static void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double NegativeDeadZone)
-{
-	if ((Voltage > 0.0) && (Voltage<PositiveDeadZone))
-		Voltage=PositiveDeadZone;
-	else if ((Voltage < 0.0 ) && (Voltage>NegativeDeadZone))
-		Voltage=NegativeDeadZone;
-}
-
 void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &LocalForce,double Torque,double TorqueRestraint,double dTime_s)
 {
 	m_VehicleDrive->UpdateVelocities(PhysicsToUse,LocalForce,Torque,TorqueRestraint,dTime_s);
@@ -559,11 +551,6 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("inv_max_decel_left", NULL, NULL, &m_TankRobotProps.InverseMaxDecel_Left);
 		script.GetField("inv_max_decel_right", NULL, NULL, &m_TankRobotProps.InverseMaxDecel_Right);
 
-		script.Pop(); 
-	}
-	err = script.GetFieldTable("controls");
-	if (!err)
-	{
 		script.GetField("forward_deadzone_left", NULL, NULL,&m_TankRobotProps.Positive_DeadZone_Left);
 		script.GetField("forward_deadzone_right", NULL, NULL,&m_TankRobotProps.Positive_DeadZone_Right);
 		script.GetField("reverse_deadzone_left", NULL, NULL,&m_TankRobotProps.Negative_DeadZone_Left);
@@ -574,6 +561,13 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (m_TankRobotProps.Negative_DeadZone_Right>0.0)
 			m_TankRobotProps.Negative_DeadZone_Right=-m_TankRobotProps.Negative_DeadZone_Right;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
+
+		script.Pop(); 
+	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		script.GetField("tank_steering_tolerance", NULL, NULL,&m_TankRobotProps.TankSteering_Tolerance);
 		script.Pop();
 	}
 
