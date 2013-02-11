@@ -709,30 +709,6 @@ void FRC_2012_Robot::TimeChange(double dTime_s)
 	m_Flippers.AsEntity1D().TimeChange(dTime_s);
 }
 
-const double c_rMotorDriveForward_DeadZone=0.02;
-const double c_rMotorDriveReverse_DeadZone=0.02;
-const double c_lMotorDriveForward_DeadZone=0.02;
-const double c_lMotorDriveReverse_DeadZone=0.02;
-
-const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
-const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
-const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
-const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
-
-void FRC_2012_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
-{
-	//Eliminate the deadzone
-	if (LeftVoltage>0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
-	else if (LeftVoltage < 0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
-
-	if (RightVoltage>0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
-	else if (RightVoltage < 0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
-}
-
 const FRC_2012_Robot_Properties &FRC_2012_Robot::GetRobotProps() const
 {
 	return m_RobotProps;
