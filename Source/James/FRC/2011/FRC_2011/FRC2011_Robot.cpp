@@ -453,32 +453,6 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	claw_entity.TimeChange(dTime_s);
 }
 
-//TODO recalibrate the dead zones
-//It prior to cow town these were 0.110, 0.04, 0.02, and 0.115  (keep these as a reference)
-const double c_rMotorDriveForward_DeadZone=0.02;
-const double c_rMotorDriveReverse_DeadZone=0.02;
-const double c_lMotorDriveForward_DeadZone=0.02;
-const double c_lMotorDriveReverse_DeadZone=0.02;
-
-const double c_rMotorDriveForward_Range=1.0-c_rMotorDriveForward_DeadZone;
-const double c_rMotorDriveReverse_Range=1.0-c_rMotorDriveReverse_DeadZone;
-const double c_lMotorDriveForward_Range=1.0-c_lMotorDriveForward_DeadZone;
-const double c_lMotorDriveReverse_Range=1.0-c_lMotorDriveReverse_DeadZone;
-
-void FRC_2011_Robot::ComputeDeadZone(double &LeftVoltage,double &RightVoltage)
-{
-	//Eliminate the deadzone
-	if (LeftVoltage>0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveForward_Range) + c_lMotorDriveForward_DeadZone;
-	else if (LeftVoltage < 0.0)
-		LeftVoltage=(LeftVoltage * c_lMotorDriveReverse_Range) - c_lMotorDriveReverse_DeadZone;
-
-	if (RightVoltage>0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveForward_Range) + c_rMotorDriveForward_DeadZone;
-	else if (RightVoltage < 0.0)
-		RightVoltage=(RightVoltage * c_rMotorDriveReverse_Range) - c_rMotorDriveReverse_DeadZone;
-}
-
 void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 {
 	m_RobotControl->CloseSolenoid(eDeployment,Close);
