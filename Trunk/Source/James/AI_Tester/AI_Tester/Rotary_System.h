@@ -14,6 +14,9 @@ struct Rotary_Props
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
 	double InverseMaxDecel;  //used for deceleration case
+	double Positive_DeadZone;
+	double Negative_DeadZone;  //These must be in negative form
+
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
 	{

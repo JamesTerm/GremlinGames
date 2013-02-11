@@ -3,6 +3,14 @@
 class UI_Controller;
 class AI_Base_Controller;
 
+inline void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double NegativeDeadZone)
+{
+	if ((Voltage > 0.0) && (Voltage<PositiveDeadZone))
+		Voltage=PositiveDeadZone;
+	else if ((Voltage < 0.0 ) && (Voltage>NegativeDeadZone))
+		Voltage=NegativeDeadZone;
+}
+
 inline osg::Vec2d GlobalToLocal(double Heading,const osg::Vec2d &GlobalVector);
 inline osg::Vec2d LocalToGlobal(double Heading,const osg::Vec2d &LocalVector);
 inline void NormalizeRotation(double &Rotation)

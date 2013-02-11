@@ -94,7 +94,11 @@ MainRobot = {
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1/15.0  --solved empiracally
+		inv_max_accel = 1/15.0,  --solved empiracally
+		forward_deadzone_left  = 0.02,
+		forward_deadzone_right = 0.02,
+		reverse_deadzone_left  = 0.02,
+		reverse_deadzone_right = 0.02
 	},
 	
 	robot_settings =
