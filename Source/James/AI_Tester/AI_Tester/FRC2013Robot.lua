@@ -372,6 +372,26 @@ MainRobot = {
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			Ball_Fire = {type="joystick_button", key=6, on_off=true},
 			PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
+		},
+		
+		Joystick_4 =
+		{
+			control = "logitech attack 3",
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
+			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Robot_SetClimbGearOff = {type="joystick_button", key=8, on_off=false},
+			Robot_SetClimbGearOn = {type="joystick_button", key=9, on_off=false},
+			Ball_Fire = {type="joystick_button", key=2, on_off=true},
+			PowerWheels_IsRunning = {type="joystick_button", key=1, on_off=true},
+			Ball_Grip = {type="joystick_button", key=6, on_off=true},
+			Ball_Squirt = {type="joystick_button", key=7, on_off=true},
+			Intake_Deployment_Retract = {type="joystick_button", key=10, on_off=false},
+			Intake_Deployment_Advance = {type="joystick_button", key=11, on_off=false},
+			--POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--Turn_180 = {type="joystick_button", key=7, on_off=false}
 		}
 	},
 	
