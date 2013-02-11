@@ -58,7 +58,11 @@ TestShip = {
 		reverse_steering='yes',
 		left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1.0/15.0  --solved empiracally
+		inv_max_accel = 1.0/15.0,  --solved empiracally
+		forward_deadzone_left  = 0.02,
+		forward_deadzone_right = 0.110,
+		reverse_deadzone_left  = 0.115,
+		reverse_deadzone_right = 0.04
 	},
 
 	controls =

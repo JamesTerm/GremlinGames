@@ -267,7 +267,6 @@ class FRC_2012_Robot : public Tank_Robot
 		const FRC_2012_Robot_Properties &GetRobotProps() const;
 		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
 	protected:
-		virtual void ComputeDeadZone(double &LeftVoltage,double &RightVoltage);
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 	private:
