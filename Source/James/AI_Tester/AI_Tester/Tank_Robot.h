@@ -138,10 +138,17 @@ class Tank_Robot_Properties : public UI_Ship_Properties
 		Tank_Robot_Properties();
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
+		#ifdef AI_TesterCode
+		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
+		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
+		#endif
 	protected:
 		Tank_Robot_Props m_TankRobotProps;
 	private:
 		//typedef Ship_Properties __super;
+		#ifdef AI_TesterCode
+		EncoderSimulation_Properties m_EncoderSimulation;
+		#endif
 };
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
