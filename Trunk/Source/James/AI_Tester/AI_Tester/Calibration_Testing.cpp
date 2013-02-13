@@ -382,7 +382,8 @@ __inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double 
 
 __inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Voltage)
 {
-	const double Amps=fabs(Voltage*133.0);
+	const EncoderSimulation_Props::Motor_Specs &motor=m_Props.motor;
+	const double Amps=fabs(Voltage*motor.Stall_Current_Amp);
 	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
 	const double WheelTorque=GetTorqueAtWheel(MotorTorque * 2.0);
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
@@ -390,7 +391,8 @@ __inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Vo
 
 __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage)
 {
-	const double Amps=fabs(Voltage*133.0);
+	const EncoderSimulation_Props::Motor_Specs &motor=m_Props.motor;
+	const double Amps=fabs(Voltage*motor.Stall_Current_Amp);
 	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
 	const double WheelTorque=GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign

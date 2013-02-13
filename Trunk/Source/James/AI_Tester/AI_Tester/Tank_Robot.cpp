@@ -1,10 +1,13 @@
 #include "stdafx.h"
 #include "AI_Tester.h"
+#include "Debug.h"
 namespace AI_Tester
 {
 	#include "PIDController.h"
 	#include "Calibration_Testing.h"
 	#include "Tank_Robot.h"
+	#include "Robot_Control_Interface.h"
+	#include "Rotary_System.h"
 }
 
 
@@ -557,6 +560,15 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TankRobotProps.Negative_DeadZone_Right=-m_TankRobotProps.Negative_DeadZone_Right;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 
+		#ifdef AI_TesterCode
+		err = script.GetFieldTable("motor_specs");
+		if (!err)
+		{
+			m_EncoderSimulation.LoadFromScript(script);
+			script.Pop();
+		}
+		#endif
+
 		script.Pop(); 
 	}
 	err = script.GetFieldTable("controls");
@@ -596,7 +608,11 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		m_TankRobotProps=robot_props->GetTankRobotProps();
 		//We'll try to construct the props to match our properties
 		//Note: for max accel it needs to be powerful enough to handle curve equations
-		Ship_1D_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
+		Rotary_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
+		props.RoteryProps().EncoderToRS_Ratio=m_TankRobotProps.MotorToWheelGearRatio;
+		#ifdef AI_TesterCode
+		props.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
+		#endif
 		m_Encoders.Initialize(&props);
 
 		#if 1
@@ -627,6 +643,7 @@ double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
 void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	m_Encoders.GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f",Meters2Feet(LeftVelocity),Meters2Feet(RightVelocity));
 }
 
 void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
@@ -772,7 +789,8 @@ void Tank_Robot_UI::TimeChange(double dTime_s)
 		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
 		const double LinearVelocity=(i&1)?_.GetRightVelocity():_.GetLeftVelocity();
 		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
-		const double RPS=LinearVelocity /  (PI * _.GetTankRobotProps().WheelDiameter * PixelHackScale);
+		//Note: for UI... to make it pixel friendly always use 6 inches with the hack and not _.GetTankRobotProps().WheelDiameter
+		const double RPS=LinearVelocity /  (PI * Inches2Meters(6.0) * PixelHackScale);
 		const double AngularVelocity=RPS * Pi2;
 		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
 	}
