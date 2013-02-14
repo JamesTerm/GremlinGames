@@ -62,7 +62,7 @@ MainRobot = {
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.333333,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=12/36,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
@@ -144,18 +144,32 @@ MainRobot = {
 			pid=
 			{p=200, i=0, d=50 },
 			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
-			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
+			encoder_to_wheel_ratio=30/40,     --Just use the gearing ratios here
 			voltage_multiply=-1.0,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
-			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
+			max_speed=(3804.55/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
 			accel=200.0,						--These are only needed if we bind keys for power in meters per second
 			brake=200.0,
 			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=200,			--The wheel may some time to ramp up
-			min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			min_range=28 * Pi2,				--We borrow the min range to represent the min speed
+			motor_specs =
+			{
+				wheel_mass=1.5,	
+				cof_efficiency=1.0,
+				gear_reduction=1.5,
+				torque_on_wheel_radius=0.0508,
+				drive_wheel_radius=0.0508,
+				number_of_motors=1,
+				
+				free_speed_rpm=6200,
+				stall_torque=1.4,
+				stall_current_amp=86,
+				free_current_amp=1.5
+			}
 		},
 		power_first_stage =
 		{
@@ -165,18 +179,32 @@ MainRobot = {
 			pid=
 			{p=0, i=0, d=0 },
 			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
-			encoder_to_wheel_ratio=0.9215,     --Just use the gearing ratios here
+			encoder_to_wheel_ratio=30/44,     --Just use the gearing ratios here
 			voltage_multiply=-1.0,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
-			max_speed=(5000.0/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
+			max_speed=(3804.55/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
 			accel=200.0,						--These are only needed if we bind keys for power in meters per second
 			brake=200.0,
 			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=200,			--The wheel may some time to ramp up
-			min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			min_range=28 * Pi2,				--We borrow the min range to represent the min speed
+			motor_specs =
+			{
+				wheel_mass=1.5,	
+				cof_efficiency=1.0,
+				gear_reduction=1.5,
+				torque_on_wheel_radius=0.0508,
+				drive_wheel_radius=0.0508,
+				number_of_motors=1,
+				
+				free_speed_rpm=6200,
+				stall_torque=1.4,
+				stall_current_amp=86,
+				free_current_amp=1.5
+			}
 		},
 		intake_deployment =
 		{
@@ -186,7 +214,7 @@ MainRobot = {
 			pid=
 			{p=200, i=0, d=50},
 			tolerance=0.01,					--should not matter much
-			encoder_to_wheel_ratio=0.5,
+			encoder_to_wheel_ratio=20/50,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
@@ -375,7 +403,7 @@ MainRobot = {
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=8, on_off=false},
 			Robot_SetClimbGearOn = {type="joystick_button", key=9, on_off=false},
