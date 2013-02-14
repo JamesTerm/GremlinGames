@@ -94,6 +94,7 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 	m_Ship_1D_Props.MinRange=MinRange;
 	m_Ship_1D_Props.MaxRange=MaxRange;
 	m_Ship_1D_Props.UsingRange=UsingRange;
+	m_Ship_1D_Props.DistanceDegradeScalar=1.0;  //only can be changed in script!
 }
 
 void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
@@ -133,6 +134,8 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 			err=script.GetField("max_range", NULL, NULL, &range);
 			if (!err) m_Ship_1D_Props.MaxRange=range;
 		}
+		script.GetField("distance_scale", NULL, NULL, &m_Ship_1D_Props.DistanceDegradeScalar);
+
 		std::string sTest;
 		//TODO determine why the bool type fails
 		//script.GetField("using_range", NULL, &m_Ship_1D_Props.UsingRange, NULL);

@@ -8,6 +8,9 @@ struct Ship_1D_Props
 
 	double MaxAccelForward,MaxAccelReverse;
 	double MinRange,MaxRange;
+	//This is used to avoid overshoot when trying to rotate to a heading
+	double DistanceDegradeScalar;
+
 	//TODO these are somewhat specific, we may want to move subclass them or have more generic meaning
 	enum Ship_Type
 	{
@@ -151,6 +154,7 @@ class Ship_1D : public Entity1D
 		double m_currAccel;  //This is the immediate request for thruster levels
 		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity  from a speed delta change
 		double m_MinRange,m_MaxRange;
+		double m_DistanceDegradeScalar;
 		bool m_SimFlightMode;  ///< If true auto strafing will occur to keep ship in line with its position
 		bool m_UsingRange; 
 	private:
