@@ -478,7 +478,10 @@ void Ship_2D::TimeChange(double dTime_s)
 
 		#ifndef __DisableSpeedControl__
 		{
-			if (m_currAccel[1]<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
+			//Note: this was checking m_currAccel[1] for a long time, but that fails for backwards case when using keyboard as it would be zero while
+			//VelocityToUse[1] would be negative, in which case it should use the negative bounds check
+			//  [2/14/2013 James]
+			if (VelocityToUse[1]<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
 			{
 				if ((VelocityToUse[1]) < -ENGAGED_MAX_SPEED)
 				{
