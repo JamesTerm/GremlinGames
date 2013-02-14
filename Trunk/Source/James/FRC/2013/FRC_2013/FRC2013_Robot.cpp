@@ -918,6 +918,7 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 			//for the simulation this will restore it back to drive (since it doesn't matter what state the pneumatics are in
 			#ifdef AI_TesterCode
 			GetController()->GetUIController_RW()->SetAutoPilot(false);
+			SetClimbState(eClimbState_Drive);  //well set props back
 			#endif
 		}
 	}
@@ -956,6 +957,9 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		//Ship first then tank  (so PID settings have correct ship props)
 		UpdateShipProperties(m_RobotProps.GetShipProps());
 		UpdateTankProps(m_RobotProps.GetTankRobotProps());
+		#ifdef AI_TesterCode
+		m_RobotControl->Initialize(&m_RobotProps);
+		#endif
 		break;
 	case eClimbState_RaiseLift:
 		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
@@ -964,12 +968,18 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		//Ship first then tank  (so PID settings have correct ship props)
 		UpdateShipProperties(m_RobotProps.GetClimbGearLiftProps().GetShipProps());
 		UpdateTankProps(m_RobotProps.GetClimbGearLiftProps().GetTankRobotProps());
+		#ifdef AI_TesterCode
+		m_RobotControl->Initialize(&m_RobotProps.GetClimbGearLiftProps());
+		#endif
 		break;
 	case eClimbState_DropLift:
 		m_RobotControl->OpenSolenoid(eEngageDropWinch);
 		//Ship first then tank  (so PID settings have correct ship props)
 		UpdateShipProperties(m_RobotProps.GetClimbGearDropProps().GetShipProps());
 		UpdateTankProps(m_RobotProps.GetClimbGearDropProps().GetTankRobotProps());
+		#ifdef AI_TesterCode
+		m_RobotControl->Initialize(&m_RobotProps.GetClimbGearDropProps());
+		#endif
 		break;
 	case eClimbState_DropLift2:
 		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
@@ -1444,7 +1454,7 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		m_ClimbGearDropProps=*this;  //copy redundant data first
+		m_ClimbGearDropProps=m_ClimbGearLiftProps;  //copy redundant data first
 		err = script.GetFieldTable("climb_gear_drop");
 		if (!err)
 		{
