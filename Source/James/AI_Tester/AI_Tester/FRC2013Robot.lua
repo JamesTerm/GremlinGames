@@ -5,7 +5,9 @@ Inches2Meters=0.0254
 Feet2Meters=0.3048
 Meters2Feet=3.2808399
 Meters2Inches=39.3700787
+Inches2Meters=0.0254
 OunceInchToNewton=0.00706155183333
+Pounds2Kilograms=0.453592
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -173,7 +175,7 @@ MainRobot = {
 		},
 		power_first_stage =
 		{
-			is_closed='no',
+			is_closed='yes',
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
@@ -231,7 +233,7 @@ MainRobot = {
 			distance_scale = 0.5,
 			motor_specs =
 			{
-				wheel_mass=4.53,	        --10 pounds (see applied load)
+				wheel_mass=Pounds2Kilograms * 10,	        --(see applied load)
 				cof_efficiency=1.0,
 				gear_reduction=64,
 				torque_on_wheel_radius=0.0508,
@@ -258,20 +260,35 @@ MainRobot = {
 
 		rollers =
 		{
+			ds_display_row=-1,
 			--Note: there are no encoders here so is_closed is ignored and can not show pid dump
 			tolerance=0.01,					--we need good precision
 			voltage_multiply=1.0,			--May be reversed
 			--For open loop, and using limit... the curve will help achieve proper velocity
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-			max_speed=28,
+			max_speed=14000.0/60.0,  --233 rps!
 			accel=112,						--These are needed and should be high enough to grip without slip
 			brake=112,
 			max_accel_forward=112,
 			max_accel_reverse=112,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			min_range=-10,				--TODO find out what these are
-			max_range= 10
+			max_range= 10,
+			motor_specs =
+			{
+				wheel_mass=Pounds2Kilograms * 3,	        --(see applied load)
+				cof_efficiency=0.8,
+				gear_reduction=64,
+				torque_on_wheel_radius=Inches2Meters * 0.642 * 0.5,
+				drive_wheel_radius=Inches2Meters * 0.642 * 0.5,
+				number_of_motors=1,
+				
+				free_speed_rpm=14000.0,
+				stall_torque=0.8,
+				stall_current_amp=82,
+				free_current_amp=3.6
+			}
 		},
 
 		climb_gear_lift = 
@@ -297,7 +314,7 @@ MainRobot = {
 				inv_max_accel = 0.0,  --solved empiracally
 				motor_specs =
 				{
-					wheel_mass=54.43,
+					wheel_mass=Pounds2Kilograms * 120,
 					cof_efficiency=1.0,
 					gear_reduction=5310.0/724.284,
 					torque_on_wheel_radius=0.0508,
