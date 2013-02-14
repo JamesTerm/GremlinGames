@@ -48,7 +48,7 @@ void Dout(size_t line, size_t startingColumn, const char *writeFmt, va_list argp
 	char lineBuffer[kLineLength + 1];
 
 	assert (startingColumn >= 1 && startingColumn < kLineLength);
-	assert ((line>0) && (line<5));
+	assert ((line>0) && (line<=5));
 
 	// snprintf appends NULL to its output.  Therefore we can't write directly to the buffer.
 	size_t length = vsnprintf(lineBuffer, kLineLength + 1, writeFmt, argptr);
