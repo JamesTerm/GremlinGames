@@ -7,46 +7,20 @@ Meters2Feet=3.2808399
 Meters2Inches=39.3700787
 OunceInchToNewton=0.00706155183333
 
-g_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
-WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
-WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Width_In * WheelBase_Width_In) ) ^ 0.5
-HighGearSpeed = (427.68 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-ClimbGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
+WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelBase_Length_In=9.625
+WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
+HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
+ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
 Drive_MaxAccel=4
-skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
-
---CIM Motor torque
-CIM_StallTorque_OzIn=343.3
-CIM_StallTorque_Nm=CIM_StallTorque_OzIn*OunceInchToNewton
-CIM_MaxRPM=5310
-CIM_Vel_To_Torque_oz=(1.0/(CIM_MaxRPM/60.0)) * CIM_StallTorque_OzIn
-CIM_Vel_To_Torque_nm=CIM_Vel_To_Torque_oz*OunceInchToNewton
-CIM_MotorTorque=(CIM_MaxRPM / 60) * CIM_Vel_To_Torque_nm  --long math to show its equal to CIM_StallTorque_Nm
-
-DriveTrain_GearReduction = 12.4158
-DriveTrain_Efficiency=1.0
-DriveTrain_MaxTorque = 2.0 * CIM_MotorTorque * DriveTrain_GearReduction * DriveTrain_Efficiency
-
---Now to compute the linear equivalent
-DriveTrain_PayloadMass = 3.0   --This combines mass with each moment used to compute acceleration
-DriveTrain_MaxAccel_rad= DriveTrain_MaxTorque / DriveTrain_PayloadMass
-DriveTrain_MaxAccel_rps= DriveTrain_MaxAccel_rad / (2.0 * Pi)
-DriveTrain_WheelDiameter = Inches2Meters * g_wheel_diameter_in
-DriveTrain_MaxAccel_linear = DriveTrain_MaxAccel_rps * (Pi * DriveTrain_WheelDiameter)
-DriveTrain_MaxForce = DriveTrain_MaxAccel_linear * DriveTrain_PayloadMass
-
---extra computations
-DriveTrain_MaxWheelRPS_High = HighGearSpeed / (Pi * DriveTrain_WheelDiameter)  --The fastest RPS of the wheels
-DriveTrain_MaxWheelRPS_Low  = ClimbGearSpeed  / (Pi * DriveTrain_WheelDiameter)
-DriveTrain_MotorRPS = DriveTrain_MaxWheelRPS_High * DriveTrain_GearReduction
-DriveTrain_MaxAngularVelocity_High = DriveTrain_MaxWheelRPS_High * 2.0 * Pi --In radians
+skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 
 KeyDistance_in=144
 --KeyDistance_in=0
 KeyWidth_in=101
 KeyDepth_in=48
 HalfKeyWidth_in=KeyWidth_in/2.0
-
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
@@ -67,6 +41,7 @@ MainRobot = {
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
+	--{ Length=0.48895, Width=0.69215 }  --this is what it really is, but looks too small
 	
 	tank_drive =
 	{
@@ -87,14 +62,32 @@ MainRobot = {
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=0.333333,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1/15.0  --solved empiracally
+		inv_max_accel = 1/15.0,  --solved empiracally
+		forward_deadzone_left  = 0.02,
+		forward_deadzone_right = 0.02,
+		reverse_deadzone_left  = 0.02,
+		reverse_deadzone_right = 0.02,
+		motor_specs =
+		{
+			wheel_mass=1.5,
+			cof_efficiency=1.0,
+			gear_reduction=5310.0/733.14,
+			torque_on_wheel_radius=0.0254,
+			drive_wheel_radius=0.0508,
+			number_of_motors=1,
+			
+			free_speed_rpm=5310.0,
+			stall_torque=6.561,
+			stall_current_amp=399,
+			free_current_amp=8.1
+		}
 	},
 	
 	robot_settings =
@@ -197,16 +190,31 @@ MainRobot = {
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
-			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
-			brake=10.0,
+			max_speed=19300/64/60,			--This is about 5 rps (a little slower than hiking viking drive)
+			accel=10,						--We may indeed have a two button solution (match with max accel)
+			brake=10,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			min_range_deg=0,				--Stowed position where 0 degrees is vertical up
 			min_drop_deg=45,				--The minimum amount of intake drop to occur to be able to fire shots
 			max_range_deg= 90,				--Dropped position where 90 degrees is horizontal
-			inv_max_accel = 1.0/36.0
+			inv_max_accel = 1.0/36.0,
+			distance_scale = 0.5,
+			motor_specs =
+			{
+				wheel_mass=4.53,	        --10 pounds (see applied load)
+				cof_efficiency=1.0,
+				gear_reduction=64,
+				torque_on_wheel_radius=0.0508,
+				drive_wheel_radius=0.0508,
+				number_of_motors=1,
+				
+				free_speed_rpm=19300.0,
+				stall_torque=0.4862,
+				stall_current_amp=85,
+				free_current_amp=1.4
+			}
 		},
 		helix =
 		{
@@ -254,25 +262,28 @@ MainRobot = {
 			tank_drive =
 			{
 				is_closed=1,						--Must be on
-				show_pid_dump='no',
-				ds_display_row=-1,
 				left_pid=
 				{p=200, i=0, d=50},
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				latency=0.300,
-				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
-				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=1.0,				--May be reversed using -1.0
-				curve_voltage=
-				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-				reverse_steering='no',
-				left_encoder_reversed='no',
-				right_encoder_reversed='no',
-				inv_max_accel = 0.0  --solved empiracally
+				inv_max_accel = 0.0,  --solved empiracally
+				motor_specs =
+				{
+					wheel_mass=54.43,
+					cof_efficiency=1.0,
+					gear_reduction=5310.0/724.284,
+					torque_on_wheel_radius=0.0508,
+					drive_wheel_radius=0.0508,
+					number_of_motors=1,
+					
+					free_speed_rpm=5310.0,
+					stall_torque=11.8098,
+					stall_current_amp=798,
+					free_current_amp=16.2
+				}
 			}
 		},
+		--This get copy of everything set in climb_gear_lift by default... so everything in common does not need to be duplicated
 		climb_gear_drop = 
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
@@ -289,22 +300,10 @@ MainRobot = {
 			tank_drive =
 			{
 				is_closed=1,						--Must be on
-				show_pid_dump='no',
-				ds_display_row=-1,
 				left_pid=
 				{p=200, i=0, d=50},
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				latency=0.300,
-				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
-				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=1.0,				--May be reversed using -1.0
-				curve_voltage=
-				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-				reverse_steering='no',
-				left_encoder_reversed='no',
-				right_encoder_reversed='no',
 				inv_max_accel = 0.0  --solved empiracally
 			}
 		}
@@ -368,6 +367,26 @@ MainRobot = {
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			Ball_Fire = {type="joystick_button", key=6, on_off=true},
 			PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
+		},
+		
+		Joystick_4 =
+		{
+			control = "logitech attack 3",
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
+			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Robot_SetClimbGearOff = {type="joystick_button", key=8, on_off=false},
+			Robot_SetClimbGearOn = {type="joystick_button", key=9, on_off=false},
+			Ball_Fire = {type="joystick_button", key=2, on_off=true},
+			PowerWheels_IsRunning = {type="joystick_button", key=1, on_off=true},
+			Ball_Grip = {type="joystick_button", key=6, on_off=true},
+			Ball_Squirt = {type="joystick_button", key=7, on_off=true},
+			Intake_Deployment_Retract = {type="joystick_button", key=10, on_off=false},
+			Intake_Deployment_Advance = {type="joystick_button", key=11, on_off=false},
+			--POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--Turn_180 = {type="joystick_button", key=7, on_off=false}
 		}
 	},
 	
