@@ -47,7 +47,7 @@ MainRobot = {
 	{
 		is_closed=1,
 		show_pid_dump='no',
-		ds_display_row=5,
+		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
@@ -190,16 +190,31 @@ MainRobot = {
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
-			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
-			brake=10.0,
+			max_speed=19300/64/60,			--This is about 5 rps (a little slower than hiking viking drive)
+			accel=10,						--We may indeed have a two button solution (match with max accel)
+			brake=10,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			min_range_deg=0,				--Stowed position where 0 degrees is vertical up
 			min_drop_deg=45,				--The minimum amount of intake drop to occur to be able to fire shots
 			max_range_deg= 90,				--Dropped position where 90 degrees is horizontal
-			inv_max_accel = 1.0/36.0
+			inv_max_accel = 1.0/36.0,
+			distance_scale = 0.5,
+			motor_specs =
+			{
+				wheel_mass=4.53,	        --10 pounds (see applied load)
+				cof_efficiency=1.0,
+				gear_reduction=64,
+				torque_on_wheel_radius=0.0508,
+				drive_wheel_radius=0.0508,
+				number_of_motors=1,
+				
+				free_speed_rpm=19300.0,
+				stall_torque=0.4862,
+				stall_current_amp=85,
+				free_current_amp=1.4
+			}
 		},
 		helix =
 		{

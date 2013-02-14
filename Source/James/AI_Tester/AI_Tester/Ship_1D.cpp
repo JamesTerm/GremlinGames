@@ -89,6 +89,7 @@ void Ship_1D::UpdateShip1DProperties(const Ship_1D_Props &props)
 	m_MinRange=props.MinRange;
 	m_MaxRange=props.MaxRange;
 	m_UsingRange=props.UsingRange;
+	m_DistanceDegradeScalar=props.DistanceDegradeScalar;
 }
 
 void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
@@ -151,8 +152,11 @@ void Ship_1D::TimeChange(double dTime_s)
 	}
 
 	//Apply the restraints now... I need this to compute my roll offset
-	double AccRestraintPositive=MaxAccelForward;
-	double AccRestraintNegative=MaxAccelReverse;
+	const double AccRestraintPositive=MaxAccelForward;
+	const double AccRestraintNegative=MaxAccelReverse;
+
+	const double DistanceRestraintPositive=MaxAccelForward*m_DistanceDegradeScalar;
+	const double DistanceRestraintNegative=MaxAccelReverse*m_DistanceDegradeScalar;
 
 	//Unlike in 2D the intended position and velocity control now resides in the same vector to apply force.  To implement, we'll branch depending on
 	//which last LockShipToPosition was used.  Typically speaking the mouse, AI, or SetIntendedPosition() will branch to the non locked mode, while the
@@ -207,13 +211,13 @@ void Ship_1D::TimeChange(double dTime_s)
 				//check to see if we are going reach limit
 				if (VelocityToUse>0.0)
 				{
-					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,DistanceRestraintPositive*Mass,DistanceRestraintNegative*Mass,dTime_s,0.0);
 					if (Vel<VelocityToUse)
 						VelocityToUse=Vel;
 				}
 				else
 				{
-					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,DistanceRestraintPositive*Mass,DistanceRestraintNegative*Mass,dTime_s,0.0);
 					if (fabs(Vel)<fabs(VelocityToUse))
 						VelocityToUse=Vel;
 				}
@@ -254,9 +258,9 @@ void Ship_1D::TimeChange(double dTime_s)
 				double Vel;
 				//check to see if we are going reach limit
 				if (ForceToApply>0.0)
-					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,DistanceRestraintPositive*Mass,DistanceRestraintNegative*Mass,dTime_s,0.0);
 				else
-					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,0.0);
+					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,DistanceRestraintPositive*Mass,DistanceRestraintNegative*Mass,dTime_s,0.0);
 				double TestForce=m_Physics.GetForceFromVelocity(Vel,dTime_s);
 				if (fabs(ForceToApply)>fabs(TestForce)) 
 					ForceToApply=TestForce;
@@ -282,10 +286,10 @@ void Ship_1D::TimeChange(double dTime_s)
 			if (!m_IsAngular)
 			{
 				//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
-				Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s,MatchVelocity);
+				Vel=m_Physics.GetVelocityFromDistance_Linear(DistanceToUse,DistanceRestraintPositive*Mass,DistanceRestraintNegative*Mass,dTime_s,MatchVelocity);
 			}
 			else
-				Vel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,AccRestraintPositive*Mass,dTime_s,MatchVelocity);
+				Vel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,DistanceRestraintPositive*Mass,dTime_s,MatchVelocity);
 		}
 
 		#ifndef __DisableSpeedControl__
