@@ -326,7 +326,7 @@ void FRC_2013_Robot::IntakeSystem::Initialize(Base::EventMap& em,const Entity1D_
 {
 	//These share the same props and fire is scaled from this level
 	m_Helix.Initialize(em,props);
-	m_Rollers.Initialize(em,&m_pParent->GetRobotProps().GetRollersProps());  //borrowing helix props as it is simple (like we did for conveyor)
+	m_Rollers.Initialize(em,&m_pParent->GetRobotProps().GetRollersProps());
 	m_IntakeDeployment.Initialize(em,&m_pParent->GetRobotProps().GetIntakeDeploymentProps());
 }
 void FRC_2013_Robot::IntakeSystem::ResetPos() 
@@ -430,7 +430,9 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	m_Helix.SetCurrentLinearAcceleration(HelixAcceleration);
 
 	//manage rollers... just like helix except that it is off it it is stowed
-	const double RollerAcceleration= (!IsStowed || Squirt) ? HelixAcceleration : 0.0;
+	const double RollerAcceleration= (!IsStowed || Squirt) ? 
+		(Grip | Squirt ?	((Squirt)?m_Rollers.GetACCEL():-m_Rollers.GetBRAKE()):0.0)
+		: 0.0;
 	m_Rollers.SetCurrentLinearAcceleration(RollerAcceleration);
 
 	m_Helix.AsEntity1D().TimeChange(dTime_s);
@@ -2155,7 +2157,7 @@ void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
 		m_PowerSlowWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
 		m_Helix_Enc.Initialize(&robot_props->GetHelixProps());
 		m_IntakeDeployment_Pot.Initialize(&robot_props->GetIntakeDeploymentProps());
-		m_Rollers_Enc.Initialize(&robot_props->GetHelixProps());  //borrow helix... these are like conveyor
+		m_Rollers_Enc.Initialize(&robot_props->GetRollersProps());
 	}
 }
 
