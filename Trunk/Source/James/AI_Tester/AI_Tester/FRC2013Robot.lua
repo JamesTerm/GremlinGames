@@ -211,16 +211,17 @@ MainRobot = {
 		intake_deployment =
 		{
 			is_closed=1,
-			show_pid_dump='no',
+			show_pid_dump='n',
 			ds_display_row=-1,
 			pid=
-			{p=200, i=0, d=50},
+			{p=1000, i=0, d=250},
 			tolerance=0.01,					--should not matter much
 			encoder_to_wheel_ratio=20/50,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
-			max_speed=19300/64/60,			--This is about 5 rps (a little slower than hiking viking drive)
+			--max_speed=(19300/64/60) * Pi2,			--This is about 5 rps (a little slower than hiking viking drive)
+			max_speed=(969.86/360) * Pi2,	--loaded max speed (see sheet)
 			accel=10,						--We may indeed have a two button solution (match with max accel)
 			brake=10,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
@@ -229,15 +230,17 @@ MainRobot = {
 			min_range_deg=0,				--Stowed position where 0 degrees is vertical up
 			min_drop_deg=45,				--The minimum amount of intake drop to occur to be able to fire shots
 			max_range_deg= 90,				--Dropped position where 90 degrees is horizontal
-			inv_max_accel = 1.0/36.0,
+			use_aggressive_stop = 'yes',
+			inv_max_accel = 1.0/15.0,
+			inv_max_decel = 1.0/24.0,
 			distance_scale = 0.5,
 			motor_specs =
 			{
 				wheel_mass=Pounds2Kilograms * 10,	        --(see applied load)
 				cof_efficiency=1.0,
 				gear_reduction=64,
-				torque_on_wheel_radius=0.0508,
-				drive_wheel_radius=0.0508,
+				torque_on_wheel_radius=Inches2Meters * 2.0,
+				drive_wheel_radius=Inches2Meters * 2.0,
 				number_of_motors=1,
 				
 				free_speed_rpm=19300.0,
@@ -261,17 +264,20 @@ MainRobot = {
 		rollers =
 		{
 			ds_display_row=-1,
+			--these are for simulation only should be disabled to ensure state is set to no encoder
+			--is_closed=0,
+			--show_pid_dump='y',
 			--Note: there are no encoders here so is_closed is ignored and can not show pid dump
 			tolerance=0.01,					--we need good precision
 			voltage_multiply=1.0,			--May be reversed
 			--For open loop, and using limit... the curve will help achieve proper velocity
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-			max_speed=14000.0/60.0,  --233 rps!
-			accel=112,						--These are needed and should be high enough to grip without slip
-			brake=112,
-			max_accel_forward=112,
-			max_accel_reverse=112,
+			max_speed=(14000.0/60.0) * Pi2,  --233 rps!
+			accel=233 * Pi2 * 5,						--These are needed and should be high enough to grip without slip
+			brake=233 * Pi2 * 5,
+			max_accel_forward=233 * Pi2 * 5,
+			max_accel_reverse=233 * Pi2 * 5,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			min_range=-10,				--TODO find out what these are
 			max_range= 10,
@@ -279,7 +285,7 @@ MainRobot = {
 			{
 				wheel_mass=Pounds2Kilograms * 3,	        --(see applied load)
 				cof_efficiency=0.8,
-				gear_reduction=64,
+				gear_reduction=1,
 				torque_on_wheel_radius=Inches2Meters * 0.642 * 0.5,
 				drive_wheel_radius=Inches2Meters * 0.642 * 0.5,
 				number_of_motors=1,
@@ -363,7 +369,8 @@ MainRobot = {
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
