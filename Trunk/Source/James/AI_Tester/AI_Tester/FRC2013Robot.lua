@@ -220,8 +220,8 @@ MainRobot = {
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
-			--max_speed=(19300/64/60) * Pi2,			--This is about 5 rps (a little slower than hiking viking drive)
-			max_speed=(969.86/360) * Pi2,	--loaded max speed (see sheet)
+			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
+			max_speed=(969.86/360) * Pi2,	--loaded max speed (see sheet) which is 2.69 rps
 			accel=10,						--We may indeed have a two button solution (match with max accel)
 			brake=10,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
@@ -251,14 +251,34 @@ MainRobot = {
 		},
 		helix =
 		{
+			--ds_display_row=-1,
+			--these are for simulation only should be disabled to ensure state is set to no encoder
+			--is_closed=0,
+			--show_pid_dump='y',
 			--Note: there are no encoders here so is_closed is ignored and can not show pid dump
 			tolerance=0.01,					--should not matter much
 			voltage_multiply=1.0,			--May be reversed
-			max_speed=28,
-			accel=112,						--These are needed and should be high enough to grip without slip
-			brake=112,
-			max_accel_forward=112,
-			max_accel_reverse=112
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			max_speed=(11353.86/360.0) * Pi2,  --loaded max speed (see sheet) about 32 rps
+			accel=32 * Pi2 * 5,
+			brake=32 * Pi2 * 5,
+			max_accel_forward=32 * Pi2 * 5,
+			max_accel_reverse=32 * Pi2 * 5,
+			motor_specs =
+			{
+				wheel_mass=Pounds2Kilograms * 3,	        --(see applied load)
+				cof_efficiency=0.95,
+				gear_reduction=5,
+				torque_on_wheel_radius=Inches2Meters * 0.642 * 0.5,
+				drive_wheel_radius=Inches2Meters * 0.642 * 0.5,
+				number_of_motors=1,
+				
+				free_speed_rpm=15500.0,
+				stall_torque=0.1176,
+				stall_current_amp=15,
+				free_current_amp=0.5
+			}
 		},
 
 		rollers =

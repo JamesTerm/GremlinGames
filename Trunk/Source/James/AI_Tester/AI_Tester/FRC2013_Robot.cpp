@@ -2003,12 +2003,14 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		//Only display second stage
 		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
 		break;
-	case FRC_2013_Robot::eRollers:
-		//Only display second stage
-		Dout(m_RobotProps.GetRollersProps().GetRoteryProps().Feedback_DiplayRow,1,"ro_v=%.2f",Voltage);
+	case FRC_2013_Robot::eHelix:
+		Dout(m_RobotProps.GetHelixProps().GetRoteryProps().Feedback_DiplayRow,1,"he_v=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::eIntake_Deployment:
 		Dout(m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
+		break;
+	case FRC_2013_Robot::eRollers:
+		Dout(m_RobotProps.GetRollersProps().GetRoteryProps().Feedback_DiplayRow,1,"ro_v=%.2f",Voltage);
 		break;
 	}
 	#endif
@@ -2208,7 +2210,6 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			break;
 		case FRC_2013_Robot::eHelix:
 			result=m_Helix_Enc.GetEncoderVelocity();
-			//DOUT5 ("vel=%f",result);
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
 			#ifndef __TestPotsOnEncoder__
@@ -2232,11 +2233,14 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2013_Robot::ePowerWheelSecondStage:
 			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
 			break;
-		case FRC_2013_Robot::eRollers:
-			Dout(m_RobotProps.GetRollersProps().GetRoteryProps().Feedback_DiplayRow,11,"ro=%.1f",result / Pi2);
+		case FRC_2013_Robot::eHelix:
+			Dout(m_RobotProps.GetHelixProps().GetRoteryProps().Feedback_DiplayRow,11,"he=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
 			Dout(m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
+			break;
+		case FRC_2013_Robot::eRollers:
+			Dout(m_RobotProps.GetRollersProps().GetRoteryProps().Feedback_DiplayRow,11,"ro=%.1f",result / Pi2);
 			break;
 	}
 	#endif
