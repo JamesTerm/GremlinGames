@@ -1760,6 +1760,7 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 {
 	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
 	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
+	const double tolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
 	// reset the coordinates to use way points.  This will also ensure there is no movement
 	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
 	ChangeClimbState *goal_decouple_drive_1=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);		   //de-couple the drive via pneumatic 1
@@ -1769,7 +1770,7 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	wp.Position[0]=0.0;
 	wp.Position[1]=climb_props.LiftDistance;
 	wp.Power=1.0;
-	Goal_Ship_MoveToPosition *goal_spool_lift_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+	Goal_Ship_MoveToPosition *goal_spool_lift_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
 
 	//This also takes care of ... engage your control loop 'brake mode'.  By ensuring that there is no movement before resetting the position
 	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
@@ -1779,7 +1780,7 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	ChangeClimbState *goal_couple_elevator_DOWN_releaseLiftWinch=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift2);
 
 	wp.Position[1]=climb_props.DropDistance;
-	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);  //run the drive motors a very specific distance 
+	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
 
 	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
 	//For now this is just a backup plan that would need a rotary system
