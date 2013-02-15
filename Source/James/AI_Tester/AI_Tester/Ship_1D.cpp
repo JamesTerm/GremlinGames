@@ -242,9 +242,9 @@ void Ship_1D::TimeChange(double dTime_s)
 					}
 					double VelocityDelta=m_currAccel*dTime_s;
 					if ((LocalVelocity+VelocityDelta>MaxSpeed_Forward)&&(m_currAccel>0))
-							m_currAccel=0.0;
+						m_currAccel= (MaxSpeed_Forward-LocalVelocity) / dTime_s;  //saturate the delta
 					else if ((LocalVelocity+VelocityDelta<MaxSpeed_Reverse)&&(m_currAccel<0))
-						m_currAccel=0.0;
+						m_currAccel=(MaxSpeed_Reverse-LocalVelocity) / dTime_s;  //saturate the delta
 				}
 			}
 			#endif
