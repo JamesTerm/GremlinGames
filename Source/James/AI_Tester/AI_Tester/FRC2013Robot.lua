@@ -147,20 +147,20 @@ MainRobot = {
 			{p=200, i=0, d=50 },
 			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/40,     --Just use the gearing ratios here
-			voltage_multiply=-1.0,
+			voltage_multiply=1.0,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
-			max_speed=(3804.55/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
-			accel=200.0,						--These are only needed if we bind keys for power in meters per second
-			brake=200.0,
-			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=200,			--The wheel may some time to ramp up
+			max_speed=(3804.55/60.0) * Pi2,	--This is about 63 rps)
+			accel=64 * Pi2 * 5,
+			brake=64 * Pi2 * 5,
+			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
 			min_range=28 * Pi2,				--We borrow the min range to represent the min speed
 			motor_specs =
 			{
-				wheel_mass=1.5,	
+				wheel_mass=Pounds2Kilograms * 3,	
 				cof_efficiency=1.0,
 				gear_reduction=1.5,
 				torque_on_wheel_radius=0.0508,
@@ -179,23 +179,23 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=0, i=0, d=0 },
+			{p=200, i=0, d=50 },
 			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/44,     --Just use the gearing ratios here
-			voltage_multiply=-1.0,
+			voltage_multiply=1.0,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
 			max_speed=(3804.55/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
-			accel=200.0,						--These are only needed if we bind keys for power in meters per second
-			brake=200.0,
-			max_accel_forward=200,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=200,			--The wheel may some time to ramp up
+			accel=64 * Pi2 * 5,						--These are only needed if we bind keys for power in meters per second
+			brake=64 * Pi2 * 5,
+			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
 			min_range=28 * Pi2,				--We borrow the min range to represent the min speed
 			motor_specs =
 			{
-				wheel_mass=1.5,	
+				wheel_mass=Pounds2Kilograms * 3,	
 				cof_efficiency=1.0,
 				gear_reduction=1.5,
 				torque_on_wheel_radius=0.0508,
