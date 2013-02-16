@@ -40,6 +40,8 @@ namespace Scripting=Framework::Scripting;
 #define __NotFieldAware__
 #define __EnablePitchDisplay__
 #undef __EnableTargetingDisplay__
+//This should be enabled during calibration
+#define __DisableIntakeAutoPosition__
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -367,6 +369,7 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) > props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
 
+	#ifndef __DisableIntakeAutoPosition__
 	if (m_pParent->m_PowerWheels.GetIsRunning() || (m_ControlSignals.bits.Fire==1))
 	{
 		//If this fails we'll keep issuing the min dropped position until it finally reaches it
@@ -379,6 +382,7 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 		if 	((!IsStowed) && (!m_IntakeDeployment.GetChooseDropped()) )
 			m_IntakeDeployment.SetIntendedPosition(IntakeMinRange);
 	}
+	#endif
 
 	bool Grip=m_ControlSignals.bits.Grip==1;
 	//bool GripH=m_ControlSignals.bits.GripH==1;
