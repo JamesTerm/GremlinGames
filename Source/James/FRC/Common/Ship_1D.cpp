@@ -196,22 +196,16 @@ void Ship_1D::TimeChange(double dTime_s)
 
 			#ifndef __DisableSpeedControl__
 			{
-				if (m_currAccel<0) // Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
+				// Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
+				if ((VelocityToUse) < -MAX_SPEED)
 				{
-					if ((VelocityToUse) < -MAX_SPEED)
-					{
-						m_RequestedVelocity = VelocityToUse = -MAX_SPEED;
-						m_currAccel=0.0;
-					}
+					m_RequestedVelocity = VelocityToUse = -MAX_SPEED;
+					m_currAccel=0.0;
 				}
-				else 
+				else if ((VelocityToUse) > MAX_SPEED)
 				{
-					double MaxSpeed=MAX_SPEED;
-					if ((VelocityToUse) > MaxSpeed)
-					{
-						m_RequestedVelocity = VelocityToUse=MaxSpeed;
-						m_currAccel=0.0;
-					}
+					m_RequestedVelocity = VelocityToUse=MAX_SPEED;
+					m_currAccel=0.0;
 				}
 			}
 			#endif
