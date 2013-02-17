@@ -535,10 +535,7 @@ void FRC_2013_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 }
 void FRC_2013_Robot::ResetPos()
 {
-	//TODO determine if we need to worry about resetting position
-	//SetBypassPosAtt_Update(true);
 	__super::ResetPos();
-	//SetBypassPosAtt_Update(false);
 
 	//This should be false to avoid any conflicts during a reset
 	//m_IsTargeting=false;
@@ -1718,7 +1715,7 @@ FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ResetPosition::Pro
 			m_TimeStopped+=dTime_s;  //count how much time its been at zero
 		}
 		//If we've been stopped long enough... reset position and complete goal
-		if (m_TimeStopped>0.100)
+		if (m_TimeStopped>0.500)
 		{
 			//before resetting the position... ensure there is no movement
 			m_Robot.ResetPos();
@@ -1785,12 +1782,16 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	wp.Position[1]=climb_props.DropDistance;
 	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
 
+	//If we use 'I' I want to ensure it gets cleared
+	ResetPosition *goal_reset_3=new ResetPosition(*Robot);
+
 	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
 	//For now this is just a backup plan that would need a rotary system
 
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	//MainGoal->AddSubgoal(goal_JamGear);
+	MainGoal->AddSubgoal(goal_reset_3);
 	MainGoal->AddSubgoal(goal_spool_drop_winch);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
@@ -2085,6 +2086,14 @@ void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Ri
 	m_LastLeftVelocity = + RCW;
 	m_LastRightVelocity = - RCW;
 }
+#else
+void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) 
+{
+	m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	//For climb states... use only one encoder as a safety precaution
+	if (!m_IsDriveEngaged)
+		RightVelocity=LeftVelocity;
+}
 #endif
 
 bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
@@ -2102,7 +2111,7 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 }
 
 FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),m_PowerSlowWheelVoltage(0.0),m_dTime_s(0.0),
-	m_FireSensor(false),m_SlowWheel(false),m_FirePiston(false)
+	m_IsDriveEngaged(true),m_FireSensor(false),m_SlowWheel(false),m_FirePiston(false)
 {
 	#ifdef __TestXAxisServoDump__
 	m_LastYawAxisSetting=m_LastLeftVelocity=m_LastRightVelocity=0.0;
@@ -2275,6 +2284,7 @@ void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	{
 	case FRC_2013_Robot::eEngageDriveTrain:
 		printf("Drive Train Gear = %s\n",SolenoidState);
+		m_IsDriveEngaged=Open;
 		break;
 	case FRC_2013_Robot::eEngageLiftWinch:
 		printf("Lift Winch = %s\n",SolenoidState);
@@ -2295,6 +2305,8 @@ bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
 	switch (index)
 	{
 	case FRC_2013_Robot::eEngageDriveTrain:
+		ret=m_IsDriveEngaged;
+		assert(false);   //no-one should be calling this... if they are I'll want to know why
 		break;
 	case FRC_2013_Robot::eEngageLiftWinch:
 		break;

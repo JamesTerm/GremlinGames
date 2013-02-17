@@ -431,7 +431,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 
 		#ifndef __TestXAxisServoDump__
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);  //Needed to intercept for climb case
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
 		#else
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
@@ -473,6 +473,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		double m_PitchRampVoltage,m_PowerWheelVoltage,m_PowerSlowWheelVoltage,m_IntakeDeploymentVoltage;
 		double m_HelixVoltage,m_RollersVoltage;
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
+		bool m_IsDriveEngaged;  //Cache when the drive is engaged to avoid excessive I/O reads
 		bool m_FireSensor;
 		bool m_SlowWheel;
 		bool m_FirePiston;
