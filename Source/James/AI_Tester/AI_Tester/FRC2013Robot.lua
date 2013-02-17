@@ -152,7 +152,7 @@ MainRobot = {
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
-			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+			length_in=4,
 			max_speed=(3804.55/60.0) * Pi2,	--This is about 63 rps)
 			accel=64 * Pi2 * 5,
 			brake=64 * Pi2 * 5,
@@ -187,7 +187,7 @@ MainRobot = {
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
-			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+			length_in=4,
 			max_speed=(3804.55/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
 			accel=64 * Pi2 * 5,						--These are only needed if we bind keys for power in meters per second
 			brake=64 * Pi2 * 5,
