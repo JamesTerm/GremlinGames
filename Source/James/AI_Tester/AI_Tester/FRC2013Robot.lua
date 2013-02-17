@@ -81,8 +81,8 @@ MainRobot = {
 			wheel_mass=1.5,
 			cof_efficiency=1.0,
 			gear_reduction=5310.0/733.14,
-			torque_on_wheel_radius=0.0254,
-			drive_wheel_radius=0.0508,
+			torque_on_wheel_radius=Inches2Meters * 1,
+			drive_wheel_radius=Inches2Meters * 2,
 			number_of_motors=1,
 			
 			free_speed_rpm=5310.0,
@@ -320,32 +320,30 @@ MainRobot = {
 
 		climb_gear_lift = 
 		{
-			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
-			--cause slipping if driver "high sticks" to start or stop quickly.
-			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
-			MaxTorqueYaw = 25 * 2, 
-			
 			MAX_SPEED = ClimbGearSpeed,
-			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
-			BRAKE = ACCEL, 
-			-- Turn Rates (deg/sec) This is always correct do not change
 			heading_rad = 0,  --No turning for climbing mode
 			
 			tank_drive =
 			{
-				is_closed=1,						--Must be on
+				is_closed=1,						--Must be on (there is no passive mode for tank drive), but start open loop for calibration
 				left_pid=
 				{p=200, i=0, d=50},
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 0.0,  --solved empiracally
+				tolerance=0.2,
+				drive_to_scale=0.8,
+				inv_max_accel = 1/16,
+				--forward_deadzone_left  = 0,
+				--forward_deadzone_right = 0,
+				--reverse_deadzone_left  = 0,
+				--reverse_deadzone_right = 0,
 				motor_specs =
 				{
-					wheel_mass=Pounds2Kilograms * 120,
+					wheel_mass=Pounds2Kilograms * 20,
 					cof_efficiency=1.0,
 					gear_reduction=5310.0/724.284,
-					torque_on_wheel_radius=0.0508,
-					drive_wheel_radius=0.0508,
+					torque_on_wheel_radius=Inches2Meters * 2,
+					drive_wheel_radius=Inches2Meters * 2,
 					number_of_motors=1,
 					
 					free_speed_rpm=5310.0,
@@ -358,17 +356,6 @@ MainRobot = {
 		--This get copy of everything set in climb_gear_lift by default... so everything in common does not need to be duplicated
 		climb_gear_drop = 
 		{
-			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
-			--cause slipping if driver "high sticks" to start or stop quickly.
-			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
-			MaxTorqueYaw = 25 * 2, 
-			
-			MAX_SPEED = ClimbGearSpeed,
-			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
-			BRAKE = ACCEL, 
-			-- Turn Rates (deg/sec) This is always correct do not change
-			heading_rad = 0,  --No turning for climbing mode
-			
 			tank_drive =
 			{
 				is_closed=1,						--Must be on
@@ -376,7 +363,11 @@ MainRobot = {
 				{p=200, i=0, d=50},
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 0.0  --solved empiracally
+				inv_max_accel = 1, 
+				motor_specs =
+				{
+					wheel_mass=Pounds2Kilograms * 120,
+				}
 			}
 		}
 	},
