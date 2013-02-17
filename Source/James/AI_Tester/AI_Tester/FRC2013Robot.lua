@@ -96,7 +96,8 @@ MainRobot = {
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
-		ds_power_velocity_row=-1,			--Only used during keying the grid
+		ds_power1_velocity_row=-1,			--Only used during keying the grid
+		ds_power2_velocity_row=-1,
 		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
 		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
 		yaw_tolerance=0.001,				--Used for drive yaw targeting (the drive is the turret) to avoid oscillation
@@ -163,8 +164,8 @@ MainRobot = {
 				wheel_mass=Pounds2Kilograms * 3,	
 				cof_efficiency=1.0,
 				gear_reduction=1.5,
-				torque_on_wheel_radius=0.0508,
-				drive_wheel_radius=0.0508,
+				torque_on_wheel_radius=Inches2Meters * 1,
+				drive_wheel_radius=Inches2Meters * 2,
 				number_of_motors=1,
 				
 				free_speed_rpm=6200,
@@ -198,8 +199,8 @@ MainRobot = {
 				wheel_mass=Pounds2Kilograms * 3,	
 				cof_efficiency=1.0,
 				gear_reduction=1.5,
-				torque_on_wheel_radius=0.0508,
-				drive_wheel_radius=0.0508,
+				torque_on_wheel_radius=Inches2Meters * 1,
+				drive_wheel_radius=Inches2Meters * 2,
 				number_of_motors=1,
 				
 				free_speed_rpm=6200,
@@ -433,8 +434,8 @@ MainRobot = {
 		{	
 			control = "ch throttle quadrant",
 			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
 			
 			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},

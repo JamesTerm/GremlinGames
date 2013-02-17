@@ -207,13 +207,12 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 			const double Offset=minRange / MaxSpeed;
 			const double Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
-			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().PowerVelocity_DisplayRow;
+			const size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().Power2Velocity_DisplayRow;
 			if (DisplayRow!=(size_t)-1)
 			{
 				const double rps=(Velocity * MaxSpeed) / Pi2;
 				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * m_SecondStage.GetDimension()));
 			}
-
 			m_SecondStage.SetRequestedVelocity_FromNormalized(Velocity);
 			if (IsZero(m_FirstStageManualVelocity))  //typical case...no pot connected for first stage we latch to second stage velocity
 			{
@@ -235,6 +234,13 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 				const double rps=(Velocity * MaxSpeed) / Pi2;
 				DOUT4("fs rps=%.2f dv=%.2f",rps,m_FirstStageManualVelocity);
 				#endif
+				const size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().Power1Velocity_DisplayRow;
+				if (DisplayRow!=(size_t)-1)
+				{
+					const double rps=(Velocity * MaxSpeed) / Pi2;
+					Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * m_FirstStage.GetDimension()));
+				}
+
 				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity);
 			}
 		}
@@ -1223,7 +1229,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		props.FireButtonStayOn_Time=0.100; //100 ms
 		props.Coordinates_DiplayRow=(size_t)-1;
 		props.TargetVars_DisplayRow=(size_t)-1;
-		props.PowerVelocity_DisplayRow=(size_t)-1;
+		props.Power1Velocity_DisplayRow=props.Power2Velocity_DisplayRow=(size_t)-1;
 		props.YawTolerance=0.001; //give a good high precision for default
 		props.Min_IntakeDrop=DEG_2_RAD(90.0);  //full drop default
 
@@ -1474,9 +1480,13 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 			m_FRC2013RobotProps.TargetVars_DisplayRow=(size_t)fDisplayRow;
 
-		err=script.GetField("ds_power_velocity_row", NULL, NULL, &fDisplayRow);
+		err=script.GetField("ds_power1_velocity_row", NULL, NULL, &fDisplayRow);
 		if (!err)
-			m_FRC2013RobotProps.PowerVelocity_DisplayRow=(size_t)fDisplayRow;
+			m_FRC2013RobotProps.Power1Velocity_DisplayRow=(size_t)fDisplayRow;
+
+		err=script.GetField("ds_power2_velocity_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2013RobotProps.Power2Velocity_DisplayRow=(size_t)fDisplayRow;
 
 		script.GetField("yaw_tolerance", NULL, NULL, &m_FRC2013RobotProps.YawTolerance);
 
@@ -2004,9 +2014,11 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	case FRC_2013_Robot::ePitchRamp:
 		Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
 		break;
+	case FRC_2013_Robot::ePowerWheelFirstStage:
+		Dout(m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage);
+		break;
 	case FRC_2013_Robot::ePowerWheelSecondStage:
-		//Only display second stage
-		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
+		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"p2_v=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::eHelix:
 		Dout(m_RobotProps.GetHelixProps().GetRoteryProps().Feedback_DiplayRow,1,"he_v=%.2f",Voltage);
@@ -2235,8 +2247,11 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"p1=%.2f",result / Pi2);
+			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"p2=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::eHelix:
 			Dout(m_RobotProps.GetHelixProps().GetRoteryProps().Feedback_DiplayRow,11,"he=%.2f",result / Pi2);

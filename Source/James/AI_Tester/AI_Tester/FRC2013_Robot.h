@@ -34,7 +34,7 @@ public:
 	double FireButtonStayOn_Time;   //Time to stay on before stopping the conveyors
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
-	size_t PowerVelocity_DisplayRow;
+	size_t Power1Velocity_DisplayRow,Power2Velocity_DisplayRow;
 	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
 	double Min_IntakeDrop;			//Used to determine the minimum drop of the intake during a fire operation
 
