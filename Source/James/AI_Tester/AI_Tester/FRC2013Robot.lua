@@ -408,7 +408,7 @@ MainRobot = {
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
-			Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
