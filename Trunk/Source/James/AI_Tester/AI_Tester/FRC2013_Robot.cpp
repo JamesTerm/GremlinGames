@@ -1994,11 +1994,11 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			{
 				//	printf("IntakeDeployment=%f\n",Voltage);
 				//DOUT3("IntakeDeployment Voltage=%f",Voltage);
-				m_IntakeDeploymentVoltage=Voltage;
+				m_IntakeDeploymentVoltage=Voltage * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().VoltageScalar;
 				#ifndef __TestPotsOnEncoder__
 				m_IntakeDeployment_Pot.UpdatePotentiometerVoltage(Voltage);
 				#else
-				m_IntakeDeployment_Pot.UpdateEncoderVoltage(Voltage);
+				m_IntakeDeployment_Pot.UpdateEncoderVoltage(m_IntakeDeploymentVoltage);
 				#endif
 				m_IntakeDeployment_Pot.TimeChange();  //have this velocity immediately take effect
 			}
