@@ -278,12 +278,12 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetIntendedPosition(double
 
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Advance()
 {
-	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange);
+	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange);
 	m_ChooseDropped=true;
 }
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Retract()
 {
-	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange);
+	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange);
 	m_ChooseDropped=false;
 }
 
@@ -359,11 +359,12 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	//And ensure the intake has dropped low enough to not block shooter
 	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
 	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
+	const double IntakeMaxRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange;
 	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance;
 	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
-	const bool IsStowed=(fabs(Intake_Position-IntakeMinRange) < IntakeTolerance);
+	const bool IsStowed=(fabs(Intake_Position-IntakeMaxRange) < IntakeTolerance);
 	//The intake must be low enough to not block the shooter
-	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) > props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
+	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) < props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
 
 	#ifndef __DisableIntakeAutoPosition__
@@ -377,7 +378,7 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	{
 		//Check to see if we used the minimum drop... if so put it back into stowed position
 		if 	((!IsStowed) && (!m_IntakeDeployment.GetChooseDropped()) )
-			m_IntakeDeployment.SetIntendedPosition(IntakeMinRange);
+			m_IntakeDeployment.SetIntendedPosition(IntakeMaxRange);
 	}
 	#endif
 
@@ -2101,8 +2102,8 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	bool ret;
 	switch (index)
 	{
-	case FRC_2013_Robot::eTest_Sensor:
-		ret=m_FireSensor;
+	case FRC_2013_Robot::eIntake_DeployedLimit_Sensor:
+		ret=m_DeployedLimit;
 		break;
 	default:
 		assert (false);
@@ -2110,20 +2111,20 @@ bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 	return ret;
 }
 
-FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),m_PowerSlowWheelVoltage(0.0),m_dTime_s(0.0),
-	m_IsDriveEngaged(true),m_FireSensor(false),m_SlowWheel(false),m_FirePiston(false)
+FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),m_PowerSlowWheelVoltage(0.0),m_IntakeDeploymentOffset(DEG_2_RAD(90.0)),
+	m_dTime_s(0.0),m_IsDriveEngaged(true),m_DeployedLimit(false),m_SlowWheel(false),m_FirePiston(false)
 {
 	#ifdef __TestXAxisServoDump__
 	m_LastYawAxisSetting=m_LastLeftVelocity=m_LastRightVelocity=0.0;
 	#endif
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
-	#if 0
-	Dout(1,"");
-	Dout(2,"");
-	Dout(3,"");
-	Dout(4,"");
-	Dout(5,"");
-	#endif
+
+	using namespace GG_Framework::Base;
+	using namespace GG_Framework::UI;
+	using namespace osg;
+	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
+	//Add custom keys to FRC 2013 robot
+	kbm.AddKeyBindingR(true, "Intake_DeployLimit_Sensor", 'l');
 }
 
 void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
@@ -2160,12 +2161,12 @@ void FRC_2013_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMa
 {
 	if (Bind)
 	{
-		em->EventOnOff_Map["Ball_FireSensor"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::TriggerFire);
+		em->EventOnOff_Map["Intake_DeployLimit_Sensor"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::TriggerIntakeDeployedLimit);
 		em->EventOnOff_Map["Ball_SlowWheel"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::SlowWheel);
 	}
 	else
 	{
-		em->EventOnOff_Map["Ball_FireSensor"]  .Remove(*this, &FRC_2013_Robot_Control::TriggerFire);
+		em->EventOnOff_Map["Intake_DeployLimit_Sensor"]  .Remove(*this, &FRC_2013_Robot_Control::TriggerIntakeDeployedLimit);
 		em->EventOnOff_Map["Ball_SlowWheel"]  .Remove(*this, &FRC_2013_Robot_Control::SlowWheel);
 	}
 }
@@ -2201,6 +2202,11 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f hx=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
 		m_PitchRampVoltage,m_PowerWheelVoltage,m_HelixVoltage);
 	m_dTime_s=dTime_s;
+	if (GetBoolSensorState(FRC_2013_Robot::eIntake_DeployedLimit_Sensor))
+	{
+		m_IntakeDeployment_Pot.ResetPos();
+		m_IntakeDeploymentOffset=0.0;
+	}
 }
 
 
@@ -2224,7 +2230,8 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),RAD_2_DEG(m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition()));
 			#else
 			#endif
-			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio));
+			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),
+				RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
 			#endif
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
@@ -2241,7 +2248,8 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#ifndef __TestPotsOnEncoder__
 			result=m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition();
 			#else
-			result=m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio;
+			//Note: determine which direction the encoders are going, use EncoderToRS_Ratio negative or positive to match
+			result=(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio) + m_IntakeDeploymentOffset;
 			#endif
 			break;
 		case FRC_2013_Robot::eRollers:
@@ -2403,7 +2411,7 @@ void FRC_2013_Rollers_UI::TimeChange(double dTime_s)
 	y_offset-=props.MinRange;
 	y_offset/=fabs(props.MaxRange-props.MinRange);
 	//printf("\rTest=%.2f     ",y_offset);
-	UpdatePosition(0.0,2.0+y_offset);
+	UpdatePosition(0.0,3.0-y_offset);
 }
 
 

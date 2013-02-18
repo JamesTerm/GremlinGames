@@ -112,7 +112,7 @@ class FRC_2013_Robot : public Tank_Robot
 		//Most likely will not need IR sensors
 		enum BoolSensorDevices
 		{
-			eTest_Sensor
+			eIntake_DeployedLimit_Sensor
 		};
 
 		//Note: these shouldn't be written to directly but instead set the climb state which then will write to these
@@ -451,7 +451,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		//Note: This is only for AI Tester
 		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
 
-		void TriggerFire(bool on) {m_FireSensor=on;}
+		void TriggerIntakeDeployedLimit(bool on) {m_DeployedLimit=on;}
 		void SlowWheel(bool on) {m_SlowWheel=on;}
 
 	protected:
@@ -472,9 +472,10 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		//cache voltage values for display
 		double m_PitchRampVoltage,m_PowerWheelVoltage,m_PowerSlowWheelVoltage,m_IntakeDeploymentVoltage;
 		double m_HelixVoltage,m_RollersVoltage;
+		double m_IntakeDeploymentOffset;  //used to keep 90-0 range once limit switch has been triggered
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 		bool m_IsDriveEngaged;  //Cache when the drive is engaged to avoid excessive I/O reads
-		bool m_FireSensor;
+		bool m_DeployedLimit;
 		bool m_SlowWheel;
 		bool m_FirePiston;
 };
