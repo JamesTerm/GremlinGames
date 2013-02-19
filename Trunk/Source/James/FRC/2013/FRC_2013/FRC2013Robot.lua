@@ -75,21 +75,7 @@ MainRobot = {
 		forward_deadzone_left  = 0.02,
 		forward_deadzone_right = 0.02,
 		reverse_deadzone_left  = 0.02,
-		reverse_deadzone_right = 0.02,
-		motor_specs =
-		{
-			wheel_mass=1.5,
-			cof_efficiency=1.0,
-			gear_reduction=5310.0/733.14,
-			torque_on_wheel_radius=Inches2Meters * 1,
-			drive_wheel_radius=Inches2Meters * 2,
-			number_of_motors=1,
-			
-			free_speed_rpm=5310.0,
-			stall_torque=6.561,
-			stall_current_amp=399,
-			free_current_amp=8.1
-		}
+		reverse_deadzone_right = 0.02
 	},
 	
 	robot_settings =
@@ -165,21 +151,7 @@ MainRobot = {
 			brake=64 * Pi2 * 5,
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
-			min_range=28 * Pi2,				--We borrow the min range to represent the min speed
-			motor_specs =
-			{
-				wheel_mass=Pounds2Kilograms * 3,	
-				cof_efficiency=1.0,
-				gear_reduction=1.5,
-				torque_on_wheel_radius=Inches2Meters * 1,
-				drive_wheel_radius=Inches2Meters * 2,
-				number_of_motors=1,
-				
-				free_speed_rpm=6200,
-				stall_torque=1.4,
-				stall_current_amp=86,
-				free_current_amp=1.5
-			}
+			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
 		power_first_stage =
 		{
@@ -200,21 +172,7 @@ MainRobot = {
 			brake=64 * Pi2 * 5,
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
-			min_range=28 * Pi2,				--We borrow the min range to represent the min speed
-			motor_specs =
-			{
-				wheel_mass=Pounds2Kilograms * 3,	
-				cof_efficiency=1.0,
-				gear_reduction=1.5,
-				torque_on_wheel_radius=Inches2Meters * 1,
-				drive_wheel_radius=Inches2Meters * 2,
-				number_of_motors=1,
-				
-				free_speed_rpm=6200,
-				stall_torque=1.4,
-				stall_current_amp=86,
-				free_current_amp=1.5
-			}
+			min_range=28 * Pi2				--We borrow the min range to represent the min speed
 		},
 		intake_deployment =
 		{
@@ -243,20 +201,6 @@ MainRobot = {
 			inv_max_accel = 1.0/15.0,
 			inv_max_decel = 1.0/24.0,
 			distance_scale = 0.5,
-			motor_specs =
-			{
-				wheel_mass=Pounds2Kilograms * 10,	        --(see applied load)
-				cof_efficiency=1.0,
-				gear_reduction=64,
-				torque_on_wheel_radius=Inches2Meters * 2.0,
-				drive_wheel_radius=Inches2Meters * 2.0,
-				number_of_motors=1,
-				
-				free_speed_rpm=19300.0,
-				stall_torque=0.4862,
-				stall_current_amp=85,
-				free_current_amp=1.4
-			}
 		},
 		helix =
 		{
@@ -273,21 +217,7 @@ MainRobot = {
 			accel=32 * Pi2 * 5,
 			brake=32 * Pi2 * 5,
 			max_accel_forward=32 * Pi2 * 5,
-			max_accel_reverse=32 * Pi2 * 5,
-			motor_specs =
-			{
-				wheel_mass=Pounds2Kilograms * 3,	        --(see applied load)
-				cof_efficiency=0.95,
-				gear_reduction=5,
-				torque_on_wheel_radius=Inches2Meters * 0.642 * 0.5,
-				drive_wheel_radius=Inches2Meters * 0.642 * 0.5,
-				number_of_motors=1,
-				
-				free_speed_rpm=15500.0,
-				stall_torque=0.1176,
-				stall_current_amp=15,
-				free_current_amp=0.5
-			}
+			max_accel_reverse=32 * Pi2 * 5
 		},
 
 		rollers =
@@ -309,21 +239,7 @@ MainRobot = {
 			max_accel_reverse=233 * Pi2 * 5,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			min_range=-10,				--TODO find out what these are
-			max_range= 10,
-			motor_specs =
-			{
-				wheel_mass=Pounds2Kilograms * 3,	        --(see applied load)
-				cof_efficiency=0.8,
-				gear_reduction=1,
-				torque_on_wheel_radius=Inches2Meters * 0.642 * 0.5,
-				drive_wheel_radius=Inches2Meters * 0.642 * 0.5,
-				number_of_motors=1,
-				
-				free_speed_rpm=14000.0,
-				stall_torque=0.8,
-				stall_current_amp=82,
-				free_current_amp=3.6
-			}
+			max_range= 10
 		},
 
 		climb_gear_lift = 
@@ -340,25 +256,11 @@ MainRobot = {
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
 				tolerance=0.2,
 				drive_to_scale=0.8,
-				inv_max_accel = 1/16,
+				inv_max_accel = 1/16
 				--forward_deadzone_left  = 0,
 				--forward_deadzone_right = 0,
 				--reverse_deadzone_left  = 0,
-				--reverse_deadzone_right = 0,
-				motor_specs =
-				{
-					wheel_mass=Pounds2Kilograms * 20,
-					cof_efficiency=1.0,
-					gear_reduction=5310.0/724.284,
-					torque_on_wheel_radius=Inches2Meters * 2,
-					drive_wheel_radius=Inches2Meters * 2,
-					number_of_motors=1,
-					
-					free_speed_rpm=5310.0,
-					stall_torque=11.8098,
-					stall_current_amp=798,
-					free_current_amp=16.2
-				}
+				--reverse_deadzone_right = 0
 			}
 		},
 		--This get copy of everything set in climb_gear_lift by default... so everything in common does not need to be duplicated
@@ -371,11 +273,7 @@ MainRobot = {
 				{p=200, i=0, d=50},
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 1, 
-				motor_specs =
-				{
-					wheel_mass=Pounds2Kilograms * 120,
-				}
+				inv_max_accel = 1
 			}
 		}
 	},
