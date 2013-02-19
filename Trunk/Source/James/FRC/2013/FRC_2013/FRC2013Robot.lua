@@ -81,8 +81,8 @@ MainRobot = {
 			wheel_mass=1.5,
 			cof_efficiency=1.0,
 			gear_reduction=5310.0/733.14,
-			torque_on_wheel_radius=0.0254,
-			drive_wheel_radius=0.0508,
+			torque_on_wheel_radius=Inches2Meters * 1,
+			drive_wheel_radius=Inches2Meters * 2,
 			number_of_motors=1,
 			
 			free_speed_rpm=5310.0,
@@ -96,7 +96,8 @@ MainRobot = {
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
-		ds_power_velocity_row=-1,			--Only used during keying the grid
+		ds_power1_velocity_row=-1,			--Only used during keying the grid
+		ds_power2_velocity_row=-1,
 		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
 		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
 		yaw_tolerance=0.001,				--Used for drive yaw targeting (the drive is the turret) to avoid oscillation
@@ -111,11 +112,18 @@ MainRobot = {
 			c61={p=1.0, y=1.0}, c62={p=1.0, y=1.0}, c63={p=1.0, y=1.0},
 		},
 	
-		climb =
+		climb_1 =
+		{
+			lift_ft=2,
+			drop_ft=-2
+		},
+		climb_2 =
 		{
 			lift_ft=5,
 			drop_ft=-5
 		},
+		--Note: if we need a climb 3 it will require a code change
+
 		pitch =
 		{
 			is_closed='yes',
@@ -151,7 +159,7 @@ MainRobot = {
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
-			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+			length_in=4,
 			max_speed=(3804.55/60.0) * Pi2,	--This is about 63 rps)
 			accel=64 * Pi2 * 5,
 			brake=64 * Pi2 * 5,
@@ -163,8 +171,8 @@ MainRobot = {
 				wheel_mass=Pounds2Kilograms * 3,	
 				cof_efficiency=1.0,
 				gear_reduction=1.5,
-				torque_on_wheel_radius=0.0508,
-				drive_wheel_radius=0.0508,
+				torque_on_wheel_radius=Inches2Meters * 1,
+				drive_wheel_radius=Inches2Meters * 2,
 				number_of_motors=1,
 				
 				free_speed_rpm=6200,
@@ -186,7 +194,7 @@ MainRobot = {
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
-			length_in=6,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+			length_in=4,
 			max_speed=(3804.55/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
 			accel=64 * Pi2 * 5,						--These are only needed if we bind keys for power in meters per second
 			brake=64 * Pi2 * 5,
@@ -198,8 +206,8 @@ MainRobot = {
 				wheel_mass=Pounds2Kilograms * 3,	
 				cof_efficiency=1.0,
 				gear_reduction=1.5,
-				torque_on_wheel_radius=0.0508,
-				drive_wheel_radius=0.0508,
+				torque_on_wheel_radius=Inches2Meters * 1,
+				drive_wheel_radius=Inches2Meters * 2,
 				number_of_motors=1,
 				
 				free_speed_rpm=6200,
@@ -216,6 +224,7 @@ MainRobot = {
 			pid=
 			{p=1000, i=0, d=250},
 			tolerance=0.01,					--should not matter much
+			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=20/50,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
@@ -319,32 +328,30 @@ MainRobot = {
 
 		climb_gear_lift = 
 		{
-			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
-			--cause slipping if driver "high sticks" to start or stop quickly.
-			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
-			MaxTorqueYaw = 25 * 2, 
-			
 			MAX_SPEED = ClimbGearSpeed,
-			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
-			BRAKE = ACCEL, 
-			-- Turn Rates (deg/sec) This is always correct do not change
 			heading_rad = 0,  --No turning for climbing mode
 			
 			tank_drive =
 			{
-				is_closed=1,						--Must be on
+				is_closed=1,						--Must be on (there is no passive mode for tank drive), but start open loop for calibration
 				left_pid=
 				{p=200, i=0, d=50},
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 0.0,  --solved empiracally
+				tolerance=0.2,
+				drive_to_scale=0.8,
+				inv_max_accel = 1/16,
+				--forward_deadzone_left  = 0,
+				--forward_deadzone_right = 0,
+				--reverse_deadzone_left  = 0,
+				--reverse_deadzone_right = 0,
 				motor_specs =
 				{
-					wheel_mass=Pounds2Kilograms * 120,
+					wheel_mass=Pounds2Kilograms * 20,
 					cof_efficiency=1.0,
 					gear_reduction=5310.0/724.284,
-					torque_on_wheel_radius=0.0508,
-					drive_wheel_radius=0.0508,
+					torque_on_wheel_radius=Inches2Meters * 2,
+					drive_wheel_radius=Inches2Meters * 2,
 					number_of_motors=1,
 					
 					free_speed_rpm=5310.0,
@@ -357,17 +364,6 @@ MainRobot = {
 		--This get copy of everything set in climb_gear_lift by default... so everything in common does not need to be duplicated
 		climb_gear_drop = 
 		{
-			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
-			--cause slipping if driver "high sticks" to start or stop quickly.
-			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
-			MaxTorqueYaw = 25 * 2, 
-			
-			MAX_SPEED = ClimbGearSpeed,
-			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
-			BRAKE = ACCEL, 
-			-- Turn Rates (deg/sec) This is always correct do not change
-			heading_rad = 0,  --No turning for climbing mode
-			
 			tank_drive =
 			{
 				is_closed=1,						--Must be on
@@ -375,7 +371,11 @@ MainRobot = {
 				{p=200, i=0, d=50},
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 0.0  --solved empiracally
+				inv_max_accel = 1, 
+				motor_specs =
+				{
+					wheel_mass=Pounds2Kilograms * 120,
+				}
 			}
 		}
 	},
@@ -413,18 +413,20 @@ MainRobot = {
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
-			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
-			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
+			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
+			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
+			Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbGearOn = {type="joystick_button", key=10, on_off=false},
-			Ball_Fire = {type="joystick_button", key=8, on_off=true},
-			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
-			Ball_GripL = {type="joystick_button", key=2, on_off=true},
-			Ball_GripM = {type="joystick_button", key=3, on_off=true},
-			Ball_GripH = {type="joystick_button", key=4, on_off=true},
+			Ball_Fire = {type="joystick_button", key=4, on_off=true},
+			PowerWheels_IsRunning = {type="joystick_button", key=3, on_off=true},
+			Ball_Grip = {type="joystick_button", key=2, on_off=true},
+			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
+			Intake_Deployment_Retract = {type="joystick_button", key=12, on_off=false},
+			Intake_Deployment_Advance = {type="joystick_button", key=11, on_off=false},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
@@ -433,8 +435,8 @@ MainRobot = {
 		{	
 			control = "ch throttle quadrant",
 			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
 			
 			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
