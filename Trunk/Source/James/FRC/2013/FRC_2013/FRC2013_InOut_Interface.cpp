@@ -96,6 +96,7 @@ enum DigitalIO_SlotList
 	eEncoder_PowerWheel_Second_B,
 	eEncoder_IntakeDeployment_A,
 	eEncoder_IntakeDeployment_B,
+	eSensor_Intake_DeployedLimit,
 	eLimit_Compressor=14
 };
 
@@ -135,10 +136,12 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	m_IntakeDeployment_Encoder(eEncoder_IntakeDeployment_A,eEncoder_IntakeDeployment_B,false,CounterBase::k4X),
 	m_PowerWheel_First_Encoder(eEncoder_PowerWheel_First_A,eEncoder_PowerWheel_First_B),
 	m_PowerWheel_Second_Encoder(eEncoder_PowerWheel_Second_A,eEncoder_PowerWheel_Second_B),
+	m_Intake_DeployedLimit(eSensor_Intake_DeployedLimit),
+	//other----------------------------------
 	//m_PowerWheelAverager(0.5),
-	m_PowerWheel_PriorityAverager(10,0.30)
-
-	//m_Potentiometer(1)
+	m_PowerWheel_PriorityAverager(10,0.30),
+	m_IntakeDeploymentOffset(DEG_2_RAD(90.0)),
+	m_IsDriveEngaged(true)
 {
 	//TODO set the SetDistancePerPulse() for turret
 	ResetPos();
@@ -172,6 +175,11 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->UpdateLCD();
 	#endif
+	if (GetBoolSensorState(FRC_2013_Robot::eIntake_DeployedLimit_Sensor))
+	{
+		m_IntakeDeployment_Encoder.Reset();
+		m_IntakeDeploymentOffset=0.0;
+	}
 }
 
 void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
@@ -268,14 +276,21 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#endif
 }
 
+void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) 
+{
+	m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	//For climb states... use only one encoder as a safety precaution
+	if (!m_IsDriveEngaged)
+		RightVelocity=LeftVelocity;
+}
+
 bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
 {
-	return false; //remove once we have this working
 	bool ret=false;
 	switch (index)
 	{
-	case FRC_2013_Robot::eTest_Sensor:
-		//ret= m_Fire_Limit.Get()!=0;
+	case FRC_2013_Robot::eIntake_DeployedLimit_Sensor:
+		ret= m_Intake_DeployedLimit.Get()!=0;
 		break;
 	default:
 		assert (false);
@@ -341,8 +356,9 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result= result * m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
-			result= m_IntakeDeployment_Encoder.GetRate();
-			result= result * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
+			result= m_IntakeDeployment_Encoder.GetDistance();
+			//Note: determine which direction the encoders are going, use EncoderToRS_Ratio negative or positive to match
+			result=(result * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio) + m_IntakeDeploymentOffset;
 			break;
 		case FRC_2013_Robot::eHelix:
 			assert(false);  //These should be disabled as there is no encoder for them
@@ -380,6 +396,7 @@ void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	case FRC_2013_Robot::eEngageDriveTrain:
 		printf("Drive Train Gear = %s\n",SolenoidState);
 		m_EngageDrive.Set(value);
+		m_IsDriveEngaged=Open;
 		break;
 	case FRC_2013_Robot::eEngageLiftWinch:
 		printf("Lift Winch = %s\n",SolenoidState);
@@ -394,4 +411,24 @@ void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
 		m_EngageFirePiston.Set(value);
 		break;
 	}
+}
+
+
+bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
+{
+	bool ret=false;
+	switch (index)
+	{
+	case FRC_2013_Robot::eEngageDriveTrain:
+		ret=m_IsDriveEngaged;
+		break;
+	case FRC_2013_Robot::eEngageLiftWinch:
+		break;
+	case FRC_2013_Robot::eEngageDropWinch:
+		break;
+	case FRC_2013_Robot::eFirePiston:
+		ret=(m_EngageFirePiston.Get()==DoubleSolenoid::kForward);
+		break;
+	}
+	return ret;
 }

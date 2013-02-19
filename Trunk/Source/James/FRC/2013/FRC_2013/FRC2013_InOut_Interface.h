@@ -19,9 +19,11 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Victor m_IntakeMotor_Victor,m_Rollers_Victor,m_IntakeDeployment_Victor;
 		//pitch ramp is using i2c
 		Compressor m_Compress;
-		DoubleSolenoid m_EngageDrive,m_EngageLiftWinch,m_EngageDropWinch,m_EngageFirePiston;
+		//Note: Unfortunately the Get() accessor does not have const so these have to be mutable
+		mutable DoubleSolenoid m_EngageDrive,m_EngageLiftWinch,m_EngageDropWinch,m_EngageFirePiston;
 		
 		Encoder2 m_IntakeDeployment_Encoder, m_PowerWheel_First_Encoder,m_PowerWheel_Second_Encoder;
+		DigitalInput m_Intake_DeployedLimit;
 		//AnalogChannel m_Potentiometer;
 		//Cached from properties
 		//double m_ArmMaxSpeed;
@@ -32,7 +34,8 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		KalmanFilter m_PowerWheelFilter;
 		Averager<double,5> m_PowerWheelAverager;
 		Priority_Averager m_PowerWheel_PriorityAverager;
-		
+		double m_IntakeDeploymentOffset;
+		bool m_IsDriveEngaged;
 	public:
 		FRC_2013_Robot_Control(bool UseSafety);
 		virtual ~FRC_2013_Robot_Control();
@@ -48,9 +51,10 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		virtual bool GetBoolSensorState(size_t index);
 		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
 		virtual void OpenSolenoid(size_t index,bool Open);
+		virtual bool GetIsSolenoidOpen(size_t index) const;
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		//Note: If the motors are reversed, this is now solved in LUA
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
