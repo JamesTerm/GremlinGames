@@ -42,6 +42,7 @@ namespace Scripting=Framework::Scripting;
 #undef __EnableTargetingDisplay__
 //This should be enabled during calibration
 #define __DisableIntakeAutoPosition__
+#define __DisabledClimbPneumatics__
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -216,13 +217,12 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 			const double Offset=minRange / MaxSpeed;
 			const double Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
-			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().PowerVelocity_DisplayRow;
+			const size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().Power2Velocity_DisplayRow;
 			if (DisplayRow!=(size_t)-1)
 			{
 				const double rps=(Velocity * MaxSpeed) / Pi2;
 				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * m_SecondStage.GetDimension()));
 			}
-
 			m_SecondStage.SetRequestedVelocity_FromNormalized(Velocity);
 			if (IsZero(m_FirstStageManualVelocity))  //typical case...no pot connected for first stage we latch to second stage velocity
 			{
@@ -244,6 +244,13 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 				const double rps=(Velocity * MaxSpeed) / Pi2;
 				DOUT4("fs rps=%.2f dv=%.2f",rps,m_FirstStageManualVelocity);
 				#endif
+				const size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2013RobotProps().Power1Velocity_DisplayRow;
+				if (DisplayRow!=(size_t)-1)
+				{
+					const double rps=(Velocity * MaxSpeed) / Pi2;
+					Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * m_FirstStage.GetDimension()));
+				}
+
 				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity);
 			}
 		}
@@ -281,12 +288,12 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::SetIntendedPosition(double
 
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Advance()
 {
-	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange);
+	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange);
 	m_ChooseDropped=true;
 }
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Retract()
 {
-	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange);
+	SetIntendedPosition(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange);
 	m_ChooseDropped=false;
 }
 
@@ -362,11 +369,12 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	//And ensure the intake has dropped low enough to not block shooter
 	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
 	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
+	const double IntakeMaxRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange;
 	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance;
 	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
-	const bool IsStowed=(fabs(Intake_Position-IntakeMinRange) < IntakeTolerance);
+	const bool IsStowed=(fabs(Intake_Position-IntakeMaxRange) < IntakeTolerance);
 	//The intake must be low enough to not block the shooter
-	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) > props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
+	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) < props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
 
 	#ifndef __DisableIntakeAutoPosition__
@@ -380,7 +388,7 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	{
 		//Check to see if we used the minimum drop... if so put it back into stowed position
 		if 	((!IsStowed) && (!m_IntakeDeployment.GetChooseDropped()) )
-			m_IntakeDeployment.SetIntendedPosition(IntakeMinRange);
+			m_IntakeDeployment.SetIntendedPosition(IntakeMaxRange);
 	}
 	#endif
 
@@ -506,7 +514,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
-		m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
+		m_ClimbCounter(0),m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
 	//m_IsTargeting=true;
 	//m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented
@@ -538,10 +546,7 @@ void FRC_2013_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 }
 void FRC_2013_Robot::ResetPos()
 {
-	//TODO determine if we need to worry about resetting position
-	//SetBypassPosAtt_Update(true);
 	__super::ResetPos();
-	//SetBypassPosAtt_Update(false);
 
 	//This should be false to avoid any conflicts during a reset
 	//m_IsTargeting=false;
@@ -894,7 +899,11 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 				delete oldgoal;
 
 			Goal *goal=NULL;
-			goal=FRC_2013_Goals::Climb(this);
+			goal=FRC_2013_Goals::Climb(this,m_ClimbCounter++);
+			//Saturate counter to number of climb property elements
+			if (m_ClimbCounter>=c_NoClimbPropertyElements)
+				m_ClimbCounter=c_NoClimbPropertyElements-1;
+
 			if (goal)
 				goal->Activate(); //now with the goal(s) loaded activate it
 			SetGoal(goal);
@@ -946,6 +955,7 @@ void FRC_2013_Robot::SetClimbGear_RightButton(bool on)
 
 void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 {
+	#ifndef __DisabledClimbPneumatics__
 	//Note: the order of each of these will disengage others before engage... as a fall back precaution, but the client code
 	//really needs to set state to neutral with a wait time before going into the next state so that there is never a time when
 	//multiple gears are engaged at any moment
@@ -992,6 +1002,7 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
 		break;
 	}
+	#endif
 }
 
 bool FRC_2013_Robot::IsStopped() const
@@ -1234,7 +1245,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		props.FireButtonStayOn_Time=0.100; //100 ms
 		props.Coordinates_DiplayRow=(size_t)-1;
 		props.TargetVars_DisplayRow=(size_t)-1;
-		props.PowerVelocity_DisplayRow=(size_t)-1;
+		props.Power1Velocity_DisplayRow=props.Power2Velocity_DisplayRow=(size_t)-1;
 		props.YawTolerance=0.001; //give a good high precision for default
 		props.Min_IntakeDrop=DEG_2_RAD(90.0);  //full drop default
 
@@ -1267,9 +1278,12 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		ball_2.InitialWait=4.0;
 		ball_2.TimeOutWait=-1.0;
 		ball_2.ToleranceThreshold=0.0;
-		FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
-		climb_props.LiftDistance=1.0;
-		climb_props.DropDistance=-1.0;
+		for (size_t i=0;i<c_NoClimbPropertyElements;i++)
+		{
+			FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props[i];
+			climb_props.LiftDistance=1.0;
+			climb_props.DropDistance=-1.0;
+		}
 		m_FRC2013RobotProps=props;
 	}
 	{
@@ -1485,9 +1499,13 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 			m_FRC2013RobotProps.TargetVars_DisplayRow=(size_t)fDisplayRow;
 
-		err=script.GetField("ds_power_velocity_row", NULL, NULL, &fDisplayRow);
+		err=script.GetField("ds_power1_velocity_row", NULL, NULL, &fDisplayRow);
 		if (!err)
-			m_FRC2013RobotProps.PowerVelocity_DisplayRow=(size_t)fDisplayRow;
+			m_FRC2013RobotProps.Power1Velocity_DisplayRow=(size_t)fDisplayRow;
+
+		err=script.GetField("ds_power2_velocity_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_FRC2013RobotProps.Power2Velocity_DisplayRow=(size_t)fDisplayRow;
 
 		script.GetField("yaw_tolerance", NULL, NULL, &m_FRC2013RobotProps.YawTolerance);
 
@@ -1575,20 +1593,24 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		err = script.GetFieldTable("climb");
-		if (!err)
 		{
-			struct FRC_2013_Robot_Props::Climb_Properties &climb=m_FRC2013RobotProps.Climb_Props;
+			std::string climb_string;
+			size_t i=1,j=0;
+			char Buffer[4];
+			while ( climb_string="climb_",climb_string+=itoa(i++,Buffer,10) ,	(err = script.GetFieldTable(climb_string.c_str()))==NULL)
 			{
-				double length;
-				err = script.GetField("lift_ft", NULL, NULL,&length);
-				if (!err)
-					climb.LiftDistance=Feet2Meters(length);
-				err = script.GetField("drop_ft", NULL, NULL,&length);
-				if (!err)
-					climb.DropDistance=Feet2Meters(length);
+				struct FRC_2013_Robot_Props::Climb_Properties &climb=m_FRC2013RobotProps.Climb_Props[j++];
+				{
+					double length;
+					err = script.GetField("lift_ft", NULL, NULL,&length);
+					if (!err)
+						climb.LiftDistance=Feet2Meters(length);
+					err = script.GetField("drop_ft", NULL, NULL,&length);
+					if (!err)
+						climb.DropDistance=Feet2Meters(length);
+				}
+				script.Pop();
 			}
-			script.Pop();
 		}
 
 		//This is the main robot settings pop
@@ -1719,7 +1741,7 @@ FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ResetPosition::Pro
 			m_TimeStopped+=dTime_s;  //count how much time its been at zero
 		}
 		//If we've been stopped long enough... reset position and complete goal
-		if (m_TimeStopped>0.100)
+		if (m_TimeStopped>0.500)
 		{
 			//before resetting the position... ensure there is no movement
 			m_Robot.ResetPos();
@@ -1760,10 +1782,10 @@ Goal *FRC_2013_Goals::Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt)
 	return MainGoal;
 }
 
-Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
+Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot,size_t iteration)
 {
 	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
-	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
+	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props[iteration];
 	const double tolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
 	// reset the coordinates to use way points.  This will also ensure there is no movement
 	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
@@ -1786,12 +1808,16 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
 	wp.Position[1]=climb_props.DropDistance;
 	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
 
+	//If we use 'I' I want to ensure it gets cleared
+	ResetPosition *goal_reset_3=new ResetPosition(*Robot);
+
 	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
 	//For now this is just a backup plan that would need a rotary system
 
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	//MainGoal->AddSubgoal(goal_JamGear);
+	MainGoal->AddSubgoal(goal_reset_3);
 	MainGoal->AddSubgoal(goal_spool_drop_winch);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
 	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);

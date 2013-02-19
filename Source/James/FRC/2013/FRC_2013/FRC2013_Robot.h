@@ -16,6 +16,10 @@ public:
 	#endif
 };
 
+//We know that from ground to first rung distance vs. first to second rung will be different lengths since the angle approach is different, so we'll need at least
+//two different distance settings.  The second to third rung should be equal, but we can add more if needed here.
+const size_t c_NoClimbPropertyElements=2;
+
 struct FRC_2013_Robot_Props
 {
 public:
@@ -34,7 +38,7 @@ public:
 	double FireButtonStayOn_Time;   //Time to stay on before stopping the conveyors
 	size_t Coordinates_DiplayRow;
 	size_t TargetVars_DisplayRow;
-	size_t PowerVelocity_DisplayRow;
+	size_t Power1Velocity_DisplayRow,Power2Velocity_DisplayRow;
 	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
 	double Min_IntakeDrop;			//Used to determine the minimum drop of the intake during a fire operation
 
@@ -43,7 +47,8 @@ public:
 		//In theory lift and drop should be the same they can be negative in direction as well.  They may work where lift goes in one directions and the drop goes in the opposite
 		double LiftDistance;
 		double DropDistance;
-	} Climb_Props;
+	} Climb_Props[c_NoClimbPropertyElements];
+
 	struct Autonomous_Properties
 	{
 		Vec2D RampLeft_ErrorCorrection_Offset;
@@ -112,7 +117,7 @@ class FRC_2013_Robot : public Tank_Robot
 		//Most likely will not need IR sensors
 		enum BoolSensorDevices
 		{
-			eTest_Sensor
+			eIntake_DeployedLimit_Sensor
 		};
 
 		//Note: these shouldn't be written to directly but instead set the climb state which then will write to these
@@ -333,6 +338,7 @@ class FRC_2013_Robot : public Tank_Robot
 		};
 		DriveTargetSelection m_DriveTargetSelection;
 
+		size_t m_ClimbCounter;  //keep track of which iteration count we are on (saturates to c_NoClimbPropertyElements)
 		bool m_SetClimbGear;
 		bool m_SetClimbLeft,m_SetClimbRight;
 		void SetClimbGear(bool on);
@@ -355,7 +361,8 @@ class FRC_2013_Goals
 	public:
 		static Goal *Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt=false);
 		static Goal *Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
-		static Goal *Climb(FRC_2013_Robot *Robot);
+		/// \param iteration this is a simple count of how many climbs which have been made.  This is used to pick the correct distance properties to use per iteration
+		static Goal *Climb(FRC_2013_Robot *Robot,size_t iteration);
 	private:
 		class Fire : public AtomicGoal
 		{
