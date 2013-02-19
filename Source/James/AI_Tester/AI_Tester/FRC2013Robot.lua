@@ -112,11 +112,18 @@ MainRobot = {
 			c61={p=1.0, y=1.0}, c62={p=1.0, y=1.0}, c63={p=1.0, y=1.0},
 		},
 	
-		climb =
+		climb_1 =
+		{
+			lift_ft=2,
+			drop_ft=-2
+		},
+		climb_2 =
 		{
 			lift_ft=5,
 			drop_ft=-5
 		},
+		--Note: if we need a climb 3 it will require a code change
+
 		pitch =
 		{
 			is_closed='yes',
