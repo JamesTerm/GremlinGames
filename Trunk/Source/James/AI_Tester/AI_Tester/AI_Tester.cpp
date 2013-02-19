@@ -868,7 +868,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				if (DoAutonomous)
 				{
 					Goal *goal=NULL;
-					goal=FRC_2013_Goals::Climb(Robot);
+					goal=FRC_2013_Goals::Climb(Robot,0);
 					if (goal)
 						goal->Activate(); //now with the goal(s) loaded activate it
 					Robot->SetGoal(goal);

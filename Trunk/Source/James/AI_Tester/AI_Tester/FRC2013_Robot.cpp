@@ -33,6 +33,7 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 #undef __EnableTargetingDisplay__
 //This should be enabled during calibration
 #define __DisableIntakeAutoPosition__
+#define __DisabledClimbPneumatics__
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -504,7 +505,7 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
-		m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
+		m_ClimbCounter(0),m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
 	//m_IsTargeting=true;
 	//m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented
@@ -887,7 +888,11 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 				delete oldgoal;
 
 			Goal *goal=NULL;
-			goal=FRC_2013_Goals::Climb(this);
+			goal=FRC_2013_Goals::Climb(this,m_ClimbCounter++);
+			//Saturate counter to number of climb property elements
+			if (m_ClimbCounter>=c_NoClimbPropertyElements)
+				m_ClimbCounter=c_NoClimbPropertyElements-1;
+
 			if (goal)
 				goal->Activate(); //now with the goal(s) loaded activate it
 			SetGoal(goal);
@@ -939,6 +944,7 @@ void FRC_2013_Robot::SetClimbGear_RightButton(bool on)
 
 void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 {
+	#ifndef __DisabledClimbPneumatics__
 	//Note: the order of each of these will disengage others before engage... as a fall back precaution, but the client code
 	//really needs to set state to neutral with a wait time before going into the next state so that there is never a time when
 	//multiple gears are engaged at any moment
@@ -985,6 +991,7 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		m_RobotControl->CloseSolenoid(eEngageLiftWinch);
 		break;
 	}
+	#endif
 }
 
 bool FRC_2013_Robot::IsStopped() const
@@ -1260,9 +1267,12 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		ball_2.InitialWait=4.0;
 		ball_2.TimeOutWait=-1.0;
 		ball_2.ToleranceThreshold=0.0;
-		FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
-		climb_props.LiftDistance=1.0;
-		climb_props.DropDistance=-1.0;
+		for (size_t i=0;i<c_NoClimbPropertyElements;i++)
+		{
+			FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props[i];
+			climb_props.LiftDistance=1.0;
+			climb_props.DropDistance=-1.0;
+		}
 		m_FRC2013RobotProps=props;
 	}
 	{
@@ -1572,20 +1582,24 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		err = script.GetFieldTable("climb");
-		if (!err)
 		{
-			struct FRC_2013_Robot_Props::Climb_Properties &climb=m_FRC2013RobotProps.Climb_Props;
+			std::string climb_string;
+			size_t i=1,j=0;
+			char Buffer[4];
+			while ( climb_string="climb_",climb_string+=itoa(i++,Buffer,10) ,	(err = script.GetFieldTable(climb_string.c_str()))==NULL)
 			{
-				double length;
-				err = script.GetField("lift_ft", NULL, NULL,&length);
-				if (!err)
-					climb.LiftDistance=Feet2Meters(length);
-				err = script.GetField("drop_ft", NULL, NULL,&length);
-				if (!err)
-					climb.DropDistance=Feet2Meters(length);
+				struct FRC_2013_Robot_Props::Climb_Properties &climb=m_FRC2013RobotProps.Climb_Props[j++];
+				{
+					double length;
+					err = script.GetField("lift_ft", NULL, NULL,&length);
+					if (!err)
+						climb.LiftDistance=Feet2Meters(length);
+					err = script.GetField("drop_ft", NULL, NULL,&length);
+					if (!err)
+						climb.DropDistance=Feet2Meters(length);
+				}
+				script.Pop();
 			}
-			script.Pop();
 		}
 
 		//This is the main robot settings pop
@@ -1757,10 +1771,10 @@ Goal *FRC_2013_Goals::Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt)
 	return MainGoal;
 }
 
-Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot)
+Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot,size_t iteration)
 {
 	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
-	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props;
+	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props[iteration];
 	const double tolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
 	// reset the coordinates to use way points.  This will also ensure there is no movement
 	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
