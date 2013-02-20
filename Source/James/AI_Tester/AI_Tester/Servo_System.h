@@ -2,8 +2,8 @@
 
 struct Servo_Props
 {
-	double ServoToRS_Ratio;
-	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
+	double ServoScalar,ServoOffset;  //used to translate desired angle range and offset to actual range and offset
+	double PrecisionTolerance;  //Used to avoid oscillation during set point adjustments
 
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	//bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
