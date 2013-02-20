@@ -420,7 +420,7 @@ void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 	if (rotary_props)
 	{
 		m_DriveTrain.UpdateProps(rotary_props->GetEncoderSimulationProps());
-		m_EncoderScalar=rotary_props->GetRoteryProps().EncoderToRS_Ratio;
+		m_EncoderScalar=rotary_props->GetRotaryProps().EncoderToRS_Ratio;
 	}
 
 	#if 0

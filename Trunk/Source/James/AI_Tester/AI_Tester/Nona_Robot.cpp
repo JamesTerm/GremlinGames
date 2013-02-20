@@ -37,7 +37,7 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		const TractionModeProps *PropsToUse=(Mode==eTractionDrive)?&m_TractionModeProps:&m_OmniModeProps;
 		m_pParent->UpdateShipProperties(PropsToUse->ShipProperties.GetShipProps());
 		//init the props (more of a pedantic step to avoid corrupt data)
-		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
+		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRotaryProps();
 		props.InverseMaxAccel=m_TractionModeProps.InverseMaxAccel;
 		props.InverseMaxDecel=m_TractionModeProps.InverseMaxDecel;
 		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
