@@ -95,7 +95,7 @@ void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
 	}
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 }
 
@@ -292,7 +292,7 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::TimeChange(double dTime_s)
 {
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 }
 
@@ -361,7 +361,7 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
 	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
 	const double IntakeMaxRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange;
-	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance;
+	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRotaryProps().PrecisionTolerance;
 	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
 	const bool IsStowed=(fabs(Intake_Position-IntakeMaxRange) < IntakeTolerance);
 	//The intake must be low enough to not block the shooter
@@ -731,7 +731,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			#endif
 
 			//Use precision tolerance asset to determine whether to make the change
-			m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetRoteryProps().PrecisionTolerance)?NewPitch:CurrentPitch;
+			m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetRotaryProps().PrecisionTolerance)?NewPitch:CurrentPitch;
 
 			//ensure we do not have some crazy computation of pitch
 			if (m_PitchAngle>DEG_2_RAD(80))
@@ -2008,7 +2008,7 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			{
 				//	printf("IntakeDeployment=%f\n",Voltage);
 				//DOUT3("IntakeDeployment Voltage=%f",Voltage);
-				m_IntakeDeploymentVoltage=Voltage * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().VoltageScalar;
+				m_IntakeDeploymentVoltage=Voltage * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().VoltageScalar;
 				#ifndef __TestPotsOnEncoder__
 				m_IntakeDeployment_Pot.UpdatePotentiometerVoltage(Voltage);
 				#else
@@ -2028,22 +2028,22 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	switch (index)
 	{
 	case FRC_2013_Robot::ePitchRamp:
-		Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
+		Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::ePowerWheelFirstStage:
-		Dout(m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage);
+		Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::ePowerWheelSecondStage:
-		Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"p2_v=%.2f",Voltage);
+		Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p2_v=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::eHelix:
-		Dout(m_RobotProps.GetHelixProps().GetRoteryProps().Feedback_DiplayRow,1,"he_v=%.2f",Voltage);
+		Dout(m_RobotProps.GetHelixProps().GetRotaryProps().Feedback_DiplayRow,1,"he_v=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::eIntake_Deployment:
-		Dout(m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
+		Dout(m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
 		break;
 	case FRC_2013_Robot::eRollers:
-		Dout(m_RobotProps.GetRollersProps().GetRoteryProps().Feedback_DiplayRow,1,"ro_v=%.2f",Voltage);
+		Dout(m_RobotProps.GetRollersProps().GetRotaryProps().Feedback_DiplayRow,1,"ro_v=%.2f",Voltage);
 		break;
 	}
 	#endif
@@ -2235,7 +2235,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#ifndef __TestPotsOnEncoder__
 			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
 			#else
-			result=m_Pitch_Pot.GetDistance() * m_RobotProps.GetPitchRampProps().GetRoteryProps().EncoderToRS_Ratio;
+			result=m_Pitch_Pot.GetDistance() * m_RobotProps.GetPitchRampProps().GetRotaryProps().EncoderToRS_Ratio;
 			#endif
 			#ifdef __EnablePitchDisplay__
 			//DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
@@ -2245,7 +2245,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#else
 			#endif
 			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),
-				RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
+				RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
 			#endif
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
@@ -2263,7 +2263,7 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result=m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition();
 			#else
 			//Note: determine which direction the encoders are going, use EncoderToRS_Ratio negative or positive to match
-			result=(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().EncoderToRS_Ratio) + m_IntakeDeploymentOffset;
+			result=(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio) + m_IntakeDeploymentOffset;
 			#endif
 			break;
 		case FRC_2013_Robot::eRollers:
@@ -2276,22 +2276,22 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2013_Robot::ePowerWheelFirstStage:
-			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"p1=%.2f",result / Pi2);
+			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,11,"p1=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"p2=%.2f",result / Pi2);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,11,"p2=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::eHelix:
-			Dout(m_RobotProps.GetHelixProps().GetRoteryProps().Feedback_DiplayRow,11,"he=%.2f",result / Pi2);
+			Dout(m_RobotProps.GetHelixProps().GetRotaryProps().Feedback_DiplayRow,11,"he=%.2f",result / Pi2);
 			break;
 		case FRC_2013_Robot::eIntake_Deployment:
-			Dout(m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2013_Robot::eRollers:
-			Dout(m_RobotProps.GetRollersProps().GetRoteryProps().Feedback_DiplayRow,11,"ro=%.1f",result / Pi2);
+			Dout(m_RobotProps.GetRollersProps().GetRotaryProps().Feedback_DiplayRow,11,"ro=%.1f",result / Pi2);
 			break;
 	}
 	#endif

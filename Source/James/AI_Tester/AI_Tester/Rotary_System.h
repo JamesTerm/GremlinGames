@@ -42,6 +42,7 @@ class Rotary_System : public Ship_1D
 			__super::Initialize(em,props);  //must call predecessor first!
 			m_UsingRange_props=m_UsingRange;
 		}
+		//This is basically like m_UsingRange from Ship_1D except that it is dynamic, and disabled when potentiometer is disabled (as we cannot detect limits)
 		bool GetUsingRange_Props() const {return m_UsingRange_props;}
 };
 
@@ -166,7 +167,7 @@ class Rotary_Properties : public Ship_1D_Properties
 
 		Rotary_Properties() {Init();}
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		const Rotary_Props &GetRoteryProps() const {return m_RoteryProps;}
+		const Rotary_Props &GetRotaryProps() const {return m_RoteryProps;}
 		//Get and Set the properties
 		Rotary_Props &RoteryProps() {return m_RoteryProps;}
 		#ifdef AI_TesterCode

@@ -40,7 +40,7 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	const Rotary_Properties *Props=dynamic_cast<const Rotary_Properties *>(props);
 	assert(Props);
 	//This will copy all the props
-	m_Rotary_Props=Props->GetRoteryProps();
+	m_Rotary_Props=Props->GetRotaryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 
 	const double MaxSpeedReference=Props->GetMaxSpeed();
@@ -225,7 +225,7 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	const Rotary_Properties *Props=dynamic_cast<const Rotary_Properties *>(props);
 	assert(Props);
 	//This will copy all the props
-	m_Rotary_Props=Props->GetRoteryProps();
+	m_Rotary_Props=Props->GetRotaryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 
 	//Note: for the drive we create a large enough number that can divide out the voltage and small enough to recover quickly,
