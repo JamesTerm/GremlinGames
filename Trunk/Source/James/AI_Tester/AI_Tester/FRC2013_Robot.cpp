@@ -89,9 +89,10 @@ void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle * m_pParent->m_PitchErrorCorrection);
 	}
 	__super::TimeChange(dTime_s);
-	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	#endif
+	//This is no longer needed since the get position is the actual angle to set
+	//#ifdef __DebugLUA__
+	//Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	//#endif
 }
 
 void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
@@ -2308,24 +2309,22 @@ double FRC_2013_Robot_Control::GetServoAngle(size_t index)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			result=m_PitchRampAngle * m_RobotProps.GetPitchRampProps().GetServoProps().ServoToRS_Ratio;
+		{
+			const Servo_Props &props=m_RobotProps.GetPitchRampProps().GetServoProps();
+			result=(m_PitchRampAngle * props.ServoScalar) + props.ServoOffset;
 
 			#ifdef __EnablePitchDisplay__
 			//DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
 
 			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),
-				RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
+			RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
+			#endif
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,11,"p=%.2f",RAD_2_DEG(result));
 			#endif
 			break;
+		}
 	}
-	#ifdef __DebugLUA__
-	switch (index)
-	{
-		case FRC_2013_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,1,"p=%.2f",result);
-			break;
-	}
-	#endif
 	return result;
 }
 
@@ -2345,7 +2344,7 @@ void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,1,"p=%.2f",radians);
+			Dout(m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,1,"p=%.1f",RAD_2_DEG(radians));
 			break;
 	}
 	#endif

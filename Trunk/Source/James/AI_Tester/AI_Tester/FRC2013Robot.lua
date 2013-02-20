@@ -126,15 +126,11 @@ MainRobot = {
 
 		pitch =
 		{
-			is_closed='yes',
-			show_pid_dump='no',
+			show_console_dump='no',
 			ds_display_row=-1,
-			pid=
-			{p=200, i=0, d=50},
-			tolerance=0.001,				--we need high precision
-			encoder_to_wheel_ratio=0.5,
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			tolerance=0.05,
+			servo_ratio=1.0,
+			servo_offset=0.0,
 
 			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
@@ -144,7 +140,6 @@ MainRobot = {
 
 			min_range_deg=0,				--These should be good to go
 			max_range_deg=85,
-			inv_max_accel = 1.0/36.0
 		},
 		power =
 		{

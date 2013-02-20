@@ -100,7 +100,8 @@ void Servo_Properties::Init()
 	Servo_Props props;
 	memset(&props,0,sizeof(Servo_Props));
 
-	props.ServoToRS_Ratio=1.0;
+	props.ServoScalar=1.0;
+	props.ServoOffset=0.0;
 	//Late assign this to override the initial default
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
@@ -116,7 +117,8 @@ void Servo_Properties::LoadFromScript(Scripting::Script& script)
 	//if (!err) 
 
 	{
-		script.GetField("servo_ratio", NULL, NULL, &m_ServoProps.ServoToRS_Ratio);
+		script.GetField("servo_ratio", NULL, NULL, &m_ServoProps.ServoScalar);
+		script.GetField("servo_offset", NULL, NULL, &m_ServoProps.ServoOffset);
 		script.GetField("tolerance", NULL, NULL, &m_ServoProps.PrecisionTolerance);
 
 		double fDisplayRow;
