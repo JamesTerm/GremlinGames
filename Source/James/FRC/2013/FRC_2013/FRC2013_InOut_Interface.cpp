@@ -65,16 +65,16 @@ void FRC_2013_Robot_Control::ResetPos()
 enum VictorSlotList
 {
 	eVictor_NoZeroUsed,
-	eVictor_RightMotor1,	//Used in InOut_Interface
-	eVictor_RightMotor2,	//Used in InOut_Interface
-	eVictor_LeftMotor1,		//Used in InOut_Interface
-	eVictor_LeftMotor2,		//Used in InOut_Interface
-	eVictor_PowerWheel_First,	//The slower wheel
-	eVictor_PowerWheel_Second,
-	eVictor_Helix,
-	eVictor_IntakeMotor,    //The transitional motor (tied to rollers)
-	eVictor_Rollers,
-	eVictor_IntakeDeployment  //aka flippers 
+	eVictor_RightMotor1,		//1Y Used in InOut_Interface
+	eVictor_RightMotor2,		//2  Used in InOut_Interface
+	eVictor_LeftMotor1,			//3Y Used in InOut_Interface
+	eVictor_LeftMotor2,			//4  Used in InOut_Interface
+	eVictor_Helix,				//5
+	eVictor_IntakeDeployment,	//6  aka flippers (one motor)
+	eVictor_Rollers,			//7y
+	eVictor_PowerWheel_First,	//8  The slower wheel
+	eVictor_PowerWheel_Second,	//9  The fast motor
+	eVictor_IntakeMotor			//10 The transitional motor (tied to rollers)
 };
 enum RelaySlotList
 {
@@ -90,12 +90,12 @@ enum DigitalIO_SlotList
 	eEncoder_DriveRight_B,
 	eEncoder_DriveLeft_A,
 	eEncoder_DriveLeft_B,
+	eEncoder_IntakeDeployment_A,
+	eEncoder_IntakeDeployment_B,
 	eEncoder_PowerWheel_First_A,
 	eEncoder_PowerWheel_First_B,
 	eEncoder_PowerWheel_Second_A,
 	eEncoder_PowerWheel_Second_B,
-	eEncoder_IntakeDeployment_A,
-	eEncoder_IntakeDeployment_B,
 	eSensor_Intake_DeployedLimit,
 	eLimit_Compressor=14
 };
