@@ -74,7 +74,7 @@ void Servo_Position_Control::TimeChange(double dTime_s)
 	//#endif
 
 	//Note: the scaling of angle occurs in robot control
-	m_RobotControl->SetAngle(m_InstanceIndex,GetPos_m());
+	m_RobotControl->SetServoAngle(m_InstanceIndex,GetPos_m());
 }
 
 
@@ -84,9 +84,53 @@ void Servo_Position_Control::ResetPos()
 	if (!GetBypassPos_Update())
 	{
 		m_RobotControl->Reset_Servo(m_InstanceIndex);
-		double NewPosition=m_RobotControl->GetAngle(m_InstanceIndex);
+		double NewPosition=m_RobotControl->GetServoAngle(m_InstanceIndex);
 		Stop();
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
 	}
+}
+
+  /***********************************************************************************************************************************/
+ /*														Servo_Properties															*/
+/***********************************************************************************************************************************/
+
+void Servo_Properties::Init()
+{
+	Servo_Props props;
+	memset(&props,0,sizeof(Servo_Props));
+
+	props.ServoToRS_Ratio=1.0;
+	//Late assign this to override the initial default
+	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
+	m_ServoProps=props;
+}
+
+void Servo_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+
+	//I shouldn't need this nested field redundancy... just need to be sure all client cases like this
+	//err = script.GetFieldTable("rotary_settings");
+	//if (!err) 
+
+	{
+		script.GetField("servo_ratio", NULL, NULL, &m_ServoProps.ServoToRS_Ratio);
+		script.GetField("tolerance", NULL, NULL, &m_ServoProps.PrecisionTolerance);
+
+		double fDisplayRow;
+		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		if (!err)
+			m_ServoProps.Feedback_DiplayRow=(size_t)fDisplayRow;
+
+		string sTest;
+		//err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
+		//if (!err)
+		//{
+		//	if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+		//		m_ServoProps.PID_Console_Dump=true;
+		//}
+	}
+	__super::LoadFromScript(script);
 }

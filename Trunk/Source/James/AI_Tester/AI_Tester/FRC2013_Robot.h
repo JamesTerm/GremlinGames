@@ -3,7 +3,8 @@
 
 class FRC_2013_Control_Interface :	public Tank_Drive_Control_Interface,
 									public Robot_Control_Interface,
-									public Rotary_Control_Interface
+									public Rotary_Control_Interface,
+									public Servo_Control_Interface
 {
 public:
 	//This is primarily used for updates to dashboard and driver station during a test build
@@ -75,7 +76,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		FRC_2013_Robot_Properties();
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 
-		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Servo_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetPowerSlowWheelProps() const {return m_PowerSlowWheelProps;}
 		const Rotary_Properties &GetHelixProps() const {return m_HelixProps;}
@@ -87,7 +88,8 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
+		Servo_Properties m_PitchRampProps;
+		Rotary_Properties m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
 		Tank_Robot_Properties m_ClimbGearLiftProps;
 		Tank_Robot_Properties m_ClimbGearDropProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
@@ -106,12 +108,17 @@ class FRC_2013_Robot : public Tank_Robot
 	public:
 		enum SpeedControllerDevices
 		{
-			ePitchRamp,
 			ePowerWheelFirstStage,
 			ePowerWheelSecondStage,
 			eHelix,
 			eIntake_Deployment,
 			eRollers
+		};
+
+		enum ServoDevices
+		{
+			ePitchRamp,
+			eTurret
 		};
 
 		//Most likely will not need IR sensors
@@ -177,10 +184,10 @@ class FRC_2013_Robot : public Tank_Robot
 
 	protected:
 
-		class PitchRamp : public Rotary_Position_Control
+		class PitchRamp : public Servo_Position_Control
 		{
 			public:
-				PitchRamp(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
+				PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
@@ -189,7 +196,6 @@ class FRC_2013_Robot : public Tank_Robot
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetIntendedPosition_Plus(double Position);
 
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2013_Robot * const m_pParent;
@@ -451,6 +457,11 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		virtual double GetRotaryCurrentPorV(size_t index=0);
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
 
+	protected: //from Servo Interface
+		virtual void Reset_Servo(size_t index=0); 
+		virtual double GetServoAngle(size_t index=0);
+		virtual void SetServoAngle(size_t index,double radians);
+
 	protected: //from FRC_2013_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
@@ -477,7 +488,8 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		double m_LastLeftVelocity,m_LastRightVelocity;
 		#endif
 		//cache voltage values for display
-		double m_PitchRampVoltage,m_PowerWheelVoltage,m_PowerSlowWheelVoltage,m_IntakeDeploymentVoltage;
+		double m_PitchRampAngle;
+		double m_PowerWheelVoltage,m_PowerSlowWheelVoltage,m_IntakeDeploymentVoltage;
 		double m_HelixVoltage,m_RollersVoltage;
 		double m_IntakeDeploymentOffset;  //used to keep 90-0 range once limit switch has been triggered
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use

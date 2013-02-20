@@ -8,6 +8,7 @@ namespace AI_Tester
 	#include "Tank_Robot.h"
 	#include "Robot_Control_Interface.h"
 	#include "Rotary_System.h"
+	#include "Servo_System.h"
 	#include "CommonUI.h"
 	#include "FRC2013_Robot.h"
 }
@@ -56,46 +57,40 @@ static double PositionToVelocity_Tweak(double Value)
   /***********************************************************************************************************************************/
  /*													FRC_2013_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
-FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
+FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
+	Servo_Position_Control("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
 {
 }
 
 void FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 {
-	if (GetIsUsingPotentiometer())
+	bool IsTargeting=(m_pParent->m_IsTargeting);
+	if (!IsTargeting)
 	{
-		bool IsTargeting=(m_pParent->m_IsTargeting);
-		if (!IsTargeting)
-		{
-			Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
-			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-			//first get the range from 0 - 1
-			double positive_range = (Position * 0.5) + 0.5;
-			//positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=GetMaxRange();
-			const double Scale=(maxRange-minRange) / maxRange;
-			Position=(positive_range * Scale) + minRange;
-		}
-		//DOUT5("Test=%f",RAD_2_DEG(Position));
-		SetIntendedPosition(Position);
+		Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
+		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+		//first get the range from 0 - 1
+		double positive_range = (Position * 0.5) + 0.5;
+		//positive_range=positive_range>0.01?positive_range:0.0;
+		const double minRange=GetMinRange();
+		const double maxRange=GetMaxRange();
+		const double Scale=(maxRange-minRange) / maxRange;
+		Position=(positive_range * Scale) + minRange;
 	}
-	else
-		SetRequestedVelocity_FromNormalized(PositionToVelocity_Tweak(Position));   //allow manual use of same control
-
+	//DOUT5("Test=%f",RAD_2_DEG(Position));
+	SetIntendedPosition(Position);
 }
 
 void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer());
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())));
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle * m_pParent->m_PitchErrorCorrection);
 	}
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 }
 
@@ -106,13 +101,11 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 	else
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 }
 
@@ -731,7 +724,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			#endif
 
 			//Use precision tolerance asset to determine whether to make the change
-			m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetRotaryProps().PrecisionTolerance)?NewPitch:CurrentPitch;
+			m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetServoProps().PrecisionTolerance)?NewPitch:CurrentPitch;
 
 			//ensure we do not have some crazy computation of pitch
 			if (m_PitchAngle>DEG_2_RAD(80))
@@ -1288,9 +1281,9 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		m_TankRobotProps=props;
 	}
 	{
-		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
-		props.PrecisionTolerance=0.001; //we need high precision
-		m_PitchRampProps.RoteryProps()=props;
+		Servo_Props props=m_PitchRampProps.ServoProps(); //start with super class settings
+		props.PrecisionTolerance=0.05; //Servo's tend to have 2 positions per degree
+		m_PitchRampProps.ServoProps()=props;
 	}
 	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
@@ -1972,19 +1965,6 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 
 	switch (index)
 	{
-		case FRC_2013_Robot::ePitchRamp:
-			{
-				//	printf("Pitch=%f\n",Voltage);
-				//DOUT3("Pitch Voltage=%f",Voltage);
-				m_PitchRampVoltage=Voltage;
-				#ifndef __TestPotsOnEncoder__
-				m_Pitch_Pot.UpdatePotentiometerVoltage(Voltage);
-				#else
-				m_Pitch_Pot.UpdateEncoderVoltage(Voltage);
-				#endif
-				m_Pitch_Pot.TimeChange();  //have this velocity immediately take effect
-			}
-			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
 			if (m_SlowWheel) Voltage=0.0;
 			m_PowerWheelVoltage=Voltage;
@@ -2027,9 +2007,6 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-	case FRC_2013_Robot::ePitchRamp:
-		Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
-		break;
 	case FRC_2013_Robot::ePowerWheelFirstStage:
 		Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage);
 		break;
@@ -2145,11 +2122,6 @@ void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
 {
 	switch (index)
 	{
-		case FRC_2013_Robot::ePitchRamp:
-			m_Pitch_Pot.ResetPos();
-			//We may want this for more accurate simulation
-			//m_Pitch_Pot.SetPos_m((m_Pitch_Pot.GetMinRange()+m_Pitch_Pot.GetMaxRange()) / 2.0);
-			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
 			m_PowerWheel_Enc.ResetPos();
 			//DOUT3("Arm Voltage=%f",Voltage);
@@ -2214,7 +2186,7 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	m_Rollers_Enc.SetTimeDelta(dTime_s);
 	//display voltages
 	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f hx=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
-		m_PitchRampVoltage,m_PowerWheelVoltage,m_HelixVoltage);
+		m_PitchRampAngle,m_PowerWheelVoltage,m_HelixVoltage);
 	m_dTime_s=dTime_s;
 	if (GetBoolSensorState(FRC_2013_Robot::eIntake_DeployedLimit_Sensor))
 	{
@@ -2230,24 +2202,6 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 	switch (index)
 	{
-		case FRC_2013_Robot::ePitchRamp:
-
-			#ifndef __TestPotsOnEncoder__
-			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
-			#else
-			result=m_Pitch_Pot.GetDistance() * m_RobotProps.GetPitchRampProps().GetRotaryProps().EncoderToRS_Ratio;
-			#endif
-			#ifdef __EnablePitchDisplay__
-			//DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
-
-			#ifndef __TestPotsOnEncoder__
-			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),RAD_2_DEG(m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition()));
-			#else
-			#endif
-			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),
-				RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
-			#endif
-			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
 			result=m_PowerWheel_Enc.GetEncoderVelocity();
 			//DOUT5 ("vel=%f",result);
@@ -2275,9 +2229,6 @@ double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-		case FRC_2013_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
-			break;
 		case FRC_2013_Robot::ePowerWheelFirstStage:
 			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,11,"p1=%.2f",result / Pi2);
 			break;
@@ -2341,6 +2292,64 @@ bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
 	return ret;
 }
 
+void FRC_2013_Robot_Control::Reset_Servo(size_t index)
+{
+
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+			m_PitchRampAngle=0.0;  //may want to just center this
+			break;
+	}
+}
+double FRC_2013_Robot_Control::GetServoAngle(size_t index)
+{
+	double result=0.0;
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+			result=m_PitchRampAngle * m_RobotProps.GetPitchRampProps().GetServoProps().ServoToRS_Ratio;
+
+			#ifdef __EnablePitchDisplay__
+			//DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
+
+			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),
+				RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
+			#endif
+			break;
+	}
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+			Dout(m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,1,"p=%.2f",result);
+			break;
+	}
+	#endif
+	return result;
+}
+
+void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
+{
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+			{
+				//	printf("Pitch=%f\n",Voltage);
+				//DOUT3("Pitch Voltage=%f",Voltage);
+				m_PitchRampAngle=radians;
+			}
+			break;
+	}
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+			Dout(m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,1,"p=%.2f",radians);
+			break;
+	}
+	#endif
+}
 
   /***************************************************************************************************************/
  /*											FRC_2013_Power_Wheel_UI												*/
@@ -2367,7 +2376,7 @@ void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 
 	//Scale down the rotation to something easy to gauge in UI
 	AddRotation((NormalizedVelocity * 18) * dTime_s);
-	double y_offset=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::ePitchRamp);
+	double y_offset=pw_access->GetServoAngle(FRC_2013_Robot::ePitchRamp);
 	//normalize
 	const Ship_1D_Props &props=m_RobotControl->GetRobotProps().GetPitchRampProps().GetShip_1D_Props();
 	y_offset-=props.MinRange;
