@@ -7,6 +7,7 @@ namespace AI_Tester
 	#include "Tank_Robot.h"
 	#include "Robot_Control_Interface.h"
 	#include "Rotary_System.h"
+	#include "Servo_System.h"
 	#include "CommonUI.h"
 	#include "FRC2011_Robot.h"
 	#include "FRC2012_Robot.h"

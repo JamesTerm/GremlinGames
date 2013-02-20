@@ -2,7 +2,7 @@
 
 struct Servo_Props
 {
-	double EncoderToRS_Ratio;
+	double ServoToRS_Ratio;
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
@@ -63,7 +63,7 @@ class Servo_Properties : public Ship_1D_Properties
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 		const Servo_Props &GetServoProps() const {return m_ServoProps;}
 		//Get and Set the properties
-		Servo_Props &RoteryProps() {return m_ServoProps;}
+		Servo_Props &ServoProps() {return m_ServoProps;}
 	protected:
 		Servo_Props m_ServoProps;
 	private:
