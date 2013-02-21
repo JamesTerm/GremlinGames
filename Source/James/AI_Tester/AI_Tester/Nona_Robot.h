@@ -100,7 +100,7 @@ class Butterfly_Robot_Control : public Swerve_Robot_Control
 		Butterfly_Robot_Properties m_ButterflyProps; //cache to obtain drive props
 };
 
-class Omni_Wheel_UI : public Wheel_UI
+class Omni_Wheel_UI : public Swivel_Wheel_UI
 {
 public:
 	virtual osg::Vec4 GetFrontWheelColor() const {return osg::Vec4(0.3,0.3,1.0,1.0);}
@@ -114,7 +114,7 @@ class Butterfly_Robot_UI : public Swerve_Robot_UI
 		Butterfly_Robot_UI(Swerve_Robot *SwerveRobot) : Swerve_Robot_UI(SwerveRobot) {}
 		void DriveModeManager_SetMode_Callback(DriveMode Mode);
 	protected:
-		virtual Wheel_UI *Create_WheelUI() {return new Omni_Wheel_UI;}
+		virtual Swivel_Wheel_UI *Create_WheelUI() {return new Omni_Wheel_UI;}
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control

@@ -6,6 +6,7 @@ namespace AI_Tester
 	#include "Calibration_Testing.h"
 	#include "Robot_Control_Interface.h"
 	#include "Rotary_System.h"
+	#include "CommonUI.h"
 	#include "Swerve_Robot.h"
 	#include "Nona_Robot.h"
 }
@@ -293,13 +294,13 @@ void Butterfly_Robot_UI::DriveModeManager_SetMode_Callback(DriveMode Mode)
 	{
 		if (Mode==Butterfly_Robot::eTractionDrive)
 		{
-			m_Wheel[i]->SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Wheel_UI::eFront);
-			m_Wheel[i]->SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Wheel_UI::eBack);
+			m_Wheel[i]->SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Swivel_Wheel_UI::eFront);
+			m_Wheel[i]->SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Swivel_Wheel_UI::eBack);
 		}
 		else
 		{
-			m_Wheel[i]->SetWheelColor(m_Wheel[i]->GetFrontWheelColor(),Wheel_UI::eFront);
-			m_Wheel[i]->SetWheelColor(m_Wheel[i]->GetBackWheelColor(),Wheel_UI::eBack);
+			m_Wheel[i]->SetWheelColor(m_Wheel[i]->GetFrontWheelColor(),Swivel_Wheel_UI::eFront);
+			m_Wheel[i]->SetWheelColor(m_Wheel[i]->GetBackWheelColor(),Swivel_Wheel_UI::eBack);
 		}
 	}
 }
@@ -545,19 +546,19 @@ void Nona_Robot_UI::DriveModeManager_SetMode_Callback(DriveMode Mode)
 		{
 			if (i!=4)
 			{
-				m_Wheel[i].SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Wheel_UI::eFront);
-				m_Wheel[i].SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Wheel_UI::eBack);
+				m_Wheel[i].SetWheelColor(osg::Vec4(1.0,0.0,0.0,1.0),Swivel_Wheel_UI::eFront);
+				m_Wheel[i].SetWheelColor(osg::Vec4(0.5,0.1,0.1,1.0),Swivel_Wheel_UI::eBack);
 			}
 			else
 			{
-				m_Wheel[i].SetWheelColor(osg::Vec4(0.2,0.2,0.2,1.0),Wheel_UI::eFront);
-				m_Wheel[i].SetWheelColor(osg::Vec4(0.2,0.2,0.2,1.0),Wheel_UI::eBack);
+				m_Wheel[i].SetWheelColor(osg::Vec4(0.2,0.2,0.2,1.0),Swivel_Wheel_UI::eFront);
+				m_Wheel[i].SetWheelColor(osg::Vec4(0.2,0.2,0.2,1.0),Swivel_Wheel_UI::eBack);
 			}
 		}
 		else
 		{
-			m_Wheel[i].SetWheelColor(m_Wheel[i].GetFrontWheelColor(),Wheel_UI::eFront);
-			m_Wheel[i].SetWheelColor(m_Wheel[i].GetBackWheelColor(),Wheel_UI::eBack);
+			m_Wheel[i].SetWheelColor(m_Wheel[i].GetFrontWheelColor(),Swivel_Wheel_UI::eFront);
+			m_Wheel[i].SetWheelColor(m_Wheel[i].GetBackWheelColor(),Swivel_Wheel_UI::eBack);
 		}
 	}
 }
