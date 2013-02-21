@@ -193,8 +193,6 @@ class FRC_2013_Robot : public Tank_Robot
 			protected:
 				//typedef Rotary_Position_Control __super;
 				virtual void SetIntendedPosition_Plus(double Position);
-				virtual void TimeChange(double dTime_s);
-			private:
 				FRC_2013_Robot * const m_pParent;
 		};
 
@@ -203,6 +201,7 @@ class FRC_2013_Robot : public Tank_Robot
 			public:
 				PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
 				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void TimeChange(double dTime_s);
 			protected:
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
@@ -214,6 +213,7 @@ class FRC_2013_Robot : public Tank_Robot
 			public:
 				Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
 				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void TimeChange(double dTime_s);
 			protected:
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
@@ -343,7 +343,9 @@ class FRC_2013_Robot : public Tank_Robot
 		//This is adjusted depending on doing a bank shot or swishing 
 		double m_TargetHeight;  //1d z height (front view) of the target
 		//cached during robot time change and applied to other systems when targeting is true
-		double m_PitchAngle,m_LinearVelocity,m_HangTime;
+		double m_PitchAngle,m_YawAngle;
+		//TODO remove these
+		double m_LinearVelocity,m_HangTime;
 		double m_PitchErrorCorrection,m_PowerErrorCorrection;
 		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
@@ -361,7 +363,7 @@ class FRC_2013_Robot : public Tank_Robot
 		{
 			eDrive_NoTarget,
 			eDrive_Goal_Yaw,  //as name implies this only rotates (for now)
-			eDrive_Frisbee
+			eDrive_Goal_Drive  //This does full drive to way-point for Frisbees
 		};
 		DriveTargetSelection m_DriveTargetSelection;
 

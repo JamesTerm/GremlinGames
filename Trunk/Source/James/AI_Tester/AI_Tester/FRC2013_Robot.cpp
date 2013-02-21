@@ -32,6 +32,7 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 #define __NotFieldAware__
 #define __EnableSensorsDisplay__
 #undef __EnableTargetingDisplay__
+#define __UseFileTargetTracking__  //to test against a file that tracks
 //This should be enabled during calibration
 #undef __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
@@ -81,9 +82,20 @@ void FRC_2013_Robot::AxisControl::SetIntendedPosition_Plus(double Position)
 	SetIntendedPosition(Position);
 }
 
-void FRC_2013_Robot::AxisControl::TimeChange(double dTime_s)
+  /***********************************************************************************************************************************/
+ /*													FRC_2013_Robot::PitchRamp														*/
+/***********************************************************************************************************************************/
+
+FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
+	AxisControl(pParent,"PitchRamp",robot_control,ePitchRamp)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())));
+}
+
+void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
+{
+	//TODO check this GetRequestedVelocity logic
+	//bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())));
+	bool IsTargeting=(m_pParent->m_IsTargeting);
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle * m_pParent->m_PitchErrorCorrection);
@@ -93,15 +105,6 @@ void FRC_2013_Robot::AxisControl::TimeChange(double dTime_s)
 	//#ifdef __DebugLUA__
 	//Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	//#endif
-}
-
-  /***********************************************************************************************************************************/
- /*													FRC_2013_Robot::PitchRamp														*/
-/***********************************************************************************************************************************/
-
-FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
-	AxisControl(pParent,"PitchRamp",robot_control,ePitchRamp)
-{
 }
 
 void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
@@ -126,6 +129,18 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 FRC_2013_Robot::Turret::Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
 	AxisControl(pParent,"Turret",robot_control,eTurret)
 {
+}
+
+void FRC_2013_Robot::Turret::TimeChange(double dTime_s)
+{
+	//TODO check this GetRequestedVelocity logic
+	//bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())));
+	bool IsTargeting=(m_pParent->m_IsTargeting);
+	if (IsTargeting)
+	{
+		__super::SetIntendedPosition(m_pParent->m_YawAngle);
+	}
+	__super::TimeChange(dTime_s);
 }
 
 void FRC_2013_Robot::Turret::BindAdditionalEventControls(bool Bind)
@@ -534,13 +549,13 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control), m_Turret(this,robot_control),
 		m_PowerWheels(this,robot_control),m_IntakeSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
-		m_PitchAngle(0.0),
+		m_PitchAngle(0.0),m_YawAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
 		m_ClimbCounter(0),m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
-	//m_IsTargeting=true;
+	m_IsTargeting=true;
 	//m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
@@ -731,48 +746,73 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
 		const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
 		double distance,yaw;
-		if ((YOffset!=0)&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
+		if (((YOffset!=0)||(XOffset!=0))&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
 		{
-			 //monitor where it should be against where it actually is
-			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
-			//printf("d=%.2f\n",Meters2Feet(distance));
-			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
-			#ifdef __EnableTargetingDisplay__
-			#if 0
-			const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
-			Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
-			#endif
-			#if 0
-			const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
-			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
-			//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
-			#endif
-			#endif
+			if (YOffset!=0)
+			{
+				 //monitor where it should be against where it actually is
+				//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
+				//printf("d=%.2f\n",Meters2Feet(distance));
+				//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
+				#ifdef __EnableTargetingDisplay__
+				#if 0
+				const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
+				Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
+				#endif
+				#if 0
+				const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
+				Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
+				//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
+				#endif
+				#endif
 
-			#ifndef __NotFieldAware__
-			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
-			//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
-			//we can just adjust for Y and use the POV turning calls for yaw correction
-			const Vec2d &Pos_m=GetPos_m();
-			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
-			#else
-			//printf("\rD=%.2f      ",distance);
-			//m_PitchAngle=CurrentPitch+atan(m_TargetHeight/distance);
-			#if 1
-			const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
-			#else
-			//Enable this for playback of file since it cannot really cannot control the pitch
-			const double NewPitch=atan(m_TargetHeight/distance);
-			#endif
+				#ifndef __NotFieldAware__
+				//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
+				//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
+				//we can just adjust for Y and use the POV turning calls for yaw correction
+				const Vec2d &Pos_m=GetPos_m();
+				SetPosition(Pos_m[0],c_HalfCourtLength-distance);
+				#else
+				//printf("\rD=%.2f      ",distance);
+				#ifndef __UseFileTargetTracking__
+				const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
+				//NewPitch=CurrentPitch+atan(m_TargetHeight/distance);
+				#else
+				//Enable this for playback of file since it cannot really cannot control the pitch
+				const double NewPitch=atan(m_TargetHeight/distance);
+				#endif
 
-			//Use precision tolerance asset to determine whether to make the change
-			m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetServoProps().PrecisionTolerance)?NewPitch:CurrentPitch;
+				//Use precision tolerance asset to determine whether to make the change
+				m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetServoProps().PrecisionTolerance)?NewPitch:CurrentPitch;
 
-			//ensure we do not have some crazy computation of pitch
-			if (m_PitchAngle>DEG_2_RAD(80))
-				m_PitchAngle=DEG_2_RAD(80);
-			else if (m_PitchAngle<0)
-				m_PitchAngle=0;
+				//ensure we do not have some crazy computation of pitch
+				if (m_PitchAngle>DEG_2_RAD(80))
+					m_PitchAngle=DEG_2_RAD(80);
+				else if (m_PitchAngle<0)
+					m_PitchAngle=0;
+				#endif
+			}
+
+			#ifdef __NotFieldAware__
+			if (XOffset!=0.0)
+			{
+				const double CurrentYaw=m_RobotControl->GetRotaryCurrentPorV(eTurret);
+				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
+				#ifndef __UseFileTargetTracking__
+				const double NewYaw=CurrentPitch+atan(yaw/distance);
+				#else
+				//Enable this for playback of file since it cannot really cannot control the pitch
+				const double NewYaw=atan(yaw/distance);
+				#endif
+				//Use precision tolerance asset to determine whether to make the change
+				m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetServoProps().PrecisionTolerance)?NewYaw:CurrentYaw;
+
+				//ensure we do not have some crazy computation of pitch
+				if (m_YawAngle>DEG_2_RAD(80))
+					m_YawAngle=DEG_2_RAD(80);
+				else if (m_YawAngle<0)
+					m_YawAngle=0;
+			}
 			#endif
 
 			if (m_DriveTargetSelection==eDrive_Goal_Yaw)
@@ -785,9 +825,12 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 					m_controller->GetUIController_RW()->Turn_RelativeOffset(value);
 				}
 			}
+			
 		}
-		//else
-			//printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
+		#if 0
+		else
+			printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
+		#endif
 	}
 	#endif
 
@@ -841,6 +884,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 
 		#ifndef __NotFieldAware__
 		m_PitchAngle=atan2(y,x);
+		m_YawAngle=NormalizeRotation2(atan2(-Pos_m[0],(m_TargetOffset[1]-Pos_m[1])) - GetAtt_r());
 		#endif
 
 		//Be sure G is in the same units as x and y!  (all in meters in code)
