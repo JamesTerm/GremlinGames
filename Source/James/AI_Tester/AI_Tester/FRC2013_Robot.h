@@ -174,6 +174,7 @@ class FRC_2013_Robot : public Tank_Robot
 			eCenterHighGoal,
 			eLeftGoal,
 			eRightGoal,
+			eFrisbee,
 			eDefensiveKey
 		};
 		FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous=false);
@@ -355,17 +356,25 @@ class FRC_2013_Robot : public Tank_Robot
 		bool m_IsTargeting;
 		bool IsTargeting() const {return m_IsTargeting;}
 		void SetTargeting(bool on) {m_IsTargeting=on;}
+		void SetTargeting_Off(bool off) {SetTargeting(!off);}
 		void SetTargetingOn() {SetTargeting(true);}
 		void SetTargetingOff() {SetTargeting(false);}
 		void SetTargetingValue(double Value);
 
-		enum DriveTargetSelection
+		enum AutoDriveState
 		{
-			eDrive_NoTarget,
-			eDrive_Goal_Yaw,  //as name implies this only rotates (for now)
-			eDrive_Goal_Drive  //This does full drive to way-point for Frisbees
+			eAutoDrive_Disabled,
+			eAutoDrive_YawOnly,  //as name implies this only rotates for targets
+			eAutoDrive_FullAuto  //This does full drive to way-point for Frisbees
 		};
-		DriveTargetSelection m_DriveTargetSelection;
+		AutoDriveState m_AutoDriveState;
+		AutoDriveState GetAutoDriveState() const {return m_AutoDriveState;}
+		void SetAutoDriveYaw(bool on) {m_AutoDriveState=on?eAutoDrive_YawOnly:eAutoDrive_Disabled;}
+		void SetAutoDriveYawOn() {SetAutoDriveYaw(true);}
+		void SetAutoDriveYawOff() {SetAutoDriveYaw(false);}
+		void SetAutoDriveFull(bool on) {m_AutoDriveState=eAutoDrive_FullAuto;}
+		void SetAutoDriveFullOn() {SetAutoDriveFull(true);}
+		void SetAutoDriveFullOff() {SetAutoDriveFull(false);}
 
 		size_t m_ClimbCounter;  //keep track of which iteration count we are on (saturates to c_NoClimbPropertyElements)
 		bool m_SetClimbGear;
