@@ -132,14 +132,31 @@ MainRobot = {
 			servo_ratio=1.0,
 			servo_offset=0.0,
 
-			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			max_speed=1.4 * Pi2,
+			accel=10.0,
 			brake=10.0,
-			max_accel_forward=10,			--These are in radians, just go with what feels right
+			max_accel_forward=10,
 			max_accel_reverse=10,
 
-			min_range_deg=0,				--These should be good to go
-			max_range_deg=85,
+			min_range_deg=-80,
+			max_range_deg=80,
+		},
+		turret =
+		{
+			show_console_dump='no',
+			ds_display_row=-1,
+			tolerance=0.05,
+			servo_ratio=1.0,
+			servo_offset=0.0,
+
+			max_speed=1.4 * Pi2,
+			accel=10.0,
+			brake=10.0,
+			max_accel_forward=10,
+			max_accel_reverse=10,
+
+			min_range_deg=-80,
+			max_range_deg=80,
 		},
 		power =
 		{
@@ -383,8 +400,9 @@ MainRobot = {
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
 			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},

@@ -77,6 +77,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
 
 		const Servo_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Servo_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetPowerSlowWheelProps() const {return m_PowerSlowWheelProps;}
 		const Rotary_Properties &GetHelixProps() const {return m_HelixProps;}
@@ -88,7 +89,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
-		Servo_Properties m_PitchRampProps;
+		Servo_Properties m_PitchRampProps,m_TurretProps;
 		Rotary_Properties m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
 		Tank_Robot_Properties m_ClimbGearLiftProps;
 		Tank_Robot_Properties m_ClimbGearDropProps;
@@ -184,21 +185,39 @@ class FRC_2013_Robot : public Tank_Robot
 
 	protected:
 
-		class PitchRamp : public Servo_Position_Control
+		class AxisControl : public Servo_Position_Control
 		{
 			public:
-				PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
+				AxisControl(FRC_2013_Robot *pParent,const char EntityName[],Servo_Control_Interface *robot_control,size_t InstanceIndex);
 				IEvent::HandlerList ehl;
-				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
 				//typedef Rotary_Position_Control __super;
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				void SetIntendedPosition_Plus(double Position);
-
+				virtual void SetIntendedPosition_Plus(double Position);
 				virtual void TimeChange(double dTime_s);
 			private:
 				FRC_2013_Robot * const m_pParent;
+		};
+
+		class PitchRamp : public AxisControl
+		{
+			public:
+				PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
+				virtual void BindAdditionalEventControls(bool Bind);
+			protected:
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				void SetIntendedPosition_Plus(double Position) {__super::SetIntendedPosition_Plus(Position);}
+		};
+
+		class Turret : public AxisControl
+		{
+			public:
+				Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
+				virtual void BindAdditionalEventControls(bool Bind);
+			protected:
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				void SetIntendedPosition_Plus(double Position) {__super::SetIntendedPosition_Plus(Position);}
 		};
 
 		class PowerWheels
@@ -310,6 +329,7 @@ class FRC_2013_Robot : public Tank_Robot
 		//typedef  Tank_Robot __super;
 		FRC_2013_Control_Interface * const m_RobotControl;
 		PitchRamp m_PitchRamp;
+		Turret m_Turret;
 		PowerWheels m_PowerWheels;
 		IntakeSystem m_IntakeSystem;
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
@@ -488,7 +508,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		double m_LastLeftVelocity,m_LastRightVelocity;
 		#endif
 		//cache voltage values for display
-		double m_PitchRampAngle;
+		double m_PitchRampAngle,m_TurretAngle;
 		double m_PowerWheelVoltage,m_PowerSlowWheelVoltage,m_IntakeDeploymentVoltage;
 		double m_HelixVoltage,m_RollersVoltage;
 		double m_IntakeDeploymentOffset;  //used to keep 90-0 range once limit switch has been triggered

@@ -55,14 +55,14 @@ static double PositionToVelocity_Tweak(double Value)
 
 
   /***********************************************************************************************************************************/
- /*													FRC_2013_Robot::PitchRamp														*/
+ /*													FRC_2013_Robot::AxisControl														*/
 /***********************************************************************************************************************************/
-FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
-	Servo_Position_Control("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
+FRC_2013_Robot::AxisControl::AxisControl(FRC_2013_Robot *pParent,const char EntityName[],Servo_Control_Interface *robot_control,size_t InstanceIndex) : 
+	Servo_Position_Control(EntityName,robot_control,InstanceIndex),m_pParent(pParent)
 {
 }
 
-void FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
+void FRC_2013_Robot::AxisControl::SetIntendedPosition_Plus(double Position)
 {
 	bool IsTargeting=(m_pParent->m_IsTargeting);
 	if (!IsTargeting)
@@ -81,7 +81,7 @@ void FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 	SetIntendedPosition(Position);
 }
 
-void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
+void FRC_2013_Robot::AxisControl::TimeChange(double dTime_s)
 {
 	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())));
 	if (IsTargeting)
@@ -93,6 +93,15 @@ void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
 	//#ifdef __DebugLUA__
 	//Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	//#endif
+}
+
+  /***********************************************************************************************************************************/
+ /*													FRC_2013_Robot::PitchRamp														*/
+/***********************************************************************************************************************************/
+
+FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
+	AxisControl(pParent,"PitchRamp",robot_control,ePitchRamp)
+{
 }
 
 void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
@@ -107,6 +116,30 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus);
+	}
+}
+
+  /***********************************************************************************************************************************/
+ /*														FRC_2013_Robot::Turret														*/
+/***********************************************************************************************************************************/
+
+FRC_2013_Robot::Turret::Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
+	AxisControl(pParent,"Turret",robot_control,eTurret)
+{
+}
+
+void FRC_2013_Robot::Turret::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2013_Robot::Turret::SetIntendedPosition_Plus);
+	}
+	else
+	{
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::Turret::SetIntendedPosition_Plus);
 	}
 }
 
@@ -498,7 +531,7 @@ const double c_Target_MiddleHoop_XOffset=Inches2Meters(27+3/8);
 
 
 FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous) : 
-	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control),
+	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control), m_Turret(this,robot_control),
 		m_PowerWheels(this,robot_control),m_IntakeSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
 		m_PitchAngle(0.0),
@@ -525,6 +558,7 @@ void FRC_2013_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties 
 	const FRC_2013_Robot_Properties *RobotProps=dynamic_cast<const FRC_2013_Robot_Properties *>(props);
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
+	m_Turret.Initialize(em,RobotProps?&RobotProps->GetTurretProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 	m_IntakeSystem.Initialize(em,RobotProps?&RobotProps->GetHelixProps():NULL);
 
@@ -542,6 +576,7 @@ void FRC_2013_Robot::ResetPos()
 	//This should be false to avoid any conflicts during a reset
 	//m_IsTargeting=false;
 	m_PitchRamp.ResetPos();
+	m_Turret.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_IntakeSystem.ResetPos();
 	if (!m_SetClimbGear)
@@ -834,6 +869,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 	m_PitchRamp.AsEntity1D().TimeChange(dTime_s);
+	m_Turret.AsEntity1D().TimeChange(dTime_s);
 	m_PowerWheels.TimeChange(dTime_s);
 	m_IntakeSystem.TimeChange(dTime_s);
 }
@@ -1126,6 +1162,7 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	}
 
 	m_PitchRamp.BindAdditionalEventControls(Bind);
+	m_Turret.BindAdditionalEventControls(Bind);
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_IntakeSystem.BindAdditionalEventControls(Bind);
 	#ifdef AI_TesterCode
@@ -1156,7 +1193,18 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	10.0,10.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
-	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
+	DEG_2_RAD(-80),DEG_2_RAD(80) //add padding for quick response time (as close to limits will slow it down)
+	),
+	m_TurretProps(
+	"Turret",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	10.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0, //Max Acceleration Forward/Reverse 
+	Ship_1D_Props::eRobotArm,
+	true,	//Using the range
+	DEG_2_RAD(-80),DEG_2_RAD(80) //add padding for quick response time (as close to limits will slow it down)
 	),
 	m_PowerWheelProps(
 	"PowerWheels",
@@ -1293,6 +1341,11 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		m_PitchRampProps.ServoProps()=props;
 	}
 	{
+		Servo_Props props=m_TurretProps.ServoProps(); //start with super class settings
+		props.PrecisionTolerance=0.05; //Servo's tend to have 2 positions per degree
+		m_TurretProps.ServoProps()=props;
+	}
+	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
 		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
 		m_PowerWheelProps.RoteryProps()=props;
@@ -1378,6 +1431,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 {
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
+	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PowerWheels_SetCurrentVelocity","PowerWheels_SetCurrentVelocity_Axis","PowerWheels_FirstStage_SetCurrentVelocity",
 	"PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
 	"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
@@ -1418,6 +1472,12 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_PitchRampProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("turret");
+		if (!err)
+		{
+			m_TurretProps.LoadFromScript(script);
 			script.Pop();
 		}
 		err = script.GetFieldTable("power");
@@ -2196,11 +2256,13 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 		m_PitchRampAngle,m_PowerWheelVoltage,m_HelixVoltage);
 	#ifdef __EnableSensorsDisplay__
 	{
-		const Servo_Props &servo_props=m_RobotProps.GetPitchRampProps().GetServoProps();
-		const double pitch=(m_PitchRampAngle * servo_props.ServoScalar) + servo_props.ServoOffset;
+		const Servo_Props &pitch_props=m_RobotProps.GetPitchRampProps().GetServoProps();
+		const double pitch=(m_PitchRampAngle * pitch_props.ServoScalar) + pitch_props.ServoOffset;
+		const Servo_Props &turret_props=m_RobotProps.GetTurretProps().GetServoProps();
+		const double turret=(m_TurretAngle * turret_props.ServoScalar) + turret_props.ServoOffset;
 		const Rotary_Props &rotary_props=m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps();
 		const double intake=m_IntakeDeployment_Pot.GetDistance() * rotary_props.EncoderToRS_Ratio + m_IntakeDeploymentOffset;
-		DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(pitch),RAD_2_DEG(intake));
+		DOUT (4,"pitch=%.2f turret=%.2f intake=%.2f",RAD_2_DEG(pitch),RAD_2_DEG(turret),RAD_2_DEG(intake));
 	}
 	#endif
 
@@ -2317,6 +2379,9 @@ void FRC_2013_Robot_Control::Reset_Servo(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 			m_PitchRampAngle=0.0;  //may want to just center this
 			break;
+		case FRC_2013_Robot::eTurret:
+			m_TurretAngle=0.0;
+			break;
 	}
 }
 double FRC_2013_Robot_Control::GetServoAngle(size_t index)
@@ -2333,6 +2398,15 @@ double FRC_2013_Robot_Control::GetServoAngle(size_t index)
 			#endif
 			break;
 		}
+		case FRC_2013_Robot::eTurret:
+		{
+			const Servo_Props &props=m_RobotProps.GetTurretProps().GetServoProps();
+			result=(m_TurretAngle * props.ServoScalar) + props.ServoOffset;
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,11,"p=%.2f",RAD_2_DEG(result));
+			#endif
+			break;
+		}
 	}
 	return result;
 }
@@ -2342,11 +2416,10 @@ void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			{
-				//	printf("Pitch=%f\n",Voltage);
-				//DOUT3("Pitch Voltage=%f",Voltage);
-				m_PitchRampAngle=radians;
-			}
+			m_PitchRampAngle=radians;
+			break;
+		case FRC_2013_Robot::eTurret:
+			m_TurretAngle=radians;
 			break;
 	}
 	#ifdef __DebugLUA__
@@ -2354,6 +2427,9 @@ void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
 	{
 		case FRC_2013_Robot::ePitchRamp:
 			Dout(m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,1,"p=%.1f",RAD_2_DEG(radians));
+			break;
+		case FRC_2013_Robot::eTurret:
+			Dout(m_RobotProps.GetTurretProps().GetServoProps().Feedback_DiplayRow,1,"p=%.1f",RAD_2_DEG(radians));
 			break;
 	}
 	#endif
@@ -2385,16 +2461,18 @@ void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 	//Scale down the rotation to something easy to gauge in UI
 	AddRotation((NormalizedVelocity * 18) * dTime_s);
 	double y_offset=pw_access->GetServoAngle(FRC_2013_Robot::ePitchRamp);
+	#if 0
 	//normalize
 	const Ship_1D_Props &props=m_RobotControl->GetRobotProps().GetPitchRampProps().GetShip_1D_Props();
 	y_offset-=props.MinRange;
 	y_offset/=fabs(props.MaxRange-props.MinRange);
 	//printf("\rTest=%.2f     ",y_offset);
 	UpdatePosition(0.6,-2.0-y_offset);
+	#endif
 }
 
   /***************************************************************************************************************/
- /*											FRC_2013_Power_Wheel_UI												*/
+ /*										FRC_2013_Power_Slow_Wheel_UI											*/
 /***************************************************************************************************************/
 
 void FRC_2013_Power_Slow_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
