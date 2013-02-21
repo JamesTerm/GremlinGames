@@ -93,9 +93,8 @@ FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Inter
 
 void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
 {
-	//TODO check this GetRequestedVelocity logic
-	//bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())));
-	bool IsTargeting=(m_pParent->m_IsTargeting);
+	//Note: GetRequestedVelocity tests for manual override, giving the tolerance a bit more grace for joystick dead-zone
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity(),0.01)));
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle * m_pParent->m_PitchErrorCorrection);
@@ -133,9 +132,8 @@ FRC_2013_Robot::Turret::Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *
 
 void FRC_2013_Robot::Turret::TimeChange(double dTime_s)
 {
-	//TODO check this GetRequestedVelocity logic
-	//bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())));
-	bool IsTargeting=(m_pParent->m_IsTargeting);
+	//Note: GetRequestedVelocity tests for manual override, giving the tolerance a bit more grace for joystick dead-zone
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity(),0.01)));
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_YawAngle);
@@ -552,11 +550,12 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 		m_PitchAngle(0.0),m_YawAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
+		m_POVSetValve(false),m_IsTargeting(true),m_AutoDriveState(eAutoDrive_Disabled),
 		m_ClimbCounter(0),m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
-	m_IsTargeting=true;
-	//m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented
+	//These are for testing if not using buttons
+	//m_IsTargeting=false;
+	//m_AutoDriveState=eAutoDrive_Disabled; 
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -797,7 +796,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				const double NewYaw=CurrentPitch+atan(yaw/distance);
 				#else
 				//Enable this for playback of file since it cannot really cannot control the pitch
-				const double NewYaw=atan(yaw/distance);
+				const double NewYaw=atan(yaw/distance)-GetAtt_r();
 				#endif
 				//Use precision tolerance asset to determine whether to make the change
 				m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetServoProps().PrecisionTolerance)?NewYaw:CurrentYaw;
@@ -805,14 +804,17 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			}
 			#endif
 
-			if (m_DriveTargetSelection==eDrive_Goal_Yaw)
+			if (m_AutoDriveState==eAutoDrive_YawOnly)
 			{
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
-				double value=atan(yaw/distance);
-				if (fabs(value)>m_RobotProps.GetFRC2013RobotProps().YawTolerance)
+				if (fabs(m_YawAngle)>m_RobotProps.GetFRC2013RobotProps().YawTolerance)
 				{
+					#ifndef __UseFileTargetTracking__
 					//We set this through the controller so that it goes through the same path and ensures that its in the right mode (just as it is for POV turns)
-					m_controller->GetUIController_RW()->Turn_RelativeOffset(value);
+					m_controller->GetUIController_RW()->Turn_RelativeOffset(m_YawAngle);
+					#else
+					m_controller->GetUIController_RW()->Turn_RelativeOffset(atan(yaw/distance),true);
+					#endif
 				}
 			}
 			
@@ -856,6 +858,9 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		case eDefensiveKey:
 			m_TargetOffset=m_DefensiveKeyPosition;
 			m_TargetHeight=0;
+			break;
+		case eFrisbee:
+			m_TargetHeight=-0.2;  //TODO determine camera height
 			break;
 	}
 
@@ -1155,10 +1160,13 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventOnOff_Map["Robot_SetTargeting"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargeting);
+		em->EventOnOff_Map["Robot_SetTargeting_Off"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargeting_Off);
 		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOff);
-		//em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_AutoDriveYaw"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveYaw);
+		em->EventOnOff_Map["Robot_AutoDriveFull"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveFull);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOff);
@@ -1176,10 +1184,13 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	else
 	{
 		em->EventOnOff_Map["Robot_SetTargeting"]  .Remove(*this, &FRC_2013_Robot::SetTargeting);
+		em->EventOnOff_Map["Robot_SetTargeting_Off"]  .Remove(*this, &FRC_2013_Robot::SetTargeting_Off);
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOff);
-		//em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Remove(*this, &FRC_2013_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2013_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_AutoDriveYaw"].Remove(*this, &FRC_2013_Robot::SetAutoDriveYaw);
+		em->EventOnOff_Map["Robot_AutoDriveFull"].Remove(*this, &FRC_2013_Robot::SetAutoDriveFull);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOff);
@@ -1472,6 +1483,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Intake_Deployment_SetCurrentVelocity","Intake_Deployment_SetIntendedPosition","Intake_Deployment_SetPotentiometerSafety",
 	"Intake_Deployment_Advance","Intake_Deployment_Retract",
 	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
+	"Robot_SetTargeting_Off","Robot_AutoDriveYaw","Robot_AutoDriveFull",
 	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
 	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
