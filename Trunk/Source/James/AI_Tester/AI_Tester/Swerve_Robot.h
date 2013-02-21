@@ -244,48 +244,6 @@ class Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 		bool m_DisplayVoltage;
 };
 
-class Wheel_UI
-{
-	public:
-		Wheel_UI() : m_UIParent(NULL) {}
-		virtual ~Wheel_UI() {}
-		typedef osg::Vec2d Vec2D;
-
-		struct Wheel_Properties
-		{
-			Vec2D m_Offset;  //Placement of the wheel in reference to the parent object (default 0,0)
-			double m_Wheel_Diameter; //in meters default 0.1524  (6 inches)
-		};
-
-		void UI_Init(Actor_Text *parent);
-
-		//Client code can manage the properties
-		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
-		//Keep virtual for special kind of wheels
-		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
-		virtual void Text_SizeToUse(double SizeToUse);
-
-		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
-		//Where 0 is up and 1.57 is right and -1.57 is left
-		void SetSwivel(double SwivelAngle){m_Swivel=-SwivelAngle;}
-		//This will add to the existing rotation and normalize
-		void AddRotation(double RadiansToAdd);
-		double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
-		enum WheelEnum
-		{
-			eFront, eBack, eTread
-		};
-		void SetWheelColor(osg::Vec4 Color, WheelEnum Wheel);
-
-		virtual osg::Vec4 GetFrontWheelColor() const {return osg::Vec4(0.0,1.0,0.0,1.0);}
-		virtual osg::Vec4 GetBackWheelColor() const {return osg::Vec4(1.0,0.0,0.0,1.0);}
-	private:
-		Actor_Text *m_UIParent;
-		Wheel_Properties m_props;
-		osg::ref_ptr<osgText::Text> m_Front,m_Back,m_Tread; //Tread is really a line that helps show speed
-		double m_Rotation,m_Swivel;
-};
-
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
 class Swerve_Robot_UI
 {
@@ -308,10 +266,10 @@ class Swerve_Robot_UI
 	protected:
 		virtual void UpdateVoltage(size_t index,double Voltage) {}
 		virtual void CloseSolenoid(size_t index,bool Close) {}
-		virtual Wheel_UI *Create_WheelUI() {return new Wheel_UI;}
-		virtual void Destroy_WheelUI(Wheel_UI *wheel_ui) {delete wheel_ui;}
+		virtual Swivel_Wheel_UI *Create_WheelUI() {return new Swivel_Wheel_UI;}
+		virtual void Destroy_WheelUI(Swivel_Wheel_UI *wheel_ui) {delete wheel_ui;}
 		//Allow subclasses to change wheels look
-		Wheel_UI *m_Wheel[4];
+		Swivel_Wheel_UI *m_Wheel[4];
 	private:
 		Swerve_Robot * const m_SwerveRobot;
 };
