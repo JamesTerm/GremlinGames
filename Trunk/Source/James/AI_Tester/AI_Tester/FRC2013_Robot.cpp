@@ -30,11 +30,11 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 #undef __DisableEncoderTracking__
 //Perhaps off season we can experiment with being field aware (some code in place for this)
 #define __NotFieldAware__
-#define __EnablePitchDisplay__
+#define __EnableSensorsDisplay__
 #undef __EnableTargetingDisplay__
 //This should be enabled during calibration
-#define __DisableIntakeAutoPosition__
-#define __DisabledClimbPneumatics__
+#undef __DisableIntakeAutoPosition__
+#undef __DisabledClimbPneumatics__
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -346,9 +346,9 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	const FRC_2013_Robot_Props &props=properties.GetFRC2013RobotProps();
 
 	//const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
-	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity_Difference();
-	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity()!=0.0) &&
-		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetSecondStageShooter().GetRotary_Properties().PrecisionTolerance);
+	const Rotary_Velocity_Control &Shooter=m_pParent->m_PowerWheels.GetSecondStageShooter();
+	const double PowerWheelSpeedDifference=Shooter.GetRequestedVelocity_Difference();
+	const bool PowerWheelReachedTolerance=(Shooter.GetRequestedVelocity()!=0.0) &&	(fabs(PowerWheelSpeedDifference)<Shooter.GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
 
 	//And ensure the intake has dropped low enough to not block shooter
@@ -361,6 +361,12 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	//The intake must be low enough to not block the shooter
 	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) < props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
+
+	//Use these in conjuction with a PID dump if the fire seems stuck
+	#if 0
+	if (Shooter.GetRequestedVelocity()!=0.0)
+		printf(" pwd=%.2f pwrt=%d imd=%d ",PowerWheelSpeedDifference,PowerWheelReachedTolerance,IsIntakeMinimumDropped);
+	#endif
 
 	#ifndef __DisableIntakeAutoPosition__
 	if (m_pParent->m_PowerWheels.GetIsRunning() || (m_ControlSignals.bits.Fire==1))
@@ -2188,6 +2194,16 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	//display voltages
 	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f hx=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
 		m_PitchRampAngle,m_PowerWheelVoltage,m_HelixVoltage);
+	#ifdef __EnableSensorsDisplay__
+	{
+		const Servo_Props &servo_props=m_RobotProps.GetPitchRampProps().GetServoProps();
+		const double pitch=(m_PitchRampAngle * servo_props.ServoScalar) + servo_props.ServoOffset;
+		const Rotary_Props &rotary_props=m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps();
+		const double intake=m_IntakeDeployment_Pot.GetDistance() * rotary_props.EncoderToRS_Ratio + m_IntakeDeploymentOffset;
+		DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(pitch),RAD_2_DEG(intake));
+	}
+	#endif
+
 	m_dTime_s=dTime_s;
 	if (GetBoolSensorState(FRC_2013_Robot::eIntake_DeployedLimit_Sensor))
 	{
@@ -2312,13 +2328,6 @@ double FRC_2013_Robot_Control::GetServoAngle(size_t index)
 		{
 			const Servo_Props &props=m_RobotProps.GetPitchRampProps().GetServoProps();
 			result=(m_PitchRampAngle * props.ServoScalar) + props.ServoOffset;
-
-			#ifdef __EnablePitchDisplay__
-			//DOUT (4,"pitch=%.2f ",RAD_2_DEG(result));
-
-			DOUT (4,"pitch=%.2f intake=%.2f",RAD_2_DEG(result),
-			RAD_2_DEG(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio + m_IntakeDeploymentOffset));
-			#endif
 			#ifdef __DebugLUA__
 			Dout(props.Feedback_DiplayRow,11,"p=%.2f",RAD_2_DEG(result));
 			#endif
