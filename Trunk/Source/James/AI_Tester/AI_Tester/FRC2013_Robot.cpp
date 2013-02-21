@@ -28,11 +28,11 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 
 
 #undef __DisableEncoderTracking__
-//Perhaps off season we can experiment with being field aware (some code in place for this)
-#define __NotFieldAware__
+#undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
 #define __EnableSensorsDisplay__
 #undef __EnableTargetingDisplay__
 #define __UseFileTargetTracking__  //to test against a file that tracks
+#define __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
 #undef __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
@@ -765,12 +765,14 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				#endif
 				#endif
 
-				#ifndef __NotFieldAware__
+				#ifdef __TargetFixedPoint__
+				//This is disabled for now to test driving to position
+
 				//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
 				//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
 				//we can just adjust for Y and use the POV turning calls for yaw correction
-				const Vec2d &Pos_m=GetPos_m();
-				SetPosition(Pos_m[0],c_HalfCourtLength-distance);
+				//const Vec2d &Pos_m=GetPos_m();
+				//SetPosition(Pos_m[0],c_HalfCourtLength-distance);
 				#else
 				//printf("\rD=%.2f      ",distance);
 				#ifndef __UseFileTargetTracking__
@@ -787,7 +789,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				#endif
 			}
 
-			#ifdef __NotFieldAware__
+			#ifndef __TargetFixedPoint__
 			if (XOffset!=0.0)
 			{
 				const double CurrentYaw=m_RobotControl->GetRotaryCurrentPorV(eTurret);
@@ -816,6 +818,23 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 					m_controller->GetUIController_RW()->Turn_RelativeOffset(atan(yaw/distance),true);
 					#endif
 				}
+			}
+			else if (m_AutoDriveState==eAutoDrive_FullAuto)
+			{
+				bool HitWayPoint;
+				{
+					const double tolerance=GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+					const Vec2d &currPos = GetPos_m();
+					double position_delta=(m_TargetOffset-currPos).length();
+					HitWayPoint=position_delta<tolerance;
+				}
+				if (!HitWayPoint)
+				{
+					Vec2d Temp(0,0);
+					GetController()->DriveToLocation(m_TargetOffset, m_TargetOffset, 1.0, dTime_s,&Temp);
+				}
+				else
+					GetController()->SetShipVelocity(0.0);
 			}
 			
 		}
@@ -877,7 +896,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		const double g=9.80665;
 		//These equations come from here http://www.lightingsciences.ca/pdf/BNEWSEM2.PDF
 
-		#ifndef __NotFieldAware__
+		#ifdef __TargetFixedPoint__
 		m_PitchAngle=atan2(y,x);
 		m_YawAngle=NormalizeRotation2(atan2(-Pos_m[0],(m_TargetOffset[1]-Pos_m[1])) - GetAtt_r());
 		#endif
@@ -911,6 +930,25 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	m_Turret.AsEntity1D().TimeChange(dTime_s);
 	m_PowerWheels.TimeChange(dTime_s);
 	m_IntakeSystem.TimeChange(dTime_s);
+}
+
+void FRC_2013_Robot::SetAutoDriveFull(bool on) 
+{
+	m_AutoDriveState=(on)?eAutoDrive_FullAuto:eAutoDrive_Disabled;
+	//Turn on safety check to prevent driver from smacking into the goals
+	#ifdef __AutoDriveFull_AnyTarget__
+	m_AutoDriveState=(on)?eAutoDrive_FullAuto:eAutoDrive_Disabled;
+	#else
+	m_AutoDriveState=(on&&m_Target==eFrisbee)?eAutoDrive_FullAuto:eAutoDrive_Disabled;
+	#endif
+	//since this is event driven, I don't need a valve... the user has come out of auto targeting we must clear the cruise speed
+	if (m_AutoDriveState==eAutoDrive_FullAuto)
+		GetController()->GetUIController_RW()->SetAutoPilot(true);
+	else if (m_AutoDriveState==eAutoDrive_Disabled)
+	{
+		GetController()->SetShipVelocity(0.0);  //for robustness (e.g. no joystick plugged in to override)
+		GetController()->GetUIController_RW()->SetAutoPilot(false);
+	}
 }
 
 const FRC_2013_Robot_Properties &FRC_2013_Robot::GetRobotProps() const

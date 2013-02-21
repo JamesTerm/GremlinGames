@@ -372,7 +372,7 @@ class FRC_2013_Robot : public Tank_Robot
 		void SetAutoDriveYaw(bool on) {m_AutoDriveState=on?eAutoDrive_YawOnly:eAutoDrive_Disabled;}
 		void SetAutoDriveYawOn() {SetAutoDriveYaw(true);}
 		void SetAutoDriveYawOff() {SetAutoDriveYaw(false);}
-		void SetAutoDriveFull(bool on) {m_AutoDriveState=eAutoDrive_FullAuto;}
+		void SetAutoDriveFull(bool on);
 		void SetAutoDriveFullOn() {SetAutoDriveFull(true);}
 		void SetAutoDriveFullOff() {SetAutoDriveFull(false);}
 
