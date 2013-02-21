@@ -482,7 +482,7 @@ MainRobot = {
 	UI =
 	{
 		Length=5, Width=5,
-		TextImage="(   )\n|   |\n(-+-)\n|   |\n(   )"
+		TextImage="(   )\n|   |\n(. .)\n|   |\n(   )"
 	}
 }
 

@@ -565,6 +565,13 @@ class FRC_2013_Fire_Conveyor_UI : public Side_Wheel_UI
 		FRC_2013_Robot_Control * const m_RobotControl;
 };
 
+class Axis_UI : public Swivel_Wheel_UI
+{
+public:
+	virtual osg::Vec4 GetFrontWheelColor() const {return osg::Vec4(0.0,0.6,0.2,1.0);}
+	virtual osg::Vec4 GetBackWheelColor() const {return osg::Vec4(0.1,0.1,1.0,1.0);}
+};
+
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
 class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
 {
@@ -586,4 +593,5 @@ class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
 		FRC_2013_Power_Slow_Wheel_UI m_PowerSlowWheelUI;
 		FRC_2013_Rollers_UI m_Rollers;
 		FRC_2013_Fire_Conveyor_UI m_Helix;
+		Axis_UI m_AxisCamera;
 };
