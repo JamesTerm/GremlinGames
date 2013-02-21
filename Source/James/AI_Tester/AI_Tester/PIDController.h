@@ -103,6 +103,7 @@ class PIDController2
 		double GetD();
 
 		double GetError();  ///< Returns the current difference of the input from the setpoint
+		double GetTotalError() {return m_totalError;}  //Help track I
 
 		///Set the percentage error which is considered tolerable for use with OnTarget.
 		///	\param percent percentage of error which is tolerable
