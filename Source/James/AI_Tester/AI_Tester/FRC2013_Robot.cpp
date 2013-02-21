@@ -784,12 +784,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 
 				//Use precision tolerance asset to determine whether to make the change
 				m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetServoProps().PrecisionTolerance)?NewPitch:CurrentPitch;
-
-				//ensure we do not have some crazy computation of pitch
-				if (m_PitchAngle>DEG_2_RAD(80))
-					m_PitchAngle=DEG_2_RAD(80);
-				else if (m_PitchAngle<0)
-					m_PitchAngle=0;
+				//Note: limits will be solved at ship level
 				#endif
 			}
 
@@ -806,12 +801,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				#endif
 				//Use precision tolerance asset to determine whether to make the change
 				m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetServoProps().PrecisionTolerance)?NewYaw:CurrentYaw;
-
-				//ensure we do not have some crazy computation of pitch
-				if (m_YawAngle>DEG_2_RAD(80))
-					m_YawAngle=DEG_2_RAD(80);
-				else if (m_YawAngle<0)
-					m_YawAngle=0;
+				//Note: limits will be solved at ship level
 			}
 			#endif
 
