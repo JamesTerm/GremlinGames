@@ -147,8 +147,8 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=200, i=0, d=50 },
-			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
+			{p=50, i=10, d=0 },
+			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/40,     --Just use the gearing ratios here
 			voltage_multiply=1.0,
 			curve_voltage=
@@ -182,8 +182,8 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=200, i=0, d=50 },
-			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
+			{p=50, i=10, d=0 },
+			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/44,     --Just use the gearing ratios here
 			voltage_multiply=1.0,
 			curve_voltage=
