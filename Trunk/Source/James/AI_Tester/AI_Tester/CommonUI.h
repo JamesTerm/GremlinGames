@@ -63,6 +63,7 @@ class Swivel_Wheel_UI
 		void SetSwivel(double SwivelAngle){m_Swivel=-SwivelAngle;}
 		//This will add to the existing rotation and normalize
 		void AddRotation(double RadiansToAdd);
+		void SetRotation(double position) {m_Rotation=-position;}
 		double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
 		enum WheelEnum
 		{

@@ -2460,15 +2460,6 @@ void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
 
 	//Scale down the rotation to something easy to gauge in UI
 	AddRotation((NormalizedVelocity * 18) * dTime_s);
-	double y_offset=pw_access->GetServoAngle(FRC_2013_Robot::ePitchRamp);
-	#if 0
-	//normalize
-	const Ship_1D_Props &props=m_RobotControl->GetRobotProps().GetPitchRampProps().GetShip_1D_Props();
-	y_offset-=props.MinRange;
-	y_offset/=fabs(props.MaxRange-props.MinRange);
-	//printf("\rTest=%.2f     ",y_offset);
-	UpdatePosition(0.6,-2.0-y_offset);
-	#endif
 }
 
   /***************************************************************************************************************/
@@ -2564,6 +2555,10 @@ void FRC_2013_Robot_UI::TimeChange(double dTime_s)
 	m_PowerSlowWheelUI.TimeChange(dTime_s);
 	m_Helix.TimeChange(dTime_s);
 	m_Rollers.TimeChange(dTime_s);
+	{
+		m_AxisCamera.SetRotation(GetServoAngle(FRC_2013_Robot::ePitchRamp));
+		m_AxisCamera.SetSwivel(GetServoAngle(FRC_2013_Robot::eTurret));
+	}
 }
 void FRC_2013_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
@@ -2573,8 +2568,13 @@ void FRC_2013_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properti
 	m_PowerSlowWheelUI.Initialize(em);
 	m_Helix.Initialize(em);
 	m_Rollers.Initialize(em);
+	{
+		Swivel_Wheel_UI::Wheel_Properties props;
+		props.m_Offset=Vec2d(0,-0.5);
+		props.m_Wheel_Diameter=0.0254;
+		m_AxisCamera.Initialize(em,&props);
+	}
 }
-
 void FRC_2013_Robot_UI::UI_Init(Actor_Text *parent) 
 {
 	m_TankUI.UI_Init(parent);
@@ -2582,6 +2582,7 @@ void FRC_2013_Robot_UI::UI_Init(Actor_Text *parent)
 	m_PowerSlowWheelUI.UI_Init(parent);
 	m_Helix.UI_Init(parent);
 	m_Rollers.UI_Init(parent);
+	m_AxisCamera.UI_Init(parent);
 }
 void FRC_2013_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
 {
@@ -2590,6 +2591,7 @@ void FRC_2013_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,
 	m_PowerSlowWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
 	m_Helix.update(nv,draw,parent_pos,-GetAtt_r());
 	m_Rollers.update(nv,draw,parent_pos,-GetAtt_r());
+	m_AxisCamera.update(nv,draw,parent_pos,-GetAtt_r());
 }
 void FRC_2013_Robot_UI::Text_SizeToUse(double SizeToUse) 
 {
@@ -2598,6 +2600,7 @@ void FRC_2013_Robot_UI::Text_SizeToUse(double SizeToUse)
 	m_PowerSlowWheelUI.Text_SizeToUse(SizeToUse);
 	m_Helix.Text_SizeToUse(SizeToUse);
 	m_Rollers.Text_SizeToUse(SizeToUse);
+	m_AxisCamera.Text_SizeToUse(SizeToUse);
 }
 void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
 {
@@ -2606,4 +2609,5 @@ void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 	m_PowerSlowWheelUI.UpdateScene(geode,AddOrRemove);
 	m_Helix.UpdateScene(geode,AddOrRemove);
 	m_Rollers.UpdateScene(geode,AddOrRemove);
+	m_AxisCamera.UpdateScene(geode,AddOrRemove);
 }
