@@ -127,7 +127,7 @@ void FRC_2012_Robot::Turret::TimeChange(double dTime_s)
 
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	Dout(m_pParent->m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 }
 
@@ -179,7 +179,7 @@ void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
 	}
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 }
 
@@ -435,7 +435,7 @@ void FRC_2012_Robot::Flippers::TimeChange(double dTime_s)
 
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	Dout(m_pParent->m_RobotProps.GetFlipperProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 }
 
@@ -1065,22 +1065,22 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 		m_TankRobotProps=props;
 	}
 	{
-		Rotary_Props props=m_TurretProps.RoteryProps(); //start with super class settings
+		Rotary_Props props=m_TurretProps.RotaryProps(); //start with super class settings
 		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.001; //we need high precision
-		m_TurretProps.RoteryProps()=props;
+		m_TurretProps.RotaryProps()=props;
 	}
 	{
-		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
+		Rotary_Props props=m_PitchRampProps.RotaryProps(); //start with super class settings
 		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.001; //we need high precision
-		m_PitchRampProps.RoteryProps()=props;
+		m_PitchRampProps.RotaryProps()=props;
 	}
 	{
-		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
+		Rotary_Props props=m_PowerWheelProps.RotaryProps(); //start with super class settings
 		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
-		m_PowerWheelProps.RoteryProps()=props;
+		m_PowerWheelProps.RotaryProps()=props;
 	}
 }
 
