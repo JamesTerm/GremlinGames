@@ -22,6 +22,7 @@
 #include "Drive/Tank_Robot.h"
 #include "Common/Robot_Control_Interface.h"
 #include "Common/Rotary_System.h"
+#include "Common/Servo_System.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"

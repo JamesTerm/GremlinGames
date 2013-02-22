@@ -3,7 +3,8 @@
 
 class FRC_2013_Control_Interface :	public Tank_Drive_Control_Interface,
 									public Robot_Control_Interface,
-									public Rotary_Control_Interface
+									public Rotary_Control_Interface,
+									public Servo_Control_Interface
 {
 public:
 	//This is primarily used for updates to dashboard and driver station during a test build
@@ -75,7 +76,8 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		FRC_2013_Robot_Properties();
 		virtual void LoadFromScript(Framework::Scripting::Script& script);
 
-		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Servo_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
+		const Servo_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPowerWheelProps() const {return m_PowerWheelProps;}
 		const Rotary_Properties &GetPowerSlowWheelProps() const {return m_PowerSlowWheelProps;}
 		const Rotary_Properties &GetHelixProps() const {return m_HelixProps;}
@@ -87,7 +89,8 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_PitchRampProps,m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
+		Servo_Properties m_PitchRampProps,m_TurretProps;
+		Rotary_Properties m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
 		Tank_Robot_Properties m_ClimbGearLiftProps;
 		Tank_Robot_Properties m_ClimbGearDropProps;
 		FRC_2013_Robot_Props m_FRC2013RobotProps;
@@ -106,12 +109,17 @@ class FRC_2013_Robot : public Tank_Robot
 	public:
 		enum SpeedControllerDevices
 		{
-			ePitchRamp,
 			ePowerWheelFirstStage,
 			ePowerWheelSecondStage,
 			eHelix,
 			eIntake_Deployment,
 			eRollers
+		};
+
+		enum ServoDevices
+		{
+			ePitchRamp,
+			eTurret
 		};
 
 		//Most likely will not need IR sensors
@@ -166,6 +174,7 @@ class FRC_2013_Robot : public Tank_Robot
 			eCenterHighGoal,
 			eLeftGoal,
 			eRightGoal,
+			eFrisbee,
 			eDefensiveKey
 		};
 		FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous=false);
@@ -177,22 +186,43 @@ class FRC_2013_Robot : public Tank_Robot
 
 	protected:
 
-		class PitchRamp : public Rotary_Position_Control
+		class AxisControl : public Servo_Position_Control
 		{
 			public:
-				PitchRamp(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
+				AxisControl(FRC_2013_Robot *pParent,const char EntityName[],Servo_Control_Interface *robot_control,size_t InstanceIndex);
 				IEvent::HandlerList ehl;
-				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
-				typedef Rotary_Position_Control __super;
+				//typedef Rotary_Position_Control __super;
+				virtual void SetIntendedPosition_Plus(double Position);
+				FRC_2013_Robot * const m_pParent;
+		};
+
+		class PitchRamp : public AxisControl
+		{
+			private:
+			typedef AxisControl __super;
+			public:
+				PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
+				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void TimeChange(double dTime_s);
+			protected:
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				void SetIntendedPosition_Plus(double Position);
+				void SetIntendedPosition_Plus(double Position) {__super::SetIntendedPosition_Plus(Position);}
+		};
 
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
-				virtual void TimeChange(double dTime_s);
+		class Turret : public AxisControl
+		{
 			private:
-				FRC_2013_Robot * const m_pParent;
+			typedef AxisControl __super;
+			public:
+				Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
+				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void TimeChange(double dTime_s);
+			protected:
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				void SetIntendedPosition_Plus(double Position) {__super::SetIntendedPosition_Plus(Position);}
 		};
 
 		class PowerWheels
@@ -303,6 +333,7 @@ class FRC_2013_Robot : public Tank_Robot
 		typedef  Tank_Robot __super;
 		FRC_2013_Control_Interface * const m_RobotControl;
 		PitchRamp m_PitchRamp;
+		Turret m_Turret;
 		PowerWheels m_PowerWheels;
 		IntakeSystem m_IntakeSystem;
 		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
@@ -316,7 +347,9 @@ class FRC_2013_Robot : public Tank_Robot
 		//This is adjusted depending on doing a bank shot or swishing 
 		double m_TargetHeight;  //1d z height (front view) of the target
 		//cached during robot time change and applied to other systems when targeting is true
-		double m_PitchAngle,m_LinearVelocity,m_HangTime;
+		double m_PitchAngle,m_YawAngle;
+		//TODO remove these
+		double m_LinearVelocity,m_HangTime;
 		double m_PitchErrorCorrection,m_PowerErrorCorrection;
 		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
@@ -326,17 +359,25 @@ class FRC_2013_Robot : public Tank_Robot
 		bool m_IsTargeting;
 		bool IsTargeting() const {return m_IsTargeting;}
 		void SetTargeting(bool on) {m_IsTargeting=on;}
+		void SetTargeting_Off(bool off) {SetTargeting(!off);}
 		void SetTargetingOn() {SetTargeting(true);}
 		void SetTargetingOff() {SetTargeting(false);}
 		void SetTargetingValue(double Value);
 
-		enum DriveTargetSelection
+		enum AutoDriveState
 		{
-			eDrive_NoTarget,
-			eDrive_Goal_Yaw,  //as name implies this only rotates (for now)
-			eDrive_Frisbee
+			eAutoDrive_Disabled,
+			eAutoDrive_YawOnly,  //as name implies this only rotates for targets
+			eAutoDrive_FullAuto  //This does full drive to way-point for Frisbees
 		};
-		DriveTargetSelection m_DriveTargetSelection;
+		AutoDriveState m_AutoDriveState;
+		AutoDriveState GetAutoDriveState() const {return m_AutoDriveState;}
+		void SetAutoDriveYaw(bool on) {m_AutoDriveState=on?eAutoDrive_YawOnly:eAutoDrive_Disabled;}
+		void SetAutoDriveYawOn() {SetAutoDriveYaw(true);}
+		void SetAutoDriveYawOff() {SetAutoDriveYaw(false);}
+		void SetAutoDriveFull(bool on);
+		void SetAutoDriveFullOn() {SetAutoDriveFull(true);}
+		void SetAutoDriveFullOff() {SetAutoDriveFull(false);}
 
 		size_t m_ClimbCounter;  //keep track of which iteration count we are on (saturates to c_NoClimbPropertyElements)
 		bool m_SetClimbGear;

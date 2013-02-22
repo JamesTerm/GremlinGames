@@ -7,12 +7,12 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		
 		#ifdef __UsingTestingKit__
 		Servo_Robot_Control m_TankRobotControl;  //for x-axis control
-		Servo m_PitchAxis;
-		double m_LastAxisSetting;  //needed to creep up the angle to position smoothly
 		#else
 		Tank_Robot_Control m_TankRobotControl;
 		#endif
-		
+
+		Servo m_PitchAxis,m_TurretAxis;
+
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 
 		Victor m_PowerWheel_First_Victor,m_PowerWheel_Second_Victor,m_Helix_Victor;
@@ -35,6 +35,8 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Averager<double,5> m_PowerWheelAverager;
 		Priority_Averager m_PowerWheel_PriorityAverager;
 		double m_IntakeDeploymentOffset;
+		//for best results we'll read back what we got to be smooth as they are needed to creep up the angle to position smoothly
+		double m_PitchRampAngle,m_TurretAngle;
 		bool m_IsDriveEngaged;
 	public:
 		FRC_2013_Robot_Control(bool UseSafety);
@@ -62,6 +64,10 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		virtual void Reset_Rotary(size_t index=0); 
 		virtual double GetRotaryCurrentPorV(size_t index=0);
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
+	protected: //from Servo Interface
+		virtual void Reset_Servo(size_t index=0); 
+		virtual double GetServoAngle(size_t index=0);
+		virtual void SetServoAngle(size_t index,double radians);
 
 	protected: //from FRC_2012_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
