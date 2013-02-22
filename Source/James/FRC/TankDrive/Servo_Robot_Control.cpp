@@ -41,7 +41,8 @@ using namespace Framework::Base;
 
 
 Servo_Robot_Control::Servo_Robot_Control(bool UseSafety) :
-	m_YawControl(1),m_LastYawAxisSetting(0.0),
+	//m_YawControl(1),
+	m_LastYawAxisSetting(0.0),
 	 m_LastLeftVelocity(0.0),m_LastRightVelocity(0.0),
 	m_dTime_s(0.0)
 {
@@ -116,7 +117,7 @@ void Servo_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Right
 	//if (!IsZero(AngularVelocity))
 	//	printf("a=%.2f av=%.2f\n",m_LastYawAxisSetting,AngularVelocity);
 
-	m_YawControl.SetAngle(m_LastYawAxisSetting);
+	//m_YawControl.SetAngle(m_LastYawAxisSetting);
 	
 	const double inv_skid=1.0/cos(atan2(W,L));
 	double RCW=AngularVelocity;
