@@ -167,15 +167,15 @@ class Rotary_Properties : public Ship_1D_Properties
 
 		Rotary_Properties() {Init();}
 		virtual void LoadFromScript(Framework::Scripting::Script& script);
-		const Rotary_Props &GetRotaryProps() const {return m_RoteryProps;}
+		const Rotary_Props &GetRotaryProps() const {return m_RotaryProps;}
 		//Get and Set the properties
-		Rotary_Props &RoteryProps() {return m_RoteryProps;}
+		Rotary_Props &RotaryProps() {return m_RotaryProps;}
 		#ifdef AI_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
 	protected:
-		Rotary_Props m_RoteryProps;
+		Rotary_Props m_RotaryProps;
 		#ifdef AI_TesterCode
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
