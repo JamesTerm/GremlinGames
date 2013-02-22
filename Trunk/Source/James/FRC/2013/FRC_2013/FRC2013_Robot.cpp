@@ -1438,14 +1438,14 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		m_TurretProps.ServoProps()=props;
 	}
 	{
-		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
+		Rotary_Props props=m_PowerWheelProps.RotaryProps(); //start with super class settings
 		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
-		m_PowerWheelProps.RoteryProps()=props;
+		m_PowerWheelProps.RotaryProps()=props;
 	}
 	{
-		Rotary_Props props=m_PowerSlowWheelProps.RoteryProps(); //start with super class settings
+		Rotary_Props props=m_PowerSlowWheelProps.RotaryProps(); //start with super class settings
 		props.PrecisionTolerance=0.1; //we need decent precision (this will depend on ramp up time too)
-		m_PowerSlowWheelProps.RoteryProps()=props;
+		m_PowerSlowWheelProps.RotaryProps()=props;
 	}
 }
 
