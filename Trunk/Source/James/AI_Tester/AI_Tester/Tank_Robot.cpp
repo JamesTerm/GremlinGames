@@ -609,7 +609,7 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		//We'll try to construct the props to match our properties
 		//Note: for max accel it needs to be powerful enough to handle curve equations
 		Rotary_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
-		props.RoteryProps().EncoderToRS_Ratio=m_TankRobotProps.MotorToWheelGearRatio;
+		props.RotaryProps().EncoderToRS_Ratio=m_TankRobotProps.MotorToWheelGearRatio;
 		#ifdef AI_TesterCode
 		props.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
 		#endif

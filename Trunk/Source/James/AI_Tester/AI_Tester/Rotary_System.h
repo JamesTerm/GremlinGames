@@ -25,7 +25,7 @@ struct Rotary_Props
 		eClosed, //Will attempt to match predicted velocity to actual velocity
 	} LoopState; //This should always be false once control is fully functional
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
-	//Only supported in RoteryAngular
+	//Only supported in RotaryAngular
 	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.  Recommended not to use I to avoid thrashing
 };
 
@@ -167,15 +167,15 @@ class Rotary_Properties : public Ship_1D_Properties
 
 		Rotary_Properties() {Init();}
 		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		const Rotary_Props &GetRotaryProps() const {return m_RoteryProps;}
+		const Rotary_Props &GetRotaryProps() const {return m_RotaryProps;}
 		//Get and Set the properties
-		Rotary_Props &RoteryProps() {return m_RoteryProps;}
+		Rotary_Props &RotaryProps() {return m_RotaryProps;}
 		#ifdef AI_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
 	protected:
-		Rotary_Props m_RoteryProps;
+		Rotary_Props m_RotaryProps;
 		#ifdef AI_TesterCode
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif

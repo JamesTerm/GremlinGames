@@ -490,7 +490,7 @@ void Rotary_Properties::Init()
 	props.Polynomial[4]=0.0;
 	props.InverseMaxAccel=props.InverseMaxAccel=0.0;
 	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
-	m_RoteryProps=props;
+	m_RotaryProps=props;
 }
 
 void Rotary_Properties::LoadFromScript(Scripting::Script& script)
@@ -509,25 +509,25 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		//bool IsOpen;  //This should always be false once control is fully functional
 		//bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 
-		script.GetField("voltage_multiply", NULL, NULL, &m_RoteryProps.VoltageScalar);
-		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_RoteryProps.EncoderToRS_Ratio);
+		script.GetField("voltage_multiply", NULL, NULL, &m_RotaryProps.VoltageScalar);
+		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_RotaryProps.EncoderToRS_Ratio);
 		err = script.GetFieldTable("pid");
 		if (!err)
 		{
-			err = script.GetField("p", NULL, NULL,&m_RoteryProps.PID[0]);
+			err = script.GetField("p", NULL, NULL,&m_RotaryProps.PID[0]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("i", NULL, NULL,&m_RoteryProps.PID[1]);
+			err = script.GetField("i", NULL, NULL,&m_RotaryProps.PID[1]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("d", NULL, NULL,&m_RoteryProps.PID[2]);
+			err = script.GetField("d", NULL, NULL,&m_RotaryProps.PID[2]);
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
-		script.GetField("tolerance", NULL, NULL, &m_RoteryProps.PrecisionTolerance);
+		script.GetField("tolerance", NULL, NULL, &m_RotaryProps.PrecisionTolerance);
 
 		double fDisplayRow;
 		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
 		if (!err)
-			m_RoteryProps.Feedback_DiplayRow=(size_t)fDisplayRow;
+			m_RotaryProps.Feedback_DiplayRow=(size_t)fDisplayRow;
 
 		string sTest;
 		//I've made it closed so that typing no or NO stands out, but you can use bool as well
@@ -536,46 +536,46 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
-				m_RoteryProps.LoopState=Rotary_Props::eOpen;
+				m_RotaryProps.LoopState=Rotary_Props::eOpen;
 			else if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
-				m_RoteryProps.LoopState=Rotary_Props::eClosed;
+				m_RotaryProps.LoopState=Rotary_Props::eClosed;
 		}
 		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
 		if (!err)
 		{
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
-				m_RoteryProps.PID_Console_Dump=true;
+				m_RotaryProps.PID_Console_Dump=true;
 		}
 		err = script.GetField("use_aggressive_stop",&sTest,NULL,NULL);
 		if (!err)
 		{
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
-				m_RoteryProps.UseAggressiveStop=true;
+				m_RotaryProps.UseAggressiveStop=true;
 		}
 		err = script.GetFieldTable("curve_voltage");
 		if (!err)
 		{
-			err = script.GetField("c", NULL, NULL,&m_RoteryProps.Polynomial[0]);
+			err = script.GetField("c", NULL, NULL,&m_RotaryProps.Polynomial[0]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("t1", NULL, NULL,&m_RoteryProps.Polynomial[1]);
+			err = script.GetField("t1", NULL, NULL,&m_RotaryProps.Polynomial[1]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("t2", NULL, NULL,&m_RoteryProps.Polynomial[2]);
+			err = script.GetField("t2", NULL, NULL,&m_RotaryProps.Polynomial[2]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("t3", NULL, NULL,&m_RoteryProps.Polynomial[3]);
+			err = script.GetField("t3", NULL, NULL,&m_RotaryProps.Polynomial[3]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("t4", NULL, NULL,&m_RoteryProps.Polynomial[4]);
+			err = script.GetField("t4", NULL, NULL,&m_RotaryProps.Polynomial[4]);
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
-		script.GetField("inv_max_accel", NULL, NULL, &m_RoteryProps.InverseMaxAccel);
-		m_RoteryProps.InverseMaxDecel=m_RoteryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
-		script.GetField("inv_max_decel", NULL, NULL, &m_RoteryProps.InverseMaxDecel);
+		script.GetField("inv_max_accel", NULL, NULL, &m_RotaryProps.InverseMaxAccel);
+		m_RotaryProps.InverseMaxDecel=m_RotaryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
+		script.GetField("inv_max_decel", NULL, NULL, &m_RotaryProps.InverseMaxDecel);
 
-		script.GetField("forward_deadzone", NULL, NULL,&m_RoteryProps.Positive_DeadZone);
-		script.GetField("reverse_deadzone", NULL, NULL,&m_RoteryProps.Negative_DeadZone);
+		script.GetField("forward_deadzone", NULL, NULL,&m_RotaryProps.Positive_DeadZone);
+		script.GetField("reverse_deadzone", NULL, NULL,&m_RotaryProps.Negative_DeadZone);
 		//Ensure the negative settings are negative
-		if (m_RoteryProps.Negative_DeadZone>0.0)
-			m_RoteryProps.Negative_DeadZone=-m_RoteryProps.Negative_DeadZone;
+		if (m_RotaryProps.Negative_DeadZone>0.0)
+			m_RotaryProps.Negative_DeadZone=-m_RotaryProps.Negative_DeadZone;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 
 		#ifdef AI_TesterCode

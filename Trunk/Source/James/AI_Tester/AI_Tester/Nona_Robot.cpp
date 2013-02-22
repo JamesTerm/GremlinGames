@@ -372,7 +372,7 @@ Nona_Robot_Properties::Nona_Robot_Properties() : m_KickerWheelProps(
 	)
 {
 	//Always use aggressive stop for driving
-	m_KickerWheelProps.RoteryProps().UseAggressiveStop=true;
+	m_KickerWheelProps.RotaryProps().UseAggressiveStop=true;
 }
 
 void Nona_Robot_Properties::LoadFromScript(Scripting::Script& script)
