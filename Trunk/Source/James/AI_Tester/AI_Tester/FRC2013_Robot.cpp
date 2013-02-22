@@ -2341,12 +2341,12 @@ void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifdef __EnableSensorsDisplay__
 	{
 		const Servo_Props &pitch_props=m_RobotProps.GetPitchRampProps().GetServoProps();
-		const double pitch=(m_PitchRampAngle * pitch_props.ServoScalar) + pitch_props.ServoOffset;
+		const double pitch=(m_PitchRampAngle -  pitch_props.ServoOffset) /  pitch_props.ServoScalar;
 		const Servo_Props &turret_props=m_RobotProps.GetTurretProps().GetServoProps();
-		const double turret=(m_TurretAngle * turret_props.ServoScalar) + turret_props.ServoOffset;
+		const double turret=(m_TurretAngle - turret_props.ServoOffset) /  turret_props.ServoScalar;
 		const Rotary_Props &rotary_props=m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps();
 		const double intake=m_IntakeDeployment_Pot.GetDistance() * rotary_props.EncoderToRS_Ratio + m_IntakeDeploymentOffset;
-		DOUT (4,"pitch=%.2f turret=%.2f intake=%.2f",RAD_2_DEG(pitch),RAD_2_DEG(turret),RAD_2_DEG(intake));
+		DOUT (4,"pitch=%.2f turret=%.2f intake=%.2f",pitch,turret,RAD_2_DEG(intake));
 	}
 	#endif
 
@@ -2458,13 +2458,14 @@ bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
 void FRC_2013_Robot_Control::Reset_Servo(size_t index)
 {
 
+	 //may want to just center these
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			m_PitchRampAngle=0.0;  //may want to just center this
+			SetServoAngle(FRC_2013_Robot::ePitchRamp,0.0);  
 			break;
 		case FRC_2013_Robot::eTurret:
-			m_TurretAngle=0.0;
+			SetServoAngle(FRC_2013_Robot::eTurret,0.0); 
 			break;
 	}
 }
@@ -2476,18 +2477,18 @@ double FRC_2013_Robot_Control::GetServoAngle(size_t index)
 		case FRC_2013_Robot::ePitchRamp:
 		{
 			const Servo_Props &props=m_RobotProps.GetPitchRampProps().GetServoProps();
-			result=(m_PitchRampAngle * props.ServoScalar) + props.ServoOffset;
+			result=DEG_2_RAD((m_PitchRampAngle - props.ServoOffset) / props.ServoScalar);
 			#ifdef __DebugLUA__
-			Dout(props.Feedback_DiplayRow,11,"p=%.2f",RAD_2_DEG(result));
+			Dout(props.Feedback_DiplayRow,14,"p=%.2f",RAD_2_DEG(result));
 			#endif
 			break;
 		}
 		case FRC_2013_Robot::eTurret:
 		{
 			const Servo_Props &props=m_RobotProps.GetTurretProps().GetServoProps();
-			result=(m_TurretAngle * props.ServoScalar) + props.ServoOffset;
+			result=DEG_2_RAD((m_TurretAngle - props.ServoOffset) / props.ServoScalar);
 			#ifdef __DebugLUA__
-			Dout(props.Feedback_DiplayRow,11,"p=%.2f",RAD_2_DEG(result));
+			Dout(props.Feedback_DiplayRow,14,"p=%.2f",RAD_2_DEG(result));
 			#endif
 			break;
 		}
@@ -2500,23 +2501,24 @@ void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePitchRamp:
-			m_PitchRampAngle=radians;
+		{
+			const Servo_Props &props=m_RobotProps.GetPitchRampProps().GetServoProps();
+			m_PitchRampAngle=RAD_2_DEG(radians) * props.ServoScalar + props.ServoOffset;
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,1,"p=%.1f %.1f",RAD_2_DEG(radians),m_PitchRampAngle);
+			#endif
 			break;
+		}
 		case FRC_2013_Robot::eTurret:
-			m_TurretAngle=radians;
+		{
+			const Servo_Props &props=m_RobotProps.GetTurretProps().GetServoProps();
+			m_TurretAngle=RAD_2_DEG(radians) * props.ServoScalar + props.ServoOffset;
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,1,"t=%.1f %.1f",RAD_2_DEG(radians),m_TurretAngle);
+			#endif
 			break;
+		}
 	}
-	#ifdef __DebugLUA__
-	switch (index)
-	{
-		case FRC_2013_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,1,"p=%.1f",RAD_2_DEG(radians));
-			break;
-		case FRC_2013_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetServoProps().Feedback_DiplayRow,1,"p=%.1f",RAD_2_DEG(radians));
-			break;
-	}
-	#endif
 }
 
   /***************************************************************************************************************/
