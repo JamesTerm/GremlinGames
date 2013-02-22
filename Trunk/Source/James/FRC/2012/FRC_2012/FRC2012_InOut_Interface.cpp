@@ -196,18 +196,18 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifndef __DisableMotorControls__
 	switch (index)
 	{
-	case FRC_2012_Robot::eTurret:			m_Turret_Victor.Set((float)(Voltage * m_RobotProps.GetTurretProps().GetRoteryProps().VoltageScalar));		break;
+	case FRC_2012_Robot::eTurret:			m_Turret_Victor.Set((float)(Voltage * m_RobotProps.GetTurretProps().GetRotaryProps().VoltageScalar));		break;
 	case FRC_2012_Robot::ePowerWheels:		
-		m_PowerWheel_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRoteryProps().VoltageScalar));	
+		m_PowerWheel_Victor.Set((float)(Voltage *m_RobotProps.GetPowerWheelProps().GetRotaryProps().VoltageScalar));	
 		break;
-	case FRC_2012_Robot::eFlippers:			m_Flipper_Victor.Set((float)(Voltage * m_RobotProps.GetFlipperProps().GetRoteryProps().VoltageScalar));		break;
+	case FRC_2012_Robot::eFlippers:			m_Flipper_Victor.Set((float)(Voltage * m_RobotProps.GetFlipperProps().GetRotaryProps().VoltageScalar));		break;
 	case FRC_2012_Robot::eLowerConveyor:	
-		m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	
+		m_LowerConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRotaryProps().VoltageScalar));	
 		break;
 	case FRC_2012_Robot::eMiddleConveyor:	
-		m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	break;
+		m_MiddleConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRotaryProps().VoltageScalar));	break;
 	case FRC_2012_Robot::eFireConveyor:		
-		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRoteryProps().VoltageScalar));	break;
+		m_FireConveyor_Relay.Set(TranslateToRelay(Voltage * m_RobotProps.GetConveyorProps().GetRotaryProps().VoltageScalar));	break;
 	case FRC_2012_Robot::ePitchRamp:
 		//TODO research i2c's
 		break;
@@ -294,16 +294,16 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,1,"t=%.2f",Voltage);
+			Dout(m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,1,"t=%.2f",Voltage);
 			break;
 		case FRC_2012_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
+			Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
 			break;
 		case FRC_2012_Robot::ePowerWheels:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"po_v=%.2f",Voltage);
 			break;
 		case FRC_2012_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
+			Dout(m_RobotProps.GetFlipperProps().GetRotaryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
 			break;
 	}
 	#endif
@@ -341,7 +341,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//We start out wound around so we'll add Pi to get correct reading
 			//In may tests the threshold favors being wound counter-clockwise (not sure why) so it's -Pi
 			//result=m_Turret_Encoder.GetDistance();
-			result=m_Turret_Encoder.GetDistance() * m_RobotProps.GetTurretProps().GetRoteryProps().EncoderToRS_Ratio;
+			result=m_Turret_Encoder.GetDistance() * m_RobotProps.GetTurretProps().GetRotaryProps().EncoderToRS_Ratio;
 			result=NormalizeRotation2(result - Pi);
 			break;
 		case FRC_2012_Robot::ePitchRamp:
@@ -367,7 +367,7 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				printf("pw1=%.1f pw2=%.1f t=%f\n",m_PowerWheel_Encoder.GetRate(),result,m_TankRobotControl.Get_dTime_s());
 			#endif
 			
-			result= result * m_RobotProps.GetPowerWheelProps().GetRoteryProps().EncoderToRS_Ratio * Pi2;
+			result= result * m_RobotProps.GetPowerWheelProps().GetRotaryProps().EncoderToRS_Ratio * Pi2;
 			
 			{
 				result=m_PowerWheelFilter(result);
@@ -404,16 +404,16 @@ double FRC_2012_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2012_Robot::eTurret:
-			Dout(m_RobotProps.GetTurretProps().GetRoteryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2012_Robot::ePowerWheels:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRoteryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,11,"rs=%.2f",result / Pi2);
 			break;
 		case FRC_2012_Robot::eFlippers:
-			Dout(m_RobotProps.GetFlipperProps().GetRoteryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
+			Dout(m_RobotProps.GetFlipperProps().GetRotaryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
 			break;
 	}
 	#endif
