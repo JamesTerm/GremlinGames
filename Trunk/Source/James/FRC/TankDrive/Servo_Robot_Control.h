@@ -3,6 +3,9 @@
 
 #ifdef __UsingTestingKit__
 
+//This class use to simulate the yaw control through the drive, but now is used to pacify the drive from using the same PWM's that the servos
+//use on the testing kit.  This is now mostly inert code but successfully bypasses the tank drive code, so it is still needed in that regard
+//for the testing kit.  We can still easily use it again in the future if needed for the drive.
 class Servo_Robot_Control : public Tank_Drive_Control_Interface
 {
 	public:
@@ -20,7 +23,7 @@ class Servo_Robot_Control : public Tank_Drive_Control_Interface
 		double RPS_To_LinearVelocity(double RPS);
 	protected:
 		
-		Servo m_YawControl;
+		//Servo m_YawControl;
 		double m_LastYawAxisSetting;  //needed to creep up the angle to position smoothly when testing servo code
 		double m_LastLeftVelocity,m_LastRightVelocity;
 
