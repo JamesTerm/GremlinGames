@@ -26,7 +26,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	--version = 1;
+	version = 1.0;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -110,22 +110,24 @@ MainRobot = {
 		},
 		--Note: if we need a climb 3 it will require a code change
 
+		--For axis camera settings in Video Camera Settings, set exposure priority to motion in dim lighting set the time to 250ms, or 120 for better lighting
+		--and use range from 0 - 12db in dim lighting setting
 		pitch =
 		{
 			show_console_dump='no',
 			ds_display_row=-1,
 			tolerance=0.05,
-			servo_ratio=1.0,
-			servo_offset=0.0,
+			servo_ratio=1.12,
+			servo_offset=32,
 
-			max_speed=1.4 * Pi2,
+			max_speed=1.0 * Pi2,
 			accel=10.0,
 			brake=10.0,
 			max_accel_forward=10,
 			max_accel_reverse=10,
 
-			min_range_deg=-80,
-			max_range_deg=80,
+			min_range_deg=-32,
+			max_range_deg=138,
 		},
 		turret =
 		{
@@ -133,9 +135,9 @@ MainRobot = {
 			ds_display_row=-1,
 			tolerance=0.05,
 			servo_ratio=1.0,
-			servo_offset=0.0,
+			servo_offset=85,
 
-			max_speed=1.4 * Pi2,
+			max_speed=1.0 * Pi2,
 			accel=10.0,
 			brake=10.0,
 			max_accel_forward=10,
