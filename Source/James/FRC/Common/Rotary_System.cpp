@@ -48,7 +48,7 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	const Rotary_Properties *Props=dynamic_cast<const Rotary_Properties *>(props);
 	assert(Props);
 	//This will copy all the props
-	m_Rotary_Props=Props->GetRoteryProps();
+	m_Rotary_Props=Props->GetRotaryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 
 	const double MaxSpeedReference=Props->GetMaxSpeed();
@@ -233,7 +233,7 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	const Rotary_Properties *Props=dynamic_cast<const Rotary_Properties *>(props);
 	assert(Props);
 	//This will copy all the props
-	m_Rotary_Props=Props->GetRoteryProps();
+	m_Rotary_Props=Props->GetRotaryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 
 	//Note: for the drive we create a large enough number that can divide out the voltage and small enough to recover quickly,
@@ -382,7 +382,12 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 		if (m_Rotary_Props.UseAggressiveStop)
 			printf("v=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset);
 		else
-			printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
+		{
+			if (m_PIDController.GetI()==0.0)
+				printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
+			else
+				printf("v=%.2f p=%.2f e=%.2f i=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_PIDController.GetTotalError(),m_CalibratedScaler/MAX_SPEED);
+		}
 	}
 	#endif
 
