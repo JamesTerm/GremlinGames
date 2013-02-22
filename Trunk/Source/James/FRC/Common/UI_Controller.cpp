@@ -336,10 +336,10 @@ void UI_Controller::Ship_Turn(Directions dir)
 	}
 }
 
-void UI_Controller::Turn_RelativeOffset(double value) 
+void UI_Controller::Turn_RelativeOffset(double value,bool Absolute) 
 {
 	if (AreControlsDisabled()) return;
-	m_ship->SetIntendedOrientation(value,false);
+	m_ship->SetIntendedOrientation(value,Absolute);
 	m_Ship_UseHeadingSpeed=false;
 }
 
