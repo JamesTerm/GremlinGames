@@ -112,25 +112,37 @@ MainRobot = {
 
 		pitch =
 		{
-			is_closed='yes',
-			show_pid_dump='no',
+			show_console_dump='no',
 			ds_display_row=-1,
-			pid=
-			{p=200, i=0, d=50},
-			tolerance=0.001,				--we need high precision
-			encoder_to_wheel_ratio=0.5,
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			tolerance=0.05,
+			servo_ratio=1.0,
+			servo_offset=0.0,
 
-			max_speed=1.4 * Pi2,			--(Parker gave this one, should be good)
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			max_speed=1.4 * Pi2,
+			accel=10.0,
 			brake=10.0,
-			max_accel_forward=10,			--These are in radians, just go with what feels right
+			max_accel_forward=10,
 			max_accel_reverse=10,
 
-			min_range_deg=0,				--These should be good to go
-			max_range_deg=85,
-			inv_max_accel = 1.0/36.0
+			min_range_deg=-80,
+			max_range_deg=80,
+		},
+		turret =
+		{
+			show_console_dump='no',
+			ds_display_row=-1,
+			tolerance=0.05,
+			servo_ratio=1.0,
+			servo_offset=0.0,
+
+			max_speed=1.4 * Pi2,
+			accel=10.0,
+			brake=10.0,
+			max_accel_forward=10,
+			max_accel_reverse=10,
+
+			min_range_deg=-80,
+			max_range_deg=80,
 		},
 		power =
 		{
@@ -138,8 +150,8 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=200, i=0, d=50 },
-			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
+			{p=50, i=10, d=0 },
+			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/40,     --Just use the gearing ratios here
 			voltage_multiply=1.0,
 			curve_voltage=
@@ -159,8 +171,8 @@ MainRobot = {
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
-			{p=200, i=0, d=50 },
-			tolerance=10.0,					--we need decent precision (this will depend on ramp up time too)
+			{p=50, i=10, d=0 },
+			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/44,     --Just use the gearing ratios here
 			voltage_multiply=1.0,
 			curve_voltage=
@@ -283,13 +295,14 @@ MainRobot = {
 		Joystick_1 =
 		{
 			control = "airflo",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.90, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			--PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
-			Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
@@ -345,15 +358,19 @@ MainRobot = {
 		Joystick_4 =
 		{
 			control = "logitech attack 3",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=8, on_off=false},
 			Robot_SetClimbGearOn = {type="joystick_button", key=9, on_off=false},
-			Ball_Fire = {type="joystick_button", key=2, on_off=true},
-			PowerWheels_IsRunning = {type="joystick_button", key=1, on_off=true},
+			--Ball_Fire = {type="joystick_button", key=2, on_off=true},
+			Robot_AutoDriveYaw = {type="joystick_button", key=2, on_off=true},
+			--PowerWheels_IsRunning = {type="joystick_button", key=1, on_off=true},
+			Robot_SetTargeting_Off = {type="joystick_button", key=1, on_off=true},
 			Ball_Grip = {type="joystick_button", key=6, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=7, on_off=true},
 			Intake_Deployment_Retract = {type="joystick_button", key=10, on_off=false},
@@ -367,7 +384,7 @@ MainRobot = {
 	UI =
 	{
 		Length=5, Width=5,
-		TextImage="(   )\n|   |\n(-+-)\n|   |\n(   )"
+		TextImage="(   )\n|   |\n(. .)\n|   |\n(   )"
 	}
 }
 
