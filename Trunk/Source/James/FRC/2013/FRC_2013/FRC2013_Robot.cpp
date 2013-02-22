@@ -19,6 +19,7 @@
 #include "Drive/Tank_Robot.h"
 #include "Common/Robot_Control_Interface.h"
 #include "Common/Rotary_System.h"
+#include "Common/Servo_System.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
@@ -36,13 +37,14 @@ namespace Scripting=Framework::Scripting;
 
 
 #undef __DisableEncoderTracking__
-//Perhaps off season we can experiment with being field aware (some code in place for this)
-#define __NotFieldAware__
-#define __EnablePitchDisplay__
+#undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
+#define __EnableSensorsDisplay__
 #undef __EnableTargetingDisplay__
+#define __UseFileTargetTracking__  //to test against a file that tracks
+#define __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
-#define __DisableIntakeAutoPosition__
-#define __DisabledClimbPneumatics__
+#undef __DisableIntakeAutoPosition__
+#undef __DisabledClimbPneumatics__
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -63,49 +65,54 @@ static double PositionToVelocity_Tweak(double Value)
 
 
   /***********************************************************************************************************************************/
- /*													FRC_2013_Robot::PitchRamp														*/
+ /*													FRC_2013_Robot::AxisControl														*/
 /***********************************************************************************************************************************/
-FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
+FRC_2013_Robot::AxisControl::AxisControl(FRC_2013_Robot *pParent,const char EntityName[],Servo_Control_Interface *robot_control,size_t InstanceIndex) : 
+	Servo_Position_Control(EntityName,robot_control,InstanceIndex),m_pParent(pParent)
 {
 }
 
-void FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
+void FRC_2013_Robot::AxisControl::SetIntendedPosition_Plus(double Position)
 {
-	if (GetIsUsingPotentiometer())
+	bool IsTargeting=(m_pParent->m_IsTargeting);
+	if (!IsTargeting)
 	{
-		bool IsTargeting=(m_pParent->m_IsTargeting);
-		if (!IsTargeting)
-		{
-			Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
-			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-			//first get the range from 0 - 1
-			double positive_range = (Position * 0.5) + 0.5;
-			//positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=GetMaxRange();
-			const double Scale=(maxRange-minRange) / maxRange;
-			Position=(positive_range * Scale) + minRange;
-		}
-		//DOUT5("Test=%f",RAD_2_DEG(Position));
-		SetIntendedPosition(Position);
+		Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
+		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
+		//first get the range from 0 - 1
+		double positive_range = (Position * 0.5) + 0.5;
+		//positive_range=positive_range>0.01?positive_range:0.0;
+		const double minRange=GetMinRange();
+		const double maxRange=GetMaxRange();
+		const double Scale=(maxRange-minRange) / maxRange;
+		Position=(positive_range * Scale) + minRange;
 	}
-	else
-		SetRequestedVelocity_FromNormalized(PositionToVelocity_Tweak(Position));   //allow manual use of same control
+	//DOUT5("Test=%f",RAD_2_DEG(Position));
+	SetIntendedPosition(Position);
+}
 
+  /***********************************************************************************************************************************/
+ /*													FRC_2013_Robot::PitchRamp														*/
+/***********************************************************************************************************************************/
+
+FRC_2013_Robot::PitchRamp::PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
+	AxisControl(pParent,"PitchRamp",robot_control,ePitchRamp)
+{
 }
 
 void FRC_2013_Robot::PitchRamp::TimeChange(double dTime_s)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer());
+	//Note: GetRequestedVelocity tests for manual override, giving the tolerance a bit more grace for joystick dead-zone
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity(),0.01)));
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle * m_pParent->m_PitchErrorCorrection);
 	}
 	__super::TimeChange(dTime_s);
-	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	#endif
+	//This is no longer needed since the get position is the actual angle to set
+	//#ifdef __DebugLUA__
+	//Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetServoProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	//#endif
 }
 
 void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
@@ -115,13 +122,46 @@ void FRC_2013_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2013_Robot::PitchRamp::SetPotentiometerSafety);
 	}
 	else
 	{
 		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
 		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Remove(*this, &FRC_2013_Robot::PitchRamp::SetPotentiometerSafety);
+	}
+}
+
+  /***********************************************************************************************************************************/
+ /*														FRC_2013_Robot::Turret														*/
+/***********************************************************************************************************************************/
+
+FRC_2013_Robot::Turret::Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control) : 
+	AxisControl(pParent,"Turret",robot_control,eTurret)
+{
+}
+
+void FRC_2013_Robot::Turret::TimeChange(double dTime_s)
+{
+	//Note: GetRequestedVelocity tests for manual override, giving the tolerance a bit more grace for joystick dead-zone
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity(),0.01)));
+	if (IsTargeting)
+	{
+		__super::SetIntendedPosition(m_pParent->m_YawAngle);
+	}
+	__super::TimeChange(dTime_s);
+}
+
+void FRC_2013_Robot::Turret::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2013_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2013_Robot::Turret::SetIntendedPosition_Plus);
+	}
+	else
+	{
+		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2013_Robot::Turret::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Turret_SetIntendedPosition"].Remove(*this, &FRC_2013_Robot::Turret::SetIntendedPosition_Plus);
 	}
 }
 
@@ -301,7 +341,7 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::TimeChange(double dTime_s)
 {
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRoteryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 }
 
@@ -361,21 +401,27 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 	const FRC_2013_Robot_Props &props=properties.GetFRC2013RobotProps();
 
 	//const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
-	const double PowerWheelSpeedDifference=m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity_Difference();
-	const bool PowerWheelReachedTolerance=(m_pParent->m_PowerWheels.GetSecondStageShooter().GetRequestedVelocity()!=0.0) &&
-		(fabs(PowerWheelSpeedDifference)<m_pParent->m_PowerWheels.GetSecondStageShooter().GetRotary_Properties().PrecisionTolerance);
+	const Rotary_Velocity_Control &Shooter=m_pParent->m_PowerWheels.GetSecondStageShooter();
+	const double PowerWheelSpeedDifference=Shooter.GetRequestedVelocity_Difference();
+	const bool PowerWheelReachedTolerance=(Shooter.GetRequestedVelocity()!=0.0) &&	(fabs(PowerWheelSpeedDifference)<Shooter.GetRotary_Properties().PrecisionTolerance);
 	//Only fire when the wheel has reached its aiming speed
 
 	//And ensure the intake has dropped low enough to not block shooter
 	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
 	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
 	const double IntakeMaxRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange;
-	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRoteryProps().PrecisionTolerance;
+	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRotaryProps().PrecisionTolerance;
 	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
 	const bool IsStowed=(fabs(Intake_Position-IntakeMaxRange) < IntakeTolerance);
 	//The intake must be low enough to not block the shooter
 	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) < props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
+
+	//Use these in conjuction with a PID dump if the fire seems stuck
+	#if 0
+	if (Shooter.GetRequestedVelocity()!=0.0)
+		printf(" pwd=%.2f pwrt=%d imd=%d ",PowerWheelSpeedDifference,PowerWheelReachedTolerance,IsIntakeMinimumDropped);
+	#endif
 
 	#ifndef __DisableIntakeAutoPosition__
 	if (m_pParent->m_PowerWheels.GetIsRunning() || (m_ControlSignals.bits.Fire==1))
@@ -507,17 +553,18 @@ const double c_Target_MiddleHoop_XOffset=Inches2Meters(27+3/8);
 
 
 FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous) : 
-	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control),
+	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_PitchRamp(this,robot_control), m_Turret(this,robot_control),
 		m_PowerWheels(this,robot_control),m_IntakeSystem(this,robot_control),
 		m_Target(eCenterHighGoal),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_UDP_Listener(NULL),
-		m_PitchAngle(0.0),
+		m_PitchAngle(0.0),m_YawAngle(0.0),
 		m_LinearVelocity(0.0),m_HangTime(0.0),  //These may go away
 		m_PitchErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_POVSetValve(false),m_IsTargeting(false),m_DriveTargetSelection(eDrive_NoTarget),
+		m_POVSetValve(false),m_IsTargeting(true),m_AutoDriveState(eAutoDrive_Disabled),
 		m_ClimbCounter(0),m_SetClimbGear(false),m_SetClimbLeft(false),m_SetClimbRight(false)
 {
-	//m_IsTargeting=true;
-	//m_DriveTargetSelection=eDrive_Goal_Yaw; //for testing until button is implemented
+	//These are for testing if not using buttons
+	//m_IsTargeting=false;
+	//m_AutoDriveState=eAutoDrive_Disabled; 
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
 }
 
@@ -534,6 +581,7 @@ void FRC_2013_Robot::Initialize(Base::EventMap& em, const Entity_Properties *pro
 	const FRC_2013_Robot_Properties *RobotProps=dynamic_cast<const FRC_2013_Robot_Properties *>(props);
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
+	m_Turret.Initialize(em,RobotProps?&RobotProps->GetTurretProps():NULL);
 	m_PowerWheels.Initialize(em,RobotProps?&RobotProps->GetPowerWheelProps():NULL);
 	m_IntakeSystem.Initialize(em,RobotProps?&RobotProps->GetHelixProps():NULL);
 
@@ -551,6 +599,7 @@ void FRC_2013_Robot::ResetPos()
 	//This should be false to avoid any conflicts during a reset
 	//m_IsTargeting=false;
 	m_PitchRamp.ResetPos();
+	m_Turret.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_IntakeSystem.ResetPos();
 	if (!m_SetClimbGear)
@@ -696,8 +745,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		listener->ResetUpdate();
 		//TODO see if we want a positive Y for up... for now we can convert it here
 		const double  YOffset=-listener->GetYpos();
-		//const double XOffset=listener->GetXpos();
-		
+		const double XOffset=listener->GetXpos();
 		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
 		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
 		//Fortunately for us... we'll have error correction because of gravity... so for the game it should be impossible for this to happen except for the rare
@@ -706,64 +754,103 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
 		const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
 		double distance,yaw;
-		//TODO remove the YOffset check here as it should be redundant but check pitch is working when this is done
-		if ((YOffset!=0)&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
+		if (((YOffset!=0)||(XOffset!=0))&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
 		{
-			 //monitor where it should be against where it actually is
-			//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
-			//printf("d=%.2f\n",Meters2Feet(distance));
-			//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
-			#ifdef __EnableTargetingDisplay__
-			#if 0
-			const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
-			Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
-			#endif
-			#if 0
-			const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
-			Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
-			//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
-			#endif
+			if (YOffset!=0)
+			{
+				 //monitor where it should be against where it actually is
+				//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
+				//printf("d=%.2f\n",Meters2Feet(distance));
+				//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
+				#ifdef __EnableTargetingDisplay__
+				#if 0
+				const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
+				Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
+				#endif
+				#if 0
+				const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
+				Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
+				//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
+				#endif
+				#endif
+
+				#ifdef __TargetFixedPoint__
+				//This is disabled for now to test driving to position
+
+				//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
+				//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
+				//we can just adjust for Y and use the POV turning calls for yaw correction
+				//const Vec2d &Pos_m=GetPos_m();
+				//SetPosition(Pos_m[0],c_HalfCourtLength-distance);
+				#else
+				//printf("\rD=%.2f      ",distance);
+				#ifndef __UseFileTargetTracking__
+				const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
+				//NewPitch=CurrentPitch+atan(m_TargetHeight/distance);
+				#else
+				//Enable this for playback of file since it cannot really cannot control the pitch
+				const double NewPitch=atan(m_TargetHeight/distance);
+				#endif
+
+				//Use precision tolerance asset to determine whether to make the change
+				m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetServoProps().PrecisionTolerance)?NewPitch:CurrentPitch;
+				//Note: limits will be solved at ship level
+				#endif
+			}
+
+			#ifndef __TargetFixedPoint__
+			if (XOffset!=0.0)
+			{
+				const double CurrentYaw=m_RobotControl->GetRotaryCurrentPorV(eTurret);
+				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
+				#ifndef __UseFileTargetTracking__
+				const double NewYaw=CurrentPitch+atan(yaw/distance);
+				#else
+				//Enable this for playback of file since it cannot really cannot control the pitch
+				const double NewYaw=atan(yaw/distance)-GetAtt_r();
+				#endif
+				//Use precision tolerance asset to determine whether to make the change
+				m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetServoProps().PrecisionTolerance)?NewYaw:CurrentYaw;
+				//Note: limits will be solved at ship level
+			}
 			#endif
 
-			#ifndef __NotFieldAware__
-			//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
-			//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
-			//we can just adjust for Y and use the POV turning calls for yaw correction
-			const Vec2d &Pos_m=GetPos_m();
-			SetPosition(Pos_m[0],c_HalfCourtLength-distance);
-			#else
-			//printf("\rD=%.2f      ",distance);
-			//m_PitchAngle=CurrentPitch+atan(m_TargetHeight/distance);
-			#if 1
-			const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
-			#else
-			//Enable this for playback of file since it cannot really cannot control the pitch
-			const double NewPitch=atan(m_TargetHeight/distance);
-			#endif
-
-			//Use precision tolerance asset to determine whether to make the change
-			m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetRoteryProps().PrecisionTolerance)?NewPitch:CurrentPitch;
-
-			//ensure we do not have some crazy computation of pitch
-			if (m_PitchAngle>DEG_2_RAD(80))
-				m_PitchAngle=DEG_2_RAD(80);
-			else if (m_PitchAngle<0)
-				m_PitchAngle=0;
-			#endif
-
-			if (m_DriveTargetSelection==eDrive_Goal_Yaw)
+			if (m_AutoDriveState==eAutoDrive_YawOnly)
 			{
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
-				double value=atan(yaw/distance);
-				if (fabs(value)>m_RobotProps.GetFRC2013RobotProps().YawTolerance)
+				if (fabs(m_YawAngle)>m_RobotProps.GetFRC2013RobotProps().YawTolerance)
 				{
+					#ifndef __UseFileTargetTracking__
 					//We set this through the controller so that it goes through the same path and ensures that its in the right mode (just as it is for POV turns)
-					m_controller->GetUIController_RW()->Turn_RelativeOffset(value);
+					m_controller->GetUIController_RW()->Turn_RelativeOffset(m_YawAngle);
+					#else
+					m_controller->GetUIController_RW()->Turn_RelativeOffset(atan(yaw/distance),true);
+					#endif
 				}
 			}
+			else if (m_AutoDriveState==eAutoDrive_FullAuto)
+			{
+				bool HitWayPoint;
+				{
+					const double tolerance=GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+					const Vec2d &currPos = GetPos_m();
+					double position_delta=(m_TargetOffset-currPos).length();
+					HitWayPoint=position_delta<tolerance;
+				}
+				if (!HitWayPoint)
+				{
+					Vec2d Temp(0,0);
+					GetController()->DriveToLocation(m_TargetOffset, m_TargetOffset, 1.0, dTime_s,&Temp);
+				}
+				else
+					GetController()->SetShipVelocity(0.0);
+			}
+			
 		}
-		//else
-			//printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
+		#if 0
+		else
+			printf("FRC_2013_Robot::TimeChange YOffset=%f\n",YOffset);  //just curious to see how often this would really occur
+		#endif
 	}
 	#endif
 
@@ -800,6 +887,9 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 			m_TargetOffset=m_DefensiveKeyPosition;
 			m_TargetHeight=0;
 			break;
+		case eFrisbee:
+			m_TargetHeight=-0.2;  //TODO determine camera height
+			break;
 	}
 
 	const double x=Vec2D(Pos_m-m_TargetOffset).length();
@@ -815,8 +905,9 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		const double g=9.80665;
 		//These equations come from here http://www.lightingsciences.ca/pdf/BNEWSEM2.PDF
 
-		#ifndef __NotFieldAware__
+		#ifdef __TargetFixedPoint__
 		m_PitchAngle=atan2(y,x);
+		m_YawAngle=NormalizeRotation2(atan2(-Pos_m[0],(m_TargetOffset[1]-Pos_m[1])) - GetAtt_r());
 		#endif
 
 		//Be sure G is in the same units as x and y!  (all in meters in code)
@@ -845,8 +936,28 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 	m_PitchRamp.AsEntity1D().TimeChange(dTime_s);
+	m_Turret.AsEntity1D().TimeChange(dTime_s);
 	m_PowerWheels.TimeChange(dTime_s);
 	m_IntakeSystem.TimeChange(dTime_s);
+}
+
+void FRC_2013_Robot::SetAutoDriveFull(bool on) 
+{
+	m_AutoDriveState=(on)?eAutoDrive_FullAuto:eAutoDrive_Disabled;
+	//Turn on safety check to prevent driver from smacking into the goals
+	#ifdef __AutoDriveFull_AnyTarget__
+	m_AutoDriveState=(on)?eAutoDrive_FullAuto:eAutoDrive_Disabled;
+	#else
+	m_AutoDriveState=(on&&m_Target==eFrisbee)?eAutoDrive_FullAuto:eAutoDrive_Disabled;
+	#endif
+	//since this is event driven, I don't need a valve... the user has come out of auto targeting we must clear the cruise speed
+	if (m_AutoDriveState==eAutoDrive_FullAuto)
+		GetController()->GetUIController_RW()->SetAutoPilot(true);
+	else if (m_AutoDriveState==eAutoDrive_Disabled)
+	{
+		GetController()->SetShipVelocity(0.0);  //for robustness (e.g. no joystick plugged in to override)
+		GetController()->GetUIController_RW()->SetAutoPilot(false);
+	}
 }
 
 const FRC_2013_Robot_Properties &FRC_2013_Robot::GetRobotProps() const
@@ -1096,10 +1207,13 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	if (Bind)
 	{
 		em->EventOnOff_Map["Robot_SetTargeting"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargeting);
+		em->EventOnOff_Map["Robot_SetTargeting_Off"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargeting_Off);
 		em->Event_Map["Robot_SetTargetingOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOff);
-		//em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_AutoDriveYaw"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveYaw);
+		em->EventOnOff_Map["Robot_AutoDriveFull"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveFull);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetDefensiveKeyOff);
@@ -1117,10 +1231,13 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	else
 	{
 		em->EventOnOff_Map["Robot_SetTargeting"]  .Remove(*this, &FRC_2013_Robot::SetTargeting);
+		em->EventOnOff_Map["Robot_SetTargeting_Off"]  .Remove(*this, &FRC_2013_Robot::SetTargeting_Off);
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOff);
-		//em->EventOnOff_Map["Robot_TurretSetTargetingOff"].Remove(*this, &FRC_2013_Robot::SetTurretTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2013_Robot::SetTargetingValue);
+
+		em->EventOnOff_Map["Robot_AutoDriveYaw"].Remove(*this, &FRC_2013_Robot::SetAutoDriveYaw);
+		em->EventOnOff_Map["Robot_AutoDriveFull"].Remove(*this, &FRC_2013_Robot::SetAutoDriveFull);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Remove(*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
 		em->Event_Map["Robot_SetDefensiveKeyOn"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOn);
 		em->Event_Map["Robot_SetDefensiveKeyOff"]  .Remove(*this, &FRC_2013_Robot::SetDefensiveKeyOff);
@@ -1137,6 +1254,7 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	}
 
 	m_PitchRamp.BindAdditionalEventControls(Bind);
+	m_Turret.BindAdditionalEventControls(Bind);
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_IntakeSystem.BindAdditionalEventControls(Bind);
 	#ifdef AI_TesterCode
@@ -1167,7 +1285,18 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 	10.0,10.0, //Max Acceleration Forward/Reverse 
 	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
-	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
+	DEG_2_RAD(-80),DEG_2_RAD(80) //add padding for quick response time (as close to limits will slow it down)
+	),
+	m_TurretProps(
+	"Turret",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	10.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0, //Max Acceleration Forward/Reverse 
+	Ship_1D_Props::eRobotArm,
+	true,	//Using the range
+	DEG_2_RAD(-80),DEG_2_RAD(80) //add padding for quick response time (as close to limits will slow it down)
 	),
 	m_PowerWheelProps(
 	"PowerWheels",
@@ -1299,9 +1428,14 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		m_TankRobotProps=props;
 	}
 	{
-		Rotary_Props props=m_PitchRampProps.RoteryProps(); //start with super class settings
-		props.PrecisionTolerance=0.001; //we need high precision
-		m_PitchRampProps.RoteryProps()=props;
+		Servo_Props props=m_PitchRampProps.ServoProps(); //start with super class settings
+		props.PrecisionTolerance=0.05; //Servo's tend to have 2 positions per degree
+		m_PitchRampProps.ServoProps()=props;
+	}
+	{
+		Servo_Props props=m_TurretProps.ServoProps(); //start with super class settings
+		props.PrecisionTolerance=0.05; //Servo's tend to have 2 positions per degree
+		m_TurretProps.ServoProps()=props;
 	}
 	{
 		Rotary_Props props=m_PowerWheelProps.RoteryProps(); //start with super class settings
@@ -1389,12 +1523,14 @@ const char * const g_FRC_2013_Controls_Events[] =
 {
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
+	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PowerWheels_SetCurrentVelocity","PowerWheels_SetCurrentVelocity_Axis","PowerWheels_FirstStage_SetCurrentVelocity",
 	"PowerWheels_SetEncoderSafety","PowerWheels_IsRunning",
 	"Ball_SetCurrentVelocity","Ball_Fire","Ball_Squirt","Ball_Grip","Ball_GripL","Ball_GripM","Ball_GripH",
 	"Intake_Deployment_SetCurrentVelocity","Intake_Deployment_SetIntendedPosition","Intake_Deployment_SetPotentiometerSafety",
 	"Intake_Deployment_Advance","Intake_Deployment_Retract",
 	"Robot_IsTargeting","Robot_SetTargetingOn","Robot_SetTargetingOff","Robot_TurretSetTargetingOff","Robot_SetTargetingValue",
+	"Robot_SetTargeting_Off","Robot_AutoDriveYaw","Robot_AutoDriveFull",
 	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
 	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
@@ -1429,6 +1565,12 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_PitchRampProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("turret");
+		if (!err)
+		{
+			m_TurretProps.LoadFromScript(script);
 			script.Pop();
 		}
 		err = script.GetFieldTable("power");
