@@ -109,7 +109,7 @@ void Servo_Properties::Init()
 	props.ServoScalar=1.0;
 	props.ServoOffset=0.0;
 	//Late assign this to override the initial default
-	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.PrecisionTolerance=DEG_2_RAD(0.05); 
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	m_ServoProps=props;
 }
