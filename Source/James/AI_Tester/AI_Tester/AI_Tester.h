@@ -5,6 +5,7 @@
 #include "../../../GG_Framework/Logic/Scripting/GG_Framework.Logic.Scripting.h"
 
 #define AI_TesterCode  //used to branch AI test code from wind-river code
+typedef osg::Vec2d Vec2D;
 
 //local includes
 namespace AI_Tester
