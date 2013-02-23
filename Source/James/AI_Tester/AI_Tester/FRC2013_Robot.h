@@ -88,7 +88,9 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const FRC_2013_Robot_Props &GetFRC2013RobotProps() const {return m_FRC2013RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
-		//typedef Tank_Robot_Properties __super;
+		#ifndef AI_TesterCode
+		typedef Tank_Robot_Properties __super;
+		#endif
 		Servo_Properties m_PitchRampProps,m_TurretProps;
 		Rotary_Properties m_PowerWheelProps,m_PowerSlowWheelProps,m_HelixProps,m_RollersProps,m_IntakeDeploymentProps;
 		Tank_Robot_Properties m_ClimbGearLiftProps;
@@ -192,13 +194,19 @@ class FRC_2013_Robot : public Tank_Robot
 				AxisControl(FRC_2013_Robot *pParent,const char EntityName[],Servo_Control_Interface *robot_control,size_t InstanceIndex);
 				IEvent::HandlerList ehl;
 			protected:
-				//typedef Rotary_Position_Control __super;
+				#ifndef AI_TesterCode
+				typedef Rotary_Position_Control __super;
+				#endif
 				virtual void SetIntendedPosition_Plus(double Position);
 				FRC_2013_Robot * const m_pParent;
 		};
 
 		class PitchRamp : public AxisControl
 		{
+			private:
+				#ifndef AI_TesterCode
+				typedef AxisControl __super;
+				#endif
 			public:
 				PitchRamp(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
 				virtual void BindAdditionalEventControls(bool Bind);
@@ -211,6 +219,11 @@ class FRC_2013_Robot : public Tank_Robot
 
 		class Turret : public AxisControl
 		{
+			private:
+
+			#ifndef AI_TesterCode
+			typedef AxisControl __super;
+			#endif
 			public:
 				Turret(FRC_2013_Robot *pParent,Servo_Control_Interface *robot_control);
 				virtual void BindAdditionalEventControls(bool Bind);
@@ -235,7 +248,6 @@ class FRC_2013_Robot : public Tank_Robot
 				void TimeChange(double dTime_s);
 				bool GetIsRunning() const {return m_IsRunning;}
 			protected:
-				//typedef Rotary_Velocity_Control __super;
 				void SetRequestedVelocity_FromNormalized(double Velocity) {m_ManualVelocity=Velocity;}
 				void SetRequestedVelocity_Axis_FromNormalized(double Velocity) {m_ManualAcceleration=Velocity;}
 				void Set_FirstStage_RequestedVelocity_FromNormalized(double Velocity) {m_FirstStageManualVelocity=Velocity;}
@@ -257,7 +269,9 @@ class FRC_2013_Robot : public Tank_Robot
 				class Intake_Deployment : public Rotary_Position_Control
 				{
 				private:
-					//typedef Rotary_Position_Control __super;
+					#ifndef AI_TesterCode
+					typedef Rotary_Position_Control __super;
+					#endif
 					FRC_2013_Robot * const m_pParent;
 					bool m_Advance,m_Retract;
 					bool m_ChooseDropped; //cache last state that was used
@@ -270,8 +284,6 @@ class FRC_2013_Robot : public Tank_Robot
 				protected:
 					void Advance();
 					void Retract();
-
-					//typedef Rotary_Position_Control __super;
 					//events are a bit picky on what to subscribe so we'll just wrap from here
 					void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 
@@ -327,7 +339,9 @@ class FRC_2013_Robot : public Tank_Robot
 		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 	private:
 		void ApplyErrorCorrection();
-		//typedef  Tank_Robot __super;
+		#ifndef AI_TesterCode
+		typedef  Tank_Robot __super;
+		#endif
 		FRC_2013_Control_Interface * const m_RobotControl;
 		PitchRamp m_PitchRamp;
 		Turret m_Turret;

@@ -762,7 +762,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				#ifndef __UseFileTargetTracking__
 				//const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
 				//NewPitch=CurrentPitch+atan(m_TargetHeight/distance);
-				const double NewPitch=CurrentPitch+atan(YOffset * c_ez_y);
+				const double NewPitch=CurrentPitch+(atan(YOffset * c_ez_y)*0.25);
 				#else
 				//Enable this for playback of file since it cannot really cannot control the pitch
 				//const double NewPitch=atan(m_TargetHeight/distance);
@@ -788,7 +788,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
 				#ifndef __UseFileTargetTracking__
 				//const double NewYaw=CurrentYaw+atan(yaw/distance);
-				const double NewYaw=CurrentYaw+atan(XOffset * c_AspectRatio_recip * c_ez_x)-GetAtt_r();
+				const double NewYaw=CurrentYaw+(atan(XOffset * c_AspectRatio_recip * c_ez_x)*0.25);
 				#else
 				//Enable this for playback of file since it cannot really cannot control the pitch
 				//const double NewYaw=atan(yaw/distance)-GetAtt_r();
