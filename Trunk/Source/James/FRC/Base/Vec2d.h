@@ -170,3 +170,5 @@ class Vec2d
 
 }    // end of namespace Base
 }	//end of namespace Framework
+
+typedef Framework::Base::Vec2d Vec2D;

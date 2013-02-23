@@ -23,10 +23,7 @@ const size_t c_NoClimbPropertyElements=2;
 
 struct FRC_2013_Robot_Props
 {
-public:
-	typedef Framework::Base::Vec2d Vec2D;
-	//typedef osg::Vec2d Vec2D;
-	
+public:	
 	Vec2D PresetPositions[3];
 	Vec2D KeyGrid[6][3];
 	struct DeliveryCorrectionFields
@@ -70,9 +67,6 @@ public:
 class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		FRC_2013_Robot_Properties();
 		virtual void LoadFromScript(Framework::Scripting::Script& script);
 
@@ -167,9 +161,6 @@ class FRC_2013_Robot : public Tank_Robot
 			eClimbState_DropLift,
 			eClimbState_DropLift2
 		};
-
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
 
 		enum Targets
 		{
