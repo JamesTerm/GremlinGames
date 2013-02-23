@@ -38,10 +38,13 @@ namespace Scripting=Framework::Scripting;
 
 #undef __DisableEncoderTracking__
 #undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
-#define __EnableSensorsDisplay__
-#undef __EnableTargetingDisplay__
-#define __UseFileTargetTracking__  //to test against a file that tracks
-#define __AutoDriveFull_AnyTarget__ //to target any target
+
+#undef __EnableSensorsDisplayRow4__
+#undef __EnablePitchDisplayRow4__
+#undef __EnableYawDisplayRow4__
+
+#undef __UseFileTargetTracking__  //to test against a file that tracks
+#undef __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
 #undef __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
@@ -680,24 +683,30 @@ void FRC_2013_Robot::ApplyErrorCorrection()
 
 namespace VisionConversion
 {
+	//Note: for this camera we use square pixels, so we need not worry about pixel aspect ratio
 	const double c_X_Image_Res=640.0;		//X Image resolution in pixels, should be 160, 320 or 640
+	const double c_Y_Image_Res=480.0;
+	const double c_AspectRatio=c_X_Image_Res/c_Y_Image_Res;
+	const double c_AspectRatio_recip=c_Y_Image_Res/c_X_Image_Res;
 	//const double c_ViewAngle=43.5;  //Axis M1011 camera (in code sample)
-	const double c_ViewAngle_x=47;		//These are the angles I've measured
-	const double c_ViewAngle_y=40;
+	const double c_ViewAngle_x=DEG_2_RAD(47);		//These are the angles I've measured
+	const double c_ViewAngle_y=DEG_2_RAD(40);
 	const double c_HalfViewAngle_y=c_ViewAngle_y/2.0;
 
 	//doing it this way is faster since it never changes
-	const double c_ez_y=1.0/(tan(DEG_2_RAD(c_ViewAngle_y)/2.0));
-	const double c_ez_x=(tan(DEG_2_RAD(c_ViewAngle_x)/2.0));
+	const double c_ez_y=(tan(c_ViewAngle_y/2.0));
+	const double c_ez_y_recip=1.0/c_ez_y;
+	const double c_ez_x=(tan(c_ViewAngle_x/2.0));
+	const double c_ez_x_recip=1.0/c_ez_x;
 
 	//For example if the target height is 22.16 feet the distance would be 50, or 10 foot height would be around 22 feet for distance
 	//this constant is used to check my pitch math below (typically will be disabled)
-	const double c_DistanceCheck=c_TargetBaseHeight*c_ez_y;
+	const double c_DistanceCheck=c_TargetBaseHeight*c_ez_y_recip;
 
 	__inline void GetYawAndDistance(double bx,double by,double &dx,double dy,double &dz)
 	{
 		//Note: the camera angle for x is different than for y... thus for example we have 4:3 aspect ratio
-		dz = (dy * c_ez_y) / by;
+		dz = (dy * c_ez_y_recip) / by;
 		dx = (bx * dz) * c_ez_x;
 	}
 
@@ -746,69 +755,62 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 		//TODO see if we want a positive Y for up... for now we can convert it here
 		const double  YOffset=-listener->GetYpos();
 		const double XOffset=listener->GetXpos();
-		//If Ypos... is zero no work needs to be done for pitch... also we avoid division by zero too
-		//the likelihood of this is rare, but in theory it could make yaw not work for that frame.  
-		//Fortunately for us... we'll have error correction because of gravity... so for the game it should be impossible for this to happen except for the rare
-		//graze across to get to the final targeting point... point being... the final target point should rest above the target.
 
-		//printf("New coordinates %f , %f\n",listener->GetXpos(),listener->GetYpos());
-		const double CurrentPitch=m_RobotControl->GetRotaryCurrentPorV(ePitchRamp);
-		double distance,yaw;
-		if (((YOffset!=0)||(XOffset!=0))&&(VisionConversion::computeDistanceAndYaw(listener->GetXpos(),YOffset,CurrentPitch,yaw,distance)))
 		{
-			if (YOffset!=0)
+			using namespace VisionConversion;
+
+			#ifndef __TargetFixedPoint__
+			//if (YOffset!=0)
 			{
+				const double CurrentPitch=m_RobotControl->GetServoAngle(ePitchRamp);
 				 //monitor where it should be against where it actually is
 				//printf("p=%.2f a=%.2f\n",m_PitchAngle,CurrentPitch);
 				//printf("d=%.2f\n",Meters2Feet(distance));
 				//Check math... let's see how the pitch angle measures up to simple offset (it will not factor in the camera transform, but should be close anyhow)
-				#ifdef __EnableTargetingDisplay__
-				#if 0
-				const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
-				Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
-				#endif
-				#if 0
-				const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
-				Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
-				//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
-				#endif
-				#endif
 
-				#ifdef __TargetFixedPoint__
-				//This is disabled for now to test driving to position
-
-				//Now for the final piece... until we actually solve for orientation we'll exclusively just set the ypos to the distance
-				//Note: if we were field aware by solving the orientation we could this by placing the final position here, but since we are not (at least for now)
-				//we can just adjust for Y and use the POV turning calls for yaw correction
-				//const Vec2d &Pos_m=GetPos_m();
-				//SetPosition(Pos_m[0],c_HalfCourtLength-distance);
-				#else
-				//printf("\rD=%.2f      ",distance);
 				#ifndef __UseFileTargetTracking__
-				const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
+				//const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
 				//NewPitch=CurrentPitch+atan(m_TargetHeight/distance);
+				const double NewPitch=CurrentPitch+atan(YOffset * c_ez_y);
 				#else
 				//Enable this for playback of file since it cannot really cannot control the pitch
-				const double NewPitch=atan(m_TargetHeight/distance);
+				//const double NewPitch=atan(m_TargetHeight/distance);
+				const double NewPitch=atan(YOffset * c_ez_y);
+				#endif
+
+				#ifdef __EnablePitchDisplayRow4__
+				//const double PredictedOffset=tan(m_PitchAngle)*VisionConversion::c_DistanceCheck;
+				//Dout (4,"p%.2f y%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),YOffset,PredictedOffset,PredictedOffset-YOffset);
+				Dout (4,"y%.2f c%.1f d%.1f",YOffset,RAD_2_DEG(CurrentPitch),RAD_2_DEG(NewPitch));
 				#endif
 
 				//Use precision tolerance asset to determine whether to make the change
 				m_PitchAngle=(fabs(NewPitch-CurrentPitch)>m_RobotProps.GetPitchRampProps().GetServoProps().PrecisionTolerance)?NewPitch:CurrentPitch;
 				//Note: limits will be solved at ship level
-				#endif
 			}
+			#endif
 
 			#ifndef __TargetFixedPoint__
-			if (XOffset!=0.0)
+			//if (XOffset!=0.0)
 			{
-				const double CurrentYaw=m_RobotControl->GetRotaryCurrentPorV(eTurret);
+				const double CurrentYaw=m_RobotControl->GetServoAngle(eTurret);
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
 				#ifndef __UseFileTargetTracking__
-				const double NewYaw=CurrentPitch+atan(yaw/distance);
+				//const double NewYaw=CurrentYaw+atan(yaw/distance);
+				const double NewYaw=CurrentYaw+atan(XOffset * c_AspectRatio_recip * c_ez_x)-GetAtt_r();
 				#else
 				//Enable this for playback of file since it cannot really cannot control the pitch
-				const double NewYaw=atan(yaw/distance)-GetAtt_r();
+				//const double NewYaw=atan(yaw/distance)-GetAtt_r();
+				const double NewYaw=atan(XOffset * c_AspectRatio_recip * c_ez_x)-GetAtt_r();
 				#endif
+
+				#ifdef __EnableYawDisplayRow4__
+				//const double PredictedOffset=sin(atan(yaw/distance))*VisionConversion::c_DistanceCheck;
+				//Dout (4,"y%.2f x%.2f t%.2f e%.2f",RAD_2_DEG(CurrentPitch),XOffset,PredictedOffset,PredictedOffset-XOffset);
+				//Dout (4,"x=%.2f yaw=%.2f",XOffset,yaw);
+				Dout (4,"x%.2f c%.1f d%.1f",XOffset,RAD_2_DEG(CurrentYaw),RAD_2_DEG(NewYaw));
+				#endif
+
 				//Use precision tolerance asset to determine whether to make the change
 				m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetServoProps().PrecisionTolerance)?NewYaw:CurrentYaw;
 				//Note: limits will be solved at ship level
@@ -824,7 +826,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 					//We set this through the controller so that it goes through the same path and ensures that its in the right mode (just as it is for POV turns)
 					m_controller->GetUIController_RW()->Turn_RelativeOffset(m_YawAngle);
 					#else
-					m_controller->GetUIController_RW()->Turn_RelativeOffset(atan(yaw/distance),true);
+					m_controller->GetUIController_RW()->Turn_RelativeOffset(m_YawAngle,true);
 					#endif
 				}
 			}
