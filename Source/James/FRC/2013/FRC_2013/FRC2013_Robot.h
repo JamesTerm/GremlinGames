@@ -39,6 +39,7 @@ public:
 	size_t Power1Velocity_DisplayRow,Power2Velocity_DisplayRow;
 	double YawTolerance;			//Used for drive yaw targeting (the drive is the turret) to avoid oscillation
 	double Min_IntakeDrop;			//Used to determine the minimum drop of the intake during a fire operation
+	double SmoothingPitch,SmoothingYaw;  //Used to help camera not overshoot the delta adjustments
 
 	struct Climb_Properties
 	{
