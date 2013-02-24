@@ -23,10 +23,6 @@ using namespace std;
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
-namespace Base=GG_Framework::Base;
-namespace Scripting=GG_Framework::Logic::Scripting;
-
-
 #undef __DisableEncoderTracking__
 #undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
 
