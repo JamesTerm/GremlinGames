@@ -773,7 +773,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				#ifndef __UseFileTargetTracking__
 				//const double NewPitch=CurrentPitch+atan(YOffset/VisionConversion::c_DistanceCheck);
 				//NewPitch=CurrentPitch+atan(m_TargetHeight/distance);
-				const double NewPitch=CurrentPitch+(atan(YOffset * c_ez_y)*0.25);
+				const double NewPitch=CurrentPitch+(atan(YOffset * c_ez_y)*m_RobotProps.GetFRC2013RobotProps().SmoothingPitch);
 				#else
 				//Enable this for playback of file since it cannot really cannot control the pitch
 				//const double NewPitch=atan(m_TargetHeight/distance);
@@ -799,7 +799,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
 				#ifndef __UseFileTargetTracking__
 				//const double NewYaw=CurrentYaw+atan(yaw/distance);
-				const double NewYaw=CurrentYaw+(atan(XOffset * c_AspectRatio_recip * c_ez_x)*0.25);
+				const double NewYaw=CurrentYaw+(atan(XOffset * c_AspectRatio_recip * c_ez_x)*m_RobotProps.GetFRC2013RobotProps().SmoothingYaw);
 				#else
 				//Enable this for playback of file since it cannot really cannot control the pitch
 				//const double NewYaw=atan(yaw/distance)-GetAtt_r();
@@ -1381,6 +1381,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		props.Power1Velocity_DisplayRow=props.Power2Velocity_DisplayRow=(size_t)-1;
 		props.YawTolerance=0.001; //give a good high precision for default
 		props.Min_IntakeDrop=DEG_2_RAD(90.0);  //full drop default
+		props.SmoothingPitch=props.SmoothingYaw=0.25;  //This is conservative and stable
 
 		for (size_t row=0;row<6;row++)
 		{
@@ -1569,12 +1570,14 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_PitchRampProps.LoadFromScript(script);
+			err = script.GetField("smoothing", NULL, NULL, &m_FRC2013RobotProps.SmoothingPitch);
 			script.Pop();
 		}
 		err = script.GetFieldTable("turret");
 		if (!err)
 		{
 			m_TurretProps.LoadFromScript(script);
+			err = script.GetField("smoothing", NULL, NULL, &m_FRC2013RobotProps.SmoothingYaw);
 			script.Pop();
 		}
 		err = script.GetFieldTable("power");
