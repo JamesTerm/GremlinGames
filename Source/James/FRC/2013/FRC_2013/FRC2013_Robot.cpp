@@ -33,6 +33,23 @@ using namespace Framework::Base;
 using namespace std;
 #endif
 
+#ifdef AI_TesterCode
+
+#undef __DisableEncoderTracking__
+#undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
+
+#define __EnableSensorsDisplayRow4__
+#undef __EnablePitchDisplayRow4__
+#undef __EnableYawDisplayRow4__
+
+#define __UseFileTargetTracking__  //to test against a file that tracks
+#define __AutoDriveFull_AnyTarget__ //to target any target
+//This should be enabled during calibration
+#undef __DisableIntakeAutoPosition__
+#undef __DisabledClimbPneumatics__
+
+#else
+
 #undef __DisableEncoderTracking__
 #undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
 
@@ -46,6 +63,9 @@ using namespace std;
 #undef __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
 
+#endif
+
+#if 0
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
 {
@@ -62,7 +82,7 @@ static double PositionToVelocity_Tweak(double Value)
 	Value=(Value<0.0)?-Temp:Temp;
 	return Value;
 }
-
+#endif
 
   /***********************************************************************************************************************************/
  /*													FRC_2013_Robot::AxisControl														*/
@@ -2120,3 +2140,600 @@ Goal *FRC_2013_Goals::Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyInd
 	MainGoal->Activate();
 	return MainGoal;
 }
+
+#ifdef AI_TesterCode
+
+  /***********************************************************************************************************************************/
+ /*													FRC_2013_Robot_Control															*/
+/***********************************************************************************************************************************/
+
+void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
+{
+	//This will not be in the wind river... this adds stress to simulate stall on low values
+	if ((fabs(Voltage)<0.01) && (Voltage!=0)) Voltage=0.0;
+
+	switch (index)
+	{
+		case FRC_2013_Robot::ePowerWheelSecondStage:
+			if (m_SlowWheel) Voltage=0.0;
+			m_PowerWheelVoltage=Voltage;
+			m_PowerWheel_Enc.UpdateEncoderVoltage(Voltage);
+			m_PowerWheel_Enc.TimeChange();
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			if (m_SlowWheel) Voltage=0.0;
+			m_PowerSlowWheelVoltage=Voltage;
+			m_PowerSlowWheel_Enc.UpdateEncoderVoltage(Voltage);
+			m_PowerSlowWheel_Enc.TimeChange();
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+		case FRC_2013_Robot::eHelix:
+			m_HelixVoltage=Voltage;
+			m_Helix_Enc.UpdateEncoderVoltage(Voltage);
+			m_Helix_Enc.TimeChange();
+			break;
+		case FRC_2013_Robot::eIntake_Deployment:
+			{
+				//	printf("IntakeDeployment=%f\n",Voltage);
+				//DOUT3("IntakeDeployment Voltage=%f",Voltage);
+				m_IntakeDeploymentVoltage=Voltage * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().VoltageScalar;
+				#ifndef __TestPotsOnEncoder__
+				m_IntakeDeployment_Pot.UpdatePotentiometerVoltage(Voltage);
+				#else
+				m_IntakeDeployment_Pot.UpdateEncoderVoltage(m_IntakeDeploymentVoltage);
+				#endif
+				m_IntakeDeployment_Pot.TimeChange();  //have this velocity immediately take effect
+			}
+			break;
+		case FRC_2013_Robot::eRollers:
+			m_RollersVoltage=Voltage;
+			m_Rollers_Enc.UpdateEncoderVoltage(Voltage);
+			m_Rollers_Enc.TimeChange();
+			break;
+	}
+
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+	case FRC_2013_Robot::ePowerWheelFirstStage:
+		Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage);
+		break;
+	case FRC_2013_Robot::ePowerWheelSecondStage:
+		Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p2_v=%.2f",Voltage);
+		break;
+	case FRC_2013_Robot::eHelix:
+		Dout(m_RobotProps.GetHelixProps().GetRotaryProps().Feedback_DiplayRow,1,"he_v=%.2f",Voltage);
+		break;
+	case FRC_2013_Robot::eIntake_Deployment:
+		Dout(m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,1,"f=%.2f",Voltage);
+		break;
+	case FRC_2013_Robot::eRollers:
+		Dout(m_RobotProps.GetRollersProps().GetRotaryProps().Feedback_DiplayRow,1,"ro_v=%.2f",Voltage);
+		break;
+	}
+	#endif
+}
+
+#ifdef __TestXAxisServoDump__
+void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) 
+{
+	LeftVelocity=m_LastLeftVelocity,RightVelocity=m_LastRightVelocity;
+	//Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", LeftVelocity,RightVelocity);
+}
+
+void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
+{
+	//For now leave this disabled... should not need to script this
+	Dout(2, "l=%.1f r=%.1f", LeftVoltage,RightVoltage);
+
+	//first interpolate the angular velocity
+	const Tank_Robot_Props &props=m_RobotProps.GetTankRobotProps();
+	const double D=props.WheelDimensions.length();
+	//Here we go it is finally working I just needed to take out the last division
+	const Vec2d &WheelDimensions=props.WheelDimensions;
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+	const double skid=cos(atan2(W,L));
+	const double MaxSpeed=m_RobotProps.GetShipProps().MAX_SPEED;
+	const double omega = ((LeftVoltage*MaxSpeed*skid) + (RightVoltage*MaxSpeed*-skid)) * 0.5;
+
+	double AngularVelocity=(omega / (Pi * D)) * Pi2;
+	if (props.ReverseSteering)
+		AngularVelocity*=-1.0;
+
+	double NewAngle=m_LastYawAxisSetting+(RAD_2_DEG(AngularVelocity * m_dTime_s) * props.MotorToWheelGearRatio);
+	//double NewAngle=m_LastYawAxisSetting+RAD_2_DEG(AngularVelocity * m_dTime_s);
+	if (NewAngle>170)
+		NewAngle=170;
+	else if (NewAngle<0)
+		NewAngle=0;
+
+	//Ensure the angle deltas of angular velocity are calibrated to servo's angles
+	m_LastYawAxisSetting=NewAngle;
+	Dout(4, "a=%.2f av=%.2f",m_LastYawAxisSetting,AngularVelocity);
+	//if (!IsZero(AngularVelocity))
+	//	printf("a=%.2f av=%.2f\n",m_LastYawAxisSetting,AngularVelocity);
+
+	//m_YawControl.SetAngle(m_LastYawAxisSetting);
+
+	const double inv_skid=1.0/cos(atan2(W,L));
+	double RCW=AngularVelocity;
+	double RPS=RCW / Pi2;
+	RCW=RPS * (Pi * D) * inv_skid;  //D is the turning diameter
+
+	m_LastLeftVelocity = + RCW;
+	m_LastRightVelocity = - RCW;
+}
+#else
+void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) 
+{
+	m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	//For climb states... use only one encoder as a safety precaution
+	if (!m_IsDriveEngaged)
+		RightVelocity=LeftVelocity;
+}
+#endif
+
+bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
+{
+	bool ret;
+	switch (index)
+	{
+	case FRC_2013_Robot::eIntake_DeployedLimit_Sensor:
+		ret=m_DeployedLimit;
+		break;
+	default:
+		assert (false);
+	}
+	return ret;
+}
+
+FRC_2013_Robot_Control::FRC_2013_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_PowerWheelVoltage(0.0),m_PowerSlowWheelVoltage(0.0),m_IntakeDeploymentOffset(DEG_2_RAD(90.0)),
+	m_dTime_s(0.0),m_IsDriveEngaged(true),m_DeployedLimit(false),m_SlowWheel(false),m_FirePiston(false)
+{
+	#ifdef __TestXAxisServoDump__
+	m_LastYawAxisSetting=m_LastLeftVelocity=m_LastRightVelocity=0.0;
+	#endif
+	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
+
+	using namespace GG_Framework::Base;
+	using namespace GG_Framework::UI;
+	using namespace osg;
+	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
+	//Add custom keys to FRC 2013 robot
+	kbm.AddKeyBindingR(true, "Intake_DeployLimit_Sensor", 'l');
+}
+
+void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
+{
+	switch (index)
+	{
+		case FRC_2013_Robot::ePowerWheelSecondStage:
+			m_PowerWheel_Enc.ResetPos();
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			m_PowerSlowWheel_Enc.ResetPos();
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+		case FRC_2013_Robot::eHelix:
+			m_Helix_Enc.ResetPos();
+			break;
+		case FRC_2013_Robot::eIntake_Deployment:
+			m_IntakeDeployment_Pot.ResetPos();
+			break;
+		case FRC_2013_Robot::eRollers:
+			m_Rollers_Enc.ResetPos();
+			break;
+	}
+}
+
+//This is only for AI Tester
+void FRC_2013_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
+{
+	if (Bind)
+	{
+		em->EventOnOff_Map["Intake_DeployLimit_Sensor"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::TriggerIntakeDeployedLimit);
+		em->EventOnOff_Map["Ball_SlowWheel"].Subscribe(ehl, *this, &FRC_2013_Robot_Control::SlowWheel);
+	}
+	else
+	{
+		em->EventOnOff_Map["Intake_DeployLimit_Sensor"]  .Remove(*this, &FRC_2013_Robot_Control::TriggerIntakeDeployedLimit);
+		em->EventOnOff_Map["Ball_SlowWheel"]  .Remove(*this, &FRC_2013_Robot_Control::SlowWheel);
+	}
+}
+
+void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
+{
+	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
+	tank_interface->Initialize(props);
+
+	const FRC_2013_Robot_Properties *robot_props=dynamic_cast<const FRC_2013_Robot_Properties *>(props);
+	if (robot_props)
+	{
+		m_RobotProps=*robot_props;  //save a copy
+
+		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
+		m_PowerWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
+		m_PowerSlowWheel_Enc.Initialize(&robot_props->GetPowerWheelProps());
+		m_Helix_Enc.Initialize(&robot_props->GetHelixProps());
+		m_IntakeDeployment_Pot.Initialize(&robot_props->GetIntakeDeploymentProps());
+		m_Rollers_Enc.Initialize(&robot_props->GetRollersProps());
+	}
+}
+
+void FRC_2013_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+{
+	m_Pitch_Pot.SetTimeDelta(dTime_s);
+	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
+	m_PowerSlowWheel_Enc.SetTimeDelta(dTime_s);
+	m_Helix_Enc.SetTimeDelta(dTime_s);
+	m_IntakeDeployment_Pot.SetTimeDelta(dTime_s);
+	m_Rollers_Enc.SetTimeDelta(dTime_s);
+	//display voltages
+	DOUT(2,"l=%.2f r=%.2f pi=%.2f pw=%.2f hx=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
+		m_PitchRampAngle,m_PowerWheelVoltage,m_HelixVoltage);
+	#ifdef __EnableSensorsDisplayRow4__
+	{
+		const Servo_Props &pitch_props=m_RobotProps.GetPitchRampProps().GetServoProps();
+		const double pitch=(m_PitchRampAngle -  pitch_props.ServoOffset) /  pitch_props.ServoScalar;
+		const Servo_Props &turret_props=m_RobotProps.GetTurretProps().GetServoProps();
+		const double turret=(m_TurretAngle - turret_props.ServoOffset) /  turret_props.ServoScalar;
+		const Rotary_Props &rotary_props=m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps();
+		const double intake=m_IntakeDeployment_Pot.GetDistance() * rotary_props.EncoderToRS_Ratio + m_IntakeDeploymentOffset;
+		DOUT (4,"pitch=%.2f turret=%.2f intake=%.2f",pitch,turret,RAD_2_DEG(intake));
+	}
+	#endif
+
+	m_dTime_s=dTime_s;
+	if (GetBoolSensorState(FRC_2013_Robot::eIntake_DeployedLimit_Sensor))
+	{
+		m_IntakeDeployment_Pot.ResetPos();
+		m_IntakeDeploymentOffset=0.0;
+	}
+}
+
+
+double FRC_2013_Robot_Control::GetRotaryCurrentPorV(size_t index)
+{
+	double result=0.0;
+
+	switch (index)
+	{
+		case FRC_2013_Robot::ePowerWheelSecondStage:
+			result=m_PowerWheel_Enc.GetEncoderVelocity();
+			//DOUT5 ("vel=%f",result);
+			break;
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			result=m_PowerSlowWheel_Enc.GetEncoderVelocity();
+			break;
+		case FRC_2013_Robot::eHelix:
+			result=m_Helix_Enc.GetEncoderVelocity();
+			break;
+		case FRC_2013_Robot::eIntake_Deployment:
+			#ifndef __TestPotsOnEncoder__
+			result=m_IntakeDeployment_Pot.GetPotentiometerCurrentPosition();
+			#else
+			//Note: determine which direction the encoders are going, use EncoderToRS_Ratio negative or positive to match
+			result=(m_IntakeDeployment_Pot.GetDistance() * m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().EncoderToRS_Ratio) + m_IntakeDeploymentOffset;
+			#endif
+			break;
+		case FRC_2013_Robot::eRollers:
+			result=m_Rollers_Enc.GetEncoderVelocity();
+			//DOUT5 ("vel=%f",result);
+			break;
+	}
+
+	#ifdef __DebugLUA__
+	switch (index)
+	{
+		case FRC_2013_Robot::ePowerWheelFirstStage:
+			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,11,"p1=%.2f",result / Pi2);
+			break;
+		case FRC_2013_Robot::ePowerWheelSecondStage:
+			Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,11,"p2=%.2f",result / Pi2);
+			break;
+		case FRC_2013_Robot::eHelix:
+			Dout(m_RobotProps.GetHelixProps().GetRotaryProps().Feedback_DiplayRow,11,"he=%.2f",result / Pi2);
+			break;
+		case FRC_2013_Robot::eIntake_Deployment:
+			Dout(m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,14,"f=%.1f",RAD_2_DEG(result));
+			break;
+		case FRC_2013_Robot::eRollers:
+			Dout(m_RobotProps.GetRollersProps().GetRotaryProps().Feedback_DiplayRow,11,"ro=%.1f",result / Pi2);
+			break;
+	}
+	#endif
+
+	return result;
+}
+
+void FRC_2013_Robot_Control::OpenSolenoid(size_t index,bool Open)
+{
+	const char * const SolenoidState=Open?"Engaged":"Disengaged";
+	switch (index)
+	{
+	case FRC_2013_Robot::eEngageDriveTrain:
+		printf("Drive Train Gear = %s\n",SolenoidState);
+		m_IsDriveEngaged=Open;
+		break;
+	case FRC_2013_Robot::eEngageLiftWinch:
+		printf("Lift Winch = %s\n",SolenoidState);
+		break;
+	case FRC_2013_Robot::eEngageDropWinch:
+		printf("Drop Winch = %s\n",SolenoidState);
+		break;
+	case FRC_2013_Robot::eFirePiston:
+		printf("Fire Piston = %s\n",SolenoidState);
+		m_FirePiston=Open;
+		break;
+	}
+}
+
+bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
+{
+	bool ret=false;
+	switch (index)
+	{
+	case FRC_2013_Robot::eEngageDriveTrain:
+		ret=m_IsDriveEngaged;
+		assert(false);   //no-one should be calling this... if they are I'll want to know why
+		break;
+	case FRC_2013_Robot::eEngageLiftWinch:
+		break;
+	case FRC_2013_Robot::eEngageDropWinch:
+		break;
+	case FRC_2013_Robot::eFirePiston:
+		ret=m_FirePiston;
+		break;
+	}
+	return ret;
+}
+
+void FRC_2013_Robot_Control::Reset_Servo(size_t index)
+{
+
+	 //may want to just center these
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+			SetServoAngle(FRC_2013_Robot::ePitchRamp,0.0);  
+			break;
+		case FRC_2013_Robot::eTurret:
+			SetServoAngle(FRC_2013_Robot::eTurret,0.0); 
+			break;
+	}
+}
+double FRC_2013_Robot_Control::GetServoAngle(size_t index)
+{
+	double result=0.0;
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+		{
+			const Servo_Props &props=m_RobotProps.GetPitchRampProps().GetServoProps();
+			result=DEG_2_RAD((m_PitchRampAngle - props.ServoOffset) / props.ServoScalar);
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,14,"p=%.2f",RAD_2_DEG(result));
+			#endif
+			break;
+		}
+		case FRC_2013_Robot::eTurret:
+		{
+			const Servo_Props &props=m_RobotProps.GetTurretProps().GetServoProps();
+			result=DEG_2_RAD((m_TurretAngle - props.ServoOffset) / props.ServoScalar);
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,14,"p=%.2f",RAD_2_DEG(result));
+			#endif
+			break;
+		}
+	}
+	return result;
+}
+
+void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
+{
+	switch (index)
+	{
+		case FRC_2013_Robot::ePitchRamp:
+		{
+			const Servo_Props &props=m_RobotProps.GetPitchRampProps().GetServoProps();
+			m_PitchRampAngle=RAD_2_DEG(radians) * props.ServoScalar + props.ServoOffset;
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,1,"p=%.1f %.1f",RAD_2_DEG(radians),m_PitchRampAngle);
+			#endif
+			break;
+		}
+		case FRC_2013_Robot::eTurret:
+		{
+			const Servo_Props &props=m_RobotProps.GetTurretProps().GetServoProps();
+			m_TurretAngle=RAD_2_DEG(radians) * props.ServoScalar + props.ServoOffset;
+			#ifdef __DebugLUA__
+			Dout(props.Feedback_DiplayRow,1,"t=%.1f %.1f",RAD_2_DEG(radians),m_TurretAngle);
+			#endif
+			break;
+		}
+	}
+}
+
+  /***************************************************************************************************************/
+ /*											FRC_2013_Power_Wheel_UI												*/
+/***************************************************************************************************************/
+
+void FRC_2013_Power_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	Wheel_Properties Myprops;
+	Myprops.m_Offset=Vec2d(0.6,-2.0);
+	Myprops.m_Color=osg::Vec4(1.0,0.0,0.5,1.0);
+	Myprops.m_TextDisplay=L"|";
+
+	__super::Initialize(em,&Myprops);
+	m_PowerWheelMaxSpeed=m_RobotControl->GetRobotProps().GetPowerWheelProps().GetMaxSpeed();
+}
+
+void FRC_2013_Power_Wheel_UI::TimeChange(double dTime_s)
+{
+	FRC_2013_Control_Interface *pw_access=m_RobotControl;
+	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::ePowerWheelSecondStage) / m_PowerWheelMaxSpeed;
+	//NormalizedVelocity-=0.2;
+	//if (NormalizedVelocity<0.0)
+	//	NormalizedVelocity=0.0;
+
+	//Scale down the rotation to something easy to gauge in UI
+	AddRotation((NormalizedVelocity * 18) * dTime_s);
+}
+
+  /***************************************************************************************************************/
+ /*										FRC_2013_Power_Slow_Wheel_UI											*/
+/***************************************************************************************************************/
+
+void FRC_2013_Power_Slow_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	Wheel_Properties Myprops;
+	Myprops.m_Offset=Vec2d(-0.6,-2.0);
+	Myprops.m_Color=osg::Vec4(1.0,1.0,0.0,1.0);
+	Myprops.m_TextDisplay=L"|";
+
+	__super::Initialize(em,&Myprops);
+	m_PowerWheelMaxSpeed=m_RobotControl->GetRobotProps().GetPowerWheelProps().GetMaxSpeed();
+}
+
+void FRC_2013_Power_Slow_Wheel_UI::TimeChange(double dTime_s)
+{
+	FRC_2013_Control_Interface *pw_access=m_RobotControl;
+	double NormalizedVelocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::ePowerWheelFirstStage) / m_PowerWheelMaxSpeed;
+
+	//Scale down the rotation to something easy to gauge in UI
+	AddRotation((NormalizedVelocity * 18) * dTime_s);
+}
+
+  /***************************************************************************************************************/
+ /*												FRC_2013_Rollers_UI												*/
+/***************************************************************************************************************/
+
+void FRC_2013_Rollers_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	Wheel_Properties Myprops;
+	Myprops.m_Offset=Vec2d(0.0,2.0);
+	Myprops.m_Color=osg::Vec4(0.75,0.75,0.75,1.0);
+	Myprops.m_TextDisplay=L"|";
+
+	__super::Initialize(em,&Myprops);
+}
+
+void FRC_2013_Rollers_UI::TimeChange(double dTime_s)
+{
+	FRC_2013_Control_Interface *pw_access=m_RobotControl;
+	double Velocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eRollers);
+	AddRotation(Velocity* 0.5 * dTime_s);
+	double y_offset=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eIntake_Deployment);
+	//normalize
+	const Ship_1D_Props &props=m_RobotControl->GetRobotProps().GetIntakeDeploymentProps().GetShip_1D_Props();
+	y_offset-=props.MinRange;
+	y_offset/=fabs(props.MaxRange-props.MinRange);
+	//printf("\rTest=%.2f     ",y_offset);
+	UpdatePosition(0.0,3.0-y_offset);
+}
+
+
+  /***************************************************************************************************************/
+ /*											FRC_2013_Fire_Conveyor_UI											*/
+/***************************************************************************************************************/
+
+void FRC_2013_Fire_Conveyor_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	Wheel_Properties Myprops;
+	Myprops.m_Offset=Vec2d(0.0,1.0);
+	Myprops.m_Color=osg::Vec4(0.0,1.0,0.5,1.0);
+	Myprops.m_TextDisplay=L"-";
+
+	__super::Initialize(em,&Myprops);
+}
+
+void FRC_2013_Fire_Conveyor_UI::TimeChange(double dTime_s)
+{
+	FRC_2013_Control_Interface *pw_access=m_RobotControl;
+	double Velocity=pw_access->GetRotaryCurrentPorV(FRC_2013_Robot::eHelix);
+	AddRotation(Velocity* 0.5 * dTime_s);
+	double y_offset=pw_access->GetIsSolenoidOpen(FRC_2013_Robot::eFirePiston)==true?-1.8:1.0;
+	UpdatePosition(0.0,y_offset);
+}
+
+  /***************************************************************************************************************/
+ /*												FRC_2013_Robot_UI												*/
+/***************************************************************************************************************/
+
+FRC_2013_Robot_UI::FRC_2013_Robot_UI(const char EntityName[]) : FRC_2013_Robot(EntityName,this),FRC_2013_Robot_Control(),
+		m_TankUI(this),m_PowerWheelUI(this),m_PowerSlowWheelUI(this),m_Helix(this),m_Rollers(this)
+{
+}
+
+void FRC_2013_Robot_UI::TimeChange(double dTime_s) 
+{
+	__super::TimeChange(dTime_s);
+	m_TankUI.TimeChange(dTime_s);
+	m_PowerWheelUI.TimeChange(dTime_s);
+	m_PowerSlowWheelUI.TimeChange(dTime_s);
+	m_Helix.TimeChange(dTime_s);
+	m_Rollers.TimeChange(dTime_s);
+	{
+		m_AxisCamera.SetRotation(GetServoAngle(FRC_2013_Robot::ePitchRamp));
+		m_AxisCamera.SetSwivel(GetServoAngle(FRC_2013_Robot::eTurret));
+	}
+}
+void FRC_2013_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+{
+	__super::Initialize(em,props);
+	m_TankUI.Initialize(em,props);
+	m_PowerWheelUI.Initialize(em);
+	m_PowerSlowWheelUI.Initialize(em);
+	m_Helix.Initialize(em);
+	m_Rollers.Initialize(em);
+	{
+		Swivel_Wheel_UI::Wheel_Properties props;
+		props.m_Offset=Vec2d(0,-0.5);
+		props.m_Wheel_Diameter=0.0254;
+		m_AxisCamera.Initialize(em,&props);
+	}
+}
+void FRC_2013_Robot_UI::UI_Init(Actor_Text *parent) 
+{
+	m_TankUI.UI_Init(parent);
+	m_PowerWheelUI.UI_Init(parent);
+	m_PowerSlowWheelUI.UI_Init(parent);
+	m_Helix.UI_Init(parent);
+	m_Rollers.UI_Init(parent);
+	m_AxisCamera.UI_Init(parent);
+}
+void FRC_2013_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
+{
+	m_TankUI.custom_update(nv,draw,parent_pos);
+	m_PowerWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
+	m_PowerSlowWheelUI.update(nv,draw,parent_pos,-GetAtt_r());
+	m_Helix.update(nv,draw,parent_pos,-GetAtt_r());
+	m_Rollers.update(nv,draw,parent_pos,-GetAtt_r());
+	m_AxisCamera.update(nv,draw,parent_pos,-GetAtt_r());
+}
+void FRC_2013_Robot_UI::Text_SizeToUse(double SizeToUse) 
+{
+	m_TankUI.Text_SizeToUse(SizeToUse);
+	m_PowerWheelUI.Text_SizeToUse(SizeToUse);
+	m_PowerSlowWheelUI.Text_SizeToUse(SizeToUse);
+	m_Helix.Text_SizeToUse(SizeToUse);
+	m_Rollers.Text_SizeToUse(SizeToUse);
+	m_AxisCamera.Text_SizeToUse(SizeToUse);
+}
+void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
+{
+	m_TankUI.UpdateScene(geode,AddOrRemove);
+	m_PowerWheelUI.UpdateScene(geode,AddOrRemove);
+	m_PowerSlowWheelUI.UpdateScene(geode,AddOrRemove);
+	m_Helix.UpdateScene(geode,AddOrRemove);
+	m_Rollers.UpdateScene(geode,AddOrRemove);
+	m_AxisCamera.UpdateScene(geode,AddOrRemove);
+}
+
+#endif //AI_TesterCode

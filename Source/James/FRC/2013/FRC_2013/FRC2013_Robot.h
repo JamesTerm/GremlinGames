@@ -465,4 +465,154 @@ class FRC_2013_Goals
 		};
 };
 
+#ifdef AI_TesterCode
 
+#undef __TestXAxisServoDump__
+#define __TestPotsOnEncoder__
+class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
+{
+	public:
+		FRC_2013_Robot_Control();
+		const FRC_2013_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
+	protected: //from Robot_Control_Interface
+		virtual void UpdateVoltage(size_t index,double Voltage);
+		virtual bool GetBoolSensorState(size_t index);
+		virtual void OpenSolenoid(size_t index,bool Open);
+		virtual bool GetIsSolenoidOpen(size_t index) const;
+	protected: //from Tank_Drive_Control_Interface
+		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
+
+		#ifndef __TestXAxisServoDump__
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);  //Needed to intercept for climb case
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
+		#else
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
+		#endif
+
+		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
+	protected: //from Rotary Interface
+		virtual void Reset_Rotary(size_t index=0); 
+		virtual double GetRotaryCurrentPorV(size_t index=0);
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
+
+	protected: //from Servo Interface
+		virtual void Reset_Servo(size_t index=0); 
+		virtual double GetServoAngle(size_t index=0);
+		virtual void SetServoAngle(size_t index,double radians);
+
+	protected: //from FRC_2013_Control_Interface
+		//Will reset various members as needed (e.g. Kalman filters)
+		virtual void Robot_Control_TimeChange(double dTime_s);
+		virtual void Initialize(const Entity_Properties *props);
+		//Note: This is only for AI Tester
+		virtual void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
+
+		void TriggerIntakeDeployedLimit(bool on) {m_DeployedLimit=on;}
+		void SlowWheel(bool on) {m_SlowWheel=on;}
+
+	protected:
+		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
+		Tank_Robot_Control m_TankRobotControl;
+		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
+		#ifndef __TestPotsOnEncoder__
+		Potentiometer_Tester2 m_Pitch_Pot,m_IntakeDeployment_Pot; //simulate the potentiometer and motor
+		#else
+		Encoder_Simulator2 m_Pitch_Pot,m_IntakeDeployment_Pot;
+		#endif
+		Encoder_Simulator m_PowerWheel_Enc,m_PowerSlowWheel_Enc,m_Helix_Enc,m_Rollers_Enc;  //simulate the encoder and motor
+		KalmanFilter m_KalFilter_Arm;
+		#ifdef __TestXAxisServoDump__
+		double m_LastYawAxisSetting;  //needed to creep up the angle to position smoothly when testing servo code
+		double m_LastLeftVelocity,m_LastRightVelocity;
+		#endif
+		//cache voltage values for display
+		double m_PitchRampAngle,m_TurretAngle;
+		double m_PowerWheelVoltage,m_PowerSlowWheelVoltage,m_IntakeDeploymentVoltage;
+		double m_HelixVoltage,m_RollersVoltage;
+		double m_IntakeDeploymentOffset;  //used to keep 90-0 range once limit switch has been triggered
+		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
+		bool m_IsDriveEngaged;  //Cache when the drive is engaged to avoid excessive I/O reads
+		bool m_DeployedLimit;
+		bool m_SlowWheel;
+		bool m_FirePiston;
+};
+
+class FRC_2013_Power_Wheel_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2013_Power_Wheel_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2013_Robot_Control * const m_RobotControl;
+		double m_PowerWheelMaxSpeed;  //cache to avoid all the hoops of getting it (it's constant)
+};
+
+class FRC_2013_Power_Slow_Wheel_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2013_Power_Slow_Wheel_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2013_Robot_Control * const m_RobotControl;
+		double m_PowerWheelMaxSpeed;  //cache to avoid all the hoops of getting it (it's constant)
+};
+
+class FRC_2013_Rollers_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2013_Rollers_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2013_Robot_Control * const m_RobotControl;
+};
+
+class FRC_2013_Fire_Conveyor_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2013_Fire_Conveyor_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2013_Robot_Control * const m_RobotControl;
+};
+
+class Axis_UI : public Swivel_Wheel_UI
+{
+public:
+	virtual osg::Vec4 GetFrontWheelColor() const {return osg::Vec4(0.0,0.6,0.2,1.0);}
+	virtual osg::Vec4 GetBackWheelColor() const {return osg::Vec4(0.1,0.1,1.0,1.0);}
+};
+
+///This is only for the simulation where we need not have client code instantiate a Robot_Control
+class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
+{
+	public:
+		FRC_2013_Robot_UI(const char EntityName[]);
+	protected:
+		virtual void TimeChange(double dTime_s);
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+
+	protected:   //from EntityPropertiesInterface
+		virtual void UI_Init(Actor_Text *parent);
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos); 
+		virtual void Text_SizeToUse(double SizeToUse);
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+
+	private:
+		Tank_Robot_UI m_TankUI;
+		FRC_2013_Power_Wheel_UI m_PowerWheelUI;
+		FRC_2013_Power_Slow_Wheel_UI m_PowerSlowWheelUI;
+		FRC_2013_Rollers_UI m_Rollers;
+		FRC_2013_Fire_Conveyor_UI m_Helix;
+		Axis_UI m_AxisCamera;
+};
+
+#endif //AI_TesterCode
