@@ -465,6 +465,8 @@ class FRC_2013_Goals
 		};
 };
 
+#ifdef AI_TesterCode
+
 #undef __TestXAxisServoDump__
 #define __TestPotsOnEncoder__
 class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
@@ -612,3 +614,5 @@ class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
 		FRC_2013_Fire_Conveyor_UI m_Helix;
 		Axis_UI m_AxisCamera;
 };
+
+#endif //AI_TesterCode

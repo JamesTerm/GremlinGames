@@ -33,6 +33,8 @@ using namespace Framework::Base;
 using namespace std;
 #endif
 
+#ifdef AI_TesterCode
+
 #undef __DisableEncoderTracking__
 #undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
 
@@ -46,6 +48,24 @@ using namespace std;
 #undef __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
 
+#else
+
+#undef __DisableEncoderTracking__
+#undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
+
+#undef __EnableSensorsDisplayRow4__
+#undef __EnablePitchDisplayRow4__
+#undef __EnableYawDisplayRow4__
+
+#undef __UseFileTargetTracking__  //to test against a file that tracks
+#undef __AutoDriveFull_AnyTarget__ //to target any target
+//This should be enabled during calibration
+#undef __DisableIntakeAutoPosition__
+#undef __DisabledClimbPneumatics__
+
+#endif
+
+#if 0
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
 {
@@ -62,7 +82,7 @@ static double PositionToVelocity_Tweak(double Value)
 	Value=(Value<0.0)?-Temp:Temp;
 	return Value;
 }
-
+#endif
 
   /***********************************************************************************************************************************/
  /*													FRC_2013_Robot::AxisControl														*/
@@ -2121,6 +2141,8 @@ Goal *FRC_2013_Goals::Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyInd
 	return MainGoal;
 }
 
+#ifdef AI_TesterCode
+
   /***********************************************************************************************************************************/
  /*													FRC_2013_Robot_Control															*/
 /***********************************************************************************************************************************/
@@ -2713,3 +2735,5 @@ void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 	m_Rollers.UpdateScene(geode,AddOrRemove);
 	m_AxisCamera.UpdateScene(geode,AddOrRemove);
 }
+
+#endif //AI_TesterCode
