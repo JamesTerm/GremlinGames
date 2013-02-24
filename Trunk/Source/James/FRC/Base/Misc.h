@@ -283,3 +283,6 @@ inline double RAND_GEN(double minR = 0.0, double maxR = 1.0)
 	mbstowcs(char2wchar_pwchar,char2wchar_pchar_source,char2wchar_Length);
 
 #define _aligned_alloca( size, alignement ) ( (void*)( ((size_t)((alignement)-1)+(size_t)_alloca( (size)+(alignement) ))&(~((alignement)-1)) ) )
+
+namespace Base=Framework::Base;
+namespace Entity2D_Kind=Framework::Base;
