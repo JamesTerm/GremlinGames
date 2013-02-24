@@ -1,40 +1,37 @@
-#include "Base/Base_Includes.h"
-#include <math.h>
-#include <assert.h>
-#include "Base/Vec2d.h"
-#include "Base/Misc.h"
-#include "Base/Event.h"
-#include "Base/EventMap.h"
-#include "Base/Script.h"
-#include "Common/Entity_Properties.h"
-#include "Common/Physics_1D.h"
-#include "Common/Physics_2D.h"
-#include "Common/Entity2D.h"
-#include "Common/Goal.h"
-#include "Common/Ship_1D.h"
-#include "Common/Ship.h"
-#include "Common/AI_Base_Controller.h"
-#include "Common/Vehicle_Drive.h"
-#include "Common/PIDController.h"
-#include "Drive/Tank_Robot.h"
-#include "Common/Robot_Control_Interface.h"
-#include "Common/Rotary_System.h"
-#include "Common/Servo_System.h"
-#include "Base/Joystick.h"
-#include "Base/JoystickBinder.h"
-#include "Common/UI_Controller.h"
-#include "Common/PIDController.h"
+#include "stdafx.h"
+#include "AI_Tester.h"
+
+#ifdef AI_TesterCode
+#include "Debug.h"
+namespace AI_Tester
+{
+	#include "PIDController.h"
+	#include "Calibration_Testing.h"
+	#include "Tank_Robot.h"
+	#include "Robot_Control_Interface.h"
+	#include "Rotary_System.h"
+	#include "Servo_System.h"
+	#include "CommonUI.h"
+	#include "FRC2013_Robot.h"
+}
+
+#include "UDP_Listener.h"
+
+using namespace AI_Tester;
+using namespace GG_Framework::Base;
+using namespace osg;
+using namespace std;
+
+const double Pi=M_PI;
+const double Pi2=M_PI*2.0;
+#else
 #include "Common/Debug.h"
 #include "FRC2013_Robot.h"
 #include "UDP_Listener.h"
 
 using namespace Framework::Base;
 using namespace std;
-
-namespace Base=Framework::Base;
-namespace Scripting=Framework::Scripting;
-
-
+#endif
 
 #undef __DisableEncoderTracking__
 #undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
@@ -179,7 +176,7 @@ FRC_2013_Robot::PowerWheels::PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_
 {
 }
 
-void FRC_2013_Robot::PowerWheels::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void FRC_2013_Robot::PowerWheels::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
 {
 	m_SecondStage.Initialize(em,props);
 	m_FirstStage.Initialize(em,&m_pParent->GetRobotProps().GetPowerSlowWheelProps());
@@ -576,7 +573,7 @@ FRC_2013_Robot::~FRC_2013_Robot()
 	coodinate_manager_Interface::DestroyInstance((coodinate_manager_Interface *)m_UDP_Listener);
 }
 
-void FRC_2013_Robot::Initialize(Base::EventMap& em, const Entity_Properties *props)
+void FRC_2013_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	m_RobotControl->Initialize(props);
@@ -746,12 +743,17 @@ namespace VisionConversion
 void FRC_2013_Robot::TimeChange(double dTime_s)
 {
 	coodinate_manager_Interface *listener=(coodinate_manager_Interface *)m_UDP_Listener;
+	#ifdef AI_TesterCode
+	listener->TimeChange(dTime_s);
+	#endif
 
 	//Leave the macro enable for ease of disabling the corrections (in case it goes horribly wrong) :)
 	#if 1
 	if (listener->IsUpdated())
 	{
+		#ifndef AI_TesterCode
 		listener->ResetUpdate();
+		#endif
 		//TODO see if we want a positive Y for up... for now we can convert it here
 		const double  YOffset=-listener->GetYpos();
 		const double XOffset=listener->GetXpos();
@@ -1205,7 +1207,7 @@ void FRC_2013_Robot::Robot_SetCreepMode(bool on)
 
 void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=GetEventMap(); 
+	Entity2D_Kind::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
 		em->EventOnOff_Map["Robot_SetTargeting"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargeting);
