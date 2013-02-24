@@ -82,3 +82,5 @@ private:
 
 	}
 }
+
+namespace Scripting=Framework::Scripting;
