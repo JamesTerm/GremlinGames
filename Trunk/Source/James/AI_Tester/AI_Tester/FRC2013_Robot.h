@@ -13,7 +13,7 @@ public:
 	//The client code may cast the properties to obtain the specific data 
 	virtual void Initialize(const Entity_Properties *props)=0;
 	#ifdef AI_TesterCode
-	virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)=0;
+	virtual void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)=0;
 	#endif
 };
 
@@ -68,7 +68,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
 		FRC_2013_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 
 		const Servo_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Servo_Properties &GetTurretProps() const {return m_TurretProps;}
@@ -173,7 +173,7 @@ class FRC_2013_Robot : public Tank_Robot
 		FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interface *robot_control,bool IsAutonomous=false);
 		virtual~FRC_2013_Robot();
 		IEvent::HandlerList ehl;
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 
@@ -230,7 +230,7 @@ class FRC_2013_Robot : public Tank_Robot
 			public:
 				PowerWheels(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
-				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+				void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL);
 
 				void BindAdditionalEventControls(bool Bind);
 				void ResetPos();
@@ -299,7 +299,7 @@ class FRC_2013_Robot : public Tank_Robot
 				} m_ControlSignals;
 			public:
 				IntakeSystem(FRC_2013_Robot *pParent,Rotary_Control_Interface *robot_control);
-				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+				void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL);
 				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
 
@@ -503,7 +503,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
 		//Note: This is only for AI Tester
-		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+		virtual void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
 
 		void TriggerIntakeDeployedLimit(bool on) {m_DeployedLimit=on;}
 		void SlowWheel(bool on) {m_SlowWheel=on;}
@@ -540,7 +540,7 @@ class FRC_2013_Power_Wheel_UI : public Side_Wheel_UI
 	public:
 		FRC_2013_Power_Wheel_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
 		//Client code can manage the properties
-		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Wheel_Properties *props=NULL);
 		virtual void TimeChange(double dTime_s);
 	private:
 		FRC_2013_Robot_Control * const m_RobotControl;
@@ -552,7 +552,7 @@ class FRC_2013_Power_Slow_Wheel_UI : public Side_Wheel_UI
 	public:
 		FRC_2013_Power_Slow_Wheel_UI(FRC_2013_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
 		//Client code can manage the properties
-		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Wheel_Properties *props=NULL);
 		virtual void TimeChange(double dTime_s);
 	private:
 		FRC_2013_Robot_Control * const m_RobotControl;

@@ -124,6 +124,8 @@ class Entity2D : public EntityPropertiesInterface
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement) {return false;}
 };
 
+typedef Entity2D Entity2D_Kind;
+
 class RimSpace_GameAttributes
 {
 	public:
