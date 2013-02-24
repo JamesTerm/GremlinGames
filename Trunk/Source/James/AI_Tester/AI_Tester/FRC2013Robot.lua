@@ -8,6 +8,7 @@ Meters2Inches=39.3700787
 Inches2Meters=0.0254
 OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
+Deg2Rad=(1/180) * Pi
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -130,7 +131,8 @@ MainRobot = {
 		{
 			show_console_dump='no',
 			ds_display_row=-1,
-			tolerance=0.05,
+			tolerance=Deg2Rad * 0.05,
+			smoothing=0.35,
 			servo_ratio=1.12,
 			servo_offset=32,
 
@@ -147,7 +149,8 @@ MainRobot = {
 		{
 			show_console_dump='no',
 			ds_display_row=-1,
-			tolerance=0.05,
+			tolerance=Deg2Rad * 0.05,
+			smoothing=0.45,
 			servo_ratio=1.0,
 			servo_offset=85,
 
