@@ -10,14 +10,14 @@ using namespace osg;
 #undef __DisableSpeedControl__  //This one is great for test purposes
 #undef DEBUG_AFTERBURNER
 
-bool g_DisableEngineRampUp2=false;
+bool g_DisableEngineRampUp2=false;  //TODO phase out
 
-namespace Scripting=GG_Framework::Logic::Scripting;
-//namespace Scripting=Framework::Scripting;
-
+#ifdef AI_TesterCode
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
+#endif
 const double Half_Pi=M_PI/2.0;
+
 
   /***************************************************************************************************************/
  /*													Ship_2D														*/
@@ -107,7 +107,7 @@ void Ship_2D::SetSimFlightMode(bool SimFlightMode)
 		//but that would not be something desirable
 		m_RequestedVelocity=GlobalToLocal(GetAtt_r(),m_Physics.GetLinearVelocity()); 
 		m_SimFlightMode=SimFlightMode;	
-		DebugOutput("SimFlightMode=%d\n",SimFlightMode);
+		//DebugOutput("SimFlightMode=%d\n",SimFlightMode);
 	}
 }
 
@@ -239,7 +239,7 @@ void Ship_2D::UpdateShipProperties(const Ship_Props &props)
 	MaxTorqueYaw=props.MaxTorqueYaw * m_Physics.GetMass();
 }
 
-void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
+void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *props)
 {
 	if (!m_controller)
 		m_controller = Create_Controller();
@@ -282,11 +282,12 @@ void Ship_2D::Initialize(Entity2D::EventMap& em,const Entity_Properties *props)
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
+	#ifdef AI_TesterCode
 	m_Physics.GetPilotInfo().GLimit = 8.0;
 	m_Physics.GetPilotInfo().PassOutTime_s = 10.0;
 	m_Physics.GetPilotInfo().PassOutRecoveryTime_s = 1.0;
 	m_Physics.GetPilotInfo().MaxRecoveryTime_s = 10.0;
-
+	#endif
 	double RadiusOfConcentratedMass=m_Physics.GetRadiusOfConcentratedMass();
 	m_IntendedOrientationPhysics.SetRadiusOfConcentratedMass(RadiusOfConcentratedMass);
 	m_RadialArmDefault=RadiusOfConcentratedMass*RadiusOfConcentratedMass;
@@ -683,15 +684,14 @@ void Ship_2D::TimeChange(double dTime_s)
 	m_currAccel=Vec2d(0,0);
 }
 
-//////////////////////////////////////////////////////////////////////////
 
 void Ship_2D::CancelAllControls()
 {
 	//__super::CancelAllControls();
+	//if (m_controller )
 	//	m_controller->CancelAllControls();
 }
 
-//////////////////////////////////////////////////////////////////////////
 #if 0
 void Ship_2D::DestroyEntity(bool shotDown, Vec3d collisionPt)
 {
@@ -945,6 +945,64 @@ double Ship_Properties::GetRotateToScaler(double Distance) const
 	return (ratio * High) + ((1.0-ratio) * Low);
 }
 
+
+  /***********************************************************************************************************************************/
+ /*													Ship_Tester																		*/
+/***********************************************************************************************************************************/
+
+
+Ship_Tester::~Ship_Tester()
+{
+	//not perfect but in a test environment will do
+	delete GetController()->m_Goal;
+	GetController()->m_Goal=NULL;
+	//assert(!GetController()->m_Goal);
+}
+
+void Ship_Tester::SetPosition(double x,double y) 
+{
+	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	writePtr->m_pos_m.set(x,y);
+	writePtr->m_att_r=readPtr->m_att_r;  //make sure the entire structure is updated!
+	m_att_r=readPtr->m_att_r;
+	UpdatePosAtt();
+}
+
+void Ship_Tester::SetAttitude(double radians)
+{
+
+	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
+	writePtr->m_att_r=radians;
+	m_att_r=radians;
+	UpdatePosAtt();
+}
+
+const Goal *Ship_Tester::GetGoal() const 
+{
+	return GetController()->m_Goal;
+}
+
+Goal *Ship_Tester::ClearGoal()
+{
+	//Ensure there the current goal is clear
+	if (GetController()->m_Goal)
+	{
+		GetController()->m_Goal->Terminate();
+		//TODO determine how to ensure the update thread is finished with the process
+	}
+	return GetController()->m_Goal;
+}
+
+void Ship_Tester::SetGoal(Goal *goal) 
+{
+	GetController()->m_Goal=goal;
+}
+
+#ifdef AI_TesterCode
+
   /***********************************************************************************************************************************/
  /*														UI_Ship_Properties															*/
 /***********************************************************************************************************************************/
@@ -982,3 +1040,5 @@ void UI_Ship_Properties::LoadFromScript(Scripting::Script& script)
 	}
 	__super::LoadFromScript(script);
 }
+
+#endif
