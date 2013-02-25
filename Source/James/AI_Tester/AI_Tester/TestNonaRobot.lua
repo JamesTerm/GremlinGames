@@ -5,6 +5,7 @@ Feet2Meters=0.3048
 Meters2Feet=3.2808399
 Meters2Inches=39.3700787
 Pounds2Kilograms=0.453592
+Deg2Rad=(1/180) * Pi
 
 wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 --TODO where length is in 5 inches in, and width is 3 on each side
@@ -35,7 +36,9 @@ TestShip = {
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid, 
-	rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
+	--Note rotate_to_scale may become depreciated to rotation_tolerance, will want to test how well it comes to point on several machines
+	--rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
+	rotation_tolerance=Deg2Rad * 3,
 	
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
