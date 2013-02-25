@@ -401,7 +401,7 @@ double FRC_2013_Robot_Control::GetServoAngle(size_t index)
 			const Servo_Props &props=m_RobotProps.GetPitchRampProps().GetServoProps();
 			result=DEG_2_RAD((m_PitchRampAngle - props.ServoOffset) / props.ServoScalar);
 			#ifdef __DebugLUA__
-			Dout(props.Feedback_DiplayRow,14,"p=%.2f",RAD_2_DEG(result));
+			Dout(props.Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			#endif
 			break;
 		}
@@ -410,7 +410,7 @@ double FRC_2013_Robot_Control::GetServoAngle(size_t index)
 			const Servo_Props &props=m_RobotProps.GetTurretProps().GetServoProps();
 			result=DEG_2_RAD((m_TurretAngle - props.ServoOffset) / props.ServoScalar);
 			#ifdef __DebugLUA__
-			Dout(props.Feedback_DiplayRow,14,"p=%.2f",RAD_2_DEG(result));
+			Dout(props.Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
 			#endif
 			break;
 		}
