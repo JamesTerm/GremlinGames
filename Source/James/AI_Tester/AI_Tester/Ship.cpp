@@ -53,7 +53,7 @@ inline Vec2d GetDirection(double Heading,double Intensity)
 //Quat FromLW_Rot_Radians(double H, double P, double R);
 
 Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
-	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation),m_TorqueReported_Averager(0.0625)
+	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation)
 {
 	SetSimFlightMode(true);  //this sets up the initial speed as well
 	SetStabilizeRotation(true); //This should always be true unless there is some ship failure
