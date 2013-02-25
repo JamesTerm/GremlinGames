@@ -11,8 +11,11 @@ inline void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double Negat
 		Voltage=NegativeDeadZone;
 }
 
-inline osg::Vec2d GlobalToLocal(double Heading,const osg::Vec2d &GlobalVector);
-inline osg::Vec2d LocalToGlobal(double Heading,const osg::Vec2d &LocalVector);
+inline Vec2D GlobalToLocal(double Heading,const Vec2D &GlobalVector);
+inline Vec2D LocalToGlobal(double Heading,const Vec2D &LocalVector);
+
+//TODO AI should probably move this to Entity2D as well
+#ifdef AI_TesterCode
 inline void NormalizeRotation(double &Rotation)
 {
 	const double Pi2=M_PI*2.0;
@@ -22,6 +25,7 @@ inline void NormalizeRotation(double &Rotation)
 	else if (Rotation<-M_PI)
 		Rotation+=Pi2;
 }
+#endif
 
 inline double NormalizeRotation2(double Rotation)
 {
@@ -46,7 +50,6 @@ inline double SaturateRotation(double Rotation)
 
 struct Ship_Props
 {
-	//typedef Entity_Properties __super;
 	// This is the rate used by the keyboard
 	double dHeading;
 
@@ -81,6 +84,10 @@ struct Ship_Props
 	};
 	Ship_Type ShipType;
 };
+
+#ifndef AI_TesterCode
+typedef Entity2D Ship;
+#endif
 
 class Physics_Tester : public Ship
 {
@@ -151,16 +158,16 @@ class LUA_Controls_Properties
 		typedef std::vector<Control_Props> Controls_List;
 	private:
 		//Return if element was successfully created (be sure to check as some may not be present)
-		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,GG_Framework::Logic::Scripting::Script& script);
+		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script);
 
 		Controls_List m_Controls;
-		LUA_Controls_Properties_Interface * const m_pParent;
+		LUA_Controls_Properties_Interface * m_pParent;
 	public:
 		LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent);
 
 		const Controls_List &Get_Controls() const {return m_Controls;}
 		//call from within GetFieldTable controls
-		void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		void LoadFromScript(Scripting::Script& script);
 		//Just have the client (from ship) call this
 		void BindAdditionalUIControls(bool Bind,void *joy) const;
 		LUA_Controls_Properties &operator= (const LUA_Controls_Properties &CopyFrom);
@@ -172,8 +179,8 @@ class Ship_Properties : public Entity_Properties
 	public:
 		Ship_Properties();
 		virtual ~Ship_Properties() {}
-		const char *SetUpGlobalTable(GG_Framework::Logic::Scripting::Script& script);
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		const char *SetUpGlobalTable(Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 		//This is depreciated (may need to review game use-case)
 		//void Initialize(Ship_2D *NewShip) const;
 		void UpdateShipProperties(const Ship_Props &props);  //explicitly allow updating of ship props here
@@ -190,7 +197,9 @@ class Ship_Properties : public Entity_Properties
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}
 		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
 	private:
-		//typedef Entity_Properties __super;
+		#ifndef AI_TesterCode
+		typedef Entity_Properties __super;
+		#endif
 		
 		Ship_Props m_ShipProps;
 
@@ -203,27 +212,13 @@ class Ship_Properties : public Entity_Properties
 		LUA_Controls_Properties m_ShipControls;
 };
 
-
-class UI_Ship_Properties : public Ship_Properties
-{
-	public:
-		UI_Ship_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		void Initialize(const char **TextImage,osg::Vec2d &Dimension) const;
-	private:
-		std::string m_TextImage;
-		osg::Vec2d m_UI_Dimensions;
-};
-
 class Ship_2D : public Ship
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 		Ship_2D(const char EntityName[]);
 		//Give ability to change ship properties 
 		void UpdateShipProperties(const Ship_Props &props);
-		virtual void Initialize(Entity2D::EventMap& em,const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *props=NULL);
 		virtual ~Ship_2D();
 
 		///This implicitly will place back in auto mode with a speed of zero
@@ -372,11 +367,10 @@ class Ship_2D : public Ship
 		//double m_Last_AccDel;  ///< This monitors a previous AccDec session to determine when to reset the speed
 		Vec2D m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
 
-		// When notifying everything about thrusters, we want to keep a bit of an averager
-		Averager<osg::Vec3d, 5> m_ThrustReported_Averager;
-		Blend_Averager<osg::Vec3d> m_TorqueReported_Averager;
 	private:
-		//typedef Entity2D __super;
+		#ifndef AI_TesterCode
+		typedef Entity2D __super;
+		#endif
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
 
 };
@@ -392,3 +386,16 @@ class Ship_Tester : public Ship_2D
 		const Goal *GetGoal() const;
 		void SetGoal(Goal *goal);
 };
+
+#ifdef AI_TesterCode
+class UI_Ship_Properties : public Ship_Properties
+{
+	public:
+		UI_Ship_Properties();
+		virtual void LoadFromScript(Scripting::Script& script);
+		void Initialize(const char **TextImage,Vec2D &Dimension) const;
+	private:
+		std::string m_TextImage;
+		Vec2D m_UI_Dimensions;
+};
+#endif
