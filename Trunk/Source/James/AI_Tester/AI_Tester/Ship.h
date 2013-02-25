@@ -71,6 +71,7 @@ struct Ship_Props
 	double MaxTorqueYaw;
 	//These are used to avoid overshoot when trying to rotate to a heading
 	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
+	double Rotation_Tolerance;
 	enum Ship_Type
 	{
 		eDefault,
