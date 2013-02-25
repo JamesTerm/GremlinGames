@@ -404,6 +404,8 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			UpdateIntendedOrientaton(dTime_s);
 			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
+			if (fabs(m_rotDisplacement_rad)<m_ShipProps.GetShipProps().Rotation_Tolerance)
+				m_rotDisplacement_rad=0.0;
 		}
 		#endif
 	}
@@ -768,6 +770,7 @@ Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
 	props.EngineRampStrafe= props.STRAFE/RAMP_UP_DUR;
 	props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
 	props.RotateTo_TorqueDegradeScalar=props.RotateTo_TorqueDegradeScalar_High=1.0;
+	props.Rotation_Tolerance=0.0;
 	m_ShipProps=props;
 };
 
@@ -872,7 +875,8 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
 		if (err)
 			props.RotateTo_TorqueDegradeScalar_High=props.RotateTo_TorqueDegradeScalar;
-
+		script.GetField("rotation_tolerance", NULL, NULL, &props.Rotation_Tolerance);
+	
 		err = script.GetField("MAX_SPEED", NULL, NULL, &props.MAX_SPEED);
 		err = script.GetField("ENGAGED_MAX_SPEED", NULL, NULL, &props.ENGAGED_MAX_SPEED);
 		if (err)
