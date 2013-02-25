@@ -60,7 +60,7 @@ using namespace std;
 #undef __UseFileTargetTracking__  //to test against a file that tracks
 #undef __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
-#undef __DisableIntakeAutoPosition__
+#define __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
 
 #endif
