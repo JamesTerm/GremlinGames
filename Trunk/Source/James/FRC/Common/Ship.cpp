@@ -21,10 +21,12 @@ using namespace Framework::Base;
 #undef __DisableSpeedControl__  //This one is great for test purposes
 #undef DEBUG_AFTERBURNER
 
-bool g_DisableEngineRampUp2=true;  //we need not use engine ramping for the robot
+bool g_DisableEngineRampUp2=false;  //TODO phase out
 
-//namespace Scripting=GG_Framework::Logic::Scripting;
-namespace Scripting=Framework::Scripting;
+#ifdef AI_TesterCode
+const double Pi=M_PI;
+const double Pi2=M_PI*2.0;
+#endif
 const double Half_Pi=M_PI/2.0;
 
 
@@ -245,7 +247,7 @@ void Ship_2D::UpdateShipProperties(const Ship_Props &props)
 	MaxTorqueYaw=props.MaxTorqueYaw * m_Physics.GetMass();
 }
 
-void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *props)
+void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *props)
 {
 	if (!m_controller)
 		m_controller = Create_Controller();
@@ -288,7 +290,12 @@ void Ship_2D::Initialize(Framework::Base::EventMap& em,const Entity_Properties *
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
-
+	#ifdef AI_TesterCode
+	m_Physics.GetPilotInfo().GLimit = 8.0;
+	m_Physics.GetPilotInfo().PassOutTime_s = 10.0;
+	m_Physics.GetPilotInfo().PassOutRecoveryTime_s = 1.0;
+	m_Physics.GetPilotInfo().MaxRecoveryTime_s = 10.0;
+	#endif
 	double RadiusOfConcentratedMass=m_Physics.GetRadiusOfConcentratedMass();
 	m_IntendedOrientationPhysics.SetRadiusOfConcentratedMass(RadiusOfConcentratedMass);
 	m_RadialArmDefault=RadiusOfConcentratedMass*RadiusOfConcentratedMass;
@@ -693,6 +700,21 @@ void Ship_2D::CancelAllControls()
 	//	m_controller->CancelAllControls();
 }
 
+#if 0
+void Ship_2D::DestroyEntity(bool shotDown, Vec3d collisionPt)
+{
+	__super::DestroyEntity(shotDown, collisionPt);
+
+	//Reset all of the intended vectors and thrusters.
+	// Anything that would keep the ship from flying with its current velocities. (linear and angular)
+	if (IsLocallyControlled())
+	{
+		SetSimFlightMode(false);
+		SetStabilizeRotation(false);
+	}
+}
+#endif
+
 void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy)
 {
 	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy);
@@ -947,7 +969,6 @@ Ship_Tester::~Ship_Tester()
 
 void Ship_Tester::SetPosition(double x,double y) 
 {
-
 	PosAtt *writePtr=m_PosAtt_Write;
 	PosAtt *readPtr=m_PosAtt_Read;
 	writePtr->m_pos_m.set(x,y);
@@ -962,6 +983,7 @@ void Ship_Tester::SetAttitude(double radians)
 	PosAtt *readPtr=m_PosAtt_Read;
 	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
 	writePtr->m_att_r=radians;
+	m_att_r=radians;
 	UpdatePosAtt();
 }
 
@@ -985,3 +1007,45 @@ void Ship_Tester::SetGoal(Goal *goal)
 {
 	GetController()->m_Goal=goal;
 }
+
+#ifdef AI_TesterCode
+
+  /***********************************************************************************************************************************/
+ /*														UI_Ship_Properties															*/
+/***********************************************************************************************************************************/
+
+UI_Ship_Properties::UI_Ship_Properties()
+{
+	m_TextImage="*";
+	m_UI_Dimensions[0]=1,m_UI_Dimensions[1]=1;
+};
+
+void UI_Ship_Properties::Initialize(const char **TextImage,osg::Vec2d &Dimension) const
+{
+	*TextImage=m_TextImage.c_str();
+	Dimension[0]=m_UI_Dimensions[0];
+	Dimension[1]=m_UI_Dimensions[1];
+}
+
+void UI_Ship_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	{
+		//Get the ships UI
+		err = script.GetFieldTable("UI");
+		if (!err)
+		{
+			err = script.GetField("Length", NULL, NULL,&m_UI_Dimensions[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("Width", NULL, NULL,&m_UI_Dimensions[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("TextImage",&m_TextImage,NULL,NULL);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+
+	}
+	__super::LoadFromScript(script);
+}
+
+#endif
