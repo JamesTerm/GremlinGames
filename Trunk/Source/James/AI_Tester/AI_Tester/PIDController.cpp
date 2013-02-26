@@ -7,6 +7,11 @@ namespace AI_Tester
 
 using namespace AI_Tester;
 
+inline bool IsZero(double value,double tolerance=1e-5)
+{
+	return fabs(value)<tolerance;
+}
+
   /***********************************************************************************************************/
  /*												LatencyFilter												*/
 /***********************************************************************************************************/
@@ -139,10 +144,10 @@ double KalmanFilter::operator()(double input)
 /***********************************************************************************************************/
 
 
-PIDController2::PIDController2(double p, double i, double d,double maximumOutput,double minimumOutput,double maximumInput,
+PIDController2::PIDController2(double p, double i, double d,bool AutoResetI,double maximumOutput,double minimumOutput,double maximumInput,
 	double minimumInput,double m_tolerance,bool continuous,bool enabled) :
 	m_P(p),m_I(i),m_D(d),m_maximumOutput(maximumOutput),m_minimumOutput(minimumOutput),m_maximumInput(maximumInput),m_minimumInput(minimumInput),
-	m_continuous(continuous),m_enabled(enabled)
+	m_continuous(continuous),m_enabled(enabled),m_AutoResetI(AutoResetI)
 {
 	m_prevError = 0;
 	m_totalError = 0;
@@ -173,6 +178,11 @@ double PIDController2::operator()(double setpoint,double input,double dTime_s)
 					m_maximumInput - m_minimumInput;
 			}
 		}
+
+
+		//If both the setpoint and input are zero then there should be no total error
+		if (m_AutoResetI && IsZero(setpoint + input))
+			m_totalError=0.0;
 
 		//Note: here is the original code, which is correct but incomplete; 
 		//this check really needs an else case, where if the error grows too large it would stop accumulating error and become stuck
