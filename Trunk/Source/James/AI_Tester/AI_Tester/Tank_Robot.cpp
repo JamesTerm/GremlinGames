@@ -10,17 +10,17 @@ namespace AI_Tester
 	#include "Rotary_System.h"
 }
 
-
+#ifdef AI_TesterCode
 using namespace AI_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-namespace Scripting=GG_Framework::Logic::Scripting;
-//namespace Scripting=Framework::Scripting;
-
 const double Pi2=M_PI*2.0;
-
+#else
+using namespace Framework::Base;
+using namespace std;
+#endif
 
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/
@@ -41,7 +41,7 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 void Tank_Robot::DestroyDrive() 
 {
 	delete m_VehicleDrive;
-	const_cast<Tank_Drive *>(m_VehicleDrive)=NULL;
+	m_VehicleDrive=NULL;
 }
 
 Tank_Robot::~Tank_Robot()
@@ -49,9 +49,9 @@ Tank_Robot::~Tank_Robot()
 	DestroyDrive();
 }
 
-void Tank_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
-	const_cast<Tank_Drive *>(m_VehicleDrive)=CreateDrive();
+	m_VehicleDrive=CreateDrive();
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
@@ -581,6 +581,8 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 }
 
+#ifdef AI_TesterCode
+
   /***********************************************************************************************************************************/
  /*														Tank_Robot_Control															*/
 /***********************************************************************************************************************************/
@@ -795,3 +797,5 @@ void Tank_Robot_UI::TimeChange(double dTime_s)
 		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
 	}
 }
+
+#endif

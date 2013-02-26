@@ -53,15 +53,11 @@ using namespace std;
 #undef __DisableEncoderTracking__
 #undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
 
-#undef __EnableSensorsDisplayRow4__
-#undef __EnablePitchDisplayRow4__
-#undef __EnableYawDisplayRow4__
-
 #undef __UseFileTargetTracking__  //to test against a file that tracks
 #undef __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
-#undef __DisableIntakeAutoPosition__
-#undef __DisabledClimbPneumatics__
+#define __DisableIntakeAutoPosition__
+#define __DisabledClimbPneumatics__
 
 #endif
 
@@ -1477,7 +1473,6 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 const char *ProcessVec2D(FRC_2013_Robot_Props &m_FRC2013RobotProps,Scripting::Script& script,Vec2d &Dest)
 {
 	const char *err;
-	typedef FRC_2013_Robot_Properties::Vec2D Vec2D;
 	double length, width;	
 	//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
 	err = script.GetField("y", NULL, NULL,&length);
@@ -1517,7 +1512,6 @@ const char *ProcessVec2D(FRC_2013_Robot_Props &m_FRC2013RobotProps,Scripting::Sc
 const char *ProcessKey(FRC_2013_Robot_Props &m_FRC2013RobotProps,Scripting::Script& script,size_t index)
 {
 	const char *err;
-	typedef FRC_2013_Robot_Properties::Vec2D Vec2D;
 	Vec2D PresetPosition;
 	err=ProcessVec2D(m_FRC2013RobotProps,script,PresetPosition);
 	ASSERT_MSG(!err, err);

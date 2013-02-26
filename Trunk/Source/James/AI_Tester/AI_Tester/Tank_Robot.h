@@ -18,9 +18,6 @@ class Tank_Drive_Control_Interface
 
 struct Tank_Robot_Props
 {
-	//typedef Framework::Base::Vec2d Vec2D;
-	typedef osg::Vec2d Vec2D;
-
 	//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
 	//the width is a measurement of the the center of the wheel width to the other wheel
 	Vec2D WheelDimensions;
@@ -61,12 +58,10 @@ class Tank_Robot : public Ship_Tester,
 				   public Vehicle_Drive_Common_Interface
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 		Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 		virtual ~Tank_Robot();
 		IEvent::HandlerList ehl;
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		void Reset(bool ResetPosition=true);
 		/// \param ResetPos typically true for autonomous and false for dynamic use
 		void SetUseEncoders(bool UseEncoders,bool ResetPosition=true);
@@ -76,8 +71,9 @@ class Tank_Robot : public Ship_Tester,
 		//Give ability to change properties
 		void UpdateTankProps(const Tank_Robot_Props &TankProps);
 	protected:
+		#ifdef AI_TesterCode
 		friend Tank_Robot_UI;
-
+		#endif
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
 		#ifdef __UseScalerPID__
@@ -108,9 +104,11 @@ class Tank_Robot : public Ship_Tester,
 	protected:
 		bool m_IsAutonomous;
 	private:
-		//typedef  Tank_Drive __super;
+		#ifndef AI_TesterCode
+		typedef  Ship_Tester __super;
+		#endif
 		Tank_Drive_Control_Interface * const m_RobotControl;
-		Tank_Drive * const m_VehicleDrive;
+		Tank_Drive *m_VehicleDrive;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
 		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration
 		bool m_UsingEncoders;
@@ -129,14 +127,15 @@ class Tank_Robot : public Ship_Tester,
 		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
 };
 
+#ifndef AI_TesterCode
+typedef Ship_Properties UI_Ship_Properties;
+#endif
+
 class Tank_Robot_Properties : public UI_Ship_Properties
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
 		Tank_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
 		#ifdef AI_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
@@ -145,14 +144,15 @@ class Tank_Robot_Properties : public UI_Ship_Properties
 	protected:
 		Tank_Robot_Props m_TankRobotProps;
 	private:
-		//typedef Ship_Properties __super;
-		#ifdef AI_TesterCode
+		#ifndef AI_TesterCode
+		typedef Ship_Properties __super;
+		#else
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
 };
 
-///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
-///are correct
+#ifdef AI_TesterCode
+
 class Tank_Robot_Control : public Tank_Drive_Control_Interface
 {
 	public:
@@ -263,3 +263,5 @@ class Tank_Robot_UI_Control : public Tank_Robot, public Tank_Robot_Control
 	private:
 		Tank_Robot_UI m_TankUI;
 };
+
+#endif
