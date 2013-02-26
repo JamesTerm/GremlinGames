@@ -146,9 +146,17 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
 		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
 
+		const double LeftAcceleration=(LeftVelocity-m_PreviousLeftVelocity)/dTime_s;
+		const double RightAcceleration=(RightVelocity-m_PreviousRightVelocity)/dTime_s;
+		const bool LeftDecel=(LeftAcceleration * LeftVelocity <= 0);
+		const bool RightDecel=(RightAcceleration * RightVelocity <= 0);
+
 		//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
-		m_ErrorOffset_Left=fabs(m_ErrorOffset_Left)>m_TankRobotProps.PrecisionTolerance?m_ErrorOffset_Left:0.0;
-		m_ErrorOffset_Right=fabs(m_ErrorOffset_Right)>m_TankRobotProps.PrecisionTolerance?m_ErrorOffset_Right:0.0;
+		//Note: that it is important to bias towards deceleration this can help satisfy both requirements of avoiding oscillation as well
+		//As well as avoiding a potential overshoot when trying stop at a precise distance
+		m_ErrorOffset_Left=LeftDecel || fabs(m_ErrorOffset_Left)>m_TankRobotProps.PrecisionTolerance?m_ErrorOffset_Left:0.0;
+		m_ErrorOffset_Right=RightDecel || fabs(m_ErrorOffset_Right)>m_TankRobotProps.PrecisionTolerance?m_ErrorOffset_Right:0.0;
+
 		//Adjust the engaged max speed to avoid the PID from overflow lockup
 		//ENGAGED_MAX_SPEED=(m_CalibratedScaler_Left+m_CalibratedScaler_Right) / 2.0;
 		//DOUT5("p=%f e=%f d=%f cs=%f",RightVelocity,Encoder_RightVelocity,RightVelocity-Encoder_RightVelocity,m_CalibratedScaler_Right);
