@@ -17,12 +17,17 @@
 #include "../Common/PIDController.h"
 #include "Tank_Robot.h"
 
-using namespace Framework::Base;
+#ifdef AI_TesterCode
+using namespace AI_Tester;
+using namespace GG_Framework::Base;
+using namespace osg;
 using namespace std;
 
-//namespace Scripting=GG_Framework::Logic::Scripting;
-namespace Scripting=Framework::Scripting;
-
+const double Pi2=M_PI*2.0;
+#else
+using namespace Framework::Base;
+using namespace std;
+#endif
 
   /***********************************************************************************************************************************/
  /*																Tank_Robot															*/
@@ -51,7 +56,7 @@ Tank_Robot::~Tank_Robot()
 	DestroyDrive();
 }
 
-void Tank_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
+void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	m_VehicleDrive=CreateDrive();
 	__super::Initialize(em,props);
@@ -562,6 +567,15 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TankRobotProps.Negative_DeadZone_Right=-m_TankRobotProps.Negative_DeadZone_Right;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 
+		#ifdef AI_TesterCode
+		err = script.GetFieldTable("motor_specs");
+		if (!err)
+		{
+			m_EncoderSimulation.LoadFromScript(script);
+			script.Pop();
+		}
+		#endif
+
 		script.Pop(); 
 	}
 	err = script.GetFieldTable("controls");
@@ -574,3 +588,221 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 }
 
+#ifdef AI_TesterCode
+
+  /***********************************************************************************************************************************/
+ /*														Tank_Robot_Control															*/
+/***********************************************************************************************************************************/
+
+Tank_Robot_Control::Tank_Robot_Control() : m_LeftVoltage(0.0),m_RightVoltage(0.0),m_DisplayVoltage(true)
+{
+}
+
+void Tank_Robot_Control::Reset_Encoders()
+{
+	m_KalFilter_EncodeLeft.Reset(),m_KalFilter_EncodeRight.Reset();	
+}
+
+void Tank_Robot_Control::Initialize(const Entity_Properties *props)
+{
+	const Tank_Robot_Properties *robot_props=dynamic_cast<const Tank_Robot_Properties *>(props);
+
+	//For now robot_props can be NULL since the swerve robot is borrowing it
+	if (robot_props)
+	{
+		assert(robot_props);
+		m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
+
+		//This will copy all the props
+		m_TankRobotProps=robot_props->GetTankRobotProps();
+		//We'll try to construct the props to match our properties
+		//Note: for max accel it needs to be powerful enough to handle curve equations
+		Rotary_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
+		props.RotaryProps().EncoderToRS_Ratio=m_TankRobotProps.MotorToWheelGearRatio;
+		#ifdef AI_TesterCode
+		props.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
+		#endif
+		m_Encoders.Initialize(&props);
+
+		#if 1
+		//Now to set the encoders reverse state
+		m_Encoders.SetLeftRightReverseDirectionEncoder(m_TankRobotProps.LeftEncoderReversed,m_TankRobotProps.RightEncoderReversed);
+		#else
+		//Testing a side imbalance
+		m_Encoders.SetLeftRightScalar(1.0,0.94);
+		#endif
+	}
+}
+
+void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
+{
+	m_Encoders.SetTimeDelta(dTime_s);
+	if (m_DisplayVoltage)
+	{
+		//display voltages
+		DOUT2("l=%f r=%f\n",m_LeftVoltage,m_RightVoltage);
+	}
+}
+
+double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
+{
+	return RPS * m_TankRobotProps.MotorToWheelGearRatio * M_PI * m_TankRobotProps.WheelDiameter; 
+}
+
+void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
+{
+	m_Encoders.GetLeftRightVelocity(LeftVelocity,RightVelocity);
+	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f",Meters2Feet(LeftVelocity),Meters2Feet(RightVelocity));
+}
+
+void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)
+{
+	double LeftVoltageToUse=min(LeftVoltage,1.0);
+	double RightVoltageToUse=min(RightVoltage,1.0);
+	if (!m_TankRobotProps.ReverseSteering)
+	{
+		m_LeftVoltage=LeftVoltageToUse;
+		m_RightVoltage=RightVoltageToUse;
+		m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse * m_TankRobotProps.VoltageScalar,RightVoltageToUse * m_TankRobotProps.VoltageScalar);
+	}
+	else
+	{
+		m_LeftVoltage=RightVoltageToUse;
+		m_RightVoltage=LeftVoltageToUse;
+		m_Encoders.UpdateLeftRightVoltage(RightVoltageToUse * m_TankRobotProps.VoltageScalar,LeftVoltageToUse * m_TankRobotProps.VoltageScalar);
+	}
+	m_Encoders.TimeChange();   //have this velocity immediately take effect
+}
+
+
+  /***************************************************************************************************************/
+ /*												Tank_Wheel_UI													*/
+/***************************************************************************************************************/
+
+void Tank_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
+{
+	m_props=*props;
+	m_Rotation=0.0;
+}
+
+void Tank_Wheel_UI::UI_Init(Actor_Text *parent) 
+{
+	m_UIParent=parent;
+
+	osg::Vec3 position(0.5*c_Scene_XRes_InPixels,0.5*c_Scene_YRes_InPixels,0.0f);
+
+	m_Tread= new osgText::Text;
+	m_Tread->setColor(osg::Vec4(1.0,1.0,1.0,1.0));
+	m_Tread->setCharacterSize(m_UIParent->GetFontSize());
+	m_Tread->setFontResolution(10,10);
+	m_Tread->setPosition(position);
+	m_Tread->setAlignment(osgText::Text::CENTER_CENTER);
+	m_Tread->setText(L"_");
+	m_Tread->setUpdateCallback(m_UIParent);
+}
+
+void Tank_Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
+{
+	if (AddOrRemove)
+		if (m_Tread.valid()) geode->addDrawable(m_Tread);
+	else
+		if (m_Tread.valid()) geode->removeDrawable(m_Tread);
+}
+
+void Tank_Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
+{
+	const double FS=m_UIParent->GetFontSize();
+	//Vec2d TreadRotPos(0.0,cos(m_Rotation)-0.3);  //good for " font
+	Vec2d TreadRotPos(sin(m_Rotation)*-0.25,(cos(m_Rotation)*.5)+0.4);
+	const Vec2d TreadOffset(m_props.m_Offset[0]+TreadRotPos[0],m_props.m_Offset[1]+TreadRotPos[1]);
+	const Vec2d TreadLocalOffset=GlobalToLocal(Heading,TreadOffset);
+	const osg::Vec3 TreadPos (parent_pos[0]+( TreadLocalOffset[0]*FS),parent_pos[1]+( TreadLocalOffset[1]*FS),parent_pos[2]);
+
+	const double TreadColor=((sin(-m_Rotation) + 1.0)/2.0) * 0.8 + 0.2;
+	m_Tread->setColor(osg::Vec4(TreadColor,TreadColor,TreadColor,1.0));
+
+	if (m_Tread.valid())
+	{
+		m_Tread->setPosition(TreadPos);
+		m_Tread->setRotation(FromLW_Rot_Radians(Heading,0.0,0.0));
+	}
+}
+
+void Tank_Wheel_UI::Text_SizeToUse(double SizeToUse)
+{
+	if (m_Tread.valid()) m_Tread->setCharacterSize(SizeToUse);
+}
+
+void Tank_Wheel_UI::AddRotation(double RadiansToAdd)
+{
+	m_Rotation+=RadiansToAdd;
+	if (m_Rotation>Pi2)
+		m_Rotation-=Pi2;
+	else if (m_Rotation<-Pi2)
+		m_Rotation+=Pi2;
+}
+
+  /***************************************************************************************************************/
+ /*												Tank_Robot_UI													*/
+/***************************************************************************************************************/
+void Tank_Robot_UI::UI_Init(Actor_Text *parent)
+{
+	for (size_t i=0;i<6;i++)
+		m_Wheel[i].UI_Init(parent);
+}
+
+void Tank_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+{
+	Vec2D Offsets[6]=
+	{
+		Vec2D(-1.6, 2.0),
+		Vec2D( 1.6, 2.0),
+		Vec2D(-1.6, 0.0),
+		Vec2D( 1.6, 0.0),
+		Vec2D(-1.6,-2.0),
+		Vec2D( 1.6,-2.0),
+	};
+	for (size_t i=0;i<6;i++)
+	{
+		Tank_Wheel_UI::Wheel_Properties props;
+		props.m_Offset=Offsets[i];
+		props.m_Wheel_Diameter=m_TankRobot->GetTankRobotProps().WheelDiameter;
+		m_Wheel[i].Initialize(em,&props);
+	}
+}
+
+void Tank_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos)
+{
+	//just dispatch the update to the wheels (for now)
+	for (size_t i=0;i<6;i++)
+		m_Wheel[i].update(nv,draw,parent_pos,-m_TankRobot->GetAtt_r());
+}
+
+void Tank_Robot_UI::Text_SizeToUse(double SizeToUse)
+{
+	for (size_t i=0;i<6;i++)
+		m_Wheel[i].Text_SizeToUse(SizeToUse);
+}
+
+void Tank_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
+{
+	for (size_t i=0;i<6;i++)
+		m_Wheel[i].UpdateScene(geode,AddOrRemove);
+}
+
+void Tank_Robot_UI::TimeChange(double dTime_s)
+{
+	Tank_Robot &_=*m_TankRobot;
+	for (size_t i=0;i<6;i++)
+	{
+		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
+		const double LinearVelocity=(i&1)?_.GetRightVelocity():_.GetLeftVelocity();
+		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
+		//Note: for UI... to make it pixel friendly always use 6 inches with the hack and not _.GetTankRobotProps().WheelDiameter
+		const double RPS=LinearVelocity /  (PI * Inches2Meters(6.0) * PixelHackScale);
+		const double AngularVelocity=RPS * Pi2;
+		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
+	}
+}
+
+#endif

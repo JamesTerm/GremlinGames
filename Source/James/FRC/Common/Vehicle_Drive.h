@@ -3,9 +3,6 @@
 class Vehicle_Drive_Common_Interface
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		//override the wheel dimensions, which by default are the entities dimensions (a good approximation)
 		virtual const Vec2D &GetWheelDimensions() const =0;
 		//This returns the measurement of the turning diameter where the wheels turn within themselves
@@ -28,9 +25,6 @@ class Vehicle_Drive_Common
 {
 	public:
 		Vehicle_Drive_Common(Vehicle_Drive_Common_Interface *VehicleProps);
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		virtual void InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s);
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s)=0;
 
@@ -55,11 +49,11 @@ class Tank_Drive : public Vehicle_Drive_Common
 {
 	private:
 		Vehicle_Drive_Common_Interface * const m_pParent;
+		#ifndef AI_TesterCode
 		typedef Vehicle_Drive_Common __super;
+		#endif
 		double m_LeftLinearVelocity,m_RightLinearVelocity;
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
 		Tank_Drive(Vehicle_Drive_Common_Interface *Parent);
 		double GetLeftVelocity() const {return m_LeftLinearVelocity;}
 		double GetRightVelocity() const {return m_RightLinearVelocity;}
@@ -112,8 +106,6 @@ class Swerve_Drive_Interface : public Vehicle_Drive_Common_Interface
 class Swerve_Drive : public Vehicle_Drive_Common
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
 		Swerve_Drive(Swerve_Drive_Interface *Parent);
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
@@ -131,7 +123,9 @@ class Swerve_Drive : public Vehicle_Drive_Common
 		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 	protected:
 		Swerve_Drive_Interface * const m_pParent;
+		#ifndef AI_TesterCode
 		typedef Vehicle_Drive_Common __super;
+		#endif
 		SwerveVelocities m_Velocities;
 		const SwerveVelocities &GetIntendedVelocities() const {return m_Velocities;}
 };
@@ -139,9 +133,6 @@ class Swerve_Drive : public Vehicle_Drive_Common
 class Butterfly_Drive : public Swerve_Drive
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		Butterfly_Drive(Swerve_Drive_Interface *Parent);
 
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
@@ -157,12 +148,11 @@ class Butterfly_Drive : public Swerve_Drive
 class Nona_Drive : public Butterfly_Drive
 {
 	private:
+		#ifndef AI_TesterCode
 		typedef Butterfly_Drive __super;
+		#endif
 		double m_KickerWheel;
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		Nona_Drive(Swerve_Drive_Interface *Parent);
 
 		virtual void UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double Torque,double TorqueRestraint,double dTime_s);
