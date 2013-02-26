@@ -69,6 +69,7 @@ class PIDController2
 			double p,					///< proportional coefficient
 			double i,					///< integral coefficient
 			double d,					///< derivative coefficient
+			bool AutoResetI=true,		///< If both setpoint and input are zero total error is reset (great for all velocity control cases except for lifting mechanisms)
 			double maximumOutput=1.0,	///< maximum output
 			double minimumOutput=-1.0,	///< minimum output|
 			double maximumInput=1.0,	///< maximum input - limit setpoint to this
@@ -137,4 +138,5 @@ class PIDController2
 		double m_result;
 		bool m_continuous;	// do the endpoints wrap around? eg. Absolute encoder
 		bool m_enabled;		//is the pid controller enabled
+		bool m_AutoResetI;
 };
