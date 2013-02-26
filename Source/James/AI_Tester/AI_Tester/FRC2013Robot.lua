@@ -356,7 +356,7 @@ MainRobot = {
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
 				tolerance=0.2,
-				drive_to_scale=0.8,
+				drive_to_scale=1.0,
 				inv_max_accel = 1/16,
 				--forward_deadzone_left  = 0,
 				--forward_deadzone_right = 0,
@@ -381,14 +381,15 @@ MainRobot = {
 		--This get copy of everything set in climb_gear_lift by default... so everything in common does not need to be duplicated
 		climb_gear_drop = 
 		{
+			MaxAccelForward = 1.5, MaxAccelReverse = 1.5, 
 			tank_drive =
 			{
 				is_closed=1,						--Must be on
 				left_pid=
-				{p=200, i=0, d=50},
+				{p=200, i=10, d=50},
 				right_pid=
-				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 1, 
+				{p=200, i=10, d=50},					--These should always match, but able to be made different
+				inv_max_accel = 0.5, 
 				motor_specs =
 				{
 					wheel_mass=Pounds2Kilograms * 120,
