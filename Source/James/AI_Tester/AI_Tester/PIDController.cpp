@@ -252,6 +252,11 @@ void PIDController2::SetContinuous(bool continuous)
 	m_continuous = continuous;
 }
 
+void PIDController2::SetAutoResetI(bool AutoReset)
+{
+	m_AutoResetI=AutoReset;
+}
+
 void PIDController2::SetInputRange(double minimumInput, double maximumInput)
 {
 	m_minimumInput = minimumInput;

@@ -25,8 +25,16 @@ struct Rotary_Props
 		eClosed, //Will attempt to match predicted velocity to actual velocity
 	} LoopState; //This should always be false once control is fully functional
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
-	//Only supported in RotaryAngular
-	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.  Recommended not to use I to avoid thrashing
+
+	//Only supported in Rotary_Velocity_Control
+	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.
+
+	//Only supported in Rotary_Position_Control
+	struct Rotary_Arm_GainAssist_Props
+	{
+		double SlowVelocityVoltage;  //Empirically solved as the max voltage to keep load just above steady state for worst case scenario
+		double SlowVelocity;  //Rate at which the gain assist voltage gets blended out; This may be a bit more than the slow velocity used for SlowVelocityVoltage
+	} ArmGainAssist;
 };
 
 class Rotary_System : public Ship_1D
