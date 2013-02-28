@@ -40,12 +40,14 @@ struct Rotary_Props
 class Rotary_System : public Ship_1D
 {
 	private:
-		//typedef Ship_1D __super;
+		#ifndef AI_TesterCode
+		typedef Ship_1D __super;
+		#endif
 		bool m_UsingRange_props;
 	public:
 		Rotary_System(const char EntityName[]) : Ship_1D(EntityName),m_UsingRange_props(false) {}
 		//Cache the m_UsingRange props so that we can know what to set back to
-		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL) 
+		virtual void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL) 
 		{
 			__super::Initialize(em,props);  //must call predecessor first!
 			m_UsingRange_props=m_UsingRange;
@@ -60,7 +62,9 @@ class Rotary_System : public Ship_1D
 class Rotary_Position_Control : public Rotary_System
 {
 	private:
-		//typedef Rotary_System __super;
+		#ifndef AI_TesterCode
+		typedef Rotary_System __super;
+		#endif
 
 		//Copy these lines to the subclass that binds the events
 		//events are a bit picky on what to subscribe so we'll just wrap from here
@@ -83,7 +87,7 @@ class Rotary_Position_Control : public Rotary_System
 		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
-		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		virtual void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual void ResetPos();
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
 		//This is optionally used to lock to another ship (e.g. drive using rotary system)
@@ -109,7 +113,9 @@ class Rotary_Velocity_Control : public Rotary_System
 			eActive, //Will attempt to match predicted velocity to actual velocity
 		};
 	private:
-		//typedef Rotary_System __super;
+		#ifndef AI_TesterCode
+		typedef Rotary_System __super;
+		#endif
 
 		//Copy these lines to the subclass that binds the events
 		//events are a bit picky on what to subscribe so we'll just wrap from here
@@ -141,7 +147,7 @@ class Rotary_Velocity_Control : public Rotary_System
 		Rotary_Velocity_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
-		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		virtual void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual void ResetPos();
 		double GetRequestedVelocity_Difference() const {return m_RequestedVelocity_Difference;}
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
@@ -163,9 +169,6 @@ class Rotary_Velocity_Control : public Rotary_System
 class Rotary_Properties : public Ship_1D_Properties
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
 		void Init();
 		Rotary_Properties(const char EntityName[], double Mass,double Dimension,
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
@@ -174,7 +177,7 @@ class Rotary_Properties : public Ship_1D_Properties
 			MaxAccelReverse,ShipType,UsingRange,MinRange,MaxRange,IsAngular) {Init();}
 
 		Rotary_Properties() {Init();}
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 		const Rotary_Props &GetRotaryProps() const {return m_RotaryProps;}
 		//Get and Set the properties
 		Rotary_Props &RotaryProps() {return m_RotaryProps;}
@@ -188,5 +191,7 @@ class Rotary_Properties : public Ship_1D_Properties
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
 	private:
-		//typedef Ship_1D_Properties __super;
+		#ifndef AI_TesterCode
+		typedef Ship_1D_Properties __super;
+		#endif
 };
