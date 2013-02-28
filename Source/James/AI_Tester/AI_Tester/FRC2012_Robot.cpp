@@ -248,15 +248,15 @@ void FRC_2012_Robot::PowerWheels::TimeChange(double dTime_s)
 			double positive_range = (m_ManualVelocity * 0.5) + 0.5;
 			positive_range=positive_range>0.01?positive_range:0.0;
 			const double minRange=GetMinRange();
-			const double maxRange=MAX_SPEED;
-			const double Scale=(maxRange-minRange) / MAX_SPEED;
-			const double Offset=minRange/MAX_SPEED;
+			const double maxRange=m_MaxSpeed;
+			const double Scale=(maxRange-minRange) / m_MaxSpeed;
+			const double Offset=minRange/m_MaxSpeed;
 			const double Velocity=(positive_range * Scale) + Offset;
 			//DOUT5("%f",Velocity);
 			size_t DisplayRow=m_pParent->m_RobotProps.GetFRC2012RobotProps().PowerVelocity_DisplayRow;
 			if (DisplayRow!=(size_t)-1)
 			{
-				const double rps=(Velocity * MAX_SPEED) / Pi2;
+				const double rps=(Velocity * m_MaxSpeed) / Pi2;
 				Dout(DisplayRow,"%f ,%f",rps,Meters2Feet(rps * Pi * GetDimension()));
 			}
 
@@ -421,7 +421,7 @@ void FRC_2012_Robot::Flippers::TimeChange(double dTime_s)
 {
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Advance ^ m_Retract)
-		SetCurrentLinearAcceleration(m_Advance?ACCEL:-BRAKE);
+		SetCurrentLinearAcceleration(m_Advance?m_Accel:-m_Brake);
 
 	__super::TimeChange(dTime_s);
 	#ifdef __DebugLUA__
