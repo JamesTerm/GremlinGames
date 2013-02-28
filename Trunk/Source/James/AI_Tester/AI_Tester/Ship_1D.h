@@ -33,7 +33,9 @@ class Ship_1D;
 class Ship_1D_Properties : public Entity1D_Properties
 {
 	private:
-		//typedef Entity1D_Properties __super;
+		#ifndef AI_TesterCode
+		typedef Entity1D_Properties __super;
+		#endif
 		Ship_1D_Props m_Ship_1D_Props;
 	public:
 		typedef Ship_1D_Props::Ship_Type Ship_Type;
@@ -45,7 +47,7 @@ class Ship_1D_Properties : public Entity1D_Properties
 			Ship_Type ShipType=Ship_1D_Props::eDefault, bool UsingRange=false, double MinRange=0.0, double MaxRange=0.0,
 			bool IsAngular=false);
 
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 		//This is depreciated (may need to review game use-case)
 		//void Initialize(Ship_1D *NewShip) const;
 		void UpdateShip1DProperties(const Ship_1D_Props &props);  //explicitly allow updating of ship props here
@@ -68,7 +70,7 @@ class Ship_1D : public Entity1D
 	public:
 		Ship_1D(const char EntityName[]);
 		void UpdateShip1DProperties(const Ship_1D_Props &props);
-		virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		virtual void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual ~Ship_1D();
 
 		///This implicitly will place back in auto mode with a speed of zero
@@ -167,7 +169,9 @@ class Ship_1D : public Entity1D
 		//Only used with SetRequestedVelocity_FromNormalized()
 		//this is managed direct from being set to avoid need for precision tolerance
 		double m_LastNormalizedVelocity;  
-		//typedef Entity1D __super;
+		#ifndef AI_TesterCode
+		typedef Entity1D __super;
+		#endif
 		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
 };
 
