@@ -3,9 +3,6 @@
 
 using namespace AI_Tester;
 
-namespace Scripting=GG_Framework::Logic::Scripting;
-//namespace Scripting=Framework::Scripting;
-
   /***********************************************************************************************************************************/
  /*															Entity1D_Properties														*/
 /***********************************************************************************************************************************/
@@ -179,9 +176,9 @@ Entity_Properties::Entity_Properties()
 {
 	m_EntityName="Entity";
 	//m_NAME="default";
-	m_Mass=10000.0;
-	m_Dimensions[0]=12.0;
-	m_Dimensions[1]=12.0;
+	m_Mass=25.0;
+	m_Dimensions[0]=0.6477;
+	m_Dimensions[1]=0.9525;
 };
 
 void Entity_Properties::LoadFromScript(Scripting::Script& script)
