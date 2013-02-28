@@ -3,7 +3,12 @@ struct Ship_1D_Props
 {
 	void SetFromShip_Properties(const Ship_Props & NewValue);
 
+	//Note there may be a difference between MAX_SPEED and MaxSpeed_Forward/MaxSpeed_Reverse, where MAX_SPEED represents the fastest speed something is capable of traveling, while
+	// MaxSpeed_Forward/MaxSpeed_Reverse is the fastest desired speed the controller will want to manage this becomes more important in robotics where the gearing has some rotary
+	// systems have a much faster max speed than what the desired speed would want to be.  These are also handy for button controlled operations to operate at a certain desired
+	// max speed when held down
 	double MAX_SPEED;
+	double MaxSpeed_Forward,MaxSpeed_Reverse;
 	double ACCEL, BRAKE;
 
 	double MaxAccelForward,MaxAccelReverse;
@@ -94,9 +99,10 @@ class Ship_1D : public Entity1D
 
 		// virtual void ResetPos();
 		bool GetAlterTrajectory() const { return m_SimFlightMode;}
-		double GetMaxSpeed() const		{return MAX_SPEED;}
-		double GetACCEL() const			{return ACCEL;}
-		double GetBRAKE() const			{return BRAKE;}
+		//Note:  This returns the maximum speed possible and not the desired max speed
+		double GetMaxSpeed() const		{return m_MaxSpeed;}
+		double GetACCEL() const			{return m_Accel;}
+		double GetBRAKE() const			{return m_Brake;}
 
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
@@ -129,14 +135,14 @@ class Ship_1D : public Entity1D
 
 		friend class Ship_1D_Properties;
 
-		double MAX_SPEED;
-
+		double m_MaxSpeed;
 		// Used in Keyboard acceleration and braking
-		double ACCEL, BRAKE;
+		double m_Accel, m_Brake;
 
 		//Stuff needed for physics
-		double Mass;
-		double MaxAccelForward,MaxAccelReverse;
+		double m_Mass;
+		double m_MaxAccelForward,m_MaxAccelReverse;
+		double m_MaxSpeed_Forward,m_MaxSpeed_Reverse;
 
 		//I don't think we would need this for the game, but it is possible, (certainly not for the robot arm)
 		//! We can break this up even more if needed

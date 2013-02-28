@@ -110,7 +110,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	const double Velocity=m_Physics.GetVelocity();
 	const double Acceleration=(Velocity-m_PreviousVelocity)/dTime_s;
 
-	double Voltage=(Velocity+m_ErrorOffset)/MAX_SPEED;
+	double Voltage=(Velocity+m_ErrorOffset)/m_MaxSpeed;
 
 	bool IsAccel=(Acceleration * Velocity > 0);
 	Voltage+=Acceleration*(IsAccel? m_Rotary_Props.InverseMaxAccel : m_Rotary_Props.InverseMaxDecel);
@@ -237,11 +237,11 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	//but this turned out to be problematic when using other angular rotary systems... therefore I am going to use the same computation
 	//I do for linear, where it allows as slow to max speed as possible.
 	//  [3/20/2012 Terminator]
-	m_PIDController.SetInputRange(-MAX_SPEED,MAX_SPEED);
+	m_PIDController.SetInputRange(m_MaxSpeed_Reverse,m_MaxSpeed_Forward);
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
-	m_PIDController.SetOutputRange(-MAX_SPEED*tolerance,MAX_SPEED*tolerance);
+	m_PIDController.SetOutputRange(m_MaxSpeed_Reverse*tolerance,m_MaxSpeed_Forward*tolerance);
 	m_PIDController.Enable();
-	m_CalibratedScaler=MAX_SPEED;
+	m_CalibratedScaler=m_MaxSpeed;
 	m_ErrorOffset=0.0;
 
 	switch (m_Rotary_Props.LoopState)
@@ -261,7 +261,7 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 {
 	m_Rotary_Props=RotaryProps;
-	m_CalibratedScaler=MAX_SPEED;
+	m_CalibratedScaler=m_MaxSpeed;
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 	switch (m_Rotary_Props.LoopState)
 	{
@@ -297,7 +297,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 				if (((CurrentVelocity * Encoder_Velocity) > 0.0) || IsZero(Encoder_Velocity) )
 				{
 					control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_Velocity),dTime_s);
-					m_CalibratedScaler=MAX_SPEED+control;
+					m_CalibratedScaler=m_MaxSpeed+control;
 				}
 			}
 			else
@@ -385,9 +385,9 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 		else
 		{
 			if (m_PIDController.GetI()==0.0)
-				printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MAX_SPEED);
+				printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/m_MaxSpeed);
 			else
-				printf("v=%.2f p=%.2f e=%.2f i=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_PIDController.GetTotalError(),m_CalibratedScaler/MAX_SPEED);
+				printf("v=%.2f p=%.2f e=%.2f i=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_PIDController.GetTotalError(),m_CalibratedScaler/m_MaxSpeed);
 		}
 	}
 	#endif
@@ -433,7 +433,7 @@ void Rotary_Velocity_Control::ResetPos()
 		m_EncoderVelocity=0.0;
 
 	//ensure teleop has these set properly
-	m_CalibratedScaler=MAX_SPEED;
+	m_CalibratedScaler=m_MaxSpeed;
 	m_ErrorOffset=0.0;
 	m_RequestedVelocity_Difference=0.0;
 }
@@ -452,9 +452,9 @@ void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
-			//MAX_SPEED=m_MaxSpeedReference;
+			//m_MaxSpeed=m_MaxSpeedReference;
 			m_EncoderVelocity=0.0;
-			m_CalibratedScaler=MAX_SPEED;
+			m_CalibratedScaler=m_MaxSpeed;
 			m_ErrorOffset=0;
 			m_UsingRange=false;
 		}
@@ -468,7 +468,7 @@ void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 			printf("Enabling encoder for %s\n",GetName().c_str());
 			ResetPos();
 			m_UsingRange=GetUsingRange_Props();
-			m_CalibratedScaler=MAX_SPEED;
+			m_CalibratedScaler=m_MaxSpeed;
 			m_ErrorOffset=0;
 		}
 	}

@@ -184,12 +184,12 @@ void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
 {
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Grip ^ m_Squirt)
-		SetCurrentLinearAcceleration(m_Grip?ACCEL:-BRAKE);
+		SetCurrentLinearAcceleration(m_Grip?m_Accel:-m_Brake);
 
 	__super::TimeChange(dTime_s);
 	//send out the voltage
 	double CurrentVelocity=m_Physics.GetVelocity();
-	double Voltage=CurrentVelocity/MAX_SPEED;
+	double Voltage=CurrentVelocity/m_MaxSpeed;
 
 	//Clamp range
 	if (Voltage>0.0)
@@ -270,7 +270,7 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
-	m_CalibratedScaler=MAX_SPEED;
+	m_CalibratedScaler=m_MaxSpeed;
 }
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
@@ -317,10 +317,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 			double control=0.0;
 			control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			m_CalibratedScaler=MAX_SPEED+control;
+			m_CalibratedScaler=m_MaxSpeed+control;
 
-			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
-			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,m_MaxSpeed);
+			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,m_MaxSpeed);
 
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
@@ -332,7 +332,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		//Test potentiometer readings without applying to current position (disabled by default)
 		m_RobotControl->GetArmCurrentPosition(m_InstanceIndex);
 		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
-		//MAX_SPEED=m_CalibratedScaler=1.0;
+		//m_MaxSpeed=m_CalibratedScaler=1.0;
 	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
@@ -432,9 +432,9 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
-			//MAX_SPEED=m_MaxSpeedReference;
+			//m_MaxSpeed=m_MaxSpeedReference;
 			m_LastPosition=0.0;
-			m_CalibratedScaler=MAX_SPEED;
+			m_CalibratedScaler=m_MaxSpeed;
 			m_LastTime=0.0;
 			m_UsingRange=false;
 		}
@@ -448,7 +448,7 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			printf("Enabling potentiometer\n");
 			ResetPos();
 			m_UsingRange=true;
-			m_CalibratedScaler=MAX_SPEED;
+			m_CalibratedScaler=m_MaxSpeed;
 		}
 	}
 }
