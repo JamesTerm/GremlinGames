@@ -95,6 +95,7 @@ class PIDController2
 		///be the same point and automatically calculates the shortest route to the setpoint.
 		///	\param continuous Set to true turns on continuous, false turns off continuous
 		void SetContinuous(bool continuous = true);
+		void SetAutoResetI(bool AutoReset=true);
 
 		void SetInputRange(double minimumInput, double maximumInput);
 		void SetOutputRange(double mimimumOutput, double maximumOutput);
