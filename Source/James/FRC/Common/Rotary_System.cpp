@@ -58,6 +58,9 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	m_PIDController.SetInputRange(-MaxSpeedReference,MaxSpeedReference);
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-MaxSpeedReference*tolerance,MaxSpeedReference*tolerance);
+	//The idea here is that the arm may rest at a stop point that needs consistent voltage to keep steady
+	if (m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage!=0.0)
+		m_PIDController.SetAutoResetI(false);
 	m_PIDController.Enable();
 	m_ErrorOffset=0.0;
 	if ((m_Rotary_Props.LoopState==Rotary_Props::eNone)||(m_Rotary_Props.LoopState==Rotary_Props::eOpen))
@@ -124,6 +127,28 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 
 	bool IsAccel=(Acceleration * Velocity > 0);
 	Voltage+=Acceleration*(IsAccel? m_Rotary_Props.InverseMaxAccel : m_Rotary_Props.InverseMaxDecel);
+
+	//See if we are using the arm gain assist
+	if (m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage!=0.0)
+	{
+		//first start out by allowing the max amount to correspond to the angle of the arm... this assumes the arm zero degrees is parallel to the ground
+		//90 is straight up... should work for angles below zero (e.g. hiking viking)... angles greater than 90 will be negative which is also correct
+		const double MaxVoltage=cos(NewPosition) * m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage;
+		double BlendStrength=0.0;
+		const double SlowVelocity=m_Rotary_Props.ArmGainAssist.SlowVelocity;
+		//Now to compute blend strength... a simple linear distribution of how much slower it is from the slow velocity
+		if (MaxVoltage>0.0)
+		{
+			if (Velocity<SlowVelocity)
+				BlendStrength= (SlowVelocity-Velocity) / SlowVelocity;
+		}
+		else
+		{
+			if (Velocity>-SlowVelocity)
+				BlendStrength= (SlowVelocity-fabs(Velocity)) / SlowVelocity;
+		}
+		Voltage+= MaxVoltage * BlendStrength;
+	}
 
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousVelocity=Velocity;
@@ -509,6 +534,8 @@ void Rotary_Properties::Init()
 	props.Polynomial[4]=0.0;
 	props.InverseMaxAccel=props.InverseMaxAccel=0.0;
 	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
+	Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
+	arm.SlowVelocity=arm.SlowVelocityVoltage=0.0;
 	m_RotaryProps=props;
 }
 
@@ -596,6 +623,9 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		if (m_RotaryProps.Negative_DeadZone>0.0)
 			m_RotaryProps.Negative_DeadZone=-m_RotaryProps.Negative_DeadZone;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
+
+		script.GetField("slow_velocity_voltage", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocityVoltage);
+		script.GetField("slow_velocity", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocity);
 
 		#ifdef AI_TesterCode
 		err = script.GetFieldTable("motor_specs");
