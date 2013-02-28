@@ -57,7 +57,7 @@ using namespace std;
 #undef __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
 #define __DisableIntakeAutoPosition__
-#define __DisabledClimbPneumatics__
+#undef __DisabledClimbPneumatics__
 
 #endif
 
