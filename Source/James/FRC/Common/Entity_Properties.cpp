@@ -16,9 +16,6 @@
 
 using namespace Framework::Base;
 
-//namespace Scripting=GG_Framework::Logic::Scripting;
-namespace Scripting=Framework::Scripting;
-
   /***********************************************************************************************************************************/
  /*															Entity1D_Properties														*/
 /***********************************************************************************************************************************/
@@ -80,7 +77,8 @@ void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
 Ship_1D_Properties::Ship_1D_Properties()
 {
 	double Scale=0.2;  //we must scale everything down to see on the view
-	m_Ship_1D_Props.MAX_SPEED = 400.0 * Scale;
+	m_Ship_1D_Props.MAX_SPEED = m_Ship_1D_Props.MaxSpeed_Forward = 400.0 * Scale;
+	m_Ship_1D_Props.MaxAccelReverse = -m_Ship_1D_Props.MAX_SPEED;
 	m_Ship_1D_Props.ACCEL = 60.0 * Scale;
 	m_Ship_1D_Props.BRAKE = 50.0 * Scale;
 
@@ -98,7 +96,8 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 				   double MinRange, double MaxRange,bool IsAngular
 				   ) : Entity1D_Properties(EntityName,Mass,Dimension,IsAngular)
 {
-	m_Ship_1D_Props.MAX_SPEED = MAX_SPEED;
+	m_Ship_1D_Props.MAX_SPEED = m_Ship_1D_Props.MaxSpeed_Forward = MAX_SPEED;
+	m_Ship_1D_Props.MaxAccelReverse = -MAX_SPEED;
 	m_Ship_1D_Props.ACCEL = ACCEL;
 	m_Ship_1D_Props.BRAKE = BRAKE;
 	m_Ship_1D_Props.MaxAccelForward=MaxAccelForward;
@@ -128,6 +127,11 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 		//bool m_Ship_1D_Props.UsingRange;
 
 		script.GetField("max_speed", NULL, NULL, &m_Ship_1D_Props.MAX_SPEED);
+		m_Ship_1D_Props.MaxSpeed_Forward=m_Ship_1D_Props.MAX_SPEED;
+		m_Ship_1D_Props.MaxSpeed_Reverse=-m_Ship_1D_Props.MAX_SPEED;
+		script.GetField("max_speed_forward", NULL, NULL, &m_Ship_1D_Props.MaxSpeed_Forward);
+		script.GetField("max_speed_reverse", NULL, NULL, &m_Ship_1D_Props.MaxSpeed_Reverse);
+
 		script.GetField("accel", NULL, NULL, &m_Ship_1D_Props.ACCEL);
 		script.GetField("brake", NULL, NULL, &m_Ship_1D_Props.BRAKE);
 		script.GetField("max_accel_forward", NULL, NULL, &m_Ship_1D_Props.MaxAccelForward);
@@ -161,24 +165,11 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 }
 
-//This is depreciated
-#if 0
-void Ship_1D_Properties::Initialize(Ship_1D *NewShip) const
-{
-	NewShip->MAX_SPEED=m_Ship_1D_Props.MAX_SPEED;
-	NewShip->ACCEL=m_Ship_1D_Props.ACCEL;
-	NewShip->BRAKE=m_Ship_1D_Props.BRAKE;
-	NewShip->MaxAccelForward=m_Ship_1D_Props.MaxAccelForward;
-	NewShip->MaxAccelReverse=m_Ship_1D_Props.MaxAccelReverse;
-	NewShip->m_UsingRange=m_Ship_1D_Props.UsingRange;
-	NewShip->m_MinRange=m_Ship_1D_Props.MinRange;
-	NewShip->m_MaxRange=m_Ship_1D_Props.MaxRange;
-}
-#endif
-
 void Ship_1D_Props::SetFromShip_Properties (const Ship_Props & NewValue)
 {
 	MAX_SPEED=NewValue.MAX_SPEED;
+	MaxSpeed_Forward=MAX_SPEED;
+	MaxSpeed_Reverse=-MAX_SPEED;
 	ACCEL=NewValue.ACCEL;
 	BRAKE=NewValue.BRAKE;
 	MaxAccelForward=NewValue.MaxAccelForward_High;
