@@ -485,7 +485,22 @@ MainRobot = {
 			Intake_Deployment_Advance = {type="joystick_button", key=11, on_off=false},
 			--POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Turn_180 = {type="joystick_button", key=7, on_off=false}
-		}
+		},
+		
+		Joystick_5 =
+		{
+			control = "xbox 360 for windows (controller)",
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
+			Robot_SetClimbGear_RightButton = {type="joystick_button", key=8, on_off=true},
+			Robot_SetClimbGear_LeftButton = {type="joystick_button", key=7, on_off=true},
+			--Robot_SetClimbGearOff = {type="joystick_button", key=7, on_off=false},
+			--Robot_SetClimbGearOn = {type="joystick_button", key=8, on_off=false},
+		},
+
 	},
 	
 	--This is only used in the AI tester, can be ignored
