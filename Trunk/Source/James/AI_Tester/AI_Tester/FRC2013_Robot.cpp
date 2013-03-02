@@ -47,7 +47,7 @@ using namespace std;
 //This should be enabled during calibration
 #undef __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
-
+#undef __ShooterOpenLoop__		//If defined able to use fire piston for open loop systems
 #else
 
 #undef __DisableEncoderTracking__
@@ -57,7 +57,8 @@ using namespace std;
 #undef __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
 #define __DisableIntakeAutoPosition__
-#define __DisabledClimbPneumatics__
+#undef __DisabledClimbPneumatics__
+#define __ShooterOpenLoop__		//If defined able to use fire piston for open loop systems
 
 #endif
 
@@ -415,23 +416,34 @@ void FRC_2013_Robot::IntakeSystem::TimeChange(double dTime_s)
 {
 	const FRC_2013_Robot_Properties &properties=m_pParent->m_RobotProps;
 	const FRC_2013_Robot_Props &props=properties.GetFRC2013RobotProps();
-
 	//const bool FireSensor=m_pParent->m_RobotControl->GetBoolSensorState(eFireConveyor_Sensor);
+
+	//Get some info on the intake's position
+	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
+	const double IntakeMaxRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange;
+	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRotaryProps().PrecisionTolerance;
+	const bool IsStowed=(fabs(Intake_Position-IntakeMaxRange) < IntakeTolerance);
+	
+	#ifndef __ShooterOpenLoop__
+	//Only fire when the wheel has reached its aiming speed
 	const Rotary_Velocity_Control &Shooter=m_pParent->m_PowerWheels.GetSecondStageShooter();
 	const double PowerWheelSpeedDifference=Shooter.GetRequestedVelocity_Difference();
 	const bool PowerWheelReachedTolerance=(Shooter.GetRequestedVelocity()!=0.0) &&	(fabs(PowerWheelSpeedDifference)<Shooter.GetRotary_Properties().PrecisionTolerance);
-	//Only fire when the wheel has reached its aiming speed
-
-	//And ensure the intake has dropped low enough to not block shooter
-	const double Intake_Position=m_pParent->m_RobotControl->GetRotaryCurrentPorV(eIntake_Deployment);
-	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
-	const double IntakeMaxRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MaxRange;
-	const double IntakeTolerance=properties.GetIntakeDeploymentProps().GetRotaryProps().PrecisionTolerance;
-	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
-	const bool IsStowed=(fabs(Intake_Position-IntakeMaxRange) < IntakeTolerance);
+	#ifndef __DisableIntakeAutoPosition__
 	//The intake must be low enough to not block the shooter
+	const double IntakeMinRange=properties.GetIntakeDeploymentProps().GetShip_1D_Props().MinRange;
+	const bool IntakePositionIsOnMinIntakeDrop=(fabs(Intake_Position-props.Min_IntakeDrop)<IntakeTolerance);
 	const bool IsIntakeMinimumDropped=((fabs(Intake_Position-IntakeMinRange) < props.Min_IntakeDrop) || IntakePositionIsOnMinIntakeDrop);
+	//Ideal case test all conditions
 	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance && IsIntakeMinimumDropped;
+	#else
+	//Tests shooter closed loop with no check on intake
+	bool Fire=(m_ControlSignals.bits.Fire==1) && PowerWheelReachedTolerance;
+	#endif
+	#else
+	//Tests shooter open loop
+	bool Fire=(m_ControlSignals.bits.Fire==1);
+	#endif
 
 	//Use these in conjuction with a PID dump if the fire seems stuck
 	#if 0
