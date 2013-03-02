@@ -489,7 +489,7 @@ MainRobot = {
 		
 		Joystick_5 =
 		{
-			control = "xbox 360 for windows (controller)",
+			control = "gamepad f310 (controller)",
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
