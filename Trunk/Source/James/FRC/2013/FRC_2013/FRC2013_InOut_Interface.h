@@ -51,7 +51,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual bool GetBoolSensorState(size_t index);
-		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
+		virtual void CloseSolenoid(size_t index,bool Close=true) {OpenSolenoid(index,!Close);}
 		virtual void OpenSolenoid(size_t index,bool Open);
 		virtual bool GetIsSolenoidOpen(size_t index) const;
 	protected: //from Tank_Drive_Control_Interface
