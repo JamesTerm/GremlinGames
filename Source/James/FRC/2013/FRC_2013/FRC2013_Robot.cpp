@@ -594,6 +594,9 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	//m_IsTargeting=false;
 	//m_AutoDriveState=eAutoDrive_Disabled; 
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
+	#ifdef __ShooterOpenLoop__
+	m_IsTargeting=false;
+	#endif
 }
 
 FRC_2013_Robot::~FRC_2013_Robot()
