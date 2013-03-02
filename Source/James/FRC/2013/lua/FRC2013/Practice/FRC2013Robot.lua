@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.2;
+	version = 1.3;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -85,8 +85,8 @@ MainRobot = {
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
-		ds_power1_velocity_row=-1,			--Only used during keying the grid
-		ds_power2_velocity_row=-1,
+		ds_power1_velocity_row=1,			--Only used during keying the grid
+		ds_power2_velocity_row=3,
 		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
 		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
 		yaw_tolerance=0.001,				--Used for drive yaw targeting (the drive is the turret) to avoid oscillation
@@ -155,7 +155,7 @@ MainRobot = {
 		{
 			is_closed='no',
 			show_pid_dump='no',
-			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
+			ds_display_row=4,				--Use this display to determine max speed (try to get a good match)
 			pid=
 			{p=50, i=10, d=0 },
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
@@ -176,7 +176,7 @@ MainRobot = {
 		{
 			is_closed='no',
 			show_pid_dump='no',
-			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
+			ds_display_row=5,				--Use this display to determine max speed (try to get a good match)
 			pid=
 			{p=50, i=10, d=0 },
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
@@ -197,7 +197,7 @@ MainRobot = {
 		{
 			is_closed=0,
 			show_pid_dump='y',
-			ds_display_row=3,
+			ds_display_row=-1,
 			pid=
 			{p=1000, i=0, d=250},
 			tolerance=0.01,					--should not matter much
@@ -345,8 +345,8 @@ MainRobot = {
 		{	
 			control = "ch throttle quadrant",
 			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
 			
 			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
