@@ -172,6 +172,7 @@ void FRC_2013_Robot_Control::Initialize(const Entity_Properties *props)
 		//Not sure I need to this since I got the copy... we'll see
 		//m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 	}
+	CloseSolenoid(FRC_2013_Robot::eFirePiston);
 }
 
 //NOTE: for now, never pulse the spike relays, there is too much debate on the damage that will cause
