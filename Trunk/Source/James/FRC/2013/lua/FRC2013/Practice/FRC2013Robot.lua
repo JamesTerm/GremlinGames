@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.1;
+	version = 1.2;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -72,7 +72,9 @@ MainRobot = {
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1/14.0,  --solved empiracally
+		inv_max_accel = 0.0,  --solved empiracally
+		--inv_max_accel = 1/14.0,  --solved empiracally
+		--inv_max_accel = 1/10.0,  --matt field?
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
 		--reverse_deadzone_left  = 0.02,
@@ -151,7 +153,7 @@ MainRobot = {
 		},
 		power =
 		{
-			is_closed='yes',
+			is_closed='no',
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
@@ -172,7 +174,7 @@ MainRobot = {
 		},
 		power_first_stage =
 		{
-			is_closed='yes',
+			is_closed='no',
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
@@ -299,28 +301,20 @@ MainRobot = {
 	{
 		Joystick_1 =
 		{
-			control = "airflo",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.90, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			--PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
-			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
-			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
-			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
+			control = "gamepad f310 (controller)",
+			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
-			Robot_SetClimbGearOn = {type="joystick_button", key=10, on_off=false},
-			Ball_Fire = {type="joystick_button", key=4, on_off=true},
+			Robot_SetClimbGear_RightButton = {type="joystick_button", key=8, on_off=true},
+			Robot_SetClimbGear_LeftButton = {type="joystick_button", key=7, on_off=true},
+			--Robot_SetClimbGearOff = {type="joystick_button", key=7, on_off=false},
+			--Robot_SetClimbGearOn = {type="joystick_button", key=8, on_off=false},
+			
+			--Temp controls for testing...
 			PowerWheels_IsRunning = {type="joystick_button", key=2, on_off=true},
-			Ball_Grip = {type="joystick_button", key=1, on_off=true},
-			Ball_Squirt = {type="joystick_button", key=3, on_off=true},
-			Intake_Deployment_Retract = {type="joystick_button", key=13, on_off=false},
-			Intake_Deployment_Advance = {type="joystick_button", key=12, on_off=false},
-			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false}
+			Ball_Fire = {type="joystick_button", key=4, on_off=true},
 		},
 		
 		Joystick_2 =
