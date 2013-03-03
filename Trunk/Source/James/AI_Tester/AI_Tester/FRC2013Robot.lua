@@ -48,7 +48,7 @@ MainRobot = {
 	
 	tank_drive =
 	{
-		is_closed=1,
+		is_closed=0,
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
@@ -97,8 +97,8 @@ MainRobot = {
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
-		ds_power1_velocity_row=1,			--Only used during keying the grid
-		ds_power2_velocity_row=3,
+		ds_power1_velocity_row=-1,			--Only used during keying the grid
+		ds_power2_velocity_row=-1,
 		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
 		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
 		yaw_tolerance=0.001,				--Used for drive yaw targeting (the drive is the turret) to avoid oscillation
@@ -165,9 +165,9 @@ MainRobot = {
 		},
 		power =
 		{
-			is_closed='yes',
+			is_closed=0,
 			show_pid_dump='no',
-			ds_display_row=4,				--Use this display to determine max speed (try to get a good match)
+			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
 			{p=50, i=10, d=0 },
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
@@ -200,9 +200,9 @@ MainRobot = {
 		},
 		power_first_stage =
 		{
-			is_closed='yes',
+			is_closed=0,
 			show_pid_dump='no',
-			ds_display_row=5,				--Use this display to determine max speed (try to get a good match)
+			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
 			{p=50, i=10, d=0 },
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
@@ -235,7 +235,7 @@ MainRobot = {
 		},
 		intake_deployment =
 		{
-			is_closed=1,
+			is_closed=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			pid=
@@ -350,7 +350,7 @@ MainRobot = {
 			
 			tank_drive =
 			{
-				is_closed=1,						--Must be on (there is no passive mode for tank drive), but start open loop for calibration
+				is_closed=0,						--Must be on (there is no passive mode for tank drive), but start open loop for calibration
 				left_pid=
 				{p=200, i=0, d=50},
 				right_pid=
@@ -384,7 +384,7 @@ MainRobot = {
 			MaxAccelForward = 1.5, MaxAccelReverse = 1.5, 
 			tank_drive =
 			{
-				is_closed=1,						--Must be on
+				is_closed=0,						--Must be on
 				left_pid=
 				{p=200, i=10, d=50},
 				right_pid=
@@ -409,6 +409,7 @@ MainRobot = {
 			--PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Robot_SetTargeting_Off = {type="joystick_button", key=6, on_off=true},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
 			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
