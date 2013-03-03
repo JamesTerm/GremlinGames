@@ -141,7 +141,6 @@ class Rotary_Velocity_Control : public Rotary_System
 		double m_EncoderVelocity;  //cache for later use
 		double m_RequestedVelocity_Difference;
 		EncoderUsage m_EncoderState; //dynamically able to change state
-		const EncoderUsage m_EncoderCachedState; //This is a fall-back state upon recovery of the safety state
 		double m_PreviousVelocity; //used to compute acceleration
 	public:
 		Rotary_Velocity_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0,EncoderUsage EncoderState=eNoEncoder);
@@ -156,7 +155,7 @@ class Rotary_Velocity_Control : public Rotary_System
 		//Give ability to change properties
 		void UpdateRotaryProps(const Rotary_Props &RotaryProps);
 		virtual void SetEncoderSafety(bool DisableFeedback);
-		EncoderUsage GetEncoderUsage() const {return m_EncoderCachedState;}
+		EncoderUsage GetEncoderUsage() const {return m_EncoderState;}
 	protected:
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);

@@ -243,7 +243,7 @@ Rotary_Velocity_Control::Rotary_Velocity_Control(const char EntityName[],Rotary_
 	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
 	m_MatchVelocity(0.0),m_CalibratedScaler(1.0),m_ErrorOffset(0.0),
 	m_MaxSpeedReference(0.0),m_EncoderVelocity(0.0),m_RequestedVelocity_Difference(0.0),
-	m_EncoderState(EncoderState),m_EncoderCachedState(EncoderState),m_PreviousVelocity(0.0)
+	m_EncoderState(EncoderState),m_PreviousVelocity(0.0)
 {
 }
 
@@ -488,7 +488,20 @@ void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 	{
 		if (m_EncoderState==eNoEncoder)
 		{
-			m_EncoderState=m_EncoderCachedState;
+			switch (m_Rotary_Props.LoopState)
+			{
+			case Rotary_Props::eNone:
+				m_EncoderState=eNoEncoder;
+				//This should not happen but added for completeness
+				printf("Rotary_Velocity_Control::SetEncoderSafety %s set to no encoder\n",GetName().c_str());
+				break;
+			case Rotary_Props::eOpen:
+				m_EncoderState=ePassive;
+				break;
+			case Rotary_Props::eClosed:
+				m_EncoderState=eActive;
+				break;
+			}
 			//setup the initial value with the potentiometers value
 			printf("Enabling encoder for %s\n",GetName().c_str());
 			ResetPos();
