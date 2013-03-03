@@ -45,9 +45,9 @@ using namespace std;
 #define __UseFileTargetTracking__  //to test against a file that tracks
 #define __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
-#undef __DisableIntakeAutoPosition__
+#define __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
-#undef __ShooterOpenLoop__		//If defined able to use fire piston for open loop systems
+#define __ShooterOpenLoop__		//If defined able to use fire piston for open loop systems
 #else
 
 #undef __DisableEncoderTracking__
@@ -89,12 +89,15 @@ FRC_2013_Robot::AxisControl::AxisControl(FRC_2013_Robot *pParent,const char Enti
 {
 }
 
+//Note: When using this (i.e. pot) in conjunction with a velocity control axis there are 2 modes:
+//While targeting... this will be passive
+//While not targeting... this will be active and when it is it will take over... the axis control can temporarily
+//bounce off of its point but when released it will snap back to this position
 void FRC_2013_Robot::AxisControl::SetIntendedPosition_Plus(double Position)
 {
 	bool IsTargeting=(m_pParent->m_IsTargeting);
 	if (!IsTargeting)
 	{
-		Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
 		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
 		//first get the range from 0 - 1
 		double positive_range = (Position * 0.5) + 0.5;
@@ -104,8 +107,11 @@ void FRC_2013_Robot::AxisControl::SetIntendedPosition_Plus(double Position)
 		const double Scale=(maxRange-minRange) / maxRange;
 		Position=(positive_range * Scale) + minRange;
 	}
-	//DOUT5("Test=%f",RAD_2_DEG(Position));
-	SetIntendedPosition(Position);
+	if (IsZero(GetRequestedVelocity(),0.01))
+	{
+		//DOUT5("Test=%f",RAD_2_DEG(Position));
+		SetIntendedPosition(Position);
+	}
 }
 
   /***********************************************************************************************************************************/
@@ -283,7 +289,7 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 			m_SecondStage.SetRequestedVelocity_FromNormalized(Velocity);
 			if (IsZero(m_FirstStageManualVelocity))  //typical case...no pot connected for first stage we latch to second stage velocity
 			{
-				const double FirstStageScalar=0.5;  //TODO properties
+				const double FirstStageScalar=1.0;  //For now leave full from testing it appears we need it full speed
 				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity * FirstStageScalar);
 			}
 			else	//This should only be used during calibration as it will be difficult to control two pots otherwise
@@ -594,9 +600,6 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	//m_IsTargeting=false;
 	//m_AutoDriveState=eAutoDrive_Disabled; 
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
-	#ifdef __ShooterOpenLoop__
-	m_IsTargeting=false;
-	#endif
 }
 
 FRC_2013_Robot::~FRC_2013_Robot()
