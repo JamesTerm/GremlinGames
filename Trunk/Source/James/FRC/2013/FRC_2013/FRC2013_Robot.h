@@ -367,6 +367,13 @@ class FRC_2013_Robot : public Tank_Robot
 		void SetTargetingOff() {SetTargeting(false);}
 		void SetTargetingValue(double Value);
 
+		void SetClimbDriveEngaged() {SetClimbState(eClimbState_Drive);}
+		void SetClimbRaiseLift() {SetClimbState(eClimbState_RaiseLift);}
+		void SetClimbDropLift() {SetClimbState(eClimbState_DropLift);}
+		void SetClimbDropLift2() {SetClimbState(eClimbState_DropLift2);}
+		void SetClimbSpeed(double Speed);
+		ClimbState m_ClimbState;
+
 		enum AutoDriveState
 		{
 			eAutoDrive_Disabled,

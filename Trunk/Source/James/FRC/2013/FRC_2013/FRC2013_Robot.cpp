@@ -45,9 +45,9 @@ using namespace std;
 #define __UseFileTargetTracking__  //to test against a file that tracks
 #define __AutoDriveFull_AnyTarget__ //to target any target
 //This should be enabled during calibration
-#undef __DisableIntakeAutoPosition__
+#define __DisableIntakeAutoPosition__
 #undef __DisabledClimbPneumatics__
-#undef __ShooterOpenLoop__		//If defined able to use fire piston for open loop systems
+#define __ShooterOpenLoop__		//If defined able to use fire piston for open loop systems
 #else
 
 #undef __DisableEncoderTracking__
@@ -89,23 +89,30 @@ FRC_2013_Robot::AxisControl::AxisControl(FRC_2013_Robot *pParent,const char Enti
 {
 }
 
+//Note: When using this (i.e. pot) in conjunction with a velocity control axis there are 2 modes:
+//While targeting... this will be passive
+//While not targeting... this will be active and when it is it will take over... the axis control can temporarily
+//bounce off of its point but when released it will snap back to this position
 void FRC_2013_Robot::AxisControl::SetIntendedPosition_Plus(double Position)
 {
+	//Only apply if we are not targeting
 	bool IsTargeting=(m_pParent->m_IsTargeting);
 	if (!IsTargeting)
 	{
-		Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
-		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
 		//first get the range from 0 - 1
 		double positive_range = (Position * 0.5) + 0.5;
 		//positive_range=positive_range>0.01?positive_range:0.0;
 		const double minRange=GetMinRange();
 		const double maxRange=GetMaxRange();
-		const double Scale=(maxRange-minRange) / maxRange;
+		const double Scale=fabs(maxRange-minRange);
 		Position=(positive_range * Scale) + minRange;
+		//If axis controls are used or quadrant is locked down do nothing
+		if ((IsZero(GetRequestedVelocity(),0.01)) && (Position > -0.98))
+		{
+			//DOUT5("Test=%f",RAD_2_DEG(Position));
+			SetIntendedPosition(Position);
+		}
 	}
-	//DOUT5("Test=%f",RAD_2_DEG(Position));
-	SetIntendedPosition(Position);
 }
 
   /***********************************************************************************************************************************/
@@ -283,7 +290,7 @@ void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 			m_SecondStage.SetRequestedVelocity_FromNormalized(Velocity);
 			if (IsZero(m_FirstStageManualVelocity))  //typical case...no pot connected for first stage we latch to second stage velocity
 			{
-				const double FirstStageScalar=0.5;  //TODO properties
+				const double FirstStageScalar=1.0;  //For now leave full from testing it appears we need it full speed
 				m_FirstStage.SetRequestedVelocity_FromNormalized(Velocity * FirstStageScalar);
 			}
 			else	//This should only be used during calibration as it will be difficult to control two pots otherwise
@@ -594,9 +601,6 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	//m_IsTargeting=false;
 	//m_AutoDriveState=eAutoDrive_Disabled; 
 	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
-	#ifdef __ShooterOpenLoop__
-	m_IsTargeting=false;
-	#endif
 }
 
 FRC_2013_Robot::~FRC_2013_Robot()
@@ -1101,6 +1105,7 @@ void FRC_2013_Robot::SetClimbGear_RightButton(bool on)
 
 void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 {
+	m_ClimbState=climb_state;
 	#ifndef __DisabledClimbPneumatics__
 	//Note: the order of each of these will disengage others before engage... as a fall back precaution, but the client code
 	//really needs to set state to neutral with a wait time before going into the next state so that there is never a time when
@@ -1149,6 +1154,31 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		break;
 	}
 	#endif
+}
+
+void FRC_2013_Robot::SetClimbSpeed(double Speed)
+{
+	if (m_IsAutonomous) return;  //disable controls during autonomous
+	//The clamp speed range as Quadrant may be scaled to go beyond -1.0 1.0 range
+	if (Speed < -1.0)
+		Speed=-1.0;
+	else if (Speed > 1.0)
+		Speed=1.0;
+	const double positive_range = (Speed * 0.5) + 0.5;
+	switch (m_ClimbState)
+	{
+	case eClimbState_Neutral:
+	case eClimbState_RaiseLift:
+		m_controller->GetUIController_RW()->Quadrant_SetCurrentSpeed(positive_range);
+		break;
+	case eClimbState_Drive:
+	case eClimbState_DropLift:
+		//Don't do anything on these
+		break;
+	case eClimbState_DropLift2:
+		m_controller->GetUIController_RW()->Quadrant_SetCurrentSpeed(-positive_range);
+		break;
+	}
 }
 
 bool FRC_2013_Robot::IsStopped() const
@@ -1247,6 +1277,12 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTargetingValue);
 
+		em->Event_Map["Robot_SetClimbDriveEngaged"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbDriveEngaged);
+		em->Event_Map["Robot_SetClimbRaiseLift"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbRaiseLift);
+		em->Event_Map["Robot_SetClimbDropLift"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbDropLift);
+		em->Event_Map["Robot_SetClimbDropLift2"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbDropLift2);
+		em->EventValue_Map["Robot_SetClimbSpeed"].Subscribe(ehl,*this, &FRC_2013_Robot::SetClimbSpeed);
+
 		em->EventOnOff_Map["Robot_AutoDriveYaw"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveYaw);
 		em->EventOnOff_Map["Robot_AutoDriveFull"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveFull);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
@@ -1270,6 +1306,12 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2013_Robot::SetTargetingValue);
+
+		em->Event_Map["Robot_SetClimbDriveEngaged"].Remove(*this, &FRC_2013_Robot::SetClimbDriveEngaged);
+		em->Event_Map["Robot_SetClimbRaiseLift"].Remove(*this, &FRC_2013_Robot::SetClimbRaiseLift);
+		em->Event_Map["Robot_SetClimbDropLift"].Remove(*this, &FRC_2013_Robot::SetClimbDropLift);
+		em->Event_Map["Robot_SetClimbDropLift2"].Remove(*this, &FRC_2013_Robot::SetClimbDropLift2);
+		em->EventValue_Map["Robot_SetClimbSpeed"].Remove(*this, &FRC_2013_Robot::SetClimbSpeed);
 
 		em->EventOnOff_Map["Robot_AutoDriveYaw"].Remove(*this, &FRC_2013_Robot::SetAutoDriveYaw);
 		em->EventOnOff_Map["Robot_AutoDriveFull"].Remove(*this, &FRC_2013_Robot::SetAutoDriveFull);
@@ -1568,6 +1610,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Robot_SetTargeting_Off","Robot_AutoDriveYaw","Robot_AutoDriveFull",
 	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
 	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
+	"Robot_SetClimbDriveEngaged","Robot_SetClimbRaiseLift","Robot_SetClimbDropLift","Robot_SetClimbDropLift2","Robot_SetClimbSpeed",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff"
 	//AI Tester events only
