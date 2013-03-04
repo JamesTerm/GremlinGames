@@ -1171,8 +1171,9 @@ void FRC_2013_Robot::SetClimbSpeed(double Speed)
 	case eClimbState_RaiseLift:
 		m_controller->GetUIController_RW()->Quadrant_SetCurrentSpeed(positive_range);
 		break;
+	case eClimbState_Drive:
 	case eClimbState_DropLift:
-		//Don't do anything on this
+		//Don't do anything on these
 		break;
 	case eClimbState_DropLift2:
 		m_controller->GetUIController_RW()->Quadrant_SetCurrentSpeed(-positive_range);
