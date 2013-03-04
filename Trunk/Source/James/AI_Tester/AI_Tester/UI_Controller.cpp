@@ -652,7 +652,7 @@ void UI_Controller::Slider_Accel(double Intensity)
 		Ship_Brake(-Intensity);
 }
 
-void UI_Controller::Quatrant_SetCurrentSpeed(double NormalizedVelocity)
+void UI_Controller::Quadrant_SetCurrentSpeed(double NormalizedVelocity)
 {
 	if ((m_Ship_Keyboard_currAccel[1]==0.0)&&(!AreControlsDisabled()))
 	{

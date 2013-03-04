@@ -1159,7 +1159,7 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 void FRC_2013_Robot::SetClimbSpeed(double Speed)
 {
 	if (m_IsAutonomous) return;  //disable controls during autonomous
-	//The clamp speed range as Quatrant may be scaled to go beyond -1.0 1.0 range
+	//The clamp speed range as Quadrant may be scaled to go beyond -1.0 1.0 range
 	if (Speed < -1.0)
 		Speed=-1.0;
 	else if (Speed > 1.0)
@@ -1169,13 +1169,13 @@ void FRC_2013_Robot::SetClimbSpeed(double Speed)
 	{
 	case eClimbState_Neutral:
 	case eClimbState_RaiseLift:
-		m_controller->GetUIController_RW()->Quatrant_SetCurrentSpeed(positive_range);
+		m_controller->GetUIController_RW()->Quadrant_SetCurrentSpeed(positive_range);
 		break;
 	case eClimbState_DropLift:
 		//Don't do anything on this
 		break;
 	case eClimbState_DropLift2:
-		m_controller->GetUIController_RW()->Quatrant_SetCurrentSpeed(-positive_range);
+		m_controller->GetUIController_RW()->Quadrant_SetCurrentSpeed(-positive_range);
 		break;
 	}
 }

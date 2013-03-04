@@ -52,7 +52,7 @@ class UI_Controller
 		void Brake(bool on){if (AreControlsDisabled() && on) return; Ship_Brake(on);}
 		void Stop() {if (AreControlsDisabled()) return; m_ShipKeyVelocity=0.0;m_ship->Stop();}
 		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedVelocity(speed);}
-		void Quatrant_SetCurrentSpeed(double NormalizedVelocity);
+		void Quadrant_SetCurrentSpeed(double NormalizedVelocity);
 
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
