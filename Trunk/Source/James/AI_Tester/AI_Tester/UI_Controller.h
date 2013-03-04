@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef AI_TesterCode
 class Mouse_ShipDriver
 {
 public:
@@ -20,6 +21,7 @@ private:
 	unsigned m_currFrame;
 	bool m_mouseRoll;
 };
+#endif
 
 class UI_Controller
 {
@@ -35,7 +37,12 @@ class UI_Controller
 			Dir_180
 		};
 
+		#ifdef AI_TesterCode
 		UI_Controller(AI_Base_Controller *base_controller=NULL,bool AddJoystickDefaults=true);
+		#else
+		UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
+		#endif
+
 		virtual ~UI_Controller();
 
 		///This is the most important method, as we must have a ship to control
@@ -105,7 +112,7 @@ class UI_Controller
 			{
 				struct AnalogSpecifics_rw
 				{
-					GG_Framework::UI::JoyStick_Binder::JoyAxis_enum JoyAxis;
+					UI::JoyStick_Binder::JoyAxis_enum JoyAxis;
 					bool IsFlipped;
 					double Multiplier;
 					double FilterRange;
@@ -120,10 +127,12 @@ class UI_Controller
 			} Specifics;
 		};
 		//Return if element was successfully created (be sure to check as some may not be present)
-		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,GG_Framework::Logic::Scripting::Script& script);
-		GG_Framework::UI::JoyStick_Binder &GetJoyStickBinder();
+		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script);
+		UI::JoyStick_Binder &GetJoyStickBinder();
 	protected:
+		#ifdef AI_TesterCode
 		friend Mouse_ShipDriver;
+		#endif
 
 		void BlackoutHandler(double bl);
 
@@ -164,8 +173,12 @@ class UI_Controller
 		void Init_AutoPilotControls();
 		AI_Base_Controller *m_Base;
 		Ship_2D *m_ship; //there is an overwhelming use of the ship so we'll cache a pointer of it here
-		//osg::ref_ptr<HUD_PDCB> m_HUD_UI;
+		
+		#ifdef AI_TesterCode
 		Mouse_ShipDriver *m_mouseDriver;
+		#else
+		UI::JoyStick_Binder &m_JoyStick_Binder;
+		#endif
 
 		double m_LastSliderTime[2]; //Keep track of the slider to help it stay smooth;
 		bool m_isControlled;
@@ -174,12 +187,8 @@ class UI_Controller
 		double m_Ship_Keyboard_rotAcc_rad_s;
 		///This one is used exclusively for the Joystick and Mouse turn methods
 		double m_Ship_JoyMouse_rotAcc_rad_s;
-		osg::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
+		Vec2D m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
 		double m_ShipKeyVelocity;
-
-		//void ConnectHUD_Elements(bool connect);
-		//bool m_hud_connected;
-
 
 		//I have to monitor when it is down then up
 		bool m_SlideButtonToggle;
@@ -199,7 +208,7 @@ class UI_Controller
 		bool m_POVSetValve;
 };
 
-
+#ifdef AI_TesterCode
 class UI_Controller_GameClient : public UI_GameClient
 {
 	public:
@@ -212,3 +221,4 @@ class UI_Controller_GameClient : public UI_GameClient
 		UI_Controller *m_UI_Controller;  //unfortunately this is late binding once the window is setup
 		Entity2D* m_controlledEntity;
 };
+#endif

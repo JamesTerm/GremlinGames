@@ -7,6 +7,7 @@
 #define AI_TesterCode  //used to branch AI test code from wind-river code
 typedef osg::Vec2d Vec2D;
 namespace Base=GG_Framework::Base;
+namespace UI=GG_Framework::UI;
 namespace Scripting=GG_Framework::Logic::Scripting;
 
 //local includes
