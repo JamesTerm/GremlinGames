@@ -121,3 +121,5 @@ private:
 
 	}
 }
+
+namespace UI=Framework::UI;

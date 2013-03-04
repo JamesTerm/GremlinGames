@@ -20,27 +20,162 @@
 
 #undef __EnableTestKeys__
 
+#ifdef AI_TesterCode
+using namespace AI_Tester;
+using namespace GG_Framework::Base;
+using namespace GG_Framework::UI;
+using namespace osg;
+bool g_UseMouse=false;
+const double Pi=PI;
+#else
 using namespace Framework::Base;
 using namespace Framework::UI;
+#endif
 
-namespace Scripting=Framework::Scripting;
 const double Half_Pi=M_PI/2.0;
+
+#ifdef AI_TesterCode
+  /***************************************************************************************************************/
+ /*												Mouse_ShipDriver												*/
+/***************************************************************************************************************/
+
+Mouse_ShipDriver::Mouse_ShipDriver(Ship_2D& ship,UI_Controller *parent, unsigned avgFrames) : 
+	m_ship(ship),m_ParentUI_Controller(parent), m_mousePosHist(NULL), m_avgFrames(avgFrames), m_currFrame(0), m_mouseRoll(false)
+{
+	//GG_Framework::UI::KeyboardMouse_CB &kbm = GG_Framework::UI::MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
+	//kbm.AddKeyBindingR(true, "Ship.MouseRoll", osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON);
+
+	// Set up the Mouse Control to drive
+	Entity2D::EventMap* em = m_ship.GetEventMap();
+	em->KBM_Events.MouseMove.Subscribe(ehl, *this, &Mouse_ShipDriver::OnMouseMove);
+	//em->EventOnOff_Map["Ship.MouseRoll"].Subscribe(ehl, *this, &Mouse_ShipDriver::OnMouseRoll);
+
+	if (m_avgFrames)
+	{
+		m_mousePosHist = new Vec2f[m_avgFrames];
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+
+void Mouse_ShipDriver::OnMouseMove(float mx, float my)
+{
+	//Rick keep this here so I can debug code... thanks
+	//Ideally when the window loses focus we should release control of the mouse
+	if (!g_UseMouse)
+	 return;
+
+	// Watch for the window being too small.  We will also need the width and height
+	int x,y;
+	unsigned w,h;
+	GG_Framework::UI::MainWindow::GetMainWindow()->GetWindowRectangle(x,y,w,h);
+	if ((w < 2) || (h < 2))
+		return;
+
+	// We want to use the physical distance in pixels to normalize the distance the mouse moves
+	// and to avoid the re-centering effect that gives a small amount of pixel deviation
+	float pixelX, pixelY;
+	if (!GG_Framework::UI::MainWindow::GetMainWindow()->ComputePixelCoords(mx, my, pixelX, pixelY))
+		return;
+
+	// We are assuming that the mouse was set to its 0,0 position (center screen) Before every call
+	float dX = pixelX - (float)x - ((float)w/2.0f);
+	float dY = pixelY - (float)y - ((float)h/2.0f);
+
+	// Remember this for the next time, if larger than what we have
+	if ((dX > 1.5f) || (dX < -1.5f))  // Watch for very small amounts of mouse drift
+	{
+		if (fabs(dX) > fabs(m_lastMousePos[0]))
+			m_lastMousePos[0] = dX;
+	}
+	if ((dY > 1.5f) || (dY < -1.5f))  // Watch for very small amounts of mouse drift
+	{
+		if (fabs(dY) > fabs(m_lastMousePos[1]))
+			m_lastMousePos[1] = dY;
+	}
+
+	// Reset back to 0,0 for next time
+	GG_Framework::UI::MainWindow::GetMainWindow()->PositionPointer(0.0f,0.0f);
+}
+//////////////////////////////////////////////////////////////////////////
+
+void Mouse_ShipDriver::DriveShip()
+{
+	float dX = 0.0f;
+	float dY = 0.0f;
+	if (m_mousePosHist)
+	{
+		// Store from this frame
+		if (m_currFrame >= m_avgFrames)
+			m_currFrame = 0;
+		m_mousePosHist[m_currFrame] = m_lastMousePos;
+		++m_currFrame;
+
+		// Get the average
+		for (unsigned i=0; i < m_avgFrames; ++i)
+		{
+			dX += m_mousePosHist[i][0];
+			dY += m_mousePosHist[i][1];
+		}
+		dX /= (float)m_avgFrames;
+		dY /= (float)m_avgFrames;
+	}
+	else
+	{
+		// We are not using averages, just use this value
+		dX = m_lastMousePos[0];
+		dY = m_lastMousePos[1];
+	}
+	// Reset for next time
+	m_lastMousePos = Vec2f(0.0f, 0.0f);
+
+	// Will be used eventually for sensitivity and mouse flip, store in script, etc.
+	static const float x_coeff = 0.004f;
+	static const float y_coeff = -0.004f;
+	static const float roll_coeff = 0.01f;
+
+	// Finally Turn the Heading or Pitch (or roll if using the rt mouse button
+	if (m_mouseRoll)
+	{
+		// Use this roll versus the scroll wheel
+		float dR = dY - dX;
+
+		//! \todo JAMES: here is the funky roll
+		//if (dR != 0.0f)
+		//	m_ParentUI_Controller->Mouse_Roll(dR*roll_coeff);
+	}
+	else
+	{
+		if (dX != 0.0f)
+			m_ParentUI_Controller->Mouse_Turn(dX*x_coeff);
+		//if (dY != 0.0f)
+		//	m_ParentUI_Controller->Mouse_Pitch(dY*y_coeff);
+	}
+}                                                      
+//////////////////////////////////////////////////////////////////////////
+
+#endif
 
 
   /***************************************************************************************************************/
  /*												UI_Controller													*/
 /***************************************************************************************************************/
 
-
 void UI_Controller::Init_AutoPilotControls()
 {
 }
 
-
-//! TODO: Use the script to grab the head position to provide the HUD
+#ifdef AI_TesterCode
+UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
+#else
 UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_controller) : 
-	/*m_HUD_UI(new HUD_PDCB(osg::Vec3(0.0, 4.0, 0.5))), */
-	m_Base(NULL),m_JoyStick_Binder(joy),m_isControlled(false),m_ShipKeyVelocity(0.0),m_SlideButtonToggle(false),m_CruiseSpeed(0.0),
+#endif
+	m_Base(NULL),
+	#ifdef AI_TesterCode
+	m_mouseDriver(NULL),
+	#else
+	m_JoyStick_Binder(joy),
+	#endif
+	m_isControlled(false),m_ShipKeyVelocity(0.0),m_SlideButtonToggle(false),m_CruiseSpeed(0.0),
 	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Ship_UseHeadingSpeed(true),m_Test1(false),m_Test2(false),m_IsBeingDestroyed(false),
 	m_POVSetValve(false)
 {
@@ -48,15 +183,52 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
 	m_LastSliderTime[0]=m_LastSliderTime[1]=0.0;
 
-	//No longer putting controls here as they may change depending on what controller is used (e.g. deadzone tweaks)
+	#ifdef AI_TesterCode
+	// Hard code these key bindings at first
+	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
+	JoyStick_Binder &joy = MainWindow::GetMainWindow()->GetJoystick();
+	kbm.AddKeyBindingR(true, "Ship.TryFireMainWeapon", osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON);
+	//disabled until it works
+	//kbm.AddKeyBindingR(true, "RequestAfterburner", GG_Framework::Base::Key('w', GG_Framework::Base::Key::DBL));
+	kbm.AddKeyBindingR(true, "Thrust", GG_Framework::Base::Key('w'));
+	kbm.AddKeyBindingR(true, "Brake", 's');
+	kbm.AddKeyBindingR(false, "Stop", 'x');
+	kbm.AddKeyBindingR(true, "Turn_R", 'd');
+	kbm.AddKeyBindingR(true, "Turn_L", 'a');
+	kbm.AddKeyBindingR(false, "Turn_180", '`');
+	kbm.AddKeyBindingR(false, "UseMouse", '/');
+	//I would like to keep this macro case to easily populate my defaults
 	#if 0
-	//Note: Only generic default keys assigned for windriver builds.  Others are moved to the specific robot
-	//We may wish to move these as well, but for now assert this is generic enough for all robots, which will come in
-	//handy if we want to change the driving style (e.g. arcade, tank steering, etc)
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.1,false,"Joystick_1");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.1,true,"Joystick_1");
+	//for testing
+	kbm.AddKeyBindingR(true, "Test1", 'n');
+	kbm.AddKeyBindingR(true, "Test2", 'm');
 	#endif
-	
+	kbm.AddKeyBindingR(true, "StrafeRight", 'e');
+	kbm.AddKeyBindingR(true, "StrafeLeft", 'q');
+	kbm.AddKeyBindingR(false, "UserResetPos", ' ');
+	kbm.AddKeyBindingR(false, "Slide", 'g');
+	kbm.AddKeyBindingR(true, "StrafeLeft", osgGA::GUIEventAdapter::KEY_Left);
+	kbm.AddKeyBindingR(true, "StrafeRight", osgGA::GUIEventAdapter::KEY_Right);
+	kbm.AddKeyBindingR(false, "ToggleAutoPilot", 'z');
+	//kbm.AddKeyBindingR(false, "ShowHUD", osgGA::GUIEventAdapter::KEY_F4);
+
+	if (AddJoystickDefaults)
+	{
+		joy.AddJoy_Button_Default(0,"Ship.TryFireMainWeapon");
+		joy.AddJoy_Button_Default(1,"Missile.Launch");
+		// We can now use double-tap to fire the afterburners (for when we have them)
+		joy.AddJoy_Button_Default(2,"Thrust");
+		joy.AddJoy_Button_Default(3,"Brake");
+		joy.AddJoy_Analog_Default(JoyStick_Binder::eSlider1,"Joystick_SetCurrentSpeed");
+		//These are not assigned by default but can configured to use via xml preferences
+		joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.01,true);
+		//hmmm could use this to thrust
+		//joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Analog_Pitch",true,1.0,0.01,true);
+		joy.AddJoy_Button_Default(6,"Slide",false);
+		joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
+	}
+	#endif
+
 	Init_AutoPilotControls();
 }
 
@@ -132,17 +304,29 @@ const char *UI_Controller::ExtractControllerElementProperties(Controller_Element
 
 void UI_Controller::Flush_AI_BaseResources()
 {
+	#ifdef AI_TesterCode
+	if (m_mouseDriver)
+	{
+		delete m_mouseDriver;
+		m_mouseDriver=NULL;
+	}
+	#endif
 	m_ship=NULL; //we don't own this
 }
 
 UI_Controller::~UI_Controller()
 {
+	m_IsBeingDestroyed=true;
 	Set_AI_Base_Controller(NULL); //this will unbind the events and flush the AI resources
 }
 
-Framework::UI::JoyStick_Binder &UI_Controller::GetJoyStickBinder()
+UI::JoyStick_Binder &UI_Controller::GetJoyStickBinder()
 {
+	#ifdef AI_TesterCode
+	return MainWindow::GetMainWindow()->GetJoystick();
+	#else
 	return m_JoyStick_Binder;
+	#endif
 }
 
 void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
@@ -150,7 +334,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 	//destroy all resources associated with the previous ship
 	if (m_Base)
 	{
-		Framework::Base::EventMap* em = m_ship->GetEventMap();
+		Entity2D_Kind::EventMap* em = m_ship->GetEventMap();
 		//disabled until it works
 		//em->EventOnOff_Map["RequestAfterburner"].Remove(*this, &UI_Controller::AfterBurner_Thrust);
 		em->EventOnOff_Map["Thrust"].Remove(*this, &UI_Controller::Thrust);
@@ -167,10 +351,11 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventOnOff_Map["StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->Event_Map["ToggleAutoPilot"].Remove(*this, &UI_Controller::TryToggleAutoPilot);
 		em->EventOnOff_Map["SPAWN"].Remove(*this, &UI_Controller::OnSpawn);
-		//em->Event_Map["UseMouse"].Remove(*this, &UI_Controller::UseMouse);
+		#ifdef AI_TesterCode
+		em->Event_Map["UseMouse"].Remove(*this, &UI_Controller::UseMouse);
+		#endif
 		em->EventOnOff_Map["Test1"].Remove(*this, &UI_Controller::Test1);
 		em->EventOnOff_Map["Test2"].Remove(*this, &UI_Controller::Test2);
-		//em->Event_Map["ShowHUD"].Remove(*m_HUD_UI.get(), &HUD_PDCB::ToggleEnabled);
 		em->EventValue_Map["BLACKOUT"].Remove(*this, &UI_Controller::BlackoutHandler);
 
 		em->EventValue_Map["POV_Turn"].Remove(*this, &UI_Controller::Ship_Turn90_POV);
@@ -188,8 +373,10 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 	if (m_Base)
 	{
 		m_ship=&m_Base->m_ship;
-		Framework::Base::EventMap* em = m_ship->GetEventMap();
-
+		#ifdef AI_TesterCode
+		m_mouseDriver=new Mouse_ShipDriver(*m_ship,this, 3);
+		#endif
+		Entity2D_Kind::EventMap *em = m_ship->GetEventMap();
 		//disabled until it works
 		//em->EventOnOff_Map["RequestAfterburner"].Subscribe(ehl, *this, &UI_Controller::AfterBurner_Thrust);
 		em->EventOnOff_Map["Thrust"].Subscribe(ehl, *this, &UI_Controller::Thrust);
@@ -207,7 +394,9 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["ToggleAutoPilot"].Subscribe(ehl, *this, &UI_Controller::TryToggleAutoPilot);
 		em->EventOnOff_Map["SPAWN"].Subscribe(ehl, *this, &UI_Controller::OnSpawn);
 
-		//em->Event_Map["UseMouse"].Subscribe(ehl, *this, &UI_Controller::UseMouse);
+		#ifdef AI_TesterCode
+		em->Event_Map["UseMouse"].Subscribe(ehl, *this, &UI_Controller::UseMouse);
+		#endif
 		em->EventOnOff_Map["Test1"].Subscribe(ehl, *this, &UI_Controller::Test1);
 		em->EventOnOff_Map["Test2"].Subscribe(ehl, *this, &UI_Controller::Test2);
 
@@ -241,8 +430,15 @@ void UI_Controller::Test2(bool on)
 	m_Test2=on;
 }
 
+#ifdef AI_TesterCode
+void UI_Controller::UseMouse()
+{
+	g_UseMouse=!g_UseMouse;
+}
+#endif
+
 void UI_Controller::Ship_AfterBurner_Thrust(bool on)	
-{		
+{	
 	//Note this will happen implicitly
 	// Touching the Afterburner always places us back in SImFLight mode
 	//m_ship->SetSimFlightMode(true);
@@ -460,24 +656,30 @@ void UI_Controller::Slider_Accel(double Intensity)
 		Ship_Brake(-Intensity);
 }
 
+void UI_Controller::Quadrant_SetCurrentSpeed(double NormalizedVelocity)
+{
+	if ((m_Ship_Keyboard_currAccel[1]==0.0)&&(!AreControlsDisabled()))
+	{
+		if (m_ship->GetAlterTrajectory())
+		{
+			const double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
+			m_CruiseSpeed+=NormalizedVelocity * SpeedToUse;
+			//This one is intended to be used with other axis control since its clean I'm not going to use m_LastSliderTime check
+		}
+	}
+}
+
 void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 {
 	if ((m_Ship_Keyboard_currAccel[1]==0.0)&&(!AreControlsDisabled()))
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
-			if ((fabs(Speed-m_LastSliderTime[1])>0.05)||(Speed==0))
-			{
-				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
-				//This works but I really did not like the feel of it
-				double SpeedCalibrated=((Speed/2.0)+0.5)*SpeedToUse;
-				m_LastSliderTime[1]=Speed;
-				if (SpeedCalibrated!=m_CruiseSpeed)
-				{
-					//m_ship->SetRequestedVelocity(SpeedCalibrated);
-					m_CruiseSpeed=SpeedCalibrated;
-				}
-			}
+			const double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
+			//This works but I really did not like the feel of it
+			const double SpeedCalibrated=((Speed/2.0)+0.5)*SpeedToUse;
+			m_LastSliderTime[1]=Speed;
+			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
 			m_Ship_JoyMouse_currAccel[1]=Speed;
@@ -490,18 +692,10 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
-			//Avoid jitter for slider controls by testing the tolerance of change
-			if ((fabs(Speed-m_LastSliderTime[1])>0.05)||(Speed==0))
-			{
-				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
-				double SpeedCalibrated=Speed*SpeedToUse;
-				m_LastSliderTime[1]=Speed;
-				if (SpeedCalibrated!=m_CruiseSpeed)
-				{
-					//m_ship->SetRequestedVelocity(SpeedCalibrated);
-					m_CruiseSpeed=SpeedCalibrated;
-				}
-			}
+			const double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
+			const double SpeedCalibrated=Speed*SpeedToUse;
+			m_LastSliderTime[1]=Speed;
+			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
 			m_Ship_JoyMouse_currAccel[1]=Speed;
@@ -524,8 +718,10 @@ void UI_Controller::UpdateController(double dTime_s)
 
 	if (m_isControlled)
 	{
+		#ifdef AI_TesterCode
 		// Update Mouse Controller (This is ONLY allowed to update the POV in auto pilot)
-		//m_mouseDriver->DriveShip();
+		m_mouseDriver->DriveShip();
+		#endif
 
 		//Now for the ship
 		if (!AreControlsDisabled())
@@ -575,6 +771,7 @@ void UI_Controller::UpdateController(double dTime_s)
 			//flush the JoyMouse rotation acceleration since it works on an additive nature
 			m_Ship_JoyMouse_rotAcc_rad_s=0.0;
 			m_Ship_JoyMouse_currAccel=Vec2d(0.0,0.0);
+			m_CruiseSpeed=0;
 		}
 	}
 }
@@ -593,6 +790,13 @@ void UI_Controller::UpdateUI(double dTime_s)
 	//[0]  +Right -Left
 	//[1]  +Forward -Reverse
 	//[2]  +Up -Down
+	#ifdef __EnableTestKeys__
+	if (m_Test1)
+		m_ship->m_Physics.ApplyFractionalForce(Vec3d(0,0,m_ship->Mass),Vec3d(0,10,0),dTime_s);
+
+	else if (m_Test2)
+		m_ship->m_Physics.ApplyFractionalForce(Vec3d(0,0,-m_ship->Mass),Vec3d(0,10,0),dTime_s);
+	#endif
 	{
 		#if 1
 		Vec2d pos=m_ship->GetPos_m();
@@ -605,6 +809,15 @@ void UI_Controller::UpdateUI(double dTime_s)
 		DOUT1("x=%f y=%f r=%f",pos[0],pos[1],RAD_2_DEG(m_ship->GetAtt_r()));
 		DOUT3("Speed=%f mode=%s",m_ship->GetPhysics().GetLinearVelocity().length(),m_ship->GetAlterTrajectory()?"Sim":"Slide");
 		#endif
+		#if 0
+		{
+			GG_Framework::UI::MainWindow& mainWin = *GG_Framework::UI::MainWindow::GetMainWindow();
+			Vec3 eye,center,up;
+			mainWin.GetMainCamera()->GetCameraMatrix().getLookAt(eye,center,up);
+			//DOUT2("%f %f %f",eye[0],eye[1],eye[2]);
+			DOUT2("%f %f %f",eye[0]-pos[0],eye[1]-pos[1],eye[2]-pos[2]);
+		}
+		#endif
 		//DebugOut_PDCB::TEXT2 = BuildString("%s", ThrustStateNames[m_ship->GetThrustState()]);
 	}
 }
@@ -614,13 +827,19 @@ void UI_Controller::UpdateUI(double dTime_s)
 void UI_Controller::HookUpUI(bool ui)
 {
 	m_isControlled = ui;
-	//GG_Framework::UI::MainWindow& mainWin = *GG_Framework::UI::MainWindow::GetMainWindow();
+	#ifdef AI_TesterCode
+	UI::MainWindow& mainWin = *GG_Framework::UI::MainWindow::GetMainWindow();
 	if (m_isControlled)
 	{
-		//Note: This is handled explicitly in the main; however, I may want to add a member here... probably not since I do not wish to deviate from
-		//the original source
-		//mainWin.GetJoystick().SetControlledEventMap(m_ship->GetEventMap());
+		// Start with the mouse centered in the screen and turn off the cursor
+		mainWin.PositionPointer(0.0f,0.0f);
+		mainWin.UseCursor(false);
+
+		// Provide the new camera manipulator
+		mainWin.GetKeyboard_Mouse().SetControlledEventMap(m_ship->GetEventMap());
+		mainWin.GetJoystick().SetControlledEventMap(m_ship->GetEventMap());
 	}
+	#endif
 
 	if (m_ship)
 	{
