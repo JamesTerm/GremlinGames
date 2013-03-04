@@ -95,22 +95,23 @@ FRC_2013_Robot::AxisControl::AxisControl(FRC_2013_Robot *pParent,const char Enti
 //bounce off of its point but when released it will snap back to this position
 void FRC_2013_Robot::AxisControl::SetIntendedPosition_Plus(double Position)
 {
+	//Only apply if we are not targeting
 	bool IsTargeting=(m_pParent->m_IsTargeting);
 	if (!IsTargeting)
 	{
-		//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
 		//first get the range from 0 - 1
 		double positive_range = (Position * 0.5) + 0.5;
 		//positive_range=positive_range>0.01?positive_range:0.0;
 		const double minRange=GetMinRange();
 		const double maxRange=GetMaxRange();
-		const double Scale=(maxRange-minRange) / maxRange;
+		const double Scale=fabs(maxRange-minRange);
 		Position=(positive_range * Scale) + minRange;
-	}
-	if (IsZero(GetRequestedVelocity(),0.01))
-	{
-		//DOUT5("Test=%f",RAD_2_DEG(Position));
-		SetIntendedPosition(Position);
+		//If axis controls are used or quadrant is locked down do nothing
+		if ((IsZero(GetRequestedVelocity(),0.01)) && (Position > -0.98))
+		{
+			//DOUT5("Test=%f",RAD_2_DEG(Position));
+			SetIntendedPosition(Position);
+		}
 	}
 }
 
