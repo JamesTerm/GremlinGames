@@ -1,5 +1,28 @@
 #pragma once
 
+#ifdef AI_TesterCode
+class Mouse_ShipDriver
+{
+public:
+	Mouse_ShipDriver(Ship_2D& ship,UI_Controller *parent, unsigned avgFrames);
+	void OnMouseMove(float mx, float my);
+	void DriveShip();
+
+private:
+	// Use this handler to tie events to this manipulator
+	IEvent::HandlerList ehl;
+	void OnMouseRoll(bool onoff){m_mouseRoll = onoff;}
+
+	Ship_2D& m_ship;
+	UI_Controller * const m_ParentUI_Controller;
+	osg::Vec2f m_lastMousePos;
+	osg::Vec2f* m_mousePosHist;
+	unsigned m_avgFrames;
+	unsigned m_currFrame;
+	bool m_mouseRoll;
+};
+#endif
+
 class UI_Controller
 {
 	public:
@@ -14,7 +37,12 @@ class UI_Controller
 			Dir_180
 		};
 
+		#ifdef AI_TesterCode
+		UI_Controller(AI_Base_Controller *base_controller=NULL,bool AddJoystickDefaults=true);
+		#else
 		UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
+		#endif
+
 		virtual ~UI_Controller();
 
 		///This is the most important method, as we must have a ship to control
@@ -31,6 +59,8 @@ class UI_Controller
 		void Brake(bool on){if (AreControlsDisabled() && on) return; Ship_Brake(on);}
 		void Stop() {if (AreControlsDisabled()) return; m_ShipKeyVelocity=0.0;m_ship->Stop();}
 		void MatchSpeed(double speed) {if (AreControlsDisabled()) return; m_ship->SetRequestedVelocity(speed);}
+		void Quadrant_SetCurrentSpeed(double NormalizedVelocity);
+
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
 		void Turn_180() {if (AreControlsDisabled()) return; Ship_Turn(Dir_180);}
@@ -82,7 +112,7 @@ class UI_Controller
 			{
 				struct AnalogSpecifics_rw
 				{
-					Framework::UI::JoyStick_Binder::JoyAxis_enum JoyAxis;
+					UI::JoyStick_Binder::JoyAxis_enum JoyAxis;
 					bool IsFlipped;
 					double Multiplier;
 					double FilterRange;
@@ -97,9 +127,13 @@ class UI_Controller
 			} Specifics;
 		};
 		//Return if element was successfully created (be sure to check as some may not be present)
-		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Framework::Scripting::Script& script);
-		Framework::UI::JoyStick_Binder &GetJoyStickBinder();
+		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script);
+		UI::JoyStick_Binder &GetJoyStickBinder();
 	protected:
+		#ifdef AI_TesterCode
+		friend Mouse_ShipDriver;
+		#endif
+
 		void BlackoutHandler(double bl);
 
 		///All non-right button mouse movements will come here to be dispatched to the proper place
@@ -139,7 +173,12 @@ class UI_Controller
 		void Init_AutoPilotControls();
 		AI_Base_Controller *m_Base;
 		Ship_2D *m_ship; //there is an overwhelming use of the ship so we'll cache a pointer of it here
-		Framework::UI::JoyStick_Binder &m_JoyStick_Binder;
+		
+		#ifdef AI_TesterCode
+		Mouse_ShipDriver *m_mouseDriver;
+		#else
+		UI::JoyStick_Binder &m_JoyStick_Binder;
+		#endif
 
 		double m_LastSliderTime[2]; //Keep track of the slider to help it stay smooth;
 		bool m_isControlled;
@@ -148,7 +187,7 @@ class UI_Controller
 		double m_Ship_Keyboard_rotAcc_rad_s;
 		///This one is used exclusively for the Joystick and Mouse turn methods
 		double m_Ship_JoyMouse_rotAcc_rad_s;
-		Framework::Base::Vec2d m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
+		Vec2D m_Ship_Keyboard_currAccel,m_Ship_JoyMouse_currAccel;
 		double m_ShipKeyVelocity;
 
 		//I have to monitor when it is down then up
@@ -169,3 +208,17 @@ class UI_Controller
 		bool m_POVSetValve;
 };
 
+#ifdef AI_TesterCode
+class UI_Controller_GameClient : public UI_GameClient
+{
+	public:
+		UI_Controller_GameClient();
+		~UI_Controller_GameClient();
+		virtual void SetControlledEntity(Entity2D* newEntity,bool AddJoystickDefaults=true);
+		virtual void AboutTo_RemoveEntity(Entity2D *Entity) {if (Entity==m_controlledEntity) SetControlledEntity(NULL);}
+	private:
+		//The one, the only!
+		UI_Controller *m_UI_Controller;  //unfortunately this is late binding once the window is setup
+		Entity2D* m_controlledEntity;
+};
+#endif
