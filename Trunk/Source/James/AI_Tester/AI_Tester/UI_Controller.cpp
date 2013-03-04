@@ -652,24 +652,30 @@ void UI_Controller::Slider_Accel(double Intensity)
 		Ship_Brake(-Intensity);
 }
 
+void UI_Controller::Quatrant_SetCurrentSpeed(double NormalizedVelocity)
+{
+	if ((m_Ship_Keyboard_currAccel[1]==0.0)&&(!AreControlsDisabled()))
+	{
+		if (m_ship->GetAlterTrajectory())
+		{
+			const double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
+			m_CruiseSpeed+=NormalizedVelocity * SpeedToUse;
+			//This one is intended to be used with other axis control since its clean I'm not going to use m_LastSliderTime check
+		}
+	}
+}
+
 void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 {
 	if ((m_Ship_Keyboard_currAccel[1]==0.0)&&(!AreControlsDisabled()))
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
-			if ((fabs(Speed-m_LastSliderTime[1])>0.05)||(Speed==0))
-			{
-				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
-				//This works but I really did not like the feel of it
-				double SpeedCalibrated=((Speed/2.0)+0.5)*SpeedToUse;
-				m_LastSliderTime[1]=Speed;
-				if (SpeedCalibrated!=m_CruiseSpeed)
-				{
-					//m_ship->SetRequestedVelocity(SpeedCalibrated);
-					m_CruiseSpeed=SpeedCalibrated;
-				}
-			}
+			const double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
+			//This works but I really did not like the feel of it
+			const double SpeedCalibrated=((Speed/2.0)+0.5)*SpeedToUse;
+			m_LastSliderTime[1]=Speed;
+			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
 			m_Ship_JoyMouse_currAccel[1]=Speed;
@@ -682,18 +688,10 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 	{
 		if (m_ship->GetAlterTrajectory())
 		{
-			//Avoid jitter for slider controls by testing the tolerance of change
-			if ((fabs(Speed-m_LastSliderTime[1])>0.05)||(Speed==0))
-			{
-				double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
-				double SpeedCalibrated=Speed*SpeedToUse;
-				m_LastSliderTime[1]=Speed;
-				if (SpeedCalibrated!=m_CruiseSpeed)
-				{
-					//m_ship->SetRequestedVelocity(SpeedCalibrated);
-					m_CruiseSpeed=SpeedCalibrated;
-				}
-			}
+			const double SpeedToUse=m_ship->GetIsAfterBurnerOn()?m_ship->GetMaxSpeed():m_ship->GetEngaged_Max_Speed();
+			const double SpeedCalibrated=Speed*SpeedToUse;
+			m_LastSliderTime[1]=Speed;
+			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
 			m_Ship_JoyMouse_currAccel[1]=Speed;
@@ -767,6 +765,7 @@ void UI_Controller::UpdateController(double dTime_s)
 			//flush the JoyMouse rotation acceleration since it works on an additive nature
 			m_Ship_JoyMouse_rotAcc_rad_s=0.0;
 			m_Ship_JoyMouse_currAccel=Vec2d(0.0,0.0);
+			m_CruiseSpeed=0;
 		}
 	}
 }

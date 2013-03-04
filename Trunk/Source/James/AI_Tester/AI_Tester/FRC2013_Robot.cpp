@@ -1105,6 +1105,7 @@ void FRC_2013_Robot::SetClimbGear_RightButton(bool on)
 
 void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 {
+	m_ClimbState=climb_state;
 	#ifndef __DisabledClimbPneumatics__
 	//Note: the order of each of these will disengage others before engage... as a fall back precaution, but the client code
 	//really needs to set state to neutral with a wait time before going into the next state so that there is never a time when
@@ -1153,6 +1154,30 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		break;
 	}
 	#endif
+}
+
+void FRC_2013_Robot::SetClimbSpeed(double Speed)
+{
+	if (m_IsAutonomous) return;  //disable controls during autonomous
+	//The clamp speed range as Quatrant may be scaled to go beyond -1.0 1.0 range
+	if (Speed < -1.0)
+		Speed=-1.0;
+	else if (Speed > 1.0)
+		Speed=1.0;
+	const double positive_range = (Speed * 0.5) + 0.5;
+	switch (m_ClimbState)
+	{
+	case eClimbState_Neutral:
+	case eClimbState_RaiseLift:
+		m_controller->GetUIController_RW()->Quatrant_SetCurrentSpeed(positive_range);
+		break;
+	case eClimbState_DropLift:
+		//Don't do anything on this
+		break;
+	case eClimbState_DropLift2:
+		m_controller->GetUIController_RW()->Quatrant_SetCurrentSpeed(-positive_range);
+		break;
+	}
 }
 
 bool FRC_2013_Robot::IsStopped() const
@@ -1251,6 +1276,12 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetTargetingValue);
 
+		em->Event_Map["Robot_SetClimbDriveEngaged"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbDriveEngaged);
+		em->Event_Map["Robot_SetClimbRaiseLift"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbRaiseLift);
+		em->Event_Map["Robot_SetClimbDropLift"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbDropLift);
+		em->Event_Map["Robot_SetClimbDropLift2"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbDropLift2);
+		em->EventValue_Map["Robot_SetClimbSpeed"].Subscribe(ehl,*this, &FRC_2013_Robot::SetClimbSpeed);
+
 		em->EventOnOff_Map["Robot_AutoDriveYaw"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveYaw);
 		em->EventOnOff_Map["Robot_AutoDriveFull"].Subscribe(ehl,*this, &FRC_2013_Robot::SetAutoDriveFull);
 		em->EventValue_Map["Robot_SetDefensiveKeyValue"].Subscribe(ehl,*this, &FRC_2013_Robot::SetDefensiveKeyPosition);
@@ -1274,6 +1305,12 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetTargetingOn"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOn);
 		em->Event_Map["Robot_SetTargetingOff"]  .Remove(*this, &FRC_2013_Robot::SetTargetingOff);
 		em->EventValue_Map["Robot_SetTargetingValue"].Remove(*this, &FRC_2013_Robot::SetTargetingValue);
+
+		em->Event_Map["Robot_SetClimbDriveEngaged"].Remove(*this, &FRC_2013_Robot::SetClimbDriveEngaged);
+		em->Event_Map["Robot_SetClimbRaiseLift"].Remove(*this, &FRC_2013_Robot::SetClimbRaiseLift);
+		em->Event_Map["Robot_SetClimbDropLift"].Remove(*this, &FRC_2013_Robot::SetClimbDropLift);
+		em->Event_Map["Robot_SetClimbDropLift2"].Remove(*this, &FRC_2013_Robot::SetClimbDropLift2);
+		em->EventValue_Map["Robot_SetClimbSpeed"].Remove(*this, &FRC_2013_Robot::SetClimbSpeed);
 
 		em->EventOnOff_Map["Robot_AutoDriveYaw"].Remove(*this, &FRC_2013_Robot::SetAutoDriveYaw);
 		em->EventOnOff_Map["Robot_AutoDriveFull"].Remove(*this, &FRC_2013_Robot::SetAutoDriveFull);
@@ -1572,6 +1609,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Robot_SetTargeting_Off","Robot_AutoDriveYaw","Robot_AutoDriveFull",
 	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
 	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
+	"Robot_SetClimbDriveEngaged","Robot_SetClimbRaiseLift","Robot_SetClimbDropLift","Robot_SetClimbDropLift2","Robot_SetClimbSpeed",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff"
 	//AI Tester events only

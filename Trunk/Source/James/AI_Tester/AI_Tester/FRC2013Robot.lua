@@ -345,6 +345,7 @@ MainRobot = {
 
 		climb_gear_lift = 
 		{
+			MaxAccelForward = 15, MaxAccelReverse = 15, 
 			MAX_SPEED = ClimbGearSpeed,
 			heading_rad = 0,  --No turning for climbing mode
 			
@@ -357,7 +358,7 @@ MainRobot = {
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
 				tolerance=0.2,
 				drive_to_scale=1.0,
-				inv_max_accel = 1/16,
+				inv_max_accel = 0.0,
 				--forward_deadzone_left  = 0,
 				--forward_deadzone_right = 0,
 				--reverse_deadzone_left  = 0,
@@ -381,7 +382,6 @@ MainRobot = {
 		--This get copy of everything set in climb_gear_lift by default... so everything in common does not need to be duplicated
 		climb_gear_drop = 
 		{
-			MaxAccelForward = 1.5, MaxAccelReverse = 1.5, 
 			tank_drive =
 			{
 				is_closed=0,						--Must be on
@@ -389,7 +389,7 @@ MainRobot = {
 				{p=200, i=10, d=50},
 				right_pid=
 				{p=200, i=10, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 0.5, 
+				inv_max_accel = 0.0, 
 				motor_specs =
 				{
 					wheel_mass=Pounds2Kilograms * 120,
@@ -460,11 +460,17 @@ MainRobot = {
 			Turret_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			Robot_SetClimbSpeed = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			
-			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-			Ball_Fire = {type="joystick_button", key=6, on_off=true},
+			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
+			Ball_Fire = {type="joystick_button", key=6, on_off=true},
+			
+			Robot_SetClimbRaiseLift		= {type="joystick_button", key=7, on_off=false},
+			Robot_SetClimbDriveEngaged	= {type="joystick_button", key=8, on_off=false},
+			Robot_SetClimbDropLift2		= {type="joystick_button", key=9, on_off=false},
+			Robot_SetClimbDropLift		= {type="joystick_button", key=10, on_off=false},
 		},
 		
 		Joystick_4 =
