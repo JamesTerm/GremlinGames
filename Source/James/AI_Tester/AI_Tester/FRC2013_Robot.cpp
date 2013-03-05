@@ -364,8 +364,10 @@ void FRC_2013_Robot::IntakeSystem::Intake_Deployment::Retract()
 void FRC_2013_Robot::IntakeSystem::Intake_Deployment::TimeChange(double dTime_s)
 {
 	__super::TimeChange(dTime_s);
+	#if 0
 	#ifdef __DebugLUA__
 	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	#endif
 	#endif
 }
 
