@@ -1053,8 +1053,8 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 			Goal *goal=NULL;
 			goal=FRC_2013_Goals::Climb(this,m_ClimbCounter++);
 			//Saturate counter to number of climb property elements
-			if (m_ClimbCounter>=c_NoClimbPropertyElements)
-				m_ClimbCounter=c_NoClimbPropertyElements-1;
+			if (m_ClimbCounter>=c_NoClimbPropertyElements * 2)
+				m_ClimbCounter=(c_NoClimbPropertyElements*2)-2;
 
 			if (goal)
 				goal->Activate(); //now with the goal(s) loaded activate it
@@ -2009,47 +2009,56 @@ Goal *FRC_2013_Goals::Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt)
 Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot,size_t iteration)
 {
 	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
-	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props[iteration];
+	const FRC_2013_Robot_Props::Climb_Properties &climb_props=props.Climb_Props[iteration>>1];
 	const double tolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
-	// reset the coordinates to use way points.  This will also ensure there is no movement
-	ResetPosition *goal_reset_1=new ResetPosition(*Robot);
-	ChangeClimbState *goal_decouple_drive_1=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);		   //de-couple the drive via pneumatic 1
-	ChangeClimbState *goal_couple_elevator_UP=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);  //couple the elevator UP winch via pneumatic 2
+
 	//Construct a way point
 	WayPoint wp;
 	wp.Position[0]=0.0;
-	wp.Position[1]=climb_props.LiftDistance;
 	wp.Power=1.0;
-	Goal_Ship_MoveToPosition *goal_spool_lift_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
-
-	//This also takes care of ... engage your control loop 'brake mode'.  By ensuring that there is no movement before resetting the position
-	ResetPosition *goal_reset_2=new ResetPosition(*Robot);
-
-	//de-couple elevator UP winch, and engage elevator DOWN winch
-	ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift);
-	ChangeClimbState *goal_couple_elevator_DOWN_releaseLiftWinch=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift2);
-
-	wp.Position[1]=climb_props.DropDistance;
-	Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
-
-	//If we use 'I' I want to ensure it gets cleared
-	ResetPosition *goal_reset_3=new ResetPosition(*Robot);
-
-	//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
-	//For now this is just a backup plan that would need a rotary system
 
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	//MainGoal->AddSubgoal(goal_JamGear);
-	MainGoal->AddSubgoal(goal_reset_3);
-	MainGoal->AddSubgoal(goal_spool_drop_winch);
-	MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
-	MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
-	MainGoal->AddSubgoal(goal_reset_2);
-	MainGoal->AddSubgoal(goal_spool_lift_winch);
-	MainGoal->AddSubgoal(goal_couple_elevator_UP);
-	MainGoal->AddSubgoal(goal_decouple_drive_1);
-	MainGoal->AddSubgoal(goal_reset_1);
+	if (iteration & 1)
+	{
+		ChangeClimbState *goal_couple_elevator_DOWN_releaseLiftWinch=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift2);
+
+		wp.Position[1]=climb_props.DropDistance;
+		Goal_Ship_MoveToPosition *goal_spool_drop_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
+
+		//If we use 'I' I want to ensure it gets cleared
+		ResetPosition *goal_reset_3=new ResetPosition(*Robot);
+
+		//engage the VEX motor on each drive side to LOCK the gearboxes (solves no power hanging).
+		//For now this is just a backup plan that would need a rotary system
+
+		MainGoal->AddSubgoal(goal_reset_3);
+		MainGoal->AddSubgoal(goal_spool_drop_winch);
+		MainGoal->AddSubgoal(goal_couple_elevator_DOWN_releaseLiftWinch);
+	}
+	else
+	{
+		// reset the coordinates to use way points.  This will also ensure there is no movement
+		ResetPosition *goal_reset_1=new ResetPosition(*Robot);
+		ChangeClimbState *goal_decouple_drive_1=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_Neutral);		   //de-couple the drive via pneumatic 1
+		ChangeClimbState *goal_couple_elevator_UP=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_RaiseLift);  //couple the elevator UP winch via pneumatic 2
+		wp.Position[1]=climb_props.LiftDistance;
+		Goal_Ship_MoveToPosition *goal_spool_lift_winch=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);  //run the drive motors a very specific distance 
+
+		//This also takes care of ... engage your control loop 'brake mode'.  By ensuring that there is no movement before resetting the position
+		ResetPosition *goal_reset_2=new ResetPosition(*Robot);
+
+		//de-couple elevator UP winch, and engage elevator DOWN winch
+		ChangeClimbState *goal_couple_elevator_DOWN=new ChangeClimbState(*Robot,FRC_2013_Robot::eClimbState_DropLift);
+
+		MainGoal->AddSubgoal(goal_couple_elevator_DOWN);
+		MainGoal->AddSubgoal(goal_reset_2);
+		MainGoal->AddSubgoal(goal_spool_lift_winch);
+		MainGoal->AddSubgoal(goal_couple_elevator_UP);
+		MainGoal->AddSubgoal(goal_decouple_drive_1);
+		MainGoal->AddSubgoal(goal_reset_1);
+	}
 	return MainGoal;
 }
 
