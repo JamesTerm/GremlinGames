@@ -72,9 +72,9 @@ MainRobot = {
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 0.0,  --solved empiracally
-		--inv_max_accel = 1/14.0,  --solved empiracally
-		--inv_max_accel = 1/10.0,  --matt field?
+		inv_max_accel = 0.0,  --Up vertical
+		--inv_max_accel = 1/17.0,  --On workbench
+		--inv_max_accel = 1/10.0,  --On field
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
 		--reverse_deadzone_left  = 0.02,
@@ -85,8 +85,8 @@ MainRobot = {
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		ds_target_vars_row=-1,				--Only used during keying the grid
-		ds_power1_velocity_row=1,			--Only used during keying the grid
-		ds_power2_velocity_row=3,
+		ds_power1_velocity_row=-1,			--Only used during keying the grid
+		ds_power2_velocity_row=-1,
 		fire_trigger_delay=0.100,			--Used to wait for a stable rate before engaging the conveyor
 		fire_stay_on_time=0.200,			--Used to prevent ball from get stuck during a fire operation (keep small)
 		yaw_tolerance=0.001,				--Used for drive yaw targeting (the drive is the turret) to avoid oscillation
@@ -197,7 +197,7 @@ MainRobot = {
 		{
 			is_closed=0,
 			show_pid_dump='y',
-			ds_display_row=-1,
+			ds_display_row=1,
 			pid=
 			{p=1000, i=0, d=250},
 			tolerance=0.01,					--should not matter much
@@ -212,7 +212,7 @@ MainRobot = {
 			brake=10,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			min_range_deg=0,				--Stowed position where 0 degrees is vertical up
 			min_drop_deg=45,				--The minimum amount of intake drop to occur to be able to fire shots
 			max_range_deg= 90,				--Dropped position where 90 degrees is horizontal
@@ -263,6 +263,7 @@ MainRobot = {
 
 		climb_gear_lift = 
 		{
+			MaxAccelForward = 15, MaxAccelReverse = 15, 
 			MAX_SPEED = ClimbGearSpeed,
 			heading_rad = 0,  --No turning for climbing mode
 			
@@ -274,8 +275,8 @@ MainRobot = {
 				right_pid=
 				{p=200, i=0, d=50},					--These should always match, but able to be made different
 				tolerance=0.2,
-				drive_to_scale=0.8,
-				inv_max_accel = 1/16
+				drive_to_scale=1.0,
+				inv_max_accel = 0.0,
 				--forward_deadzone_left  = 0,
 				--forward_deadzone_right = 0,
 				--reverse_deadzone_left  = 0,
@@ -289,10 +290,10 @@ MainRobot = {
 			{
 				is_closed=0,						--Must be on
 				left_pid=
-				{p=200, i=0, d=50},
+				{p=200, i=10, d=50},
 				right_pid=
-				{p=200, i=0, d=50},					--These should always match, but able to be made different
-				inv_max_accel = 1
+				{p=200, i=10, d=50},					--These should always match, but able to be made different
+				inv_max_accel = 0.0 
 			}
 		}
 	},
@@ -320,8 +321,10 @@ MainRobot = {
 		Joystick_2 =
 		{
 			control = "logitech dual action",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
@@ -329,29 +332,38 @@ MainRobot = {
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
-			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
-			Robot_SetClimbGearOn = {type="joystick_button", key=10, on_off=false},
+			--Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
+			--Robot_SetClimbGearOn = {type="joystick_button", key=10, on_off=false},
 			Ball_Fire = {type="joystick_button", key=4, on_off=true},
 			PowerWheels_IsRunning = {type="joystick_button", key=3, on_off=true},
 			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			Intake_Deployment_Retract = {type="joystick_button", key=12, on_off=false},
 			Intake_Deployment_Advance = {type="joystick_button", key=11, on_off=false},
-			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false}
+			--POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
 		
 		Joystick_3 =
 		{	
 			control = "ch throttle quadrant",
-			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+			--todo the practice quatrant is rated at 1.173 check if the other quatrant is really 1.142
+			Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			Turret_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			Robot_SetClimbSpeed = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			
-			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-			Ball_Fire = {type="joystick_button", key=6, on_off=true},
+			Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
+			Ball_Fire = {type="joystick_button", key=6, on_off=true},
+			
+			Robot_SetClimbRaiseLift		= {type="joystick_button", key=7, on_off=false},
+			Robot_SetClimbDriveEngaged	= {type="joystick_button", key=8, on_off=false},
+			Robot_SetClimbDropLift2		= {type="joystick_button", key=9, on_off=false},
+			Robot_SetClimbDropLift		= {type="joystick_button", key=10, on_off=false},
 		},
 		
 		Joystick_4 =
