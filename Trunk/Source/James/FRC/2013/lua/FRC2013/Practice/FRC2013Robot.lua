@@ -66,7 +66,8 @@ MainRobot = {
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=12/36,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply=1.0,				--May be reversed using -1.0
+		voltage_multiply_left=1.0,				--May be reversed using -1.0
+		voltage_multiply_right=1.0,
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
@@ -277,6 +278,8 @@ MainRobot = {
 				tolerance=0.2,
 				drive_to_scale=1.0,
 				inv_max_accel = 0.0,
+				voltage_multiply_left=1.0,				--May be reversed using -1.0
+				voltage_multiply_right=1.0,
 				--forward_deadzone_left  = 0,
 				--forward_deadzone_right = 0,
 				--reverse_deadzone_left  = 0,
