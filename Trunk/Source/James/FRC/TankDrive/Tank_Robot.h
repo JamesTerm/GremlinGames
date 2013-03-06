@@ -22,7 +22,7 @@ struct Tank_Robot_Props
 	//the width is a measurement of the the center of the wheel width to the other wheel
 	Vec2D WheelDimensions;
 	double WheelDiameter;
-	double VoltageScalar;		//Used to handle reversed voltage wiring
+	double VoltageScalar_Left,VoltageScalar_Right;		//Used to handle reversed voltage wiring
 	double MotorToWheelGearRatio;  //Used to interpolate RPS of the encoder to linear velocity
 	double LeftPID[3]; //p,i,d
 	double RightPID[3]; //p,i,d
