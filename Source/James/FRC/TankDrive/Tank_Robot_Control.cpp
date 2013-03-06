@@ -139,14 +139,14 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	if (!m_TankRobotProps.ReverseSteering)
 	{
 		m_RobotDrive.SetLeftRightMotorOutputs(
-				(float)(LeftVoltage * m_TankRobotProps.VoltageScalar),
-				(float)(RightVoltage * m_TankRobotProps.VoltageScalar));
+				(float)(LeftVoltage * m_TankRobotProps.VoltageScalar_Left),
+				(float)(RightVoltage * m_TankRobotProps.VoltageScalar_Right));
 	}
 	else
 	{
 		m_RobotDrive.SetLeftRightMotorOutputs(
-				(float)(RightVoltage * m_TankRobotProps.VoltageScalar),
-				(float)(LeftVoltage * m_TankRobotProps.VoltageScalar));
+				(float)(RightVoltage * m_TankRobotProps.VoltageScalar_Right),
+				(float)(LeftVoltage * m_TankRobotProps.VoltageScalar_Left));
 	}
 }
 
