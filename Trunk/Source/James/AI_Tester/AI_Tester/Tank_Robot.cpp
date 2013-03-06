@@ -404,7 +404,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.LeftPID[0]=props.RightPID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.HeadingLatency=0.0;
 	props.MotorToWheelGearRatio=1.0;  //most-likely this will be overridden
-	props.VoltageScalar=1.0;  //May need to be reversed
+	props.VoltageScalar_Left=props.VoltageScalar_Right=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=true;  //Always true by default until control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
@@ -458,7 +458,13 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 			m_TankRobotProps.WheelDiameter=Inches2Meters(wheel_diameter);
 		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_TankRobotProps.MotorToWheelGearRatio);
-		script.GetField("voltage_multiply", NULL, NULL, &m_TankRobotProps.VoltageScalar);
+		double VoltageScalar;
+		err = script.GetField("voltage_multiply", NULL, NULL, &VoltageScalar);
+		if (!err)
+			m_TankRobotProps.VoltageScalar_Left=m_TankRobotProps.VoltageScalar_Right=VoltageScalar;
+		err = script.GetField("voltage_multiply_left", NULL, NULL, &m_TankRobotProps.VoltageScalar_Left);
+		err = script.GetField("voltage_multiply_right", NULL, NULL, &m_TankRobotProps.VoltageScalar_Right);
+
 		err = script.GetFieldTable("left_pid");
 		if (!err)
 		{
@@ -664,13 +670,13 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	{
 		m_LeftVoltage=LeftVoltageToUse;
 		m_RightVoltage=RightVoltageToUse;
-		m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse * m_TankRobotProps.VoltageScalar,RightVoltageToUse * m_TankRobotProps.VoltageScalar);
+		m_Encoders.UpdateLeftRightVoltage(LeftVoltageToUse * m_TankRobotProps.VoltageScalar_Left,RightVoltageToUse * m_TankRobotProps.VoltageScalar_Right);
 	}
 	else
 	{
 		m_LeftVoltage=RightVoltageToUse;
 		m_RightVoltage=LeftVoltageToUse;
-		m_Encoders.UpdateLeftRightVoltage(RightVoltageToUse * m_TankRobotProps.VoltageScalar,LeftVoltageToUse * m_TankRobotProps.VoltageScalar);
+		m_Encoders.UpdateLeftRightVoltage(RightVoltageToUse * m_TankRobotProps.VoltageScalar_Right,LeftVoltageToUse * m_TankRobotProps.VoltageScalar_Left);
 	}
 	m_Encoders.TimeChange();   //have this velocity immediately take effect
 }
