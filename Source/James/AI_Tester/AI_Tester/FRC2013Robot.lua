@@ -448,7 +448,8 @@ MainRobot = {
 			Intake_Deployment_Retract = {type="joystick_button", key=12, on_off=false},
 			Intake_Deployment_Advance = {type="joystick_button", key=11, on_off=false},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false}
+			Turn_180 = {type="joystick_button", key=5, on_off=false},
+			Robot_AutoDriveYaw = {type="joystick_button", key=6, on_off=true}
 		},
 		
 		Joystick_3 =
