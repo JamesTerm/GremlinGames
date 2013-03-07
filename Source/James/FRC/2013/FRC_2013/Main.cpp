@@ -34,6 +34,7 @@ class SetUp_Manager
 		SetUp_Manager(bool UseSafety,bool UseEncoders=false) : m_Joystick(3,0), //3 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
+			SmartDashboard::init();
 			m_Control.AsControlInterface().Initialize(&m_RobotProps);
 			m_pRobot = new FRC_2013_Robot("FRC2013_Robot",&m_Control,UseEncoders);
 			{

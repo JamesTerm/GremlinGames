@@ -431,6 +431,8 @@ void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
 			#ifdef __DebugLUA__
 			Dout(props.Feedback_DiplayRow,1,"p=%.1f %.1f",RAD_2_DEG(radians),m_PitchRampAngle);
 			#endif
+			//using a simple dial control adding more will make it level
+			SmartDashboard::PutNumber("Pitch",RAD_2_DEG(radians)+17.048);
 			break;
 		}
 		case FRC_2013_Robot::eTurret:
@@ -441,6 +443,8 @@ void FRC_2013_Robot_Control::SetServoAngle(size_t index,double radians)
 			#ifdef __DebugLUA__
 			Dout(props.Feedback_DiplayRow,1,"t=%.1f %.1f",RAD_2_DEG(radians),m_TurretAngle);
 			#endif
+			SmartDashboard::PutNumber("Confidence",((Pi-fabs(radians))/Pi)*100.0);
+			SmartDashboard::PutNumber("Yaw",((radians+PI_2)/Pi)*100.0);
 			break;
 		}
 	}
