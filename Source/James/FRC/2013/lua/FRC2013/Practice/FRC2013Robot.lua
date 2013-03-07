@@ -121,7 +121,7 @@ MainRobot = {
 			show_console_dump='no',
 			ds_display_row=-1,
 			tolerance=Deg2Rad * 0.05,
-			smoothing=0.25,
+			smoothing=0.18,
 			servo_ratio=1.12,
 			servo_offset=32,
 
