@@ -66,17 +66,20 @@ MainRobot = {
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=12/36,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply=1.0,				--May be reversed using -1.0
-		curve_voltage=
-		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		voltage_multiply_left=1.0,				--May be reversed using -1.0
+		voltage_multiply_right=1.0,
+		--curve_voltage=
+		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1/15.0,  --solved empiracally
-		forward_deadzone_left  = 0.02,
-		forward_deadzone_right = 0.02,
-		reverse_deadzone_left  = 0.02,
-		reverse_deadzone_right = 0.02
+		inv_max_accel = 0.0,  --Up vertical
+		--inv_max_accel = 1/17.0,  --On workbench
+		--inv_max_accel = 1/10.0,  --On field
+		--forward_deadzone_left  = 0.02,
+		--forward_deadzone_right = 0.02,
+		--reverse_deadzone_left  = 0.02,
+		--reverse_deadzone_right = 0.02
 	},
 	
 	robot_settings =
@@ -136,7 +139,7 @@ MainRobot = {
 			show_console_dump='no',
 			ds_display_row=-1,
 			tolerance=Deg2Rad * 0.05,
-			smoothing=0.25,
+			smoothing=0.18,
 			servo_ratio=1.12,
 			servo_offset=32,
 
@@ -177,8 +180,8 @@ MainRobot = {
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/40,     --Just use the gearing ratios here
 			voltage_multiply=1.0,
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--curve_voltage=
+			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=4,
 			max_speed=(3804.55/60.0) * Pi2,	--This is about 63 rps)
@@ -198,8 +201,8 @@ MainRobot = {
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/44,     --Just use the gearing ratios here
 			voltage_multiply=1.0,
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--curve_voltage=
+			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
 			length_in=4,
 			max_speed=(3804.55/60.0) * Pi2,	--(This is clocked at 5000 rpm) in radians
@@ -219,8 +222,8 @@ MainRobot = {
 			tolerance=0.01,					--should not matter much
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=20/50,
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--curve_voltage=
+			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
 			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
 			max_speed=(969.86/360) * Pi2,	--loaded max speed (see sheet) which is 2.69 rps
@@ -246,8 +249,8 @@ MainRobot = {
 			--Note: there are no encoders here so is_closed is ignored and can not show pid dump
 			tolerance=0.01,					--should not matter much
 			voltage_multiply=1.0,			--May be reversed
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--curve_voltage=
+			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			max_speed=(11353.86/360.0) * Pi2,  --loaded max speed (see sheet) about 32 rps
 			accel=32 * Pi2 * 5,
 			brake=32 * Pi2 * 5,
@@ -265,8 +268,8 @@ MainRobot = {
 			tolerance=0.01,					--we need good precision
 			voltage_multiply=1.0,			--May be reversed
 			--For open loop, and using limit... the curve will help achieve proper velocity
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--curve_voltage=
+			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			max_speed=(14000.0/60.0) * Pi2,  --233 rps!
 			accel=233 * Pi2 * 5,						--These are needed and should be high enough to grip without slip
 			brake=233 * Pi2 * 5,
@@ -293,6 +296,8 @@ MainRobot = {
 				tolerance=0.2,
 				drive_to_scale=1.0,
 				inv_max_accel = 0.0,
+				voltage_multiply_left=1.0,				--May be reversed using -1.0
+				voltage_multiply_right=1.0,
 				--forward_deadzone_left  = 0,
 				--forward_deadzone_right = 0,
 				--reverse_deadzone_left  = 0,
@@ -377,7 +382,7 @@ MainRobot = {
 			Turret_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
-			Robot_SetClimbSpeed = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			Robot_SetClimbSpeed = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			Ball_Grip = {type="joystick_button", key=2, on_off=true},
