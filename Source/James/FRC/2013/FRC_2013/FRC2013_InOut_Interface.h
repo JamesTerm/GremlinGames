@@ -14,6 +14,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		Servo m_PitchAxis,m_TurretAxis;
 
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
+		Victor m_drive_1,m_drive_2;  //explicitly specify victor speed controllers for the robot drive
 
 		Victor m_PowerWheel_First_Victor,m_PowerWheel_Second_Victor,m_Helix_Victor;
 		Victor m_IntakeMotor_Victor,m_Rollers_Victor,m_IntakeDeployment_Victor;
@@ -58,7 +59,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
 		//Note: If the motors are reversed, this is now solved in LUA
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
 	protected: //from Rotary Interface
 		virtual void Reset_Rotary(size_t index=0); 

@@ -96,10 +96,11 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	#ifdef __UsingTestingKit__
 	m_PitchAxis(2),m_TurretAxis(1),
 	#else
-	m_PitchAxis(2,2),m_TurretAxis(1,1),
+	m_PitchAxis(2,6),m_TurretAxis(2,5),
 	#endif
 	m_pTankRobotControl(&m_TankRobotControl),
 	//Victors--------------------------------
+	m_drive_1(2,eVictor_RightMotor1),m_drive_2(2,eVictor_RightMotor2),
 	m_PowerWheel_First_Victor(eVictor_PowerWheel_First),m_PowerWheel_Second_Victor(eVictor_PowerWheel_Second),
 	m_Helix_Victor(eVictor_Helix),
 	m_IntakeMotor_Victor(eVictor_IntakeMotor),m_Rollers_Victor(eVictor_Rollers),m_IntakeDeployment_Victor(eVictor_IntakeDeployment),
@@ -216,10 +217,10 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	switch (index)
 	{
 		case FRC_2013_Robot::ePowerWheelFirstStage:		
-			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage);
+			Dout(m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p1_v=%.2f",Voltage * m_RobotProps.GetPowerSlowWheelProps().GetRotaryProps().VoltageScalar);
 			break;
 		case FRC_2013_Robot::ePowerWheelSecondStage:
-			Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p2_v=%.2f",Voltage);
+			Dout(m_RobotProps.GetPowerWheelProps().GetRotaryProps().Feedback_DiplayRow,1,"p2_v=%.2f",Voltage * m_RobotProps.GetPowerWheelProps().GetRotaryProps().VoltageScalar);
 			break;
 		case FRC_2013_Robot::eHelix:		
 			Dout(m_RobotProps.GetHelixProps().GetRotaryProps().Feedback_DiplayRow,1,"h_v=%.2f",Voltage);
@@ -232,6 +233,13 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			break;
 	}
 	#endif
+}
+
+void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
+{
+	m_drive_1.Set((float)RightVoltage);
+	m_drive_2.Set((float)RightVoltage);
+	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 
 void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) 
