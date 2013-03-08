@@ -235,6 +235,25 @@ void FRC_2013_Robot::PowerWheels::SetEncoderSafety(bool DisableFeedback)
 
 void FRC_2013_Robot::PowerWheels::TimeChange(double dTime_s)
 {
+	//Note: m_IsAutonomous cannot be tested in simulation (use true to test)
+	if (m_pParent->m_IsAutonomous)
+	{
+		const FRC_2013_Robot_Props::Autonomous_Properties &auton=m_pParent->m_RobotProps.GetFRC2013RobotProps().Autonomous_Props;
+		if ((m_IsRunning)||(m_pParent->m_IntakeSystem.GetIsFireRequested())) 
+		{
+			m_SecondStage.SetRequestedVelocity(auton.SecondStageVelocity);
+			m_FirstStage.SetRequestedVelocity(auton.FirstStageVelocity);
+		}
+		else
+		{
+			m_SecondStage.SetRequestedVelocity(0);
+			m_FirstStage.SetRequestedVelocity(0);
+		}
+
+		m_SecondStage.AsEntity1D().TimeChange(dTime_s);
+		m_FirstStage.AsEntity1D().TimeChange(dTime_s);
+		return;
+	}
 	//additive with a smoothing rate
 	m_ManualVelocity+=(m_ManualAcceleration*dTime_s);
 	//clamp bounds
