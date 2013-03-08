@@ -50,18 +50,21 @@ public:
 
 	struct Autonomous_Properties
 	{
-		Vec2D RampLeft_ErrorCorrection_Offset;
-		Vec2D RampRight_ErrorCorrection_Offset;
-		Vec2D RampCenter_ErrorCorrection_Offset;
-		double XLeftArc,XRightArc;
+		//These are first iteration open loop based on time... fine if nothing else is needed
+		double InitalRevTime;
+		double WaitOnTime;
+		double WaitOffTime;
+		//solved empirically
+		double FirstStageVelocity, SecondStageVelocity;
+
+		//May want to use something like this for next iteration... closed loop will make most efficient time to do other tasks
 		struct WaitForBall_Info
 		{
 			double InitialWait;
 			double TimeOutWait;			//If -1 then it is infinite and will not multi task a wait time (great for testing)
 			double ToleranceThreshold;  //If zero then only the initial wait is used for each ball (or not using the wait for ball feature)
 		} FirstBall_Wait,SecondBall_Wait; //We'll want to tweak the second ball a bit differently
-		double MoveForward;				//Optional to move forward to use less power to shoot
-		double TwoShotScaler;			//Scaler used for two point shots
+
 	} Autonomous_Props;
 };
 
@@ -239,12 +242,12 @@ class FRC_2013_Robot : public Tank_Robot
 				const Rotary_Velocity_Control &GetSecondStageShooter() const {return m_SecondStage;}
 				void TimeChange(double dTime_s);
 				bool GetIsRunning() const {return m_IsRunning;}
+				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
 			protected:
 				void SetRequestedVelocity_FromNormalized(double Velocity) {m_ManualVelocity=Velocity;}
 				void SetRequestedVelocity_Axis_FromNormalized(double Velocity) {m_ManualAcceleration=Velocity;}
 				void Set_FirstStage_RequestedVelocity_FromNormalized(double Velocity) {m_FirstStageManualVelocity=Velocity;}
 				void SetEncoderSafety(bool DisableFeedback);
-				void SetIsRunning(bool IsRunning) {m_IsRunning=IsRunning;}
 			private:
 				FRC_2013_Robot * const m_pParent;
 				Rotary_Velocity_Control m_SecondStage,m_FirstStage;
@@ -410,8 +413,8 @@ class FRC_2013_Robot : public Tank_Robot
 class FRC_2013_Goals
 {
 	public:
-		static Goal *Get_ShootBalls(FRC_2013_Robot *Robot,bool DoSquirt=false);
-		static Goal *Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
+		static Goal *Get_ShootFrisbees(FRC_2013_Robot *Robot);
+		//static Goal *Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
 		/// \param iteration this is a simple count of how many climbs which have been made.  This is used to pick the correct distance properties to use per iteration
 		static Goal *Climb(FRC_2013_Robot *Robot,size_t iteration);
 	private:
@@ -421,9 +424,9 @@ class FRC_2013_Goals
 			FRC_2013_Robot &m_Robot;
 			bool m_Terminate;
 			bool m_IsOn;
-			bool m_DoSquirt;  //If True it does the feed instead of fire
+			bool m_AimOnly;  //If True it does the feed instead of fire
 		public:
-			Fire(FRC_2013_Robot &robot, bool On, bool DoSquirt=false);
+			Fire(FRC_2013_Robot &robot, bool On, bool AimOnly=false);
 			virtual void Activate() {m_Status=eActive;}
 			virtual Goal_Status Process(double dTime_s);
 			virtual void Terminate() {m_Terminate=true;}
