@@ -237,8 +237,8 @@ void FRC_2013_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 
 void FRC_2013_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
 {
-	m_drive_1.Set((float)RightVoltage);
-	m_drive_2.Set((float)RightVoltage);
+	//m_drive_1.Set((float)RightVoltage);
+	//m_drive_2.Set((float)LeftVoltage);
 	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 
