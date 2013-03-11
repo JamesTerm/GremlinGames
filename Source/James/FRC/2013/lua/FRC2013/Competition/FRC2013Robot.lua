@@ -16,7 +16,7 @@ WheelBase_Length_In=9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
-Drive_MaxAccel=4
+Drive_MaxAccel=20
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 
 KeyDistance_in=144
@@ -37,7 +37,7 @@ MainRobot = {
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
-	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
+	ACCEL = 20,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
 	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
@@ -62,19 +62,19 @@ MainRobot = {
 		{p=200, i=0, d=50},					--These should always match, but able to be made different
 		latency=0.0,
 		heading_latency=0.0,
-		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
+		--drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=12/36,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply_left=1.0,				--May be reversed using -1.0
-		voltage_multiply_right=1.0,
+		voltage_multiply_left=-1.0,				--May be reversed using -1.0
+		voltage_multiply_right=-1.0,
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
 		inv_max_accel = 0.0,  --Up vertical
-		--inv_max_accel = 1/17.0,  --On workbench
+		--inv_max_accel = 1/30.0,  --On workbench
 		--inv_max_accel = 1/10.0,  --On field
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
@@ -113,9 +113,9 @@ MainRobot = {
 			--ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			--ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			
-			init_rev=2.0,
-			wait_on_times=1.0,
-			wait_off_times=1.0,
+			init_rev=5.0,
+			wait_on_times=0.5,
+			wait_off_times=1.5,
 			first_stage_speed=(3804.55/60.0) * Pi2,
 			second_stage_speed=(3804.55/60.0) * Pi2
 		},
@@ -179,7 +179,7 @@ MainRobot = {
 			{p=50, i=10, d=0 },
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/40,     --Just use the gearing ratios here
-			voltage_multiply=1.0,
+			voltage_multiply=2.0,
 			--curve_voltage=
 			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
@@ -200,7 +200,7 @@ MainRobot = {
 			{p=50, i=10, d=0 },
 			tolerance=3.0,					--we need decent precision (this will depend on ramp up time too)
 			encoder_to_wheel_ratio=30/44,     --Just use the gearing ratios here
-			voltage_multiply=1.0,
+			voltage_multiply=2.0,
 			--curve_voltage=
 			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 
@@ -324,10 +324,11 @@ MainRobot = {
 		Joystick_1 =
 		{
 			control = "gamepad f310 (controller)",
-			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			--3=x 4=y right stick 0=x 1=y left stick
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			--Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbGear_RightButton = {type="joystick_button", key=8, on_off=true},
 			Robot_SetClimbGear_LeftButton = {type="joystick_button", key=7, on_off=true},
