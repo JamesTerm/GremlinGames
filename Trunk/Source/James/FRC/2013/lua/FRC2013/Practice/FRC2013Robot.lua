@@ -17,7 +17,7 @@ WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBas
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
 Drive_MaxAccel=4
-skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
 
 KeyDistance_in=144
 --KeyDistance_in=0
@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.3;
+	version = 1.4;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -52,7 +52,7 @@ MainRobot = {
 		show_pid_dump='n',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
+		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = g_wheel_diameter_in,
@@ -76,6 +76,7 @@ MainRobot = {
 		inv_max_accel = 0.0,  --Up vertical
 		--inv_max_accel = 1/17.0,  --On workbench
 		--inv_max_accel = 1/10.0,  --On field
+		--linear_gain_assist = 0.05,
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
 		--reverse_deadzone_left  = 0.02,
@@ -102,6 +103,24 @@ MainRobot = {
 			c61={p=1.0, y=1.0}, c62={p=1.0, y=1.0}, c63={p=1.0, y=1.0},
 		},
 	
+		auton =
+		{
+			--If you put -1.0 for the timeout wait it will wait infinitely (good for initial testing or if we are not tipping ramps)
+			--ball 1 initial wait should be long enough for a good ramp up from zero speed
+			ball_1 ={initial_wait=  2.0, tolerance=75.0, timeout_wait=4.0},
+			--ball 2 initial wait should be long enough to recover from dip and short enough to be active during second ball's deployment
+			ball_2 ={initial_wait=0.500, tolerance=75.0, timeout_wait=4.0},
+			--panic mode incase the wait ball doesn't work... using zero makes it work like before just pure time
+			--ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
+			--ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
+			
+			init_rev=2.0,
+			wait_on_times=1.0,
+			wait_off_times=1.0,
+			first_stage_speed=(3804.55/60.0) * Pi2,
+			second_stage_speed=(3804.55/60.0) * Pi2
+		},
+
 		climb_1 =
 		{
 			lift_ft=2,
