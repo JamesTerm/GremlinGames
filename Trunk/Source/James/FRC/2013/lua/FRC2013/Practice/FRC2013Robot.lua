@@ -62,7 +62,7 @@ MainRobot = {
 		{p=200, i=0, d=50},					--These should always match, but able to be made different
 		latency=0.0,
 		heading_latency=0.0,
-		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
+		--drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=12/36,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -114,9 +114,9 @@ MainRobot = {
 			--ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			--ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			
-			init_rev=2.0,
-			wait_on_times=1.0,
-			wait_off_times=1.0,
+			init_rev=5.0,
+			wait_on_times=0.5,
+			wait_off_times=1.5,
 			first_stage_speed=(3804.55/60.0) * Pi2,
 			second_stage_speed=(3804.55/60.0) * Pi2
 		},
@@ -325,6 +325,7 @@ MainRobot = {
 		Joystick_1 =
 		{
 			control = "gamepad f310 (controller)",
+			--3=x 4=y right stick 0=x 1=y left stick
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
