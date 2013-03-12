@@ -12,7 +12,6 @@ using namespace GG_Framework::Base;
 //double g_WorldScaleFactor=1.0; //This only give 1280 x 1024 meters but ideal to really see everything
 double g_WorldScaleFactor=2.0; //This only give 640 x 512 good for windowed mode
 bool g_TestPhysics=false;
-extern bool g_DisableEngineRampUp2;
 
   /***********************************************************************************************************************************/
  /*																Actor																*/
@@ -402,17 +401,6 @@ void GameClient::RemoveEntity(Entity2D *Entity)
 			delete Entity;
 			break;
 		}
-	}
-}
-
-void GameClient::SetDisableEngineRampUp2(bool DisableRampUp)
-{
-	g_DisableEngineRampUp2=DisableRampUp;
-	for (EntityIterator i=m_Entities.begin();i!=m_Entities.end();i++)
-	{
-		Ship_2D *ship=dynamic_cast<Ship_2D *>(*i);
-		if (ship)
-			ship->GetPhysics().SetUsingAccelerationRate(!DisableRampUp);
 	}
 }
 
