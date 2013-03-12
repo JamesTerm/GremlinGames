@@ -183,7 +183,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	else
 	{
 		#ifdef __DebugLUA__
-		if (m_TankRobotProps.PID_Console_Dump && ((LeftVelocity!=0.0)||(RightVelocity!=0.0)))
+		if (m_TankRobotProps.PID_Console_Dump && (!IsZero(LeftVelocity,1e-3)||!IsZero(RightVelocity,1e-3)))
 		{
 			double PosY=GetPos_m()[1];
 			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
@@ -352,7 +352,7 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
 
 	#ifdef __DebugLUA__
-	if (m_TankRobotProps.PID_Console_Dump && ((LeftVoltage!=0.0)||(RightVoltage!=0.0)))
+	if (m_TankRobotProps.PID_Console_Dump && (!IsZero(LeftVoltage,1e-3)||!IsZero(RightVoltage,1e-3)))
 		printf("v=%.2f v=%.2f ",LeftVoltage,RightVoltage);
 	#endif
 
