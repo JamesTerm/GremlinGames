@@ -17,7 +17,7 @@ WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBas
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
 Drive_MaxAccel=4
-skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
 
 KeyDistance_in=144
 --KeyDistance_in=0
@@ -52,7 +52,7 @@ MainRobot = {
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
+		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = g_wheel_diameter_in,
@@ -352,12 +352,14 @@ MainRobot = {
 		Joystick_2 =
 		{
 			control = "logitech dual action",
+			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			--Joystick_SetRightVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
-			Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
