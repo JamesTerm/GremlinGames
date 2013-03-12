@@ -43,6 +43,9 @@ struct Tank_Robot_Props
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel_Left,InverseMaxAccel_Right;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
 	double InverseMaxDecel_Left,InverseMaxDecel_Right;  //used for deceleration case
+	//This scalars work with the local force directly to be added to the voltage
+	double ForwardLinearGainAssist_Scalar;
+	//double RightLinearGainAssist_Scalar;  --until we have a take drive that can strafe, this is not needed
 	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
 	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
 	bool LeftEncoderReversed,RightEncoderReversed;
