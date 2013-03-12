@@ -701,7 +701,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestTankRobot.lua","TestRobot",Commands::eTank);
 			Entity2D *TestEntity=_command.AddRobot("TankRobot","TestRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
@@ -713,7 +712,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestSwerveRobot.lua","TestSwerveRobot",Commands::eSwerve);
 			Entity2D *TestEntity=_command.AddRobot("SwerveRobot","TestSwerveRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
@@ -723,7 +721,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		{
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestButterflyRobot.lua","TestButterflyRobot",Commands::eButterfly);
 			Entity2D *TestEntity=_command.AddRobot("ButterflyRobot","TestButterflyRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
@@ -733,7 +730,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		{
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("TestNonaRobot.lua","TestNonaRobot",Commands::eNona);
 			Entity2D *TestEntity=_command.AddRobot("NonaRobot","TestNonaRobot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
@@ -745,7 +741,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("FRC2011Robot.lua","FRC2011Robot",Commands::e2011);
 			Entity2D *TestEntity=_command.AddRobot("Robot2011","FRC2011Robot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
@@ -783,7 +778,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("FRC2012Robot.lua","FRC2012Robot",Commands::e2012);
 			Entity2D *TestEntity=_command.AddRobot("Robot2012","FRC2012Robot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,false);
@@ -848,7 +842,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadRobot("FRC2013Robot.lua","FRC2013Robot",Commands::e2013);
 			Entity2D *TestEntity=_command.AddRobot("Robot2013","FRC2013Robot",str_3,str_4,str_5);
 			game.SetControlledEntity(TestEntity,false);
@@ -884,7 +877,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 
 			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("TankRobot"));
 
@@ -935,7 +927,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	case eTestLUAShip:
 		{
 			g_WorldScaleFactor=100.0;
-			game.SetDisableEngineRampUp2(true);
 			_command.LoadShip("TestShip.lua","TestShip");
 			Entity2D *TestEntity=_command.AddShip("GodShip","TestShip",str_3,str_4,str_5);
 			_.GiveRobotSquareWayPointGoal(dynamic_cast<Ship_Tester *>(TestEntity));
@@ -1221,10 +1212,6 @@ void CommandLineInterface(bool useUserPrefs=true)
 			else if (!_strnicmp( input_line, "Test", 4))
 			{
 				Test(UI_thread,game,_command,Args);
-			}
-			else if (!_strnicmp( input_line, "RampEngine", 5))
-			{
-				game.SetDisableEngineRampUp2(str_1[0]=='1');
 			}
 			else if (!_strnicmp( input_line, "poke", 4))
 			{

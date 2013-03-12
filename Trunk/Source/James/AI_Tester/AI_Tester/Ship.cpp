@@ -10,8 +10,6 @@ using namespace osg;
 #undef __DisableSpeedControl__  //This one is great for test purposes
 #undef DEBUG_AFTERBURNER
 
-bool g_DisableEngineRampUp2=false;  //TODO phase out
-
 #ifdef AI_TesterCode
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
@@ -64,9 +62,6 @@ Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
 	m_LockShipHeadingToOrientation=false;  //usually this is false (especially for AI and Remote controllers)
 	m_thrustState=TS_NotVisible;
 	m_StabilizeRotation=true;
-
-	m_Physics.SetUsingAccelerationRate(!g_DisableEngineRampUp2);
-
 	ResetPos();
 }
 
@@ -589,14 +584,6 @@ void Ship_2D::TimeChange(double dTime_s)
 	}
 
 	ForceToApply=m_Physics.ComputeRestrainedForce(ForceToApply,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
-
-	if (!g_DisableEngineRampUp2)
-	{
-		const Vec2d Target=ForceToApply/Mass;
-		m_Physics.SetTargetAcceleration(Target);
-		m_Physics.Acceleration_TimeChangeUpdate(dTime_s);
-		ForceToApply=m_Physics.GetCurrentAcceleration()*Mass;
-	}
 
 	double TorqueToApply;
 	if (m_StabilizeRotation)

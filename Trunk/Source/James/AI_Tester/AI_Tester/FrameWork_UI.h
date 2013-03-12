@@ -104,8 +104,6 @@ class GameClient : public Viewer_Callback_Interface
 		Entity2D *GetEntity(const char EntityName[]);
 		virtual void RemoveEntity(Entity2D *Entity);
 		void RemoveAllEntities();
-		//for testing purposes only
-		void SetDisableEngineRampUp2(bool DisableRampUp);
 	protected:
 		virtual void UpdateData(double dtime_s);
 		virtual void UpdateScene(osg::Group *rootNode,osg::Geode *geode) {}  //No UI to muck with at this level
