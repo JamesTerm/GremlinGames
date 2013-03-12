@@ -76,6 +76,7 @@ MainRobot = {
 		inv_max_accel = 0.0,  --Up vertical
 		--inv_max_accel = 1/17.0,  --On workbench
 		--inv_max_accel = 1/10.0,  --On field
+		--linear_gain_assist = 0.05,
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
 		--reverse_deadzone_left  = 0.02,
