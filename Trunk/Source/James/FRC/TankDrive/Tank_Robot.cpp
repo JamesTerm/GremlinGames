@@ -302,6 +302,14 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	const bool RightAccel=(RightAcceleration * RightVelocity > 0);
 	RightVoltage+=RightAcceleration*(RightAccel ? m_TankRobotProps.InverseMaxAccel_Right : m_TankRobotProps.InverseMaxDecel_Right);
 
+	//For now this is simple and can apply for acceleration, deceleration for both directions
+	const double local_acceleration=LocalForce[1]/Mass;
+	LeftVoltage+=m_TankRobotProps.ForwardLinearGainAssist_Scalar * local_acceleration;
+	RightVoltage+=m_TankRobotProps.ForwardLinearGainAssist_Scalar * local_acceleration;
+	//Quick test
+	//if ((LeftVoltage!=0.0)||(RightVoltage!=0.0))
+	//	printf("la[0]=%.2f la[1]=%.2f \n",LocalForce[0]/Mass,LocalForce[1]/Mass);
+
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousLeftVelocity=LeftVelocity,m_PreviousRightVelocity=RightVelocity;
 	#endif
@@ -429,6 +437,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.TankSteering_Tolerance=0.05;
 	props.InverseMaxAccel_Left=props.InverseMaxDecel_Left=0.0;
 	props.InverseMaxAccel_Right=props.InverseMaxDecel_Right=0.0;
+	props.ForwardLinearGainAssist_Scalar=0.0;
 	props.Positive_DeadZone_Left=props.Positive_DeadZone_Right=0.0;
 	props.Negative_DeadZone_Left=props.Negative_DeadZone_Right=0.0;
 	m_TankRobotProps=props;
@@ -569,6 +578,8 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("inv_max_accel_right", NULL, NULL, &m_TankRobotProps.InverseMaxAccel_Right);
 		script.GetField("inv_max_decel_left", NULL, NULL, &m_TankRobotProps.InverseMaxDecel_Left);
 		script.GetField("inv_max_decel_right", NULL, NULL, &m_TankRobotProps.InverseMaxDecel_Right);
+
+		script.GetField("linear_gain_assist", NULL, NULL, &m_TankRobotProps.ForwardLinearGainAssist_Scalar);
 
 		script.GetField("forward_deadzone_left", NULL, NULL,&m_TankRobotProps.Positive_DeadZone_Left);
 		script.GetField("forward_deadzone_right", NULL, NULL,&m_TankRobotProps.Positive_DeadZone_Right);
