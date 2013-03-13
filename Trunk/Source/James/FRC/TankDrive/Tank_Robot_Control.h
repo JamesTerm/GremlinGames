@@ -20,7 +20,7 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		double RPS_To_LinearVelocity(double RPS);
 	protected:
 		
-		Victor m_1,m_2,m_3,m_4;  //explicitly specify victor speed controllers for the robot drive
+		Victor m_fl_1,m_rl_2,m_fr_3,m_rr_4;  //explicitly specify victor speed controllers for the robot drive
 		RobotDrive m_RobotDrive;
 		Encoder2 m_LeftEncoder,m_RightEncoder;
 

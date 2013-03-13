@@ -52,8 +52,8 @@ void Tank_Robot_Control::SetSafety(bool UseSafety)
 }
 
 Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) :
-	m_1(1),m_2(2),m_3(3),m_4(4),
-	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
+	m_fl_1(1),m_rl_2(2),m_fr_3(3),m_rr_4(4),
+	m_RobotDrive(&m_fl_1,&m_rl_2,&m_fr_3,&m_rr_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
 	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0)
 {
