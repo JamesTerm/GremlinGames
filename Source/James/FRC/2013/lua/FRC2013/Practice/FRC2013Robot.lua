@@ -50,7 +50,7 @@ MainRobot = {
 	{
 		is_closed=0,
 		show_pid_dump='n',
-		ds_display_row=-1,
+		ds_display_row=3,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
@@ -328,8 +328,8 @@ MainRobot = {
 			--3=x 4=y right stick 0=x 1=y left stick
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=4, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbGear_RightButton = {type="joystick_button", key=8, on_off=true},
 			Robot_SetClimbGear_LeftButton = {type="joystick_button", key=7, on_off=true},
