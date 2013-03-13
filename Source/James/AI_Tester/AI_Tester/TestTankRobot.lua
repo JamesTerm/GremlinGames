@@ -11,7 +11,7 @@ WheelBase_Length_In=27.5
 Half_WB_Length_In=WheelBase_Length_In / 2.0
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (Half_WB_Length_In * Half_WB_Length_In) ) ^ 0.5
 HighGearSpeed = (427.68 / 60.0) * Pi * Wheel_diameter_in * Inches2Meters  --RPM's from Parker
-skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In/2))
+skid=math.cos(math.atan2(WheelBase_Length_In/2,WheelBase_Width_In))
 
 
 TestShip = {
