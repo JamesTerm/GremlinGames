@@ -17,7 +17,7 @@ WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBas
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
 Drive_MaxAccel=4
-skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Length_In))
+skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 
 KeyDistance_in=144
 --KeyDistance_in=0
