@@ -66,13 +66,12 @@ MainRobot = {
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=12/36,	--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply_left=1.0,				--May be reversed using -1.0
-		voltage_multiply_right=1.0,
+		voltage_multiply=-1.0,				--May be reversed using -1.0
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-		reverse_steering='no',
-		 left_encoder_reversed='no',
-		right_encoder_reversed='no',
+		reverse_steering='yes',
+		 left_encoder_reversed='yes',
+		right_encoder_reversed='yes',
 		inv_max_accel = 0.0,  --Up vertical
 		--inv_max_accel = 1/17.0,  --On workbench
 		--inv_max_accel = 1/10.0,  --On field
@@ -328,8 +327,8 @@ MainRobot = {
 			--3=x 4=y right stick 0=x 1=y left stick
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=4, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbGear_RightButton = {type="joystick_button", key=8, on_off=true},
 			Robot_SetClimbGear_LeftButton = {type="joystick_button", key=7, on_off=true},
