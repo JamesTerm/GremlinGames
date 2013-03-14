@@ -176,10 +176,24 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	else
 	{
 		#ifdef __DebugLUA__
-		if (m_TankRobotProps.PID_Console_Dump && (!IsZero(LeftVelocity,1e-3)||!IsZero(RightVelocity,1e-3)))
+		if (m_TankRobotProps.PID_Console_Dump)
 		{
 			double PosY=GetPos_m()[1];
-			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+			if (!m_TankRobotProps.HasEncoders)
+			{
+				//No encoders... use only predicted velocity as mark of when to display... still want to see encoder readings in case there is some noise going on
+				if (!IsZero(LeftVelocity,1e-3)||!IsZero(RightVelocity,1e-3))
+					printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+			}
+			else
+			{
+				//passive reading... This is pretty much identical code of active encoder reading
+				if ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0) || (!IsZero(LeftVelocity,1e-3))||(!IsZero(RightVelocity,1e-3)) )
+				{
+					double PosY=GetPos_m()[1];
+					printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+				}
+			}
 		}
 		#endif
 	}
@@ -415,6 +429,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.VoltageScalar_Left=props.VoltageScalar_Right=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=true;  //Always true by default until control is fully functional
+	props.HasEncoders=true;  //no harm in having passive reading of them
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
@@ -512,10 +527,16 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err = script.GetField("is_closed",&sTest,NULL,NULL);
 		if (!err)
 		{
+			m_TankRobotProps.HasEncoders=true;
 			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
 				m_TankRobotProps.IsOpen=true;
 			else
 				m_TankRobotProps.IsOpen=false;
+		}
+		else
+		{
+			m_TankRobotProps.IsOpen=true;
+			m_TankRobotProps.HasEncoders=false;
 		}
 		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
 		if (!err)
