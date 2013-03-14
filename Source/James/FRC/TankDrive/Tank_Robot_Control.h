@@ -1,4 +1,6 @@
 #pragma once
+//TODO this may be omitted once we confirm encoder directions are working properly
+#undef __UseOwnEncoderScalar__
 
 class Tank_Robot_Control : public Tank_Drive_Control_Interface
 {
@@ -27,8 +29,10 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
+		
+		#ifdef __UseOwnEncoderScalar__
 		double m_EncoderLeftScalar, m_EncoderRightScalar;
-
+		#endif
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
