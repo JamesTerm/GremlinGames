@@ -33,7 +33,7 @@ struct Tank_Robot_Props
 	double TankSteering_Tolerance; //used to help controls drive straight
 	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
-	bool IsOpen;  //This property only applies in teleop
+	bool IsOpen,HasEncoders;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
