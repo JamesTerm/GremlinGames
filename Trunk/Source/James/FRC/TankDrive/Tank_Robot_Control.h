@@ -27,6 +27,7 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		double m_ArmMaxSpeed;
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
+		double m_EncoderLeftScalar, m_EncoderRightScalar;
 
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
 	private:

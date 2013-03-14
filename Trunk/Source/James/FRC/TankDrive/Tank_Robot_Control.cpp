@@ -55,7 +55,7 @@ Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) :
 	m_fl_1(1),m_rl_2(2),m_fr_3(3),m_rr_4(4),
 	m_RobotDrive(&m_fl_1,&m_rl_2,&m_fr_3,&m_rr_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
-	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0)
+	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0),m_EncoderLeftScalar(1.0),m_EncoderRightScalar(1.0)
 {
 	//ResetPos();  may need this later
 	SetSafety(UseSafety);
@@ -73,6 +73,8 @@ Tank_Robot_Control::~Tank_Robot_Control()
 void Tank_Robot_Control::Reset_Encoders()
 {
 	m_KalFilter_EncodeLeft.Reset(),m_KalFilter_EncodeRight.Reset();	
+	m_LeftEncoder.SetReverseDirection(m_TankRobotProps.LeftEncoderReversed);
+	m_RightEncoder.SetReverseDirection(m_TankRobotProps.RightEncoderReversed);
 }
 
 void Tank_Robot_Control::Initialize(const Entity_Properties *props)
@@ -82,8 +84,15 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 	m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
 	//This will copy all the props
 	m_TankRobotProps=robot_props->GetTankRobotProps();
+	//m_TankRobotProps.LeftEncoderReversed=m_TankRobotProps.RightEncoderReversed=true;
+	printf("Tank_Robot_Control::Initialize ReverseLeft=%d ReverseRight=%d\n",m_TankRobotProps.LeftEncoderReversed,m_TankRobotProps.RightEncoderReversed);
+	#if 1
 	m_LeftEncoder.SetReverseDirection(m_TankRobotProps.LeftEncoderReversed);
 	m_RightEncoder.SetReverseDirection(m_TankRobotProps.RightEncoderReversed);
+	#else
+	m_EncoderLeftScalar=m_TankRobotProps.LeftEncoderReversed?-1.0:1.0;
+	m_EncoderRightScalar=m_TankRobotProps.RightEncoderReversed?-1.0:1.0;
+	#endif
 }
 
 double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
@@ -112,8 +121,8 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 		printf("l1=%.1f l2=%.1f r1=%.1f r2=%.1f\n",m_LeftEncoder.GetRate(),LeftRate,m_RightEncoder.GetRate(),RightRate);
 	#endif
 	
-	LeftVelocity=RPS_To_LinearVelocity(LeftRate);
-	RightVelocity=RPS_To_LinearVelocity(RightRate);
+	LeftVelocity=RPS_To_LinearVelocity(LeftRate) * m_EncoderLeftScalar;
+	RightVelocity=RPS_To_LinearVelocity(RightRate) * m_EncoderRightScalar;
 	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 	//Dout(m_TankRobotProps.Feedback_DiplayRow, "l=%.1f r=%.1f", m_LeftEncoder.GetRate()/3.0,m_RightEncoder.GetRate()/3.0);
 }
