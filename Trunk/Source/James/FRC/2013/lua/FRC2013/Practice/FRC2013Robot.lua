@@ -70,8 +70,8 @@ MainRobot = {
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='yes',
-		 left_encoder_reversed='yes',
-		right_encoder_reversed='yes',
+		left_encoder_reversed=0,
+		right_encoder_reversed=0,
 		inv_max_accel = 0.0,  --Up vertical
 		--inv_max_accel = 1/17.0,  --On workbench
 		--inv_max_accel = 1/10.0,  --On field
