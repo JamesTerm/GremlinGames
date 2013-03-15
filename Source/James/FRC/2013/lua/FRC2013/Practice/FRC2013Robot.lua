@@ -16,7 +16,7 @@ WheelBase_Length_In=9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
-Drive_MaxAccel=4
+Drive_MaxAccel=7
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 
 KeyDistance_in=144
@@ -49,7 +49,7 @@ MainRobot = {
 	tank_drive =
 	{
 		is_closed=0,
-		show_pid_dump='n',
+		show_pid_dump='y',
 		ds_display_row=3,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
@@ -72,10 +72,10 @@ MainRobot = {
 		reverse_steering='yes',
 		left_encoder_reversed=0,
 		right_encoder_reversed=0,
-		inv_max_accel = 0.0,  --Up vertical
-		--inv_max_accel = 1/17.0,  --On workbench
-		--inv_max_accel = 1/10.0,  --On field
-		--linear_gain_assist = 0.05,
+		--inv_max_accel = 0.0,  --Up vertical
+		inv_max_accel = 1/37.0,  --On workbench
+		--On field turn linear gain assist on
+		--linear_gain_assist = 0.02,
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
 		--reverse_deadzone_left  = 0.02,
