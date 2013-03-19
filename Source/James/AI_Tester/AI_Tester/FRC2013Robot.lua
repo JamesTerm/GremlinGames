@@ -201,7 +201,8 @@ MainRobot = {
 			brake=64 * Pi2 * 5,
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
-			min_range=28 * Pi2,				--We borrow the min range to represent the min speed
+			--min_range=28 * Pi2,				--We borrow the min range to represent the min speed
+			min_range=-1 * (3804.55/60.0) * Pi2,	--Use to calibrate victors
 			motor_specs =
 			{
 				wheel_mass=Pounds2Kilograms * 3,	
@@ -455,7 +456,9 @@ MainRobot = {
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			--PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			--to calibrate victors
+			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=10.0, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
 			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
