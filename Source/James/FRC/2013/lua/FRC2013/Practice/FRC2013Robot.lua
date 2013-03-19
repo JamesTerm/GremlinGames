@@ -16,7 +16,7 @@ WheelBase_Length_In=9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
-Drive_MaxAccel=7
+Drive_MaxAccel=4
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 
 KeyDistance_in=144
@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.4;
+	version = 1.5;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -73,9 +73,11 @@ MainRobot = {
 		left_encoder_reversed=0,
 		right_encoder_reversed=0,
 		--inv_max_accel = 0.0,  --Up vertical
-		inv_max_accel = 1/37.0,  --On workbench
+		inv_max_accel = 1/50.0,
+		--inv_max_accel = 1/37.0,  --On workbench using 7 mps
+		--inv_max_accel = 1/27.0,
 		--On field turn linear gain assist on
-		--linear_gain_assist = 0.02,
+		linear_gain_assist = 0.00,
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
 		--reverse_deadzone_left  = 0.02,
@@ -325,10 +327,11 @@ MainRobot = {
 		{
 			control = "gamepad f310 (controller)",
 			--3=x 4=y right stick 0=x 1=y left stick
-			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=3.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbGear_RightButton = {type="joystick_button", key=8, on_off=true},
 			Robot_SetClimbGear_LeftButton = {type="joystick_button", key=7, on_off=true},
