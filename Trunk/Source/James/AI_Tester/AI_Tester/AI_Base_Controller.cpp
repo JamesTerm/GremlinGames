@@ -186,7 +186,8 @@ void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAccelerati
 	}
 	const double difference=(m_LeftVelocity + -m_RightVelocity);
 	const double omega = (fabs(difference)>m_StraightDeadZone_Tolerance)? difference * 0.5 : 0;
-	AngularAcceleration=omega*ship.GetHeadingSpeed();
+	//TODO put a property for the angular scalar
+	AngularAcceleration=omega*ship.GetHeadingSpeed() * 0.50;
 	if (!IsZero(omega))
 		LockShipHeadingToOrientation=true;
 	//DOUT4("%f %f %f",m_LeftVelocity,m_RightVelocity,difference);
