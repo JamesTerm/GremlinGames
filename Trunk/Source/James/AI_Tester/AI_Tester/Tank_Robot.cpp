@@ -305,12 +305,12 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
 	LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
 	RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
-	const double LeftForceCurve=m_ForcePoly(LeftVelocity/MAX_SPEED);
-	const double RightForceCurve=m_ForcePoly(RightVelocity/MAX_SPEED);
 	//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
 	const bool LeftAccel=(LeftAcceleration * LeftVelocity > 0);
+	const double LeftForceCurve=m_ForcePoly(LeftAccel?1.0-(LeftVelocity/MAX_SPEED):LeftVelocity/MAX_SPEED);
 	LeftVoltage+=LeftAcceleration * LeftForceCurve *(LeftAccel? m_TankRobotProps.InverseMaxAccel_Left : m_TankRobotProps.InverseMaxDecel_Left);
 	const bool RightAccel=(RightAcceleration * RightVelocity > 0);
+	const double RightForceCurve=m_ForcePoly(RightAccel?1.0-(RightVelocity/MAX_SPEED):RightVelocity/MAX_SPEED);
 	RightVoltage+=RightAcceleration * RightForceCurve *(RightAccel ? m_TankRobotProps.InverseMaxAccel_Right : m_TankRobotProps.InverseMaxDecel_Right);
 
 	//For now this is simple and can apply for acceleration, deceleration for both directions
