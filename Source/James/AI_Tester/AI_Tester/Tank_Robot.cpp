@@ -60,6 +60,7 @@ void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties
 	//This will copy all the props
 	m_TankRobotProps=RobotProps->GetTankRobotProps();
 	m_VoltagePoly.Initialize(&m_TankRobotProps.Voltage_Terms);
+	m_ForcePoly.Initialize(&m_TankRobotProps.Force_Terms);
 	m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
 	m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
 
@@ -304,16 +305,18 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
 	LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
 	RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+	const double LeftForceCurve=m_ForcePoly(LeftVelocity/MAX_SPEED);
+	const double RightForceCurve=m_ForcePoly(RightVelocity/MAX_SPEED);
 	//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
 	const bool LeftAccel=(LeftAcceleration * LeftVelocity > 0);
-	LeftVoltage+=LeftAcceleration*(LeftAccel? m_TankRobotProps.InverseMaxAccel_Left : m_TankRobotProps.InverseMaxDecel_Left);
+	LeftVoltage+=LeftAcceleration * LeftForceCurve *(LeftAccel? m_TankRobotProps.InverseMaxAccel_Left : m_TankRobotProps.InverseMaxDecel_Left);
 	const bool RightAccel=(RightAcceleration * RightVelocity > 0);
-	RightVoltage+=RightAcceleration*(RightAccel ? m_TankRobotProps.InverseMaxAccel_Right : m_TankRobotProps.InverseMaxDecel_Right);
+	RightVoltage+=RightAcceleration * RightForceCurve *(RightAccel ? m_TankRobotProps.InverseMaxAccel_Right : m_TankRobotProps.InverseMaxDecel_Right);
 
 	//For now this is simple and can apply for acceleration, deceleration for both directions
 	const double local_acceleration=LocalForce[1]/Mass;
-	LeftVoltage+=m_TankRobotProps.ForwardLinearGainAssist_Scalar * local_acceleration;
-	RightVoltage+=m_TankRobotProps.ForwardLinearGainAssist_Scalar * local_acceleration;
+	LeftVoltage+=m_TankRobotProps.ForwardLinearGainAssist_Scalar * LeftForceCurve * local_acceleration;
+	RightVoltage+=m_TankRobotProps.ForwardLinearGainAssist_Scalar * RightForceCurve * local_acceleration;
 	//Quick test
 	//if ((LeftVoltage!=0.0)||(RightVoltage!=0.0))
 	//	printf("la[0]=%.2f la[1]=%.2f \n",LocalForce[0]/Mass,LocalForce[1]/Mass);
@@ -419,6 +422,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
 	props.ReverseSteering=false;
 	props.Voltage_Terms.Init();
+	props.Force_Terms.Init();
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
@@ -544,6 +548,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		}
 
 		m_TankRobotProps.Voltage_Terms.LoadFromScript(script,"curve_voltage");
+		m_TankRobotProps.Force_Terms.LoadFromScript(script,"force_voltage");
 
 		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel_Left);
 		m_TankRobotProps.InverseMaxAccel_Right=m_TankRobotProps.InverseMaxAccel_Left;
