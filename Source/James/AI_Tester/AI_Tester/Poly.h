@@ -21,14 +21,28 @@ class PolynomialEquation_forth
 		__inline double operator() (double x)
 		{
 			double y=fabs(x);
-			double *c=m_PolyProps.Term;
-			double x2=y*y;
-			double x3=y*x2;
-			double x4=x2*x2;
+			const double *c=m_PolyProps.Term;
+			const double x2=y*y;
+			const double x3=y*x2;
+			const double x4=x2*x2;
 			y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
 			const double result=(x<0)?-y:y;
 			return result;
 		}
+		/// \param clip_value used to auto clip before restoring sign this is typically set to 1.0
+		__inline double operator() (double x,double clip_value)
+		{
+			double y=fabs(x);
+			const double *c=m_PolyProps.Term;
+			const double x2=y*y;
+			const double x3=y*x2;
+			const double x4=x2*x2;
+			y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
+			y=(y<clip_value)?y:clip_value;  //min operation
+			const double result=(x<0)?-y:y;
+			return result;
+		}
+
 	private:
 		PolynomialEquation_forth_Props m_PolyProps;
 };
