@@ -19,6 +19,7 @@
 #include "../Common/Ship.h"
 #include "../Common/Vehicle_Drive.h"
 #include "../Common/PIDController.h"
+#include "../Common/Poly.h"
 #include "../Common/AI_Base_Controller.h"
 #include "Tank_Robot.h"
 #include "../Base/Joystick.h"
