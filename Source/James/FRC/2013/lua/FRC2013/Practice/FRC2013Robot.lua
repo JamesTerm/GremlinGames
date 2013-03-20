@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.6;
+	version = 1.7;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -69,6 +69,8 @@ MainRobot = {
 		voltage_multiply=-1.0,				--May be reversed using -1.0
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		force_voltage=
+		{t4=0, t3=0, t2=0, t1=1, c=0},
 		reverse_steering='yes',
 		left_encoder_reversed=0,
 		right_encoder_reversed=0,
