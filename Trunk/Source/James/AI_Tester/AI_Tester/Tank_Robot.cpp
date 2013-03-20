@@ -59,6 +59,7 @@ void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties
 	const Tank_Robot_Properties *RobotProps=dynamic_cast<const Tank_Robot_Properties *>(props);
 	//This will copy all the props
 	m_TankRobotProps=RobotProps->GetTankRobotProps();
+	m_VoltagePoly.Initialize(&m_TankRobotProps.Voltage_Terms);
 	m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
 	m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
 
@@ -322,25 +323,8 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	#endif
 
 	//Apply the polynomial equation to the voltage to linearize the curve
-	//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
-	{
-		double Voltage=fabs(LeftVoltage);
-		double *c=m_TankRobotProps.Polynomial;
-		double x2=Voltage*Voltage;
-		double x3=Voltage*x2;
-		double x4=x2*x2;
-		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-		Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
-		LeftVoltage=(LeftVoltage<0)?-Voltage:Voltage; //restore sign
-
-		Voltage=fabs(RightVoltage);
-		x2=Voltage*Voltage;
-		x3=Voltage*x2;
-		x4=x2*x2;
-		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-		Voltage=min(Voltage,1.0); //Clip the voltage as it can become really high values when applying equation
-		RightVoltage=(RightVoltage<0)?-Voltage:Voltage; //restore sign
-	}
+	LeftVoltage=m_VoltagePoly(LeftVoltage,1.0);
+	RightVoltage=m_VoltagePoly(RightVoltage,1.0);
 	
 	{  //Dead zone management
 		//The dead zone is only used when accelerating and the encoder reads no movement it does not skew the rest of the values like
@@ -434,11 +418,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
 	props.ReverseSteering=false;
-	props.Polynomial[0]=0.0;
-	props.Polynomial[1]=1.0;
-	props.Polynomial[2]=0.0;
-	props.Polynomial[3]=0.0;
-	props.Polynomial[4]=0.0;
+	props.Voltage_Terms.Init();
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
@@ -563,21 +543,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				m_TankRobotProps.RightEncoderReversed=true;
 		}
 
-		err = script.GetFieldTable("curve_voltage");
-		if (!err)
-		{
-			err = script.GetField("c", NULL, NULL,&m_TankRobotProps.Polynomial[0]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t1", NULL, NULL,&m_TankRobotProps.Polynomial[1]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t2", NULL, NULL,&m_TankRobotProps.Polynomial[2]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t3", NULL, NULL,&m_TankRobotProps.Polynomial[3]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t4", NULL, NULL,&m_TankRobotProps.Polynomial[4]);
-			ASSERT_MSG(!err, err);
-			script.Pop();
-		}
+		m_TankRobotProps.Voltage_Terms.LoadFromScript(script,"curve_voltage");
 
 		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel_Left);
 		m_TankRobotProps.InverseMaxAccel_Right=m_TankRobotProps.InverseMaxAccel_Left;

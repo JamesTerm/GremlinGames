@@ -43,6 +43,9 @@ class PolynomialEquation_forth
 			if (props)
 				m_PolyProps=*props;
 		}
+
+		/// \note these equations most-likely will not be symmetrical in the negative range so we'll work with the 
+		///positive range and restore the sign
 		__inline double operator() (double x)
 		{
 			double y=fabs(x);
@@ -54,6 +57,8 @@ class PolynomialEquation_forth
 			const double result=(x<0)?-y:y;
 			return result;
 		}
+
+		/// This version of the function is identical to previous but also includes auto clipping prior to restoring the sign
 		/// \param clip_value used to auto clip before restoring sign this is typically set to 1.0
 		__inline double operator() (double x,double clip_value)
 		{
