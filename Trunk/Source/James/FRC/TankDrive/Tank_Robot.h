@@ -38,7 +38,8 @@ struct Tank_Robot_Props
 	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
 	//Currently supporting 4 terms in polynomial equation
-	double Polynomial[5];  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	PolynomialEquation_forth_Props Voltage_Terms;  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
+	PolynomialEquation_forth_Props Force_Terms;
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel_Left,InverseMaxAccel_Right;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
@@ -125,6 +126,7 @@ class Tank_Robot : public Ship_Tester,
 		double m_HeadingUpdateTimer;
 		double m_PreviousLeftVelocity,m_PreviousRightVelocity; //used to compute acceleration
 		Tank_Steering m_TankSteering;  //adding controls for tank steering
+		PolynomialEquation_forth m_VoltagePoly,m_ForcePoly;
 	public:
 		double GetLeftVelocity() const {return m_VehicleDrive->GetLeftVelocity();}
 		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
