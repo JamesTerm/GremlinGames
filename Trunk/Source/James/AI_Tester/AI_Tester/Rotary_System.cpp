@@ -540,17 +540,20 @@ void Rotary_Properties::Init()
 	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is only for angular so false is a good default (must be explicit in script otherwise)
-	//props.Polynomial[0]=0.0;
-	//props.Polynomial[1]=1.0;
-	//props.Polynomial[2]=0.0;
-	//props.Polynomial[3]=0.0;
-	//props.Polynomial[4]=0.0;
+	#if 0
+	props.Polynomial[0]=0.0;
+	props.Polynomial[1]=1.0;
+	props.Polynomial[2]=0.0;
+	props.Polynomial[3]=0.0;
+	props.Polynomial[4]=0.0;
+	#else
+	props.Voltage_Terms.Init();
+	#endif
 	props.InverseMaxAccel=props.InverseMaxAccel=0.0;
 	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
 	Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
 	arm.SlowVelocity=arm.SlowVelocityVoltage=0.0;
 	m_RotaryProps=props;
-	m_VoltagePoly_Properties.Init();
 }
 
 void Rotary_Properties::LoadFromScript(Scripting::Script& script)
@@ -629,8 +632,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 		#else
-		m_VoltagePoly_Properties.LoadFromScript(script,"curve_voltage");
-		m_RotaryProps.Voltage_Terms=m_VoltagePoly_Properties.GetPolyProps();
+		m_RotaryProps.Voltage_Terms.LoadFromScript(script,"curve_voltage");
 		#endif
 		script.GetField("inv_max_accel", NULL, NULL, &m_RotaryProps.InverseMaxAccel);
 		m_RotaryProps.InverseMaxDecel=m_RotaryProps.InverseMaxAccel;	//set up deceleration to be the same value by default

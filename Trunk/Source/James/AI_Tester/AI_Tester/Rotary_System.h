@@ -188,7 +188,6 @@ class Rotary_Properties : public Ship_1D_Properties
 		#endif
 	protected:
 		Rotary_Props m_RotaryProps;
-		PolynomialEquation_forth_Properties m_VoltagePoly_Properties;
 		#ifdef AI_TesterCode
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif

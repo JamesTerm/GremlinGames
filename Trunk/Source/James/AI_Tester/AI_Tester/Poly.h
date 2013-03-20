@@ -2,7 +2,32 @@
 
 struct PolynomialEquation_forth_Props
 {
+	void Init()
+	{
+		memset(&Term,0,sizeof(PolynomialEquation_forth_Props));
+		Term[1]=1.0;
+	}
 	double Term[5];
+
+	virtual void LoadFromScript(Scripting::Script& script,const char FieldName[])
+	{
+		const char* err=NULL;
+		err = script.GetFieldTable(FieldName);
+		if (!err)
+		{
+			err = script.GetField("c", NULL, NULL,&Term[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t1", NULL, NULL,&Term[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t2", NULL, NULL,&Term[2]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t3", NULL, NULL,&Term[3]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("t4", NULL, NULL,&Term[4]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+	}
 };
 
 class PolynomialEquation_forth
@@ -44,42 +69,5 @@ class PolynomialEquation_forth
 		}
 
 	private:
-		PolynomialEquation_forth_Props m_PolyProps;
-};
-
-class PolynomialEquation_forth_Properties
-{
-	public:
-		/// \param FieldName this is the name chosen in lua to represent field table to obtain the terms when using LoadFromScript
-		void Init()
-		{
-			memset(&m_PolyProps,0,sizeof(PolynomialEquation_forth_Props));
-			m_PolyProps.Term[1]=1.0;
-		}
-		virtual void LoadFromScript(Scripting::Script& script,const char FieldName[])
-		{
-			const char* err=NULL;
-			err = script.GetFieldTable(FieldName);
-			if (!err)
-			{
-				err = script.GetField("c", NULL, NULL,&m_PolyProps.Term[0]);
-				ASSERT_MSG(!err, err);
-				err = script.GetField("t1", NULL, NULL,&m_PolyProps.Term[1]);
-				ASSERT_MSG(!err, err);
-				err = script.GetField("t2", NULL, NULL,&m_PolyProps.Term[2]);
-				ASSERT_MSG(!err, err);
-				err = script.GetField("t3", NULL, NULL,&m_PolyProps.Term[3]);
-				ASSERT_MSG(!err, err);
-				err = script.GetField("t4", NULL, NULL,&m_PolyProps.Term[4]);
-				ASSERT_MSG(!err, err);
-				script.Pop();
-			}
-		}
-
-		const PolynomialEquation_forth_Props &GetPolyProps() const {return m_PolyProps;}
-		//Get and Set the properties
-		PolynomialEquation_forth_Props &PolyProps() {return m_PolyProps;}
-
-	protected:
 		PolynomialEquation_forth_Props m_PolyProps;
 };
