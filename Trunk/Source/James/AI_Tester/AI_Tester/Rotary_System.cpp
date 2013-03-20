@@ -40,6 +40,7 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	__super::Initialize(em,props);
 	const Rotary_Properties *Props=dynamic_cast<const Rotary_Properties *>(props);
 	assert(Props);
+	m_VoltagePoly.Initialize(&Props->GetRotaryProps().Voltage_Terms);
 	//This will copy all the props
 	m_Rotary_Props=Props->GetRotaryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
@@ -143,6 +144,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousVelocity=Velocity;
 
+	#if 0
 	//Apply the polynomial equation to the voltage to linearize the curve
 	{
 		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
@@ -154,6 +156,9 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
 		Voltage=(Voltage<0)?-y:y;
 	}
+	#else
+	Voltage=m_VoltagePoly(Voltage);
+	#endif
 
 	if ((IsZero(PotentiometerVelocity)) && IsAccel)
 		ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone);
@@ -254,6 +259,7 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	__super::Initialize(em,props);
 	const Rotary_Properties *Props=dynamic_cast<const Rotary_Properties *>(props);
 	assert(Props);
+	m_VoltagePoly.Initialize(&Props->GetRotaryProps().Voltage_Terms);
 	//This will copy all the props
 	m_Rotary_Props=Props->GetRotaryProps();
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
@@ -357,6 +363,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 	m_PreviousVelocity=Velocity;
 
 	//Apply the polynomial equation to the voltage to linearize the curve
+	#if 0
 	{
 		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
 		double y=fabs(Voltage);
@@ -367,6 +374,9 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
 		Voltage=(Voltage<0)?-y:y;
 	}
+	#else
+	Voltage=m_VoltagePoly(Voltage);
+	#endif
 
 	if ((IsZero(m_EncoderVelocity)) && IsAccel)
 		ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone);
@@ -530,16 +540,17 @@ void Rotary_Properties::Init()
 	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is only for angular so false is a good default (must be explicit in script otherwise)
-	props.Polynomial[0]=0.0;
-	props.Polynomial[1]=1.0;
-	props.Polynomial[2]=0.0;
-	props.Polynomial[3]=0.0;
-	props.Polynomial[4]=0.0;
+	//props.Polynomial[0]=0.0;
+	//props.Polynomial[1]=1.0;
+	//props.Polynomial[2]=0.0;
+	//props.Polynomial[3]=0.0;
+	//props.Polynomial[4]=0.0;
 	props.InverseMaxAccel=props.InverseMaxAccel=0.0;
 	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
 	Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
 	arm.SlowVelocity=arm.SlowVelocityVoltage=0.0;
 	m_RotaryProps=props;
+	m_VoltagePoly_Properties.Init();
 }
 
 void Rotary_Properties::LoadFromScript(Scripting::Script& script)
@@ -601,6 +612,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_RotaryProps.UseAggressiveStop=true;
 		}
+		#if 0
 		err = script.GetFieldTable("curve_voltage");
 		if (!err)
 		{
@@ -616,6 +628,10 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
+		#else
+		m_VoltagePoly_Properties.LoadFromScript(script,"curve_voltage");
+		m_RotaryProps.Voltage_Terms=m_VoltagePoly_Properties.GetPolyProps();
+		#endif
 		script.GetField("inv_max_accel", NULL, NULL, &m_RotaryProps.InverseMaxAccel);
 		m_RotaryProps.InverseMaxDecel=m_RotaryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
 		script.GetField("inv_max_decel", NULL, NULL, &m_RotaryProps.InverseMaxDecel);

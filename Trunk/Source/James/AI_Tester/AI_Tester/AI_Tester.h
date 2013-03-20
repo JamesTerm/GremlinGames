@@ -25,4 +25,5 @@ namespace AI_Tester
 	#include "Vehicle_Drive.h"
 	#include "AI_Base_Controller.h"
 	#include "UI_Controller.h"
+	#include "Poly.h"
 }
