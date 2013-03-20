@@ -378,6 +378,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Poly.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Robot_Control_Interface.h"
 				>
 			</File>

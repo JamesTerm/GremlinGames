@@ -664,19 +664,19 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			err = script.GetField("c", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[0]);
-			m_DriveProps.RotaryProps().Polynomial[0]=m_SwerveRobotProps.Polynomial_Wheel[0];
+			m_DriveProps.RotaryProps().Voltage_Terms.Term[0]=m_SwerveRobotProps.Polynomial_Wheel[0];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t1", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[1]);
-			m_DriveProps.RotaryProps().Polynomial[1]=m_SwerveRobotProps.Polynomial_Wheel[1];
+			m_DriveProps.RotaryProps().Voltage_Terms.Term[1]=m_SwerveRobotProps.Polynomial_Wheel[1];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t2", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[2]);
-			m_DriveProps.RotaryProps().Polynomial[2]=m_SwerveRobotProps.Polynomial_Wheel[2];
+			m_DriveProps.RotaryProps().Voltage_Terms.Term[2]=m_SwerveRobotProps.Polynomial_Wheel[2];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t3", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[3]);
-			m_DriveProps.RotaryProps().Polynomial[3]=m_SwerveRobotProps.Polynomial_Wheel[3];
+			m_DriveProps.RotaryProps().Voltage_Terms.Term[3]=m_SwerveRobotProps.Polynomial_Wheel[3];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t4", NULL, NULL,&m_SwerveRobotProps.Polynomial_Wheel[4]);
-			m_DriveProps.RotaryProps().Polynomial[4]=m_SwerveRobotProps.Polynomial_Wheel[4];
+			m_DriveProps.RotaryProps().Voltage_Terms.Term[4]=m_SwerveRobotProps.Polynomial_Wheel[4];
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
@@ -685,19 +685,19 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			err = script.GetField("c", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[0]);
-			m_SwivelProps.RotaryProps().Polynomial[0]=m_SwerveRobotProps.Polynomial_Wheel[0];
+			m_SwivelProps.RotaryProps().Voltage_Terms.Term[0]=m_SwerveRobotProps.Polynomial_Wheel[0];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t1", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[1]);
-			m_SwivelProps.RotaryProps().Polynomial[1]=m_SwerveRobotProps.Polynomial_Wheel[1];
+			m_SwivelProps.RotaryProps().Voltage_Terms.Term[1]=m_SwerveRobotProps.Polynomial_Wheel[1];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t2", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[2]);
-			m_SwivelProps.RotaryProps().Polynomial[2]=m_SwerveRobotProps.Polynomial_Wheel[2];
+			m_SwivelProps.RotaryProps().Voltage_Terms.Term[2]=m_SwerveRobotProps.Polynomial_Wheel[2];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t3", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[3]);
-			m_SwivelProps.RotaryProps().Polynomial[3]=m_SwerveRobotProps.Polynomial_Wheel[3];
+			m_SwivelProps.RotaryProps().Voltage_Terms.Term[3]=m_SwerveRobotProps.Polynomial_Wheel[3];
 			ASSERT_MSG(!err, err);
 			err = script.GetField("t4", NULL, NULL,&m_SwerveRobotProps.Polynomial_Swivel[4]);
-			m_SwivelProps.RotaryProps().Polynomial[4]=m_SwerveRobotProps.Polynomial_Wheel[4];
+			m_SwivelProps.RotaryProps().Voltage_Terms.Term[4]=m_SwerveRobotProps.Polynomial_Wheel[4];
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
