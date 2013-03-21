@@ -16,7 +16,7 @@ WheelBase_Length_In=9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
-Drive_MaxAccel=4
+Drive_MaxAccel=3
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 
 KeyDistance_in=144
@@ -27,10 +27,10 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.7;
+	version = 1.8;
 	
 	Mass = 25, -- Weight kg
-	MaxAccelLeft = 20, MaxAccelRight = 20, 
+	MaxAccelLeft = 10, MaxAccelRight = 10, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxAccelForward_High = Drive_MaxAccel, MaxAccelReverse_High = Drive_MaxAccel, 
 	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid,
@@ -75,11 +75,12 @@ MainRobot = {
 		left_encoder_reversed=0,
 		right_encoder_reversed=0,
 		--inv_max_accel = 0.0,  --Up vertical
-		inv_max_accel = 1/50.0,
+		--inv_max_accel = 1/50.0,
 		--inv_max_accel = 1/37.0,  --On workbench using 7 mps
-		--inv_max_accel = 1/27.0,
+		inv_max_decel = 1/7,
+		inv_max_accel = 1/17.0,
 		--On field turn linear gain assist on
-		linear_gain_assist = 0.00,
+		linear_gain_assist = 0.03,
 		--forward_deadzone_left  = 0.02,
 		--forward_deadzone_right = 0.02,
 		--reverse_deadzone_left  = 0.02,
@@ -194,8 +195,8 @@ MainRobot = {
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
 
-			min_range=28 * Pi2				--We borrow the min range to represent the min speed
-			--min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
+			--min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
 		},
 		power_first_stage =
 		{
@@ -216,7 +217,8 @@ MainRobot = {
 			brake=64 * Pi2 * 5,
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
-			min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			--min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
 		},
 		intake_deployment =
 		{
@@ -334,8 +336,8 @@ MainRobot = {
 			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=3.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Robot_SetClimbGearOff = {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbGear_RightButton = {type="joystick_button", key=8, on_off=true},
 			Robot_SetClimbGear_LeftButton = {type="joystick_button", key=7, on_off=true},
@@ -382,8 +384,8 @@ MainRobot = {
 			Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			Turret_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
-			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			--PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			--PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			Robot_SetClimbSpeed = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
@@ -395,31 +397,8 @@ MainRobot = {
 			Robot_SetClimbDriveEngaged	= {type="joystick_button", key=8, on_off=false},
 			Robot_SetClimbDropLift2		= {type="joystick_button", key=9, on_off=false},
 			Robot_SetClimbDropLift		= {type="joystick_button", key=10, on_off=false},
-		},
-		
-		Joystick_4 =
-		{
-			control = "logitech attack 3",
-			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			Robot_SetClimbGearOff = {type="joystick_button", key=8, on_off=false},
-			Robot_SetClimbGearOn = {type="joystick_button", key=9, on_off=false},
-			--Ball_Fire = {type="joystick_button", key=2, on_off=true},
-			Robot_AutoDriveYaw = {type="joystick_button", key=2, on_off=true},
-			--PowerWheels_IsRunning = {type="joystick_button", key=1, on_off=true},
-			Robot_SetTargeting_Off = {type="joystick_button", key=1, on_off=true},
-			Ball_Grip = {type="joystick_button", key=6, on_off=true},
-			Ball_Squirt = {type="joystick_button", key=7, on_off=true},
-			Intake_Deployment_Retract = {type="joystick_button", key=10, on_off=false},
-			Intake_Deployment_Advance = {type="joystick_button", key=11, on_off=false},
-			--POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			--Turn_180 = {type="joystick_button", key=7, on_off=false}
 		}
+		
 	},
 	
 	--This is only used in the AI tester, can be ignored
