@@ -363,6 +363,29 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 
 void Tank_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
+	Vec2D LocalForceToUse;
+	#if 1
+	{
+		const double NormalizedForce=(LocalForce[1]/Mass) / m_ShipProps.GetShipProps().MaxAccelForward;
+		const double NormalizedTorque=(LocalTorque*dTime_s)/TorqueRestraint;
+		const double TorqeForceAngle=atan2(NormalizedTorque,NormalizedForce);
+		const double RoundForce=fabs(cos(TorqeForceAngle));
+		const double RoundTorque=fabs(sin(TorqeForceAngle));
+		#if 0
+		if (fabs(LocalForce[1])>0.0 || fabs(LocalTorque)>0.0)
+		{
+			printf("l=%.2f t=%.2f a=%2.f nf=%.2f,nt=%.2f %.2f\n",NormalizedForce,NormalizedTorque,RAD_2_DEG(TorqeForceAngle),RoundForce,RoundTorque,LocalTorque/Mass);
+		}
+		#endif
+		//Further restrain the torque and force
+		TorqueRestraint*=RoundTorque;
+		Vec2d AccRestraintPositive(MaxAccelRight,m_ShipProps.GetShipProps().MaxAccelForward * RoundForce);
+		Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetShipProps().MaxAccelForward * RoundForce);
+		LocalForceToUse=m_Physics.ComputeRestrainedForce(LocalForce,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
+	}
+	#else
+	LocalForceToUse=LocalForce;
+	#endif
 	UpdateVelocities(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 	m_VehicleDrive->ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 	//We are not going to use these interpolated values in the control (it would corrupt it)... however we can monitor them here, or choose to
@@ -370,7 +393,7 @@ void Tank_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &Loca
 	Vec2D force;
 	double torque;
 	InterpolateThrusterChanges(force,torque,dTime_s);
-	__super::ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
+	__super::ApplyThrusters(PhysicsToUse,LocalForceToUse,LocalTorque,TorqueRestraint,dTime_s);
 }
 
 void Tank_Robot::ResetPos()
