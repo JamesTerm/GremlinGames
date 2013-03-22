@@ -360,19 +360,16 @@ void Tank_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &Loca
 	{
 		const double NormalizedForce=(LocalForce[1]/Mass) / m_ShipProps.GetShipProps().MaxAccelForward;
 		const double NormalizedTorque=(LocalTorque*dTime_s)/TorqueRestraint;
-		const double TorqeForceAngle=atan2(NormalizedTorque,NormalizedForce);
-		const double RoundForce=fabs(cos(TorqeForceAngle));
-		const double RoundTorque=fabs(sin(TorqeForceAngle));
+		const double ScaledForce=max(fabs(NormalizedForce)-fabs(NormalizedTorque),0.0);
+		const double ScaledTorque=1.0;
 		#if 0
 		if (fabs(LocalForce[1])>0.0 || fabs(LocalTorque)>0.0)
-		{
-			printf("l=%.2f t=%.2f a=%2.f nf=%.2f,nt=%.2f %.2f\n",NormalizedForce,NormalizedTorque,RAD_2_DEG(TorqeForceAngle),RoundForce,RoundTorque,LocalTorque/Mass);
-		}
+			printf("l=%.2f t=%.2f nf=%.2f,nt=%.2f %.2f\n",NormalizedForce,NormalizedTorque,ScaledForce,ScaledTorque,LocalTorque/Mass);
 		#endif
 		//Further restrain the torque and force
-		TorqueRestraint*=RoundTorque;
-		Vec2d AccRestraintPositive(MaxAccelRight,m_ShipProps.GetShipProps().MaxAccelForward * RoundForce);
-		Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetShipProps().MaxAccelForward * RoundForce);
+		TorqueRestraint*=ScaledTorque;
+		Vec2d AccRestraintPositive(MaxAccelRight,m_ShipProps.GetShipProps().MaxAccelForward * ScaledForce);
+		Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetShipProps().MaxAccelForward * ScaledForce);
 		LocalForceToUse=m_Physics.ComputeRestrainedForce(LocalForce,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 	}
 	#else
