@@ -16,7 +16,7 @@ WheelBase_Length_In=9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 ClimbGearSpeed  = (724.284 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
-Drive_MaxAccel=3
+Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 
 KeyDistance_in=144
@@ -27,13 +27,13 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.8;
+	version = 1.9;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxAccelForward_High = Drive_MaxAccel, MaxAccelReverse_High = Drive_MaxAccel, 
-	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid,
+	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid * 0.5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
@@ -195,8 +195,8 @@ MainRobot = {
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
 
-			--min_range=28 * Pi2				--We borrow the min range to represent the min speed
-			min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
+			min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			--min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
 		},
 		power_first_stage =
 		{
@@ -217,8 +217,8 @@ MainRobot = {
 			brake=64 * Pi2 * 5,
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
-			--min_range=28 * Pi2				--We borrow the min range to represent the min speed
-			min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
+			min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			--min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
 		},
 		intake_deployment =
 		{
@@ -361,7 +361,7 @@ MainRobot = {
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
 			--to calibrate victors
 			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=10.0, filter=0.1, curve_intensity=0.0},
+			--PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=10.0, filter=0.1, curve_intensity=0.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
@@ -384,8 +384,8 @@ MainRobot = {
 			Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			Turret_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
-			--PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
-			--PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			Robot_SetClimbSpeed = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
