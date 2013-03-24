@@ -391,6 +391,15 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			UpdateIntendedOrientaton(dTime_s);
 			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
+			const double TargetDistanceScalar=m_ShipProps.GetShipProps().Rotation_TargetDistanceScalar;
+			if (TargetDistanceScalar!=1.0)
+			{
+				//a simple linear blend on the scalar should be fine (could upgrade to poly if needed)
+				const double ratio = fabs(m_Physics.GetAngularVelocity())/dHeading;
+				const double scale=(ratio * TargetDistanceScalar) + ((1.0-ratio) * 1.0);
+				//printf("%.2f %.2f\n",ratio,scale);
+				m_rotDisplacement_rad*=scale;
+			}
 			if (fabs(m_rotDisplacement_rad)<m_ShipProps.GetShipProps().Rotation_Tolerance)
 				m_rotDisplacement_rad=0.0;
 		}
@@ -750,6 +759,7 @@ Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
 	props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
 	props.RotateTo_TorqueDegradeScalar=props.RotateTo_TorqueDegradeScalar_High=1.0;
 	props.Rotation_Tolerance=0.0;
+	props.Rotation_TargetDistanceScalar=1.0;
 	m_ShipProps=props;
 };
 
@@ -855,6 +865,7 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		if (err)
 			props.RotateTo_TorqueDegradeScalar_High=props.RotateTo_TorqueDegradeScalar;
 		script.GetField("rotation_tolerance", NULL, NULL, &props.Rotation_Tolerance);
+		script.GetField("rotation_distance_scalar", NULL, NULL, &props.Rotation_TargetDistanceScalar);
 	
 		err = script.GetField("MAX_SPEED", NULL, NULL, &props.MAX_SPEED);
 		err = script.GetField("ENGAGED_MAX_SPEED", NULL, NULL, &props.ENGAGED_MAX_SPEED);
