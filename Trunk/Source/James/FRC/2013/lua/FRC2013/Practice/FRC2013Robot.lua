@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 2.0;
+	version = 2.1;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
@@ -49,7 +49,7 @@ MainRobot = {
 	tank_drive =
 	{
 		is_closed=0,
-		show_pid_dump='y',
+		show_pid_dump='n',
 		ds_display_row=3,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
@@ -195,7 +195,8 @@ MainRobot = {
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
 
-			min_range=28 * Pi2				--We borrow the min range to represent the min speed
+			--min_range=28 * Pi2,					--Test case for a lower range (probably do not need)
+			min_range=(3804.55/60.0) * Pi2,			--Use this to lock to full power always
 			--min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
 		},
 		power_first_stage =
@@ -217,14 +218,14 @@ MainRobot = {
 			brake=64 * Pi2 * 5,
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
-			min_range=28 * Pi2				--We borrow the min range to represent the min speed
-			--min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
+			--Note: this min range only works with the quadrant, so locking to full voltage or victor calibration do not apply here
+			min_range=28 * Pi2,					--Test case for a lower range (probably do not need)
 		},
 		intake_deployment =
 		{
 			is_closed=0,
 			show_pid_dump='y',
-			ds_display_row=1,
+			ds_display_row=-1,
 			pid=
 			{p=1000, i=0, d=250},
 			tolerance=0.01,					--should not matter much
@@ -359,9 +360,9 @@ MainRobot = {
 			--PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
-			--to calibrate victors
 			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			--PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=10.0, filter=0.1, curve_intensity=0.0},
+			--to calibrate victors
+			PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=2, is_flipped=false, multiplier=10.0, filter=0.1, curve_intensity=0.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
 			--Robot_SetClimbGear_RightButton = {type="joystick_button", key=10, on_off=true},
 			--Robot_SetClimbGear_LeftButton = {type="joystick_button", key=9, on_off=true},
