@@ -72,6 +72,10 @@ struct Ship_Props
 	//These are used to avoid overshoot when trying to rotate to a heading
 	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
 	double Rotation_Tolerance;
+	//This supersedes RotateTo_TorqueDegradeScalar to avoid overshoot without slowing down rate
+	//This applies linear blended scale against the current distance based on current velocity
+	//default using 1.0 will produce no change
+	double Rotation_TargetDistanceScalar;
 	enum Ship_Type
 	{
 		eDefault,
