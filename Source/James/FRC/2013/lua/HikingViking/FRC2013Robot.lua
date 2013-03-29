@@ -26,7 +26,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.5,
+	version = 1.6,
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -35,6 +35,7 @@ MainRobot = {
 	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid,
 	--rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	rotation_tolerance=Deg2Rad * 3,
+	rotation_distance_scalar=0.50,
 	
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
@@ -68,13 +69,15 @@ MainRobot = {
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		force_voltage=
+		{t4=0, t3=0, t2=0, t1=1, c=0},
 		reverse_steering='yes',
 		left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel_left = 1.0/15.0,
+		inv_max_accel_left = 1.0/13.0,
 		inv_max_accel_right = 1.0/10.0,
-		inv_max_decel_left = 1.0/11.0,
-		inv_max_decel_right = 1.0/17.0,
+		inv_max_decel_left = 1.0/6.0,
+		inv_max_decel_right = 1.0/4.0,
 		forward_deadzone_left  = 0.07,
 		forward_deadzone_right = 0.18,
 		reverse_deadzone_left  = 0.19,
