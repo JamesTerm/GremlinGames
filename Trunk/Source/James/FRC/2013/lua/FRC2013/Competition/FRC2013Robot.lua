@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 2.1;
+	version = 2.11;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
@@ -71,7 +71,7 @@ MainRobot = {
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		force_voltage=
 		{t4=0, t3=0, t2=0, t1=1, c=0},
-		reverse_steering='no',
+		reverse_steering='yes',
 		left_encoder_reversed=0,
 		right_encoder_reversed=0,
 		--inv_max_accel = 0.0,  --Up vertical
@@ -120,9 +120,9 @@ MainRobot = {
 			
 			init_rev=5.0,
 			wait_on_times=0.5,
-			wait_off_times=1.5,
-			first_stage_speed=(3804.55/60.0) * Pi2,
-			second_stage_speed=(3804.55/60.0) * Pi2
+			wait_off_times=0.7,
+			first_stage_speed=((3804.55/60.0) * Pi2) * 0.95,
+			second_stage_speed=((3804.55/60.0) * Pi2) * 0.95,
 		},
 
 		climb_1 =
