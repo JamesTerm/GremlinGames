@@ -121,8 +121,8 @@ MainRobot = {
 			init_rev=5.0,
 			wait_on_times=0.5,
 			wait_off_times=0.7,
-			first_stage_speed=((3804.55/60.0) * Pi2) * 0.95,
-			second_stage_speed=((3804.55/60.0) * Pi2) * 0.95,
+			first_stage_speed=((3804.55/60.0) * Pi2) * 1.0,
+			second_stage_speed=((3804.55/60.0) * Pi2) * 1.0,
 		},
 
 		climb_1 =
