@@ -658,11 +658,21 @@ void FRC_2013_Robot::ResetPos()
 	m_Turret.ResetPos();
 	m_PowerWheels.ResetPos();
 	m_IntakeSystem.ResetPos();
+	//This lifting system is depreciated
+	#if 0
 	if (!m_SetClimbGear)
 	{
 		//ensure pneumatics are in drive
 		SetClimbState(eClimbState_Drive);
 	}
+	#else
+	if (!m_SetClimbGear)
+	{
+		//10 point climb is down
+		m_RobotControl->CloseSolenoid(eEngageDriveTrain);
+	}
+
+	#endif
 }
 
 FRC_2013_Robot::IntakeSystem &FRC_2013_Robot::GetIntakeSystem()
@@ -1314,6 +1324,8 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_SetClimbGear"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear);
 		em->Event_Map["Robot_SetClimbGearOn"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOn);
 		em->Event_Map["Robot_SetClimbGearOff"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGearOff);
+		em->Event_Map["Robot_Set10PointHang"].Subscribe(ehl, *this, &FRC_2013_Robot::Set10PointHang);
+		
 		em->EventOnOff_Map["Robot_SetClimbGear_LeftButton"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear_LeftButton);
 		em->EventOnOff_Map["Robot_SetClimbGear_RightButton"].Subscribe(ehl, *this, &FRC_2013_Robot::SetClimbGear_RightButton);
 		
@@ -1344,6 +1356,8 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_SetClimbGear"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear);
 		em->Event_Map["Robot_SetClimbGearOn"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOn);
 		em->Event_Map["Robot_SetClimbGearOff"]  .Remove(*this, &FRC_2013_Robot::SetClimbGearOff);
+		em->Event_Map["Robot_Set10PointHang"]  .Remove(*this, &FRC_2013_Robot::Set10PointHang);
+
 		em->EventOnOff_Map["Robot_SetClimbGear_LeftButton"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear_LeftButton);
 		em->EventOnOff_Map["Robot_SetClimbGear_RightButton"]  .Remove(*this, &FRC_2013_Robot::SetClimbGear_RightButton);
 
@@ -1633,6 +1647,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Robot_SetClimbGear","Robot_SetClimbGearOn","Robot_SetClimbGearOff",
 	"Robot_SetClimbGear_LeftButton","Robot_SetClimbGear_RightButton",
 	"Robot_SetClimbDriveEngaged","Robot_SetClimbRaiseLift","Robot_SetClimbDropLift","Robot_SetClimbDropLift2","Robot_SetClimbSpeed",
+	"Robot_Set10PointHang",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff"
 	//AI Tester events only
@@ -2453,7 +2468,8 @@ bool FRC_2013_Robot_Control::GetIsSolenoidOpen(size_t index) const
 	{
 	case FRC_2013_Robot::eEngageDriveTrain:
 		ret=m_IsDriveEngaged;
-		assert(false);   //no-one should be calling this... if they are I'll want to know why
+		//This assert is depreciated with the old lifting system
+		//assert(false);   //no-one should be calling this... if they are I'll want to know why
 		break;
 	case FRC_2013_Robot::eEngageLiftWinch:
 		break;
