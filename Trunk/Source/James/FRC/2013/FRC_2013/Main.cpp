@@ -163,7 +163,7 @@ public:
 		{
 			{
 				Goal *goal=NULL;
-				goal=FRC_2013_Goals::Get_ShootFrisbees(Robot,ds->GetDigitalIn(1)?true:false);
+				goal=FRC_2013_Goals::Get_ShootFrisbees(Robot,ds->GetDigitalIn(2)?true:false);
 				if (goal)
 					goal->Activate(); //now with the goal(s) loaded activate it
 				Robot->SetGoal(goal);				
