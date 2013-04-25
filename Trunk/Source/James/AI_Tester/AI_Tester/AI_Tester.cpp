@@ -861,7 +861,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				if (DoAutonomous)
 				{
 					Goal *goal=NULL;
-					goal=FRC_2013_Goals::Get_ShootFrisbees(Robot,AutonomousValue&1!=0);
+					goal=FRC_2013_Goals::Get_ShootFrisbees(Robot,(AutonomousValue&2)!=0);
 					if (goal)
 						goal->Activate(); //now with the goal(s) loaded activate it
 					Robot->SetGoal(goal);
