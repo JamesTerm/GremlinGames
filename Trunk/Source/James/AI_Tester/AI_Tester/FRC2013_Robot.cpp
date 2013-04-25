@@ -2004,10 +2004,10 @@ Goal *FRC_2013_Goals::Get_ShootFrisbees(FRC_2013_Robot *Robot,bool EnableDriveBa
 	Goal_Wait *off_wait_2=new Goal_Wait(wait_off_time);
 
 	Fire *FireOn_3=new Fire(*Robot,true);
+	Goal_Wait *on_wait_3=new Goal_Wait(wait_on_time);
 
 	Generic_CompositeGoal *FinishFire_Composite= new Generic_CompositeGoal;
 	{
-		Goal_Wait *on_wait_3=new Goal_Wait(wait_on_time);
 		Fire *FireOff_3=new Fire(*Robot,false);
 		Goal_Wait *off_wait_3=new Goal_Wait(wait_off_time);
 
@@ -2017,7 +2017,6 @@ Goal *FRC_2013_Goals::Get_ShootFrisbees(FRC_2013_Robot *Robot,bool EnableDriveBa
 
 		FinishFire_Composite->AddSubgoal(off_wait_3);
 		FinishFire_Composite->AddSubgoal(FireOff_3);
-		FinishFire_Composite->AddSubgoal(on_wait_3);
 		//all added now activate
 		FinishFire_Composite->Activate();
 	}
@@ -2041,6 +2040,7 @@ Goal *FRC_2013_Goals::Get_ShootFrisbees(FRC_2013_Robot *Robot,bool EnableDriveBa
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(FinishFire_WithDrive);
+	MainGoal->AddSubgoal(on_wait_3);
 	MainGoal->AddSubgoal(FireOn_3);
 
 	MainGoal->AddSubgoal(off_wait_2);
