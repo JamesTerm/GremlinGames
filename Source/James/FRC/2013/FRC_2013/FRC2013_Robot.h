@@ -64,7 +64,7 @@ public:
 			double TimeOutWait;			//If -1 then it is infinite and will not multi task a wait time (great for testing)
 			double ToleranceThreshold;  //If zero then only the initial wait is used for each ball (or not using the wait for ball feature)
 		} FirstBall_Wait,SecondBall_Wait; //We'll want to tweak the second ball a bit differently
-
+		double DriveToY; //waypoint Y to drive in meters
 	} Autonomous_Props;
 };
 
@@ -413,7 +413,7 @@ class FRC_2013_Robot : public Tank_Robot
 class FRC_2013_Goals
 {
 	public:
-		static Goal *Get_ShootFrisbees(FRC_2013_Robot *Robot);
+		static Goal *Get_ShootFrisbees(FRC_2013_Robot *Robot,bool EnableDriveBack);
 		//static Goal *Get_FRC2013_Autonomous(FRC_2013_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
 		/// \param iteration this is a simple count of how many climbs which have been made.  This is used to pick the correct distance properties to use per iteration
 		static Goal *Climb(FRC_2013_Robot *Robot,size_t iteration);
