@@ -1498,6 +1498,7 @@ FRC_2013_Robot_Properties::FRC_2013_Robot_Properties()  :
 		auton.WaitOffTime=1.0;
 		//solved empirically
 		auton.FirstStageVelocity=auton.SecondStageVelocity=(3804.55/60.0) * Pi2;
+		auton.DriveToY=0.0;
 
 		FRC_2013_Robot_Props::Autonomous_Properties::WaitForBall_Info &ball_1=auton.FirstBall_Wait;
 		ball_1.InitialWait=4.0;
@@ -1803,6 +1804,9 @@ void FRC_2013_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.GetField("wait_off_times", NULL, NULL, &auton.WaitOffTime);
 			script.GetField("first_stage_speed", NULL, NULL, &auton.FirstStageVelocity);
 			script.GetField("second_stage_speed", NULL, NULL, &auton.SecondStageVelocity);
+			double DriveFt=0.0;
+			script.GetField("drive_ft", NULL, NULL, &DriveFt);
+			auton.DriveToY=Feet2Meters(DriveFt);
 			script.Pop();
 		}
 
@@ -1978,7 +1982,7 @@ FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ResetPosition::Pro
  /*															FRC_2013_Goals															*/
 /***********************************************************************************************************************************/
 
-Goal *FRC_2013_Goals::Get_ShootFrisbees(FRC_2013_Robot *Robot)
+Goal *FRC_2013_Goals::Get_ShootFrisbees(FRC_2013_Robot *Robot,bool EnableDriveBack)
 {
 	const FRC_2013_Robot_Props &props=Robot->GetRobotProps().GetFRC2013RobotProps();
 	const FRC_2013_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
@@ -2000,19 +2004,43 @@ Goal *FRC_2013_Goals::Get_ShootFrisbees(FRC_2013_Robot *Robot)
 	Goal_Wait *off_wait_2=new Goal_Wait(wait_off_time);
 
 	Fire *FireOn_3=new Fire(*Robot,true);
-	Goal_Wait *on_wait_3=new Goal_Wait(wait_on_time);
-	Fire *FireOff_3=new Fire(*Robot,false);
-	Goal_Wait *off_wait_3=new Goal_Wait(wait_off_time);
 
-	Fire *RevDown=new Fire(*Robot,false,true);
+	Generic_CompositeGoal *FinishFire_Composite= new Generic_CompositeGoal;
+	{
+		Goal_Wait *on_wait_3=new Goal_Wait(wait_on_time);
+		Fire *FireOff_3=new Fire(*Robot,false);
+		Goal_Wait *off_wait_3=new Goal_Wait(wait_off_time);
+
+		Fire *RevDown=new Fire(*Robot,false,true);
+
+		FinishFire_Composite->AddSubgoal(RevDown);
+
+		FinishFire_Composite->AddSubgoal(off_wait_3);
+		FinishFire_Composite->AddSubgoal(FireOff_3);
+		FinishFire_Composite->AddSubgoal(on_wait_3);
+		//all added now activate
+		FinishFire_Composite->Activate();
+	}
+	MultitaskGoal *FinishFire_WithDrive=new MultitaskGoal(true); //wait for all goals to complete
+	FinishFire_WithDrive->AddGoal(FinishFire_Composite);
+	//TODO find out why setting waypoint to where we currently are makes goal lock up... for now we'll just put if check to work-around
+	if ((EnableDriveBack)&&(auton.DriveToY!=0.0))
+	{
+		//Construct a way point
+		WayPoint wp;
+		wp.Position[0]=0.0;
+		wp.Position[1]=auton.DriveToY;
+		wp.Power=1.0;
+		const double tolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+		Goal_Ship_MoveToPosition *goal_drive_to=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true,tolerance);
+		FinishFire_WithDrive->AddGoal(goal_drive_to);
+	}
+	//all added now activate
+	FinishFire_WithDrive->Activate();
 
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
-	MainGoal->AddSubgoal(RevDown);
-
-	MainGoal->AddSubgoal(off_wait_3);
-	MainGoal->AddSubgoal(FireOff_3);
-	MainGoal->AddSubgoal(on_wait_3);
+	MainGoal->AddSubgoal(FinishFire_WithDrive);
 	MainGoal->AddSubgoal(FireOn_3);
 
 	MainGoal->AddSubgoal(off_wait_2);

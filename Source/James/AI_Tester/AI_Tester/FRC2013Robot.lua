@@ -128,11 +128,12 @@ MainRobot = {
 			--ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			--ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			
-			init_rev=2.0,
-			wait_on_times=1.0,
-			wait_off_times=1.0,
+			init_rev=5.0,
+			wait_on_times=0.5,
+			wait_off_times=0.7,
 			first_stage_speed=(3804.55/60.0) * Pi2,
-			second_stage_speed=(3804.55/60.0) * Pi2
+			second_stage_speed=(3804.55/60.0) * Pi2,
+			drive_ft=-7,
 		},
 
 		climb_1 =
@@ -205,7 +206,8 @@ MainRobot = {
 			max_accel_forward=64 * Pi2 * 5,			--These are in radians, plan on increasing these as much as possible
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
 			--min_range=28 * Pi2,				--We borrow the min range to represent the min speed
-			min_range=-1 * (3804.55/60.0) * Pi2,	--Use to calibrate victors
+			min_range=(3804.55/60.0) * Pi2,			--Use this to lock to full power always
+			--min_range=-1 * (3804.55/60.0) * Pi2,	--Use to calibrate victors
 			motor_specs =
 			{
 				wheel_mass=Pounds2Kilograms * 3,	
