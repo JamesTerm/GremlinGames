@@ -400,6 +400,8 @@ class FRC_2013_Robot : public Tank_Robot
 		void SetClimbGear_RightButton(bool on);
 		void SetClimbGearOn() {SetClimbGear(true);}
 		void SetClimbGearOff() {SetClimbGear(false);}
+		void Set10PointHang() {m_RobotControl->GetIsSolenoidClosed(eEngageDriveTrain)?
+			m_RobotControl->OpenSolenoid(eEngageDriveTrain):m_RobotControl->CloseSolenoid(eEngageDriveTrain);}
 		
 		void SetPresetPOV (double value);
 
