@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 2.11;
+	version = 2.12;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
@@ -121,8 +121,9 @@ MainRobot = {
 			init_rev=5.0,
 			wait_on_times=0.5,
 			wait_off_times=0.7,
-			first_stage_speed=((3804.55/60.0) * Pi2) * 1.0,
-			second_stage_speed=((3804.55/60.0) * Pi2) * 1.0,
+			first_stage_speed=((3804.55/60.0) * Pi2) * 0.99,
+			second_stage_speed=((3804.55/60.0) * Pi2) * 0.99,
+			drive_ft=-7,  --Comment out to disable drive back
 		},
 
 		climb_1 =
@@ -196,7 +197,8 @@ MainRobot = {
 			max_accel_reverse=64 * Pi2 * 5,			--The wheel may some time to ramp up
 
 			--min_range=28 * Pi2,					--Test case for a lower range (probably do not need)
-			min_range=(3804.55/60.0) * Pi2,			--Use this to lock to full power always
+			max_range=((3804.55/60.0) * Pi2)*0.99,
+			min_range=((3804.55/60.0) * Pi2)*0.99,			--Use this to lock to full power always
 			--min_range=-1 * (3804.55/60.0) * Pi2	--Use this to calibrate victors
 		},
 		power_first_stage =
