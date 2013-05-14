@@ -316,10 +316,14 @@ double PhysicsEntity_1D::GetFrictionalForce(double DeltaTime_s,double Ground,dou
 	const double StoppingForce=(fabs(m_Velocity) * m_EntityMass) / DeltaTime_s;
 	NormalForce=min(StoppingForce,NormalForce); //friction can never be greater than the stopping force
 	double GravityForce=(m_EntityMass * gravity * sin(Ground));
-	double FrictionForce= GravityForce + NormalForce;
+	double FrictionForce= NormalForce;
 	//If the friction force overflows beyond stopping force, apply a scale to the overflow of force 
 	if (FrictionForce>StoppingForce) FrictionForce=(BrakeResistence * (FrictionForce-StoppingForce));
 
-	//Return the fractional force in the opposite direction of the current velocity
-	return (m_Velocity>0.0)? -FrictionForce : FrictionForce;
+	//Give the sense of fractional force in the *opposite* (i.e. greater = negative) direction of the current velocity
+	if (m_Velocity>0.0) 
+		FrictionForce=-FrictionForce;
+	//Add the Gravity force... it already has its direction
+	FrictionForce+=GravityForce;
+	return FrictionForce;
 }
