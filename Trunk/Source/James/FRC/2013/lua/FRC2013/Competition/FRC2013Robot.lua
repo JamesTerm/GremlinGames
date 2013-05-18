@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 2.13;
+	version = 2.14;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 10, MaxAccelRight = 10, 
@@ -40,7 +40,7 @@ MainRobot = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
+	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid * 0.90,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
@@ -118,7 +118,7 @@ MainRobot = {
 			--ball_1 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			--ball_2 ={initial_wait=  3.5, tolerance=0.0, timeout_wait=-1.0},
 			
-			init_rev=5.0,
+			init_rev=7.0,
 			wait_on_times=0.5,
 			wait_off_times=0.7,
 			first_stage_speed=((3804.55/60.0) * Pi2) * 0.99,
