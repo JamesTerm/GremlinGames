@@ -170,16 +170,17 @@ public:
 			}
 		}
 		
-		double tm = GetTime();
+		double LastTime = GetTime();
 		
 		while (IsAutonomous() && !IsDisabled())
 		{
-			double time=GetTime() - tm;
-			tm=GetTime();
+			const double CurrentTime=GetTime();
+			const double DeltaTime=CurrentTime - LastTime;
+			LastTime=CurrentTime;
 			//Framework::Base::DebugOutput("%f\n",time),
 			//I'll keep this around as a synthetic time option for debug purposes
 			//time=0.020;
-			m_Manager.TimeChange(time);
+			m_Manager.TimeChange(DeltaTime);
 			//using this from test runs from robo wranglers code
 			Wait(0.010);				
 		}
@@ -225,16 +226,17 @@ public:
 			//m_Manager.GetRobot()->SetUseEncoders(false);
 			m_Manager.GetRobot()->SetIsAutonomous(false);
 			m_Manager.SetAutoPilot(false);  //we are driving the robot
-			double tm = GetTime();
+			double LastTime = GetTime();
 			m_Manager.SetSafety(true);
 			while (IsOperatorControl() && !IsDisabled())
 			{
+				const double CurrentTime=GetTime();
 				//I'll keep this around as a synthetic time option for debug purposes
-				//double time=0.020;
-				double time=GetTime() - tm;
-				tm=GetTime();
+				//const double DeltaTime=0.020;
+				const double DeltaTime=CurrentTime - LastTime;
+				LastTime=CurrentTime;
 				//Framework::Base::DebugOutput("%f\n",time),
-				m_Manager.TimeChange(time);
+				m_Manager.TimeChange(DeltaTime);
 				//using this from test runs from robo wranglers code
 				Wait(0.010);
 			}
