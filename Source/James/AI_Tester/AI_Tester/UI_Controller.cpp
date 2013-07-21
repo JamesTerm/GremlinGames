@@ -666,7 +666,7 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
-			m_Ship_JoyMouse_currAccel[1]=Speed;
+			m_Ship_JoyMouse_currAccel[1]=Speed * (Speed>0.0?m_ship->GetAccelSpeed():m_ship->GetBrakeSpeed());
 	}
 }
 
@@ -682,7 +682,7 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
-			m_Ship_JoyMouse_currAccel[1]=Speed;
+			m_Ship_JoyMouse_currAccel[1]=Speed * (Speed>0.0?m_ship->GetAccelSpeed():m_ship->GetBrakeSpeed());
 	}
 }
 
