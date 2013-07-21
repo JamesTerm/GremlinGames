@@ -9,7 +9,7 @@ TestShip = {
 	AFTERBURNER_ACCEL = 2, -- Take this to the limit
 	BRAKE = 5,     -- Brake Deceleration m/s2 (1g = 9.8)
 	-- Turn Rates (deg/sec)
-	dHeading = 1200,
+	heading_rad = 25,
 	
 	Dimensions =
 	{ Length=0.5, Width=0.5 }, --These should be "roughly" correct in meters

@@ -568,17 +568,21 @@ bool UI_Controller::SetAutoPilot(bool autoPilot)
 	// When in autopilot, always use mouse POV
 	//ToggleMousePOV(m_autoPilot);
 
+	//Since we do not control stabilize we don't manage it here in the controller... we can only write things we can control.  The stabilize rotation should be managed at the lower level
+	//unless we really find a compelling reason to need to control it... 
+	//  [7/21/2013 Terminator]
+
 	// If we are in auto-pilot, we MUST set simulated flight mode if we have an auto-pilot route
 	if (m_autoPilot)
 	{
 		bool hasAutoPilotRoute = m_Base->HasAutoPilotRoute();
-		m_ship->SetStabilizeRotation(hasAutoPilotRoute);
+		//m_ship->SetStabilizeRotation(hasAutoPilotRoute);
 		m_ship->SetSimFlightMode(hasAutoPilotRoute);
 	}
 	else
 	{
-		m_ship->SetStabilizeRotation(true);
-		m_ship->SetSimFlightMode(true);
+		//m_ship->SetStabilizeRotation(true);
+		m_ship->SetSimFlightMode(!m_SlideButtonToggle);
 	}
 
 	// When turning on or OFF the auto pilot, stop firing and other actions

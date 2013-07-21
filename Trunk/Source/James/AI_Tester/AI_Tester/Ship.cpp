@@ -51,17 +51,11 @@ inline Vec2d GetDirection(double Heading,double Intensity)
 //Quat FromLW_Rot_Radians(double H, double P, double R);
 
 Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
-	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation)
+	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation),m_StabilizeRotation(true),m_CoordinateTurns(true)
 {
-	SetSimFlightMode(true);  //this sets up the initial speed as well
-	SetStabilizeRotation(true); //This should always be true unless there is some ship failure
-	//SetStabilizeRotation(false); //This is for testing
-	m_CoordinateTurns=true;  //TODO may want to provide accessor/mutator accessibility
-	//m_CoordinateTurns=false;
 	m_HeadingSpeedScale=1.0;
 	m_LockShipHeadingToOrientation=false;  //usually this is false (especially for AI and Remote controllers)
 	m_thrustState=TS_NotVisible;
-	m_StabilizeRotation=true;
 	ResetPos();
 }
 
@@ -658,7 +652,7 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	}
 	else
-		TorqueToApply=m_rotAccel_rad_s*Mass*dTime_s;
+		TorqueToApply=m_rotAccel_rad_s*Mass;
 
 
 	//To be safe we reset this to zero (I'd put a critical section around this line of code if there are thread issues

@@ -246,10 +246,9 @@ class Ship_2D : public Ship
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
 
 		// virtual void ResetPos();
-		void SetStabilizeRotation(bool StabilizeRotation) { m_StabilizeRotation=StabilizeRotation;	}
 		void SetSimFlightMode(bool SimFlightMode);
 		void SetEnableAutoLevel(bool EnableAutoLevel);
-		bool GetStabilizeRotation() const { return m_StabilizeRotation;}
+		virtual bool GetStabilizeRotation() const { return m_StabilizeRotation;}
 		bool GetAlterTrajectory() const { return m_SimFlightMode;}
 		bool GetCoordinateTurns() const { return m_CoordinateTurns;}
 
@@ -291,6 +290,7 @@ class Ship_2D : public Ship
 		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),GetPhysics().GetLinearVelocity());}
 		virtual double GetAngularVelocity_ToDisplay() {return GetPhysics().GetAngularVelocity();}
 	protected:
+		void SetStabilizeRotation(bool StabilizeRotation) { m_StabilizeRotation=StabilizeRotation;	}
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
 		//virtual Vec2D GetArtificialHorizonComponent() const;
