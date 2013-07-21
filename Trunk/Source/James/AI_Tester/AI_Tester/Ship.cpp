@@ -665,6 +665,13 @@ void Ship_2D::TimeChange(double dTime_s)
 	m_rotDisplacement_rad=0.0;
 
 	ApplyThrusters(m_Physics,ForceToApply,TorqueToApply,Ships_TorqueRestraint,dTime_s);
+	#if 0
+	{
+		double Torque=m_Physics.ComputeRestrainedTorque(TorqueToApply,Ships_TorqueRestraint,dTime_s);
+		DOUT4("%.3f %.3f %.3f",ForceToApply[0]/Mass,ForceToApply[1]/Mass,Torque/Mass);
+		//DOUT4("%.3f %.3f %.3f",m_currAccel[0],m_currAccel[1],TorqueToApply/Mass);
+	}
+	#endif
 
 	// Now to run the time updates (displacement plus application of it)
 	GetPhysics().G_Dampener = G_Dampener;
