@@ -29,6 +29,7 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	Ship_Tester(EntityName), 
 	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),m_VehicleDrive(NULL),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
+	m_CalibratedScaler_Left(1.0),m_CalibratedScaler_Right(1.0),
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
 	m_UsingEncoders(IsAutonomous),
 	m_Heading(0.0), m_HeadingUpdateTimer(0.0),
@@ -72,6 +73,7 @@ void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
@@ -88,6 +90,7 @@ void Tank_Robot::Reset(bool ResetPosition)
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	m_PreviousLeftVelocity=m_PreviousRightVelocity=0.0;
 }
@@ -126,6 +129,12 @@ void Tank_Robot::SetIsAutonomous(bool IsAutonomous)
 		SetUseEncoders(true);
 }
 
+bool Tank_Robot::GetUseAgressiveStop() const
+{
+	//Note: always use aggressive stop for autonomous driving!
+	return m_TankRobotProps.UseAggressiveStop || m_IsAutonomous;
+}
+
 void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
 {
 	double Encoder_LeftVelocity,Encoder_RightVelocity;
@@ -145,8 +154,27 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 
 	if (m_UsingEncoders)
 	{
-		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
-		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
+		if (!GetUseAgressiveStop())
+		{
+			double control_left=0.0,control_right=0.0;
+			//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
+			//allow the scaler to normalize if it need to start up again.
+			if (((LeftVelocity * Encoder_LeftVelocity) > 0.0) || IsZero(Encoder_LeftVelocity) )
+			{
+				control_left=-m_PIDController_Left(fabs(LeftVelocity),fabs(Encoder_LeftVelocity),dTime_s);
+				m_CalibratedScaler_Left=MAX_SPEED+control_left;
+			}
+			if (((RightVelocity * Encoder_RightVelocity) > 0.0) || IsZero(Encoder_RightVelocity) )
+			{
+				control_right=-m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
+				m_CalibratedScaler_Right=MAX_SPEED+control_right;
+			}
+		}
+		else
+		{
+			m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
+			m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
+		}
 
 		const double LeftAcceleration=(LeftVelocity-m_PreviousLeftVelocity)/dTime_s;
 		const double RightAcceleration=(RightVelocity-m_PreviousRightVelocity)/dTime_s;
@@ -171,7 +199,10 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump &&  ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+			if (!GetUseAgressiveStop())
+				printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
+			else
+				printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
 		}
 		#endif
 	}	
@@ -180,21 +211,26 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		#ifdef __DebugLUA__
 		if (m_TankRobotProps.PID_Console_Dump)
 		{
-			double PosY=GetPos_m()[1];
+			//TODO I can probably clean up the logic to show dump to one line
+			bool ShowDump=false;
 			if (!m_TankRobotProps.HasEncoders)
 			{
-				//No encoders... use only predicted velocity as mark of when to display... still want to see encoder readings in case there is some noise going on
 				if (!IsZero(LeftVelocity,1e-3)||!IsZero(RightVelocity,1e-3))
-					printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+					ShowDump=true;
 			}
 			else
 			{
 				//passive reading... This is pretty much identical code of active encoder reading
 				if ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0) || (!IsZero(LeftVelocity,1e-3))||(!IsZero(RightVelocity,1e-3)) )
-				{
-					double PosY=GetPos_m()[1];
+					ShowDump=true;
+			}
+			if (ShowDump)
+			{
+				double PosY=GetPos_m()[1];
+				if (!GetUseAgressiveStop())
+					printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
+				else
 					printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
-				}
 			}
 		}
 		#endif
@@ -303,8 +339,16 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	//const double RightForce=RightAcceleration*ComputedMass;
 
 	//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
-	LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
-	RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+	if (!GetUseAgressiveStop())
+	{
+		LeftVoltage=LeftVelocity/(m_CalibratedScaler_Left + m_TankRobotProps.LeftMaxSpeedOffset);
+		RightVoltage=RightVelocity/(m_CalibratedScaler_Right + m_TankRobotProps.RightMaxSpeedOffset);
+	}
+	else
+	{
+		LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
+		RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+	}
 	//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
 	const bool LeftAccel=(LeftAcceleration * LeftVelocity > 0);
 	const double LeftForceCurve=m_ForcePoly(LeftAccel?1.0-(fabs(LeftVelocity)/MAX_SPEED):fabs(LeftVelocity)/MAX_SPEED);
@@ -343,7 +387,15 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			ComputeDeadZone(RightVoltage,m_TankRobotProps.Positive_DeadZone_Right,m_TankRobotProps.Negative_DeadZone_Right);
 	}
 
-	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
+	//To ensure we coast filter out any aggressive stop computations here at the last moment
+	if (!GetUseAgressiveStop())
+	{
+		//The logic is simply to never give opposite direction to the current velocity... however... in the case of intentional reverse direction... leave the aggressive stop intact
+		if ((LeftVoltage * LeftVelocity<0.0) && (LeftVoltage * m_RequestedVelocity[1]<=0.0))
+			LeftVoltage=0.0;
+		if ((RightVoltage * RightVelocity<0.0) && (RightVoltage * m_RequestedVelocity[1]<=0.0))
+			RightVoltage=0.0;
+	}
 
 	#ifdef __DebugLUA__
 	if (m_TankRobotProps.PID_Console_Dump && (!IsZero(LeftVoltage,1e-3)||!IsZero(RightVoltage,1e-3)))
@@ -417,6 +469,7 @@ void Tank_Robot::UpdateTankProps(const Tank_Robot_Props &TankProps)
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
@@ -443,6 +496,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.IsOpen=true;  //Always true by default until control is fully functional
 	props.HasEncoders=true;  //no harm in having passive reading of them
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
+	props.UseAggressiveStop=false;  //This is usually in coast for most cases from many teams
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
 	props.ReverseSteering=false;
@@ -552,6 +606,12 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_TankRobotProps.PID_Console_Dump=true;
+		}
+		err = script.GetField("use_aggressive_stop",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.UseAggressiveStop=true;
 		}
 		err = script.GetField("reverse_steering",&sTest,NULL,NULL);
 		if (!err)

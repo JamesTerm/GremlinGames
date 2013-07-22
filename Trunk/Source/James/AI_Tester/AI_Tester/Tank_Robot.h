@@ -36,6 +36,7 @@ struct Tank_Robot_Props
 	bool IsOpen,HasEncoders;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
+	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
 	//Currently supporting 4 terms in polynomial equation
 	PolynomialEquation_forth_Props Voltage_Terms;  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
@@ -97,7 +98,8 @@ class Tank_Robot : public Ship_Tester,
 		virtual void BindAdditionalEventControls(bool Bind) 
 			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 			}
-
+		//this may need to be overridden for robots that need it on for certain cases like 2012 needing it on for low gear
+		virtual bool GetUseAgressiveStop() const;
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		//Note by default a 6WD Tank Robot is assumed to set length for a 4WD (or half the total length of 6)
@@ -114,7 +116,8 @@ class Tank_Robot : public Ship_Tester,
 		Tank_Drive_Control_Interface * const m_RobotControl;
 		Tank_Drive *m_VehicleDrive;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
-		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration
+		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration (in coast mode)
+		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration in brake (a.k.a. aggressive stop) mode
 		bool m_UsingEncoders;
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderAngularVelocity;
