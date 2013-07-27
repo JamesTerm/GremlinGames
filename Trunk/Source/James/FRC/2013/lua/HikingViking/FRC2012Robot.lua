@@ -84,6 +84,7 @@ MainRobot = {
 		{p=200, i=0, d=50},
 		right_pid=
 		{p=200, i=0, d=50},					--These should always match, but able to be made different
+		latency=0.0,
 		heading_latency=0.6,
 		drive_to_scale=0.80,
 		left_max_offset=0.5 , right_max_offset=-0.01,   --Ensure both tread top speeds are aligned
@@ -93,7 +94,7 @@ MainRobot = {
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='yes',
-		 left_encoder_reversed='no',
+		left_encoder_reversed='no',
 		right_encoder_reversed='no',
 		inv_max_accel = 1.0/15.0  --solved empiracally
 	},
