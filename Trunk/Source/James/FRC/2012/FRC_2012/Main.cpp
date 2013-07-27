@@ -18,6 +18,7 @@
 #include "Common/Ship.h"
 #include "Common/Vehicle_Drive.h"
 #include "Common/PIDController.h"
+#include "Common/Poly.h"
 #include "Common/AI_Base_Controller.h"
 #include "Drive/Tank_Robot.h"
 #include "Common/Robot_Control_Interface.h"
