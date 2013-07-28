@@ -108,10 +108,10 @@ void JoyStick_Binder::AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char ev
 	Add_Analog_Binding_Common(key,eventName);
 }
 
-void JoyStick_Binder::AddJoy_Culver_Binding(JoyAxis_enum WhichXAxis,JoyAxis_enum WhichYAxis,double MagnitudeScalar,const char eventName[],bool IsFlipped,double Multiplier,
+void JoyStick_Binder::AddJoy_Culver_Binding(JoyAxis_enum WhichXAxis,JoyAxis_enum WhichYAxis,double MagnitudeScalarArc,double MagnitudeScalarBase,const char eventName[],bool IsFlipped,double Multiplier,
 											double FilterRange,double CurveIntensity,const char ProductName[])
 {
-	Culver_EventEntry key(WhichXAxis,WhichYAxis,MagnitudeScalar,ProductName,IsFlipped,Multiplier,FilterRange,CurveIntensity);
+	Culver_EventEntry key(WhichXAxis,WhichYAxis,MagnitudeScalarArc,MagnitudeScalarBase,ProductName,IsFlipped,Multiplier,FilterRange,CurveIntensity);
 	Add_Analog_Binding_Common(key,eventName);
 }
 
@@ -254,11 +254,11 @@ void JoyStick_Binder::AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char ev
 		AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName);
 }
 
-void JoyStick_Binder::AddJoy_Culver_Default(JoyAxis_enum WhichXAxis,JoyAxis_enum WhichYAxis,double MagnitudeScalar,const char eventName[],bool IsFlipped,
+void JoyStick_Binder::AddJoy_Culver_Default(JoyAxis_enum WhichXAxis,JoyAxis_enum WhichYAxis,double MagnitudeScalarArc,double MagnitudeScalarBase,const char eventName[],bool IsFlipped,
 											double Multiplier,double FilterRange,double CurveIntensity,const char ProductName[])
 {
 	if (!m_Config->InterceptDefaultKey(eventName,"joystick_analog"))
-		AddJoy_Culver_Binding(WhichXAxis,WhichYAxis,MagnitudeScalar,eventName,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName);
+		AddJoy_Culver_Binding(WhichXAxis,WhichYAxis,MagnitudeScalarArc,MagnitudeScalarBase,eventName,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName);
 }
 
 void JoyStick_Binder::AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff,bool dbl_click,const char ProductName[])
@@ -357,6 +357,8 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 
 							if (AnalogEvents)
 							{
+								double ValueABS=fabs(Value); //take out the sign... put it back in the end
+
 								if (key.AnalogEntryType==Analog_EventEntry::eAnalog_EventEntryType_Culver)
 								{
 									double YValue=GetJoystickValue(joyinfo,key.ExtraData.culver.WhichYAxis);
@@ -365,8 +367,10 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 									//const double theta = atan2(Value,-YValue);
 									//This version limits to 90 degrees... so any down motion will be treated like up motion
 									const double theta = atan2(Value,fabs(YValue));
+									//the magnitude scalar is a blend of arc and base constants depending on the values current position
+									const double magnitude_scalar=((1.0-ValueABS) * key.ExtraData.culver.MagnitudeScalarArc)+(ValueABS * key.ExtraData.culver.MagnitudeScalarBase);
 									//Find the magnitude of the wheel stick
-									const double magnitude = sqrt(((Value * Value) + (YValue * YValue))) * key.ExtraData.culver.MagnitudeScaler;
+									const double magnitude = sqrt(((Value * Value) + (YValue * YValue))) * magnitude_scalar;
 									DOUT4("%.2f,%.2f,%f,%f",RAD_2_DEG(theta),magnitude,Value,theta*magnitude);
 									//Assign the new value
 									Value=theta*magnitude;   //note theta holds the sign
@@ -375,17 +379,16 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 								//First evaluate dead zone range... if out of range subtract out the offset for no loss in precision
 								//The /(1.0-filter range) will restore the full range
 								
-								double Temp=fabs(Value); //take out the sign... put it back in the end
-								Temp=(Temp>=key.FilterRange) ? Temp-key.FilterRange:0.0; 
+								ValueABS=(ValueABS>=key.FilterRange) ? ValueABS-key.FilterRange:0.0; 
 
-								Temp=key.Multiplier*(Temp/(1.0-key.FilterRange)); //apply scale first then
+								ValueABS=key.Multiplier*(ValueABS/(1.0-key.FilterRange)); //apply scale first then
 								if (key.CurveIntensity<=1.0)
-									Temp=key.CurveIntensity*pow(Temp,3) + (1.0-key.CurveIntensity)*Temp; //apply the curve intensity
+									ValueABS=key.CurveIntensity*pow(ValueABS,3) + (1.0-key.CurveIntensity)*ValueABS; //apply the curve intensity
 								else
-									Temp=pow(Temp,key.CurveIntensity); //apply the curve intensity
+									ValueABS=pow(ValueABS,key.CurveIntensity); //apply the curve intensity
 
 								//Now to restore the sign
-								Value=(Value<0.0)?-Temp:Temp;
+								Value=(Value<0.0)?-ValueABS:ValueABS;
 	
 								std::vector<std::string>::iterator pos;
 								for (pos = AnalogEvents->begin(); pos != AnalogEvents->end(); ++pos)
