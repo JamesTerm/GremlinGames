@@ -65,6 +65,47 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 			set.CurveIntensity=CurveIntensity;
 			//joy.AddJoy_Analog_Default(JoyAxis,Eventname,IsFlipped,Multiplier,FilterRange,IsSquared,ProductName.c_str());
 		}
+		else if (strcmp(sType.c_str(),"joystick_culver")==0)
+		{
+			Element.Type=Controller_Element_Properties::eJoystickCulver;
+			JoyAxis_enum JoyAxis_X,JoyAxis_Y;
+			double dJoyAxis;
+			err = script.GetField("key_x", NULL, NULL,&dJoyAxis);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration
+			JoyAxis_X=(JoyAxis_enum)((int)dJoyAxis);
+
+			err = script.GetField("key_y", NULL, NULL,&dJoyAxis);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration
+			JoyAxis_Y=(JoyAxis_enum)((int)dJoyAxis);
+
+			bool IsFlipped;
+			err = script.GetField("is_flipped", NULL, &IsFlipped,NULL);
+			ASSERT_MSG(!err, err);
+			double Magnitude_Scalar;
+			err = script.GetField("magnitude_scalar", NULL, NULL,&Magnitude_Scalar);
+			if (err)
+				Magnitude_Scalar=1.0/PI_2;  //this is a great default
+			double Multiplier;
+			err = script.GetField("multiplier", NULL, NULL,&Multiplier);
+			ASSERT_MSG(!err, err);
+			double FilterRange;
+			err = script.GetField("filter", NULL, NULL,&FilterRange);
+			ASSERT_MSG(!err, err);
+			double CurveIntensity;
+			err = script.GetField("curve_intensity", NULL, NULL, &CurveIntensity);
+			ASSERT_MSG(!err, err);
+
+			Controller_Element_Properties::ElementTypeSpecific::CulverSpecifics_rw &set=Element.Specifics.Culver;
+			set.JoyAxis_X=JoyAxis_X,set.JoyAxis_Y=JoyAxis_Y;
+			set.MagnitudeScalar=Magnitude_Scalar;
+			set.IsFlipped=IsFlipped;
+			set.Multiplier=Multiplier;
+			set.FilterRange=FilterRange;
+			set.CurveIntensity=CurveIntensity;
+			//joy.AddJoy_Culver_Default(JoyAxis_X,JoyAxis_Y,Magnitude_Scalar,Eventname,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName.c_str());
+		}
 		else if (strcmp(sType.c_str(),"joystick_button")==0)
 		{
 			Element.Type=Controller_Element_Properties::eJoystickButton;
@@ -149,6 +190,17 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) cons
 					//Note the cast... these are not going to change, but there is dup code to on axis enum to avoid dependency issues
 					p_joy->AddJoy_Analog_Default((JoyStick_Binder::JoyAxis_enum)analog.JoyAxis,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,
 						analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
+				}
+				else
+					p_joy->RemoveJoy_Analog_Binding(element.Event.c_str(),control.Controller.c_str());
+				break;
+			case Controller_Element_Properties::eJoystickCulver:
+				if (Bind)
+				{
+					const Controller_Element_Properties::ElementTypeSpecific::CulverSpecifics_rw &analog=element.Specifics.Culver;
+					//Note the cast... these are not going to change, but there is dup code to on axis enum to avoid dependency issues
+					p_joy->AddJoy_Culver_Default((JoyStick_Binder::JoyAxis_enum)analog.JoyAxis_X,(JoyStick_Binder::JoyAxis_enum)analog.JoyAxis_Y,analog.MagnitudeScalar,
+						element.Event.c_str(),analog.IsFlipped,analog.Multiplier,analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
 				}
 				else
 					p_joy->RemoveJoy_Analog_Binding(element.Event.c_str(),control.Controller.c_str());
