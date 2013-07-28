@@ -134,6 +134,7 @@ class LUA_Controls_Properties
 			enum ElementType
 			{
 				eJoystickAnalog,
+				eJoystickCulver,
 				eJoystickButton
 			} Type;
 			union ElementTypeSpecific
@@ -146,6 +147,16 @@ class LUA_Controls_Properties
 					double FilterRange;
 					double CurveIntensity;
 				} Analog;
+				struct CulverSpecifics_rw
+				{
+					JoyAxis_enum JoyAxis_X;
+					JoyAxis_enum JoyAxis_Y;
+					double MagnitudeScalar;
+					bool IsFlipped;
+					double Multiplier;
+					double FilterRange;
+					double CurveIntensity;
+				} Culver;
 				struct ButtonSpecifics_rw
 				{
 					size_t WhichButton;
