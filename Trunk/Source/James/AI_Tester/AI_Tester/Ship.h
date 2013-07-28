@@ -151,7 +151,7 @@ class LUA_Controls_Properties
 				{
 					JoyAxis_enum JoyAxis_X;
 					JoyAxis_enum JoyAxis_Y;
-					double MagnitudeScalar;
+					double MagnitudeScalarArc,MagnitudeScalarBase;
 					bool IsFlipped;
 					double Multiplier;
 					double FilterRange;
