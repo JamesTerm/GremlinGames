@@ -75,6 +75,7 @@ MainRobot = {
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
+		use_aggressive_stop='no',
 		inv_max_accel = 1/15,  --solved empiracally
 		--linear_gain_assist = 0.05,
 		forward_deadzone_left  = 0.02,
