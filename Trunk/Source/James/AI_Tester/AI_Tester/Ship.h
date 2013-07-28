@@ -68,7 +68,7 @@ struct Ship_Props
 
 	double MaxAccelLeft,MaxAccelRight,MaxAccelForward,MaxAccelReverse;
 	double MaxAccelForward_High,MaxAccelReverse_High;
-	double MaxTorqueYaw;
+	double MaxTorqueYaw,MaxTorqueYaw_High;
 	//These are used to avoid overshoot when trying to rotate to a heading
 	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
 	double Rotation_Tolerance;
@@ -208,6 +208,7 @@ class Ship_Properties : public Entity_Properties
 
 		double GetMaxAccelForward(double Velocity) const;
 		double GetMaxAccelReverse(double Velocity) const;
+		double GetMaxTorqueYaw(double Velocity) const;
 		double GetRotateToScaler(double Distance) const;
 
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}

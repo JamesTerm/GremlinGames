@@ -404,24 +404,6 @@ void Ship_2D::TimeChange(double dTime_s)
 		m_IntendedOrientation=GetAtt_r(); //If we can't stabilize the rotation then the intended orientation is slaved to the ship!
 	}
 
-	const double Ships_TorqueRestraint=MaxTorqueYaw;
-
-	//All of this disabling torque restraint only worked when the lock to orientation applied the restraint there... now that this is gone
-	//there is no reason to ever change the restraint
-
-	//Note: We use -1 for roll here to get a great effect on being in perfect sync to the intended orientation 
-	//(provided the user doesn't exceed the turning speed of the roll)
-	//{
-	//	//This will increase the ships speed if it starts to lag further behind
-	//	#ifndef __DisableShipSpeedBoost__
-	//	//For joystick and keyboard we can use -1 to lock to the intended quat
-	//	if (m_LockShipHeadingToOrientation)
-	//	{
-	//		Ships_TorqueRestraint=-1.0;  //we are locked to the orientation!
-	//	}
-	//	#endif
-	//}
-
 	//Apply the restraints now... I need this to compute my roll offset
 	Vec2d AccRestraintPositive(MaxAccelRight,m_ShipProps.GetMaxAccelForward(currVelocity));
 	Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetMaxAccelReverse(currVelocity));
@@ -589,6 +571,8 @@ void Ship_2D::TimeChange(double dTime_s)
 	ForceToApply=m_Physics.ComputeRestrainedForce(ForceToApply,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 
 	double TorqueToApply;
+	double Ships_TorqueRestraint;
+
 	if (m_StabilizeRotation)
 	{
 		//Here we have the original way to turn the ship
@@ -603,7 +587,7 @@ void Ship_2D::TimeChange(double dTime_s)
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint * m_ShipProps.GetRotateToScaler(DistanceToUse),
+			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,MaxTorqueYaw * m_ShipProps.GetRotateToScaler(DistanceToUse),
 				dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
 		else
@@ -642,6 +626,9 @@ void Ship_2D::TimeChange(double dTime_s)
 			}
 			rotVel*=SmallestRatio;
 		}
+		//Note: rotVel has the dHeading clamp applied.  Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
+		Ships_TorqueRestraint=m_ShipProps.GetMaxTorqueYaw(rotVel) * m_Physics.GetMass();
+
 		#endif
 		//printf("\r%f %f            ",m_rotDisplacement_rad,rotVel);
 		TorqueToApply=m_Physics.GetTorqueFromVelocity(rotVel,dTime_s);
@@ -649,10 +636,12 @@ void Ship_2D::TimeChange(double dTime_s)
 		if (fabs(rotVel)>0.0)
 			printf("v=%.2f ",TorqueToApply / Ships_TorqueRestraint);
 		#endif
-
 	}
 	else
+	{
 		TorqueToApply=m_rotAccel_rad_s*Mass;
+		Ships_TorqueRestraint=MaxTorqueYaw;
+	}
 
 
 	//To be safe we reset this to zero (I'd put a critical section around this line of code if there are thread issues
@@ -861,6 +850,9 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 			props.MaxAccelReverse_High=props.MaxAccelReverse;
 
 		script.GetField("MaxTorqueYaw", NULL, NULL, &props.MaxTorqueYaw);
+		err=script.GetField("MaxTorqueYaw_High", NULL, NULL, &props.MaxTorqueYaw_High);
+		if (err)
+			props.MaxTorqueYaw_High=props.MaxTorqueYaw;
 		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
 		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
 		if (err)
@@ -916,6 +908,15 @@ void Ship_Properties::Initialize(Ship_2D *NewShip) const
 void Ship_Properties::UpdateShipProperties(const Ship_Props &props)
 {
 	m_ShipProps=props;
+}
+
+double Ship_Properties::GetMaxTorqueYaw(double Velocity) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Velocity)/props.dHeading;
+	const double  &Low=props.MaxTorqueYaw;
+	const double &High=props.MaxTorqueYaw_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
 }
 
 double Ship_Properties::GetMaxAccelForward(double Velocity) const
