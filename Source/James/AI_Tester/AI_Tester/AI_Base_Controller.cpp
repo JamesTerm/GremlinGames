@@ -83,10 +83,15 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 			bool IsFlipped;
 			err = script.GetField("is_flipped", NULL, &IsFlipped,NULL);
 			ASSERT_MSG(!err, err);
-			double Magnitude_Scalar;
-			err = script.GetField("magnitude_scalar", NULL, NULL,&Magnitude_Scalar);
+			double Magnitude_Scalar_Arc;
+			err = script.GetField("magnitude_scalar_arc", NULL, NULL,&Magnitude_Scalar_Arc);
 			if (err)
-				Magnitude_Scalar=1.0/PI_2;  //this is a great default
+				Magnitude_Scalar_Arc=1.0/PI_2;  //this is a great default for game controllers that have 1.0 intensity at the corners
+			double Magnitude_Scalar_Base;
+			err = script.GetField("magnitude_scalar_base", NULL, NULL,&Magnitude_Scalar_Base);
+			if (err)
+				Magnitude_Scalar_Base=1.0/PI_2;  //this is a great default for all (may need to be slightly tweaked to get perfect on some controllers)
+
 			double Multiplier;
 			err = script.GetField("multiplier", NULL, NULL,&Multiplier);
 			ASSERT_MSG(!err, err);
@@ -99,7 +104,8 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 
 			Controller_Element_Properties::ElementTypeSpecific::CulverSpecifics_rw &set=Element.Specifics.Culver;
 			set.JoyAxis_X=JoyAxis_X,set.JoyAxis_Y=JoyAxis_Y;
-			set.MagnitudeScalar=Magnitude_Scalar;
+			set.MagnitudeScalarArc=Magnitude_Scalar_Arc;
+			set.MagnitudeScalarBase=Magnitude_Scalar_Base;
 			set.IsFlipped=IsFlipped;
 			set.Multiplier=Multiplier;
 			set.FilterRange=FilterRange;
@@ -199,8 +205,8 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) cons
 				{
 					const Controller_Element_Properties::ElementTypeSpecific::CulverSpecifics_rw &analog=element.Specifics.Culver;
 					//Note the cast... these are not going to change, but there is dup code to on axis enum to avoid dependency issues
-					p_joy->AddJoy_Culver_Default((JoyStick_Binder::JoyAxis_enum)analog.JoyAxis_X,(JoyStick_Binder::JoyAxis_enum)analog.JoyAxis_Y,analog.MagnitudeScalar,
-						element.Event.c_str(),analog.IsFlipped,analog.Multiplier,analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
+					p_joy->AddJoy_Culver_Default((JoyStick_Binder::JoyAxis_enum)analog.JoyAxis_X,(JoyStick_Binder::JoyAxis_enum)analog.JoyAxis_Y,analog.MagnitudeScalarArc,
+						analog.MagnitudeScalarBase,element.Event.c_str(),analog.IsFlipped,analog.Multiplier,analog.FilterRange,analog.CurveIntensity,control.Controller.c_str());
 				}
 				else
 					p_joy->RemoveJoy_Analog_Binding(element.Event.c_str(),control.Controller.c_str());

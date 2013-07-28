@@ -75,7 +75,8 @@ TestShip = {
 			--AirFlo
 			--Analog_Turn = {type="joystick_culver", key_x=5, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			--Logitect F310
-			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, magnitude_scalar=(1/(Pi/2))*1.0025444578, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, magnitude_scalar_arc=0.875, magnitude_scalar_base=(1/(Pi/2))*1.0025444578, is_flipped=false, 
+				multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--Use tank steering enable
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
