@@ -37,7 +37,7 @@ TestShip = {
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxTorqueYaw = gMaxTorqueYaw, 
-	--MaxTorqueYaw_High = gMaxTorqueYaw * 5, 
+	MaxTorqueYaw_High = gMaxTorqueYaw * 5, 
 	--Note rotate_to_scale may become depreciated to rotation_tolerance, will want to test how well it comes to point on several machines
 	--rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
 	rotation_tolerance=Deg2Rad * 3,
@@ -166,7 +166,7 @@ TestShip = {
 		Joystick_2 =
 		{
 			control = "logitech dual action",
-			Analog_Turn = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_culver", key_x=2, key_y=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
 			None = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0}
