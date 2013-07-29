@@ -27,6 +27,7 @@ Kicker_MaxAccel=Kicker_CoF_Omni_Radial * Kicker_WeightBias * Mass * Gravity / Ma
 Drive_MaxAccel=  Drive_CoF_Omni_Radial * Drive_WeightBias  * Mass * Gravity / Mass  --does not change
 MaxCentripetalTraverse=20 --The maximum amount of centripetal force that can be allowed (may want to be higher for better drive)
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 TestShip = {
 
@@ -35,7 +36,8 @@ TestShip = {
 	--MaxAccelForward = 4, MaxAccelReverse = 4, 
 	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
-	MaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid, 
+	MaxTorqueYaw = gMaxTorqueYaw, 
+	--MaxTorqueYaw_High = gMaxTorqueYaw * 5, 
 	--Note rotate_to_scale may become depreciated to rotation_tolerance, will want to test how well it comes to point on several machines
 	--rotate_to_scale = 0.5, rotate_to_scale_high = 1.0,
 	rotation_tolerance=Deg2Rad * 3,
@@ -153,7 +155,7 @@ TestShip = {
 			control = "any",
 			--Use Arcade/FPS enable
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Analog_Turn = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.90, filter=0.0, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_culver", key_x=5, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Analog_StrafeRight= {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.02, curve_intensity=1.0},
 			SlideHold = {type="joystick_button", key=5, on_off=true},
