@@ -371,7 +371,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 									const double magnitude_scalar=((1.0-ValueABS) * key.ExtraData.culver.MagnitudeScalarArc)+(ValueABS * key.ExtraData.culver.MagnitudeScalarBase);
 									//Find the magnitude of the wheel stick
 									const double magnitude = sqrt(((Value * Value) + (YValue * YValue))) * magnitude_scalar;
-									DOUT4("%.2f,%.2f,%f,%f",RAD_2_DEG(theta),magnitude,Value,theta*magnitude);
+									//DOUT4("%.2f,%.2f,%f,%f",RAD_2_DEG(theta),magnitude,Value,theta*magnitude);
 									//Assign the new value
 									Value=theta*magnitude;   //note theta holds the sign
 								}
