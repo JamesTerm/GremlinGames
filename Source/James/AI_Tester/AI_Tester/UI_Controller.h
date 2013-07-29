@@ -81,7 +81,7 @@ class UI_Controller
 
 		// This may not always happen.  Some ships can ONLY be in auto pilot
 		bool SetAutoPilot(bool autoPilot);
-		bool GetAutoPilot(){return m_autoPilot;}
+		bool GetAutoPilot() const {return m_autoPilot;}
 
 		void OnSpawn(bool on);
 
