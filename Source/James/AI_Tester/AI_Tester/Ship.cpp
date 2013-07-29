@@ -350,6 +350,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	bool afterBurnerOn = (m_RequestedVelocity[1] > GetEngaged_Max_Speed());
 	bool afterBurnerBrakeOn = (fabs(currVelocity) > GetEngaged_Max_Speed());
 	//const FlightCharacteristics& currFC((afterBurnerOn||afterBurnerBrakeOn) ? Afterburner_Characteristics : GetFlightCharacteristics());
+	const Ship_Props &ship_props=m_ShipProps.GetShipProps();
 
 	Vec2d ForceToApply;
 	//Enable to monitor current speed
@@ -385,7 +386,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			UpdateIntendedOrientaton(dTime_s);
 			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
-			const double TargetDistanceScalar=m_ShipProps.GetShipProps().Rotation_TargetDistanceScalar;
+			const double TargetDistanceScalar=ship_props.Rotation_TargetDistanceScalar;
 			if (TargetDistanceScalar!=1.0)
 			{
 				//a simple linear blend on the scalar should be fine (could upgrade to poly if needed)
@@ -394,7 +395,7 @@ void Ship_2D::TimeChange(double dTime_s)
 				//printf("%.2f %.2f\n",ratio,scale);
 				m_rotDisplacement_rad*=scale;
 			}
-			if (fabs(m_rotDisplacement_rad)<m_ShipProps.GetShipProps().Rotation_Tolerance)
+			if (fabs(m_rotDisplacement_rad)<ship_props.Rotation_Tolerance)
 				m_rotDisplacement_rad=0.0;
 		}
 		#endif
@@ -404,9 +405,12 @@ void Ship_2D::TimeChange(double dTime_s)
 		m_IntendedOrientation=GetAtt_r(); //If we can't stabilize the rotation then the intended orientation is slaved to the ship!
 	}
 
-	//Apply the restraints now... I need this to compute my roll offset
-	Vec2d AccRestraintPositive(MaxAccelRight,m_ShipProps.GetMaxAccelForward(currVelocity));
-	Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetMaxAccelReverse(currVelocity));
+	// apply restraints based off if we are driving or if it is being auto piloted... for auto pilot it should not blend the max force high
+	bool AutoPilot=m_controller->GetUIController()?m_controller->GetUIController()->GetAutoPilot():true;
+	//Apply the restraints now... for now the lock ship member is a good way to know if it is being driven or autonomous, but we wouldn't want
+	//to do this in the game
+	Vec2d AccRestraintPositive(MaxAccelRight,AutoPilot?	ship_props.MaxAccelForward : m_ShipProps.GetMaxAccelForward(currVelocity));
+	Vec2d AccRestraintNegative(MaxAccelLeft,AutoPilot ?	ship_props.MaxAccelReverse : m_ShipProps.GetMaxAccelReverse(currVelocity));
 
 	if (!manualMode)
 	{
@@ -572,8 +576,11 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	double TorqueToApply;
 	
+	//If we are using set point we don't want the blend of torque high as this will throw off the computations
 	//Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
-	const double Ships_TorqueRestraint=m_ShipProps.GetMaxTorqueYaw(std::min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass();
+	const double Ships_TorqueRestraint=m_LockShipHeadingToOrientation?
+		m_ShipProps.GetMaxTorqueYaw(std::min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass() :
+		MaxTorqueYaw;
 
 	if (m_StabilizeRotation)
 	{
