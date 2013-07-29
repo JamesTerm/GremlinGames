@@ -33,9 +33,9 @@ TestShip = {
 
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = MaxCentripetalTraverse, MaxAccelRight = MaxCentripetalTraverse, 
-	--MaxAccelForward = 4, MaxAccelReverse = 4, 
-	--MaxAccelForward_High = 10, MaxAccelReverse_High = 10,
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
+	--TODO this may cause skidding we should test
+	MaxAccelForward_High = Drive_MaxAccel * 2, MaxAccelReverse_High = Drive_MaxAccel * 2,
 	MaxTorqueYaw = gMaxTorqueYaw, 
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5, 
 	--Note rotate_to_scale may become depreciated to rotation_tolerance, will want to test how well it comes to point on several machines
