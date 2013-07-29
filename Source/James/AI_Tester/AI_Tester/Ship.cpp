@@ -571,7 +571,9 @@ void Ship_2D::TimeChange(double dTime_s)
 	ForceToApply=m_Physics.ComputeRestrainedForce(ForceToApply,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 
 	double TorqueToApply;
-	double Ships_TorqueRestraint;
+	
+	//Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
+	const double Ships_TorqueRestraint=m_ShipProps.GetMaxTorqueYaw(std::min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass();
 
 	if (m_StabilizeRotation)
 	{
@@ -587,7 +589,7 @@ void Ship_2D::TimeChange(double dTime_s)
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,MaxTorqueYaw * m_ShipProps.GetRotateToScaler(DistanceToUse),
+			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint * m_ShipProps.GetRotateToScaler(DistanceToUse),
 				dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
 		else
@@ -626,9 +628,6 @@ void Ship_2D::TimeChange(double dTime_s)
 			}
 			rotVel*=SmallestRatio;
 		}
-		//Note: rotVel has the dHeading clamp applied.  Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
-		Ships_TorqueRestraint=m_ShipProps.GetMaxTorqueYaw(rotVel) * m_Physics.GetMass();
-
 		#endif
 		//printf("\r%f %f            ",m_rotDisplacement_rad,rotVel);
 		TorqueToApply=m_Physics.GetTorqueFromVelocity(rotVel,dTime_s);
@@ -636,12 +635,10 @@ void Ship_2D::TimeChange(double dTime_s)
 		if (fabs(rotVel)>0.0)
 			printf("v=%.2f ",TorqueToApply / Ships_TorqueRestraint);
 		#endif
+
 	}
 	else
-	{
 		TorqueToApply=m_rotAccel_rad_s*Mass;
-		Ships_TorqueRestraint=MaxTorqueYaw;
-	}
 
 
 	//To be safe we reset this to zero (I'd put a critical section around this line of code if there are thread issues
