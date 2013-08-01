@@ -1101,10 +1101,11 @@ void DisplayHelp()
 	    "ReadHex <count>\n"
 	    "WriteHexBytes <0x01020304> <count>\n"
 	    "WriteString <string>\n"
-	    "Touch <FileName>\n"
+		"CreateFileTime <mm/dd/yyyy> <hh:mm> <ss>\n"
+	    "Touch <FileName to update to current time>\n"
 	    "UpdateTime\n"
-	    "CaptureFileTime\n"
-	    "SetFileTime\n"
+		"CaptureFileTime <file to capture time>\n"
+		"SetFileTime <file to make cached time>\n"
 	);
 
 }
@@ -1410,6 +1411,66 @@ void CommandLineInterface()
 				}
 				else
 					printf("Unsuccessful.\n");
+			}
+			else if (!strnicmp(input_line,"CreateFileTime",11))
+			{
+				class _internal
+				{
+				public:
+					int GetNextValue(const char *_string,char delimeter,size_t &Advance)
+					{
+						char buffer[1024];
+						size_t counter=0;
+						while (_string[counter]!=delimeter&&counter<strlen(_string))
+						{
+							buffer[counter]=_string[counter];
+							counter++;
+						}
+						buffer[counter]=0;
+						Advance=counter;
+						return atoi(buffer);
+					}
+				} _;
+
+				printf("Converting %s at %s %s\n",str_1,str_2,str_3);
+				size_t Advance;
+				size_t Index=0;
+				WORD wMonth=_.GetNextValue(str_1,'/',Advance);
+				Index+=(Advance+1);
+				WORD wDay=_.GetNextValue(str_1 + Index,'/',Advance);
+				Index+=(Advance+1);
+				WORD wYear=_.GetNextValue(str_1 + Index,'/',Advance);
+
+				Index=0;
+				WORD wHour=_.GetNextValue(str_2,':',Advance);
+				Index+=(Advance+1);
+				WORD wMinute=_.GetNextValue(str_2 + Index,':',Advance);
+
+				TIME_ZONE_INFORMATION tz;
+				GetTimeZoneInformation(&tz);
+				SYSTEMTIME localtime,universal_time;
+				localtime.wDay=wDay;
+				localtime.wHour=wHour;
+				localtime.wMinute=wMinute;
+				localtime.wMonth=wMonth;
+				localtime.wSecond=atoi(str_3);
+				localtime.wYear=wYear;
+				localtime.wMilliseconds=0;
+				universal_time=localtime;
+				TzSpecificLocalTimeToSystemTime(&tz,&localtime,&universal_time);
+				FileTimeCache &cache=GetFileTimeCache();
+				FILETIME test={0};
+				BOOL btest=SystemTimeToFileTime(&universal_time,&test);
+				cache.CreationTime=test;
+				cache.LastAccessTime=test;
+				cache.LastWriteTime=test;
+				{
+					//check our work...
+					SYSTEMTIME LastWrite;
+					FileTimeToSystemTime(&cache.LastWriteTime,&LastWrite);
+					SystemTimeToTzSpecificLocalTime(&tz,&LastWrite,&LastWrite);
+					printf("Last Written: %d/%d/%d at %.2d:%.2d %.2d\n",LastWrite.wMonth,LastWrite.wDay,LastWrite.wYear,LastWrite.wHour,LastWrite.wMinute,LastWrite.wSecond);
+				}
 			}
 			else if (!strnicmp(input_line,"SetFileTime",11))
 			{
