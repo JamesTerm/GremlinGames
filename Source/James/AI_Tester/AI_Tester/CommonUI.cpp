@@ -84,20 +84,11 @@ void Side_Wheel_UI::Text_SizeToUse(double SizeToUse)
 
 void Side_Wheel_UI::AddRotation(double RadiansToAdd)
 {
-	m_Rotation += RadiansToAdd;
-
-	if(m_Rotation < -Pi)
-	{
-		m_Rotation = fmod(m_Rotation, Pi2);
-		if(m_Rotation < -Pi)
-			m_Rotation += Pi2;
-	}
-	else if(m_Rotation > Pi)
-	{
-		m_Rotation = fmod(m_Rotation, Pi2);
-		if(m_Rotation > Pi)
-			m_Rotation -= Pi2;
-	}
+	m_Rotation+=RadiansToAdd;
+	if (m_Rotation>Pi2)
+		m_Rotation-=Pi2;
+	else if (m_Rotation<-Pi2)
+		m_Rotation+=Pi2;
 }
 
   /***************************************************************************************************************/
@@ -230,18 +221,9 @@ void Swivel_Wheel_UI::Text_SizeToUse(double SizeToUse)
 
 void Swivel_Wheel_UI::AddRotation(double RadiansToAdd)
 {
-	m_Rotation += RadiansToAdd;
-
-	if(m_Rotation < -Pi)
-	{
-		m_Rotation = fmod(m_Rotation, Pi2);
-		if(m_Rotation < -Pi)
-			m_Rotation += Pi2;
-	}
-	else if(m_Rotation > Pi)
-	{
-		m_Rotation = fmod(m_Rotation, Pi2);
-		if(m_Rotation > Pi)
-			m_Rotation -= Pi2;
-	}
+	m_Rotation+=RadiansToAdd;
+	if (m_Rotation>Pi2)
+		m_Rotation-=Pi2;
+	else if (m_Rotation<-Pi2)
+		m_Rotation+=Pi2;
 }
