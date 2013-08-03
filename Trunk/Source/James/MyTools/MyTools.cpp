@@ -1108,6 +1108,7 @@ void DisplayHelp()
 	    "[ length allocates memory\n"
 	    "] memory frees memory\n"
 	    "Load <file> allocates memory with file (use ] to free memory)\n"
+		"MoveMem <memory> <size> <dest>\n"
 		"Save <memory> <size>\n"
 	    "Split <file> <splitsize in kilobytes> \n"
 	    "Join <file (no appending numbers)> <[dest file name]> \n"
@@ -1222,6 +1223,15 @@ void CommandLineInterface()
 			else if (!strnicmp(input_line,"Load",4))
 			{
 				load(str_1);
+			}
+			else if (!strnicmp(input_line,"MoveMem",5))
+			{
+				//copy memory to temporary buffer to avoid overwrite
+				unsigned length=Hex2Long(str_2);
+				byte *memory=(byte *)malloc(length);
+				memcpy(memory,(void *)Hex2Int64(str_1),length);
+				byte *dest=(byte *)Hex2Int64(str_3);
+				memcpy(dest,memory,length);
 			}
 			else if (!strnicmp(input_line,"Save",4))
 			{
