@@ -525,14 +525,14 @@ void AllocateMemory(char *sLength)
 	unsigned length=Hex2Long(sLength);
 	byte *memory=(byte *)malloc(length);
 	memset(memory,0,length);
-	printf("0x%x bytes allocated @ 0x%x \n",length,memory);
+	printf("0x%x bytes allocated @ 0x%p \n",length,memory);
 }
 
 void FreeMemory(char *sMemory)
 {
 	byte *memory=(byte *)Hex2Long(sMemory);
 	free(memory);
-	printf("Freeing 0x%x\n",memory);
+	printf("Freeing 0x%p\n",memory);
 }
 
 
@@ -682,27 +682,30 @@ void load(char *filename)
 {
 	bool Success=false;
 	HANDLE file=NULL;
-	do
+	try
 	{
 		file=OpenReadSeq(filename);
 		if (file==(HANDLE)-1)
 		{
 			file=NULL;
-			break;
+			throw 0;
 		}
 		DWORD HighPart;
 		unsigned long length=GetFileSize(file,&HighPart);
 		if (HighPart)
 		{
 			printf("Only files less than 2 gig are supported\n");
-			break;
+			throw 1;
 		}
 		byte *memory=(byte *)malloc(length);
 		myRead(file,memory,length);
-		printf("0x%x bytes loaded to memory @ 0x%x\n",length,memory);
+		printf("0x%x bytes loaded to memory @ 0x%p\n",length,memory);
 		Success=true;
 	}
-	while (false);
+	catch (int ErrorCode)
+	{
+		printf("load() Failed %d\n",ErrorCode);
+	}
 	//Close files
 	if (file)
 		myClose(file);
@@ -711,6 +714,30 @@ void load(char *filename)
 	else
 		printf("UnSuccessful! (error Detected)\n");
 }
+
+void save(char *filename,byte *memory,size_t size)
+{
+	HANDLE file=NULL;
+	try
+	{
+		file=OpenWriteSeq(filename);
+		if (file==(HANDLE)-1)
+		{
+			file=NULL;
+			throw 0;
+		}
+		int result=myWrite(file,memory,(DWORD)size);
+		printf("%d bytes written to file %s\n",result,filename);
+	}
+	catch (int ErrorCode)
+	{
+		printf("save() Failed %d\n",ErrorCode);
+	}
+	//Close files
+	if (file)
+		myClose(file);
+}
+
 
 bool split(const char *FileName,fpos_t splitsize)
 {
@@ -1081,6 +1108,7 @@ void DisplayHelp()
 	    "[ length allocates memory\n"
 	    "] memory frees memory\n"
 	    "Load <file> allocates memory with file (use ] to free memory)\n"
+		"Save <memory> <size>\n"
 	    "Split <file> <splitsize in kilobytes> \n"
 	    "Join <file (no appending numbers)> <[dest file name]> \n"
 		"SetFrameRate <double num> <double den=1.0> \n"
@@ -1194,6 +1222,10 @@ void CommandLineInterface()
 			else if (!strnicmp(input_line,"Load",4))
 			{
 				load(str_1);
+			}
+			else if (!strnicmp(input_line,"Save",4))
+			{
+				save(str_1,(byte *)Hex2Int64(str_2),Hex2Long(str_3));
 			}
 			else if (!strnicmp(input_line,"Split",5))
 			{
