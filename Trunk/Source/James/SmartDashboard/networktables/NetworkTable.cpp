@@ -1,20 +1,21 @@
+#include "stdafx.h"
 #include <map>
-#include "networktables/NetworkTable.h"
+#include "NetworkTable.h"
 #include <string>
-#include "networktables2/thread/NTThreadManager.h"
-#include "networktables2/thread/DefaultThreadManager.h"
-#include "networktables2/NetworkTableEntry.h"
-#include "networktables2/util/StringCache.h"
-#include "networktables/NetworkTableProvider.h"
-#include "networktables/NetworkTableMode.h"
-#include "Synchronized.h"
-#include "tables/TableKeyNotDefinedException.h"
-#include "networktables2/type/DefaultEntryTypes.h"
-#include "tables/ITableListener.h"
-#include "networktables/NetworkTableConnectionListenerAdapter.h"
-#include "networktables/NetworkTableKeyListenerAdapter.h"
-#include "networktables/NetworkTableListenerAdapter.h"
-#include "networktables/NetworkTableSubListenerAdapter.h"
+#include "../networktables2/thread/NTThreadManager.h"
+#include "../networktables2/thread/DefaultThreadManager.h"
+#include "../networktables2/NetworkTableEntry.h"
+#include "../networktables2/util/StringCache.h"
+#include "NetworkTableProvider.h"
+#include "NetworkTableMode.h"
+#include "../Synchronized.h"
+#include "../tables/TableKeyNotDefinedException.h"
+#include "../networktables2/type/DefaultEntryTypes.h"
+#include "../tables/ITableListener.h"
+#include "NetworkTableConnectionListenerAdapter.h"
+#include "NetworkTableKeyListenerAdapter.h"
+#include "NetworkTableListenerAdapter.h"
+#include "NetworkTableSubListenerAdapter.h"
 
 
 const char NetworkTable::PATH_SEPARATOR_CHAR = '/';
@@ -24,7 +25,7 @@ const int NetworkTable::DEFAULT_PORT = 1735;
 DefaultThreadManager NetworkTable::threadManager;
 NetworkTableProvider* NetworkTable::staticProvider = NULL;
 NetworkTableMode* NetworkTable::mode = &NetworkTableMode::Server;
-int NetworkTable::port = DEFAULT_PORT;
+int NetworkTable::port = NetworkTable::DEFAULT_PORT;  //TODO check cpp code for default port without the class name specifier
 std::string NetworkTable::ipAddress;
 ReentrantSemaphore NetworkTable::STATIC_LOCK;
 

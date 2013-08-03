@@ -11,11 +11,11 @@
 
 class NetworkTableSubListenerAdapter;
 
-#include "tables/ITableListener.h"
-#include "tables/ITable.h"
+#include "../tables/ITableListener.h"
+#include "../tables/ITable.h"
 #include <string>
 #include <set>
-#include "networktables/NetworkTable.h"
+#include "NetworkTable.h"
 
 
 using namespace std;
