@@ -20,8 +20,12 @@ typedef          __int64  int64_t;
 typedef unsigned __int64 uint64_t;
 typedef int                 BOOL;
 typedef int 		(*FUNCPTR) (...);     /* ptr to function returning int */
+#define NULL    0
+typedef	int		STATUS;
+
 // TODO: reference additional headers your program requires here
 #include <intsafe.h>
+#include <assert.h>
 
 // No C library depreciation warnings
 #pragma warning ( disable : 4995 )

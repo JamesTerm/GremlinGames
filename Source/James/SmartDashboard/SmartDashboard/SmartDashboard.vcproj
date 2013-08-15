@@ -172,6 +172,14 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\Synchronized.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Task.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -200,6 +208,26 @@
 				RelativePath="..\networktables\NetworkTable.cpp"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="NetWorkTables2"
+			>
+			<Filter
+				Name="util"
+				>
+				<File
+					RelativePath="..\networktables2\util\IllegalStateException.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="thread"
+				>
+				<File
+					RelativePath="..\networktables2\thread\DefaultThreadManger.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

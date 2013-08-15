@@ -5,7 +5,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/util/IllegalStateException.h"
+#include "IllegalStateException.h"
 
 IllegalStateException::IllegalStateException(const char* msg) 
 	: message(msg)
