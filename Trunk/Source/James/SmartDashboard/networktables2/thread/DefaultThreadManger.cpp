@@ -4,8 +4,8 @@
  *  Created on: Sep 21, 2012
  *      Author: Mitchell Wills
  */
-
-#include "networktables2/thread/DefaultThreadManager.h"
+#include "../../stdafx.h"
+#include "DefaultThreadManager.h"
 #include <stdio.h>
 
 
