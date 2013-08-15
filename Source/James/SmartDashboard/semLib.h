@@ -1,10 +1,7 @@
-struct semaphore
-{
+#include <windows.h>
 
-};
-
-typedef struct semaphore *	SEM_ID;
-typedef	int		STATUS;
+//typedef struct semaphore *	SEM_ID;
+typedef CRITICAL_SECTION *	SEM_ID;
 
 /* semaphore options */
 
