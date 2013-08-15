@@ -7,8 +7,13 @@
 #ifndef __TASK_H__
 #define __TASK_H__
 
+#include <Windows.h>
+#include "Base.h"
 //#include "ErrorBase.h"
 //#include <vxWorks.h>
+
+const UINT32 kDefaultPriority = 101;
+const INT32 kInvalidTaskID = -1;
 
 /**
  * WPI task is a wrapper for the native Task object.
@@ -17,8 +22,8 @@
 class Task //: public ErrorBase
 {
 public:
-	static const UINT32 kDefaultPriority = 101;
-	static const INT32 kInvalidTaskID = -1;
+	//static const UINT32 kDefaultPriority = 101;
+	//static const INT32 kInvalidTaskID = -1;
 
 	Task(const char* name, FUNCPTR function, INT32 priority = kDefaultPriority, UINT32 stackSize = 20000);
 	virtual ~Task();
@@ -41,10 +46,15 @@ public:
 	const char* GetName();
 	INT32 GetID();
 
-private:
 	FUNCPTR m_function;
+	UINT32 m_Arg[10];
+private:
+	bool StartInternal();
+
 	char* m_taskName;
-	INT32 m_taskID;
+	//INT32 m_taskID;
+	HANDLE m_Handle;
+	DWORD m_ID;
 	UINT32 m_stackSize;
 	INT32 m_priority;
 	bool HandleError(STATUS results);
