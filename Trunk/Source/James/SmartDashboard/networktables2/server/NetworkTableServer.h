@@ -11,12 +11,12 @@
 
 class NetworkTableServer;
 
-#include "networktables2/TransactionDirtier.h"
-#include "networktables2/NetworkTableNode.h"
+#include "../TransactionDirtier.h"
+#include "../NetworkTableNode.h"
 #include "ServerIncomingStreamMonitor.h"
 #include "ServerIncomingConnectionListener.h"
-#include "networktables2/WriteManager.h"
-#include "networktables2/stream/IOStreamProvider.h"
+#include "../WriteManager.h"
+#include "../stream/IOStreamProvider.h"
 #include "ServerConnectionList.h"
 
 /**

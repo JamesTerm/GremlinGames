@@ -10,15 +10,15 @@
 
 class ClientConnectionAdapter;
 
-#include "networktables2/connection/ConnectionAdapter.h"
-#include "networktables2/IncomingEntryReceiver.h"
-#include "networktables2/FlushableOutgoingEntryReceiver.h"
-#include "networktables2/client/ClientNetworkTableEntryStore.h"
-#include "networktables2/stream/IOStreamFactory.h"
-#include "networktables2/thread/NTThreadManager.h"
-#include "networktables2/thread/NTThread.h"
-#include "networktables2/client/ClientConnectionState.h"
-#include "networktables2/client/ClientConnectionListenerManager.h"
+#include "../connection/ConnectionAdapter.h"
+#include "../IncomingEntryReceiver.h"
+#include "../FlushableOutgoingEntryReceiver.h"
+#include "../client/ClientNetworkTableEntryStore.h"
+#include "../stream/IOStreamFactory.h"
+#include "../thread/NTThreadManager.h"
+#include "../thread/NTThread.h"
+#include "../client/ClientConnectionState.h"
+#include "../client/ClientConnectionListenerManager.h"
 
 
 /**

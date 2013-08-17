@@ -19,7 +19,7 @@ class WriteManager;
 #include "FlushableOutgoingEntryReceiver.h"
 #include "NetworkTableEntry.h"
 #include <queue>
-#include "Synchronized.h"
+#include "../Synchronized.h"
 
 
 

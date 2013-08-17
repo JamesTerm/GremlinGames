@@ -14,7 +14,7 @@ class ClientConnectionState_Error;
 class ClientConnectionState_ProtocolUnsuppotedByServer;
 
 #include <exception>
-#include "networktables2/connection/NetworkTableConnection.h"
+#include "../connection/NetworkTableConnection.h"
 
 /**
  * Represents a state that the client is in

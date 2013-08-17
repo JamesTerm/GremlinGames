@@ -10,7 +10,7 @@
 
 class SocketStreamFactory;
 
-#include "networktables2/stream/IOStreamFactory.h"
+#include "../stream/IOStreamFactory.h"
 #include <string>
 
 /**

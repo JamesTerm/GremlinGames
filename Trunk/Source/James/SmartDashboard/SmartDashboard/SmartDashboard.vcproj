@@ -208,6 +208,10 @@
 				RelativePath="..\networktables\NetworkTable.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\networktables\NetworkTableMode.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="NetWorkTables2"

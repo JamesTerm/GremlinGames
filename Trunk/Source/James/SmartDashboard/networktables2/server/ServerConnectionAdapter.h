@@ -10,17 +10,17 @@
 
 class ServerConnectionAdapter;
 
-#include "networktables2/connection/ConnectionMonitorThread.h"
-#include "networktables2/NetworkTableEntry.h"
-#include "networktables2/connection/ConnectionAdapter.h"
-#include "networktables2/stream/IOStream.h"
-#include "networktables2/IncomingEntryReceiver.h"
-#include "networktables2/FlushableOutgoingEntryReceiver.h"
-#include "networktables2/server/ServerNetworkTableEntryStore.h"
-#include "networktables2/server/ServerAdapterManager.h"
-#include "networktables2/server/ServerConnectionState.h"
-#include "networktables2/thread/NTThread.h"
-#include "networktables2/thread/NTThreadManager.h"
+#include "../connection/ConnectionMonitorThread.h"
+#include "../NetworkTableEntry.h"
+#include "../connection/ConnectionAdapter.h"
+#include "../stream/IOStream.h"
+#include "../IncomingEntryReceiver.h"
+#include "../FlushableOutgoingEntryReceiver.h"
+#include "../server/ServerNetworkTableEntryStore.h"
+#include "../server/ServerAdapterManager.h"
+#include "../server/ServerConnectionState.h"
+#include "../thread/NTThread.h"
+#include "../thread/NTThreadManager.h"
 
 
 
