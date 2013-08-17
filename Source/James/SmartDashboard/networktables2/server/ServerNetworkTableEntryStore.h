@@ -12,9 +12,9 @@
 class ServerNetworkTableEntryStore;
 
 
-#include "networktables2/AbstractNetworkTableEntryStore.h"
-#include "networktables2/NetworkTableEntry.h"
-#include "Synchronized.h"
+#include "../AbstractNetworkTableEntryStore.h"
+#include "../NetworkTableEntry.h"
+#include "../Synchronized.h"
 
 
 

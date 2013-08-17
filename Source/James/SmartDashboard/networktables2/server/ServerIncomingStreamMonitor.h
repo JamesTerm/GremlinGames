@@ -12,14 +12,14 @@
 class ServerIncomingStreamMonitor;
 
 
-#include "networktables2/thread/PeriodicRunnable.h"
-#include "networktables2/thread/NTThreadManager.h"
-#include "networktables2/thread/NTThread.h"
-#include "networktables2/stream/IOStreamProvider.h"
-#include "networktables2/server/ServerIncomingConnectionListener.h"
-#include "networktables2/server/ServerNetworkTableEntryStore.h"
-#include "networktables2/server/ServerAdapterManager.h"
-#include "networktables2/server/ServerConnectionAdapter.h"
+#include "../thread/PeriodicRunnable.h"
+#include "../thread/NTThreadManager.h"
+#include "../thread/NTThread.h"
+#include "../stream/IOStreamProvider.h"
+#include "../server/ServerIncomingConnectionListener.h"
+#include "../server/ServerNetworkTableEntryStore.h"
+#include "../server/ServerAdapterManager.h"
+#include "../server/ServerConnectionAdapter.h"
 
 
 

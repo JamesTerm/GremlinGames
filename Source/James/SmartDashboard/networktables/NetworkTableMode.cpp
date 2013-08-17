@@ -4,15 +4,15 @@
  *  Created on: Oct 16, 2012
  *      Author: Mitchell Wills
  */
-
+#include "../stdafx.h"
 #include <string>
-#include "networktables2/thread/NTThreadManager.h"
-#include "networktables2/NetworkTableNode.h"
-#include "networktables2/server/NetworkTableServer.h"
-#include "networktables2/client/NetworkTableClient.h"
-#include "networktables2/stream/SocketServerStreamProvider.h"
-#include "networktables2/stream/SocketStreamFactory.h"
-#include "networktables/NetworkTableMode.h"
+#include "../networktables2/thread/NTThreadManager.h"
+#include "../networktables2/NetworkTableNode.h"
+#include "../networktables2/server/NetworkTableServer.h"
+#include "../networktables2/client/NetworkTableClient.h"
+#include "../networktables2/stream/SocketServerStreamProvider.h"
+#include "../networktables2/stream/SocketStreamFactory.h"
+#include "../networktables/NetworkTableMode.h"
 
 
 NetworkTableServerMode NetworkTableMode::Server;

@@ -13,8 +13,8 @@
 class ServerConnectionList;
 
 
-#include "networktables2/FlushableOutgoingEntryReceiver.h"
-#include "networktables2/NetworkTableEntry.h"
+#include "../FlushableOutgoingEntryReceiver.h"
+#include "../NetworkTableEntry.h"
 #include "ServerAdapterManager.h"
 #include "ServerConnectionAdapter.h"
 #include <vector>

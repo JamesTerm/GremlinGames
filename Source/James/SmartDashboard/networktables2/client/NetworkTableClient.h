@@ -10,9 +10,9 @@
 
 class NetworkTableClient;
 
-#include "networktables2/NetworkTableNode.h"
-#include "networktables2/client/ClientConnectionAdapter.h"
-#include "networktables2/WriteManager.h"
+#include "../NetworkTableNode.h"
+#include "../client/ClientConnectionAdapter.h"
+#include "../WriteManager.h"
 
 /**
  * A client node in NetworkTables 2.0
