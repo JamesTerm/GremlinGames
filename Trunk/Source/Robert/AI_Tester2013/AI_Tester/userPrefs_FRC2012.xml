@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserPrefs>
+	<UserInput>
+		<Analog_StrafeRight type="joystick_analog" product="AIRFLO             " key="5" isFlipped="0" Multiplier="1.000000" FilterRange="0.020000" isSquared="1"/>
+		<Analog_Turn type="joystick_analog" product="any" key="0" isFlipped="0" Multiplier="1.000000" FilterRange="0.200000" isSquared="1"/>
+		<Arm_SetPos0feet type="joystick_button" product="any" key="6" dbl="0" onOff="0"/>
+		<Arm_SetPos3feet type="joystick_button" product="any" key="5" dbl="0" onOff="0"/>
+		<Arm_SetPos6feet type="joystick_button" product="any" key="4" dbl="0" onOff="0"/>
+		<Arm_SetPos9feet type="joystick_button" product="any" key="8" dbl="0" onOff="0"/>
+		<Ball_Fire type="joystick_button" product="CH THROTTLE QUADRANT" key="5" dbl="0" onOff="1"/>
+		<Ball_Fire type="joystick_button" product="Logitech Dual Action" key="3" dbl="0" onOff="1"/>
+		<Ball_Grip type="joystick_button" product="Logitech Dual Action" key="1" dbl="0" onOff="1"/>
+		<Ball_Grip type="joystick_button" product="CH THROTTLE QUADRANT" key="1" dbl="0" onOff="1"/>
+		<Ball_Squirt type="joystick_button" product="Logitech Dual Action" key="0" dbl="0" onOff="1"/>
+		<Ball_Squirt type="joystick_button" product="CH THROTTLE QUADRANT" key="0" dbl="0" onOff="1"/>
+		<Brake type="joystick_button" product="AIRFLO             " key="6" dbl="0" onOff="1"/>
+		<Flippers_Advance type="joystick_button" product="CH FLIGHTSTICK PRO" key="3" dbl="0" onOff="1"/>
+		<Flippers_Retract type="joystick_button" product="CH FLIGHTSTICK PRO" key="0" dbl="0" onOff="1"/>
+		<Joystick_SetCurrentSpeed type="joystick_analog" product="any" key="7" isFlipped="0" Multiplier="1.000000" FilterRange="0.000000" isSquared="0"/>
+		<Joystick_SetCurrentSpeed_2 type="joystick_analog" product="any" key="1" isFlipped="1" Multiplier="1.000000" FilterRange="0.100000" isSquared="1"/>
+		<Joystick_dumb type="joystick_analog" product="any" key="17" isFlipped="0" Multiplier="1.000000" FilterRange="0.000000" isSquared="0"/>
+		<Missile.Launch type="joystick_button" product="any" key="1" dbl="0" onOff="1"/>
+		<PitchRamp_SetIntendedPosition type="joystick_analog" product="CH Pro Pedals USB" key="1" isFlipped="0" Multiplier="1.000000" FilterRange="0.500000" isSquared="0"/>
+		<PitchRamp_SetIntendedPosition type="joystick_analog" product="CH THROTTLE QUADRANT" key="0" isFlipped="1" Multiplier="1.152857" FilterRange="0.000000" isSquared="0"/>
+		<PowerWheels_IsRunning type="joystick_button" product="CH THROTTLE QUADRANT" key="3" dbl="0" onOff="1"/>
+		<PowerWheels_IsRunning type="joystick_button" product="Logitech Dual Action" key="2" dbl="0" onOff="1"/>
+		<PowerWheels_SetCurrentVelocity type="joystick_analog" product="CH THROTTLE QUADRANT" key="1" isFlipped="1" Multiplier="1.142857" FilterRange="0.000000" isSquared="0"/>
+		<RequestAfterburner type="joystick_button" product="AIRFLO             " key="7" dbl="1" onOff="1"/>
+		<Robot_SetLowGearValue type="joystick_analog" product="CH FLIGHTSTICK PRO" key="2" isFlipped="1" Multiplier="1.000000" FilterRange="0.000000" isSquared="1"/>
+		<Robot_SetPreset1 type="joystick_button" product="Logitech Dual Action" key="4" dbl="0" onOff="0"/>
+		<Robot_SetPreset2 type="joystick_button" product="Logitech Dual Action" key="8" dbl="0" onOff="0"/>
+		<Robot_SetPreset3 type="joystick_button" product="Logitech Dual Action" key="9" dbl="0" onOff="0"/>
+		<Robot_SetTargetingValue type="joystick_analog" product="CH THROTTLE QUADRANT" key="0" isFlipped="1" Multiplier="1.152857" FilterRange="0.000000" isSquared="0"/>
+		<Robot_TurretSetTargetingOff type="joystick_button" product="Logitech Dual Action" key="5" dbl="0" onOff="1"/>
+		<Roll_CCW type="joystick_button" product="AIRFLO             " key="4" dbl="0" onOff="1"/>
+		<Roll_CW type="joystick_button" product="AIRFLO             " key="5" dbl="0" onOff="1"/>
+		<Ship.TryFireMainWeapon type="joystick_button" product="any" key="0" dbl="1" onOff="1"/>
+		<Slide type="joystick_button" product="AIRFLO             " key="1" dbl="0" onOff="0"/>
+		<Stop type="joystick_button" product="AIRFLO             " key="3" dbl="0" onOff="0"/>
+		<Thrust type="joystick_button" product="AIRFLO             " key="7" dbl="0" onOff="1"/>
+		<ToggleAutoPilot type="joystick_button" product="AIRFLO             " key="10" dbl="0" onOff="0"/>
+		<Turret_SetCurrentVelocity type="joystick_analog" product="CH THROTTLE QUADRANT" key="2" isFlipped="0" Multiplier="1.142857" FilterRange="0.200000" isSquared="1"/>
+		<Turret_SetCurrentVelocity type="joystick_analog" product="Logitech Dual Action" key="0" isFlipped="0" Multiplier="1.000000" FilterRange="0.100000" isSquared="1"/>
+		<Turret_SetCurrentVelocity type="joystick_analog" product="CH Pro Pedals USB" key="2" isFlipped="0" Multiplier="0.500000" FilterRange="0.100000" isSquared="1"/>
+		<Turret_dummy type="joystick_analog" product="any" key="7" isFlipped="0" Multiplier="0.500000" FilterRange="0.100000" isSquared="1"/>
+		<Arm_Claw type="keyboard" key="r" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<Arm_SetPos0feet type="keyboard" key="q" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Arm_SetPos6feet type="keyboard" key="e" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Ball_Fire type="keyboard" key=";" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<Ball_Grip type="keyboard" key="k" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<Ball_Squirt type="keyboard" key="l" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<Brake type="keyboard" key="s" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<ESC type="keyboard" key="ESCAPE" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<PowerWheels_IsRunning type="keyboard" key="j" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<RecordFrames type="keyboard" key="m" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<RequestAfterburner type="keyboard" key="w" alt="0" ctrl="0" shift="0" dbl="1" onOff="1"/>
+		<ResetTB type="keyboard" key=" " alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Ship.TryFireMainWeapon type="keyboard" key="MOUSE_LEFT" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<ShowDebug type="keyboard" key="F9" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ShowFR type="keyboard" key="F2" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ShowTB type="keyboard" key="F4" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Slide type="keyboard" key="g" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Stop type="keyboard" key="x" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<StrafeLeft type="keyboard" key="q" alt="0" ctrl="0" shift="1" dbl="0" onOff="1"/>
+		<StrafeRight type="keyboard" key="s" alt="0" ctrl="0" shift="1" dbl="0" onOff="1"/>
+		<Thrust type="keyboard" key="w" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<ToggleAutoPilot type="keyboard" key="z" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ToggleFrameLog type="keyboard" key="F7" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<ToggleFullScreen type="keyboard" key="F3" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<Turn_L type="keyboard" key="a" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<Turn_R type="keyboard" key="d" alt="0" ctrl="0" shift="0" dbl="0" onOff="1"/>
+		<UseMouse type="keyboard" key="/" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<UserResetPos type="keyboard" key=" " alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<VolumeDown type="keyboard" key="v" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<VolumeSelect type="keyboard" key="n" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+		<VolumeUp type="keyboard" key="b" alt="0" ctrl="0" shift="0" dbl="0" onOff="0"/>
+	</UserInput>
+	<AudioSettings>
+		<Volume_Master type="audio_volume" Ratio="0.800000"/>
+		<Volume_Music type="audio_volume" Ratio="0.500000"/>
+		<Volume_SoundEffects type="audio_volume" Ratio="0.800000"/>
+	</AudioSettings>
+</UserPrefs>
