@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{48A6A100-F706-41AB-BD9D-FEF52AF68F92}</ProjectGuid>
+    <RootNamespace>AI_Tester</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.20617.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\..\..\..\$(Configuration)_bin\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\..\..\$(Configuration)_bin\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/Zm126 %(AdditionalOptions) /Zm256
+</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\3rdParty;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\OpenThreads\include;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\OpenSceneGraph\include;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\xmlParser;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\FMOD\Win32\api\inc;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\lua\lua5_1_2_Win32_dll7_lib\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\OpenSceneGraph\lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\3rdParty\lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\lua\lua5_1_2_Win32_dll7_lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\FMOD\Win32\api\lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\xmlParser\Release</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\3rdParty;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\OpenThreads\include;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\OpenSceneGraph\include;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\xmlParser;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\FMOD\Win32\api\inc;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\lua\lua5_1_2_Win32_dll7_lib\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions> /Zm256
+</AdditionalOptions>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\OpenSceneGraph\lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\OSG_SVN\3rdParty\lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\lua\lua5_1_2_Win32_dll7_lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\FMOD\Win32\api\lib;C:\p4\BroncBotz\GG\Trunk\Source\Utilities\xmlParser\Release</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AI_Base_Controller.cpp" />
+    <ClCompile Include="AI_Tester.cpp" />
+    <ClCompile Include="Calibration_Testing.cpp" />
+    <ClCompile Include="CommonUI.cpp" />
+    <ClCompile Include="Debug.cpp" />
+    <ClCompile Include="Entity2D.cpp" />
+    <ClCompile Include="Entity_Properties.cpp" />
+    <ClCompile Include="FrameWork_UI.cpp" />
+    <ClCompile Include="FRC2011_Robot.cpp" />
+    <ClCompile Include="FRC2012_Robot.cpp" />
+    <ClCompile Include="FRC2013_Robot.cpp" />
+    <ClCompile Include="Goal.cpp" />
+    <ClCompile Include="Nona_Robot.cpp" />
+    <ClCompile Include="Physics_1D.cpp" />
+    <ClCompile Include="Physics_2D.cpp" />
+    <ClCompile Include="PIDController.cpp" />
+    <ClCompile Include="Rotary_System.cpp" />
+    <ClCompile Include="Servo_System.cpp" />
+    <ClCompile Include="Ship.cpp" />
+    <ClCompile Include="Ship_1D.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Swerve_Robot.cpp" />
+    <ClCompile Include="Tank_Robot.cpp" />
+    <ClCompile Include="TestText.cpp" />
+    <ClCompile Include="UDP_Listener.cpp" />
+    <ClCompile Include="UI_Controller.cpp" />
+    <ClCompile Include="Vehicle_Drive.cpp" />
+    <ClCompile Include="Viewer.cpp" />
+    <ClCompile Include="WindowsTools.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AI_Base_Controller.h" />
+    <ClInclude Include="AI_Tester.h" />
+    <ClInclude Include="Calibration_Testing.h" />
+    <ClInclude Include="CommonUI.h" />
+    <ClInclude Include="Debug.h" />
+    <ClInclude Include="Entity2D.h" />
+    <ClInclude Include="Entity_Properties.h" />
+    <ClInclude Include="FrameWork_UI.h" />
+    <ClInclude Include="FRC2011_Robot.h" />
+    <ClInclude Include="FRC2012_Robot.h" />
+    <ClInclude Include="FRC2013_Robot.h" />
+    <ClInclude Include="Goal.h" />
+    <ClInclude Include="Nona_Robot.h" />
+    <ClInclude Include="Physics_1D.h" />
+    <ClInclude Include="Physics_2D.h" />
+    <ClInclude Include="PIDController.h" />
+    <ClInclude Include="Poly.h" />
+    <ClInclude Include="Robot_Control_Interface.h" />
+    <ClInclude Include="Robot_Tester.h" />
+    <ClInclude Include="Rotary_System.h" />
+    <ClInclude Include="Servo_System.h" />
+    <ClInclude Include="Ship.h" />
+    <ClInclude Include="Ship_1D.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Swerve_Robot.h" />
+    <ClInclude Include="Tank_Robot.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="UDP_Listener.h" />
+    <ClInclude Include="UI_Controller.h" />
+    <ClInclude Include="Vehicle_Drive.h" />
+    <ClInclude Include="Viewer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\GG_Framework\Base\GG_Framework.Base VS9.vcxproj">
+      <Project>{1fa55f58-2528-463f-bb30-f905a10fc310}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\GG_Framework\Logic\Scripting\GG_Framework.Logic.Scripting VS9.vcxproj">
+      <Project>{aaa55f58-2528-463f-bb30-f905a10fc310}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\GG_Framework\UI\Audio\GG_Framework.UI.Audio VS9.vcxproj">
+      <Project>{2fa55f58-2528-463f-bb30-f905a10fc310}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\GG_Framework\UI\GG_Framework.UI VS9.vcxproj">
+      <Project>{cfa55f58-2528-463f-bb30-f905a10fc310}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\GG_Framework\UI\OSG\GG_Framework.UI.OSG VS9.vcxproj">
+      <Project>{3fa55f58-2528-463f-bb30-f905a10fc310}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Common\FileSelectionLib\FileSelectionLib.vcxproj">
+      <Project>{c9b0fce3-0621-4851-921f-a69e0a0a84f9}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
