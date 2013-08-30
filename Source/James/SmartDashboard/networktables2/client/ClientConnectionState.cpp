@@ -1,13 +1,14 @@
+#include "stdafx.h"
 /*
  * ClientConnectionState.cpp
  *
  *  Created on: Nov 2, 2012
  *      Author: Mitchell Wills
  */
-#include "networktables2/client/ClientConnectionState.h"
-#ifndef _WRS_KERNEL
-#include <stdint.h>
-#endif
+#include "ClientConnectionState.h"
+//#ifndef _WRS_KERNEL
+//#include <stdint.h>
+//#endif
 
 #include <stdlib.h>
 #include <memory>

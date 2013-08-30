@@ -356,6 +356,26 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="client"
+				>
+				<File
+					RelativePath="..\networktables2\client\ClientConnectionAdapter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\client\ClientConnectionState.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\client\ClientNetworkTableEntryStore.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\client\NetworkTableClient.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

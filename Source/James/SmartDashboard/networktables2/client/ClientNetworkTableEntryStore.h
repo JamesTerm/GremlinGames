@@ -14,7 +14,7 @@ class ClientNetworkTableEntryStore;
 
 #include "../AbstractNetworkTableEntryStore.h"
 #include "../NetworkTableEntry.h"
-#include "../Synchronized.h"
+#include "../../Synchronized.h"
 
 /**
  * The entry store for a {@link NetworkTableClient}
