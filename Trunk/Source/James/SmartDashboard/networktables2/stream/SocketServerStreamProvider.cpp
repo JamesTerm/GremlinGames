@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * SocketServerStreamProvider.cpp
  *
@@ -5,11 +6,11 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/stream/SocketServerStreamProvider.h"
-#include "networktables2/stream/FDIOStream.h"
-#include "networktables2/util/IOException.h"
+#include "SocketServerStreamProvider.h"
+#include "FDIOStream.h"
+#include "../util/IOException.h"
 
-#include <strings.h>
+//#include <strings.h>
 #include <cstring>
 #include <errno.h>
 #ifdef _WRS_KERNEL
@@ -25,10 +26,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <unistd.h>
+//#include <unistd.h>
 #ifdef WIN32
 #include <windows.h>
-#include <winsock.h>
+//#include <winsock.h>
 #include <winsock2.h>
 #include <wininet.h>
 #include <ws2tcpip.h>
@@ -63,7 +64,7 @@ SocketServerStreamProvider::SocketServerStreamProvider(int port){
 	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == ERROR)
+	if ((serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == ERROR)
 	{
 		throw IOException("Error creating server socket", errno);
 	}
@@ -75,13 +76,13 @@ SocketServerStreamProvider::SocketServerStreamProvider(int port){
 	// Bind socket to local address.
 	if (bind(serverSocket, (struct sockaddr *)&serverAddr, sockAddrSize) == ERROR)
 	{
-		::close(serverSocket);
+		close();
 		throw IOException("Could not bind server socket", errno);
 	}
 
 	if (listen(serverSocket, 1) == ERROR)
 	{
-		::close(serverSocket);
+		close();
 		throw IOException("Could not listen on server socket", errno);
 	}
 }
@@ -122,5 +123,9 @@ IOStream* SocketServerStreamProvider::accept(){
 }
 
 void SocketServerStreamProvider::close(){
-	::close(serverSocket);
+	//::close(serverSocket);
+	shutdown( serverSocket, SD_BOTH );
+	closesocket( serverSocket );
+	serverSocket = (int)INVALID_SOCKET;
+
 }

@@ -1,3 +1,6 @@
+//TODO implement if used
+
+#include "stdafx.h"
 /*
  * FDIOStream.cpp
  *
@@ -5,17 +8,17 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/stream/FDIOStream.h"
-#include "networktables2/util/IOException.h"
-#include "networktables2/util/EOFException.h"
+#include "FDIOStream.h"
+#include "../util/IOException.h"
+#include "../util/EOFException.h"
 
 #include <errno.h>
 #include <stdlib.h>
-#ifdef _WRS_KERNEL
-#include <iolib.h>
-#else
-#include <unistd.h>
-#endif
+//#ifdef _WRS_KERNEL
+//#include <iolib.h>
+//#else
+//#include <unistd.h>
+//#endif
 #include <stdio.h>
 
 
@@ -35,7 +38,7 @@ int FDIOStream::read(void* ptr, int numbytes){
 	char* bufferPointer = (char*)ptr;
 	int totalRead = 0;
 	while (totalRead < numbytes) {
-		int numRead = ::read(fd, bufferPointer, numbytes-totalRead);
+		int numRead =0; assert(false);//int numRead = ::read(fd, bufferPointer, numbytes-totalRead);
 		if(numRead == 0){
 			throw EOFException();
 		}
@@ -50,7 +53,8 @@ int FDIOStream::read(void* ptr, int numbytes){
 	return totalRead;
 }
 int FDIOStream::write(const void* ptr, int numbytes){
-  int numWrote = ::write(fd, (char*)ptr, numbytes);//TODO: this is bad
+	int numWrote = 0; assert(false);
+  //int numWrote = ::write(fd, (char*)ptr, numbytes);//TODO: this is bad
   //int numWrote = fwrite(ptr, 1, numbytes, f);
   if(numWrote==numbytes)
     return numWrote;
@@ -65,6 +69,7 @@ void FDIOStream::flush(){
 }
 void FDIOStream::close(){
   //fclose(f);//ignore any errors closing
-  ::close(fd);
+	assert(false);
+//  ::close(fd);
 }
 

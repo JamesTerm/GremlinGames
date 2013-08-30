@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * SocketStreams.cpp
  *
@@ -5,9 +6,9 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/stream/SocketStreams.h"
-#include "networktables2/stream/SocketStreamFactory.h"
-#include "networktables2/stream/SocketServerStreamProvider.h"
+#include "SocketStreams.h"
+#include "SocketStreamFactory.h"
+#include "SocketServerStreamProvider.h"
 
 
 
