@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableSubListenerAdapter.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables/NetworkTableSubListenerAdapter.h"
+#include "NetworkTableSubListenerAdapter.h"
 
 
 

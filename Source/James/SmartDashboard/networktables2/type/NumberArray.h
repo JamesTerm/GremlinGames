@@ -8,8 +8,8 @@
 #ifndef NUMBERARRAY_H_
 #define NUMBERARRAY_H_
 
-#include "networktables2/type/ArrayData.h"
-#include "networktables2/type/ArrayEntryType.h"
+#include "ArrayData.h"
+#include "ArrayEntryType.h"
 
 /**
  *

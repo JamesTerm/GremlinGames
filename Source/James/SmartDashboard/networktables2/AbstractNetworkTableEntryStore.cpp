@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * AbstractNetworkTableEntryStore.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/AbstractNetworkTableEntryStore.h"
-#include "networktables2/TableKeyExistsWithDifferentTypeException.h"
+#include "AbstractNetworkTableEntryStore.h"
+#include "TableKeyExistsWithDifferentTypeException.h"
 #include <map>
 #include <vector>
 

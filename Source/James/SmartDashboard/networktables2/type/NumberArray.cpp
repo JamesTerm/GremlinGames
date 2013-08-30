@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NumberArray.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/NumberArray.h"
-#include "networktables2/type/DefaultEntryTypes.h"
+#include "NumberArray.h"
+#include "DefaultEntryTypes.h"
 
 
 const TypeId NumberArray::NUMBER_ARRAY_RAW_ID = 0x11;

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableNode.cpp
  *
@@ -5,10 +6,10 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/NetworkTableNode.h"
-#include "networktables2/TableKeyExistsWithDifferentTypeException.h"
-#include "networktables2/type/DefaultEntryTypes.h"
-#include "tables/TableKeyNotDefinedException.h"
+#include "NetworkTableNode.h"
+#include "TableKeyExistsWithDifferentTypeException.h"
+#include "type/DefaultEntryTypes.h"
+#include "../tables/TableKeyNotDefinedException.h"
 #include <algorithm>
 
 

@@ -10,9 +10,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifndef _WRS_KERNEL
-#include <stdint.h>
-#endif
+//#ifndef _WRS_KERNEL
+//#include <stdint.h>
+//#endif
 
 class ArrayEntryType;
 

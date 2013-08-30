@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ComplexData.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/ComplexData.h"
+#include "ComplexData.h"
 
 
 ComplexData::ComplexData(ComplexEntryType& _type) : type(_type){}

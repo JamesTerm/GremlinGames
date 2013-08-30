@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ArrayEntryType.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/ArrayEntryType.h"
+#include "ArrayEntryType.h"
 
 ArrayEntryType::ArrayEntryType(TypeId id, NetworkTableEntryType& elementType)
 	: ComplexEntryType(id, "Array"), m_elementType(elementType){ //TODO super(id, "Array of [" + elementType.name + "]");

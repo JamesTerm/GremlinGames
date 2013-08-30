@@ -1,3 +1,4 @@
+
 /*
  * StringCache.cpp
  *
@@ -6,7 +7,7 @@
  */
 
 #include <map>
-#include "networktables2/util/StringCache.h"
+#include "StringCache.h"
 
 using namespace std;
 

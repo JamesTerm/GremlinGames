@@ -8,8 +8,8 @@
 #ifndef BOOLEANARRAY_H_
 #define BOOLEANARRAY_H_
 
-#include "networktables2/type/ArrayData.h"
-#include "networktables2/type/ArrayEntryType.h"
+#include "ArrayData.h"
+#include "ArrayEntryType.h"
 
 /**
  *

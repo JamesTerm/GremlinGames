@@ -22,7 +22,7 @@ class NetworkTableEntryType;
 #include <string>
 #include "../connection/DataIOStream.h"
 #include "../NetworkTableEntry.h"
-#include "../tables/ITable.h"
+#include "../../tables/ITable.h"
 
 
 class NetworkTableEntryType{

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ArrayData.cpp
  *
@@ -5,10 +6,10 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/ArrayData.h"
-#ifndef _WRS_KERNEL
-#include <stdint.h>
-#endif
+#include "ArrayData.h"
+//#ifndef _WRS_KERNEL
+//#include <stdint.h>
+//#endif
 
 #include <cstring>
 #include <stdlib.h>
