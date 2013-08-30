@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ServerConnectionList.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/server/ServerConnectionList.h"
+#include "ServerConnectionList.h"
 #include <algorithm>
 #include <stdio.h>
 

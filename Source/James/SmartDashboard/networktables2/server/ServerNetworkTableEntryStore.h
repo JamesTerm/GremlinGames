@@ -14,7 +14,7 @@ class ServerNetworkTableEntryStore;
 
 #include "../AbstractNetworkTableEntryStore.h"
 #include "../NetworkTableEntry.h"
-#include "../Synchronized.h"
+#include "../../Synchronized.h"
 
 
 

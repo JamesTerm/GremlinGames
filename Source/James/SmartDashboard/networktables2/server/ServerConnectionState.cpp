@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ServerConnectionState.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/server/ServerConnectionState.h"
+#include "ServerConnectionState.h"
 
 ServerConnectionState ServerConnectionState::GOT_CONNECTION_FROM_CLIENT("GOT_CONNECTION_FROM_CLIENT");
 

@@ -13,7 +13,7 @@ class ConnectionAdapter;
 #include "../NetworkTableEntry.h"
 #include "BadMessageException.h"
 #include "../util/IOException.h"
-#include "../tables/ITable.h"
+#include "../../tables/ITable.h"
 
 class ConnectionAdapter
 {

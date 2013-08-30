@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ServerIncomingStreamMonitor.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/server/ServerIncomingStreamMonitor.h"
-#include "networktables2/stream/IOStream.h"
+#include "ServerIncomingStreamMonitor.h"
+#include "../stream/IOStream.h"
 
 ServerIncomingStreamMonitor::ServerIncomingStreamMonitor(IOStreamProvider& _streamProvider, ServerNetworkTableEntryStore& _entryStore,
 		ServerIncomingConnectionListener& _incomingListener, ServerAdapterManager& _adapterListener, NetworkTableEntryTypeManager& _typeManager,

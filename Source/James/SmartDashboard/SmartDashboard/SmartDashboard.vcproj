@@ -308,6 +308,34 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="server"
+				>
+				<File
+					RelativePath="..\networktables2\server\NetworkTableServer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\server\ServerConnectionAdapter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\server\ServerConnectionList.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\server\ServerConnectionState.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\server\ServerIncomingStreamMonitor.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\server\ServerNetworkTableEntryStore.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
