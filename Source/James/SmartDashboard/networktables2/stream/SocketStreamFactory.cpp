@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * SocketStreamFactory.cpp
  *
@@ -12,9 +13,9 @@
 	#include <stdlib.h>
 	#include <stdio.h>
 	#include <sys/types.h>
-	#include <unistd.h>
+	//#include <unistd.h>
 	#ifdef WIN32
-	   #include <winsock.h>
+	   //#include <winsock.h>
 	   #include <winsock2.h>
 	#else
 		#include <sys/socket.h>
@@ -23,8 +24,8 @@
 		#include <netinet/in.h>
 	#endif
 #endif
-#include "networktables2/stream/FDIOStream.h"
-#include "networktables2/stream/SocketStreamFactory.h"
+#include "FDIOStream.h"
+#include "SocketStreamFactory.h"
 
 
 SocketStreamFactory::SocketStreamFactory(const char* _host, int _port):host(_host), port(_port){}
@@ -39,7 +40,7 @@ IOStream* SocketStreamFactory::createStream(){
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sockfd < 0){
         //error("ERROR opening socket");
         return NULL;

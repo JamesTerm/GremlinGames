@@ -336,6 +336,26 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="stream"
+				>
+				<File
+					RelativePath="..\networktables2\stream\FDIOStream.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\stream\SocketServerStreamProvider.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\stream\SocketStreamFactory.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\stream\SocketStreams.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"
