@@ -1,4 +1,5 @@
-#include "networktables2/NetworkTableEntry.h"
+#include "stdafx.h"
+#include "NetworkTableEntry.h"
 
 
 

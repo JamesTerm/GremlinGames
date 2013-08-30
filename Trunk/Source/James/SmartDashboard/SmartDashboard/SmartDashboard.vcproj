@@ -241,6 +241,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\networktables2\NetworkTableEntry.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\networktables2\NetworkTableNode.cpp"
 				>
 			</File>
@@ -373,6 +377,26 @@
 				</File>
 				<File
 					RelativePath="..\networktables2\client\NetworkTableClient.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="connection"
+				>
+				<File
+					RelativePath="..\networktables2\connection\BadMessageException.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\connection\ConnectionMonitorThread.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\connection\DataIOStream.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\connection\NetworkTableConnection.cpp"
 					>
 				</File>
 			</Filter>
