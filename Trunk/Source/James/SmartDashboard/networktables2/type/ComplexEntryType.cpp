@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ComplexEntryType.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/ComplexEntryType.h"
+#include "ComplexEntryType.h"
 
 
 ComplexEntryType::ComplexEntryType(TypeId id, const char* name) : NetworkTableEntryType(id, name){}

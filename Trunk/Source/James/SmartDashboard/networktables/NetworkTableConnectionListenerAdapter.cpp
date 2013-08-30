@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableConnectionListenerAdapter.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables/NetworkTableConnectionListenerAdapter.h"
+#include "NetworkTableConnectionListenerAdapter.h"
 
 
 NetworkTableConnectionListenerAdapter::NetworkTableConnectionListenerAdapter(IRemote* _targetSource, IRemoteConnectionListener* _targetListener):

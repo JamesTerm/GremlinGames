@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * DefaultEntryTypes.cpp
  *
@@ -5,12 +6,12 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/DefaultEntryTypes.h"
-#include "networktables2/type/NetworkTableEntryType.h"
-#include "networktables2/connection/DataIOStream.h"
-#include "networktables2/type/BooleanArray.h"
-#include "networktables2/type/NumberArray.h"
-#include "networktables2/type/StringArray.h"
+#include "DefaultEntryTypes.h"
+#include "NetworkTableEntryType.h"
+#include "../connection/DataIOStream.h"
+#include "BooleanArray.h"
+#include "NumberArray.h"
+#include "StringArray.h"
 
 
 DefaultEntryTypes::BOOLEAN_t DefaultEntryTypes::BOOLEAN;
@@ -36,7 +37,8 @@ void DefaultEntryTypes::DOUBLE_t::sendValue(EntryValue eValue, DataIOStream& os)
 	}
 }
 EntryValue DefaultEntryTypes::DOUBLE_t::readValue(DataIOStream& is) {
-	uint64_t value;
+	//uint64_t value;   //oops... looks like somebody goofed here -James
+	uint64_t value=0; 
 	
 	for(int i = 0; i<8; ++i){
 		value<<=8;

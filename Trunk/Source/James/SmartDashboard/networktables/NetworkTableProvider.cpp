@@ -1,12 +1,13 @@
+#include "stdafx.h"
 #include <map>
 #include <string>
 
-#include "tables/ITableProvider.h"
-#include "networktables2/NetworkTableNode.h"
-#include "networktables/NetworkTable.h"
+#include "../tables/ITableProvider.h"
+#include "../networktables2/NetworkTableNode.h"
+#include "NetworkTable.h"
 
 
-#include "networktables/NetworkTableProvider.h"
+#include "NetworkTableProvider.h"
 
 
 

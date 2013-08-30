@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * StringArray
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/StringArray.h"
-#include "networktables2/type/DefaultEntryTypes.h"
+#include "StringArray.h"
+#include "DefaultEntryTypes.h"
 
 
 const TypeId StringArray::STRING_ARRAY_RAW_ID = 0x12;

@@ -209,18 +209,50 @@
 				>
 			</File>
 			<File
+				RelativePath="..\networktables\NetworkTableConnectionListenerAdapter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables\NetworkTableKeyListenerAdapter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables\NetworkTableListenerAdapter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\networktables\NetworkTableMode.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables\NetworkTableProvider.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables\NetworkTableSubListenerAdapter.cpp"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="NetWorkTables2"
 			>
+			<File
+				RelativePath="..\networktables2\AbstractNetworkTableEntryStore.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables2\NetworkTableNode.cpp"
+				>
+			</File>
 			<Filter
 				Name="util"
 				>
 				<File
 					RelativePath="..\networktables2\util\IllegalStateException.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\util\StringCache.cpp"
 					>
 				</File>
 			</Filter>
@@ -229,6 +261,50 @@
 				>
 				<File
 					RelativePath="..\networktables2\thread\DefaultThreadManger.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="type"
+				>
+				<File
+					RelativePath="..\networktables2\type\ArrayData.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\ArrayEntryType.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\BooleanArray.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\ComplexData.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\ComplexEntryType.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\DefaultEntryTypes.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\NetworkTableEntryType.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\NetworkTableEntryTypeManager.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\NumberArray.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\type\StringArray.cpp"
 					>
 				</File>
 			</Filter>

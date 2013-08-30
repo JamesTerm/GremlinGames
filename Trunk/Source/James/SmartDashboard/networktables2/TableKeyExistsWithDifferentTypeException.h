@@ -13,7 +13,7 @@ class TableKeyExistsWithDifferentTypeException;
 
 
 #include <exception>
-#include "networktables2/type/NetworkTableEntryType.h"
+#include "type/NetworkTableEntryType.h"
 
 
 

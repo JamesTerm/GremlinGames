@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableEntryTypeManager.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/NetworkTableEntryTypeManager.h"
-#include "networktables2/type/DefaultEntryTypes.h"
+#include "NetworkTableEntryTypeManager.h"
+#include "DefaultEntryTypes.h"
 
 
 NetworkTableEntryType* NetworkTableEntryTypeManager::GetType(TypeId id){

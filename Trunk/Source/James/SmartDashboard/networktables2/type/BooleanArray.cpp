@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * BooleanArray.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/BooleanArray.h"
-#include "networktables2/type/DefaultEntryTypes.h"
+#include "BooleanArray.h"
+#include "DefaultEntryTypes.h"
 
 
 const TypeId BooleanArray::BOOLEAN_ARRAY_RAW_ID = 0x10;

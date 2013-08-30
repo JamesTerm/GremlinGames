@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableKeyListenerAdapter.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables/NetworkTableKeyListenerAdapter.h"
+#include "NetworkTableKeyListenerAdapter.h"
 
 
 

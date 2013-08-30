@@ -12,7 +12,7 @@ class ArrayData;
 
 #include "ArrayEntryType.h"
 #include "ComplexData.h"
-#include "networktables2/NetworkTableEntry.h"
+#include "../NetworkTableEntry.h"
 
 /**
  *

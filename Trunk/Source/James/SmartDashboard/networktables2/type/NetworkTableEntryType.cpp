@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableEntryType.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/type/NetworkTableEntryType.h"
+#include "NetworkTableEntryType.h"
 
 
 NetworkTableEntryType::NetworkTableEntryType(TypeId _id, const char* _name) : id(_id), name(_name){
