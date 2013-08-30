@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ConnectionMonitorThread.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/connection/ConnectionMonitorThread.h"
-#include "networktables2/connection/BadMessageException.h"
+#include "ConnectionMonitorThread.h"
+#include "BadMessageException.h"
 
 
 ConnectionMonitorThread::ConnectionMonitorThread(ConnectionAdapter& _adapter, NetworkTableConnection& _connection) :

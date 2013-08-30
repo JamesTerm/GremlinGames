@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * BadMessageException.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/connection/BadMessageException.h"
+#include "BadMessageException.h"
 
 BadMessageException::BadMessageException(const char* msg)
 	: message(msg)

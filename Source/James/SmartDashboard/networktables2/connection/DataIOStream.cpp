@@ -1,4 +1,5 @@
-#include "networktables2/connection/DataIOStream.h"
+#include "stdafx.h"
+#include "DataIOStream.h"
 
 //TODO remove this when alloca is solved
 #ifdef WIN32

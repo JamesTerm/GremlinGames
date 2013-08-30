@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /**
  * An abstraction for the NetworkTable protocol
  * 
@@ -5,8 +6,8 @@
  *
  */
 
-#include "networktables2/connection/NetworkTableConnection.h"
-#include "networktables2/connection/BadMessageException.h"
+#include "NetworkTableConnection.h"
+#include "BadMessageException.h"
 
 
 NetworkTableConnection::NetworkTableConnection(IOStream* _ioStream, NetworkTableEntryTypeManager& _typeManager) :
