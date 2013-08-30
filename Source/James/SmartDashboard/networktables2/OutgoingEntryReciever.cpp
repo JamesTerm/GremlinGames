@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * OutgoingEntryReciever.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/OutgoingEntryReceiver.h"
+#include "OutgoingEntryReceiver.h"
 
 OutgoingEntryReceiver_NULL_t OutgoingEntryReceiver_NULL;
 

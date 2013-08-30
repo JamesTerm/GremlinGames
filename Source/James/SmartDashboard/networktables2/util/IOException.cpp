@@ -5,10 +5,11 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/util/IOException.h"
+#include "IOException.h"
 #include <stdlib.h>
 #include <string.h>
 
+#pragma warning ( disable : 4996 )
 
 IOException::IOException(const char* msg) : message(strdup(msg)), errorValue(0){}
 IOException::IOException(const char* msg, int _errorValue) : message(strdup(msg)), errorValue(_errorValue){}

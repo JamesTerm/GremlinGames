@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * WriteManager.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/WriteManager.h"
-#include "networktables2/util/System.h"
+#include "WriteManager.h"
+#include "util/System.h"
 #include <iostream>
 
 
