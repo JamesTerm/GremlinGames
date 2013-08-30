@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ServerNetworkTableEntryStore.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/server/ServerNetworkTableEntryStore.h"
+#include "ServerNetworkTableEntryStore.h"
 
 ServerNetworkTableEntryStore::ServerNetworkTableEntryStore(TableListenerManager& _listenerManager) :
 	AbstractNetworkTableEntryStore(_listenerManager)

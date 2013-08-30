@@ -30,5 +30,7 @@ typedef	int		STATUS;
 // No C library depreciation warnings
 #pragma warning ( disable : 4995 )
 #pragma warning ( disable : 4996 )
+//using 'this' in the base member's initializer list
+#pragma warning ( disable : 4355 )
 //I normally would not disable this... but for now I just need their stuff to build
 #pragma warning ( disable : 4101 )

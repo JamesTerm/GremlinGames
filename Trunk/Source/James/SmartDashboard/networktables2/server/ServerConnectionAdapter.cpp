@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ServerConnectionAdapter.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/server/ServerConnectionAdapter.h"
+#include "ServerConnectionAdapter.h"
 #include <stdio.h>
 
 

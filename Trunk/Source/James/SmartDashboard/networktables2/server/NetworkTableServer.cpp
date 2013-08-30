@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableServer.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/server/NetworkTableServer.h"
-#include "networktables2/server/ServerNetworkTableEntryStore.h"
+#include "NetworkTableServer.h"
+#include "ServerNetworkTableEntryStore.h"
 #include <iostream>
 #include <limits.h>
 
