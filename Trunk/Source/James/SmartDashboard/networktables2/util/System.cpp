@@ -5,19 +5,24 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/util/System.h"
-#include "semLib.h"
+#include "windows.h"
+#include "System.h"
+//#include "semLib.h"
 #include <stdio.h>
-#include <sysLib.h> // for sysClkRateGet
-#include <usrLib.h> // for taskDelay
-
+//#include <sysLib.h> // for sysClkRateGet
+//#include <usrLib.h> // for taskDelay
+//timeGetTime() uses Winmm.lib 
+#pragma comment (lib,"Winmm.lib")
 void sleep_ms(unsigned long ms){
-	taskDelay((INT32)((double)sysClkRateGet() * ms / 1000));
+	//taskDelay((INT32)((double)sysClkRateGet() * ms / 1000));
+	Sleep(ms);
 }
 unsigned long currentTimeMillis(){
-	struct timespec tp;
-	clock_gettime(CLOCK_REALTIME,&tp);
-	return tp.tv_sec*1000 + tp.tv_nsec/1000;
+	//struct timespec tp;
+	//clock_gettime(CLOCK_REALTIME,&tp);
+	DWORD dwTick_ = timeGetTime();
+	//return tp.tv_sec*1000 + tp.tv_nsec/1000;
+	return (long)dwTick_;
 }
 void writeWarning(const char* message){
 	fprintf(stderr, "%s\n", message);

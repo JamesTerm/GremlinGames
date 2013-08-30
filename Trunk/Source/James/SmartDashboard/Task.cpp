@@ -37,7 +37,8 @@ Task::Task(const char* name, FUNCPTR function, INT32 priority, UINT32 stackSize)
 
 	static INT32 instances = 0;
 	instances++;
-	nUsageReporting::report(nUsageReporting::kResourceType_Task, instances, 0, m_taskName);
+	//TODO find this method
+	//nUsageReporting::report(nUsageReporting::kResourceType_Task, instances, 0, m_taskName);
 }
 
 Task::~Task()

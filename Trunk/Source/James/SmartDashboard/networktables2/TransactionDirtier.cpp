@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * TransactionDirtier.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/TransactionDirtier.h"
+#include "TransactionDirtier.h"
 
 
 

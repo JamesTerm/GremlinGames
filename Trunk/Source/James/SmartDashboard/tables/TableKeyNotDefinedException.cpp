@@ -5,7 +5,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "tables/TableKeyNotDefinedException.h"
+#include "TableKeyNotDefinedException.h"
 #include <stdlib.h>
 #include <cstring>
 

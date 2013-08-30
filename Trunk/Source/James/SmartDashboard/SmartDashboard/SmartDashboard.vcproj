@@ -177,6 +177,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\tables\TableKeyNotDefinedException.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Task.cpp"
 				>
 			</File>
@@ -248,15 +252,43 @@
 				RelativePath="..\networktables2\NetworkTableNode.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\networktables2\OutgoingEntryReciever.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables2\TableKeyExistsWithDifferentTypeException.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables2\TransactionDirtier.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\networktables2\WriteManager.cpp"
+				>
+			</File>
 			<Filter
 				Name="util"
 				>
+				<File
+					RelativePath="..\networktables2\util\EOFException.cpp"
+					>
+				</File>
 				<File
 					RelativePath="..\networktables2\util\IllegalStateException.cpp"
 					>
 				</File>
 				<File
+					RelativePath="..\networktables2\util\IOException.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\networktables2\util\StringCache.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\networktables2\util\System.cpp"
 					>
 				</File>
 			</Filter>
