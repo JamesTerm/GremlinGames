@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * NetworkTableClient.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/client/NetworkTableClient.h"
-#include "networktables2/TransactionDirtier.h"
+#include "NetworkTableClient.h"
+#include "../TransactionDirtier.h"
 
 /**
  * Create a new NetworkTable Client

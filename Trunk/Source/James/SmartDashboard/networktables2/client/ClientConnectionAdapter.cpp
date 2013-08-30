@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ClientConnectionAdapter.cpp
  *
@@ -5,8 +6,8 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/client/ClientConnectionAdapter.h"
-#include "networktables2/connection/ConnectionMonitorThread.h"
+#include "ClientConnectionAdapter.h"
+#include "../connection/ConnectionMonitorThread.h"
 
 void ClientConnectionAdapter::gotoState(ClientConnectionState* newState){
 	{

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * ClientNetworkTableEntryStore.cpp
  *
@@ -5,7 +6,7 @@
  *      Author: Mitchell Wills
  */
 
-#include "networktables2/client/ClientNetworkTableEntryStore.h"
+#include "ClientNetworkTableEntryStore.h"
 
 /**
  * Create a new ClientNetworkTableEntryStore
