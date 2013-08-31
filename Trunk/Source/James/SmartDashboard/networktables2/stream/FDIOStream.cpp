@@ -97,9 +97,15 @@ void FDIOStream::flush(){
   //if(fflush(f)==EOF)
   //  throw EOFException();
 }
-void FDIOStream::close(){
+void FDIOStream::close()
+{
+	//I am not really sure why this is here... we don't own the socket so I do not wish to close it... however the shutdown may be
+	//what was intended here
+	//  [8/31/2013 Terminator]
+
   //fclose(f);//ignore any errors closing
-	assert(false);
-//  ::close(fd);
+	//assert(false);
+	//::close(fd);
+	shutdown( fd, SD_BOTH );
 }
 

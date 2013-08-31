@@ -127,10 +127,15 @@ IOStream* SocketServerStreamProvider::accept(){
 		{
 			if (FD_ISSET(serverSocket, &fdSet))
 			{
+				#if 0
 				struct sockaddr clientAddr = {0};
 				addrlen_t clientAddrSize = 0;
 				int connectedSocket = ::accept(serverSocket, &clientAddr, &clientAddrSize);
-				if (connectedSocket == ERROR)
+				#else
+				//For windows these must be NULL to work properly
+				int connectedSocket = ::accept(serverSocket, NULL, NULL);
+				#endif
+				if (connectedSocket == INVALID_SOCKET)
 					return NULL;
 				
 				int on = 1;
