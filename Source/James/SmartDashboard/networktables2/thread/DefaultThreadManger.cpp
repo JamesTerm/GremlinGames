@@ -21,11 +21,19 @@ PeriodicNTThread::~PeriodicNTThread()
 {
 	stop();
 	//TODO somehow do this async
-	//delete thread;
+	if (thread)
+	{
+		delete thread;
+		thread=NULL;
+	}
 }
-int PeriodicNTThread::taskMain(PeriodicNTThread* o){//static wrapper
+
+int PeriodicNTThread::taskMain(PeriodicNTThread* o)
+{
+	//static wrapper
 	return o->_taskMain();
 }
+
 int PeriodicNTThread::_taskMain(){
 	try {
 		while(run){
@@ -40,10 +48,12 @@ int PeriodicNTThread::_taskMain(){
 	fflush(stdout);
 	return 0;
 }
-void PeriodicNTThread::stop() {
+void PeriodicNTThread::stop() 
+{
 	run = false;
-	//TODO thread->Stop();
+	thread->Stop();
 }
+
 bool PeriodicNTThread::isRunning() {
 	return thread->IsReady();
 }
