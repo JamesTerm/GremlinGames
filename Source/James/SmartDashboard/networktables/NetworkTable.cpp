@@ -25,12 +25,10 @@ const int NetworkTable::DEFAULT_PORT = 1735;
 DefaultThreadManager NetworkTable::threadManager;
 NetworkTableProvider* NetworkTable::staticProvider = NULL;
 NetworkTableMode* NetworkTable::mode = &NetworkTableMode::Server;
+NetworkTableNode *g_TableNode=NULL;
 int NetworkTable::port = NetworkTable::DEFAULT_PORT;  //TODO check cpp code for default port without the class name specifier
 std::string NetworkTable::ipAddress;
 ReentrantSemaphore NetworkTable::STATIC_LOCK;
-
-
-
 
 
 
@@ -44,7 +42,23 @@ void NetworkTable::CheckInit(){
 
 void NetworkTable::Initialize() {
 	CheckInit();
-	staticProvider = new NetworkTableProvider(*(mode->CreateNode(ipAddress.c_str(), port, threadManager)));
+	g_TableNode=mode->CreateNode(ipAddress.c_str(), port, threadManager);
+	staticProvider = new NetworkTableProvider(*g_TableNode);
+}
+
+void NetworkTable::Shutdown() 
+{
+	//while visual studio simplicity checks for null, I can't assume other compiler environments will... so we'll check
+	if (staticProvider!=NULL)
+	{
+		delete staticProvider;
+		staticProvider=NULL;
+	}
+	if (g_TableNode!=NULL)
+	{
+		mode->DestroyNode(g_TableNode);
+		g_TableNode=NULL;
+	}
 }
 
 void NetworkTable::SetServerMode(){

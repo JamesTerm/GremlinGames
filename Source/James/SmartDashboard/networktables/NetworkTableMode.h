@@ -29,7 +29,8 @@ public:
 	 * @throws IOException
 	 */
 	virtual NetworkTableNode* CreateNode(const char* ipAddress, int port, NTThreadManager& threadManager) = 0;
-	
+	virtual void DestroyNode(NetworkTableNode *Node)=0;
+
 	static NetworkTableServerMode Server;
 	static NetworkTableClientMode Client;
 };
@@ -38,12 +39,14 @@ class NetworkTableServerMode : public NetworkTableMode{
 public:
 	NetworkTableServerMode();
 	virtual NetworkTableNode* CreateNode(const char* ipAddress, int port, NTThreadManager& threadManager);
+	virtual void DestroyNode(NetworkTableNode *Node);
 };
 
 class NetworkTableClientMode : public NetworkTableMode{
 public:
 	NetworkTableClientMode();
 	virtual NetworkTableNode* CreateNode(const char* ipAddress, int port, NTThreadManager& threadManager);
+	virtual void DestroyNode(NetworkTableNode *Node);
 };
 
 

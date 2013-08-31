@@ -51,8 +51,26 @@ typedef int addrlen_t;
 typedef socklen_t addrlen_t;
 #endif
 
+void load_tcpip(void)
+{
+	WSAData wsaData_;
+	WORD wVersionRequested_ = MAKEWORD( 2, 2 );
 
-SocketServerStreamProvider::SocketServerStreamProvider(int port){
+	int result=WSAStartup( wVersionRequested_, &wsaData_ );
+	assert(result==0);
+}
+
+bool unload_tcpip(void)
+{
+	WSACleanup();
+	return true;
+}
+
+
+SocketServerStreamProvider::SocketServerStreamProvider(int port)
+{
+	load_tcpip();
+
 	struct sockaddr_in serverAddr;
 	int sockAddrSize = sizeof(serverAddr);
 	memset(&serverAddr, 0, sockAddrSize);
@@ -64,7 +82,7 @@ SocketServerStreamProvider::SocketServerStreamProvider(int port){
 	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if ((serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == ERROR)
+	if ((serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
 	{
 		throw IOException("Error creating server socket", errno);
 	}
@@ -74,20 +92,23 @@ SocketServerStreamProvider::SocketServerStreamProvider(int port){
 	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseAddr, sizeof(reuseAddr));
 
 	// Bind socket to local address.
-	if (bind(serverSocket, (struct sockaddr *)&serverAddr, sockAddrSize) == ERROR)
+	if (bind(serverSocket, (struct sockaddr *)&serverAddr, sockAddrSize) != 0)
 	{
 		close();
 		throw IOException("Could not bind server socket", errno);
 	}
 
-	if (listen(serverSocket, 1) == ERROR)
+	if (listen(serverSocket, 1) == SOCKET_ERROR)
 	{
 		close();
 		throw IOException("Could not listen on server socket", errno);
 	}
 }
-SocketServerStreamProvider::~SocketServerStreamProvider(){
+
+SocketServerStreamProvider::~SocketServerStreamProvider()
+{
 	close();
+	unload_tcpip();
 }
 
 
@@ -122,10 +143,14 @@ IOStream* SocketServerStreamProvider::accept(){
 	return NULL;
 }
 
-void SocketServerStreamProvider::close(){
-	//::close(serverSocket);
-	shutdown( serverSocket, SD_BOTH );
-	closesocket( serverSocket );
-	serverSocket = (int)INVALID_SOCKET;
+void SocketServerStreamProvider::close()
+{
+	if (serverSocket!=INVALID_SOCKET)
+	{
+		//::close(serverSocket);
+		shutdown( serverSocket, SD_BOTH );
+		closesocket( serverSocket );
+		serverSocket = (int)INVALID_SOCKET;
 
+	}
 }
