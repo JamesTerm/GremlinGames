@@ -94,6 +94,7 @@ public:
 	 * @throws IOException
 	 */
 	static void Initialize();
+	static void Shutdown();
 	/**
 	 * set that network tables should be a server
 	 * This must be called before initalize or GetTable

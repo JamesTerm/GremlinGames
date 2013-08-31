@@ -20,7 +20,8 @@ class SmartDashboard //: public SensorBase
 {
 public:
 	static void init();
-	
+	static void shutdown();
+
 	static void PutData(std::string key, Sendable *data);
 	static void PutData(NamedSendable *value);
 	//static Sendable* GetData(std::string keyName);

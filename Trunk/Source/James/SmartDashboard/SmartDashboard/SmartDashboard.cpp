@@ -14,6 +14,11 @@ void SmartDashboard::init(){
 	m_table = NetworkTable::GetTable("SmartDashboard");
 }
 
+void SmartDashboard::shutdown()
+{
+	NetworkTable::Shutdown();
+}
+
 //TODO usage reporting
 
 /**
