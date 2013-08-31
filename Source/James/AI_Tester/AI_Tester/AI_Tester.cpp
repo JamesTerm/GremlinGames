@@ -1246,4 +1246,7 @@ int main(int argc, char** argv)
 	if ((argc==2)&&((argv[1])[0]=='1'))
 		useUserPrefs=true;
 	CommandLineInterface(useUserPrefs);
+	#ifndef __DisableSmartDashboard__
+	SmartDashboard::shutdown();
+	#endif
 }
