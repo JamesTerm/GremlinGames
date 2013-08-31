@@ -1232,21 +1232,13 @@ void CommandLineInterface(bool useUserPrefs=true)
 	UI_thread=NULL;
 }
 
-#ifndef __DisableSmartDashboard__
-#include "../../SmartDashboard/SmartDashboard/SmartDashboard.h"
-#endif
-
 int main(int argc, char** argv)
 {
-	#ifndef __DisableSmartDashboard__
 	SmartDashboard::init();
-	#endif
 	DisplayHelp();
 	bool useUserPrefs=false;
 	if ((argc==2)&&((argv[1])[0]=='1'))
 		useUserPrefs=true;
 	CommandLineInterface(useUserPrefs);
-	#ifndef __DisableSmartDashboard__
 	SmartDashboard::shutdown();
-	#endif
 }
