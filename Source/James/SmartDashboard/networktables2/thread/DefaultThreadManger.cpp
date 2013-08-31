@@ -10,13 +10,16 @@
 
 
 PeriodicNTThread::PeriodicNTThread(PeriodicRunnable* _r, const char* _name) : 
-			name(_name), thread(new Task(name, (FUNCPTR)PeriodicNTThread::taskMain)), r(_r), run(true){
+			name(_name), thread(new Task(name, (FUNCPTR)PeriodicNTThread::taskMain)), r(_r), run(true)
+{
 	fprintf(stdout, "Starting task: %s\n", name);
 	fflush(stdout);
 	thread->Start((UINT32)this);
 }
 
-PeriodicNTThread::~PeriodicNTThread(){
+PeriodicNTThread::~PeriodicNTThread()
+{
+	stop();
 	//TODO somehow do this async
 	//delete thread;
 }
