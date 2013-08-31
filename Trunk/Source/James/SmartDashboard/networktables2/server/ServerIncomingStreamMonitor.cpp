@@ -44,7 +44,9 @@ void ServerIncomingStreamMonitor::run()
 	try
 	{
 		IOStream* newStream = streamProvider.accept();
-		if(newStream != NULL)
+		//Note: monitorThread must be checked to avoid crash on exit
+		//  [8/31/2013 Terminator]
+		if ((monitorThread!=NULL)&&(newStream != NULL))
 		{
 			ServerConnectionAdapter* connectionAdapter = new ServerConnectionAdapter(newStream, entryStore, entryStore, adapterListener, typeManager, threadManager);
 			incomingListener.OnNewConnection(*connectionAdapter);
