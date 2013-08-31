@@ -20,6 +20,10 @@
 //#include <unistd.h>
 //#endif
 #include <stdio.h>
+#include <windows.h>
+#include <winsock2.h>
+#include <wininet.h>
+#include <ws2tcpip.h>
 
 
 FDIOStream::FDIOStream(int _fd){
@@ -37,8 +41,9 @@ int FDIOStream::read(void* ptr, int numbytes){
 		return 0;
 	char* bufferPointer = (char*)ptr;
 	int totalRead = 0;
-	while (totalRead < numbytes) {
-		int numRead =0; assert(false);//int numRead = ::read(fd, bufferPointer, numbytes-totalRead);
+	while (totalRead < numbytes) 
+	{
+		int numRead=recv(fd, bufferPointer, numbytes-totalRead, 0);
 		if(numRead == 0){
 			throw EOFException();
 		}
@@ -52,8 +57,33 @@ int FDIOStream::read(void* ptr, int numbytes){
 	}
 	return totalRead;
 }
-int FDIOStream::write(const void* ptr, int numbytes){
-	int numWrote = 0; assert(false);
+
+int Send( int sockfd,char* Data, size_t sizeData )
+{
+	assert(sockfd!=INVALID_SOCKET);
+	bool Result_ = true;
+
+	WSABUF wsaBuf_;
+	wsaBuf_.buf = Data;
+	wsaBuf_.len = (ULONG) sizeData;
+	DWORD BytesSent_;
+
+	while (WSASend( sockfd, &wsaBuf_, 1, &BytesSent_, 0, NULL, NULL ) == SOCKET_ERROR)
+	{
+		if (WSAGetLastError() != WSAEWOULDBLOCK)
+		{
+			Result_ = false;
+			break;
+		}
+		Sleep(1);
+	}
+	assert(Result_);  //TODO reproduce and implement
+	return(int)BytesSent_;
+}
+
+int FDIOStream::write(const void* ptr, int numbytes)
+{
+	int numWrote = Send(fd,(char *)ptr,numbytes);
   //int numWrote = ::write(fd, (char*)ptr, numbytes);//TODO: this is bad
   //int numWrote = fwrite(ptr, 1, numbytes, f);
   if(numWrote==numbytes)
