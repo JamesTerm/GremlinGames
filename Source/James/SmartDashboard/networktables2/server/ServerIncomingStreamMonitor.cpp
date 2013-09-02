@@ -33,9 +33,10 @@ void ServerIncomingStreamMonitor::stop()
 {
 	if (monitorThread != NULL)
 	{
-		monitorThread->stop();
-		delete monitorThread;
-		monitorThread = NULL;
+		NTThread *temp=monitorThread;
+		monitorThread = NULL;  //call this before stop for the check below to ensur a new server connection adapter will not happen
+		temp->stop();
+		delete temp;
 	}
 }
 
