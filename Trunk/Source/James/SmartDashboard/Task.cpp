@@ -14,6 +14,7 @@
 //#include <usrLib.h>
 #include <Windows.h>
 
+
 //const UINT32 Task::kDefaultPriority;
 //const INT32 Task::kInvalidTaskID;
 
@@ -116,12 +117,60 @@ bool Task::Stop()
 {
 	if (!m_Handle) return false;
 	bool ok = true;
+	// Wait for the thread to finish
+	#ifdef	_DEBUG
+	try_again:
+	#endif	_DEBUG
+
+	//const int TimeOut=2000;
+	const int TimeOut=INFINITE;
+	if ( ::WaitForSingleObject( m_Handle , TimeOut ) == WAIT_TIMEOUT )
+	{	// Signal the thread as having been terminated
+		//if ( m_p_error ) *m_p_error = true;
+
+		// If this gets triggered we have a bug in the code.
+#ifdef	_DEBUG
+		switch( ::MessageBoxW( NULL,	L"A thread being used by the application\n"
+			L"has taken to long to exit and so is about\n"
+			L"to be terminated to avoid locking-up\n"
+			L"the application.\n\n"
+			L"Click ABORT to debug.\n"
+			L"Click RETRY to wait for a bit longer.\n"
+			L"Click IGNORE to terminate the thread.\n\n"
+			L"This message is NOT displayed in release mode.",
+			L"Thread exit has timed out.",
+			MB_ABORTRETRYIGNORE ) )
+		{	case IDRETRY:	goto try_again;
+		case IDABORT:	::DebugBreak(); break;
+		case IDIGNORE:	break;
+		}
+#endif	_DEBUG
+
+		// Free thread memory
+		CONTEXT c_ = {0};
+		c_.ContextFlags = CONTEXT_FULL;
+		::GetThreadContext( m_Handle, &c_ );
+		MEMORY_BASIC_INFORMATION Info_ = {0};
+
+#ifdef _M_X64
+		::VirtualQuery( (PVOID) c_.Rsp, &Info_, sizeof(Info_) );
+#else
+		::VirtualQuery( (PVOID) c_.Esp, &Info_, sizeof(Info_) );
+#endif
+		// Terminate the thread
+		::TerminateThread( m_Handle, 0 );
+
+		// Free the memory
+		::VirtualFree( Info_.AllocationBase, 0, MEM_RELEASE ); 		
+	}
+
 	//if (Verify())
 	//{
 	//	ok = HandleError(taskDelete(m_taskID));
 	//}
 	//m_taskID = kInvalidTaskID;
 	// The thread has finished
+
 	CloseHandle( m_Handle );
 	m_Handle = NULL;
 	return ok;
