@@ -45,7 +45,7 @@ void WriteManager::start(){
 void WriteManager::stop(){
   if(thread!=NULL){
     thread->stop();
-    //delete thread;
+    delete thread;
     thread = NULL;
   }
 }
