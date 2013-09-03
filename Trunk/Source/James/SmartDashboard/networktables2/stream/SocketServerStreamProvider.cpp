@@ -117,7 +117,7 @@ IOStream* SocketServerStreamProvider::accept(){
 	// Check for a shutdown once per second
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
-	while (true)
+	if (serverSocket!=INVALID_SOCKET)
 	{
 		fd_set fdSet;
 
