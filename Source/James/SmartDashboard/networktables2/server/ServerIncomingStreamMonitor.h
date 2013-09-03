@@ -40,6 +40,8 @@ private:
 	NTThreadManager& threadManager;
 	NTThread* monitorThread;
 	
+	ReentrantSemaphore BlockDeletionList;
+	std::vector<ServerConnectionAdapter *> m_DeletionList;
 public:
 	/**
 	 * Create a new incoming stream monitor
@@ -66,8 +68,8 @@ public:
 	
 	void run();
 	
-	
-	
+	void close(ServerConnectionAdapter *Adapter);
+
 };
 
 

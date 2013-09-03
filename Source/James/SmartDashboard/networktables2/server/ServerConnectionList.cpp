@@ -7,12 +7,13 @@
  */
 
 #include "ServerConnectionList.h"
+#include "ServerIncomingStreamMonitor.h"
 #include <algorithm>
 #include <stdio.h>
 
 
 
-ServerConnectionList::ServerConnectionList()
+ServerConnectionList::ServerConnectionList(ServerIncomingStreamMonitor *Factory) : m_Factory(Factory)
 {
 }
 ServerConnectionList::~ServerConnectionList()
@@ -36,8 +37,9 @@ void ServerConnectionList::close(ServerConnectionAdapter& connectionAdapter, boo
 		fprintf(stdout, "Close: %p\n", &connectionAdapter);
 		fflush(stdout);
 		connections.erase(connectionPosition);
-		connectionAdapter.shutdown(closeStream);
-		delete &connectionAdapter;
+		m_Factory->close(&connectionAdapter);
+		//connectionAdapter.shutdown(closeStream);
+		//delete &connectionAdapter;
 	}
 }
 

@@ -37,7 +37,6 @@ void DefaultEntryTypes::DOUBLE_t::sendValue(EntryValue eValue, DataIOStream& os)
 	}
 }
 EntryValue DefaultEntryTypes::DOUBLE_t::readValue(DataIOStream& is) {
-	//uint64_t value;   //oops... looks like somebody goofed here -James
 	uint64_t value=0; 
 	
 	for(int i = 0; i<8; ++i){
