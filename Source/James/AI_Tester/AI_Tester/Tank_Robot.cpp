@@ -235,6 +235,8 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		}
 		#endif
 	}
+	SmartDashboard::PutNumber("LeftEncoder",Encoder_LeftVelocity);
+	SmartDashboard::PutNumber("RightEncoder",Encoder_RightVelocity);
 	
 	//Update the physics with the actual velocity
 	Vec2d LocalVelocity;
