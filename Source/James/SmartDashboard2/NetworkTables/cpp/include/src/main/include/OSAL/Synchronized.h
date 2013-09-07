@@ -10,8 +10,11 @@
 #define NT_CRITICAL_REGION(s) { NTSynchronized _sync(s);
 #define NT_END_REGION }
 
+#if (defined __vxworks || defined WIN32)
+
 #ifdef __vxworks
 #include <vxWorks.h>
+#endif
 #include <semLib.h>
 
 class NTReentrantSemaphore
