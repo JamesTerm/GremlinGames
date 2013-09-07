@@ -13,9 +13,9 @@
 NetworkTableServer::NetworkTableServer(IOStreamProvider& _streamProvider, NetworkTableEntryTypeManager& typeManager, NTThreadManager& threadManager):
 		NetworkTableNode(*new ServerNetworkTableEntryStore(*this)),
 		streamProvider(_streamProvider),
-		connectionList(),
-		writeManager(connectionList, threadManager, GetEntryStore(), ULONG_MAX),
 		incomingStreamMonitor(streamProvider, (ServerNetworkTableEntryStore&)entryStore, *this, connectionList, typeManager, threadManager),
+		connectionList(&incomingStreamMonitor),
+		writeManager(connectionList, threadManager, GetEntryStore(), ULONG_MAX),
                 continuingReceiver(writeManager){
 	
 	GetEntryStore().SetIncomingReceiver(&continuingReceiver);

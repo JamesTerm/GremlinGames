@@ -28,9 +28,9 @@ class NetworkTableServer;
 class NetworkTableServer : public NetworkTableNode, public ServerIncomingConnectionListener{
 private:
 	IOStreamProvider& streamProvider;
+	ServerIncomingStreamMonitor incomingStreamMonitor;
 	ServerConnectionList connectionList;
 	WriteManager writeManager;
-	ServerIncomingStreamMonitor incomingStreamMonitor;
 	TransactionDirtier continuingReceiver;
 
   public:

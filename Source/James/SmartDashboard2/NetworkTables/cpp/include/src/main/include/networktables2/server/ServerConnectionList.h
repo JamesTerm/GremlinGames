@@ -11,7 +11,7 @@
 
 
 class ServerConnectionList;
-
+class ServerIncomingStreamMonitor;
 
 #include "networktables2/FlushableOutgoingEntryReceiver.h"
 #include "networktables2/NetworkTableEntry.h"
@@ -31,9 +31,9 @@ class ServerConnectionList : public FlushableOutgoingEntryReceiver, public Serve
 private:
 	NTReentrantSemaphore connectionsLock;
 	std::vector<ServerConnectionAdapter*> connections;
-	
+	ServerIncomingStreamMonitor * const m_Factory; //make call to close connection
 public:
-	ServerConnectionList();
+	ServerConnectionList(ServerIncomingStreamMonitor *Factory);
 	virtual ~ServerConnectionList();
 	/**
 	 * Add a connection to the list
