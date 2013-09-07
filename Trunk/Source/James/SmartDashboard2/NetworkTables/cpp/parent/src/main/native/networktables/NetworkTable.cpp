@@ -51,20 +51,11 @@ void NetworkTable::Initialize() {
 
 void NetworkTable::Shutdown() 
 {
-	//TODO this starts the next phase of checkins
-#if 0
-	//while visual studio simplicity checks for null, I can't assume other compiler environments will... so we'll check
 	if (staticProvider!=NULL)
 	{
 		delete staticProvider;
 		staticProvider=NULL;
 	}
-	if (g_TableNode!=NULL)
-	{
-		mode->DestroyNode(g_TableNode);
-		g_TableNode=NULL;
-	}
-#endif
 }
 
 void NetworkTable::SetTableProvider(NetworkTableProvider* provider){

@@ -24,21 +24,24 @@ NetworkTableServer::NetworkTableServer(IOStreamProvider& _streamProvider, Networ
 	incomingStreamMonitor.start();
 	writeManager.start();
 }
-//TODO impliment simplified NetworkTableServer constructor
+//TODO implement simplified NetworkTableServer constructor
 /*NetworkTableServer::NetworkTableServer(IOStreamProvider& streamProvider){
 	this(streamProvider, new NetworkTableEntryTypeManager(), new DefaultThreadManager());
 }*/
 NetworkTableServer::~NetworkTableServer(){
 	Close();
 	delete &entryStore;
+	delete &streamProvider;
 }
 
 void NetworkTableServer::Close(){
 	try{
+		//Note: streamProvider must come before the incomingStreamMonitor so the that task can complete first for the thread to close
+		//  [9/1/2013 Terminator]
+		streamProvider.close(); 
 		incomingStreamMonitor.stop();
 		writeManager.stop();
 		connectionList.closeAll();
-		streamProvider.close();
 	} catch (const std::exception& ex) {
 	    //TODO print stack trace?
 	}
