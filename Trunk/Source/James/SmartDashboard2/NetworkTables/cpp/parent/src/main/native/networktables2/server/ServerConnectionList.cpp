@@ -6,12 +6,13 @@
  */
 
 #include "networktables2/server/ServerConnectionList.h"
+#include "networktables2/server/ServerIncomingStreamMonitor.h"
 #include <algorithm>
 #include <stdio.h>
 
 
 
-ServerConnectionList::ServerConnectionList()
+ServerConnectionList::ServerConnectionList(ServerIncomingStreamMonitor *Factory) : m_Factory(Factory)
 {
 }
 ServerConnectionList::~ServerConnectionList()
@@ -35,8 +36,9 @@ void ServerConnectionList::close(ServerConnectionAdapter& connectionAdapter, boo
 		fprintf(stdout, "[NT] Close: %p\n", &connectionAdapter);
 		fflush(stdout);
 		connections.erase(connectionPosition);
-		connectionAdapter.shutdown(closeStream);
-		delete &connectionAdapter;
+		m_Factory->close(&connectionAdapter);
+		//connectionAdapter.shutdown(closeStream);
+		//delete &connectionAdapter;
 	}
 }
 
