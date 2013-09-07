@@ -55,6 +55,7 @@ public:
 			ServerAdapterManager& adapterListener,
 			NetworkTableEntryTypeManager& typeManager, NTThreadManager& threadManager);
 	
+	~ServerIncomingStreamMonitor();
 	/**
 	 * Start the monitor thread
 	 */
