@@ -94,7 +94,8 @@ public:
 	 * @throws IOException
 	 */
 	static void Initialize();
-	
+	static void Shutdown();
+
 	/**
 	 * set the table provider for static network tables methods
 	 * This must be called before getTable

@@ -1,39 +1,61 @@
 /*
- * DefaultThreadManager.cpp
- * Desktop
- * Author: Mitchell Wills
+ * DefaultThreadManger.cpp
  *
+ *  Created on: Sep 21, 2012
+ *      Author: Mitchell Wills
  */
-
+#include "../../../../../../../../stdafx.h"
 #include "networktables2/thread/DefaultThreadManager.h"
-#include <exception>
-#include <signal.h>
 #include <stdio.h>
 
 
-PeriodicNTThread::PeriodicNTThread(PeriodicRunnable* _r, const char* name) : r(_r), run(true){
-  if(pthread_create(&thread, NULL, (void* (*)(void*))PeriodicNTThread::taskMain, (void*)this))
-    throw std::exception();
+PeriodicNTThread::PeriodicNTThread(PeriodicRunnable* _r, const char* _name) : 
+			name(_name), thread(new NTTask(name, (FUNCPTR)PeriodicNTThread::taskMain)), r(_r), run(true)
+{
+	fprintf(stdout, "Starting task: %s\n", name);
+	fflush(stdout);
+	thread->Start((UINT32)this);
 }
-PeriodicNTThread::~PeriodicNTThread(){
-  stop();
-  //pthread_join(thread, NULL);
-  //pthread_detach(thread);
-}
-void* PeriodicNTThread::taskMain(PeriodicNTThread* o){//static wrapper
-	o->_taskMain();
-}
-void PeriodicNTThread::_taskMain(){
-	while(run){
-		r->run();
+
+PeriodicNTThread::~PeriodicNTThread()
+{
+	stop();
+	//TODO somehow do this async
+	if (thread)
+	{
+		delete thread;
+		thread=NULL;
 	}
 }
-void PeriodicNTThread::stop() {
-	run = false;
-	//pthread_cancel(thread);
+
+int PeriodicNTThread::taskMain(PeriodicNTThread* o)
+{
+	//static wrapper
+	return o->_taskMain();
 }
+
+int PeriodicNTThread::_taskMain(){
+	try {
+		while(run){
+			r->run();
+		}
+	} catch (...) {
+		fprintf(stdout, "Task exited with uncaught exception %s\n", name);
+		fflush(stdout);
+		return 1;
+	}
+	fprintf(stdout, "Task exited normally: %s\n", name);
+	fflush(stdout);
+	return 0;
+}
+void PeriodicNTThread::stop() 
+{
+	run = false;
+	thread->Stop();
+}
+
 bool PeriodicNTThread::isRunning() {
-  return pthread_kill(thread, 0) == 0;
+	return thread->IsReady();
 }
 
 NTThread* DefaultThreadManager::newBlockingPeriodicThread(PeriodicRunnable* r, const char* name) {

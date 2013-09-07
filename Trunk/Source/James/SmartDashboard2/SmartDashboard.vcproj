@@ -193,7 +193,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SmartDashboard\stdafx.h"
+				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stdint.h"
 				>
 			</File>
 		</Filter>
@@ -430,6 +434,14 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="OSAL"
+			>
+			<File
+				RelativePath=".\NetworkTables\cpp\Win32\src\main\native\OSAL\Task.cpp"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\SmartDashboard\ReadMe.txt"

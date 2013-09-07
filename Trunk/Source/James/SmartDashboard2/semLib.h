@@ -1,6 +1,8 @@
 #include <windows.h>
 #include "stdafx.h"
 
+#pragma once
+
 //typedef struct semaphore *	SEM_ID;
 typedef CRITICAL_SECTION *	SEM_ID;
 
