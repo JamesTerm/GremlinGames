@@ -8,7 +8,7 @@
 #define __SMART_DASHBOARD_DATA__
 
 #include <string>
-#include "../tables/ITable.h"
+#include "tables/ITable.h"
 
 class Sendable
 {

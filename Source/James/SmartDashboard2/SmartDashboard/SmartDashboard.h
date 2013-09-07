@@ -8,13 +8,14 @@
 #define __SMART_DASHBOARD_H__
 
 //#include "SensorBase.h"
-#include "../Base.h"
+//#include "../Base.h"
 #include <map>
 #include <string>
 #include "Sendable.h"
 #include "NamedSendable.h"
-#include "../tables/ITable.h"
-#include "../networktables2/type/ComplexData.h"
+#include "tables/ITable.h"
+#include "networktables2/type/ComplexData.h"
+#include "ErrorBase.h"
 
 class SmartDashboard //: public SensorBase
 {

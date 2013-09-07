@@ -7,10 +7,12 @@
 #ifndef __NTTASK_H__
 #define __NTTASK_H__
 
-#ifdef __vxworks
+#if (defined __vxworks || defined WIN32)
 
 #include "ErrorBase.h"
+#ifdef __vxworks
 #include <vxWorks.h>
+#endif
 
 /**
  * WPI task is a wrapper for the native Task object.
@@ -43,10 +45,22 @@ public:
 	const char* GetName();
 	INT32 GetID();
 
-private:
+	#ifdef WIN32
 	FUNCPTR m_function;
+	UINT32 m_Arg[10];
+	#endif
+private:
 	char* m_taskName;
+
+	#ifdef WIN32
+	bool StartInternal();
+	HANDLE m_Handle;
+	DWORD m_ID;
+	#else
+	FUNCPTR m_function;
 	INT32 m_taskID;
+	#endif
+
 	UINT32 m_stackSize;
 	INT32 m_priority;
 	bool HandleError(STATUS results);

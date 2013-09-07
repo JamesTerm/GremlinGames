@@ -1,3 +1,4 @@
+#include "stdafx.h"
 /*
  * SocketServerStreamProvider.cpp
  *
@@ -9,7 +10,7 @@
 #include "networktables2/stream/FDIOStream.h"
 #include "networktables2/util/IOException.h"
 
-#include <strings.h>
+//#include <strings.h>
 #include <cstring>
 #include <errno.h>
 #ifdef _WRS_KERNEL
@@ -25,10 +26,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <unistd.h>
+//#include <unistd.h>
 #ifdef WIN32
 #include <windows.h>
-#include <winsock.h>
+//#include <winsock.h>
 #include <winsock2.h>
 #include <wininet.h>
 #include <ws2tcpip.h>
@@ -40,7 +41,7 @@
 #endif
 #endif
 
-#ifndef _WRS_KERNEL
+#ifndef ERROR
 #define ERROR -1
 #endif
 
@@ -50,8 +51,26 @@ typedef int addrlen_t;
 typedef socklen_t addrlen_t;
 #endif
 
+void load_tcpip(void)
+{
+	WSAData wsaData_;
+	WORD wVersionRequested_ = MAKEWORD( 2, 2 );
 
-SocketServerStreamProvider::SocketServerStreamProvider(int port){
+	int result=WSAStartup( wVersionRequested_, &wsaData_ );
+	assert(result==0);
+}
+
+bool unload_tcpip(void)
+{
+	WSACleanup();
+	return true;
+}
+
+
+SocketServerStreamProvider::SocketServerStreamProvider(int port)
+{
+	load_tcpip();
+
 	struct sockaddr_in serverAddr;
 	int sockAddrSize = sizeof(serverAddr);
 	memset(&serverAddr, 0, sockAddrSize);
@@ -63,7 +82,7 @@ SocketServerStreamProvider::SocketServerStreamProvider(int port){
 	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == ERROR)
+	if ((serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
 	{
 		throw IOException("Error creating server socket", errno);
 	}
@@ -73,20 +92,23 @@ SocketServerStreamProvider::SocketServerStreamProvider(int port){
 	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseAddr, sizeof(reuseAddr));
 
 	// Bind socket to local address.
-	if (bind(serverSocket, (struct sockaddr *)&serverAddr, sockAddrSize) == ERROR)
+	if (bind(serverSocket, (struct sockaddr *)&serverAddr, sockAddrSize) != 0)
 	{
-		::close(serverSocket);
+		close();
 		throw IOException("Could not bind server socket", errno);
 	}
 
-	if (listen(serverSocket, 1) == ERROR)
+	if (listen(serverSocket, 1) == SOCKET_ERROR)
 	{
-		::close(serverSocket);
+		close();
 		throw IOException("Could not listen on server socket", errno);
 	}
 }
-SocketServerStreamProvider::~SocketServerStreamProvider(){
+
+SocketServerStreamProvider::~SocketServerStreamProvider()
+{
 	close();
+	unload_tcpip();
 }
 
 
@@ -95,7 +117,7 @@ IOStream* SocketServerStreamProvider::accept(){
 	// Check for a shutdown once per second
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
-	while (true)
+	if (serverSocket!=INVALID_SOCKET)
 	{
 		fd_set fdSet;
 
@@ -105,14 +127,19 @@ IOStream* SocketServerStreamProvider::accept(){
 		{
 			if (FD_ISSET(serverSocket, &fdSet))
 			{
+				#if 0
 				struct sockaddr clientAddr = {0};
-				addrlen_t clientAddrSize = sizeof(clientAddr);
+				addrlen_t clientAddrSize = 0;
 				int connectedSocket = ::accept(serverSocket, &clientAddr, &clientAddrSize);
-				if (connectedSocket == ERROR)
+				#else
+				//For windows these must be NULL to work properly
+				int connectedSocket = ::accept(serverSocket, NULL, NULL);
+				#endif
+				if (connectedSocket == INVALID_SOCKET)
 					return NULL;
 				
-				//int on = 1;
-				//setsockopt(connectedSocket, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof(on));
+				int on = 1;
+				setsockopt(connectedSocket, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof(on));
 				
 				return new FDIOStream(connectedSocket);
 			}
@@ -121,6 +148,14 @@ IOStream* SocketServerStreamProvider::accept(){
 	return NULL;
 }
 
-void SocketServerStreamProvider::close(){
-	::close(serverSocket);
+void SocketServerStreamProvider::close()
+{
+	if (serverSocket!=INVALID_SOCKET)
+	{
+		//::close(serverSocket);
+		shutdown( serverSocket, SD_BOTH );
+		closesocket( serverSocket );
+		serverSocket = (int)INVALID_SOCKET;
+
+	}
 }

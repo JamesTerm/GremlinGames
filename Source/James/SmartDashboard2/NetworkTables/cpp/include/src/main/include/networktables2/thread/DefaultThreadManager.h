@@ -17,7 +17,7 @@ class PeriodicNTThread;
 #include "networktables2/thread/NTThreadManager.h"
 #include "networktables2/thread/NTThread.h"
 
-#ifdef __vxworks
+#if (defined __vxworks || defined WIN32)
 
 #include "OSAL/Task.h"
 
