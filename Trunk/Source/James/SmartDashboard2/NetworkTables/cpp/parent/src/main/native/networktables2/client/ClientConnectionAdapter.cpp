@@ -125,7 +125,8 @@ NetworkTableEntry* ClientConnectionAdapter::GetEntry(EntryId id) {
 }
 
 
-void ClientConnectionAdapter::keepAlive() {
+bool ClientConnectionAdapter::keepAlive() {
+	return true;
 }
 
 void ClientConnectionAdapter::clientHello(ProtocolVersion protocolRevision) {
