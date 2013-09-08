@@ -91,7 +91,7 @@ public:
 	NetworkTableEntry* GetEntry(EntryId id);
 	
 	
-	void keepAlive();
+	bool keepAlive();
 
 	void clientHello(ProtocolVersion protocolRevision);
 
