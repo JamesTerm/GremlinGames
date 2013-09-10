@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SmartDashboard_Import.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
