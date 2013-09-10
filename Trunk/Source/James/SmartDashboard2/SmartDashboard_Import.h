@@ -2,9 +2,20 @@
 
 #include <map>
 #include <string>
-#include "SmartDashboard/NamedSendable.h"
+//we could include this if Sendable.h would declare the iTable class without including it
+//#include "SmartDashboard/NamedSendable.h"
 #include "NetworkTables/cpp/include/src/main/include/networktables2/type/ComplexData.h"
 //#include "NetworkTables/cpp/include/src/main/include/ErrorBase.h"
+
+class NamedSendable
+{
+public:
+
+    /**
+     * @return the name of the subtable of SmartDashboard that the Sendable object will use
+     */
+	virtual std::string GetName() = 0;
+};
 
 class ITable;
 class Sendable;
