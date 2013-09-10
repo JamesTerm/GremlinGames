@@ -35,6 +35,8 @@ public:
 	 * @param connection
 	 */
 	ConnectionMonitorThread(ConnectionAdapter& adapter, NetworkTableConnection& connection);
+	//This can be used it identify which connection adapter instance the thread procedure is running (read-only)
+	const NetworkTableConnection *GetNetworkTableConnection() const {return &connection;}
 
 	void run();
 };
