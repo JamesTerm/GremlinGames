@@ -10,13 +10,29 @@
 ITable* SmartDashboard::m_table = NULL;
 std::map<ITable *, Sendable *> SmartDashboard::m_tablesToData;
 
-void SmartDashboard::init(){
+void SmartDashboard::init()
+{
 	m_table = NetworkTable::GetTable("SmartDashboard");
 }
-
 void SmartDashboard::shutdown()
 {
 	NetworkTable::Shutdown();
+}
+void SmartDashboard::SetClientMode()
+{
+	NetworkTable::SetClientMode();
+}
+void SmartDashboard::SetServerMode()
+{
+	NetworkTable::SetServerMode();
+}
+void SmartDashboard::SetTeam(int team)
+{
+	NetworkTable::SetTeam(team);
+}
+void SmartDashboard::SetIPAddress(const char* address)
+{
+	NetworkTable::SetIPAddress(address);
 }
 
 //TODO usage reporting
