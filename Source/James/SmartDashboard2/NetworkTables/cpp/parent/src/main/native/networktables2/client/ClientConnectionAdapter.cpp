@@ -99,20 +99,32 @@ void ClientConnectionAdapter::close(ClientConnectionState* newState) {
 	{
 		NTSynchronized sync(LOCK);
 		gotoState(newState);
-		if(readThread!=NULL){
-			readThread->stop();
-		}
+		//instead of stopping the thread it will auto sleep for deletion once a new connection is assigned
+		//if(readThread!=NULL){
+		//	readThread->stop();
+		//}
 		if(connection!=NULL){
 			connection->close();
 		}
-		if(readThread!=NULL){
-		        delete readThread;
-			readThread = NULL;
+		//defer this for the FlushableOutgoingEntryReceiver::ensureAlive method from the write manager thread
+		//if(readThread!=NULL){
+		//        delete readThread;
+		//	readThread = NULL;
+		//}
+		//if(monitor!=NULL){
+		//        delete monitor;
+		//	monitor = NULL;
+		//}	
+		if(connection!=NULL)
+		{
+			assert(monitor && readThread);  //sanity check... if we have a connection we have the read and monitor
+			NTSynchronized sync(BlockDeletionList);
+			DeletionPacket newPacket;
+			newPacket.monitor=monitor;
+			newPacket.readThread=readThread;
+			m_DeletionList.push_back(newPacket);
 		}
-		if(monitor!=NULL){
-		        delete monitor;
-			monitor = NULL;
-		}	
+
 		if(connection!=NULL){
 		        delete connection;
 			connection = NULL;
@@ -139,7 +151,8 @@ NetworkTableEntry* ClientConnectionAdapter::GetEntry(EntryId id) {
 
 
 bool ClientConnectionAdapter::keepAlive() {
-	return true;
+	//we keep alive if the connection the monitor thread holds matches this connection
+	return connection==monitor->GetNetworkTableConnection();
 }
 
 void ClientConnectionAdapter::clientHello(ProtocolVersion protocolRevision) {
@@ -220,4 +233,17 @@ void ClientConnectionAdapter::ensureAlive() {
 		else
 			reconnect();//try to reconnect if not connected
 	}
+	{
+		NTSynchronized sync(BlockDeletionList);
+		for (size_t i=0;i<m_DeletionList.size();i++)
+		{
+			const DeletionPacket &Element=m_DeletionList[i];
+			if(Element.readThread!=NULL)
+				delete Element.readThread;
+			if(Element.monitor!=NULL)
+				delete Element.monitor;
+		}
+		m_DeletionList.clear();
+	}
+
 }

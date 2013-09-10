@@ -43,7 +43,14 @@ private:
 	NetworkTableConnection* connection;
 
 	void gotoState(ClientConnectionState* newState);
-	
+
+	struct DeletionPacket
+	{
+		ConnectionMonitorThread* monitor;
+		NTThread* readThread;
+	};
+	NTReentrantSemaphore BlockDeletionList;
+	std::vector<DeletionPacket> m_DeletionList;
 public:
 	/**
 	 * @return the state of the connection
