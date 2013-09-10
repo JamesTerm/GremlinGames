@@ -8,7 +8,7 @@
 
 //#define __DisableSmartDashboard__ //used to quickly disable the smart dashboard
 #ifndef __DisableSmartDashboard__
-#include "../../SmartDashboard/SmartDashboard/SmartDashboard.h"
+#include "../../SmartDashboard2/SmartDashboard_import.h"
 #else
 class SmartDashboard //: public SensorBase
 {
