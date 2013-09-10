@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="SmartDashboard"
-	ProjectGUID="{556FC434-D0C3-4b96-BF29-E9CF5CD24F02}"
+	ProjectGUID="{556FC434-D0C3-4B96-BF29-E9CF5CD24F02}"
 	RootNamespace="SmartDashboard"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
