@@ -55,6 +55,8 @@ ClientConnectionAdapter::ClientConnectionAdapter(ClientNetworkTableEntryStore& _
 }
 ClientConnectionAdapter::~ClientConnectionAdapter(){
   close();
+  delete &typeManager;
+  delete &streamFactory;
 }
 
 

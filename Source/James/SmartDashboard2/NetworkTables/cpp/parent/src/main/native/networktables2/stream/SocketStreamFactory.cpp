@@ -65,10 +65,21 @@ IOStream *SocketStreamFactory::createStream(){
 		const LINGER linger = { 1, 0 };
 		setsockopt( sockfd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger) );
 
-		if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
-			throw 2;
-
-		ret=new FDIOStream(sockfd);
+		//Note: on this last step... it can typically fail if there is no server present, so instead of issuing a throw I will handle the logic
+		//in place.  This will avoid flooding debug output on a typical scenario
+		//  [9/10/2013 JamesK]
+		if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) == 0)
+			ret=new FDIOStream(sockfd);
+		else
+		{
+			if (sockfd != INVALID_SOCKET)
+			{
+				//We must shut down socket before issuing the close to avoid zombie ports (Ask Kirk)
+				shutdown( sockfd, SD_BOTH );
+				closesocket( sockfd );
+				sockfd = (int)INVALID_SOCKET;  //pedantic, in case we cache as a member variable
+			}
+		}
 	}
 	catch (int ErrorCode)
 	{
