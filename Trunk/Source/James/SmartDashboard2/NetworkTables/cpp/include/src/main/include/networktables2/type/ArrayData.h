@@ -30,7 +30,7 @@ public:
      * 	information that this ArrayData should satisfy.
      */
     ArrayData(ArrayEntryType& type);
-    
+    virtual ~ArrayData();
 protected:
     /**
      * Gets the value stored at the specified index.

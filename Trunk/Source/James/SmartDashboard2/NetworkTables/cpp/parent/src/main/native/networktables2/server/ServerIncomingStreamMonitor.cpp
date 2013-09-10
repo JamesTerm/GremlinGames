@@ -37,6 +37,7 @@ void ServerIncomingStreamMonitor::stop()
 {
 	if (monitorThread != NULL)
 	{
+		streamProvider.close();  //This would get called on deletion too
 		NTThread *temp=monitorThread;
 		monitorThread = NULL;  //call this before stop for the check below to ensure a new server connection adapter will not happen
 		temp->stop();

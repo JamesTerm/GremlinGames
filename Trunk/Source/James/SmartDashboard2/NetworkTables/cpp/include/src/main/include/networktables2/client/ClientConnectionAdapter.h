@@ -19,6 +19,7 @@ class ClientConnectionAdapter;
 #include "networktables2/thread/NTThread.h"
 #include "networktables2/client/ClientConnectionState.h"
 #include "networktables2/client/ClientConnectionListenerManager.h"
+#include "networktables2/connection/ConnectionMonitorThread.h"
 
 
 /**
@@ -38,6 +39,7 @@ private:
 	NTReentrantSemaphore LOCK;
 	NetworkTableEntryTypeManager& typeManager;
 	NTThread* readThread;
+	ConnectionMonitorThread* monitor;
 	NetworkTableConnection* connection;
 
 	void gotoState(ClientConnectionState* newState);

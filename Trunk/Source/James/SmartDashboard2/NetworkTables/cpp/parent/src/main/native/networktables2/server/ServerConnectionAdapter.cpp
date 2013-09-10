@@ -11,7 +11,7 @@
 
 void ServerConnectionAdapter::gotoState(ServerConnectionState* newState){
 	if(connectionState!=newState){
-	  fprintf(stdout, "[NT] %p entered connection state: %s\n",this, newState->toString());
+	  fprintf(stdout, "[NT] %p entered connection state: %s\n", (void*)this, newState->toString());
 	  fflush(stdout);
 		connectionState = newState;
 	}
@@ -26,7 +26,7 @@ ServerConnectionAdapter::ServerConnectionAdapter(IOStream* stream, ServerNetwork
 }
 
 ServerConnectionAdapter::~ServerConnectionAdapter(){
-  delete readThread;
+	delete readThread;
 }
 
 

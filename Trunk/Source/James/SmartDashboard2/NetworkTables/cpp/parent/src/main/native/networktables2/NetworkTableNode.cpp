@@ -93,7 +93,9 @@ void NetworkTableNode::PutValue(std::string& name, NetworkTableEntryType* type, 
 				entryStore.PutOutgoing(entry, entryType->internalizeValue(entry->name, *complexData, entry->GetValue()));
 			else{
 				EntryValue nullValue = {0};
-				entryStore.PutOutgoing(name, type, entryType->internalizeValue(name, *complexData, nullValue));
+				EntryValue entryValue = entryType->internalizeValue(name, *complexData, nullValue);
+				entryStore.PutOutgoing(name, type, entryValue);//TODO the entry gets copied when creating the entry should make lifecycle cleaner
+				type->deleteValue(entryValue);
 			}
 		}
 	}

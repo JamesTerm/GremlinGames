@@ -61,20 +61,26 @@ int main(){
 	  table->PutString("TEST", "helloffff");
 
   NumberArray array;
-  for(int i = 0; i<10; ++i){
+  for(int i = 0; i<5; ++i){
     array.add(i);
     table->PutValue("Hi", array);
     array.set(0, i);
-    for(int j = 0; j<10; ++j){
+    table->PutValue("Hi3", array);
+    for(int j = 0; j<4; ++j){
 	    table->PutValue("Hi", array);
 	    table->PutNumber("i", i);
+	    table->PutValue("Hi2", array);
 	    table->PutNumber("j", j);
 	    sleep(1);
+	    printf("Testing %d %d \n", i, j);
     }
   }
 
+  printf("Waiting for keypress\n");
+
   std::string tmp;
   std::cin >> tmp;
+  printf("Shutting down\n");
   cTable->RemoveTableListener(listener);
   delete tableProvider;
   delete server;

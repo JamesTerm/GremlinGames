@@ -23,7 +23,7 @@
 		    delete itr->second;
 		    namedEntries.erase(itr++);
 		}
-	};
+	}
 	
 	/**
 	 * Get an entry based on it's name

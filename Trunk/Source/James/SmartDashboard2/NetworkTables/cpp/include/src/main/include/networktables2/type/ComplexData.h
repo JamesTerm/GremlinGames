@@ -35,6 +35,7 @@ public:
 	 * @return The type of this data structure.
 	 */
 	ComplexEntryType& GetType();
+	virtual ~ComplexData(){};
 
 };
 

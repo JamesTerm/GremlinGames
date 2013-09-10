@@ -29,6 +29,9 @@
               </includes>
 			</source>
 		  </sources>
+		  <compilerStartOptions>
+		    <compilerStartOptions>-Wall -O3 -Wextra -Wno-unused-parameter -pedantic -Wpointer-arith -Wswitch-default -Wswitch-enum -Wundef -Wuninitialized</compilerStartOptions>
+		  </compilerStartOptions>
 		</configuration>
 	  </plugin>
     </plugins>

@@ -8,9 +8,12 @@
 
 
 #define UPDATE_BAIOS(len, ...) { uint8_t tmp[] = {__VA_ARGS__}; \
-	input = new ByteArrayIOStream(tmp, len); }
+	ByteArrayIOStream *input = new ByteArrayIOStream(tmp, len); \
+	stream = new DataIOStream(input); \
+        }
 
-#define NEW_BAIOS(len, ...) ByteArrayIOStream *input; \
+#define NEW_BAIOS(len, ...)  \
+        DataIOStream* stream; \
 	UPDATE_BAIOS(len, __VA_ARGS__)
 	
 

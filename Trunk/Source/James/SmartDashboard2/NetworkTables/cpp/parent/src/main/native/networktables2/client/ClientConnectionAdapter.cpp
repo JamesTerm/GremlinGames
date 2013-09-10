@@ -6,13 +6,12 @@
  */
 
 #include "networktables2/client/ClientConnectionAdapter.h"
-#include "networktables2/connection/ConnectionMonitorThread.h"
 
 void ClientConnectionAdapter::gotoState(ClientConnectionState* newState){
 	{
 		NTSynchronized sync(LOCK);
 		if(connectionState!=newState){
-			fprintf(stdout, "[NT] %p entered connection state: %s\n",this, newState->toString());
+		        fprintf(stdout, "[NT] %p entered connection state: %s\n", (void*)this, newState->toString());
 			fflush(stdout);
 			if(newState==&ClientConnectionState::IN_SYNC_WITH_SERVER)
 				connectionListenerManager.FireConnectedEvent();
@@ -49,8 +48,9 @@ ClientConnectionAdapter::ClientConnectionAdapter(ClientNetworkTableEntryStore& _
 	threadManager(_threadManager),
 	connectionListenerManager(_connectionListenerManager),
 	typeManager(_typeManager),
-    readThread(NULL),
-    connection(NULL){
+	readThread(NULL),
+	monitor(NULL),
+	connection(NULL){
 	connectionState = &ClientConnectionState::DISCONNECTED_FROM_SERVER;
 }
 ClientConnectionAdapter::~ClientConnectionAdapter(){
@@ -73,7 +73,8 @@ void ClientConnectionAdapter::reconnect() {
 			if(stream==NULL)
 				return;
 			connection = new NetworkTableConnection(stream, typeManager);
-			readThread = threadManager.newBlockingPeriodicThread(new ConnectionMonitorThread(*this, *connection), "Client Connection Reader Thread");
+			monitor = new ConnectionMonitorThread(*this, *connection);
+			readThread = threadManager.newBlockingPeriodicThread(monitor, "Client Connection Reader Thread");
 			connection->sendClientHello();
 			gotoState(&ClientConnectionState::CONNECTED_TO_SERVER);
 		} catch(IOException& e){
@@ -98,13 +99,23 @@ void ClientConnectionAdapter::close(ClientConnectionState* newState) {
 		gotoState(newState);
 		if(readThread!=NULL){
 			readThread->stop();
-			readThread = NULL;
 		}
 		if(connection!=NULL){
 			connection->close();
-			connection = NULL;
 		}
-		entryStore.clearIds();
+		if(readThread!=NULL){
+		        delete readThread;
+			readThread = NULL;
+		}
+		if(monitor!=NULL){
+		        delete monitor;
+			monitor = NULL;
+		}	
+		if(connection!=NULL){
+		        delete connection;
+			connection = NULL;
+		}	
+	        entryStore.clearIds();//TODO maybe move this to reconnect so that the entry store doesn't have to be valid when this object is deleted
 	}
 }
 

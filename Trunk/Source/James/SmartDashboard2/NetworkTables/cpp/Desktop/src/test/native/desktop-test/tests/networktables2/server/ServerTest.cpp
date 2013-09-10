@@ -10,7 +10,7 @@
 using namespace testing;
 
 TEST(ServerTest, testClose) {
-	MockIOStreamProvider streamProvider;
+        MockIOStreamProvider streamProvider;
 	MockNTThreadManager threadManager;
 	MockNTThread* thread1 = new MockNTThread();
 	MockNTThread* thread2 = new MockNTThread();
@@ -27,6 +27,7 @@ TEST(ServerTest, testClose) {
 	NetworkTableEntryTypeManager typeManager;
 	NetworkTableServer* server = new NetworkTableServer(streamProvider, typeManager, threadManager);
 	delete server;//will close stream provider
+
 	//do not have to delete threads they are deleted by the server
 }
 

@@ -115,8 +115,6 @@ SocketServerStreamProvider::~SocketServerStreamProvider()
 IOStream* SocketServerStreamProvider::accept(){
 	struct timeval timeout;
 	// Check for a shutdown once per second
-	timeout.tv_sec = 1;
-	timeout.tv_usec = 0;
 	if (serverSocket!=INVALID_SOCKET)
 	{
 		fd_set fdSet;
