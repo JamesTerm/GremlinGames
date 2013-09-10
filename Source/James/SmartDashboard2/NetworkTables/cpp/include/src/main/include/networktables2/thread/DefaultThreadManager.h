@@ -32,12 +32,14 @@ private:
 	NTTask* thread;
 	PeriodicRunnable* r;
 	bool run;
+	bool detached;
 	int _taskMain();
 	static int taskMain(PeriodicNTThread* o);
 public:
 	PeriodicNTThread(PeriodicRunnable* r, const char* name);
 	virtual ~PeriodicNTThread();
 	virtual void stop();
+	virtual void detach();
 	virtual bool isRunning();
 };
 
@@ -54,12 +56,14 @@ private:
 	pthread_t thread;
 	PeriodicRunnable* r;
 	bool run;
+	bool detached;
 	void _taskMain();
 	static void* taskMain(PeriodicNTThread* o);
 public:
 	PeriodicNTThread(PeriodicRunnable* r, const char* name);
 	virtual ~PeriodicNTThread();
 	virtual void stop();
+	virtual void detach();
 	virtual bool isRunning();
 };
 #endif // __vxworks

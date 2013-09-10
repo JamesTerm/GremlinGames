@@ -33,7 +33,7 @@ void ServerConnectionList::close(ServerConnectionAdapter& connectionAdapter, boo
 	std::vector<ServerConnectionAdapter*>::iterator connectionPosition = std::find(connections.begin(), connections.end(), &connectionAdapter);
 	if (connectionPosition != connections.end() && (*connectionPosition)==&connectionAdapter)
 	{
-		fprintf(stdout, "[NT] Close: %p\n", &connectionAdapter);
+	        fprintf(stdout, "[NT] Close: %p\n", (void*)&connectionAdapter);
 		fflush(stdout);
 		connections.erase(connectionPosition);
 		m_Factory->close(&connectionAdapter);

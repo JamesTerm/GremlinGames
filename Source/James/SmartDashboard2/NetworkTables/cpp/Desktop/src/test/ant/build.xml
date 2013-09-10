@@ -13,13 +13,15 @@
             <libset libs="stdc++"/>
             <libset libs="pthread"/>
             <libset libs="wsock32" if="WINDOWS"/>
-            
-            <!-- Include common sources and includes -->
-            <fileset dir="src/common" includes="**/*.cpp"/>
-            <fileset dir="src/desktop" includes="**/*.cpp"/>
-	    <fileset dir="test-server" includes="**/*.cpp"/>
-            <includepath path="include/common"/>
-            <includepath path="include/desktop"/>
+
+	    <!-- Include common sources and includes -->
+	    <fileset dir="${nt.src.common}" includes="**/*.cpp"/>
+	    <fileset dir="${nt.src.desktop}" includes="**/*.cpp"/>
+	    <includepath path="${nt.include}"/>
+	    
+	    <!-- Include tests -->
+	    <fileset dir="${src}/test-server" includes="**/*.cpp"/>
+
 	  </cc>
 	</target>
 	<target name="run-server" depends="build-server">
@@ -39,13 +41,15 @@
             <libset libs="stdc++"/>
             <libset libs="pthread"/>
             <libset libs="wsock32" if="WINDOWS"/>
-            
-            <!-- Include common sources and includes -->
-            <fileset dir="src/common" includes="**/*.cpp"/>
-            <fileset dir="src/desktop" includes="**/*.cpp"/>
-	    <fileset dir="test-client" includes="**/*.cpp"/>
-            <includepath path="include/common"/>
-            <includepath path="include/desktop"/>
+
+	    <!-- Include common sources and includes -->
+	    <fileset dir="${nt.src.common}" includes="**/*.cpp"/>
+	    <fileset dir="${nt.src.desktop}" includes="**/*.cpp"/>
+	    <includepath path="${nt.include}"/>
+	    
+	    <!-- Include tests -->
+	    <fileset dir="${src}/test-client" includes="**/*.cpp"/>
+
 	  </cc>
 	</target>
 	<target name="run-client" depends="build-client">

@@ -49,6 +49,8 @@
     <!-- Creates an executable at the root of build/tests -->
     <cc outtype="executable" outfile="${build}/tests/runtests" objdir="${build}/tests/obj">
       <compiler name="g++"/>
+
+      <compilerarg value="-g" location="start"/>
       
       <!-- Include gmock library -->
       <libset dir="${build}" libs="gmock" />
@@ -78,6 +80,8 @@
     <!-- Creates a .a file at the root of build -->
     <cc outtype="static" outfile="${build}/gmock" objdir="${build}/gmock/obj" debug="true">
       <compiler name="g++"/>
+
+      <compilerarg value="-g" location="start"/>
       
       <!--- Include libs -->
       <libset libs="pthread"/>
