@@ -51,7 +51,7 @@ typedef int addrlen_t;
 typedef socklen_t addrlen_t;
 #endif
 
-void load_tcpip(void)
+static void load_tcpip(void)
 {
 	WSAData wsaData_;
 	WORD wVersionRequested_ = MAKEWORD( 2, 2 );
@@ -60,7 +60,7 @@ void load_tcpip(void)
 	assert(result==0);
 }
 
-bool unload_tcpip(void)
+static bool unload_tcpip(void)
 {
 	WSACleanup();
 	return true;
