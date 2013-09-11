@@ -51,6 +51,7 @@ private:
 	};
 	NTReentrantSemaphore BlockDeletionList;
 	std::vector<DeletionPacket> m_DeletionList;
+	bool m_IsClosing;
 public:
 	/**
 	 * @return the state of the connection

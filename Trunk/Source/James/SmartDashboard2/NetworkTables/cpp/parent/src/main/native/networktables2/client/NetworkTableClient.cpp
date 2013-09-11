@@ -24,7 +24,8 @@ NetworkTableClient::NetworkTableClient(IOStreamFactory& streamFactory, NetworkTa
 	writeManager.start();
 }
 NetworkTableClient::~NetworkTableClient(){
-        Close();
+	//Closing this now will cause a reconnect from the write manager -James
+	//Close();
 	delete &writeManager;
 	delete &adapter;
 	delete &entryStore;
