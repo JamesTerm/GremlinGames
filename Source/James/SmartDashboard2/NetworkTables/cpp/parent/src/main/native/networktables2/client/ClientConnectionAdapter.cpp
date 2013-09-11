@@ -53,8 +53,27 @@ ClientConnectionAdapter::ClientConnectionAdapter(ClientNetworkTableEntryStore& _
 	connection(NULL){
 	connectionState = &ClientConnectionState::DISCONNECTED_FROM_SERVER;
 }
-ClientConnectionAdapter::~ClientConnectionAdapter(){
-  close();
+ClientConnectionAdapter::~ClientConnectionAdapter()
+{
+	//close all resources here since calling close will defer deletion of the thread (This is the UI thread and we must not defer it)
+	if(connection!=NULL)
+		connection->close();
+	if(readThread!=NULL)
+	{
+	    delete readThread;
+		readThread = NULL;
+	}
+	if(monitor!=NULL)
+	{
+	        delete monitor;
+		monitor = NULL;
+	}	
+	if(connection!=NULL)
+	{
+		delete connection;
+		connection = NULL;
+	}	
+
   delete &typeManager;
   delete &streamFactory;
 }
