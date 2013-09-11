@@ -27,10 +27,31 @@
 #include "networktables2/stream/FDIOStream.h"
 #include "networktables2/stream/SocketStreamFactory.h"
 
+static void load_tcpip(void)
+{
+	WSAData wsaData_;
+	WORD wVersionRequested_ = MAKEWORD( 2, 2 );
 
-SocketStreamFactory::SocketStreamFactory(const char* _host, int _port):host(_host), port(_port){}
+	int result=WSAStartup( wVersionRequested_, &wsaData_ );
+	assert(result==0);
+}
 
-SocketStreamFactory::~SocketStreamFactory(){}
+static bool unload_tcpip(void)
+{
+	WSACleanup();
+	return true;
+}
+
+
+SocketStreamFactory::SocketStreamFactory(const char* _host, int _port):host(_host), port(_port)
+{
+	load_tcpip();
+}
+
+SocketStreamFactory::~SocketStreamFactory()
+{
+	unload_tcpip();
+}
 
 IOStream *SocketStreamFactory::createStream(){
 #ifdef _WRS_KERNEL
@@ -105,7 +126,21 @@ IOStream *SocketStreamFactory::createStream(){
 			break;
 		};
 		if (ErrorMsg)
+		{
+			char Buffer[1024];
+			sprintf(Buffer,"ErrorMsg=%s WSA error=%d\n",ErrorMsg,WSAGetLastError());
+			OutputDebugStringA(Buffer);
 			printf("ErrorMsg=%s WSA error=%d\n",ErrorMsg,WSAGetLastError());
+
+			//If we get a WSANOTINITIALISED error... try to reset it
+			if (WSAGetLastError()==WSANOTINITIALISED)
+			{
+				unload_tcpip();
+				Sleep(100);  //just to be safe
+				load_tcpip();
+				//In my tests this actually works
+			}
+		}
 		Sleep(1000); //avoid flooding to connect... it doesn't need to occur every 20ms
 	}
 	return ret;
