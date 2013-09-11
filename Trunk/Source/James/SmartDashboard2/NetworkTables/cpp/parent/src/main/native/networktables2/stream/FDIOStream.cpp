@@ -34,6 +34,11 @@ FDIOStream::FDIOStream(int _fd){
 }
 FDIOStream::~FDIOStream(){
 	close();
+	if (fd != INVALID_SOCKET)
+	{
+		closesocket( fd );
+		fd = (int)INVALID_SOCKET;  //pedantic, in case we cache as a member variable
+	}
 }
 
 int FDIOStream::read(void* ptr, int numbytes){
@@ -106,6 +111,7 @@ void FDIOStream::close()
   //fclose(f);//ignore any errors closing
 	//assert(false);
 	//::close(fd);
-	shutdown( fd, SD_BOTH );
+	if (fd != INVALID_SOCKET)
+		shutdown( fd, SD_BOTH );
 }
 
