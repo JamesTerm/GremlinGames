@@ -621,7 +621,12 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	//These are for testing if not using buttons
 	//m_IsTargeting=false;
 	//m_AutoDriveState=eAutoDrive_Disabled; 
-	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
+
+	#if 0
+	m_UDP_Listener=coodinate_manager_Interface::CreateInstance(coodinate_manager_Interface::eListeningPlatform_UDP);
+	#else
+	m_UDP_Listener=coodinate_manager_Interface::CreateInstance(coodinate_manager_Interface::eListeningPlatform_TCPIP);
+	#endif
 }
 
 FRC_2013_Robot::~FRC_2013_Robot()
