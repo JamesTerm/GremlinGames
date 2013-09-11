@@ -50,11 +50,13 @@ ClientConnectionAdapter::ClientConnectionAdapter(ClientNetworkTableEntryStore& _
 	typeManager(_typeManager),
 	readThread(NULL),
 	monitor(NULL),
-	connection(NULL){
+	connection(NULL),
+	m_IsClosing(false){
 	connectionState = &ClientConnectionState::DISCONNECTED_FROM_SERVER;
 }
 ClientConnectionAdapter::~ClientConnectionAdapter()
 {
+	m_IsClosing=true;
 	//close all resources here since calling close will defer deletion of the thread (This is the UI thread and we must not defer it)
 	if(connection!=NULL)
 		connection->close();
@@ -89,17 +91,20 @@ void ClientConnectionAdapter::reconnect() {
 	{
 		NTSynchronized sync(LOCK);
 		close();//close the existing stream and monitor thread if needed
-		try{
-			IOStream* stream = streamFactory.createStream();
-			if(stream==NULL)
-				return;
-			connection = new NetworkTableConnection(stream, typeManager);
-			monitor = new ConnectionMonitorThread(*this, *connection);
-			readThread = threadManager.newBlockingPeriodicThread(monitor, "Client Connection Reader Thread");
-			connection->sendClientHello();
-			gotoState(&ClientConnectionState::CONNECTED_TO_SERVER);
-		} catch(IOException& e){
-			close();//make sure to clean everything up if we fail to connect
+		if (!m_IsClosing)
+		{
+			try{
+				IOStream* stream = streamFactory.createStream();
+				if(stream==NULL)
+					return;
+				connection = new NetworkTableConnection(stream, typeManager);
+				monitor = new ConnectionMonitorThread(*this, *connection);
+				readThread = threadManager.newBlockingPeriodicThread(monitor, "Client Connection Reader Thread");
+				connection->sendClientHello();
+				gotoState(&ClientConnectionState::CONNECTED_TO_SERVER);
+			} catch(IOException& e){
+				close();//make sure to clean everything up if we fail to connect
+			}
 		}
 	}
 }
@@ -125,16 +130,15 @@ void ClientConnectionAdapter::close(ClientConnectionState* newState) {
 		if(connection!=NULL){
 			connection->close();
 		}
+		//clear connection before issuing the deferred delete to avoid race condition
+		if(connection!=NULL){
+			delete connection;
+			connection = NULL;
+		}	
+		entryStore.clearIds();//TODO maybe move this to reconnect so that the entry store doesn't have to be valid when this object is deleted
+
 		//defer this for the FlushableOutgoingEntryReceiver::ensureAlive method from the write manager thread
-		//if(readThread!=NULL){
-		//        delete readThread;
-		//	readThread = NULL;
-		//}
-		//if(monitor!=NULL){
-		//        delete monitor;
-		//	monitor = NULL;
-		//}	
-		if(connection!=NULL)
+		if(monitor !=NULL)
 		{
 			assert(monitor && readThread);  //sanity check... if we have a connection we have the read and monitor
 			NTSynchronized sync(BlockDeletionList);
@@ -142,13 +146,9 @@ void ClientConnectionAdapter::close(ClientConnectionState* newState) {
 			newPacket.monitor=monitor;
 			newPacket.readThread=readThread;
 			m_DeletionList.push_back(newPacket);
+			monitor=NULL;
+			readThread=NULL;
 		}
-
-		if(connection!=NULL){
-		        delete connection;
-			connection = NULL;
-		}	
-	        entryStore.clearIds();//TODO maybe move this to reconnect so that the entry store doesn't have to be valid when this object is deleted
 	}
 }
 
@@ -171,7 +171,7 @@ NetworkTableEntry* ClientConnectionAdapter::GetEntry(EntryId id) {
 
 bool ClientConnectionAdapter::keepAlive() {
 	//we keep alive if the connection the monitor thread holds matches this connection
-	return connection==monitor->GetNetworkTableConnection();
+	return monitor?connection==monitor->GetNetworkTableConnection():false;
 }
 
 void ClientConnectionAdapter::clientHello(ProtocolVersion protocolRevision) {
