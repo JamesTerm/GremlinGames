@@ -1,6 +1,4 @@
 Path
-NetworkTables/cpp/include/src/main/include/networktables2/client/ClientConnectionAdapter.h
-NetworkTables/cpp/parent/src/main/native/networktables2/client/ClientConnectionAdapter.cpp
 NetworkTables/cpp/parent/src/main/native/networktables2/stream/FDIOStream.cpp
 NetworkTables/cpp/parent/src/main/native/networktables2/stream/SocketStreamFactory.cpp
 NetworkTables/cpp/parent/src/main/native/networktables2/WriteManager.cpp
@@ -11,5 +9,14 @@ Task.cpp- Added ability to name threads
 WriteManager.cpp- Fixed deadlock on exit by stopping before starting the critical section
 FDIOStream.cpp- Moved closesocket to close and changed send fail assert to OutputDebugString
 SocketStreamFactory.cpp- Keep track of when a socket is connecting
-ClientConnectionAdapter.cpp .h-Attempted to fix reconnect stress when server stops.  work in progress
-	-Fixed memory leak with goto state change
+ClientConnectionAdapter.cpp -Fixed memory leak with goto state change
+
+Path
+NetworkTables/cpp/include/src/main/include/networktables2/connection/DataIOStream.h
+NetworkTables/cpp/include/src/main/include/networktables2/connection/NetworkTableConnection.h
+NetworkTables/cpp/include/src/main/include/networktables2/client/ClientConnectionAdapter.h
+NetworkTables/cpp/parent/src/main/native/networktables2/client/ClientConnectionAdapter.cpp
+NetworkTables/cpp/parent/src/main/native/networktables2/connection/DataIOStream.cpp
+NetworkTables/cpp/parent/src/main/native/networktables2/connection/NetworkTableConnection.cpp
+
+All of these files allow to swap out the IOstream in NetworkTableConnection
