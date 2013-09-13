@@ -4,7 +4,7 @@
  *  Created on: Nov 2, 2012
  *      Author: Mitchell Wills
  */
-#include <algorithm>
+
 #include "networktables2/client/ClientConnectionAdapter.h"
 #include "networktables2/util/System.h"
 
@@ -39,7 +39,6 @@ bool ClientConnectionAdapter::isConnected() {
 	return getConnectionState()==&ClientConnectionState::IN_SYNC_WITH_SERVER;
 }
 
-
 /**
  * Create a new ClientConnectionAdapter
  * @param entryStore
@@ -56,15 +55,12 @@ ClientConnectionAdapter::ClientConnectionAdapter(ClientNetworkTableEntryStore& _
 	typeManager(_typeManager),
 	readThread(NULL),
 	monitor(NULL),
-	connection(NULL),
-	m_IsClosing(false),
-	m_IsReconnecting(false){
+	connection(NULL){
 	connectionState = &ClientConnectionState::DISCONNECTED_FROM_SERVER;
 }
 ClientConnectionAdapter::~ClientConnectionAdapter()
 {
-	m_IsClosing=true;
-	//close all resources here since calling close will defer deletion of the thread (This is the UI thread and we must not defer it)
+	//TODO call close and just delete read thread and monitor here
 	if(connection!=NULL)
 		connection->close();
 	if(readThread!=NULL)
@@ -95,47 +91,6 @@ ClientConnectionAdapter::~ClientConnectionAdapter()
 }
 
 
-void ClientConnectionAdapter::PurgeOldConnections()
-{
-	bool IsThisRightConnection=monitor?connection==monitor->GetNetworkTableConnection():false;
-	if ((!IsThisRightConnection)&&(monitor))
-	{
-		typedef std::vector<DeletionPacket>::iterator DeletionListIter;
-		//mark this thread to delete
-		DeletionListIter iter = std::find(m_DeletionList.begin(),m_DeletionList.end(),monitor);
-		if (iter!=m_DeletionList.end())
-		{
-			DeletionPacket &Element=(*iter);
-			Element.CanDelete=true;  //we can now delete as it is in a sleep state upon this return
-		}
-		else
-		{
-			char Buffer[128];
-			sprintf(Buffer,"Warning: %p not yet removed\n",monitor);
-			throw BadMessageException(Buffer);  //keep track of this... it may be a few iterations at most
-		}
-	}
-
-	//Clean out threads
-	NTSynchronized sync(BlockDeletionList);
-	typedef std::vector<DeletionPacket>::iterator DeletionListIter;
-	for (DeletionListIter iter=m_DeletionList.begin();iter!=m_DeletionList.end();iter++)
-	{
-		const DeletionPacket &Element=(*iter);
-		if (Element.CanDelete)
-		{
-			if(connection!=NULL)
-				delete connection;
-			if(Element.readThread!=NULL)
-				delete Element.readThread;
-			if(Element.monitor!=NULL)
-				delete Element.monitor;
-			m_DeletionList.erase(iter);
-		}
-	}
-}
-
-
 /*
  * Connection management
  */
@@ -144,43 +99,19 @@ void ClientConnectionAdapter::PurgeOldConnections()
  */
 void ClientConnectionAdapter::reconnect() {
 	{
-		PurgeOldConnections();
-		bool IsReconnecting=true;
-		{	//This block needs to be atomic
-			NTSynchronized sync(LOCK);
-			if (!m_IsReconnecting)
-			{
-				m_IsReconnecting=true;
-				IsReconnecting=false;
-			}
-		}
-		if (!IsReconnecting)
-		{
-			{
-				//Note: this cannot be within the critical section of the LOCK of connection adapter the write manager has a lock on the entry store and will call here
-				entryStore.clearIds();
-
-				NTSynchronized sync(LOCK);
-				close();//close the existing stream and monitor thread if needed
-				if (!m_IsClosing)
-				{
-					try{
-						IOStream* stream = streamFactory.createStream();
-						if(stream!=NULL)
-						{
-							connection = new NetworkTableConnection(stream, typeManager);
-							monitor = new ConnectionMonitorThread(*this, *connection);
-							readThread = threadManager.newBlockingPeriodicThread(monitor, "Client Connection Reader Thread");
-							connection->sendClientHello();
-							gotoState(&ClientConnectionState::CONNECTED_TO_SERVER);
-						}
-					} catch(IOException& e){
-						close();//make sure to clean everything up if we fail to connect
-					}
-				}
-			}
-			//Outside of the critical section... reset the valve 
-			m_IsReconnecting=false;
+		NTSynchronized sync(LOCK);
+		close();//close the existing stream and monitor thread if needed
+		try{
+			IOStream* stream = streamFactory.createStream();
+			if(stream==NULL)
+				return;
+			connection = new NetworkTableConnection(stream, typeManager);
+			monitor = new ConnectionMonitorThread(*this, *connection);
+			readThread = threadManager.newBlockingPeriodicThread(monitor, "Client Connection Reader Thread");
+			connection->sendClientHello();
+			gotoState(&ClientConnectionState::CONNECTED_TO_SERVER);
+		} catch(IOException& e){
+			close();//make sure to clean everything up if we fail to connect
 		}
 	}
 }
@@ -196,29 +127,28 @@ void ClientConnectionAdapter::close() {
  * @param newState
  */
 void ClientConnectionAdapter::close(ClientConnectionState* newState) {
-	NTSynchronized sync(LOCK);
-	gotoState(newState);
-	//instead of stopping the thread it will auto sleep for deletion once a new connection is assigned
-	//if(readThread!=NULL){
-	//	readThread->stop();
-	//}
-	if(connection!=NULL)
-		connection->close();
-
-	//defer this for the FlushableOutgoingEntryReceiver::ensureAlive method from the write manager thread
-	if(monitor !=NULL)
 	{
-		assert(monitor && readThread);  //sanity check... if we have a connection we have the read and monitor
-		NTSynchronized sync(BlockDeletionList);
-		DeletionPacket newPacket;
-		newPacket.monitor=monitor;
-		newPacket.readThread=readThread;
-		newPacket.connection=connection;
-		newPacket.CanDelete=false;
-		m_DeletionList.push_back(newPacket);
-		monitor=NULL;
-		readThread=NULL;
-		connection=NULL;
+		NTSynchronized sync(LOCK);
+		gotoState(newState);
+		if(readThread!=NULL){
+			readThread->stop();
+		}
+		if(connection!=NULL){
+			connection->close();
+		}
+		if(readThread!=NULL){
+		        delete readThread;
+			readThread = NULL;
+		}
+		if(monitor!=NULL){
+		        delete monitor;
+			monitor = NULL;
+		}	
+		if(connection!=NULL){
+		        delete connection;
+			connection = NULL;
+		}	
+	        entryStore.clearIds();//TODO maybe move this to reconnect so that the entry store doesn't have to be valid when this object is deleted
 	}
 }
 
@@ -229,7 +159,6 @@ void ClientConnectionAdapter::badMessage(BadMessageException& e) {
 }
 
 void ClientConnectionAdapter::ioException(IOException& e) {
-	PurgeOldConnections();
 	if(connectionState!=&ClientConnectionState::DISCONNECTED_FROM_SERVER)//will get io exception when on read thread connection is closed
 	{
 		reconnect();
@@ -247,11 +176,7 @@ NetworkTableEntry* ClientConnectionAdapter::GetEntry(EntryId id) {
 
 
 bool ClientConnectionAdapter::keepAlive() {
-	//we keep alive if the connection the monitor thread holds matches this connection
-	bool ret=monitor?connection==monitor->GetNetworkTableConnection():false;
-	if (!ret)
-		PurgeOldConnections();
-	return ret;
+	return true;
 }
 
 void ClientConnectionAdapter::clientHello(ProtocolVersion protocolRevision) {
@@ -332,5 +257,4 @@ void ClientConnectionAdapter::ensureAlive() {
 		else
 			reconnect();//try to reconnect if not connected
 	}
-	PurgeOldConnections();
 }
