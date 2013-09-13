@@ -77,9 +77,12 @@ int Send( int sockfd,char* Data, size_t sizeData )
 		}
 		Sleep(1);
 	}
-	char Buffer[128];
-	sprintf(Buffer,"Send() failed: WSA error=%d\n",WSAGetLastError());
-	OutputDebugStringA(Buffer);
+	if (!Result_)
+	{
+		char Buffer[128];
+		sprintf(Buffer,"Send() failed: WSA error=%d\n",WSAGetLastError());
+		OutputDebugStringA(Buffer);
+	}
 
 	return(int)BytesSent_;
 }
