@@ -17,6 +17,11 @@ NetworkTableConnection::~NetworkTableConnection(){
 	delete ioStream;
 }
 
+void NetworkTableConnection::SetIOStream(IOStream* stream)
+{
+	ioStream->SetIOStream(stream);  //just passing through
+}
+
 void NetworkTableConnection::close() {
 	{
 		NTSynchronized sync(WRITE_LOCK);

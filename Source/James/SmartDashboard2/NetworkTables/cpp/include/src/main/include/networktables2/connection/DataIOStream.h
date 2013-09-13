@@ -41,8 +41,10 @@ public:
 	std::string* readString();
 	
 	void close();
+	void SetIOStream(IOStream* stream);
+
 //private:
-	IOStream& iostream;
+	IOStream *iostream;
 };
 
 

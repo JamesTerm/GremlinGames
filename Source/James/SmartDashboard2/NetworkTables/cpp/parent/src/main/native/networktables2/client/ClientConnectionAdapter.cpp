@@ -60,9 +60,7 @@ ClientConnectionAdapter::ClientConnectionAdapter(ClientNetworkTableEntryStore& _
 }
 ClientConnectionAdapter::~ClientConnectionAdapter()
 {
-	//TODO call close and just delete read thread and monitor here
-	if(connection!=NULL)
-		connection->close();
+	close();
 	if(readThread!=NULL)
 	{
 	    delete readThread;
@@ -73,11 +71,11 @@ ClientConnectionAdapter::~ClientConnectionAdapter()
 	        delete monitor;
 		monitor = NULL;
 	}	
-	if(connection!=NULL)
-	{
+	if(connection!=NULL){
 		delete connection;
 		connection = NULL;
 	}	
+
 	//TODO find better way to manage memory leak
 	ClientConnectionState_Error *temp=dynamic_cast<ClientConnectionState_Error *>(connectionState);
 	if (temp)
@@ -98,6 +96,9 @@ ClientConnectionAdapter::~ClientConnectionAdapter()
  * Reconnect the client to the server (even if the client is not currently connected)
  */
 void ClientConnectionAdapter::reconnect() {
+	//This is in reconnect so that the entry store doesn't have to be valid when this object is deleted
+	//Note:  clearIds() cannot be in a LOCK critical section
+	entryStore.clearIds();
 	{
 		NTSynchronized sync(LOCK);
 		close();//close the existing stream and monitor thread if needed
@@ -105,9 +106,14 @@ void ClientConnectionAdapter::reconnect() {
 			IOStream* stream = streamFactory.createStream();
 			if(stream==NULL)
 				return;
-			connection = new NetworkTableConnection(stream, typeManager);
-			monitor = new ConnectionMonitorThread(*this, *connection);
-			readThread = threadManager.newBlockingPeriodicThread(monitor, "Client Connection Reader Thread");
+			if (!connection)
+				connection = new NetworkTableConnection(stream, typeManager);
+			else
+				connection->SetIOStream(stream);
+			if (!monitor)
+				monitor = new ConnectionMonitorThread(*this, *connection);
+			if (!readThread)
+				readThread = threadManager.newBlockingPeriodicThread(monitor, "Client Connection Reader Thread");
 			connection->sendClientHello();
 			gotoState(&ClientConnectionState::CONNECTED_TO_SERVER);
 		} catch(IOException& e){
@@ -130,25 +136,12 @@ void ClientConnectionAdapter::close(ClientConnectionState* newState) {
 	{
 		NTSynchronized sync(LOCK);
 		gotoState(newState);
-		if(readThread!=NULL){
-			readThread->stop();
-		}
-		if(connection!=NULL){
+		//Disconnect the socket
+		if(connection!=NULL)
+		{
 			connection->close();
+			connection->SetIOStream(NULL);  //disconnect the table connection from the IO stream
 		}
-		if(readThread!=NULL){
-		        delete readThread;
-			readThread = NULL;
-		}
-		if(monitor!=NULL){
-		        delete monitor;
-			monitor = NULL;
-		}	
-		if(connection!=NULL){
-		        delete connection;
-			connection = NULL;
-		}	
-	        entryStore.clearIds();//TODO maybe move this to reconnect so that the entry store doesn't have to be valid when this object is deleted
 	}
 }
 

@@ -42,6 +42,7 @@ public:
 	void sendEntryAssignment(NetworkTableEntry& entry);
 	void sendEntryUpdate(NetworkTableEntry& entry);
 	void read(ConnectionAdapter& adapter);
+	void SetIOStream(IOStream* stream);
 private:
 	NTReentrantSemaphore WRITE_LOCK;
 	DataIOStream* const ioStream;
