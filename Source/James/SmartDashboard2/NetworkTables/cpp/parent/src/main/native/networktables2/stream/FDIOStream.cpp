@@ -34,11 +34,6 @@ FDIOStream::FDIOStream(int _fd){
 }
 FDIOStream::~FDIOStream(){
 	close();
-	if (fd != INVALID_SOCKET)
-	{
-		closesocket( fd );
-		fd = (int)INVALID_SOCKET;  //pedantic, in case we cache as a member variable
-	}
 }
 
 int FDIOStream::read(void* ptr, int numbytes){
@@ -82,7 +77,10 @@ int Send( int sockfd,char* Data, size_t sizeData )
 		}
 		Sleep(1);
 	}
-	assert(Result_);  //TODO reproduce and implement
+	char Buffer[128];
+	sprintf(Buffer,"Send() failed: WSA error=%d\n",WSAGetLastError());
+	OutputDebugStringA(Buffer);
+
 	return(int)BytesSent_;
 }
 
@@ -104,14 +102,21 @@ void FDIOStream::flush(){
 }
 void FDIOStream::close()
 {
-	//I am not really sure why this is here... we don't own the socket so I do not wish to close it... however the shutdown may be
-	//what was intended here
-	//  [8/31/2013 Terminator]
-
   //fclose(f);//ignore any errors closing
 	//assert(false);
 	//::close(fd);
+
+	//Note: the close includes to close the socket so that connection can be deferred deleted while immediately closing the socket for a new socket to open
 	if (fd != INVALID_SOCKET)
+	{
+		char Buffer[128];
+		sprintf(Buffer,"closesocket %d\n",fd);
+		OutputDebugStringA(Buffer);
+
 		shutdown( fd, SD_BOTH );
+		closesocket( fd );
+		fd = (int)INVALID_SOCKET;  //pedantic, in case we cache as a member variable
+		Sleep(20);  //give some time to take effect
+	}
 }
 
