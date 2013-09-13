@@ -44,14 +44,20 @@ private:
 
 	void gotoState(ClientConnectionState* newState);
 
+	void PurgeOldConnections();
+
 	struct DeletionPacket
 	{
-		ConnectionMonitorThread* monitor;
-		NTThread* readThread;
+		ConnectionMonitorThread *monitor;
+		NTThread *readThread;
+		NetworkTableConnection *connection;
+		bool CanDelete;  //avoids race condition where this is true once it is becomes in a sleep state
+		bool operator==(ConnectionMonitorThread *_monitor) {return monitor==_monitor;}
 	};
 	NTReentrantSemaphore BlockDeletionList;
 	std::vector<DeletionPacket> m_DeletionList;
 	bool m_IsClosing;
+	bool m_IsReconnecting;
 public:
 	/**
 	 * @return the state of the connection
