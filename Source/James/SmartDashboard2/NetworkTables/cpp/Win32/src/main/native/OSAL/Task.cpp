@@ -63,6 +63,28 @@ DWORD thread_proc( void *p_ptr )
 	return 0;
 }
 
+//This sets the name of the thread, which can help to identify threads in win32
+#define MS_VC_EXCEPTION 0x406D1388
+static void set_thread_name( const char *p_thread_name, DWORD ID )
+{	
+#pragma pack(push,8)
+	typedef struct tagTHREADNAME_INFO
+	{	DWORD dwType;		// Must be 0x1000.
+	LPCSTR szName;		// Pointer to name (in user addr space).
+	DWORD dwThreadID;	// Thread ID (-1=caller thread).
+	DWORD dwFlags;		// Reserved for future use, must be zero.
+
+	}	THREADNAME_INFO;
+#pragma pack(pop)
+
+	// Set the information
+	THREADNAME_INFO info = { 0x1000, p_thread_name, ID, 0 };
+
+	// Raise the exception
+	__try { ::RaiseException( MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info ); }
+	__except( EXCEPTION_EXECUTE_HANDLER ) {}
+}
+
 bool NTTask::StartInternal()
 {
 	if (m_Handle)
@@ -72,6 +94,8 @@ bool NTTask::StartInternal()
 	}
 
 	m_Handle = ::CreateThread( NULL, m_stackSize, (LPTHREAD_START_ROUTINE)thread_proc, (void*)this, NULL, &m_ID );
+	if (m_ID!=NULL)
+		set_thread_name(m_taskName,m_ID);
 	return m_Handle!=NULL;
 }
 
