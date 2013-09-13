@@ -25,9 +25,10 @@ WriteManager::WriteManager(FlushableOutgoingEntryReceiver& _receiver, NTThreadMa
 }
 
 WriteManager::~WriteManager(){
-	transactionsLock.take();
-
 	stop();
+
+	//Note: this must occur after stop() to avoid deadlock
+	transactionsLock.take();
 	
 	delete incomingAssignmentQueue;
 	delete incomingUpdateQueue;
