@@ -110,6 +110,7 @@ void ClientConnectionAdapter::reconnect() {
 				connection = new NetworkTableConnection(stream, typeManager);
 			else
 				connection->SetIOStream(stream);
+			m_IsConnectionClosed=false;
 			if (!monitor)
 				monitor = new ConnectionMonitorThread(*this, *connection);
 			if (!readThread)
@@ -142,6 +143,7 @@ void ClientConnectionAdapter::close(ClientConnectionState* newState) {
 			connection->close();
 			connection->SetIOStream(NULL);  //disconnect the table connection from the IO stream
 		}
+		m_IsConnectionClosed=true;
 	}
 }
 
@@ -149,6 +151,7 @@ void ClientConnectionAdapter::close(ClientConnectionState* newState) {
 
 void ClientConnectionAdapter::badMessage(BadMessageException& e) {
 	close(new ClientConnectionState_Error(e));
+	sleep_ms(33);  //avoid busy wait
 }
 
 void ClientConnectionAdapter::ioException(IOException& e) {
@@ -240,7 +243,7 @@ void ClientConnectionAdapter::flush() {
 void ClientConnectionAdapter::ensureAlive() {
 	{
 		NTSynchronized sync(LOCK);
-		if(connection!=NULL) {
+		if ((connection!=NULL)&&(!m_IsConnectionClosed)) {
 			try {
 			  connection->sendKeepAlive();
 			} catch (IOException& e) {
