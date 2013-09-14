@@ -135,9 +135,10 @@ IOStream* SocketServerStreamProvider::accept(){
 				#endif
 				if (connectedSocket == INVALID_SOCKET)
 					return NULL;
-				
-				int on = 1;
-				setsockopt(connectedSocket, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof(on));
+
+				//Enable if we need high performance feedback
+				//int on = 1;
+				//setsockopt(connectedSocket, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof(on));
 				
 				return new FDIOStream(connectedSocket);
 			}
