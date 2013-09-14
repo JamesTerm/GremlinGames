@@ -79,9 +79,11 @@ IOStream *SocketStreamFactory::createStream(){
 		serv_addr.sin_port = htons(port);
 
 		//We are outgoing so setup the socket options before making the connection
+		//Enable if we need high performance feedback
 		//Setup for TCP_NODELAY for nice crisp response time...
-		int on = 1;
-		setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof(on));
+		//int on = 1;
+		//setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof(on));
+
 		// Set the linger options
 		const LINGER linger = { 1, 0 };
 		setsockopt( sockfd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger) );
