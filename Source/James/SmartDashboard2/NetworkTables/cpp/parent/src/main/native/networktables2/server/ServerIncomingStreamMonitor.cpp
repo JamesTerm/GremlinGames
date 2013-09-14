@@ -18,6 +18,7 @@ ServerIncomingStreamMonitor::ServerIncomingStreamMonitor(IOStreamProvider& _stre
 
 ServerIncomingStreamMonitor::~ServerIncomingStreamMonitor()
 {
+	stop();
 	delete &typeManager;
 }
 
