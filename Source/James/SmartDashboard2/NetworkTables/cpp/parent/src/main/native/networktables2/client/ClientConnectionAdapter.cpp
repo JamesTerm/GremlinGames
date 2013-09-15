@@ -60,10 +60,6 @@ ClientConnectionAdapter::ClientConnectionAdapter(ClientNetworkTableEntryStore& _
 }
 ClientConnectionAdapter::~ClientConnectionAdapter()
 {
-	if(readThread!=NULL)
-	{
-	  readThread->stop();
-	}
 	connection->close();
 	if(readThread!=NULL)
 	{
