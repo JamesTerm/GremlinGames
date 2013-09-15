@@ -31,7 +31,6 @@ NetworkTableServer::NetworkTableServer(IOStreamProvider& _streamProvider, Networ
 NetworkTableServer::~NetworkTableServer(){
 	Close();
 	delete &entryStore;
-	delete &streamProvider;
 }
 
 void NetworkTableServer::Close(){

@@ -17,10 +17,8 @@
 NetworkTableServer* server;
 
 int main(){
-  SocketServerStreamProvider* provider = new SocketServerStreamProvider(1735);
-  NetworkTableEntryTypeManager* typeManager = new NetworkTableEntryTypeManager();
-  DefaultThreadManager* threadManager = new DefaultThreadManager();
-  server = new NetworkTableServer(*provider, *typeManager, *threadManager);
+  NetworkTable::SetServerMode();
+  NetworkTable::Initialize();
   
   /*class ServerListener : public ITableListener {
       virtual void ValueChanged(ITable* source, const std::string& key, EntryValue value, bool isNew){
@@ -37,15 +35,13 @@ int main(){
   ServerListener* listener = new ServerListener();
   server->AddTableListener(listener, true);*/
 
-  static NetworkTableProvider* tableProvider = new NetworkTableProvider(*server);
-
-  ITable* table = tableProvider->GetTable("SmartDashboard");
-  ITable* cTable = tableProvider->GetTable("/client");
+  ITable* table = NetworkTable::GetTable("SmartDashboard");
+  ITable* cTable = NetworkTable::GetTable("/client");
   class ServerListener : public ITableListener {
       virtual void ValueChanged(ITable* source, const std::string& key, EntryValue value, bool isNew){
 	fprintf(stdout, "Got key in client table: %s, = %f\n", key.c_str(), value.f);
 	fflush(stdout);
-	tableProvider->GetTable("/server")->PutNumber(key, value.f);
+	NetworkTable::GetTable("/server")->PutNumber(key, value.f);
       };
   };
   ServerListener* listener = new ServerListener();
@@ -82,11 +78,7 @@ int main(){
   std::cin >> tmp;
   printf("Shutting down\n");
   cTable->RemoveTableListener(listener);
-  delete tableProvider;
-  delete server;
-  delete provider;
-  delete typeManager;
-  delete threadManager;
+  NetworkTable::Shutdown();
   delete listener;
 
   /*ITable* table = NetworkTable::GetTable("SmartDashboard");

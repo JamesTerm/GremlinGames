@@ -43,7 +43,7 @@ private:
 	NetworkTableConnection* connection;
 
 	void gotoState(ClientConnectionState* newState);
-	bool m_IsConnectionClosed;  //Keep track of when this is closed to issue reconnect
+	
 public:
 	/**
 	 * @return the state of the connection

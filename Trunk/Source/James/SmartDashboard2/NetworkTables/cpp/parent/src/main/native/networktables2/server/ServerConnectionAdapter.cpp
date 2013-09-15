@@ -26,7 +26,7 @@ ServerConnectionAdapter::ServerConnectionAdapter(IOStream* stream, ServerNetwork
 }
 
 ServerConnectionAdapter::~ServerConnectionAdapter(){
-	delete readThread;
+  delete readThread;
 }
 
 

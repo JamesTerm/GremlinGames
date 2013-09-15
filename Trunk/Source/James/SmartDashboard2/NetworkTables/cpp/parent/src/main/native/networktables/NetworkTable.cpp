@@ -23,6 +23,10 @@ const int NetworkTable::DEFAULT_PORT = 1735;
 
 DefaultThreadManager NetworkTable::threadManager;
 NetworkTableProvider* NetworkTable::staticProvider = NULL;
+NetworkTableNode* NetworkTable::staticNode = NULL;
+void* NetworkTable::streamFactory = NULL;
+NetworkTableEntryTypeManager* NetworkTable::typeManager = NULL;
+StreamDeleter streamDeleter = NULL;
 NetworkTableMode* NetworkTable::mode = &NetworkTableMode::Server;
 int NetworkTable::port = DEFAULT_PORT;
 std::string NetworkTable::ipAddress;
@@ -45,7 +49,7 @@ void NetworkTable::CheckInit(){
 void NetworkTable::Initialize() {
 	CheckInit();
 	printf("[NT] NetworkTable::Initialize()...\n");
-	staticProvider = new NetworkTableProvider(*(mode->CreateNode(ipAddress.c_str(), port, threadManager)));
+	staticProvider = new NetworkTableProvider(*(staticNode = mode->CreateNode(ipAddress.c_str(), port, threadManager, streamFactory, streamDeleter, typeManager)));
 	printf("[NT] ...NetworkTable::Initialize().\n");
 }
 
@@ -55,6 +59,22 @@ void NetworkTable::Shutdown()
 	{
 		delete staticProvider;
 		staticProvider=NULL;
+	}
+	if (staticNode!=NULL)
+	{
+		delete staticNode;
+		staticNode=NULL;
+	}
+	if (streamDeleter!=NULL && streamFactory!=NULL)
+	{
+	        streamDeleter(streamFactory);
+	        streamFactory=NULL;
+		streamDeleter=NULL;
+	}
+	if (typeManager!=NULL)
+	{
+		delete typeManager;
+		typeManager=NULL;
 	}
 }
 

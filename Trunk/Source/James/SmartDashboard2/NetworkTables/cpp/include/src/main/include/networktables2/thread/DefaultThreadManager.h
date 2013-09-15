@@ -18,8 +18,10 @@ class PeriodicNTThread;
 #include "networktables2/thread/NTThread.h"
 
 #if (defined __vxworks || defined WIN32)
-
 #include "OSAL/Task.h"
+#else
+#include <pthread.h>
+#endif
 
 class DefaultThreadManager : public NTThreadManager{
 public:
@@ -28,45 +30,26 @@ public:
 
 class PeriodicNTThread : public NTThread {
 private:
+#if (defined __vxworks || defined WIN32)
 	const char* name;
 	NTTask* thread;
+#else
+	pthread_t thread;
+#endif
 	PeriodicRunnable* r;
 	bool run;
-	bool detached;
+#if (defined __vxworks || defined WIN32)
 	int _taskMain();
 	static int taskMain(PeriodicNTThread* o);
-public:
-	PeriodicNTThread(PeriodicRunnable* r, const char* name);
-	virtual ~PeriodicNTThread();
-	virtual void stop();
-	virtual void detach();
-	virtual bool isRunning();
-};
-
-#else
-
-#include <pthread.h>
-
-class DefaultThreadManager : public NTThreadManager{
-	virtual NTThread* newBlockingPeriodicThread(PeriodicRunnable* r, const char* name);
-};
-
-class PeriodicNTThread : public NTThread {
-private:
-	pthread_t thread;
-	PeriodicRunnable* r;
-	bool run;
-	bool detached;
+#else//TODO make return int for pthread as well
 	void _taskMain();
 	static void* taskMain(PeriodicNTThread* o);
+#endif
 public:
 	PeriodicNTThread(PeriodicRunnable* r, const char* name);
 	virtual ~PeriodicNTThread();
 	virtual void stop();
-	virtual void detach();
 	virtual bool isRunning();
 };
-#endif // __vxworks
-
 
 #endif /* DEFAULTTHREADMANAGER_H_ */
