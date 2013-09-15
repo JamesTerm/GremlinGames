@@ -382,19 +382,19 @@
 				Name="stream"
 				>
 				<File
-					RelativePath=".\NetworkTables\cpp\parent\src\main\native\networktables2\stream\FDIOStream.cpp"
+					RelativePath=".\NetworkTables\cpp\Win32\src\main\native\networktables2\stream\FDIOStream.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\NetworkTables\cpp\parent\src\main\native\networktables2\stream\SocketServerStreamProvider.cpp"
+					RelativePath=".\NetworkTables\cpp\Win32\src\main\native\networktables2\stream\SocketServerStreamProvider.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\NetworkTables\cpp\parent\src\main\native\networktables2\stream\SocketStreamFactory.cpp"
+					RelativePath=".\NetworkTables\cpp\Win32\src\main\native\networktables2\stream\SocketStreamFactory.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\NetworkTables\cpp\parent\src\main\native\networktables2\stream\SocketStreams.cpp"
+					RelativePath=".\NetworkTables\cpp\Win32\src\main\native\networktables2\stream\SocketStreams.cpp"
 					>
 				</File>
 			</Filter>
