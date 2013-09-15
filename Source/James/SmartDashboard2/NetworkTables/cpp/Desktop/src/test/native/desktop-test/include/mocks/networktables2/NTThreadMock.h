@@ -9,7 +9,6 @@ class MockNTThread : public NTThread
 {
 public:
 	MOCK_METHOD0(stop, void());
-	MOCK_METHOD0(detach, void());
 	MOCK_METHOD0(isRunning, bool());
 };
 

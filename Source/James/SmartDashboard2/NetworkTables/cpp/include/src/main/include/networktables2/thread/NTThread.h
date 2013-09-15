@@ -26,11 +26,6 @@ public:
 	virtual void stop() = 0;
 
 	/**
-	 * detach the thread (it will be deleted when it terminates)
-	 */
-	virtual void detach() = 0;
-
-	/**
 	 * @return true if the thread is running
 	 */
 	virtual bool isRunning() = 0;

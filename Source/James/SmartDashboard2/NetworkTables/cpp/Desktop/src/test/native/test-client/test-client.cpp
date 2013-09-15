@@ -17,21 +17,17 @@
 NetworkTableClient* client;
 
 int main(){
-  SocketStreamFactory* factory = new SocketStreamFactory("localhost", 1735);
-  NetworkTableEntryTypeManager* typeManager = new NetworkTableEntryTypeManager();
-  DefaultThreadManager* threadManager = new DefaultThreadManager();
-  client = new NetworkTableClient(*factory, *typeManager, *threadManager);
+  NetworkTable::SetClientMode();
+  NetworkTable::SetIPAddress("localhost");
+  NetworkTable::Initialize();
 
-
-  static NetworkTableProvider* tableProvider = new NetworkTableProvider(*client);
-
-  ITable* table = tableProvider->GetTable("SmartDashboard");
-  ITable* sTable = tableProvider->GetTable("/server");
+  ITable* table = NetworkTable::GetTable("SmartDashboard");
+  ITable* sTable = NetworkTable::GetTable("/server");
   class ClientListener : public ITableListener {
       virtual void ValueChanged(ITable* source, const std::string& key, EntryValue value, bool isNew){
 	fprintf(stdout, "Got key in server table: %s, = %f\n", key.c_str(), value.f);
 	fflush(stdout);
-	tableProvider->GetTable("/client")->PutNumber(key, value.f);
+	NetworkTable::GetTable("/client")->PutNumber(key, value.f);
       };
   };
   ClientListener* listener = new ClientListener();
@@ -61,11 +57,7 @@ int main(){
   std::string tmp;
   std::cin >> tmp;
   sTable->RemoveTableListener(listener);
-  delete tableProvider;
-  delete client;
-  delete factory;
-  delete typeManager;
-  delete threadManager;
+  NetworkTable::Shutdown();
   delete listener;
 
   /*ITable* table = NetworkTable::GetTable("SmartDashboard");

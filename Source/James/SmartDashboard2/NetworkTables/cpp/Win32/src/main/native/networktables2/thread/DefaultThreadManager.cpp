@@ -58,11 +58,6 @@ bool PeriodicNTThread::isRunning() {
 	return thread->IsReady();
 }
 
-void PeriodicNTThread::detach()
-{
-	//We currently do not support detach
-	assert(false);
-}
 NTThread* DefaultThreadManager::newBlockingPeriodicThread(PeriodicRunnable* r, const char* name) {
 	return new PeriodicNTThread(r, name);
 }

@@ -21,8 +21,6 @@ NetworkTableProvider::~NetworkTableProvider(){
     delete it->second;
     tables.erase(it);
   }
-  //This was created in NetworkTableMode
-  delete &node;
 }
 
 ITable* NetworkTableProvider::GetRootTable(){

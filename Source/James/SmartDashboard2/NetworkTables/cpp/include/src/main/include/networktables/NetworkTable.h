@@ -55,6 +55,9 @@ class NetworkTable : public ITable, IRemote {
 private:
 	static DefaultThreadManager threadManager;
 	static NetworkTableProvider* staticProvider;
+	static NetworkTableNode* staticNode;
+	static void* streamFactory;
+	static NetworkTableEntryTypeManager* typeManager;
 	static NetworkTableMode* mode;
 	static int port;
 	static std::string ipAddress;
