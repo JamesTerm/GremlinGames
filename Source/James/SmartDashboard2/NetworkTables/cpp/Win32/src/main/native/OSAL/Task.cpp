@@ -35,7 +35,6 @@ NTTask::NTTask(const char* name, FUNCPTR function, INT32 priority, UINT32 stackS
 
 NTTask::~NTTask()
 {
-	CloseThread();
 	//if (m_taskID != kInvalidTaskID) Stop();
 	if (m_Handle)
 		Stop();
@@ -108,7 +107,6 @@ bool NTTask::Restart()
 {
 	//return HandleError(taskRestart(m_taskID));
 	Stop();
-	CloseThread();
 	return StartInternal();
 }
 
@@ -117,12 +115,6 @@ bool NTTask::Restart()
  * @returns true on success false if the task doesn't exist or we are unable to kill it.
  */
 bool NTTask::Stop()
-{
-	//No work to do since parent class already exits the thread proc
-	return true;
-}
-
-bool NTTask::CloseThread()
 {
 	if (!m_Handle) return false;
 	bool ok = true;
