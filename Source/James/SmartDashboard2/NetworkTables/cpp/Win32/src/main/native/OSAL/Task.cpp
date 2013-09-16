@@ -1,17 +1,7 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) FIRST 2008. All Rights Reserved.							  */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in $(WIND_BASE)/WPILib.  */
-/*----------------------------------------------------------------------------*/
 #include "stdafx.h"
 #include "OSAL/Task.h"
 
-//#include "NetworkCommunication/UsageReporting.h"
-//#include "WPIErrors.h"
-//#include <errnoLib.h>
 #include <string.h>
-//#include <taskLib.h>
-//#include <usrLib.h>
 #include <Windows.h>
 
 
@@ -22,7 +12,7 @@
  * Create but don't launch a task.
  * @param name The name of the task.  "FRC_" will be prepended to the task name.
  * @param function The address of the function to run as the new task.
- * @param priority The VxWorks priority for the task.
+ * @param priority The priority for the task.
  * @param stackSize The size of the stack for the task
  */
 NTTask::NTTask(const char* name, FUNCPTR function, INT32 priority, UINT32 stackSize)
@@ -36,10 +26,11 @@ NTTask::NTTask(const char* name, FUNCPTR function, INT32 priority, UINT32 stackS
 	strcpy(m_taskName, "FRC_");
 	strcpy(m_taskName+4, name);
 
+	//TODO see if we want to debug out this... it may be interesting info
+	#if 0
 	static INT32 instances = 0;
 	instances++;
-	//TODO find this method
-	//nUsageReporting::report(nUsageReporting::kResourceType_Task, instances, 0, m_taskName);
+	#endif
 }
 
 NTTask::~NTTask()
@@ -58,9 +49,7 @@ DWORD thread_proc( void *p_ptr )
 	NTTask *p_this = (NTTask*)p_ptr;
 	assert( p_this );
 
-	(*p_this->m_function)( p_this->m_Arg[0],p_this->m_Arg[1],p_this->m_Arg[2],p_this->m_Arg[3],
-						   p_this->m_Arg[4],p_this->m_Arg[5],p_this->m_Arg[6],p_this->m_Arg[7],
-						   p_this->m_Arg[8],p_this->m_Arg[9]);
+	(*p_this->m_function)( p_this->m_Arg );
 	return 0;
 }
 
@@ -104,21 +93,9 @@ bool NTTask::StartInternal()
  * Starts this task.
  * If it is already running or unable to start, it fails and returns false.
  */
-bool NTTask::Start(UINT32 arg0, UINT32 arg1, UINT32 arg2, UINT32 arg3, UINT32 arg4, 
-		UINT32 arg5, UINT32 arg6, UINT32 arg7, UINT32 arg8, UINT32 arg9)
+bool NTTask::Start(void *arg0)
 {
-	//m_taskID = taskSpawn(m_taskName,
-	//					m_priority,
-	//					VX_FP_TASK,							// options
-	//					m_stackSize,						// stack size
-	//					m_function,							// function to start
-	//					arg0, arg1, arg2, arg3, arg4,	// parameter 1 - pointer to this class
-	//					arg5, arg6, arg7, arg8, arg9);// additional unused parameters
-	m_Arg[0]=arg0,	m_Arg[1]=arg1,	m_Arg[2]=arg2,	m_Arg[3]=arg3;
-	m_Arg[4]=arg4,	m_Arg[5]=arg5,	m_Arg[6]=arg6,	m_Arg[7]=arg7;
-	m_Arg[8]=arg8,	m_Arg[9]=arg9;
-	//bool ok = HandleError(m_taskID);
-	//if (!ok) m_taskID = kInvalidTaskID;
+	m_Arg=arg0;
 	return StartInternal();
 }
 
