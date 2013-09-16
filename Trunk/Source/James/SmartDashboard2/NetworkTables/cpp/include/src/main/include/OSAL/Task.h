@@ -59,7 +59,6 @@ private:
 
 	#ifdef WIN32
 	bool StartInternal();
-	bool CloseThread();  //This will wait until thread procedure has finished
 	HANDLE m_Handle;
 	DWORD m_ID;
 	#else
