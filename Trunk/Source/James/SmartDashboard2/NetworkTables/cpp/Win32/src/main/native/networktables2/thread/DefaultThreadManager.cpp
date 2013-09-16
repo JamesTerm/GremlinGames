@@ -51,7 +51,6 @@ int PeriodicNTThread::_taskMain(){
 void PeriodicNTThread::stop() 
 {
 	run = false;
-	thread->Stop();
 }
 
 bool PeriodicNTThread::isRunning() {
