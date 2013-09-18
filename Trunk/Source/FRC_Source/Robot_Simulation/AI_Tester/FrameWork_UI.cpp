@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "AI_Tester.h"
 #include "Robot_Tester.h"
+#include "Robots.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace std;
 using namespace GG_Framework::Base;
 

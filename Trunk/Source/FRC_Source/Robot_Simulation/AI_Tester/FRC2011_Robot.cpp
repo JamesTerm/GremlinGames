@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "AI_Tester.h"
-namespace AI_Tester
+#include "Robot_Tester.h"
+namespace Robot_Tester
 {
 	#include "Tank_Robot_UI.h"
 	#include "FRC2011_Robot.h"
@@ -148,7 +148,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 
 const bool c_UsingArmLimits=true;
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;

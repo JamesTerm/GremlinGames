@@ -9,7 +9,7 @@
 #define DRIVE_API __declspec(dllimport)
 #endif
 
-namespace AI_Tester
+namespace Robot_Tester
 {
 	#include "../Common/PIDController.h"
 	#include "../Common/Calibration_Testing.h"

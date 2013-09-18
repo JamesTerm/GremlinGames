@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "Common.h"
 
-namespace AI_Tester
+namespace Robot_Tester
 {
 	#include "PIDController.h"
 }
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 
 
   /***********************************************************************************************************/

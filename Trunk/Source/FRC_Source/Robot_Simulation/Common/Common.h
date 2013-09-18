@@ -16,7 +16,7 @@
 #define COMMON_API __declspec(dllimport)
 #endif
 
-#define AI_TesterCode  //used to branch AI test code from wind-river code
+#define Robot_TesterCode  //used to branch AI test code from wind-river code
 
 //#define __DisableSmartDashboard__ //used to quickly disable the smart dashboard
 #ifndef __DisableSmartDashboard__
@@ -53,7 +53,7 @@ namespace UI=GG_Framework::UI;
 namespace Scripting=GG_Framework::Logic::Scripting;
 
 //local includes
-namespace AI_Tester
+namespace Robot_Tester
 {
 	//Note like our game everything can reach the UI, but the UI knows nothing about the entity
 	#include "Entity_Properties.h"

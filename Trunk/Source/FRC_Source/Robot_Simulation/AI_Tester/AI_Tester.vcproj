@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="AI_Tester"
+	Name="Robot_Tester"
 	ProjectGUID="{48A6A100-F706-41AB-BD9D-FEF52AF68F92}"
 	RootNamespace="AI_Tester"
 	Keyword="Win32Proj"
@@ -176,10 +176,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\AI_Tester.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\CommonUI.cpp"
 				>
 			</File>
@@ -201,6 +197,10 @@
 			</File>
 			<File
 				RelativePath=".\Nona_Robot_UI.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Robot_Tester.cpp"
 				>
 			</File>
 			<File
@@ -250,10 +250,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\AI_Tester.h"
-				>
-			</File>
-			<File
 				RelativePath=".\CommonUI.h"
 				>
 			</File>
@@ -279,6 +275,10 @@
 			</File>
 			<File
 				RelativePath=".\Robot_Tester.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Robots.h"
 				>
 			</File>
 			<File

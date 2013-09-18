@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Common.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 void* Goal::operator new ( const size_t size )
 {	return malloc( size );
 }

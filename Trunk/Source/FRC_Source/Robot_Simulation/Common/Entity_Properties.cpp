@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Common.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 
   /***********************************************************************************************************************************/
  /*															Entity1D_Properties														*/

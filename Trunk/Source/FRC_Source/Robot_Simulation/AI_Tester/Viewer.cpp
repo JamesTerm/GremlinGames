@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include <conio.h>
-#include "AI_Tester.h"
-namespace AI_Tester
+#include "Robot_Tester.h"
+namespace Robot_Tester
 {
 	#include "Viewer.h"
 }
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace GG_Framework::UI;
 

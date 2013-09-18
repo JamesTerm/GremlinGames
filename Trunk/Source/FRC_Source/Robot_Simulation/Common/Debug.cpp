@@ -5,7 +5,7 @@
 
 using namespace GG_Framework::Base;
 
-namespace AI_Tester
+namespace Robot_Tester
 {
 
 std::string BuildString2(const char *format, va_list argptr)

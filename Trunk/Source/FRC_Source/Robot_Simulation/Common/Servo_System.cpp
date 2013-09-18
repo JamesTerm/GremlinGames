@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Common.h"
-namespace AI_Tester
+namespace Robot_Tester
 {
 #include "PIDController.h"
 #include "Calibration_Testing.h"
@@ -8,7 +8,7 @@ namespace AI_Tester
 #include "Servo_System.h"
 }
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -48,7 +48,7 @@ void Servo_Position_Control::TimeChange(double dTime_s)
 	if (!m_LastTime) 
 	{
 		m_LastTime=dTime_s;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		assert(dTime_s!=0.0);
 		#endif
 	}

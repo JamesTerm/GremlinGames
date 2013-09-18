@@ -2,7 +2,7 @@
 
 extern COMMON_API bool g_UseMouse;
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 class Mouse_ShipDriver
 {
 public:
@@ -39,7 +39,7 @@ class COMMON_API UI_Controller
 			Dir_180
 		};
 
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		UI_Controller(AI_Base_Controller *base_controller=NULL,bool AddJoystickDefaults=true);
 		#else
 		UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
@@ -132,7 +132,7 @@ class COMMON_API UI_Controller
 		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script);
 		UI::JoyStick_Binder &GetJoyStickBinder();
 	protected:
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		friend Mouse_ShipDriver;
 		#endif
 
@@ -176,7 +176,7 @@ class COMMON_API UI_Controller
 		AI_Base_Controller *m_Base;
 		Ship_2D *m_ship; //there is an overwhelming use of the ship so we'll cache a pointer of it here
 		
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		Mouse_ShipDriver *m_mouseDriver;
 		#else
 		UI::JoyStick_Binder &m_JoyStick_Binder;

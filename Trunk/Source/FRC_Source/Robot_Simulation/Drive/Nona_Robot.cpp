@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Drive.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -216,7 +216,7 @@ void Butterfly_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TractionModePropsProps.InverseMaxDecel=m_TractionModePropsProps.InverseMaxAccel;	//set up deceleration to be the same value by default
 			script.GetField("inv_max_decel", NULL, NULL, &m_TractionModePropsProps.InverseMaxDecel);
 
-			#ifdef AI_TesterCode
+			#ifdef Robot_TesterCode
 			err = script.GetFieldTable("motor_specs");
 			if (!err)
 			{

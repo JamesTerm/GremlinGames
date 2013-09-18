@@ -24,7 +24,7 @@ inline Vec2D GlobalToLocal(double Heading,const Vec2D &GlobalVector)
 }
 
 //TODO AI should probably move this to Entity2D as well
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 inline void NormalizeRotation(double &Rotation)
 {
 	const double Pi2=M_PI*2.0;
@@ -99,7 +99,7 @@ struct Ship_Props
 	Ship_Type ShipType;
 };
 
-#ifndef AI_TesterCode
+#ifndef Robot_TesterCode
 typedef Entity2D Ship;
 #endif
 
@@ -223,7 +223,7 @@ class COMMON_API Ship_Properties : public Entity_Properties
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}
 		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Entity_Properties __super;
 		#endif
 		
@@ -394,7 +394,7 @@ class COMMON_API Ship_2D : public Ship
 		Vec2D m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
 
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Entity2D __super;
 		#endif
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
@@ -413,7 +413,7 @@ class COMMON_API Ship_Tester : public Ship_2D
 		void SetGoal(Goal *goal);
 };
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 class COMMON_API UI_Ship_Properties : public Ship_Properties
 {
 	public:

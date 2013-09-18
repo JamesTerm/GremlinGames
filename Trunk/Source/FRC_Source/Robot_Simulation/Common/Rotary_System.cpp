@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Common.h"
-namespace AI_Tester
+namespace Robot_Tester
 {
 #include "PIDController.h"
 #include "Calibration_Testing.h"
@@ -8,8 +8,8 @@ namespace AI_Tester
 #include "Rotary_System.h"
 }
 
-#ifdef AI_TesterCode
-using namespace AI_Tester;
+#ifdef Robot_TesterCode
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -68,7 +68,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	if (!m_LastTime) 
 	{
 		m_LastTime=dTime_s;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		assert(dTime_s!=0.0);
 		#endif
 	}
@@ -647,7 +647,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("slow_velocity_voltage", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocityVoltage);
 		script.GetField("slow_velocity", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocity);
 
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
 		if (!err)
 		{

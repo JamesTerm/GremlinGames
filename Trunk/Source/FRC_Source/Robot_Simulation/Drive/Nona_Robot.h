@@ -7,7 +7,7 @@ struct TractionModeProps
 	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
 	double InverseMaxDecel;  //used for deceleration case
 	bool IsOpen;  //give ability to open or close loop for traction system  
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	double GearReduction;  //In reciprocal form of spread sheet
 	#endif
 };

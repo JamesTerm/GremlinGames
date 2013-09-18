@@ -49,7 +49,7 @@ class COMMON_API Tank_Drive : public Vehicle_Drive_Common
 {
 	private:
 		Vehicle_Drive_Common_Interface * const m_pParent;
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Vehicle_Drive_Common __super;
 		#endif
 		double m_LeftLinearVelocity,m_RightLinearVelocity;
@@ -123,7 +123,7 @@ class COMMON_API Swerve_Drive : public Vehicle_Drive_Common
 		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 	protected:
 		Swerve_Drive_Interface * const m_pParent;
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Vehicle_Drive_Common __super;
 		#endif
 		SwerveVelocities m_Velocities;
@@ -148,7 +148,7 @@ class COMMON_API Butterfly_Drive : public Swerve_Drive
 class COMMON_API Nona_Drive : public Butterfly_Drive
 {
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Butterfly_Drive __super;
 		#endif
 		double m_KickerWheel;
