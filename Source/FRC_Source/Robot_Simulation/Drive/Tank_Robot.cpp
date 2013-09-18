@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Drive.h"
 
-#ifdef AI_TesterCode
-using namespace AI_Tester;
+#ifdef Robot_TesterCode
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -658,7 +658,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TankRobotProps.Negative_DeadZone_Right=-m_TankRobotProps.Negative_DeadZone_Right;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
 		if (!err)
 		{
@@ -679,7 +679,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 }
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
   /***********************************************************************************************************************************/
  /*														Tank_Robot_Control															*/
@@ -710,7 +710,7 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		//Note: for max accel it needs to be powerful enough to handle curve equations
 		Rotary_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
 		props.RotaryProps().EncoderToRS_Ratio=m_TankRobotProps.MotorToWheelGearRatio;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		props.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
 		#endif
 		m_Encoders.Initialize(&props);

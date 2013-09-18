@@ -1,19 +1,19 @@
-// AI_Tester.cpp : Defines the entry point for the console application.
+// Robot_Tester.cpp : Defines the entry point for the console application.
 //
 
 #include "stdafx.h"
-#include "AI_Tester.h"
-namespace AI_Tester
+#include "Robot_Tester.h"
+namespace Robot_Tester
 {
 	#include "Viewer.h"
 }
-#include "Robot_Tester.h"
+#include "Robots.h"
 
 void cls(void *hConsole=NULL);
 extern double g_WorldScaleFactor;
 extern bool g_TestPhysics;
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace GG_Framework::UI;
 using namespace std;

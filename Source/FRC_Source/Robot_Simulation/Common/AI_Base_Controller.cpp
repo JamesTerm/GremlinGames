@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Common.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 
@@ -155,7 +155,7 @@ void LUA_Controls_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Scr
 	{
 		Control_Props control;
 		//Wind River uses generic name, and AI tester uses product name
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		control.Controller=Controls.c_str();
 		#else
 		err=script.GetField("control", &control.Controller, NULL, NULL);

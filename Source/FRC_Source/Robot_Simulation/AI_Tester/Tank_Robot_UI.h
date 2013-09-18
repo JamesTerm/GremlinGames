@@ -1,7 +1,7 @@
 #pragma once
 
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
 //This is a simplified version of the wheel UI without the swivel or the graphics to show direction (only the tread)
 class Tank_Wheel_UI

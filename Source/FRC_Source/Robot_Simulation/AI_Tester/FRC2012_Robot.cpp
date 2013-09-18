@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "AI_Tester.h"
-namespace AI_Tester
+#include "Robot_Tester.h"
+namespace Robot_Tester
 {
 	#include "Tank_Robot_UI.h"
 	#include "CommonUI.h"
 	#include "FRC2012_Robot.h"
 }
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -913,7 +913,7 @@ void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_BallConveyorSystem.BindAdditionalEventControls(Bind);
 	m_Flippers.BindAdditionalEventControls(Bind);
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
 }
@@ -1153,7 +1153,7 @@ const char * const g_FRC_2012_Controls_Events[] =
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff",
 	"Robot_SetCreepMode","Robot_Flippers_Solenoid"
 	//AI Tester events only
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	,"Ball_SlowWheel"
 	#endif
 };

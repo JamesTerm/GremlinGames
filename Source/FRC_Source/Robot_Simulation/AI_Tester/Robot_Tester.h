@@ -1,12 +1,14 @@
 #pragma once
 
-namespace AI_Tester
+//project dependencies
+#include "../../../GG_Framework/UI/GG_Framework.UI.h"
+#include "../../../GG_Framework/Logic/Scripting/GG_Framework.Logic.Scripting.h"
+
+#include "../Drive/Drive.h"
+
+//local includes
+namespace Robot_Tester
 {
-	#include "Tank_Robot_UI.h"
-	#include "CommonUI.h"
-	#include "FRC2011_Robot.h"
-	#include "FRC2012_Robot.h"
-	#include "FRC2013_Robot.h"
-	#include "Swerve_Robot_UI.h"
-	#include "Nona_Robot_UI.h"
+	//Note like our game everything can reach the UI, but the UI knows nothing about the entity
+	#include "FrameWork_UI.h"
 }

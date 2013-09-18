@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Common.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;

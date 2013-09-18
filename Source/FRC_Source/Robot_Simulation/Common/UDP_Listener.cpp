@@ -10,7 +10,7 @@
 
 #pragma comment( lib, "Ws2_32" )
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 
 class UDP_Listener
 {

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Common.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace std;
 
 const double Pi2=M_PI*2.0;

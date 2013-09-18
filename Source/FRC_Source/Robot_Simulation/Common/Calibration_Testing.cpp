@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Common.h"
-namespace AI_Tester
+namespace Robot_Tester
 {
 	#include "PIDController.h"
 	#include "Calibration_Testing.h"
@@ -8,7 +8,7 @@ namespace AI_Tester
 	#include "Rotary_System.h"
 }
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace std;
 

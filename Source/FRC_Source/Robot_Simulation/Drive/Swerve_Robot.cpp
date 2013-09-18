@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Drive.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -105,7 +105,7 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 			drive.RotaryProps().InverseMaxAccel=m_SwerveRobotProps.InverseMaxAccel;
 			drive.RotaryProps().InverseMaxDecel=m_SwerveRobotProps.InverseMaxDecel;
 			drive.RotaryProps().UseAggressiveStop=true;
-			#ifdef AI_TesterCode
+			#ifdef Robot_TesterCode
 			drive.EncoderSimulationProps()=RobotProps->GetEncoderSimulationProps();
 			#endif
 			//TODO drive.RotaryProps().EncoderReversed
@@ -695,7 +695,7 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("inv_max_accel", NULL, NULL, &m_SwerveRobotProps.InverseMaxAccel);
 		m_SwerveRobotProps.InverseMaxDecel=m_SwerveRobotProps.InverseMaxAccel;	//set up deceleration to be the same value by default
 		script.GetField("inv_max_decel", NULL, NULL, &m_SwerveRobotProps.InverseMaxDecel);
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
 		if (!err)
 		{

@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "AI_Tester.h"
-namespace AI_Tester
+#include "Robot_Tester.h"
+namespace Robot_Tester
 {
 	#include "Tank_Robot_UI.h"
 }
 
-#ifdef AI_TesterCode
-using namespace AI_Tester;
+#ifdef Robot_TesterCode
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -18,7 +18,7 @@ using namespace std;
 #endif
 
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
   /***************************************************************************************************************/
  /*												Tank_Wheel_UI													*/

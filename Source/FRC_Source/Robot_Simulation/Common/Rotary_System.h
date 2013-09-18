@@ -40,7 +40,7 @@ struct Rotary_Props
 class COMMON_API Rotary_System : public Ship_1D
 {
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Ship_1D __super;
 		#endif
 		bool m_UsingRange_props;
@@ -64,7 +64,7 @@ class COMMON_API Rotary_System : public Ship_1D
 class COMMON_API Rotary_Position_Control : public Rotary_System
 {
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Rotary_System __super;
 		#endif
 
@@ -115,7 +115,7 @@ class COMMON_API Rotary_Velocity_Control : public Rotary_System
 			eActive, //Will attempt to match predicted velocity to actual velocity
 		};
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Rotary_System __super;
 		#endif
 
@@ -182,17 +182,17 @@ class COMMON_API Rotary_Properties : public Ship_1D_Properties
 		const Rotary_Props &GetRotaryProps() const {return m_RotaryProps;}
 		//Get and Set the properties
 		Rotary_Props &RotaryProps() {return m_RotaryProps;}
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
 	protected:
 		Rotary_Props m_RotaryProps;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Ship_1D_Properties __super;
 		#endif
 };

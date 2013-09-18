@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Common.h"
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 
@@ -10,7 +10,7 @@ using namespace osg;
 #undef __DisableSpeedControl__  //This one is great for test purposes
 #undef DEBUG_AFTERBURNER
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 #endif
@@ -21,7 +21,7 @@ const double Half_Pi=M_PI/2.0;
  /*													Ship_2D														*/
 /***************************************************************************************************************/
 
-namespace AI_Tester
+namespace Robot_Tester
 {
 
 inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
@@ -260,7 +260,7 @@ void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *pr
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	m_Physics.GetPilotInfo().GLimit = 8.0;
 	m_Physics.GetPilotInfo().PassOutTime_s = 10.0;
 	m_Physics.GetPilotInfo().PassOutRecoveryTime_s = 1.0;
@@ -998,7 +998,7 @@ void Ship_Tester::SetGoal(Goal *goal)
 	GetController()->m_Goal=goal;
 }
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
   /***********************************************************************************************************************************/
  /*														UI_Ship_Properties															*/

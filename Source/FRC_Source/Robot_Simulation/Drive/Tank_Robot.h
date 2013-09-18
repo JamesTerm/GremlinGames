@@ -76,7 +76,7 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 		//Give ability to change properties
 		void UpdateTankProps(const Tank_Robot_Props &TankProps);
 	protected:
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		friend Tank_Robot_UI;
 		#endif
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
@@ -110,7 +110,7 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 	protected:
 		bool m_IsAutonomous;
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef  Ship_Tester __super;
 		#endif
 		Tank_Drive_Control_Interface * const m_RobotControl;
@@ -135,7 +135,7 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
 };
 
-#ifndef AI_TesterCode
+#ifndef Robot_TesterCode
 typedef Ship_Properties UI_Ship_Properties;
 #endif
 
@@ -145,21 +145,21 @@ class DRIVE_API Tank_Robot_Properties : public UI_Ship_Properties
 		Tank_Robot_Properties();
 		virtual void LoadFromScript(Scripting::Script& script);
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
 	protected:
 		Tank_Robot_Props m_TankRobotProps;
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Ship_Properties __super;
 		#else
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
 };
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
 class DRIVE_API Tank_Robot_Control : public Tank_Drive_Control_Interface
 {

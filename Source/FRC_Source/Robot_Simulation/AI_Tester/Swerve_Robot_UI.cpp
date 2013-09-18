@@ -1,13 +1,13 @@
 #include "stdafx.h"
-#include "AI_Tester.h"
+#include "Robot_Tester.h"
 
-namespace AI_Tester
+namespace Robot_Tester
 {
 	#include "CommonUI.h"
 	#include "Swerve_Robot_UI.h"
 }
 
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
