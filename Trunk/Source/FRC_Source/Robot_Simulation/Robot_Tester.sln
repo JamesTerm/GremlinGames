@@ -42,13 +42,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GG_Framework.Logic.Scriptin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{3B7862CC-C73B-43F0-A2F6-07028E90C670}"
 	ProjectSection(SolutionItems) = preProject
-		AI_Tester\FRC2011Robot.lua = AI_Tester\FRC2011Robot.lua
-		AI_Tester\FRC2012Robot.lua = AI_Tester\FRC2012Robot.lua
-		AI_Tester\FRC2013Robot.lua = AI_Tester\FRC2013Robot.lua
-		AI_Tester\TestButterflyRobot.lua = AI_Tester\TestButterflyRobot.lua
-		AI_Tester\TestNonaRobot.lua = AI_Tester\TestNonaRobot.lua
-		AI_Tester\TestSwerveRobot.lua = AI_Tester\TestSwerveRobot.lua
-		AI_Tester\TestTankRobot.lua = AI_Tester\TestTankRobot.lua
+		Robot_Tester\FRC2011Robot.lua = Robot_Tester\FRC2011Robot.lua
+		Robot_Tester\FRC2012Robot.lua = Robot_Tester\FRC2012Robot.lua
+		Robot_Tester\FRC2013Robot.lua = Robot_Tester\FRC2013Robot.lua
+		Robot_Tester\TestButterflyRobot.lua = Robot_Tester\TestButterflyRobot.lua
+		Robot_Tester\TestNonaRobot.lua = Robot_Tester\TestNonaRobot.lua
+		Robot_Tester\TestSwerveRobot.lua = Robot_Tester\TestSwerveRobot.lua
+		Robot_Tester\TestTankRobot.lua = Robot_Tester\TestTankRobot.lua
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcproj", "{B4AC8105-B95E-48A0-B2C6-19ED9A29293F}"
