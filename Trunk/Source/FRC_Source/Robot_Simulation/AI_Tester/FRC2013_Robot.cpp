@@ -1647,7 +1647,7 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Robot_Set10PointHang",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff"
-	//AI Tester events only
+	//Robot Tester events only
 	#ifdef Robot_TesterCode
 	,"Ball_SlowWheel"
 	#endif
@@ -2316,7 +2316,7 @@ void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
 	}
 }
 
-//This is only for AI Tester
+//This is only for Robot Tester
 void FRC_2013_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
 {
 	if (Bind)
