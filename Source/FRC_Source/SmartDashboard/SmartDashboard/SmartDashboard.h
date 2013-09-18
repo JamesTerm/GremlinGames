@@ -17,7 +17,7 @@
 #include "networktables2/type/ComplexData.h"
 #include "ErrorBase.h"
 
-class SmartDashboard //: public SensorBase
+class __declspec(dllexport) SmartDashboard //: public SensorBase
 {
 public:
 	static void init();
@@ -52,7 +52,7 @@ public:
 
 private:
 	SmartDashboard();
-	virtual ~SmartDashboard();
+	//virtual ~SmartDashboard();
 	DISALLOW_COPY_AND_ASSIGN(SmartDashboard);
 
 	/** The {@link NetworkTable} used by {@link SmartDashboard} */
