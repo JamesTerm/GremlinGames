@@ -18,9 +18,9 @@
 
 #define AI_TesterCode  //used to branch AI test code from wind-river code
 
-#define __DisableSmartDashboard__ //used to quickly disable the smart dashboard
+//#define __DisableSmartDashboard__ //used to quickly disable the smart dashboard
 #ifndef __DisableSmartDashboard__
-#include "../../SmartDashboard2/SmartDashboard_import.h"
+#include "../../SmartDashboard/SmartDashboard_import.h"
 #else
 class SmartDashboard //: public SensorBase
 {

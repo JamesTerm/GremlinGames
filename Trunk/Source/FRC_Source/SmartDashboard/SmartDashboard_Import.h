@@ -20,7 +20,7 @@ public:
 class ITable;
 class Sendable;
 
-class SmartDashboard //: public SensorBase
+class __declspec(dllimport) SmartDashboard //: public SensorBase
 {
 public:
 	static void init();
@@ -54,7 +54,7 @@ public:
 	static void SetIPAddress(const char* address);
 private:
 	SmartDashboard();
-	virtual ~SmartDashboard();
+	//virtual ~SmartDashboard();
 	//DISALLOW_COPY_AND_ASSIGN(SmartDashboard);
 
 	/** The {@link NetworkTable} used by {@link SmartDashboard} */
