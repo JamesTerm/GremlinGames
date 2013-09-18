@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AI_Tester", "AI_Tester\AI_Tester.vcproj", "{48A6A100-F706-41AB-BD9D-FEF52AF68F92}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Robot_Tester", "Robot_Tester\Robot_Tester.vcproj", "{48A6A100-F706-41AB-BD9D-FEF52AF68F92}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B4AC8105-B95E-48A0-B2C6-19ED9A29293F} = {B4AC8105-B95E-48A0-B2C6-19ED9A29293F}
 		{556FC434-D0C3-4B96-BF29-E9CF5CD24F02} = {556FC434-D0C3-4B96-BF29-E9CF5CD24F02}
