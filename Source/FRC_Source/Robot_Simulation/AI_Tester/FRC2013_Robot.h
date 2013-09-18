@@ -517,7 +517,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
-		//Note: This is only for AI Tester
+		//Note: This is only for Robot Tester
 		virtual void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
 
 		void TriggerIntakeDeployedLimit(bool on) {m_DeployedLimit=on;}

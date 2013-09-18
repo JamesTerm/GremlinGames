@@ -382,7 +382,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	#endif
 
 	m_RobotControl->UpdateArmVoltage(m_InstanceIndex,Voltage);
-	//Show current height (only in AI Tester)
+	//Show current height (only in Robot Tester)
 	#if 1
 	double Pos_m=GetPos_m();
 	double height=AngleToHeight_m(Pos_m);

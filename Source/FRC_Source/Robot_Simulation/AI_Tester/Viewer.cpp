@@ -87,7 +87,7 @@ void Viewer::Start()
 
 		mainWin.Realize();
 		mainWin.SetFullScreen(false);
-		mainWin.SetWindowText("AI Tester");
+		mainWin.SetWindowText("Robot Tester");
 
 		// Let all of the scene know we are starting
 		mainWin.GetKeyboard_Mouse().GlobalEventMap.Event_Map["START"].Fire();

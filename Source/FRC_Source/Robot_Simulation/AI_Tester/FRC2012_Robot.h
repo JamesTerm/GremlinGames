@@ -394,7 +394,7 @@ class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
-		//Note: This is only for AI Tester
+		//Note: This is only for Robot Tester
 		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
 
 		void TriggerLower(bool on) {m_LowerSensor=on;}
