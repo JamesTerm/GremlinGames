@@ -28,20 +28,29 @@ struct HikingViking_Robot_Props
 class HikingViking_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
+		#ifndef Robot_TesterCode
+		typedef Tank_Robot_Properties __super;
+		#endif
 
 		HikingViking_Robot_Properties();
-		//I'm not going to implement script support mainly due to lack of time, but also this is a specific object that
-		//most likely is not going to be sub-classed (i.e. sealed)... if this turns out different later we can implement
-		//virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
+		
 		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
 		const Ship_1D_Properties &GetClawProps() const {return m_ClawProps;}
 		const HikingViking_Robot_Props &GetHikingVikingRobotProps() const {return m_HikingVikingRobotProps;}
-
+		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		Ship_1D_Properties m_ArmProps,m_ClawProps;
 		HikingViking_Robot_Props m_HikingVikingRobotProps;
+
+		class ControlEvents : public LUA_Controls_Properties_Interface
+		{
+			protected: //from LUA_Controls_Properties_Interface
+				virtual const char *LUA_Controls_GetEvents(size_t index) const; 
+		};
+		static ControlEvents s_ControlsEvents;
+		LUA_Controls_Properties m_RobotControls;
+
 };
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -141,6 +150,7 @@ class HikingViking_Robot : public Tank_Robot
 		Robot_Claw &GetClaw() {return m_Claw;}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy);
 	private:
 		HikingViking_Robot_Properties m_RobotProps;
 		//typedef  Tank_Drive __super;

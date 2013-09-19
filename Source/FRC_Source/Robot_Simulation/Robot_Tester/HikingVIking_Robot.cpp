@@ -526,6 +526,12 @@ void HikingViking_Robot::BindAdditionalEventControls(bool Bind)
 	ClawShip_Access.BindAdditionalEventControls(Bind);
 }
 
+void HikingViking_Robot::BindAdditionalUIControls(bool Bind,void *joy)
+{
+	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
+	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
+}
+
   /***********************************************************************************************************************************/
  /*													HikingViking_Robot_Control															*/
 /***********************************************************************************************************************************/
@@ -663,7 +669,8 @@ HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Props::eSimpleMotor,
 	false	//No limit ever!
-	)
+	),
+	m_RobotControls(&s_ControlsEvents)
 {
 
 	{
@@ -686,6 +693,46 @@ HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
 	props.GearHeightOffset=c_GearHeightOffset;
 	props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
 	m_HikingVikingRobotProps=props;
+}
+
+//declared as global to avoid allocation on stack each iteration
+const char * const g_HikingViking_Controls_Events[] = 
+{
+	"Arm_SetCurrentVelocity","Arm_SetPotentiometerSafety","Arm_SetPosRest",
+	"Arm_SetPos0feet","Arm_SetPos3feet","Arm_SetPos6feet","Arm_SetPos9feet",
+	"Arm_Rist"
+};
+
+const char *HikingViking_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
+{
+	return (index<_countof(g_HikingViking_Controls_Events))?g_HikingViking_Controls_Events[index] : NULL;
+}
+HikingViking_Robot_Properties::ControlEvents HikingViking_Robot_Properties::s_ControlsEvents;
+
+void HikingViking_Robot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	{
+		double version;
+		err=script.GetField("version", NULL, NULL, &version);
+		if (!err)
+			printf ("Version=%.2f\n",version);
+	}
+
+	__super::LoadFromScript(script);
+	err = script.GetFieldTable("robot_settings");
+	if (!err) 
+	{
+		//TODO
+		//This is the main robot settings pop
+		script.Pop();
+	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		m_RobotControls.LoadFromScript(script);
+		script.Pop();
+	}
 }
 
   /***********************************************************************************************************************************/
