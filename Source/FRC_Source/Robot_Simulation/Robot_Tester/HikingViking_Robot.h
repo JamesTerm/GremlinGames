@@ -12,6 +12,38 @@ public:
 	virtual void Initialize(const Entity_Properties *props)=0;
 };
 
+struct HikingViking_Robot_Props
+{
+	//everything in meters and radians
+	double OptimalAngleUp;
+	double OptimalAngleDn;
+	double ArmLength;
+	double ArmToGearRatio;
+	double PotentiometerToArmRatio;
+	double PotentiometerMaxRotation;
+	double GearHeightOffset;
+	double MotorToWheelGearRatio;
+};
+
+class HikingViking_Robot_Properties : public Tank_Robot_Properties
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		HikingViking_Robot_Properties();
+		//I'm not going to implement script support mainly due to lack of time, but also this is a specific object that
+		//most likely is not going to be sub-classed (i.e. sealed)... if this turns out different later we can implement
+		//virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
+		const Ship_1D_Properties &GetClawProps() const {return m_ClawProps;}
+		const HikingViking_Robot_Props &GetHikingVikingRobotProps() const {return m_HikingVikingRobotProps;}
+
+	private:
+		Ship_1D_Properties m_ArmProps,m_ClawProps;
+		HikingViking_Robot_Props m_HikingVikingRobotProps;
+};
+
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
 class HikingViking_Robot : public Tank_Robot
@@ -38,6 +70,8 @@ class HikingViking_Robot : public Tank_Robot
 		virtual void TimeChange(double dTime_s);
 		void CloseDeploymentDoor(bool Close);
 
+		const HikingViking_Robot_Properties &GetRobotProps() const;
+
 		//TODO test roller using is angular to be true
 		class Robot_Claw : public Ship_1D
 		{
@@ -63,16 +97,16 @@ class HikingViking_Robot : public Tank_Robot
 		class Robot_Arm : public Ship_1D
 		{
 			public:
-				Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex=0);
+				Robot_Arm(HikingViking_Robot *parent,const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex=0);
 				IEvent::HandlerList ehl;
 				//The parent needs to call initialize
 				virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
-				static double HeightToAngle_r(double Height_m);
-				static double Arm_AngleToHeight_m(double Angle_r);
-				static double AngleToHeight_m(double Angle_r);
-				static double GetPosRest();
+				double HeightToAngle_r(double Height_m) const;
+				double Arm_AngleToHeight_m(double Angle_r) const;
+				double AngleToHeight_m(double Angle_r) const;
+				double GetPosRest();
 				//given the raw potentiometer converts to the arm angle
-				static double PotentiometerRaw_To_Arm_r(double raw);
+				double PotentiometerRaw_To_Arm_r(double raw) const;
 				void CloseRist(bool Close);
 				virtual void ResetPos();
 			protected:
@@ -90,6 +124,7 @@ class HikingViking_Robot : public Tank_Robot
 				void SetPos3feet();
 				void SetPos6feet();
 				void SetPos9feet();
+				HikingViking_Robot * const m_pParent;
 				Arm_Control_Interface * const m_RobotControl;
 				const size_t m_InstanceIndex;
 				PIDController2 m_PIDController;
@@ -107,6 +142,7 @@ class HikingViking_Robot : public Tank_Robot
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
+		HikingViking_Robot_Properties m_RobotProps;
 		//typedef  Tank_Drive __super;
 		HikingViking_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
@@ -145,6 +181,7 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 
 	protected:
 		Tank_Robot_Control m_TankRobotControl;
+		HikingViking_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		double m_ArmMaxSpeed;
 		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
@@ -184,22 +221,6 @@ class HikingViking_Robot_UI : public HikingViking_Robot, public HikingViking_Rob
 
 };
 
-class HikingViking_Robot_Properties : public Tank_Robot_Properties
-{
-	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
-		HikingViking_Robot_Properties();
-		//I'm not going to implement script support mainly due to lack of time, but also this is a specific object that
-		//most likely is not going to be sub-classed (i.e. sealed)... if this turns out different later we can implement
-		//virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
-		const Ship_1D_Properties &GetClawProps() const {return m_ClawProps;}
-
-	private:
-		Ship_1D_Properties m_ArmProps,m_ClawProps;
-};
 
 namespace HikingViking_Goals
 {
