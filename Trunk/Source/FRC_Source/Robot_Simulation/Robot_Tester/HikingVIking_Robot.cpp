@@ -46,11 +46,11 @@ Goal *Get_TestLengthGoal(HikingViking_Robot *Robot)
 
 Goal *Get_UberTubeGoal(HikingViking_Robot *Robot)
 {
-	Ship_1D &Arm=Robot->GetArm();
+	HikingViking_Robot::Robot_Arm &Arm=Robot->GetArm();
 	//Now to setup the goal
 	//double position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
 	//double position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
-	double position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	double position=Arm.HeightToAngle_r(1.08712);   //42.8 inches
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
@@ -71,7 +71,7 @@ Goal *Get_UberTubeGoal(HikingViking_Robot *Robot)
 	wp.Position[1]=starting_line+0.1;
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 
-	position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(0.83312);  //32.8 TODO find how much to lower
+	position=Arm.HeightToAngle_r(0.83312);  //32.8 TODO find how much to lower
 	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
@@ -81,7 +81,7 @@ Goal *Get_UberTubeGoal(HikingViking_Robot *Robot)
 
 	wp.Position[1]=0;
 	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	position=Arm.HeightToAngle_r(0.0);
 	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	MultitaskGoal *End_Goal=new MultitaskGoal;
@@ -109,19 +109,6 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
-const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
-const double c_ArmLength_m=1.8288;  //6 feet
-const double c_ArmToGearRatio=72.0/28.0;
-const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-//const double c_PotentiometerToGearRatio=60.0/32.0;
-//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
-const double c_PotentiometerToArmRatio=36.0/54.0;
-const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
-const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
-const double c_GearHeightOffset=1.397;  //55 inches
-const double c_WheelDiameter=0.1524;  //6 inches
-const double c_MotorToWheelGearRatio=12.0/36.0;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
@@ -199,7 +186,7 @@ void HikingViking_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
  /*													HikingViking_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
 
-HikingViking_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex) : 
+HikingViking_Robot::Robot_Arm::Robot_Arm(HikingViking_Robot *parent,const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex) : m_pParent(parent),
 	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
@@ -214,8 +201,10 @@ HikingViking_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Int
 
 void HikingViking_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
 {
-	m_LastPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 	__super::Initialize(em,props);
+
+	m_LastPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*m_pParent->GetRobotProps().GetHikingVikingRobotProps().ArmToGearRatio;
+
 	const Ship_1D_Properties *ship=dynamic_cast<const Ship_1D_Properties *>(props);
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
@@ -226,31 +215,39 @@ void HikingViking_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,
 	m_CalibratedScaler=m_MaxSpeed;
 }
 
-double HikingViking_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
+double HikingViking_Robot::Robot_Arm::AngleToHeight_m(double Angle_r) const
 {
-	return (sin(Angle_r*c_GearToArmRatio)*c_ArmLength_m)+c_GearHeightOffset;
+	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
+	const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
+
+	return (sin(Angle_r*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
 }
-double HikingViking_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r)
+double HikingViking_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r) const
 {
-	return (sin(Angle_r)*c_ArmLength_m)+c_GearHeightOffset;
+	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
+	return (sin(Angle_r)*props.ArmLength)+props.GearHeightOffset;
 }
 
-double HikingViking_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
+double HikingViking_Robot::Robot_Arm::HeightToAngle_r(double Height_m) const
 {
-	return asin((Height_m-c_GearHeightOffset)/c_ArmLength_m) * c_ArmToGearRatio;
+	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
+	return asin((Height_m-props.GearHeightOffset)/props.ArmLength) * props.ArmToGearRatio;
 }
 
-double HikingViking_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
+double HikingViking_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw) const
 {
+	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
 	const int RawRangeHalf=512;
 	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-	ret*=c_PotentiometerToArmRatio;  //convert to arm's gear ratio
+	ret*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
 	return ret;
 }
 
 
 void HikingViking_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
+	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
+	const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 	double PotentiometerVelocity; //increased scope for debugging dump
@@ -261,7 +258,7 @@ void HikingViking_Robot::Robot_Arm::TimeChange(double dTime_s)
 		if (m_LastTime!=0.0)
 		{
 			double LastSpeed=fabs(m_Physics.GetVelocity());  //This is last because the time change has not happened yet
-			double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
+			double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*props.ArmToGearRatio;
 
 			//The order here is as such where if the potentiometer's distance is greater (in either direction), we'll multiply by a value less than one
 			double Displacement=NewPosition-m_LastPosition;
@@ -359,12 +356,13 @@ void HikingViking_Robot::Robot_Arm::PosDisplacementCallback(double posDisplaceme
 
 void HikingViking_Robot::Robot_Arm::ResetPos()
 {
+	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
 	__super::ResetPos();  //Let the super do it stuff first
 	if (m_UsingPotentiometer)
 	{
 		m_PIDController.Reset();
 		m_RobotControl->Reset_Arm(m_InstanceIndex);
-		double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
+		double NewPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*props.ArmToGearRatio;
 		Stop();
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
@@ -406,11 +404,6 @@ void HikingViking_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 	}
 }
 
-static double ArmHeightToBack(double value)
-{
-	const double Vertical=PI/2.0*c_ArmToGearRatio;
-	return Vertical + (Vertical-value);
-}
 
 double HikingViking_Robot::Robot_Arm::GetPosRest()
 {
@@ -427,7 +420,6 @@ void HikingViking_Robot::Robot_Arm::SetPos0feet()
 void HikingViking_Robot::Robot_Arm::SetPos3feet()
 {
 	//Not used, but kept for reference
-	//SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
 	SetIntendedPosition(HeightToAngle_r(0.9144));
 }
 void HikingViking_Robot::Robot_Arm::SetPos6feet()
@@ -476,7 +468,7 @@ void HikingViking_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
  /*															HikingViking_Robot															*/
 /***********************************************************************************************************************************/
 HikingViking_Robot::HikingViking_Robot(const char EntityName[],HikingViking_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control)
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(this,EntityName,robot_control), m_Claw(EntityName,robot_control)
 {
 }
 
@@ -487,6 +479,8 @@ void HikingViking_Robot::Initialize(Entity2D::EventMap& em, const Entity_Propert
 	m_RobotControl->Initialize(props);
 
 	const HikingViking_Robot_Properties *RobotProps=dynamic_cast<const HikingViking_Robot_Properties *>(props);
+	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
+
 	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
 	m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
 }
@@ -495,6 +489,11 @@ void HikingViking_Robot::ResetPos()
 	__super::ResetPos();
 	m_Arm.ResetPos();
 	m_Claw.ResetPos();
+}
+
+const HikingViking_Robot_Properties &HikingViking_Robot::GetRobotProps() const
+{
+	return m_RobotProps;
 }
 
 void HikingViking_Robot::TimeChange(double dTime_s)
@@ -591,6 +590,7 @@ void HikingViking_Robot_Control::Initialize(const Entity_Properties *props)
 	//For now robot_props can be NULL since the swerve robot is borrowing it
 	if (robot_props)
 	{
+		m_RobotProps=*robot_props;  //save a copy
 		assert(robot_props);
 		m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 	}
@@ -617,7 +617,8 @@ const double c_Arm_Range=1.0-c_Arm_DeadZone;
 
 double HikingViking_Robot_Control::GetArmCurrentPosition(size_t index)
 {
-	double result=m_Potentiometer.GetPotentiometerCurrentPosition()*c_PotentiometerToArmRatio;
+	const HikingViking_Robot_Props &props=m_RobotProps.GetHikingVikingRobotProps();
+	double result=m_Potentiometer.GetPotentiometerCurrentPosition()*props.PotentiometerToArmRatio;
 	//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 	return result;
 }
@@ -625,6 +626,20 @@ double HikingViking_Robot_Control::GetArmCurrentPosition(size_t index)
   /***********************************************************************************************************************************/
  /*													HikingViking_Robot_Properties														*/
 /***********************************************************************************************************************************/
+
+const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
+const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
+const double c_ArmLength_m=1.8288;  //6 feet
+const double c_ArmToGearRatio=72.0/28.0;
+const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
+//const double c_PotentiometerToGearRatio=60.0/32.0;
+//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+const double c_PotentiometerToArmRatio=36.0/54.0;
+const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
+const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
+const double c_GearHeightOffset=1.397;  //55 inches
+const double c_WheelDiameter=0.1524;  //6 inches
+const double c_MotorToWheelGearRatio=12.0/36.0;
 
 HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
 	"Arm",
@@ -650,14 +665,27 @@ HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
 	false	//No limit ever!
 	)
 {
-	Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
 
-	//Late assign this to override the initial default
-	props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
-	props.WheelDiameter=c_WheelDiameter;
-	props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
+	{
+		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
+		//Late assign this to override the initial default
+		props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+		props.WheelDiameter=c_WheelDiameter;
+		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
+		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
+		m_TankRobotProps=props;
+	}
+
+	HikingViking_Robot_Props props;
+	props.OptimalAngleUp=c_OptimalAngleUp_r;
+	props.OptimalAngleDn=c_OptimalAngleDn_r;
+	props.ArmLength=c_ArmLength_m;
+	props.ArmToGearRatio=c_ArmToGearRatio;
+	props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
+	props.PotentiometerMaxRotation=c_PotentiometerMaxRotation;
+	props.GearHeightOffset=c_GearHeightOffset;
 	props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
-	m_TankRobotProps=props;
+	m_HikingVikingRobotProps=props;
 }
 
   /***********************************************************************************************************************************/
