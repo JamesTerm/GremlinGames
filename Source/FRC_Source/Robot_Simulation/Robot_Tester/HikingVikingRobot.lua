@@ -9,18 +9,22 @@ OunceInchToNewton=0.00706155183333
 
 FRC2011_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
-WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Width_In * WheelBase_Width_In) ) ^ 0.5
+WheelBase_Length_In=9.625
+WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 GearSpeed = (372.63 / 60.0) * Pi * FRC2011_wheel_diameter_in * Inches2Meters
 
 Drive_MaxAccel=4
-skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
+skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 TestShip = {
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
+	MaxAccelForward_High = Drive_MaxAccel * 2, MaxAccelReverse_High = Drive_MaxAccel * 2, 
 	--Note we scale down the yaw to ease velocity rate for turning
-	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid * 0.9,
+	MaxTorqueYaw =  gMaxTorqueYaw,
+	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 
 	MAX_SPEED = GearSpeed, -- Maximum Speed (m/s) use to be 2.916 but computed to 2.974848
