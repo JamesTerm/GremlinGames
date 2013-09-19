@@ -3,11 +3,11 @@
 namespace Robot_Tester
 {
 	#include "Tank_Robot_UI.h"
-	#include "FRC2011_Robot.h"
+	#include "HikingViking_Robot.h"
 
-	namespace FRC_2011_Goals
+	namespace HikingViking_Goals
 	{
-	
+
 static Goal *Get_TestLengthGoal_OLD(Ship_Tester *ship)
 {
 	//Construct a way point
@@ -20,7 +20,7 @@ static Goal *Get_TestLengthGoal_OLD(Ship_Tester *ship)
 	return goal;
 }
 
-Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot)
+Goal *Get_TestLengthGoal(HikingViking_Robot *Robot)
 {
 	//float position=DriverStation::GetInstance()->GetAnalogIn(1);
 	float position=1.0;
@@ -43,61 +43,14 @@ Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot)
 	return MainGoal;
 }
 
-static Goal *Get_UberTubeGoal_OLD(FRC_2011_Robot *Robot)
+
+Goal *Get_UberTubeGoal(HikingViking_Robot *Robot)
 {
 	Ship_1D &Arm=Robot->GetArm();
 	//Now to setup the goal
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);
-	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
-
-	//Construct a way point
-	WayPoint wp;
-	wp.Position[0]=0;
-	wp.Position[1]=8.5;
-	wp.Power=1.0;
-	//Now to setup the goal
-	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-
-	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
-	Initial_Start_Goal->AddGoal(goal_arm);
-	Initial_Start_Goal->AddGoal(goal_drive);
-
-	wp.Position[1]=9;
-	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	wp.Position[1]=8.5;
-	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
-	wp.Position[1]=0;
-	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
-	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
-
-	MultitaskGoal *End_Goal=new MultitaskGoal;
-	End_Goal->AddGoal(goal_arm2);
-	End_Goal->AddGoal(goal_drive4);
-
-	//wrap the goal in a notify goal
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete"); //will fire Complete once it is done
-	//Inserted in reverse since this is LIFO stack list
-	MainGoal->AddSubgoal(End_Goal);
-	MainGoal->AddSubgoal(goal_drive3);
-	MainGoal->AddSubgoal(goal_waitfordrop);
-	//TODO drop claw here
-	MainGoal->AddSubgoal(goal_drive2);
-	MainGoal->AddSubgoal(Initial_Start_Goal);
-	MainGoal->Activate(); //now with the goal(s) loaded activate it
-	//Now to subscribe to this event... it will call Stop Loop when the goal is finished
-	//Robot->GetEventMap()->Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Autonomous::StopLoop);
-	return MainGoal;
-}
-
-Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
-{
-	Ship_1D &Arm=Robot->GetArm();
-	//Now to setup the goal
-	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
-	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
-	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	//double position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
+	//double position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
+	double position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
 	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	//Construct a way point
@@ -118,7 +71,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	wp.Position[1]=starting_line+0.1;
 	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
 
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.83312);  //32.8 TODO find how much to lower
+	position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(0.83312);  //32.8 TODO find how much to lower
 	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
@@ -128,7 +81,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 
 	wp.Position[1]=0;
 	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
-	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	position=HikingViking_Robot::Robot_Arm::HeightToAngle_r(0.0);
 	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
 
 	MultitaskGoal *End_Goal=new MultitaskGoal;
@@ -146,8 +99,7 @@ Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 	MainGoal->AddSubgoal(Initial_Start_Goal);
 	return MainGoal;
 };
-
-	} // end namespace FRC 2011 goals
+	} // end namespace hiking viking goals
 }
 
 const bool c_UsingArmLimits=true;
@@ -173,15 +125,15 @@ const double c_MotorToWheelGearRatio=12.0/36.0;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
- /*													FRC_2011_Robot::Robot_Claw														*/
+ /*													HikingViking_Robot::Robot_Claw														*/
 /***********************************************************************************************************************************/
 
-FRC_2011_Robot::Robot_Claw::Robot_Claw(const char EntityName[],Robot_Control_Interface *robot_control) :
+HikingViking_Robot::Robot_Claw::Robot_Claw(const char EntityName[],Robot_Control_Interface *robot_control) :
 	Ship_1D(EntityName),m_RobotControl(robot_control),m_Grip(false),m_Squirt(false)
 {
 }
 
-void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
+void HikingViking_Robot::Robot_Claw::TimeChange(double dTime_s)
 {
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Grip ^ m_Squirt)
@@ -209,45 +161,45 @@ void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
 	m_RobotControl->UpdateVoltage(eRollers,Voltage);
 }
 
-void FRC_2011_Robot::Robot_Claw::CloseClaw(bool Close)
+void HikingViking_Robot::Robot_Claw::CloseClaw(bool Close)
 {
 	m_RobotControl->CloseSolenoid(eClaw,Close);
 }
 
-void FRC_2011_Robot::Robot_Claw::Grip(bool on)
+void HikingViking_Robot::Robot_Claw::Grip(bool on)
 {
 	m_Grip=on;
 }
 
-void FRC_2011_Robot::Robot_Claw::Squirt(bool on)
+void HikingViking_Robot::Robot_Claw::Squirt(bool on)
 {
 	m_Squirt=on;
 }
 
-void FRC_2011_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
+void HikingViking_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
 {
 	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["Claw_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Claw_Close"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
-		em->EventOnOff_Map["Claw_Grip"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Grip);
-		em->EventOnOff_Map["Claw_Squirt"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Claw::Squirt);
+		em->EventValue_Map["Claw_SetCurrentVelocity"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Claw_Close"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Grip"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Claw::Grip);
+		em->EventOnOff_Map["Claw_Squirt"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Claw::Squirt);
 	}
 	else
 	{
-		em->EventValue_Map["Claw_SetCurrentVelocity"].Remove(*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Claw_Close"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::CloseClaw);
-		em->EventOnOff_Map["Claw_Grip"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Grip);
-		em->EventOnOff_Map["Claw_Squirt"]  .Remove(*this, &FRC_2011_Robot::Robot_Claw::Squirt);
+		em->EventValue_Map["Claw_SetCurrentVelocity"].Remove(*this, &HikingViking_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Claw_Close"]  .Remove(*this, &HikingViking_Robot::Robot_Claw::CloseClaw);
+		em->EventOnOff_Map["Claw_Grip"]  .Remove(*this, &HikingViking_Robot::Robot_Claw::Grip);
+		em->EventOnOff_Map["Claw_Squirt"]  .Remove(*this, &HikingViking_Robot::Robot_Claw::Squirt);
 	}
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2011_Robot::Robot_Arm														*/
+ /*													HikingViking_Robot::Robot_Arm														*/
 /***********************************************************************************************************************************/
 
-FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex) : 
+HikingViking_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex) : 
 	Ship_1D(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
 	//m_PIDController(0.5,1.0,0.0),
 	//m_PIDController(1.0,0.5,0.0),
@@ -260,7 +212,7 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Interfa
 	m_UsingPotentiometer=true;  //for testing on AI simulator (unless I make a control for this)
 }
 
-void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void HikingViking_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props)
 {
 	m_LastPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 	__super::Initialize(em,props);
@@ -274,21 +226,21 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	m_CalibratedScaler=m_MaxSpeed;
 }
 
-double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
+double HikingViking_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
 {
 	return (sin(Angle_r*c_GearToArmRatio)*c_ArmLength_m)+c_GearHeightOffset;
 }
-double FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r)
+double HikingViking_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r)
 {
 	return (sin(Angle_r)*c_ArmLength_m)+c_GearHeightOffset;
 }
 
-double FRC_2011_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
+double HikingViking_Robot::Robot_Arm::HeightToAngle_r(double Height_m)
 {
 	return asin((Height_m-c_GearHeightOffset)/c_ArmLength_m) * c_ArmToGearRatio;
 }
 
-double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
+double HikingViking_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 {
 	const int RawRangeHalf=512;
 	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
@@ -297,7 +249,7 @@ double FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw)
 }
 
 
-void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
+void HikingViking_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
@@ -397,7 +349,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	#endif
 }
 
-void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m)
+void HikingViking_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m)
 {
 	m_VoltageOverride=false;
 	//note 0.02 is fine for arm without claw
@@ -405,7 +357,7 @@ void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m
 		m_VoltageOverride=true;
 }
 
-void FRC_2011_Robot::Robot_Arm::ResetPos()
+void HikingViking_Robot::Robot_Arm::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
 	if (m_UsingPotentiometer)
@@ -419,7 +371,7 @@ void FRC_2011_Robot::Robot_Arm::ResetPos()
 	}
 }
 
-void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
+void HikingViking_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 {
 	//printf("\r%f       ",Value);
 	if (Value < -0.8)
@@ -460,92 +412,92 @@ static double ArmHeightToBack(double value)
 	return Vertical + (Vertical-value);
 }
 
-double FRC_2011_Robot::Robot_Arm::GetPosRest()
+double HikingViking_Robot::Robot_Arm::GetPosRest()
 {
 	return HeightToAngle_r(-0.02);
 }
-void FRC_2011_Robot::Robot_Arm::SetPosRest()
+void HikingViking_Robot::Robot_Arm::SetPosRest()
 {
 	SetIntendedPosition(GetPosRest()  );
 }
-void FRC_2011_Robot::Robot_Arm::SetPos0feet()
+void HikingViking_Robot::Robot_Arm::SetPos0feet()
 {
 	SetIntendedPosition( HeightToAngle_r(0.0) );
 }
-void FRC_2011_Robot::Robot_Arm::SetPos3feet()
+void HikingViking_Robot::Robot_Arm::SetPos3feet()
 {
 	//Not used, but kept for reference
 	//SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
 	SetIntendedPosition(HeightToAngle_r(0.9144));
 }
-void FRC_2011_Robot::Robot_Arm::SetPos6feet()
+void HikingViking_Robot::Robot_Arm::SetPos6feet()
 {
 	SetIntendedPosition( HeightToAngle_r(1.8288) );
 }
-void FRC_2011_Robot::Robot_Arm::SetPos9feet()
+void HikingViking_Robot::Robot_Arm::SetPos9feet()
 {
 	SetIntendedPosition( HeightToAngle_r(2.7432) );
 }
-void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
+void HikingViking_Robot::Robot_Arm::CloseRist(bool Close)
 {
 	m_RobotControl->CloseRist(Close);
 }
 
-void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
+void HikingViking_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
 	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["Arm_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["Arm_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety);
+		em->EventValue_Map["Arm_SetCurrentVelocity"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Arm_SetPotentiometerSafety"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Arm::SetPotentiometerSafety);
 		
-		em->Event_Map["Arm_SetPosRest"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPosRest);
-		em->Event_Map["Arm_SetPos0feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos0feet);
-		em->Event_Map["Arm_SetPos3feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
-		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
-		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
-		em->EventOnOff_Map["Arm_Rist"].Subscribe(ehl, *this, &FRC_2011_Robot::Robot_Arm::CloseRist);
+		em->Event_Map["Arm_SetPosRest"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::SetPosRest);
+		em->Event_Map["Arm_SetPos0feet"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::SetPos0feet);
+		em->Event_Map["Arm_SetPos3feet"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::SetPos3feet);
+		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::SetPos6feet);
+		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::SetPos9feet);
+		em->EventOnOff_Map["Arm_Rist"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::CloseRist);
 	}
 	else
 	{
-		em->EventValue_Map["Arm_SetCurrentVelocity"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["Arm_SetPotentiometerSafety"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety);
+		em->EventValue_Map["Arm_SetCurrentVelocity"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["Arm_SetPotentiometerSafety"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPotentiometerSafety);
 
-		em->Event_Map["Arm_SetPosRest"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPosRest);
-		em->Event_Map["Arm_SetPos0feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos0feet);
-		em->Event_Map["Arm_SetPos3feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos3feet);
-		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos6feet);
-		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &FRC_2011_Robot::Robot_Arm::SetPos9feet);
-		em->EventOnOff_Map["Arm_Rist"]  .Remove(*this, &FRC_2011_Robot::Robot_Arm::CloseRist);
+		em->Event_Map["Arm_SetPosRest"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPosRest);
+		em->Event_Map["Arm_SetPos0feet"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPos0feet);
+		em->Event_Map["Arm_SetPos3feet"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPos3feet);
+		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPos6feet);
+		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPos9feet);
+		em->EventOnOff_Map["Arm_Rist"]  .Remove(*this, &HikingViking_Robot::Robot_Arm::CloseRist);
 	}
 }
 
   /***********************************************************************************************************************************/
- /*															FRC_2011_Robot															*/
+ /*															HikingViking_Robot															*/
 /***********************************************************************************************************************************/
-FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],FRC_2011_Control_Interface *robot_control,bool UseEncoders) : 
+HikingViking_Robot::HikingViking_Robot(const char EntityName[],HikingViking_Control_Interface *robot_control,bool UseEncoders) : 
 	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(EntityName,robot_control), m_Claw(EntityName,robot_control)
 {
 }
 
-void FRC_2011_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+void HikingViking_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
 
-	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+	const HikingViking_Robot_Properties *RobotProps=dynamic_cast<const HikingViking_Robot_Properties *>(props);
 	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
 	m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
 }
-void FRC_2011_Robot::ResetPos()
+void HikingViking_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Arm.ResetPos();
 	m_Claw.ResetPos();
 }
 
-void FRC_2011_Robot::TimeChange(double dTime_s)
+void HikingViking_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -556,18 +508,18 @@ void FRC_2011_Robot::TimeChange(double dTime_s)
 	claw_entity.TimeChange(dTime_s);
 }
 
-void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
+void HikingViking_Robot::CloseDeploymentDoor(bool Close)
 {
 	m_RobotControl->CloseSolenoid(eDeployment,Close);
 }
 
-void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
+void HikingViking_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
-		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::CloseDeploymentDoor);
+		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &HikingViking_Robot::CloseDeploymentDoor);
 	else
-		em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &FRC_2011_Robot::CloseDeploymentDoor);
+		em->EventOnOff_Map["Robot_CloseDoor"]  .Remove(*this, &HikingViking_Robot::CloseDeploymentDoor);
 
 	Ship_1D &ArmShip_Access=m_Arm;
 	ArmShip_Access.BindAdditionalEventControls(Bind);
@@ -576,14 +528,14 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2011_Robot_Control															*/
+ /*													HikingViking_Robot_Control															*/
 /***********************************************************************************************************************************/
 
-void FRC_2011_Robot_Control::UpdateVoltage(size_t index,double Voltage)
+void HikingViking_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
-		case FRC_2011_Robot::eArm:
+		case HikingViking_Robot::eArm:
 		{
 			//	printf("Arm=%f\n",Voltage);
 			//DOUT3("Arm Voltage=%f",Voltage);
@@ -593,27 +545,27 @@ void FRC_2011_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 		}
 			break;
-		case FRC_2011_Robot::eRollers:
+		case HikingViking_Robot::eRollers:
 			m_RollerVoltage=Voltage;
 			//DOUT3("Arm Voltage=%f",Voltage);
 			break;
 	}
 }
-void FRC_2011_Robot_Control::CloseSolenoid(size_t index,bool Close)
+void HikingViking_Robot_Control::CloseSolenoid(size_t index,bool Close)
 {
 	switch (index)
 	{
-		case FRC_2011_Robot::eDeployment:
+		case HikingViking_Robot::eDeployment:
 			DebugOutput("CloseDeploymentDoor=%d\n",Close);
 			m_Deployment=Close;
 			break;
-		case FRC_2011_Robot::eClaw:
+		case HikingViking_Robot::eClaw:
 			DebugOutput("CloseClaw=%d\n",Close);
 			m_Claw=Close;
 			//This was used to test error with the potentiometer
 			//m_Potentiometer.SetBypass(Close);
 			break;
-		case FRC_2011_Robot::eRist:
+		case HikingViking_Robot::eRist:
 			DebugOutput("CloseRist=%d\n",Close);
 			m_Rist=Close;
 			break;
@@ -621,20 +573,20 @@ void FRC_2011_Robot_Control::CloseSolenoid(size_t index,bool Close)
 }
 
 
-FRC_2011_Robot_Control::FRC_2011_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_ArmVoltage(0.0),m_RollerVoltage(0.0),
+HikingViking_Robot_Control::HikingViking_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_ArmVoltage(0.0),m_RollerVoltage(0.0),
 	m_Deployment(false),m_Claw(false),m_Rist(false)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 }
 
-void FRC_2011_Robot_Control::Reset_Arm(size_t index)
+void HikingViking_Robot_Control::Reset_Arm(size_t index)
 {
 	m_KalFilter_Arm.Reset();
 }
 
-void FRC_2011_Robot_Control::Initialize(const Entity_Properties *props)
+void HikingViking_Robot_Control::Initialize(const Entity_Properties *props)
 {
-	const FRC_2011_Robot_Properties *robot_props=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+	const HikingViking_Robot_Properties *robot_props=dynamic_cast<const HikingViking_Robot_Properties *>(props);
 
 	//For now robot_props can be NULL since the swerve robot is borrowing it
 	if (robot_props)
@@ -646,7 +598,7 @@ void FRC_2011_Robot_Control::Initialize(const Entity_Properties *props)
 	tank_interface->Initialize(props);
 }
 
-void FRC_2011_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+void HikingViking_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Potentiometer.SetTimeDelta(dTime_s);
 	//display voltages
@@ -663,7 +615,7 @@ const double c_Arm_Range=1.0-c_Arm_DeadZone;
 //{
 //}
 
-double FRC_2011_Robot_Control::GetArmCurrentPosition(size_t index)
+double HikingViking_Robot_Control::GetArmCurrentPosition(size_t index)
 {
 	double result=m_Potentiometer.GetPotentiometerCurrentPosition()*c_PotentiometerToArmRatio;
 	//result = m_KalFilter_Arm(result);  //apply the Kalman filter
@@ -671,10 +623,10 @@ double FRC_2011_Robot_Control::GetArmCurrentPosition(size_t index)
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2011_Robot_Properties														*/
+ /*													HikingViking_Robot_Properties														*/
 /***********************************************************************************************************************************/
 
-FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
+HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
 	"Arm",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
@@ -712,9 +664,9 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
  /*														Goal_OperateSolenoid														*/
 /***********************************************************************************************************************************/
 
-using namespace FRC_2011_Goals;
+using namespace HikingViking_Goals;
 
-Goal_OperateSolenoid::Goal_OperateSolenoid(FRC_2011_Robot &robot,FRC_2011_Robot::SolenoidDevices SolenoidDevice,bool Close) : m_Robot(robot),
+Goal_OperateSolenoid::Goal_OperateSolenoid(HikingViking_Robot &robot,HikingViking_Robot::SolenoidDevices SolenoidDevice,bool Close) : m_Robot(robot),
 	m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsClosed(Close) 
 {	
 	m_Status=eInactive;
@@ -731,13 +683,13 @@ Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
 	ActivateIfInactive();
 	switch (m_SolenoidDevice)
 	{
-		case FRC_2011_Robot::eClaw:
+		case HikingViking_Robot::eClaw:
 			m_Robot.GetClaw().CloseClaw(m_IsClosed);
 			break;
-		case FRC_2011_Robot::eRist:
+		case HikingViking_Robot::eRist:
 			m_Robot.GetArm().CloseRist(m_IsClosed);
 			break;
-		case FRC_2011_Robot::eDeployment:
+		case HikingViking_Robot::eDeployment:
 			m_Robot.CloseDeploymentDoor(m_IsClosed);
 			break;
 	}

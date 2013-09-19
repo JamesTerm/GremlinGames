@@ -7,6 +7,7 @@ namespace Robot_Tester
 	#include "FRC2011_Robot.h"
 	#include "FRC2012_Robot.h"
 	#include "FRC2013_Robot.h"
+	#include "HikingViking_Robot.h"
 	#include "Swerve_Robot_UI.h"
 	#include "Nona_Robot_UI.h"
 }

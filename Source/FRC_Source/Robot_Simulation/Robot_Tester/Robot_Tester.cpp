@@ -288,6 +288,8 @@ private:
 	Robot2012Map Robot2012_Database;
 	typedef map<string ,FRC_2013_Robot_Properties,greater<string>> Robot2013Map;
 	Robot2013Map Robot2013_Database;
+	typedef map<string ,HikingViking_Robot_Properties,greater<string>> RobotHikingVikingMap;
+	RobotHikingVikingMap RobotHikingViking_Database;
 
 	UI_Controller_GameClient &game;
 
@@ -343,7 +345,8 @@ public:
 		eNona,
 		e2011,
 		e2012,
-		e2013
+		e2013,
+		eHikingViking
 	};
 	void LoadRobot(const char *FileName,const char *RobotName,RobotType type)
 	{
@@ -427,6 +430,17 @@ public:
 					}
 				}
 				break;
+			case eHikingViking:
+				{
+					RobotHikingVikingMap::iterator iter=RobotHikingViking_Database.find(RobotName);
+					if (iter==RobotHikingViking_Database.end())
+					{
+						//New entry
+						RobotHikingViking_Database[RobotName]=HikingViking_Robot_Properties();
+						new_entry=&RobotHikingViking_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
 		}
 		if (new_entry)
 		{
@@ -487,6 +501,12 @@ public:
 		{
 			Robot2013Map::iterator iter=Robot2013_Database.find(str_2);
 			if (iter!=Robot2013_Database.end())
+				props=&((*iter).second);
+		}
+		if (props==NULL)
+		{
+			RobotHikingVikingMap::iterator iter=RobotHikingViking_Database.find(str_2);
+			if (iter!=RobotHikingViking_Database.end())
 				props=&((*iter).second);
 		}
 
@@ -634,6 +654,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eNonaRobot,
 		eRobot2011,
 		eTestGoals_2011,
+		eRobotHikingViking,
 		eRobot2012,
 		eTestGoals_2012,
 		eRobot2013,
@@ -656,6 +677,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"NonaRobot",
 		"Robot2011",
 		"Goals2011",
+		"HikingViking",
 		"Robot2012",
 		"Goals2012",
 		"Robot2013",
@@ -759,9 +781,9 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				switch (AutonomousValue)
 				{
 					//case 1:		goal=Test_Arm(Robot);			break;
-				case 2:		goal=Get_TestLengthGoal(Robot);					break;
+				case 2:		goal=FRC_2011_Goals::Get_TestLengthGoal(Robot);					break;
 					//case 3:		goal=Get_TestRotationGoal(ship);				break;
-				case 4:		goal=Get_UberTubeGoal(Robot);	break;
+				case 4:		goal=FRC_2011_Goals::Get_UberTubeGoal(Robot);	break;
 				}
 				if (goal)
 					goal->Activate(); //now with the goal(s) loaded activate it
@@ -771,6 +793,18 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 			break;
 		}
+	case eRobotHikingViking:
+	case eCurrent:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			_command.LoadRobot("HikingVikingRobot.lua","HikingVikingRobot",Commands::eHikingViking);
+			Entity2D *TestEntity=_command.AddRobot("RobotHikingViking","HikingVikingRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
+		}
+		break;
 	case eRobot2012:
 		{
 			#ifdef _DEBUG
@@ -835,7 +869,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			break;
 		}
 	case eRobot2013:
-	case eCurrent:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
