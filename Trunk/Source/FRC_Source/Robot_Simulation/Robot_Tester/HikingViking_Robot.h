@@ -1,6 +1,6 @@
 #pragma once
 
-class FRC_2011_Control_Interface :	public Tank_Drive_Control_Interface,
+class HikingViking_Control_Interface :	public Tank_Drive_Control_Interface,
 									public Robot_Control_Interface,
 									public Arm_Control_Interface
 {
@@ -14,7 +14,7 @@ public:
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class FRC_2011_Robot : public Tank_Robot
+class HikingViking_Robot : public Tank_Robot
 {
 	public:
 		enum SolenoidDevices
@@ -31,7 +31,7 @@ class FRC_2011_Robot : public Tank_Robot
 
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		FRC_2011_Robot(const char EntityName[],FRC_2011_Control_Interface *robot_control,bool UseEncoders=false);
+		HikingViking_Robot(const char EntityName[],HikingViking_Control_Interface *robot_control,bool UseEncoders=false);
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
@@ -108,7 +108,7 @@ class FRC_2011_Robot : public Tank_Robot
 		virtual void BindAdditionalEventControls(bool Bind);
 	private:
 		//typedef  Tank_Drive __super;
-		FRC_2011_Control_Interface * const m_RobotControl;
+		HikingViking_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		Robot_Claw m_Claw;
 		bool m_VoltageOverride;  //when true will kill voltage
@@ -116,10 +116,10 @@ class FRC_2011_Robot : public Tank_Robot
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
 ///are correct
-class FRC_2011_Robot_Control : public FRC_2011_Control_Interface
+class HikingViking_Robot_Control : public HikingViking_Control_Interface
 {
 	public:
-		FRC_2011_Robot_Control();
+		HikingViking_Robot_Control();
 		//This is only needed for simulation
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
@@ -133,12 +133,12 @@ class FRC_2011_Robot_Control : public FRC_2011_Control_Interface
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
 	protected: //from Arm Interface
 		virtual void Reset_Arm(size_t index=0); 
-		virtual void UpdateArmVoltage(size_t index,double Voltage) {UpdateVoltage(FRC_2011_Robot::eArm,Voltage);}
+		virtual void UpdateArmVoltage(size_t index,double Voltage) {UpdateVoltage(HikingViking_Robot::eArm,Voltage);}
 		//pacify this by returning its current value
 		virtual double GetArmCurrentPosition(size_t index);
-		virtual void CloseRist(bool Close) {CloseSolenoid(FRC_2011_Robot::eRist,Close);}
-		virtual void OpenRist(bool Close) {CloseSolenoid(FRC_2011_Robot::eRist,!Close);}
-	protected: //from FRC_2011_Control_Interface
+		virtual void CloseRist(bool Close) {CloseSolenoid(HikingViking_Robot::eRist,Close);}
+		virtual void OpenRist(bool Close) {CloseSolenoid(HikingViking_Robot::eRist,!Close);}
+	protected: //from HikingViking_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
@@ -155,10 +155,10 @@ class FRC_2011_Robot_Control : public FRC_2011_Control_Interface
 };
 
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class FRC_2011_Robot_UI : public FRC_2011_Robot, public FRC_2011_Robot_Control
+class HikingViking_Robot_UI : public HikingViking_Robot, public HikingViking_Robot_Control
 {
 	public:
-		FRC_2011_Robot_UI(const char EntityName[]) : FRC_2011_Robot(EntityName,this),FRC_2011_Robot_Control(),
+		HikingViking_Robot_UI(const char EntityName[]) : HikingViking_Robot(EntityName,this),HikingViking_Robot_Control(),
 			m_TankUI(this) {}
 	protected:
 		virtual void TimeChange(double dTime_s) 
@@ -184,13 +184,13 @@ class FRC_2011_Robot_UI : public FRC_2011_Robot, public FRC_2011_Robot_Control
 
 };
 
-class FRC_2011_Robot_Properties : public Tank_Robot_Properties
+class HikingViking_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 
-		FRC_2011_Robot_Properties();
+		HikingViking_Robot_Properties();
 		//I'm not going to implement script support mainly due to lack of time, but also this is a specific object that
 		//most likely is not going to be sub-classed (i.e. sealed)... if this turns out different later we can implement
 		//virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
@@ -201,24 +201,22 @@ class FRC_2011_Robot_Properties : public Tank_Robot_Properties
 		Ship_1D_Properties m_ArmProps,m_ClawProps;
 };
 
-
-namespace FRC_2011_Goals
+namespace HikingViking_Goals
 {
-
 	class Goal_OperateSolenoid : public AtomicGoal
 	{
 		private:
-			FRC_2011_Robot &m_Robot;
-			const FRC_2011_Robot::SolenoidDevices m_SolenoidDevice;
+			HikingViking_Robot &m_Robot;
+			const HikingViking_Robot::SolenoidDevices m_SolenoidDevice;
 			bool m_Terminate;
 			bool m_IsClosed;
 		public:
-			Goal_OperateSolenoid(FRC_2011_Robot &robot,FRC_2011_Robot::SolenoidDevices SolenoidDevice,bool Close);
+			Goal_OperateSolenoid(HikingViking_Robot &robot,HikingViking_Robot::SolenoidDevices SolenoidDevice,bool Close);
 			virtual void Activate() {m_Status=eActive;}
 			virtual Goal_Status Process(double dTime_s);
 			virtual void Terminate() {m_Terminate=true;}
 	};
 
-	Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot);
-	Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot);
+	Goal *Get_TestLengthGoal(HikingViking_Robot *Robot);
+	Goal *Get_UberTubeGoal(HikingViking_Robot *Robot);
 }
