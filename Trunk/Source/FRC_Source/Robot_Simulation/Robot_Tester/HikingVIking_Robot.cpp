@@ -112,11 +112,11 @@ using namespace std;
 const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
- /*													HikingViking_Robot::Robot_Claw														*/
+ /*													HikingViking_Robot::Robot_Claw													*/
 /***********************************************************************************************************************************/
 
-HikingViking_Robot::Robot_Claw::Robot_Claw(const char EntityName[],Robot_Control_Interface *robot_control) :
-	Ship_1D(EntityName),m_RobotControl(robot_control),m_Grip(false),m_Squirt(false)
+HikingViking_Robot::Robot_Claw::Robot_Claw(HikingViking_Robot *parent,Rotary_Control_Interface *robot_control) :
+	Rotary_Velocity_Control("Claw",robot_control,eRollers),m_pParent(parent),m_Grip(false),m_Squirt(false)
 {
 }
 
@@ -127,30 +127,11 @@ void HikingViking_Robot::Robot_Claw::TimeChange(double dTime_s)
 		SetCurrentLinearAcceleration(m_Grip?m_Accel:-m_Brake);
 
 	__super::TimeChange(dTime_s);
-	//send out the voltage
-	double CurrentVelocity=m_Physics.GetVelocity();
-	double Voltage=CurrentVelocity/m_MaxSpeed;
-
-	//Clamp range
-	if (Voltage>0.0)
-	{
-		if (Voltage>1.0)
-			Voltage=1.0;
-	}
-	else if (Voltage<0.0)
-	{
-		if (Voltage<-1.0)
-			Voltage=-1.0;
-	}
-	else
-		Voltage=0.0;  //is nan case
-
-	m_RobotControl->UpdateVoltage(eRollers,Voltage);
 }
 
 void HikingViking_Robot::Robot_Claw::CloseClaw(bool Close)
 {
-	m_RobotControl->CloseSolenoid(eClaw,Close);
+	m_pParent->m_RobotControl->CloseSolenoid(eClaw,Close);
 }
 
 void HikingViking_Robot::Robot_Claw::Grip(bool on)
@@ -183,7 +164,7 @@ void HikingViking_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
 }
 
   /***********************************************************************************************************************************/
- /*													HikingViking_Robot::Robot_Arm														*/
+ /*													HikingViking_Robot::Robot_Arm													*/
 /***********************************************************************************************************************************/
 
 HikingViking_Robot::Robot_Arm::Robot_Arm(HikingViking_Robot *parent,Rotary_Control_Interface *robot_control) : 
@@ -315,10 +296,10 @@ void HikingViking_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 }
 
   /***********************************************************************************************************************************/
- /*															HikingViking_Robot															*/
+ /*															HikingViking_Robot														*/
 /***********************************************************************************************************************************/
 HikingViking_Robot::HikingViking_Robot(const char EntityName[],HikingViking_Control_Interface *robot_control,bool UseEncoders) : 
-	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(this,robot_control), m_Claw(EntityName,robot_control)
+	Tank_Robot(EntityName,robot_control,UseEncoders), m_RobotControl(robot_control), m_Arm(this,robot_control), m_Claw(this,robot_control)
 {
 }
 
@@ -382,11 +363,173 @@ void HikingViking_Robot::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 	__super::BindAdditionalUIControls(Bind,joy,key);  //call super for more general control assignments
 }
 
+
   /***********************************************************************************************************************************/
- /*													HikingViking_Robot_Control															*/
+ /*													HikingViking_Robot_Properties													*/
 /***********************************************************************************************************************************/
 
-void HikingViking_Robot_Control::UpdateVoltage(size_t index,double Voltage)
+const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
+const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
+const double c_ArmLength_m=1.8288;  //6 feet
+const double c_ArmToGearRatio=72.0/28.0;
+const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
+//const double c_PotentiometerToGearRatio=60.0/32.0;
+//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+const double c_PotentiometerToArmRatio=36.0/54.0;
+const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
+const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
+const double c_GearHeightOffset=1.397;  //55 inches
+const double c_WheelDiameter=0.1524;  //6 inches
+const double c_MotorToWheelGearRatio=12.0/36.0;
+
+HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
+	"Arm",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	18.0,   //Max Speed
+	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
+	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
+	Ship_1D_Props::eRobotArm,
+	c_UsingArmLimits,	//Using the range
+	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
+	),
+	m_ClawProps(
+	"Claw",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
+	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
+	28,   //Max Speed (rounded as we need not have precision)
+	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Props::eSimpleMotor,
+	false	//No limit ever!
+	),
+	m_RobotControls(&s_ControlsEvents)
+{
+
+	{
+		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
+		//Late assign this to override the initial default
+		props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
+		props.WheelDiameter=c_WheelDiameter;
+		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
+		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
+		m_TankRobotProps=props;
+	}
+
+	HikingViking_Robot_Props props;
+	props.OptimalAngleUp=c_OptimalAngleUp_r;
+	props.OptimalAngleDn=c_OptimalAngleDn_r;
+	props.ArmLength=c_ArmLength_m;
+	props.ArmToGearRatio=c_ArmToGearRatio;
+	props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
+	props.PotentiometerMaxRotation=c_PotentiometerMaxRotation;
+	props.GearHeightOffset=c_GearHeightOffset;
+	props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
+	m_HikingVikingRobotProps=props;
+}
+
+//declared as global to avoid allocation on stack each iteration
+const char * const g_HikingViking_Controls_Events[] = 
+{
+	"Claw_SetCurrentVelocity","Claw_Close",
+	"Claw_Grip","Claw_Squirt",
+	"Arm_SetCurrentVelocity","Arm_SetPotentiometerSafety","Arm_SetPosRest",
+	"Arm_SetPos0feet","Arm_SetPos3feet","Arm_SetPos6feet","Arm_SetPos9feet",
+	"Arm_Rist","Arm_Advance","Arm_Retract",
+	"Robot_CloseDoor"
+};
+
+const char *HikingViking_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
+{
+	return (index<_countof(g_HikingViking_Controls_Events))?g_HikingViking_Controls_Events[index] : NULL;
+}
+HikingViking_Robot_Properties::ControlEvents HikingViking_Robot_Properties::s_ControlsEvents;
+
+void HikingViking_Robot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	{
+		double version;
+		err=script.GetField("version", NULL, NULL, &version);
+		if (!err)
+			printf ("Version=%.2f\n",version);
+	}
+
+	__super::LoadFromScript(script);
+	err = script.GetFieldTable("robot_settings");
+	if (!err) 
+	{
+		err = script.GetFieldTable("arm");
+		if (!err)
+		{
+			m_ArmProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("claw");
+		if (!err)
+		{
+			m_ClawProps.LoadFromScript(script);
+			script.Pop();
+		}
+
+		//This is the main robot settings pop
+		script.Pop();
+	}
+	err = script.GetFieldTable("controls");
+	if (!err)
+	{
+		m_RobotControls.LoadFromScript(script);
+		script.Pop();
+	}
+}
+
+  /***********************************************************************************************************************************/
+ /*														Goal_OperateSolenoid														*/
+/***********************************************************************************************************************************/
+
+using namespace HikingViking_Goals;
+
+Goal_OperateSolenoid::Goal_OperateSolenoid(HikingViking_Robot &robot,HikingViking_Robot::SolenoidDevices SolenoidDevice,bool Close) : m_Robot(robot),
+	m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsClosed(Close) 
+{	
+	m_Status=eInactive;
+}
+
+Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
+{
+	if (m_Terminate)
+	{
+		if (m_Status==eActive)
+			m_Status=eFailed;
+		return m_Status;
+	}
+	ActivateIfInactive();
+	switch (m_SolenoidDevice)
+	{
+		case HikingViking_Robot::eClaw:
+			m_Robot.GetClaw().CloseClaw(m_IsClosed);
+			break;
+		case HikingViking_Robot::eRist:
+			m_Robot.GetArm().CloseRist(m_IsClosed);
+			break;
+		case HikingViking_Robot::eDeployment:
+			m_Robot.CloseDeploymentDoor(m_IsClosed);
+			break;
+	}
+	m_Status=eCompleted;
+	return m_Status;
+}
+
+
+#ifdef Robot_TesterCode
+
+  /***********************************************************************************************************************************/
+ /*													HikingViking_Robot_Control														*/
+/***********************************************************************************************************************************/
+
+void HikingViking_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
@@ -502,155 +645,4 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	return result;
 }
 
-  /***********************************************************************************************************************************/
- /*													HikingViking_Robot_Properties														*/
-/***********************************************************************************************************************************/
-
-const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
-const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
-const double c_ArmLength_m=1.8288;  //6 feet
-const double c_ArmToGearRatio=72.0/28.0;
-const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-//const double c_PotentiometerToGearRatio=60.0/32.0;
-//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
-const double c_PotentiometerToArmRatio=36.0/54.0;
-const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
-const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
-const double c_GearHeightOffset=1.397;  //55 inches
-const double c_WheelDiameter=0.1524;  //6 inches
-const double c_MotorToWheelGearRatio=12.0/36.0;
-
-HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
-	"Arm",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	18.0,   //Max Speed
-	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
-	Ship_1D_Props::eRobotArm,
-	c_UsingArmLimits,	//Using the range
-	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
-	),
-	m_ClawProps(
-	"Claw",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
-	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
-	28,   //Max Speed (rounded as we need not have precision)
-	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
-	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Props::eSimpleMotor,
-	false	//No limit ever!
-	),
-	m_RobotControls(&s_ControlsEvents)
-{
-
-	{
-		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
-		//Late assign this to override the initial default
-		props.WheelDimensions=Vec2D(0.4953,0.6985); //27.5 x 19.5 where length is in 5 inches in, and width is 3 on each side
-		props.WheelDiameter=c_WheelDiameter;
-		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
-		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
-		m_TankRobotProps=props;
-	}
-
-	HikingViking_Robot_Props props;
-	props.OptimalAngleUp=c_OptimalAngleUp_r;
-	props.OptimalAngleDn=c_OptimalAngleDn_r;
-	props.ArmLength=c_ArmLength_m;
-	props.ArmToGearRatio=c_ArmToGearRatio;
-	props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
-	props.PotentiometerMaxRotation=c_PotentiometerMaxRotation;
-	props.GearHeightOffset=c_GearHeightOffset;
-	props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
-	m_HikingVikingRobotProps=props;
-}
-
-//declared as global to avoid allocation on stack each iteration
-const char * const g_HikingViking_Controls_Events[] = 
-{
-	"Claw_SetCurrentVelocity","Claw_Close",
-	"Claw_Grip","Claw_Squirt",
-	"Arm_SetCurrentVelocity","Arm_SetPotentiometerSafety","Arm_SetPosRest",
-	"Arm_SetPos0feet","Arm_SetPos3feet","Arm_SetPos6feet","Arm_SetPos9feet",
-	"Arm_Rist","Arm_Advance","Arm_Retract",
-	"Robot_CloseDoor"
-};
-
-const char *HikingViking_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
-{
-	return (index<_countof(g_HikingViking_Controls_Events))?g_HikingViking_Controls_Events[index] : NULL;
-}
-HikingViking_Robot_Properties::ControlEvents HikingViking_Robot_Properties::s_ControlsEvents;
-
-void HikingViking_Robot_Properties::LoadFromScript(Scripting::Script& script)
-{
-	const char* err=NULL;
-	{
-		double version;
-		err=script.GetField("version", NULL, NULL, &version);
-		if (!err)
-			printf ("Version=%.2f\n",version);
-	}
-
-	__super::LoadFromScript(script);
-	err = script.GetFieldTable("robot_settings");
-	if (!err) 
-	{
-		err = script.GetFieldTable("arm");
-		if (!err)
-		{
-			m_ArmProps.LoadFromScript(script);
-			script.Pop();
-		}
-
-		//TODO
-		//This is the main robot settings pop
-		script.Pop();
-	}
-	err = script.GetFieldTable("controls");
-	if (!err)
-	{
-		m_RobotControls.LoadFromScript(script);
-		script.Pop();
-	}
-}
-
-  /***********************************************************************************************************************************/
- /*														Goal_OperateSolenoid														*/
-/***********************************************************************************************************************************/
-
-using namespace HikingViking_Goals;
-
-Goal_OperateSolenoid::Goal_OperateSolenoid(HikingViking_Robot &robot,HikingViking_Robot::SolenoidDevices SolenoidDevice,bool Close) : m_Robot(robot),
-	m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsClosed(Close) 
-{	
-	m_Status=eInactive;
-}
-
-Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
-{
-	if (m_Terminate)
-	{
-		if (m_Status==eActive)
-			m_Status=eFailed;
-		return m_Status;
-	}
-	ActivateIfInactive();
-	switch (m_SolenoidDevice)
-	{
-		case HikingViking_Robot::eClaw:
-			m_Robot.GetClaw().CloseClaw(m_IsClosed);
-			break;
-		case HikingViking_Robot::eRist:
-			m_Robot.GetArm().CloseRist(m_IsClosed);
-			break;
-		case HikingViking_Robot::eDeployment:
-			m_Robot.CloseDeploymentDoor(m_IsClosed);
-			break;
-	}
-	m_Status=eCompleted;
-	return m_Status;
-}
+#endif
