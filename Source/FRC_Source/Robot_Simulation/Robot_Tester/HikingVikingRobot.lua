@@ -5,7 +5,11 @@ Inches2Meters=0.0254
 Feet2Meters=0.3048
 Meters2Feet=3.2808399
 Meters2Inches=39.3700787
+Inches2Meters=0.0254
 OunceInchToNewton=0.00706155183333
+Pounds2Kilograms=0.453592
+Deg2Rad=(1/180) * Pi
+
 
 FRC2011_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -68,7 +72,51 @@ TestShip = {
 		reverse_deadzone_left  = 0.115,
 		reverse_deadzone_right = 0.04
 	},
+	robot_settings =
+	{
+		arm =
+		{
+			is_closed=0,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			pid=
+			{p=1000, i=0, d=250},
+			tolerance=0.01,					--should not matter much
+			voltage_multiply=1.0,			--May be reversed
+			encoder_to_wheel_ratio=20/50,
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			
+			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
+			max_speed=(969.86/360) * Pi2,	--loaded max speed (see sheet) which is 2.69 rps
+			accel=10,						--We may indeed have a two button solution (match with max accel)
+			brake=10,
+			max_accel_forward=10,			--These are in radians, just go with what feels right
+			max_accel_reverse=10,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			min_range_deg=-50,				--Stowed position where 0 degrees is vertical up
+			max_range_deg= 70,				--Dropped position where 90 degrees is horizontal
+			use_aggressive_stop = 'yes',
+			inv_max_accel = 1.0/15.0,
+			inv_max_decel = 1.0/24.0,
+			distance_scale = 0.5,
+			motor_specs =
+			{
+				wheel_mass=Pounds2Kilograms * 10,	        --(see applied load)
+				cof_efficiency=1.0,
+				gear_reduction=64,
+				torque_on_wheel_radius=Inches2Meters * 2.0,
+				drive_wheel_radius=Inches2Meters * 2.0,
+				number_of_motors=1,
+				
+				free_speed_rpm=19300.0,
+				stall_torque=0.4862,
+				stall_current_amp=85,
+				free_current_amp=1.4
+			}
+		}
 
+	},
 	controls =
 	{
 		Joystick_1 =
@@ -89,12 +137,14 @@ TestShip = {
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Turn_180 = {type="joystick_button", key=7, on_off=false},
 			
-			Arm_SetPos0feet = {type="joystick_button", key=1, keyboard='j', on_off=false},
-			Arm_SetPos3feet = {type="joystick_button", key=3, keyboard='k', on_off=false},
+			Arm_SetPos0feet = {type="joystick_button", key=1, keyboard='y', on_off=false},
+			Arm_SetPos3feet = {type="joystick_button", key=3, keyboard='u', on_off=false},
 			Arm_SetPos6feet = {type="joystick_button", key=2, keyboard='l', on_off=false},
 			Arm_SetPos9feet = {type="joystick_button", key=4, keyboard=';', on_off=false},
 			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Arm_Rist={type="joystick_button", key=5, keyboard='r', on_off=true},
+			Arm_Advance={type="keyboard", key='k', on_off=false},
+			Arm_Retract={type="keyboard", key='j', on_off=false},
 			
 			--Claw_SetCurrentVelocity  --not used
 			Claw_Close =	 {type="joystick_button", key=6, keyboard='c', on_off=true},

@@ -2,7 +2,7 @@
 
 class HikingViking_Control_Interface :	public Tank_Drive_Control_Interface,
 									public Robot_Control_Interface,
-									public Arm_Control_Interface
+									public Rotary_Control_Interface
 {
 public:
 	//This is primarily used for updates to dashboard and driver station during a test build
@@ -35,12 +35,14 @@ class HikingViking_Robot_Properties : public Tank_Robot_Properties
 		HikingViking_Robot_Properties();
 		virtual void LoadFromScript(Scripting::Script& script);
 		
-		const Ship_1D_Properties &GetArmProps() const {return m_ArmProps;}
+		const Rotary_Properties &GetArmProps() const {return m_ArmProps;}
 		const Ship_1D_Properties &GetClawProps() const {return m_ClawProps;}
 		const HikingViking_Robot_Props &GetHikingVikingRobotProps() const {return m_HikingVikingRobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
-		Ship_1D_Properties m_ArmProps,m_ClawProps;
+		//Rotary_Properties m_ArmProps,m_ClawProps;
+		Rotary_Properties m_ArmProps;
+		Ship_1D_Properties m_ClawProps; //todo
 		HikingViking_Robot_Props m_HikingVikingRobotProps;
 
 		class ControlEvents : public LUA_Controls_Properties_Interface
@@ -103,13 +105,12 @@ class HikingViking_Robot : public Tank_Robot
 				Robot_Control_Interface * const m_RobotControl;
 				bool m_Grip,m_Squirt;
 		};
-		class Robot_Arm : public Ship_1D
+		class Robot_Arm : public Rotary_Position_Control
 		{
 			public:
-				Robot_Arm(HikingViking_Robot *parent,const char EntityName[],Arm_Control_Interface *robot_control,size_t InstanceIndex=0);
+				Robot_Arm(HikingViking_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				//The parent needs to call initialize
-				virtual void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
 				double HeightToAngle_r(double Height_m) const;
 				double Arm_AngleToHeight_m(double Angle_r) const;
 				double AngleToHeight_m(double Angle_r) const;
@@ -117,32 +118,25 @@ class HikingViking_Robot : public Tank_Robot
 				//given the raw potentiometer converts to the arm angle
 				double PotentiometerRaw_To_Arm_r(double raw) const;
 				void CloseRist(bool Close);
-				virtual void ResetPos();
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
-				virtual void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
-				virtual void PosDisplacementCallback(double posDisplacement_m);
-			private:
-				//typedef Ship_1D __super;
+				void Advance();
+				void Retract();
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				void SetPotentiometerSafety(double Value);
+
+				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				virtual void TimeChange(double dTime_s);
+
+			private:
+				//typedef Rotary_Position_Control __super;
 				void SetPosRest();
 				void SetPos0feet();
 				void SetPos3feet();
 				void SetPos6feet();
 				void SetPos9feet();
 				HikingViking_Robot * const m_pParent;
-				Arm_Control_Interface * const m_RobotControl;
-				const size_t m_InstanceIndex;
-				PIDController2 m_PIDController;
-				double m_LastPosition;  //used for calibration
-				double m_CalibratedScaler; //used for calibration
-				double m_LastTime; //used for calibration
-				double m_MaxSpeedReference; //used for calibration
-				bool m_UsingPotentiometer; //dynamically able to turn off (e.g. panic button)
-				bool m_VoltageOverride;  //when true will kill voltage
 		};
 
 		//Accessors needed for setting goals
@@ -177,11 +171,11 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 		//Unfortunately the actual wheels are reversed (resolved here since this is this specific robot)
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(RightVoltage,LeftVoltage);}
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
-	protected: //from Arm Interface
-		virtual void Reset_Arm(size_t index=0); 
-		virtual void UpdateArmVoltage(size_t index,double Voltage) {UpdateVoltage(HikingViking_Robot::eArm,Voltage);}
+	protected: //from Rotary Interface
+		virtual void Reset_Rotary(size_t index=0); 
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(HikingViking_Robot::eArm,Voltage);}
 		//pacify this by returning its current value
-		virtual double GetArmCurrentPosition(size_t index);
+		virtual double GetRotaryCurrentPorV(size_t index);
 		virtual void CloseRist(bool Close) {CloseSolenoid(HikingViking_Robot::eRist,Close);}
 		virtual void OpenRist(bool Close) {CloseSolenoid(HikingViking_Robot::eRist,!Close);}
 	protected: //from HikingViking_Control_Interface
@@ -194,7 +188,7 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 		HikingViking_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		double m_ArmMaxSpeed;
-		Potentiometer_Tester m_Potentiometer; //simulate a real potentiometer for calibration testing
+		Encoder_Simulator2 m_Potentiometer; //simulate a real potentiometer for calibration testing
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
 		double m_ArmVoltage,m_RollerVoltage;
