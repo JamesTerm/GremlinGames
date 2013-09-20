@@ -168,24 +168,26 @@ void HikingViking_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 HikingViking_Robot::Robot_Arm::Robot_Arm(HikingViking_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("Arm",robot_control,eArm),m_pParent(parent)
+	Rotary_Position_Control("Arm",robot_control,eArm),m_pParent(parent),m_Advance(false),m_Retract(false)
 {
 }
 
 
-void HikingViking_Robot::Robot_Arm::Advance()
+void HikingViking_Robot::Robot_Arm::Advance(bool on)
 {
-	SetIntendedPosition(m_pParent->m_RobotProps.GetArmProps().GetShip_1D_Props().MinRange);
-	//m_ChooseDropped=true;
+	m_Advance=on;
 }
-void HikingViking_Robot::Robot_Arm::Retract()
+void HikingViking_Robot::Robot_Arm::Retract(bool on)
 {
-	SetIntendedPosition(m_pParent->m_RobotProps.GetArmProps().GetShip_1D_Props().MaxRange);
-	//m_ChooseDropped=false;
+	m_Retract=on;
 }
 
 void HikingViking_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
+	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
+	if (m_Advance ^ m_Retract)
+		SetCurrentLinearAcceleration(m_Advance?m_Accel:-m_Brake);
+
 	__super::TimeChange(dTime_s);
 	#if 0
 	#ifdef __DebugLUA__
@@ -272,8 +274,8 @@ void HikingViking_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos6feet"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::SetPos9feet);
 
-		em->Event_Map["Arm_Advance"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Arm::Advance);
-		em->Event_Map["Arm_Retract"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Arm::Retract);
+		em->EventOnOff_Map["Arm_Advance"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Arm::Advance);
+		em->EventOnOff_Map["Arm_Retract"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Arm::Retract);
 
 		em->EventOnOff_Map["Arm_Rist"].Subscribe(ehl, *this, &HikingViking_Robot::Robot_Arm::CloseRist);
 	}
@@ -288,8 +290,8 @@ void HikingViking_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Arm_SetPos6feet"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPos6feet);
 		em->Event_Map["Arm_SetPos9feet"].Remove(*this, &HikingViking_Robot::Robot_Arm::SetPos9feet);
 
-		em->Event_Map["Arm_Advance"].Remove(*this, &HikingViking_Robot::Robot_Arm::Advance);
-		em->Event_Map["Arm_Retract"].Remove(*this, &HikingViking_Robot::Robot_Arm::Retract);
+		em->EventOnOff_Map["Arm_Advance"].Remove(*this, &HikingViking_Robot::Robot_Arm::Advance);
+		em->EventOnOff_Map["Arm_Retract"].Remove(*this, &HikingViking_Robot::Robot_Arm::Retract);
 
 		em->EventOnOff_Map["Arm_Rist"]  .Remove(*this, &HikingViking_Robot::Robot_Arm::CloseRist);
 	}

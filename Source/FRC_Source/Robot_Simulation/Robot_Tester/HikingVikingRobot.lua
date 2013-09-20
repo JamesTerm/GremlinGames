@@ -146,6 +146,22 @@ TestShip = {
 			control = "logitech dual action",
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--Turn_180 = {type="joystick_button", key=7, on_off=false},
+			
+			Arm_SetPos0feet = {type="joystick_button", key=2, on_off=false},
+			Arm_SetPos3feet = {type="joystick_button", key=1, on_off=false},
+			Arm_SetPos6feet = {type="joystick_button", key=3, on_off=false},
+			Arm_SetPos9feet = {type="joystick_button", key=4, on_off=false},
+			Arm_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Arm_Rist={type="joystick_button", key=5, on_off=true},
+			
+			--Claw_SetCurrentVelocity  --not used
+			Claw_Close =	 {type="joystick_button", key=6, on_off=true},
+			Claw_Grip =		 {type="joystick_button", key=8, on_off=true},
+			Claw_Squirt =	 {type="joystick_button", key=7, on_off=true},
+			Robot_CloseDoor= {type="joystick_button", key=9, on_off=true}
 		},
 		
 		Joystick_2 =
@@ -153,7 +169,7 @@ TestShip = {
 			control = "airflo",
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.80, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
@@ -165,8 +181,8 @@ TestShip = {
 			Arm_SetPos9feet = {type="joystick_button", key=4, keyboard=';', on_off=false},
 			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Arm_Rist={type="joystick_button", key=5, keyboard='r', on_off=true},
-			Arm_Advance={type="keyboard", key='k', on_off=false},
-			Arm_Retract={type="keyboard", key='j', on_off=false},
+			Arm_Advance={type="keyboard", key='k', on_off=true},
+			Arm_Retract={type="keyboard", key='j', on_off=true},
 			
 			--Claw_SetCurrentVelocity  --not used
 			Claw_Close =	 {type="joystick_button", key=6, keyboard='c', on_off=true},

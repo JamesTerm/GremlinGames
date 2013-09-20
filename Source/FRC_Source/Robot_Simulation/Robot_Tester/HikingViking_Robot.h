@@ -119,8 +119,8 @@ class HikingViking_Robot : public Tank_Robot
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void BindAdditionalEventControls(bool Bind);
-				void Advance();
-				void Retract();
+				void Advance(bool on);
+				void Retract(bool on);
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 
@@ -135,6 +135,7 @@ class HikingViking_Robot : public Tank_Robot
 				void SetPos6feet();
 				void SetPos9feet();
 				HikingViking_Robot * const m_pParent;
+				bool m_Advance, m_Retract;
 		};
 
 		//Accessors needed for setting goals
