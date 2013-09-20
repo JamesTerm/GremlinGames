@@ -115,10 +115,18 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 		else if (strcmp(sType.c_str(),"joystick_button")==0)
 		{
 			Element.Type=Controller_Element_Properties::eJoystickButton;
-			size_t WhichButton;
+			size_t WhichButton,WhichKey;
 			double dWhichButton;
 			err = script.GetField("key", NULL, NULL,&dWhichButton);
 			ASSERT_MSG(!err, err);
+
+			std::string stringWhichButton;
+			err = script.GetField("keyboard",&stringWhichButton, NULL, NULL);
+			if (!err)
+				WhichKey=stringWhichButton.c_str()[0];
+			else
+				WhichKey=-1;
+
 			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
 			WhichButton=(JoyAxis_enum)((int)dWhichButton-1);
 			bool useOnOff;
@@ -130,6 +138,7 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 
 			Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &set=Element.Specifics.Button;
 			set.WhichButton=WhichButton;
+			set.WhichKey=WhichKey;
 			set.useOnOff=useOnOff;
 			set.dbl_click=dbl_click;
 			//joy.AddJoy_Button_Default( WhichButton,Eventname,useOnOff,dbl_click,ProductName.c_str());
@@ -137,12 +146,12 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 		else if (strcmp(sType.c_str(),"keyboard")==0)
 		{
 			Element.Type=Controller_Element_Properties::eKeyboard;
-			size_t WhichButton;
+			size_t WhichKey;
 			std::string stringWhichButton;
 			err = script.GetField("key",&stringWhichButton, NULL, NULL);
 			ASSERT_MSG(!err, err);
 			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
-			WhichButton=stringWhichButton.c_str()[0];
+			WhichKey=stringWhichButton.c_str()[0];
 			bool useOnOff;
 			err = script.GetField("on_off", NULL, &useOnOff,NULL);
 			ASSERT_MSG(!err, err);
@@ -150,8 +159,8 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 			err = script.GetField("dbl", NULL, &dbl_click,NULL); //This one can be blank
 			err=NULL;  //don't return an error (assert for rest)
 
-			Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &set=Element.Specifics.Button;
-			set.WhichButton=WhichButton;
+			Controller_Element_Properties::ElementTypeSpecific::KeyboardSpecifics_rw &set=Element.Specifics.Keyboard;
+			set.WhichKey=WhichKey;
 			set.useOnOff=useOnOff;
 			set.dbl_click=dbl_click;
 		}
@@ -239,6 +248,13 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy,void 
 				{
 					const Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
 					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
+					if ((p_key) && (button.WhichKey!=-1))
+					{
+						if (Bind)
+							p_key->AddKeyBindingR(button.useOnOff,element.Event.c_str(),button.WhichKey);
+						else
+							p_key->RemoveKeyBinding(button.WhichKey,element.Event.c_str(),button.useOnOff);
+					}
 				}
 				else
 					p_joy->RemoveJoy_Button_Binding(element.Event.c_str(),control.Controller.c_str());
@@ -246,11 +262,11 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy,void 
 			case Controller_Element_Properties::eKeyboard:
 				if (p_key)
 				{
-					const Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
+					const Controller_Element_Properties::ElementTypeSpecific::KeyboardSpecifics_rw &button=element.Specifics.Keyboard;
 					if (Bind)
-						p_key->AddKeyBindingR(button.useOnOff,element.Event.c_str(),button.WhichButton);
+						p_key->AddKeyBindingR(button.useOnOff,element.Event.c_str(),button.WhichKey);
 					else
-						p_key->RemoveKeyBinding(button.WhichButton,element.Event.c_str(),button.useOnOff);
+						p_key->RemoveKeyBinding(button.WhichKey,element.Event.c_str(),button.useOnOff);
 				}
 				break;
 			}

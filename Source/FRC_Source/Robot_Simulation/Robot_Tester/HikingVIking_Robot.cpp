@@ -698,9 +698,12 @@ HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
 //declared as global to avoid allocation on stack each iteration
 const char * const g_HikingViking_Controls_Events[] = 
 {
+	"Claw_SetCurrentVelocity","Claw_Close",
+	"Claw_Grip","Claw_Squirt",
 	"Arm_SetCurrentVelocity","Arm_SetPotentiometerSafety","Arm_SetPosRest",
 	"Arm_SetPos0feet","Arm_SetPos3feet","Arm_SetPos6feet","Arm_SetPos9feet",
-	"Arm_Rist"
+	"Arm_Rist",
+	"Robot_CloseDoor"
 };
 
 const char *HikingViking_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const

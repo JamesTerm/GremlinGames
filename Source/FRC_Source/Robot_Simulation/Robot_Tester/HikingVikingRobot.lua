@@ -87,18 +87,20 @@ TestShip = {
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false},
+			--Turn_180 = {type="joystick_button", key=7, on_off=false},
 			
-			Arm_SetPos0feet = {type="joystick_button", key=1, on_off=false},
-			Arm_SetPos0feet = {type="keyboard", key='j', on_off=false},
-			Arm_SetPos3feet = {type="joystick_button", key=3, on_off=false},
-			Arm_SetPos3feet = {type="keyboard", key='k', on_off=false},
-			Arm_SetPos6feet = {type="joystick_button", key=2, on_off=false},
-			Arm_SetPos6feet = {type="keyboard", key='l', on_off=false},
-			Arm_SetPos9feet = {type="joystick_button", key=4, on_off=false},
-			Arm_SetPos9feet = {type="keyboard", key=';', on_off=false},
+			Arm_SetPos0feet = {type="joystick_button", key=1, keyboard='j', on_off=false},
+			Arm_SetPos3feet = {type="joystick_button", key=3, keyboard='k', on_off=false},
+			Arm_SetPos6feet = {type="joystick_button", key=2, keyboard='l', on_off=false},
+			Arm_SetPos9feet = {type="joystick_button", key=4, keyboard=';', on_off=false},
 			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Arm_Rist={type="joystick_button", key=6, on_off=true},
+			Arm_Rist={type="joystick_button", key=5, keyboard='r', on_off=true},
+			
+			--Claw_SetCurrentVelocity  --not used
+			Claw_Close =	 {type="joystick_button", key=6, keyboard='c', on_off=true},
+			Claw_Grip =		 {type="joystick_button", key=8, keyboard='i', on_off=false},
+			Claw_Squirt =	 {type="joystick_button", key=7, keyboard='h', on_off=false},
+			Robot_CloseDoor= {type="joystick_button", key=9, keyboard='o', on_off=false}
 		},
 
 	},
