@@ -88,7 +88,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		{
 			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity,dTime_s);
 			const double Acceleration=(CurrentVelocity-m_PreviousVelocity)/dTime_s;
-			const bool Decel=(Acceleration * CurrentVelocity <= 0);
+			const bool Decel=(Acceleration * CurrentVelocity < 0);
 			//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 			//Note: that it is important to bias towards deceleration this can help satisfy both requirements of avoiding oscillation as well
 			//As well as avoiding a potential overshoot when trying stop at a precise distance
@@ -336,7 +336,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 			{
 				m_ErrorOffset=m_PIDController(CurrentVelocity,Encoder_Velocity,dTime_s);
 				const double Acceleration=(CurrentVelocity-m_PreviousVelocity)/dTime_s;
-				const bool Decel=(Acceleration * CurrentVelocity <= 0);
+				const bool Decel=(Acceleration * CurrentVelocity < 0);
 				//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 				//Note: that it is important to bias towards deceleration this can help satisfy both requirements of avoiding oscillation as well
 				//As well as avoiding a potential overshoot when trying stop at a precise distance

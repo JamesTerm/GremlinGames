@@ -609,9 +609,9 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		{
 			const HikingViking_Robot_Props &props=m_RobotProps.GetHikingVikingRobotProps();
 			const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
-			//double result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
+			//result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
 			//no conversion needed in simulation
-			double result=(m_Potentiometer.GetDistance()) + 0.0;
+			result=(m_Potentiometer.GetDistance()) + 0.0;
 
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result*c_GearToArmRatio));
