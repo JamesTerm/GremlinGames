@@ -98,9 +98,9 @@ TestShip = {
 			
 			--Claw_SetCurrentVelocity  --not used
 			Claw_Close =	 {type="joystick_button", key=6, keyboard='c', on_off=true},
-			Claw_Grip =		 {type="joystick_button", key=8, keyboard='i', on_off=false},
-			Claw_Squirt =	 {type="joystick_button", key=7, keyboard='h', on_off=false},
-			Robot_CloseDoor= {type="joystick_button", key=9, keyboard='o', on_off=false}
+			Claw_Grip =		 {type="joystick_button", key=8, keyboard='i', on_off=true},
+			Claw_Squirt =	 {type="joystick_button", key=7, keyboard='h', on_off=true},
+			Robot_CloseDoor= {type="joystick_button", key=9, keyboard='o', on_off=true}
 		},
 
 	},
