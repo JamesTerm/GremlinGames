@@ -368,45 +368,21 @@ void HikingViking_Robot::BindAdditionalUIControls(bool Bind,void *joy,void *key)
  /*													HikingViking_Robot_Properties													*/
 /***********************************************************************************************************************************/
 
-const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
-const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
-const double c_ArmLength_m=1.8288;  //6 feet
-const double c_ArmToGearRatio=72.0/28.0;
-const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-//const double c_PotentiometerToGearRatio=60.0/32.0;
-//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
-const double c_PotentiometerToArmRatio=36.0/54.0;
-const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
-const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
-const double c_GearHeightOffset=1.397;  //55 inches
-const double c_WheelDiameter=0.1524;  //6 inches
-const double c_MotorToWheelGearRatio=12.0/36.0;
-
-HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_ArmProps(
-	"Arm",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	18.0,   //Max Speed
-	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse  find the balance between being quick enough without jarring the tube out of its grip
-	Ship_1D_Props::eRobotArm,
-	c_UsingArmLimits,	//Using the range
-	-c_OptimalAngleDn_r*c_ArmToGearRatio,c_OptimalAngleUp_r*c_ArmToGearRatio
-	),
-	m_ClawProps(
-	"Claw",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
-	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
-	28,   //Max Speed (rounded as we need not have precision)
-	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
-	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Props::eSimpleMotor,
-	false	//No limit ever!
-	),
-	m_RobotControls(&s_ControlsEvents)
+HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_RobotControls(&s_ControlsEvents)
 {
+	const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
+	const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
+	const double c_ArmLength_m=1.8288;  //6 feet
+	const double c_ArmToGearRatio=72.0/28.0;
+	const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
+	//const double c_PotentiometerToGearRatio=60.0/32.0;
+	//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
+	const double c_PotentiometerToArmRatio=36.0/54.0;
+	const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
+	const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
+	const double c_GearHeightOffset=1.397;  //55 inches
+	const double c_WheelDiameter=0.1524;  //6 inches
+	const double c_MotorToWheelGearRatio=12.0/36.0;
 
 	{
 		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
@@ -633,10 +609,12 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		{
 			const HikingViking_Robot_Props &props=m_RobotProps.GetHikingVikingRobotProps();
 			const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
-			double result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
+			//double result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
+			//no conversion needed in simulation
+			double result=(m_Potentiometer.GetDistance()) + 0.0;
 
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
+			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result*c_GearToArmRatio));
 			const double height= (sin(result*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
 		}
