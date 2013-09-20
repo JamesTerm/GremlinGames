@@ -36,13 +36,11 @@ class HikingViking_Robot_Properties : public Tank_Robot_Properties
 		virtual void LoadFromScript(Scripting::Script& script);
 		
 		const Rotary_Properties &GetArmProps() const {return m_ArmProps;}
-		const Ship_1D_Properties &GetClawProps() const {return m_ClawProps;}
+		const Rotary_Properties &GetClawProps() const {return m_ClawProps;}
 		const HikingViking_Robot_Props &GetHikingVikingRobotProps() const {return m_HikingVikingRobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
-		//Rotary_Properties m_ArmProps,m_ClawProps;
-		Rotary_Properties m_ArmProps;
-		Ship_1D_Properties m_ClawProps; //todo
+		Rotary_Properties m_ArmProps,m_ClawProps;
 		HikingViking_Robot_Props m_HikingVikingRobotProps;
 
 		class ControlEvents : public LUA_Controls_Properties_Interface
@@ -84,10 +82,10 @@ class HikingViking_Robot : public Tank_Robot
 		const HikingViking_Robot_Properties &GetRobotProps() const;
 
 		//TODO test roller using is angular to be true
-		class Robot_Claw : public Ship_1D
+		class Robot_Claw : public Rotary_Velocity_Control
 		{
 			public:
-				Robot_Claw(const char EntityName[],Robot_Control_Interface *robot_control);
+				Robot_Claw(HikingViking_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				//public access needed for goals
 				void CloseClaw(bool Close);
@@ -102,7 +100,7 @@ class HikingViking_Robot : public Tank_Robot
 				//typedef Ship_1D __super;
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				Robot_Control_Interface * const m_RobotControl;
+				HikingViking_Robot * const m_pParent;
 				bool m_Grip,m_Squirt;
 		};
 		class Robot_Arm : public Rotary_Position_Control
@@ -162,7 +160,6 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 		HikingViking_Robot_Control();
 		//This is only needed for simulation
 	protected: //from Robot_Control_Interface
-		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual void CloseSolenoid(size_t index,bool Close);
 		virtual void OpenSolenoid(size_t index,bool Open) {CloseSolenoid(index,!Open);}
 	protected: //from Tank_Drive_Control_Interface
@@ -173,7 +170,7 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
 	protected: //from Rotary Interface
 		virtual void Reset_Rotary(size_t index=0); 
-		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(HikingViking_Robot::eArm,Voltage);}
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage);
 		//pacify this by returning its current value
 		virtual double GetRotaryCurrentPorV(size_t index);
 		virtual void CloseRist(bool Close) {CloseSolenoid(HikingViking_Robot::eRist,Close);}

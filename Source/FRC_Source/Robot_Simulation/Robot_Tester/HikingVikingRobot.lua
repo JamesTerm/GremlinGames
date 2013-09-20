@@ -114,8 +114,19 @@ TestShip = {
 				stall_current_amp=85,
 				free_current_amp=1.4
 			}
+		},
+		claw =
+		{
+			--Note: there are no encoders here so is_closed is ignored
+			tolerance=0.01,					--we need good precision
+			voltage_multiply=1.0,			--May be reversed
+			
+			max_speed=28,
+			accel=112,						--These are needed and should be high enough to grip without slip
+			brake=112,
+			max_accel_forward=112,
+			max_accel_reverse=112
 		}
-
 	},
 	controls =
 	{
