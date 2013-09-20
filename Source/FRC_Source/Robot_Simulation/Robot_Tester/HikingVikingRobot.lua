@@ -85,19 +85,19 @@ TestShip = {
 	{
 		arm =
 		{
-			is_closed=0,
+			is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			pid=
 			{p=100, i=0, d=0},
-			tolerance=0.01,	
+			tolerance=0.1,	
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
 			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
-			max_speed=(969.86/360) * Pi2,	--loaded max speed (see sheet) which is 2.69 rps
+			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
 			accel=10,						--We may indeed have a two button solution (match with max accel)
 			brake=10,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
@@ -107,22 +107,23 @@ TestShip = {
 			max_range_deg= 70 * ArmToGearRatio,
 			min_range_deg=(-50) * ArmToGearRatio,
 			use_aggressive_stop = 'yes',
+			inv_max_accel = 1.0/17.0,
 			--inv_max_accel = 1.0/15.0,
 			--inv_max_decel = 1.0/24.0,
 			distance_scale = 0.5,
 			motor_specs =
 			{
-				wheel_mass=Pounds2Kilograms * 10,	        --(see applied load)
+				wheel_mass=Pounds2Kilograms * 16.27,
 				cof_efficiency=1.0,
-				gear_reduction=64,
-				torque_on_wheel_radius=Inches2Meters * 2.0,
+				gear_reduction=1.0,
+				torque_on_wheel_radius=Inches2Meters * 1.0,
 				drive_wheel_radius=Inches2Meters * 2.0,
-				number_of_motors=1,
+				number_of_motors=2,
 				
-				free_speed_rpm=19300.0,
-				stall_torque=0.4862,
-				stall_current_amp=85,
-				free_current_amp=1.4
+				free_speed_rpm=84.0,
+				stall_torque=10.6,
+				stall_current_amp=18.6,
+				free_current_amp=1.8
 			}
 		},
 		claw =
