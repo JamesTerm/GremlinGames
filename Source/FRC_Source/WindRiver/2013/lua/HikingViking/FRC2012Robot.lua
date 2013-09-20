@@ -73,7 +73,7 @@ MainRobot = {
 	tank_drive =
 	{
 		is_closed=1,						--This should always be false for high gear
-		show_pid_dump='yes',
+		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
@@ -144,13 +144,18 @@ MainRobot = {
 			pid=
 			{p=200, i=5, d=50},
 			tolerance=0.1,				--we need high precision
-			encoder_to_wheel_ratio=-0.2,     --Just use the gearing ratios here			
-			voltage_multiply=-1.0,			--May be reversed using -1.0
-			max_speed=10,
+			encoder_to_wheel_ratio=1.0,     --Just use the gearing ratios here			
+			voltage_multiply=1.0,			--May be reversed using -1.0
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			inv_max_decel = 1/60.0,
+			inv_max_accel = 1/30.0,
+
+			max_speed=14.42,
 			accel=10.0,						--These are only needed if we bind keys for turret
 			brake=10.0,
-			max_accel_forward=20,			--These are in radians, plan on increasing these as much as possible
-			max_accel_reverse=20,
+			max_accel_forward=10,			--These are in radians, plan on increasing these as much as possible
+			max_accel_reverse=10,
 			using_range=0,
 			min_range_deg=-180,				--These are probably good to go, but may need to be smaller
 			max_range_deg= 180
@@ -286,7 +291,7 @@ MainRobot = {
 		{
 			control = "logitech attack 3",
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=true, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--Ball_Grip = {type="joystick_button", key=2, on_off=true},
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			--Ball_Fire = {type="joystick_button", key=4, on_off=true},
