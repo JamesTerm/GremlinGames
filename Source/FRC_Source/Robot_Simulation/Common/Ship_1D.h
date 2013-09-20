@@ -54,6 +54,8 @@ class COMMON_API Ship_1D_Properties : public Entity1D_Properties
 		Ship_Type GetShipType() const {return m_Ship_1D_Props.ShipType;}
 		double GetMaxSpeed() const {return m_Ship_1D_Props.MAX_SPEED;}
 		const Ship_1D_Props &GetShip_1D_Props() const {return m_Ship_1D_Props;}
+		//I don't need this yet, but keep this here in case I do
+		//Ship_1D_Props &Ship_1D_Props_rw() {return m_Ship_1D_Props;}
 	public:
 		//These are for testing purposes only (do not use)
 		void SetMinRange(double MinRange) {m_Ship_1D_Props.MinRange=MinRange;}
