@@ -688,9 +688,9 @@ void Ship_2D::DestroyEntity(bool shotDown, Vec3d collisionPt)
 }
 #endif
 
-void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy)
+void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 {
-	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy);
+	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy,key);
 }
 
 

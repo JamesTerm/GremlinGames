@@ -145,7 +145,8 @@ class COMMON_API LUA_Controls_Properties
 			{
 				eJoystickAnalog,
 				eJoystickCulver,
-				eJoystickButton
+				eJoystickButton,
+				eKeyboard			//currently only available on simulation
 			} Type;
 			union ElementTypeSpecific
 			{
@@ -195,7 +196,7 @@ class COMMON_API LUA_Controls_Properties
 		//call from within GetFieldTable controls
 		void LoadFromScript(Scripting::Script& script);
 		//Just have the client (from ship) call this
-		void BindAdditionalUIControls(bool Bind,void *joy) const;
+		void BindAdditionalUIControls(bool Bind,void *joy,void *key) const;
 		LUA_Controls_Properties &operator= (const LUA_Controls_Properties &CopyFrom);
 };
 
@@ -304,7 +305,7 @@ class COMMON_API Ship_2D : public Ship
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		//Its possible that each ship may have its own specific controls
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 		//callback from UI_Controller for custom controls override if ship has specific controls... all outputs to be written are optional
 		//so derived classes can only write to things of interest
 		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s) {}

@@ -55,7 +55,7 @@ class DRIVE_API Butterfly_Robot : public Swerve_Robot
 		virtual Swerve_Drive *CreateDrive() {return new Butterfly_Drive(this);}
 
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 
 		virtual void DriveModeManager_SetMode_Callback(DriveMode Mode);
 		DriveMode GetDriveMode() const {return m_DriveModeManager.GetMode();}
@@ -74,7 +74,7 @@ class DRIVE_API Butterfly_Robot : public Swerve_Robot
 
 			void SetMode(DriveMode Mode);
 			void BindAdditionalEventControls(bool Bind);
-			void BindAdditionalUIControls(bool Bind, void *joy);
+			void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 			DriveMode GetMode() const {return m_CurrentMode;}
 		protected:
 			void SetLowGear(bool on);

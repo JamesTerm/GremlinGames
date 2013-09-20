@@ -134,6 +134,27 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 			set.dbl_click=dbl_click;
 			//joy.AddJoy_Button_Default( WhichButton,Eventname,useOnOff,dbl_click,ProductName.c_str());
 		}
+		else if (strcmp(sType.c_str(),"keyboard")==0)
+		{
+			Element.Type=Controller_Element_Properties::eKeyboard;
+			size_t WhichButton;
+			std::string stringWhichButton;
+			err = script.GetField("key",&stringWhichButton, NULL, NULL);
+			ASSERT_MSG(!err, err);
+			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
+			WhichButton=stringWhichButton.c_str()[0];
+			bool useOnOff;
+			err = script.GetField("on_off", NULL, &useOnOff,NULL);
+			ASSERT_MSG(!err, err);
+			bool dbl_click=false;
+			err = script.GetField("dbl", NULL, &dbl_click,NULL); //This one can be blank
+			err=NULL;  //don't return an error (assert for rest)
+
+			Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &set=Element.Specifics.Button;
+			set.WhichButton=WhichButton;
+			set.useOnOff=useOnOff;
+			set.dbl_click=dbl_click;
+		}
 		else assert(false);
 		script.Pop();
 	}
@@ -175,10 +196,12 @@ void LUA_Controls_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Scr
 	}
 }
 
-void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) const
+void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy,void *key) const
 {
 	typedef GG_Framework::UI::JoyStick_Binder JoyStick_Binder;
+	typedef GG_Framework::UI::KeyboardMouse_CB Keyboard_Binder;
 	JoyStick_Binder *p_joy=(JoyStick_Binder *)joy;
+	Keyboard_Binder *p_key=(Keyboard_Binder *)key;
 	const Controls_List &controls=Get_Controls();
 	for (size_t i=0;i<controls.size();i++)
 	{
@@ -219,6 +242,16 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy) cons
 				}
 				else
 					p_joy->RemoveJoy_Button_Binding(element.Event.c_str(),control.Controller.c_str());
+				break;
+			case Controller_Element_Properties::eKeyboard:
+				if (p_key)
+				{
+					const Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
+					if (Bind)
+						p_key->AddKeyBindingR(button.useOnOff,element.Event.c_str(),button.WhichButton);
+					else
+						p_key->RemoveKeyBinding(button.WhichButton,element.Event.c_str(),button.useOnOff);
+				}
 				break;
 			}
 		}
