@@ -194,6 +194,8 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 void Rotary_Position_Control::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
+	//We may need this if we use Kalman filters
+	m_RobotControl->Reset_Rotary(m_InstanceIndex);
 	if ((m_UsingPotentiometer)&&(!GetBypassPos_Update()))
 	{
 		m_PIDController.Reset();
