@@ -131,6 +131,7 @@ class COMMON_API UI_Controller
 		//Return if element was successfully created (be sure to check as some may not be present)
 		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script);
 		UI::JoyStick_Binder &GetJoyStickBinder();
+		void *GetKeyboardBinder();  //returns null if not supported
 	protected:
 		#ifdef Robot_TesterCode
 		friend Mouse_ShipDriver;

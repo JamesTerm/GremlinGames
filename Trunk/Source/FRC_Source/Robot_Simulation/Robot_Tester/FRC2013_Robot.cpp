@@ -1372,10 +1372,10 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	__super::BindAdditionalEventControls(Bind);
 }
 
-void FRC_2013_Robot::BindAdditionalUIControls(bool Bind,void *joy)
+void FRC_2013_Robot::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 {
-	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
-	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
+	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy,key);
+	__super::BindAdditionalUIControls(Bind,joy,key);  //call super for more general control assignments
 }
 
   /***********************************************************************************************************************************/

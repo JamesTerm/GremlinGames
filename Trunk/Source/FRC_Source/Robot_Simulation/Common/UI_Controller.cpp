@@ -312,6 +312,15 @@ UI::JoyStick_Binder &UI_Controller::GetJoyStickBinder()
 	#endif
 }
 
+void *UI_Controller::GetKeyboardBinder()
+{
+	#ifdef Robot_TesterCode
+	return &MainWindow::GetMainWindow()->GetKeyboard_Mouse();
+	#else
+	return NULL;
+	#endif
+}
+
 void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 {
 	//destroy all resources associated with the previous ship
@@ -349,7 +358,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 		m_ship->BindAdditionalEventControls(false);
 		if (!m_IsBeingDestroyed)
-			m_ship->BindAdditionalUIControls(false,&GetJoyStickBinder());
+			m_ship->BindAdditionalUIControls(false,&GetJoyStickBinder(),GetKeyboardBinder());
 		Flush_AI_BaseResources();
 	}
 	m_Base=controller;
@@ -400,7 +409,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		//m_HUD_UI->m_addnText = m_ship->GetName();
 
 		m_ship->BindAdditionalEventControls(true);
-		m_ship->BindAdditionalUIControls(true,&GetJoyStickBinder());
+		m_ship->BindAdditionalUIControls(true,&GetJoyStickBinder(),GetKeyboardBinder());
 	}
 }
 

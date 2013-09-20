@@ -268,7 +268,7 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 	private:
 		void ApplyErrorCorrection();
 		//typedef  Tank_Robot __super;

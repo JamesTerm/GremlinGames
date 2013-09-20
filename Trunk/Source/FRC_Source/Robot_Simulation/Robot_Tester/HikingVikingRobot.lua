@@ -90,9 +90,13 @@ TestShip = {
 			Turn_180 = {type="joystick_button", key=7, on_off=false},
 			
 			Arm_SetPos0feet = {type="joystick_button", key=1, on_off=false},
+			Arm_SetPos0feet = {type="keyboard", key='j', on_off=false},
 			Arm_SetPos3feet = {type="joystick_button", key=3, on_off=false},
+			Arm_SetPos3feet = {type="keyboard", key='k', on_off=false},
 			Arm_SetPos6feet = {type="joystick_button", key=2, on_off=false},
+			Arm_SetPos6feet = {type="keyboard", key='l', on_off=false},
 			Arm_SetPos9feet = {type="joystick_button", key=4, on_off=false},
+			Arm_SetPos9feet = {type="keyboard", key=';', on_off=false},
 			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Arm_Rist={type="joystick_button", key=6, on_off=true},
 		},

@@ -112,9 +112,9 @@ void Butterfly_Robot::DriveModeManager::BindAdditionalEventControls(bool Bind)
 	}
 }
 
-void Butterfly_Robot::DriveModeManager::BindAdditionalUIControls(bool Bind,void *joy)
+void Butterfly_Robot::DriveModeManager::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 {
-	m_ButterflyProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
+	m_ButterflyProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy,key);
 }
 
   /***********************************************************************************************************/
@@ -146,10 +146,10 @@ void Butterfly_Robot::BindAdditionalEventControls(bool Bind)
 	m_DriveModeManager.BindAdditionalEventControls(Bind);
 }
 
-void Butterfly_Robot::BindAdditionalUIControls(bool Bind,void *joy)
+void Butterfly_Robot::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 {
-	m_DriveModeManager.BindAdditionalUIControls(Bind,joy);
-	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
+	m_DriveModeManager.BindAdditionalUIControls(Bind,joy,key);
+	__super::BindAdditionalUIControls(Bind,joy,key);  //call super for more general control assignments
 }
 
 void Butterfly_Robot::DriveModeManager_SetMode_Callback(DriveMode Mode) 

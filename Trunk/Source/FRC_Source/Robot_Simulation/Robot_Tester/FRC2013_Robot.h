@@ -331,7 +331,7 @@ class FRC_2013_Robot : public Tank_Robot
 		bool IsStopped() const;  //returns true if both encoders read zero on this iteration
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 	private:
 		void ApplyErrorCorrection();
 		#ifndef Robot_TesterCode

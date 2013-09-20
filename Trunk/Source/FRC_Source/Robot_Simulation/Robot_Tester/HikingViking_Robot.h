@@ -150,7 +150,7 @@ class HikingViking_Robot : public Tank_Robot
 		Robot_Claw &GetClaw() {return m_Claw;}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 	private:
 		HikingViking_Robot_Properties m_RobotProps;
 		//typedef  Tank_Drive __super;
