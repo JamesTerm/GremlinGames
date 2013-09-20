@@ -171,9 +171,17 @@ class COMMON_API LUA_Controls_Properties
 				struct ButtonSpecifics_rw
 				{
 					size_t WhichButton;
+					size_t WhichKey;  //for keyboard... bundled together so events are duplicated -1 if not used
 					bool useOnOff;
 					bool dbl_click;
 				} Button;
+				struct KeyboardSpecifics_rw
+				{
+					size_t WhichKey;
+					bool useOnOff;
+					bool dbl_click;
+				} Keyboard;
+
 			} Specifics;
 		};
 
