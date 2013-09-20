@@ -561,18 +561,21 @@ void HikingViking_Robot_Control::CloseSolenoid(size_t index,bool Close)
 	switch (index)
 	{
 		case HikingViking_Robot::eDeployment:
-			DebugOutput("CloseDeploymentDoor=%d\n",Close);
+			//DebugOutput("CloseDeploymentDoor=%d\n",Close);
 			m_Deployment=Close;
+			SmartDashboard::PutBoolean("Deployment",m_Deployment);
 			break;
 		case HikingViking_Robot::eClaw:
-			DebugOutput("CloseClaw=%d\n",Close);
+			//DebugOutput("CloseClaw=%d\n",Close);
 			m_Claw=Close;
+			SmartDashboard::PutBoolean("Claw",m_Claw);
 			//This was used to test error with the potentiometer
 			//m_Potentiometer.SetBypass(Close);
 			break;
 		case HikingViking_Robot::eRist:
-			DebugOutput("CloseRist=%d\n",Close);
+			//DebugOutput("CloseRist=%d\n",Close);
 			m_Rist=Close;
+			SmartDashboard::PutBoolean("Wrist",m_Rist);
 			break;
 	}
 }
@@ -611,6 +614,8 @@ void HikingViking_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	DOUT2("l=%f r=%f a=%f r=%f D%dC%dR%d\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),m_ArmVoltage,m_RollerVoltage,
 		m_Deployment,m_Claw,m_Rist
 		);
+	SmartDashboard::PutNumber("ArmVoltage",m_ArmVoltage);
+	SmartDashboard::PutNumber("RollerVoltage",m_RollerVoltage);
 }
 
 //const double c_Arm_DeadZone=0.150;  //was 0.085 for out off
@@ -624,8 +629,12 @@ const double c_Arm_Range=1.0-c_Arm_DeadZone;
 double HikingViking_Robot_Control::GetArmCurrentPosition(size_t index)
 {
 	const HikingViking_Robot_Props &props=m_RobotProps.GetHikingVikingRobotProps();
+	const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
 	double result=m_Potentiometer.GetPotentiometerCurrentPosition()*props.PotentiometerToArmRatio;
 	//result = m_KalFilter_Arm(result);  //apply the Kalman filter
+	SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
+	const double height= (sin(result*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
+	SmartDashboard::PutNumber("Height",height*3.2808399);
 	return result;
 }
 
