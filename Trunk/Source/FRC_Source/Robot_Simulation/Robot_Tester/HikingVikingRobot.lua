@@ -10,6 +10,15 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
+ArmLength_m=1.8288  --6 feet
+ArmToGearRatio=72.0/28.0
+GearToArmRatio=1.0/ArmToGearRatio
+PotentiometerToArmRatio=36.0/54.0
+PotentiometerToGearRatio=PotentiometerToArmRatio * ArmToGearRatio
+PotentiometerMaxRotation_r=270.0 * Deg2Rad
+GearHeightOffset_m=55 * Inches2Meters
+MotorToWheelGearRatio=12.0/36.0
+
 
 FRC2011_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -80,10 +89,10 @@ TestShip = {
 			show_pid_dump='n',
 			ds_display_row=-1,
 			pid=
-			{p=1000, i=0, d=250},
-			tolerance=0.01,					--should not matter much
+			{p=100, i=0, d=0},
+			tolerance=0.01,	
 			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=20/50,
+			encoder_to_wheel_ratio=1.0,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
@@ -94,11 +103,12 @@ TestShip = {
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
-			min_range_deg=-50,				--Stowed position where 0 degrees is vertical up
-			max_range_deg= 70,				--Dropped position where 90 degrees is horizontal
+			--These are arm converted to gear ratio
+			max_range_deg= 70 * ArmToGearRatio,
+			min_range_deg=(-50) * ArmToGearRatio,
 			use_aggressive_stop = 'yes',
-			inv_max_accel = 1.0/15.0,
-			inv_max_decel = 1.0/24.0,
+			--inv_max_accel = 1.0/15.0,
+			--inv_max_decel = 1.0/24.0,
 			distance_scale = 0.5,
 			motor_specs =
 			{
