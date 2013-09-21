@@ -8,16 +8,13 @@ class COMMON_API Tank_Steering
 		double m_StraightDeadZone_Tolerance;  //used to help controls drive straight
 		bool m_AreControlsDisabled;
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
 		Tank_Steering();
 
 		void SetAreControlsDisabled(bool AreControlsDisabled) {m_AreControlsDisabled=AreControlsDisabled;}
 		//This is the ui controllers time change callback update... client code must handle initializing as this will only write to those
 		//that need to be written to
 		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s);
-		void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+		void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
 
 		//range 0-1 the higher this is the lower turning precision, but easier to drive straight
 		void SetStraightDeadZone_Tolerance(double Tolerance) {m_StraightDeadZone_Tolerance=Tolerance;}
@@ -29,8 +26,6 @@ class COMMON_API Tank_Steering
 class COMMON_API AI_Base_Controller
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 		AI_Base_Controller(Ship_2D &ship);
 
 		///This is the single update point to all controlling of the ship.  The base class contains no goal arbitration, but does implement
@@ -101,8 +96,7 @@ struct COMMON_API WayPoint
 {
 	WayPoint() : Power(0.0), Position(0,0),TurnSpeedScaler(1.0) {}
 	double Power;
-	//Framework::Base::Vec2d Position;
-	osg::Vec2d Position;
+	Vec2D Position;
 	double TurnSpeedScaler;  //This will have a default value if not in script
 };
 
@@ -148,8 +142,6 @@ class COMMON_API Goal_Ship_FollowPath : public CompositeGoal
 class COMMON_API Goal_Ship_FollowShip : public AtomicGoal
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 		/// \param Trajectory_ForwardOffset This control where the orientation of the following ship will look.  This can vary depending on the size
 		/// of the ship.  This should be virtually 0 if the ship has no strafe
 		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition,double Trajectory_ForwardOffset=100.0);
@@ -184,11 +176,13 @@ class COMMON_API Goal_Wait : public AtomicGoal
 class COMMON_API Goal_NotifyWhenComplete : public CompositeGoal
 {
 	private:
-		//typedef CompositeGoal __super;
+		#ifndef Robot_TesterCode
+		typedef CompositeGoal __super;
+		#endif
 		std::string m_EventName;  //name to fire when complete
-		GG_Framework::Base::EventMap &m_EventMap;
+		Base::EventMap &m_EventMap;
 	public:
-		Goal_NotifyWhenComplete(GG_Framework::Base::EventMap &em,char *EventName);
+		Goal_NotifyWhenComplete(Base::EventMap &em,char *EventName);
 		//give public access for client to populate goals
 		virtual void AddSubgoal(Goal *g) {__super::AddSubgoal(g);}
 		//client activates manually when goals are added
@@ -196,11 +190,3 @@ class COMMON_API Goal_NotifyWhenComplete : public CompositeGoal
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate();
 };
-
-#if 0
-class AI_Controller : public AI_Base_Controller
-{
-	public:
-	private:
-};
-#endif
