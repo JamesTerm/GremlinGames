@@ -1,6 +1,8 @@
 #pragma once
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
+extern COMMON_API bool g_UseMouse;
+
 class Mouse_ShipDriver
 {
 public:
@@ -23,7 +25,7 @@ private:
 };
 #endif
 
-class UI_Controller
+class COMMON_API UI_Controller
 {
 	public:
 		enum Directions
@@ -37,7 +39,7 @@ class UI_Controller
 			Dir_180
 		};
 
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		UI_Controller(AI_Base_Controller *base_controller=NULL,bool AddJoystickDefaults=true);
 		#else
 		UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller=NULL);
@@ -70,7 +72,7 @@ class UI_Controller
 		virtual void ResetPos();
 		void UserResetPos();
 		void SlideHold(bool holdslide) {if (AreControlsDisabled()) return; m_ship->SetSimFlightMode(!holdslide);}
-		void ToggleSlide() {if (AreControlsDisabled()) return; m_ship->SetSimFlightMode(!m_ship->GetAlterTrajectory());}
+		void ToggleSlide() {if (AreControlsDisabled()) return; m_SlideButtonToggle=!m_ship->GetAlterTrajectory(),m_ship->SetSimFlightMode(m_SlideButtonToggle);}
 		void ToggleAutoLevel();
 		void StrafeLeft(bool on) {if (AreControlsDisabled() && on) return; Ship_StrafeLeft(on);}
 		void StrafeLeft(double dir) {if (!AreControlsDisabled()) Ship_StrafeLeft(dir); }
@@ -81,7 +83,7 @@ class UI_Controller
 
 		// This may not always happen.  Some ships can ONLY be in auto pilot
 		bool SetAutoPilot(bool autoPilot);
-		bool GetAutoPilot(){return m_autoPilot;}
+		bool GetAutoPilot() const {return m_autoPilot;}
 
 		void OnSpawn(bool on);
 
@@ -129,8 +131,9 @@ class UI_Controller
 		//Return if element was successfully created (be sure to check as some may not be present)
 		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script);
 		UI::JoyStick_Binder &GetJoyStickBinder();
+		void *GetKeyboardBinder();  //returns null if not supported
 	protected:
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		friend Mouse_ShipDriver;
 		#endif
 
@@ -174,7 +177,7 @@ class UI_Controller
 		AI_Base_Controller *m_Base;
 		Ship_2D *m_ship; //there is an overwhelming use of the ship so we'll cache a pointer of it here
 		
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		Mouse_ShipDriver *m_mouseDriver;
 		#else
 		UI::JoyStick_Binder &m_JoyStick_Binder;
@@ -207,18 +210,3 @@ class UI_Controller
 		bool m_IsBeingDestroyed; //Keep track of when destructor is called
 		bool m_POVSetValve;
 };
-
-#ifdef AI_TesterCode
-class UI_Controller_GameClient : public UI_GameClient
-{
-	public:
-		UI_Controller_GameClient();
-		~UI_Controller_GameClient();
-		virtual void SetControlledEntity(Entity2D* newEntity,bool AddJoystickDefaults=true);
-		virtual void AboutTo_RemoveEntity(Entity2D *Entity) {if (Entity==m_controlledEntity) SetControlledEntity(NULL);}
-	private:
-		//The one, the only!
-		UI_Controller *m_UI_Controller;  //unfortunately this is late binding once the window is setup
-		Entity2D* m_controlledEntity;
-};
-#endif

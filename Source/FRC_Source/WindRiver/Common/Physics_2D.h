@@ -1,10 +1,8 @@
 #pragma once
 
-class PhysicsEntity_2D
+class COMMON_API PhysicsEntity_2D
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;  //Tidy up the declaration to look neat
-		//typedef osg::Vec2d Vec2D;
 		PhysicsEntity_2D();
 		virtual ~PhysicsEntity_2D() {}
 		
@@ -119,12 +117,9 @@ class PhysicsEntity_2D
 
 ///This class is a expands on some common tasks that deal more specifically with flight.  This attempts to pull common tasks needed from physics in a way
 ///Where it is easy to use for ships and other objects that deal with orientation and position
-class FlightDynamics_2D : public PhysicsEntity_2D
+class COMMON_API FlightDynamics_2D : public PhysicsEntity_2D
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		//provide common area to initialize members
 		void init();
 		FlightDynamics_2D();
@@ -190,7 +185,9 @@ class FlightDynamics_2D : public PhysicsEntity_2D
 		double G_Dampener;
 
 	private:
+		#ifndef Robot_TesterCode
 		typedef PhysicsEntity_2D __super;
+		#endif
 		double m_DefaultHeading;
 		// I'll try to keep this read only, so that client who own their own Heading can use this code, without worrying about the Heading being changed
 		const double *m_HeadingToUse;

@@ -37,10 +37,10 @@ struct Rotary_Props
 	} ArmGainAssist;
 };
 
-class Rotary_System : public Ship_1D
+class COMMON_API Rotary_System : public Ship_1D
 {
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Ship_1D __super;
 		#endif
 		bool m_UsingRange_props;
@@ -61,10 +61,10 @@ class Rotary_System : public Ship_1D
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
 ///It currently has a single PID (Dual PID may either be integrated or a new class)... to manage voltage error.  This is used for fixed point
 /// position setting... like a turret or arm
-class Rotary_Position_Control : public Rotary_System
+class COMMON_API Rotary_Position_Control : public Rotary_System
 {
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Rotary_System __super;
 		#endif
 
@@ -105,7 +105,7 @@ class Rotary_Position_Control : public Rotary_System
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
 ///This models itself much like the drive train and encoders where it allows an optional encoder sensor read back to calibrate.
 ///This is a kind of speed control system that manages the velocity and does not need to keep track of position (like the drive or a shooter)
-class Rotary_Velocity_Control : public Rotary_System
+class COMMON_API Rotary_Velocity_Control : public Rotary_System
 {
 	public:
 		enum EncoderUsage
@@ -115,7 +115,7 @@ class Rotary_Velocity_Control : public Rotary_System
 			eActive, //Will attempt to match predicted velocity to actual velocity
 		};
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Rotary_System __super;
 		#endif
 
@@ -167,7 +167,7 @@ class Rotary_Velocity_Control : public Rotary_System
 		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
-class Rotary_Properties : public Ship_1D_Properties
+class COMMON_API Rotary_Properties : public Ship_1D_Properties
 {
 	public:
 		void Init();
@@ -182,17 +182,17 @@ class Rotary_Properties : public Ship_1D_Properties
 		const Rotary_Props &GetRotaryProps() const {return m_RotaryProps;}
 		//Get and Set the properties
 		Rotary_Props &RotaryProps() {return m_RotaryProps;}
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
 	protected:
 		Rotary_Props m_RotaryProps;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Ship_1D_Properties __super;
 		#endif
 };

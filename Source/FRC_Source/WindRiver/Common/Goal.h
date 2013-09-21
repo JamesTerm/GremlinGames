@@ -7,7 +7,7 @@
 /// of some of these methods will reside in a cpp file.  Once the decision is final they will either stay in a cpp, or change to an 'hpp' file
 /// using a nested include technique to work with a templated class.  Hopefully this will not be necessary.
 //  [2/23/2010 James]
-class Goal
+class COMMON_API Goal
 {
 	public:
 		virtual ~Goal() {}
@@ -44,7 +44,7 @@ class Goal
 		//TODO see if Owner and Type are necessary
 }; 
 
-class  AtomicGoal : public Goal
+class  COMMON_API AtomicGoal : public Goal
 {
 	protected:  //from Goal
 		virtual void Activate() {}
@@ -54,7 +54,7 @@ class  AtomicGoal : public Goal
 
 };
 
-class  CompositeGoal : public Goal
+class  COMMON_API CompositeGoal : public Goal
 {
 	protected:  //from Goal
 		~CompositeGoal();
@@ -76,7 +76,7 @@ class  CompositeGoal : public Goal
 };
 
 //Similar to a Composite goal where it is composed of a list of goals, but this one will process all goals simultaneously
-class MultitaskGoal : public Goal
+class COMMON_API MultitaskGoal : public Goal
 {
 	public:
 		/// \param WaitAll if true the goal is active when the state of all objects are no longer active; If false it will either be the first
@@ -101,7 +101,9 @@ class MultitaskGoal : public Goal
 class Generic_CompositeGoal : public CompositeGoal
 {
 	private:
+		#ifndef Robot_TesterCode
 		typedef CompositeGoal __super;
+		#endif
 	public:
 		Generic_CompositeGoal()
 		{

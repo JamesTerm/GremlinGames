@@ -1,23 +1,20 @@
 #pragma once
 
 //An aggregated type of control for robots that wish to use this kind of steering
-class Tank_Steering
+class COMMON_API Tank_Steering
 {
 	private:
 		double m_LeftVelocity, m_RightVelocity;  //for tank steering
 		double m_StraightDeadZone_Tolerance;  //used to help controls drive straight
 		bool m_AreControlsDisabled;
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		Tank_Steering();
 
 		void SetAreControlsDisabled(bool AreControlsDisabled) {m_AreControlsDisabled=AreControlsDisabled;}
 		//This is the ui controllers time change callback update... client code must handle initializing as this will only write to those
 		//that need to be written to
 		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s);
-		void BindAdditionalEventControls(bool Bind,Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+		void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
 
 		//range 0-1 the higher this is the lower turning precision, but easier to drive straight
 		void SetStraightDeadZone_Tolerance(double Tolerance) {m_StraightDeadZone_Tolerance=Tolerance;}
@@ -26,10 +23,9 @@ class Tank_Steering
 		void Joystick_SetRightVelocity(double Velocity);
 };
 
-class AI_Base_Controller
+class COMMON_API AI_Base_Controller
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
 		AI_Base_Controller(Ship_2D &ship);
 
 		///This is the single update point to all controlling of the ship.  The base class contains no goal arbitration, but does implement
@@ -77,7 +73,7 @@ class AI_Base_Controller
 };
 
 //This will explicitly rotate the ship to a particular heading.  It may be moving or still.
-class Goal_Ship_RotateToPosition : public AtomicGoal
+class COMMON_API Goal_Ship_RotateToPosition : public AtomicGoal
 {
 	public:
 		Goal_Ship_RotateToPosition(AI_Base_Controller *controller,double Heading);
@@ -96,17 +92,16 @@ class Goal_Ship_RotateToPosition : public AtomicGoal
 //Update Reaction->FlyWayPoints->UpdateIndendedLocation
 //FlyToNextLocation->DriveToLocation
 
-struct WayPoint
+struct COMMON_API WayPoint
 {
 	WayPoint() : Power(0.0), Position(0,0),TurnSpeedScaler(1.0) {}
 	double Power;
-	Framework::Base::Vec2d Position;
-	//osg::Vec2d Position;
+	Vec2D Position;
 	double TurnSpeedScaler;  //This will have a default value if not in script
 };
 
 //This is similar to Traverse_Edge in book (not to be confused with its MoveToPosition)
-class Goal_Ship_MoveToPosition : public AtomicGoal
+class COMMON_API Goal_Ship_MoveToPosition : public AtomicGoal
 {
 	public:
 		/// \param double safestop_tolerance used to set safe stop tolerance, default is a little over an inch
@@ -131,7 +126,7 @@ class Goal_Ship_MoveToPosition : public AtomicGoal
 		bool m_LockOrientation;
 };
 
-class Goal_Ship_FollowPath : public CompositeGoal
+class COMMON_API Goal_Ship_FollowPath : public CompositeGoal
 {
 	public:
 		Goal_Ship_FollowPath(AI_Base_Controller *controller,std::list<WayPoint> path,bool LoopMode=false);
@@ -144,11 +139,9 @@ class Goal_Ship_FollowPath : public CompositeGoal
 		bool m_LoopMode;
 };
 
-class Goal_Ship_FollowShip : public AtomicGoal
+class COMMON_API Goal_Ship_FollowShip : public AtomicGoal
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
 		/// \param Trajectory_ForwardOffset This control where the orientation of the following ship will look.  This can vary depending on the size
 		/// of the ship.  This should be virtually 0 if the ship has no strafe
 		Goal_Ship_FollowShip(AI_Base_Controller *controller,const Ship_2D &Followship,const Vec2D &RelPosition,double Trajectory_ForwardOffset=100.0);
@@ -167,7 +160,7 @@ class Goal_Ship_FollowShip : public AtomicGoal
 		bool m_Terminate;
 };
 
-class Goal_Wait : public AtomicGoal
+class COMMON_API Goal_Wait : public AtomicGoal
 {
 	public:
 		Goal_Wait(double seconds);
@@ -180,14 +173,16 @@ class Goal_Wait : public AtomicGoal
 };
 
 //This goal simply will fire an event when all goals are complete
-class Goal_NotifyWhenComplete : public CompositeGoal
+class COMMON_API Goal_NotifyWhenComplete : public CompositeGoal
 {
 	private:
+		#ifndef Robot_TesterCode
 		typedef CompositeGoal __super;
+		#endif
 		std::string m_EventName;  //name to fire when complete
-		Framework::Base::EventMap &m_EventMap;
+		Base::EventMap &m_EventMap;
 	public:
-		Goal_NotifyWhenComplete(Framework::Base::EventMap &em,char *EventName);
+		Goal_NotifyWhenComplete(Base::EventMap &em,char *EventName);
 		//give public access for client to populate goals
 		virtual void AddSubgoal(Goal *g) {__super::AddSubgoal(g);}
 		//client activates manually when goals are added
@@ -195,11 +190,3 @@ class Goal_NotifyWhenComplete : public CompositeGoal
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate();
 };
-
-#if 0
-class AI_Controller : public AI_Base_Controller
-{
-	public:
-	private:
-};
-#endif

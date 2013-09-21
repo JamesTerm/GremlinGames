@@ -235,6 +235,13 @@ void JoyStick_Binder::AddJoy_Analog_Default(JoyAxis_enum WhichAxis,const char ev
 		AddJoy_Analog_Binding(WhichAxis,eventName,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName);
 }
 
+void JoyStick_Binder::AddJoy_Culver_Default(JoyAxis_enum WhichXAxis,JoyAxis_enum WhichYAxis,double MagnitudeScalarArc,double MagnitudeScalarBase,const char eventName[],bool IsFlipped,
+											double Multiplier,double FilterRange,double CurveIntensity,const char ProductName[])
+{
+	//removed intercept since we are not using a config manager
+		AddJoy_Culver_Binding(WhichXAxis,WhichYAxis,MagnitudeScalarArc,MagnitudeScalarBase,eventName,IsFlipped,Multiplier,FilterRange,CurveIntensity,ProductName);
+}
+
 void JoyStick_Binder::AddJoy_Button_Default(size_t WhichButton,const char eventName[],bool useOnOff,bool dbl_click,const char ProductName[])
 {
 	//removed intercept since we are not using a config manager

@@ -1,6 +1,6 @@
 #pragma once
 
-struct PolynomialEquation_forth_Props
+struct COMMON_API PolynomialEquation_forth_Props
 {
 	void Init()
 	{
@@ -30,7 +30,7 @@ struct PolynomialEquation_forth_Props
 	}
 };
 
-class PolynomialEquation_forth
+class COMMON_API PolynomialEquation_forth
 {
 	public:
 		PolynomialEquation_forth()

@@ -12,7 +12,7 @@ public:
 	//We need to pass the properties to the Robot Control to be able to make proper conversions.
 	//The client code may cast the properties to obtain the specific data 
 	virtual void Initialize(const Entity_Properties *props)=0;
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	virtual void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)=0;
 	#endif
 };
@@ -86,7 +86,7 @@ class FRC_2013_Robot_Properties : public Tank_Robot_Properties
 		const FRC_2013_Robot_Props &GetFRC2013RobotProps() const {return m_FRC2013RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
 		Servo_Properties m_PitchRampProps,m_TurretProps;
@@ -189,7 +189,7 @@ class FRC_2013_Robot : public Tank_Robot
 				AxisControl(FRC_2013_Robot *pParent,const char EntityName[],Servo_Control_Interface *robot_control,size_t InstanceIndex);
 				IEvent::HandlerList ehl;
 			protected:
-				#ifndef AI_TesterCode
+				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
 				#endif
 				virtual void SetIntendedPosition_Plus(double Position);
@@ -199,7 +199,7 @@ class FRC_2013_Robot : public Tank_Robot
 		class PitchRamp : public AxisControl
 		{
 			private:
-				#ifndef AI_TesterCode
+				#ifndef Robot_TesterCode
 				typedef AxisControl __super;
 				#endif
 			public:
@@ -216,7 +216,7 @@ class FRC_2013_Robot : public Tank_Robot
 		{
 			private:
 
-			#ifndef AI_TesterCode
+			#ifndef Robot_TesterCode
 			typedef AxisControl __super;
 			#endif
 			public:
@@ -264,7 +264,7 @@ class FRC_2013_Robot : public Tank_Robot
 				class Intake_Deployment : public Rotary_Position_Control
 				{
 				private:
-					#ifndef AI_TesterCode
+					#ifndef Robot_TesterCode
 					typedef Rotary_Position_Control __super;
 					#endif
 					FRC_2013_Robot * const m_pParent;
@@ -331,10 +331,10 @@ class FRC_2013_Robot : public Tank_Robot
 		bool IsStopped() const;  //returns true if both encoders read zero on this iteration
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 	private:
 		void ApplyErrorCorrection();
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef  Tank_Robot __super;
 		#endif
 		FRC_2013_Control_Interface * const m_RobotControl;
@@ -477,7 +477,7 @@ class FRC_2013_Goals
 		};
 };
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
 #undef __TestXAxisServoDump__
 #define __TestPotsOnEncoder__
@@ -517,7 +517,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
-		//Note: This is only for AI Tester
+		//Note: This is only for Robot Tester
 		virtual void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
 
 		void TriggerIntakeDeployedLimit(bool on) {m_DeployedLimit=on;}
@@ -627,4 +627,4 @@ class FRC_2013_Robot_UI : public FRC_2013_Robot, public FRC_2013_Robot_Control
 		Axis_UI m_AxisCamera;
 };
 
-#endif //AI_TesterCode
+#endif //Robot_TesterCode

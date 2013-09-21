@@ -36,6 +36,7 @@ struct Tank_Robot_Props
 	bool IsOpen,HasEncoders;  //This property only applies in teleop
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
+	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
 	//Currently supporting 4 terms in polynomial equation
 	PolynomialEquation_forth_Props Voltage_Terms;  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
@@ -55,10 +56,13 @@ struct Tank_Robot_Props
 };
 
 class Tank_Robot_UI;
+#ifndef Robot_TesterCode
+#define DRIVE_API
+#endif
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class Tank_Robot : public Ship_Tester,
+class DRIVE_API Tank_Robot : public Ship_Tester,
 				   public Vehicle_Drive_Common_Interface
 {
 	public:
@@ -75,7 +79,7 @@ class Tank_Robot : public Ship_Tester,
 		//Give ability to change properties
 		void UpdateTankProps(const Tank_Robot_Props &TankProps);
 	protected:
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		friend Tank_Robot_UI;
 		#endif
 		//This method is the perfect moment to obtain the new velocities and apply to the interface
@@ -97,7 +101,8 @@ class Tank_Robot : public Ship_Tester,
 		virtual void BindAdditionalEventControls(bool Bind) 
 			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 			}
-
+		//this may need to be overridden for robots that need it on for certain cases like 2012 needing it on for low gear
+		virtual bool GetUseAgressiveStop() const;
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		//Note by default a 6WD Tank Robot is assumed to set length for a 4WD (or half the total length of 6)
@@ -108,13 +113,14 @@ class Tank_Robot : public Ship_Tester,
 	protected:
 		bool m_IsAutonomous;
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef  Ship_Tester __super;
 		#endif
 		Tank_Drive_Control_Interface * const m_RobotControl;
 		Tank_Drive *m_VehicleDrive;
 		PIDController2 m_PIDController_Left,m_PIDController_Right;
-		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration
+		double m_CalibratedScaler_Left,m_CalibratedScaler_Right; //used for calibration (in coast mode)
+		double m_ErrorOffset_Left,m_ErrorOffset_Right; //used for calibration in brake (a.k.a. aggressive stop) mode
 		bool m_UsingEncoders;
 		Vec2D m_EncoderGlobalVelocity;  //cache for later use
 		double m_EncoderAngularVelocity;
@@ -132,33 +138,33 @@ class Tank_Robot : public Ship_Tester,
 		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
 };
 
-#ifndef AI_TesterCode
+#ifndef Robot_TesterCode
 typedef Ship_Properties UI_Ship_Properties;
 #endif
 
-class Tank_Robot_Properties : public UI_Ship_Properties
+class DRIVE_API Tank_Robot_Properties : public UI_Ship_Properties
 {
 	public:
 		Tank_Robot_Properties();
 		virtual void LoadFromScript(Scripting::Script& script);
 		const Tank_Robot_Props &GetTankRobotProps() const {return m_TankRobotProps;}
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
 	protected:
 		Tank_Robot_Props m_TankRobotProps;
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Ship_Properties __super;
 		#else
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
 };
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
-class Tank_Robot_Control : public Tank_Drive_Control_Interface
+class DRIVE_API Tank_Robot_Control : public Tank_Drive_Control_Interface
 {
 	public:
 		Tank_Robot_Control();
@@ -185,88 +191,6 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 		double m_LeftVoltage,m_RightVoltage;
 		bool m_DisplayVoltage;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
-};
-
-//This is a simplified version of the wheel UI without the swivel or the graphics to show direction (only the tread)
-class Tank_Wheel_UI
-{
-	public:
-		Tank_Wheel_UI() : m_UIParent(NULL) {}
-		typedef osg::Vec2d Vec2D;
-
-		struct Wheel_Properties
-		{
-			Vec2D m_Offset;  //Placement of the wheel in reference to the parent object (default 0,0)
-			double m_Wheel_Diameter; //in meters default 0.1524  (6 inches)
-		};
-
-		void UI_Init(Actor_Text *parent);
-
-		//Client code can manage the properties
-		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
-		//Keep virtual for special kind of wheels
-		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
-		virtual void Text_SizeToUse(double SizeToUse);
-
-		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
-		//This will add to the existing rotation and normalize
-		void AddRotation(double RadiansToAdd);
-		double GetFontSize() const {return m_UIParent?m_UIParent->GetFontSize():10.0;}
-	private:
-		Actor_Text *m_UIParent;
-		Wheel_Properties m_props;
-		osg::ref_ptr<osgText::Text> m_Tread; //Tread is really a line that helps show speed
-		double m_Rotation;
-};
-
-class Tank_Robot_UI
-{
-	public:
-		typedef osg::Vec2d Vec2D;
-
-		Tank_Robot_UI(Tank_Robot *tank_robot) : m_TankRobot(tank_robot) {}
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
-
-		virtual void UI_Init(Actor_Text *parent);
-		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos);
-		virtual void Text_SizeToUse(double SizeToUse);
-
-		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
-
-		virtual void TimeChange(double dTime_s);
-	private:
-		Tank_Robot * const m_TankRobot;
-		Tank_Wheel_UI m_Wheel[6];
-};
-
-///This is only for the simulation where we need not have client code instantiate a Robot_Control
-class Tank_Robot_UI_Control : public Tank_Robot, public Tank_Robot_Control
-{
-	public:
-		Tank_Robot_UI_Control(const char EntityName[]) : Tank_Robot(EntityName,this),Tank_Robot_Control(),
-		m_TankUI(this) {}
-	protected:
-		virtual void TimeChange(double dTime_s) 
-		{
-			__super::TimeChange(dTime_s);
-			m_TankUI.TimeChange(dTime_s);
-			SetDisplayVoltage(m_controller->GetUIController()?true:false);
-		}
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL)
-		{
-			__super::Initialize(em,props);
-			m_TankUI.Initialize(em,props);
-		}
-
-	protected:   //from EntityPropertiesInterface
-		virtual void UI_Init(Actor_Text *parent) {m_TankUI.UI_Init(parent);}
-		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
-		{m_TankUI.custom_update(nv,draw,parent_pos);}
-		virtual void Text_SizeToUse(double SizeToUse) {m_TankUI.Text_SizeToUse(SizeToUse);}
-		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {m_TankUI.UpdateScene(geode,AddOrRemove);}
-
-	private:
-		Tank_Robot_UI m_TankUI;
 };
 
 #endif

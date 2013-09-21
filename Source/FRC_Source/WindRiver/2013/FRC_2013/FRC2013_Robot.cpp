@@ -1,23 +1,15 @@
 #include "stdafx.h"
-#include "AI_Tester.h"
+#include "Robot_Tester.h"
 
-#ifdef AI_TesterCode
-#include "Debug.h"
-namespace AI_Tester
+#ifdef Robot_TesterCode
+namespace Robot_Tester
 {
-	#include "PIDController.h"
-	#include "Calibration_Testing.h"
-	#include "Tank_Robot.h"
-	#include "Robot_Control_Interface.h"
-	#include "Rotary_System.h"
-	#include "Servo_System.h"
+	#include "Tank_Robot_UI.h"
 	#include "CommonUI.h"
 	#include "FRC2013_Robot.h"
 }
 
-#include "UDP_Listener.h"
-
-using namespace AI_Tester;
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -27,13 +19,13 @@ const double Pi2=M_PI*2.0;
 #else
 #include "Common/Debug.h"
 #include "FRC2013_Robot.h"
-#include "UDP_Listener.h"
+#include "Common/UDP_Listener.h"
 
 using namespace Framework::Base;
 using namespace std;
 #endif
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
 #undef __DisableEncoderTracking__
 #undef  __TargetFixedPoint__	//This makes it easy to test robots ability to target a fixed point on the 2D map
@@ -599,9 +591,9 @@ const double c_CourtLength=Feet2Meters(54);
 const double c_CourtWidth=Feet2Meters(27);
 const double c_HalfCourtLength=c_CourtLength/2.0;
 const double c_HalfCourtWidth=c_CourtWidth/2.0;
-const FRC_2013_Robot::Vec2D c_BridgeDimensions=FRC_2013_Robot::Vec2D(Inches2Meters(48),Inches2Meters(88)); //width x length
+const Vec2D c_BridgeDimensions=Vec2D(Inches2Meters(48),Inches2Meters(88)); //width x length
 
-const FRC_2013_Robot::Vec2D c_TargetBasePosition=FRC_2013_Robot::Vec2D(0.0,c_HalfCourtLength);
+const Vec2D c_TargetBasePosition=Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 const double c_Target_MidBase_Height= Inches2Meters(61.0 - c_BallShootHeight_inches);
@@ -621,7 +613,12 @@ FRC_2013_Robot::FRC_2013_Robot(const char EntityName[],FRC_2013_Control_Interfac
 	//These are for testing if not using buttons
 	//m_IsTargeting=false;
 	//m_AutoDriveState=eAutoDrive_Disabled; 
-	m_UDP_Listener=coodinate_manager_Interface::CreateInstance();
+
+	#if 0
+	m_UDP_Listener=coodinate_manager_Interface::CreateInstance(coodinate_manager_Interface::eListeningPlatform_UDP);
+	#else
+	m_UDP_Listener=coodinate_manager_Interface::CreateInstance(coodinate_manager_Interface::eListeningPlatform_TCPIP);
+	#endif
 }
 
 FRC_2013_Robot::~FRC_2013_Robot()
@@ -809,7 +806,7 @@ namespace VisionConversion
 void FRC_2013_Robot::TimeChange(double dTime_s)
 {
 	coodinate_manager_Interface *listener=(coodinate_manager_Interface *)m_UDP_Listener;
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	listener->TimeChange(dTime_s);
 	#endif
 
@@ -817,7 +814,7 @@ void FRC_2013_Robot::TimeChange(double dTime_s)
 	#if 1
 	if (listener->IsUpdated())
 	{
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		listener->ResetUpdate();
 		#endif
 		//TODO see if we want a positive Y for up... for now we can convert it here
@@ -1112,7 +1109,7 @@ void FRC_2013_Robot::SetClimbGear(bool on)
 			//Now to turn off auto pilot (regain controls)
 			//Note: for the robot this acts like a kill switch, so we'll want to leave controls disabled
 			//for the simulation this will restore it back to drive (since it doesn't matter what state the pneumatics are in
-			#ifdef AI_TesterCode
+			#ifdef Robot_TesterCode
 			GetController()->GetUIController_RW()->SetAutoPilot(false);
 			SetClimbState(eClimbState_Drive);  //well set props back
 			#endif
@@ -1155,7 +1152,7 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		//Ship first then tank  (so PID settings have correct ship props)
 		UpdateShipProperties(m_RobotProps.GetShipProps());
 		UpdateTankProps(m_RobotProps.GetTankRobotProps());
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		m_RobotControl->Initialize(&m_RobotProps);
 		#endif
 		break;
@@ -1166,7 +1163,7 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		//Ship first then tank  (so PID settings have correct ship props)
 		UpdateShipProperties(m_RobotProps.GetClimbGearLiftProps().GetShipProps());
 		UpdateTankProps(m_RobotProps.GetClimbGearLiftProps().GetTankRobotProps());
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		m_RobotControl->Initialize(&m_RobotProps.GetClimbGearLiftProps());
 		#endif
 		break;
@@ -1175,7 +1172,7 @@ void FRC_2013_Robot::SetClimbState(ClimbState climb_state)
 		//Ship first then tank  (so PID settings have correct ship props)
 		UpdateShipProperties(m_RobotProps.GetClimbGearDropProps().GetShipProps());
 		UpdateTankProps(m_RobotProps.GetClimbGearDropProps().GetTankRobotProps());
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		m_RobotControl->Initialize(&m_RobotProps.GetClimbGearDropProps());
 		#endif
 		break;
@@ -1369,16 +1366,16 @@ void FRC_2013_Robot::BindAdditionalEventControls(bool Bind)
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PowerWheels.BindAdditionalEventControls(Bind);
 	m_IntakeSystem.BindAdditionalEventControls(Bind);
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
 	__super::BindAdditionalEventControls(Bind);
 }
 
-void FRC_2013_Robot::BindAdditionalUIControls(bool Bind,void *joy)
+void FRC_2013_Robot::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 {
-	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
-	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
+	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy,key);
+	__super::BindAdditionalUIControls(Bind,joy,key);  //call super for more general control assignments
 }
 
   /***********************************************************************************************************************************/
@@ -1650,8 +1647,8 @@ const char * const g_FRC_2013_Controls_Events[] =
 	"Robot_Set10PointHang",
 	"Robot_SetPreset1","Robot_SetPreset2","Robot_SetPreset3","Robot_SetPresetPOV",
 	"Robot_SetDefensiveKeyValue","Robot_SetDefensiveKeyOn","Robot_SetDefensiveKeyOff"
-	//AI Tester events only
-	#ifdef AI_TesterCode
+	//Robot Tester events only
+	#ifdef Robot_TesterCode
 	,"Ball_SlowWheel"
 	#endif
 };
@@ -1986,7 +1983,7 @@ FRC_2013_Goals::ChangeClimbState::Goal_Status FRC_2013_Goals::ResetPosition::Pro
 		printf("  ***ResetPosition::Process time exceeded- sending failed status\n");
 		//For robot code... do not assert here let code run its course perhaps a kill switch or a reattempt could happen
 		//simulation code should fix problem right away if this happens
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		assert(false);
 		#endif
 	}
@@ -2129,7 +2126,7 @@ Goal *FRC_2013_Goals::Climb(FRC_2013_Robot *Robot,size_t iteration)
 	return MainGoal;
 }
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
   /***********************************************************************************************************************************/
  /*													FRC_2013_Robot_Control															*/
@@ -2319,7 +2316,7 @@ void FRC_2013_Robot_Control::Reset_Rotary(size_t index)
 	}
 }
 
-//This is only for AI Tester
+//This is only for Robot Tester
 void FRC_2013_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
 {
 	if (Bind)
@@ -2725,4 +2722,4 @@ void FRC_2013_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 	m_AxisCamera.UpdateScene(geode,AddOrRemove);
 }
 
-#endif //AI_TesterCode
+#endif //Robot_TesterCode

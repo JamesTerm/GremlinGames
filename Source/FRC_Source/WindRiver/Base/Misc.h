@@ -286,3 +286,5 @@ inline double RAND_GEN(double minR = 0.0, double maxR = 1.0)
 
 namespace Base=Framework::Base;
 namespace Entity2D_Kind=Framework::Base;
+#define COMMON_API
+

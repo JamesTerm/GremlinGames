@@ -13,6 +13,9 @@
 #include "Goal.h"
 #include "Ship.h"
 #include "AI_Base_Controller.h"
+#include "../Base/Joystick.h"
+#include "../Base/JoystickBinder.h"
+#include "UI_Controller.h"
 
 using namespace Framework::Base;
 
@@ -21,7 +24,7 @@ using namespace Framework::Base;
 #undef __DisableSpeedControl__  //This one is great for test purposes
 #undef DEBUG_AFTERBURNER
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 #endif
@@ -32,21 +35,9 @@ const double Half_Pi=M_PI/2.0;
  /*													Ship_2D														*/
 /***************************************************************************************************************/
 
-
 inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
 {
 	return Vec2d(A[0]*rhs._v[0], A[1]*rhs._v[1]);
-}
-
-inline Vec2d LocalToGlobal(double Heading,const Vec2d &LocalVector)
-{
-	return Vec2d(sin(Heading)*LocalVector[1]+cos(-Heading)*LocalVector[0],
-					  cos(Heading)*LocalVector[1]+sin(-Heading)*LocalVector[0]);
-}
-inline Vec2d GlobalToLocal(double Heading,const Vec2d &GlobalVector)
-{
-	return Vec2d(sin(-Heading)*GlobalVector[1]+cos(Heading)*GlobalVector[0],
-					  cos(-Heading)*GlobalVector[1]+sin(Heading)*GlobalVector[0]);
 }
 
 //This is really Local to Global for just the Y Component
@@ -55,21 +46,14 @@ inline Vec2d GetDirection(double Heading,double Intensity)
 	return Vec2d(sin(Heading)*Intensity,cos(Heading)*Intensity);
 }
 
-
 //Quat FromLW_Rot_Radians(double H, double P, double R);
 
 Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
-	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation)
+	m_controller(NULL),m_IntendedOrientationPhysics(m_IntendedOrientation),m_StabilizeRotation(true),m_CoordinateTurns(true)
 {
-	SetSimFlightMode(true);  //this sets up the initial speed as well
-	SetStabilizeRotation(true); //This should always be true unless there is some ship failure
-	//SetStabilizeRotation(false); //This is for testing
-	m_CoordinateTurns=true;  //TODO may want to provide accessor/mutator accessibility
-	//m_CoordinateTurns=false;
 	m_HeadingSpeedScale=1.0;
 	m_LockShipHeadingToOrientation=false;  //usually this is false (especially for AI and Remote controllers)
 	m_thrustState=TS_NotVisible;
-	m_StabilizeRotation=true;
 	ResetPos();
 }
 
@@ -285,12 +269,6 @@ void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *pr
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
-	#ifdef AI_TesterCode
-	m_Physics.GetPilotInfo().GLimit = 8.0;
-	m_Physics.GetPilotInfo().PassOutTime_s = 10.0;
-	m_Physics.GetPilotInfo().PassOutRecoveryTime_s = 1.0;
-	m_Physics.GetPilotInfo().MaxRecoveryTime_s = 10.0;
-	#endif
 	double RadiusOfConcentratedMass=m_Physics.GetRadiusOfConcentratedMass();
 	m_IntendedOrientationPhysics.SetRadiusOfConcentratedMass(RadiusOfConcentratedMass);
 	m_RadialArmDefault=RadiusOfConcentratedMass*RadiusOfConcentratedMass;
@@ -364,6 +342,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	bool afterBurnerOn = (m_RequestedVelocity[1] > GetEngaged_Max_Speed());
 	bool afterBurnerBrakeOn = (fabs(currVelocity) > GetEngaged_Max_Speed());
 	//const FlightCharacteristics& currFC((afterBurnerOn||afterBurnerBrakeOn) ? Afterburner_Characteristics : GetFlightCharacteristics());
+	const Ship_Props &ship_props=m_ShipProps.GetShipProps();
 
 	Vec2d ForceToApply;
 	//Enable to monitor current speed
@@ -399,7 +378,7 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			UpdateIntendedOrientaton(dTime_s);
 			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
-			const double TargetDistanceScalar=m_ShipProps.GetShipProps().Rotation_TargetDistanceScalar;
+			const double TargetDistanceScalar=ship_props.Rotation_TargetDistanceScalar;
 			if (TargetDistanceScalar!=1.0)
 			{
 				//a simple linear blend on the scalar should be fine (could upgrade to poly if needed)
@@ -408,7 +387,7 @@ void Ship_2D::TimeChange(double dTime_s)
 				//printf("%.2f %.2f\n",ratio,scale);
 				m_rotDisplacement_rad*=scale;
 			}
-			if (fabs(m_rotDisplacement_rad)<m_ShipProps.GetShipProps().Rotation_Tolerance)
+			if (fabs(m_rotDisplacement_rad)<ship_props.Rotation_Tolerance)
 				m_rotDisplacement_rad=0.0;
 		}
 		#endif
@@ -418,27 +397,12 @@ void Ship_2D::TimeChange(double dTime_s)
 		m_IntendedOrientation=GetAtt_r(); //If we can't stabilize the rotation then the intended orientation is slaved to the ship!
 	}
 
-	const double Ships_TorqueRestraint=MaxTorqueYaw;
-
-	//All of this disabling torque restraint only worked when the lock to orientation applied the restraint there... now that this is gone
-	//there is no reason to ever change the restraint
-
-	//Note: We use -1 for roll here to get a great effect on being in perfect sync to the intended orientation 
-	//(provided the user doesn't exceed the turning speed of the roll)
-	//{
-	//	//This will increase the ships speed if it starts to lag further behind
-	//	#ifndef __DisableShipSpeedBoost__
-	//	//For joystick and keyboard we can use -1 to lock to the intended quat
-	//	if (m_LockShipHeadingToOrientation)
-	//	{
-	//		Ships_TorqueRestraint=-1.0;  //we are locked to the orientation!
-	//	}
-	//	#endif
-	//}
-
-	//Apply the restraints now... I need this to compute my roll offset
-	Vec2d AccRestraintPositive(MaxAccelRight,m_ShipProps.GetMaxAccelForward(currVelocity));
-	Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetMaxAccelReverse(currVelocity));
+	// apply restraints based off if we are driving or if it is being auto piloted... for auto pilot it should not blend the max force high
+	bool AutoPilot=m_controller->GetUIController()?m_controller->GetUIController()->GetAutoPilot():true;
+	//Apply the restraints now... for now the lock ship member is a good way to know if it is being driven or autonomous, but we wouldn't want
+	//to do this in the game
+	Vec2d AccRestraintPositive(MaxAccelRight,AutoPilot?	ship_props.MaxAccelForward : m_ShipProps.GetMaxAccelForward(currVelocity));
+	Vec2d AccRestraintNegative(MaxAccelLeft,AutoPilot ?	ship_props.MaxAccelReverse : m_ShipProps.GetMaxAccelReverse(currVelocity));
 
 	if (!manualMode)
 	{
@@ -603,6 +567,13 @@ void Ship_2D::TimeChange(double dTime_s)
 	ForceToApply=m_Physics.ComputeRestrainedForce(ForceToApply,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 
 	double TorqueToApply;
+	
+	//If we are using set point we don't want the blend of torque high as this will throw off the computations
+	//Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
+	const double Ships_TorqueRestraint=m_LockShipHeadingToOrientation?
+		m_ShipProps.GetMaxTorqueYaw(min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass() :
+		MaxTorqueYaw;
+
 	if (m_StabilizeRotation)
 	{
 		//Here we have the original way to turn the ship
@@ -666,13 +637,20 @@ void Ship_2D::TimeChange(double dTime_s)
 
 	}
 	else
-		TorqueToApply=m_rotAccel_rad_s*Mass*dTime_s;
+		TorqueToApply=m_rotAccel_rad_s*Mass;
 
 
 	//To be safe we reset this to zero (I'd put a critical section around this line of code if there are thread issues
 	m_rotDisplacement_rad=0.0;
 
 	ApplyThrusters(m_Physics,ForceToApply,TorqueToApply,Ships_TorqueRestraint,dTime_s);
+	#if 0
+	{
+		double Torque=m_Physics.ComputeRestrainedTorque(TorqueToApply,Ships_TorqueRestraint,dTime_s);
+		DOUT4("%.3f %.3f %.3f",ForceToApply[0]/Mass,ForceToApply[1]/Mass,Torque/Mass);
+		//DOUT4("%.3f %.3f %.3f",m_currAccel[0],m_currAccel[1],TorqueToApply/Mass);
+	}
+	#endif
 
 	// Now to run the time updates (displacement plus application of it)
 	GetPhysics().G_Dampener = G_Dampener;
@@ -713,9 +691,9 @@ void Ship_2D::DestroyEntity(bool shotDown, Vec3d collisionPt)
 }
 #endif
 
-void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy)
+void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 {
-	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy);
+	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy,key);
 }
 
 
@@ -733,7 +711,8 @@ const char * const csz_RobotNames[] =
 	"RobotNona",
 	"Robot2011",
 	"Robot2012",
-	"Robot2013"
+	"Robot2013",
+	"RobotHikingViking"
 };
 
 Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
@@ -868,6 +847,9 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 			props.MaxAccelReverse_High=props.MaxAccelReverse;
 
 		script.GetField("MaxTorqueYaw", NULL, NULL, &props.MaxTorqueYaw);
+		err=script.GetField("MaxTorqueYaw_High", NULL, NULL, &props.MaxTorqueYaw_High);
+		if (err)
+			props.MaxTorqueYaw_High=props.MaxTorqueYaw;
 		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
 		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
 		if (err)
@@ -925,6 +907,15 @@ void Ship_Properties::UpdateShipProperties(const Ship_Props &props)
 	m_ShipProps=props;
 }
 
+double Ship_Properties::GetMaxTorqueYaw(double Velocity) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Velocity)/props.dHeading;
+	const double  &Low=props.MaxTorqueYaw;
+	const double &High=props.MaxTorqueYaw_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
 double Ship_Properties::GetMaxAccelForward(double Velocity) const
 {
 	const Ship_Props &props=m_ShipProps;
@@ -971,18 +962,30 @@ Ship_Tester::~Ship_Tester()
 
 void Ship_Tester::SetPosition(double x,double y) 
 {
+	#ifdef Robot_TesterCode
+	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	#else
 	PosAtt *writePtr=m_PosAtt_Write;
 	PosAtt *readPtr=m_PosAtt_Read;
+	#endif
 	writePtr->m_pos_m.set(x,y);
 	writePtr->m_att_r=readPtr->m_att_r;  //make sure the entire structure is updated!
+	#ifdef Robot_TesterCode
+	m_att_r=readPtr->m_att_r;
+	#endif
 	UpdatePosAtt();
 }
 
 void Ship_Tester::SetAttitude(double radians)
 {
-
+	#ifdef Robot_TesterCode
+	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
+	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	#else
 	PosAtt *writePtr=m_PosAtt_Write;
 	PosAtt *readPtr=m_PosAtt_Read;
+	#endif
 	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
 	writePtr->m_att_r=radians;
 	m_att_r=radians;
@@ -1010,7 +1013,7 @@ void Ship_Tester::SetGoal(Goal *goal)
 	GetController()->m_Goal=goal;
 }
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
   /***********************************************************************************************************************************/
  /*														UI_Ship_Properties															*/

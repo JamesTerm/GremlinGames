@@ -45,11 +45,11 @@ class Vehicle_Drive_Common
 ///This kind of ship will convert the torque and force into a two fixed point force/thrust system like that of a tank.  It also interpolates the left
 ///right velocities back into the torque and force.  Unlike a ship, it will always absorb any lateral forces as it is assumed that the entity will not
 ///skid in those directions.  This means it cannot strafe, and will behave much like a vehicle on land rather than a ship in space.
-class Tank_Drive : public Vehicle_Drive_Common
+class COMMON_API Tank_Drive : public Vehicle_Drive_Common
 {
 	private:
 		Vehicle_Drive_Common_Interface * const m_pParent;
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Vehicle_Drive_Common __super;
 		#endif
 		double m_LeftLinearVelocity,m_RightLinearVelocity;
@@ -103,7 +103,7 @@ class Swerve_Drive_Interface : public Vehicle_Drive_Common_Interface
 	virtual bool IsTractionMode() const {return false;}
 };
 
-class Swerve_Drive : public Vehicle_Drive_Common
+class COMMON_API Swerve_Drive : public Vehicle_Drive_Common
 {
 	public:
 		Swerve_Drive(Swerve_Drive_Interface *Parent);
@@ -123,14 +123,14 @@ class Swerve_Drive : public Vehicle_Drive_Common
 		virtual void InterpolateVelocities(const SwerveVelocities &Velocities,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 	protected:
 		Swerve_Drive_Interface * const m_pParent;
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Vehicle_Drive_Common __super;
 		#endif
 		SwerveVelocities m_Velocities;
 		const SwerveVelocities &GetIntendedVelocities() const {return m_Velocities;}
 };
 
-class Butterfly_Drive : public Swerve_Drive
+class COMMON_API Butterfly_Drive : public Swerve_Drive
 {
 	public:
 		Butterfly_Drive(Swerve_Drive_Interface *Parent);
@@ -145,10 +145,10 @@ class Butterfly_Drive : public Swerve_Drive
 		void ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s);
 };
 
-class Nona_Drive : public Butterfly_Drive
+class COMMON_API Nona_Drive : public Butterfly_Drive
 {
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Butterfly_Drive __super;
 		#endif
 		double m_KickerWheel;

@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <list>
+#include "../Base/Misc.h"  //needed to define the declspec
 #include "Goal.h"
 
 void* Goal::operator new ( const size_t size )

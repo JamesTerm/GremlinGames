@@ -11,11 +11,12 @@ struct Servo_Props
 
 ///This is the next layer of the linear Ship_1D that converts velocity into displacement angles, on a system that has servos
 ///This is used for fixed point position setting... like a turret or arm that works with servos
-class Servo_Position_Control : public Ship_1D
+class COMMON_API Servo_Position_Control : public Ship_1D
 {
 	private:
+		#ifndef Robot_TesterCode
 		typedef Ship_1D __super;
-
+		#endif 
 		//Copy these lines to the subclass that binds the events
 		//events are a bit picky on what to subscribe so we'll just wrap from here
 		//void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
@@ -35,7 +36,7 @@ class Servo_Position_Control : public Ship_1D
 		Servo_Position_Control(const char EntityName[],Servo_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
-		virtual void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+		virtual void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL);
 		virtual void ResetPos();
 		const Servo_Props &GetServo_Properties() const {return m_Servo_Props;}
 		//This is optionally used to lock to another ship (e.g. drive using Servo system)
@@ -46,12 +47,9 @@ class Servo_Position_Control : public Ship_1D
 		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
-class Servo_Properties : public Ship_1D_Properties
+class COMMON_API Servo_Properties : public Ship_1D_Properties
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
-
 		void Init();
 		Servo_Properties(const char EntityName[], double Mass,double Dimension,
 			double MAX_SPEED,double ACCEL,double BRAKE,double MaxAccelForward, double MaxAccelReverse,	
@@ -60,12 +58,14 @@ class Servo_Properties : public Ship_1D_Properties
 			MaxAccelReverse,ShipType,UsingRange,MinRange,MaxRange,IsAngular) {Init();}
 
 		Servo_Properties() {Init();}
-		virtual void LoadFromScript(Framework::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 		const Servo_Props &GetServoProps() const {return m_ServoProps;}
 		//Get and Set the properties
 		Servo_Props &ServoProps() {return m_ServoProps;}
 	protected:
 		Servo_Props m_ServoProps;
 	private:
+		#ifndef Robot_TesterCode
 		typedef Ship_1D_Properties __super;
+		#endif
 };
