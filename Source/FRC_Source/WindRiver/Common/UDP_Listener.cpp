@@ -8,6 +8,10 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 #include <ioLib.h>
+#include <assert.h>
+//We'll declare it locally to avoid needing to include this environment with misc.h
+#define COMMON_API
+
 #include "UDP_Listener.h"
 
 unsigned long _byteswap_ulong(unsigned long i)
@@ -132,10 +136,10 @@ static void UDP_Listener_Receive_Task(UDP_Listener *instance)
 
 
 //TODO move UDP listener out as we'll have multiple instances of this to be submitted within the constructor
-class coodinate_manager : public coodinate_manager_Interface
+class UDP_coodinate_manager : public coodinate_manager
 {
 	public:
-		coodinate_manager() : m_UDP(this)
+		UDP_coodinate_manager() : m_UDP(this)
 		{
 			
 		}
@@ -172,9 +176,51 @@ class coodinate_manager : public coodinate_manager_Interface
 	 UDP_Listener m_UDP;
 };
 
-coodinate_manager_Interface *coodinate_manager_Interface::CreateInstance()
+class SmartDashboard_coordinate_manager : public coodinate_manager_Interface
 {
-	return new coodinate_manager;
+	private:
+		mutable double m_Xpos,m_Ypos;
+	protected:
+		virtual void TimeChange(double dTime_s) {}
+
+		//Note: We just get it... the put is happening from our SmartCppDashboard and will automatically be reflected in the java client
+		virtual double GetXpos() const
+		{
+			return m_Xpos;
+		}
+		virtual double GetYpos() const
+		{
+			return m_Ypos;
+		}
+		//use simple flood control here
+		virtual bool IsUpdated() const
+		{
+			double lastXpos=m_Xpos,lastYpos=m_Ypos;
+			m_Xpos=SmartDashboard::GetNumber("X Position");
+			m_Ypos=SmartDashboard::GetNumber("Y Position");
+			return ((m_Xpos!=lastXpos)||(m_Ypos!=lastYpos));
+		}
+
+};
+
+coodinate_manager_Interface *coodinate_manager_Interface::CreateInstance(ListeningPlatform listeningPlatform)
+{
+	coodinate_manager_Interface *ret=NULL;
+
+	switch(listeningPlatform)
+	{
+	case eListeningPlatform_UDP:
+		ret=new UDP_coodinate_manager;
+		break;
+	case eListeningPlatform_TCPIP:
+		ret=new SmartDashboard_coordinate_manager;
+		//ensure the variables are initialized before calling get
+		SmartDashboard::PutNumber("X Position",0.0);
+		SmartDashboard::PutNumber("Y Position",0.0);
+		break;
+	}
+	assert(ret);
+	return ret;
 }
 
 void coodinate_manager_Interface::DestroyInstance(coodinate_manager_Interface *instance)
