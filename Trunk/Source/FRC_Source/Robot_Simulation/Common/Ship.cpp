@@ -260,12 +260,6 @@ void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *pr
 
 	//For now I don't really care about these numbers yet, so I'm pulling from the q33
 	m_Physics.StructuralDmgGLimit = 10.0;
-	#ifdef Robot_TesterCode
-	m_Physics.GetPilotInfo().GLimit = 8.0;
-	m_Physics.GetPilotInfo().PassOutTime_s = 10.0;
-	m_Physics.GetPilotInfo().PassOutRecoveryTime_s = 1.0;
-	m_Physics.GetPilotInfo().MaxRecoveryTime_s = 10.0;
-	#endif
 	double RadiusOfConcentratedMass=m_Physics.GetRadiusOfConcentratedMass();
 	m_IntendedOrientationPhysics.SetRadiusOfConcentratedMass(RadiusOfConcentratedMass);
 	m_RadialArmDefault=RadiusOfConcentratedMass*RadiusOfConcentratedMass;

@@ -137,7 +137,7 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
 		FlightDynamics_2D &GetPhysics() {return m_Physics;}
-		const FlightDynamics_2D &GetPhysics() const {return m_Physics;}
+		const PhysicsEntity_2D &GetPhysics() const {return m_Physics;}
 		virtual const Vec2D &GetDimensions() const {return m_Dimensions;}
 		virtual void ResetPos();
 		// This is where both the vehicle entity and camera need to align to, by default we use the actual orientation
