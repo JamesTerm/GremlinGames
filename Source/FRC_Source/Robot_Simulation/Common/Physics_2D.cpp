@@ -11,6 +11,8 @@ const double Pi2=M_PI*2.0;
 //G is ideal to compute forces on ships from various planets
 const double G=6.673E-11;
 
+inline Vec2D GlobalToLocal(double Heading,const Vec2D &GlobalVector);
+inline Vec2D LocalToGlobal(double Heading,const Vec2D &LocalVector);
 
 inline bool PosBNE(double val,double t)
 {
