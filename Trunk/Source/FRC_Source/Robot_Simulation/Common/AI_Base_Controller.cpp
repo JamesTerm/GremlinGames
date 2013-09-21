@@ -6,7 +6,6 @@ using namespace GG_Framework::Base;
 using namespace osg;
 
 const double Pi2=M_PI*2.0;
-namespace Scripting=GG_Framework::Logic::Scripting;
 
   /***********************************************************************************************************************************/
  /*														LUA_Controls_Properties														*/
@@ -20,7 +19,7 @@ LUA_Controls_Properties &LUA_Controls_Properties::operator= (const LUA_Controls_
 {
 	m_Controls=CopyFrom.m_Controls;
 	//Note: this one probably requires a static interface
-	const_cast<LUA_Controls_Properties_Interface *>(m_pParent)=CopyFrom.m_pParent;
+	m_pParent=CopyFrom.m_pParent;
 	return *this;
 }
 
@@ -170,7 +169,7 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 	return err;
 }
 
-void LUA_Controls_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Script& script)
+void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 {
 	//ensure the list is clean (incase it gets called again)
 	m_Controls.clear();
@@ -207,8 +206,8 @@ void LUA_Controls_Properties::LoadFromScript(GG_Framework::Logic::Scripting::Scr
 
 void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy,void *key) const
 {
-	typedef GG_Framework::UI::JoyStick_Binder JoyStick_Binder;
-	typedef GG_Framework::UI::KeyboardMouse_CB Keyboard_Binder;
+	typedef UI::JoyStick_Binder JoyStick_Binder;
+	typedef UI::KeyboardMouse_CB Keyboard_Binder;
 	JoyStick_Binder *p_joy=(JoyStick_Binder *)joy;
 	Keyboard_Binder *p_key=(Keyboard_Binder *)key;
 	const Controls_List &controls=Get_Controls();
@@ -316,7 +315,7 @@ void Tank_Steering::Joystick_SetRightVelocity(double Velocity)
 		m_RightVelocity=0.0;
 }
 
-void Tank_Steering::BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)
+void Tank_Steering::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
 {
 	if (Bind)
 	{
@@ -371,7 +370,7 @@ bool AI_Base_Controller::Try_SetUIController(UI_Controller *controller)
 void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoint, double power, double dTime_s,Vec2d* matchVel,bool LockOrientation)
 {
 	//Supposedly in some compilers _isnan should be available, but isn't defined in math.h... Oh well I don't need this overhead anyhow
-	#if 1
+	#ifdef WIN32
 	if (	_isnan(TrajectoryPoint[0]) ||
 			_isnan(TrajectoryPoint[1]) ||
 			_isnan(PositionPoint[0]) ||
