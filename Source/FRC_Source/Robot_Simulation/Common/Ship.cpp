@@ -21,9 +21,6 @@ const double Half_Pi=M_PI/2.0;
  /*													Ship_2D														*/
 /***************************************************************************************************************/
 
-namespace Robot_Tester
-{
-
 inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
 {
 	return Vec2d(A[0]*rhs._v[0], A[1]*rhs._v[1]);
@@ -33,8 +30,6 @@ inline const Vec2d Vec2Multiply (const Vec2d &A,const Vec2d &rhs)
 inline Vec2d GetDirection(double Heading,double Intensity)
 {
 	return Vec2d(sin(Heading)*Intensity,cos(Heading)*Intensity);
-}
-
 }
 
 //Quat FromLW_Rot_Radians(double H, double P, double R);
@@ -953,19 +948,30 @@ Ship_Tester::~Ship_Tester()
 
 void Ship_Tester::SetPosition(double x,double y) 
 {
+	#ifdef Robot_TesterCode
 	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
 	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	#else
+	PosAtt *writePtr=m_PosAtt_Write;
+	PosAtt *readPtr=m_PosAtt_Read;
+	#endif
 	writePtr->m_pos_m.set(x,y);
 	writePtr->m_att_r=readPtr->m_att_r;  //make sure the entire structure is updated!
+	#ifdef Robot_TesterCode
 	m_att_r=readPtr->m_att_r;
+	#endif
 	UpdatePosAtt();
 }
 
 void Ship_Tester::SetAttitude(double radians)
 {
-
+	#ifdef Robot_TesterCode
 	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
 	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	#else
+	PosAtt *writePtr=m_PosAtt_Write;
+	PosAtt *readPtr=m_PosAtt_Read;
+	#endif
 	writePtr->m_pos_m=readPtr->m_pos_m;  //make sure the entire structure is updated!
 	writePtr->m_att_r=radians;
 	m_att_r=radians;
