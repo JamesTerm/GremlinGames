@@ -54,11 +54,8 @@ void JoyStick_Binder::SetControlledEventMap(Framework::Base::EventMap* em)
 		m_controlledEventMap = em;
 }
 
-void JoyStick_Binder::AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped,double Multiplier,
-															  double FilterRange,double CurveIntensity,const char ProductName[])
+void JoyStick_Binder::Add_Analog_Binding_Common(Analog_EventEntry &key,const char eventName[])
 {
-	
-	Analog_EventEntry key(WhichAxis,ProductName,IsFlipped,Multiplier,FilterRange,CurveIntensity);
 	std::vector<std::string> *eventNames = m_JoyAnalogBindings[key];
 	if (!eventNames)
 	{
@@ -93,6 +90,20 @@ void JoyStick_Binder::AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char ev
 		if (!exists)
 			keys->push_back(key);
 	}
+}
+
+void JoyStick_Binder::AddJoy_Analog_Binding(JoyAxis_enum WhichAxis,const char eventName[],bool IsFlipped,double Multiplier,
+															  double FilterRange,double CurveIntensity,const char ProductName[])
+{
+	Analog_EventEntry key(WhichAxis,ProductName,IsFlipped,Multiplier,FilterRange,CurveIntensity);
+	Add_Analog_Binding_Common(key,eventName);
+}
+
+void JoyStick_Binder::AddJoy_Culver_Binding(JoyAxis_enum WhichXAxis,JoyAxis_enum WhichYAxis,double MagnitudeScalarArc,double MagnitudeScalarBase,const char eventName[],bool IsFlipped,double Multiplier,
+											double FilterRange,double CurveIntensity,const char ProductName[])
+{
+	Culver_EventEntry key(WhichXAxis,WhichYAxis,MagnitudeScalarArc,MagnitudeScalarBase,ProductName,IsFlipped,Multiplier,FilterRange,CurveIntensity);
+	Add_Analog_Binding_Common(key,eventName);
 }
 
 void JoyStick_Binder::RemoveJoy_Analog_Binding(const char eventName[],const char ProductName[])

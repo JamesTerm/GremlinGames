@@ -147,6 +147,8 @@ private:
 	bool operator == (const Button_EventEntry& rhs) const { return (WhichButton == rhs.WhichButton) && (ProductName == rhs.ProductName) && (dbl_click == rhs.dbl_click); }
 	};
 
+	void Add_Analog_Binding_Common(Analog_EventEntry &key,const char eventName[]);
+
 	std::vector<std::string> *GetBindingsForJoyAnalog(Analog_EventEntry EventEntry) {return m_JoyAnalogBindings[EventEntry];}
 	std::vector<std::string> *GetBindingsForJoyButton(Button_EventEntry EventEntry) {return m_JoyButtonBindings[EventEntry];}
 	bool IsDoubleClicked(size_t i);
