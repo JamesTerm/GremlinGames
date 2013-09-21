@@ -43,6 +43,8 @@ PhysicsEntity_1D::PhysicsEntity_1D()
 	m_EntityMass=5.0;
 	m_StaticFriction=0.8;
 	m_KineticFriction=0.2;
+	m_AngularInertiaCoefficient=1.0;
+	m_RadiusOfConcentratedMass=1.0;
 	m_SummedExternalForces=0.0;
 	m_lastTime_s=0.0;
 
@@ -53,6 +55,21 @@ void PhysicsEntity_1D::SetFriction(double StaticFriction,double KineticFriction)
 {
 	m_StaticFriction=StaticFriction;
 	m_KineticFriction=KineticFriction;
+}
+
+void PhysicsEntity_1D::SetAngularInertiaCoefficient(double AngularInertiaCoefficient)
+{
+	m_AngularInertiaCoefficient=AngularInertiaCoefficient;
+}
+
+void PhysicsEntity_1D::SetRadiusOfConcentratedMass(double RadiusOfConcentratedMass)
+{
+	m_RadiusOfConcentratedMass=RadiusOfConcentratedMass;
+}
+
+double PhysicsEntity_1D::GetRadiusOfConcentratedMass() const
+{
+	return m_RadiusOfConcentratedMass;
 }
 
 void PhysicsEntity_1D::SetVelocity(double Velocity)
@@ -73,6 +90,37 @@ void PhysicsEntity_1D::ApplyFractionalForce( double force,double FrameDuration)
 
 	//if (AccelerationDelta[1]!=0)
 	//	DebugOutput("Acc%f Vel%f\n",AccelerationDelta[1],m_Velocity[1]);
+}
+
+inline double PhysicsEntity_1D::GetAngularAccelerationDelta(double torque,double RadialArmDistance)
+{
+	// We want a cross product here, and divide by the mass and angular inertia
+	//return (RadialArmDistance*torque) / (m_EntityMass*m_AngularInertiaCoefficient);
+
+	//We are solving for angular acceleration so a=t / I
+
+	// t=Ia 
+	//I=sum(m*r^2) or sum(AngularCoef*m*r^2)
+
+	double AngularAcceleration=0;
+	//Avoid division by zero... no radial arm distance no acceleration!
+	if (RadialArmDistance!=0)
+	{
+		//Doing it this way keeps the value of torque down to a reasonable level
+		double RadiusRatio(m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass/RadialArmDistance);
+		assert(RadiusRatio!=0);  //no-one should be using a zero sized radius!
+		AngularAcceleration=(torque/(m_AngularInertiaCoefficient*m_EntityMass*RadiusRatio));
+		//This is another way to view it
+		//AngularAcceleration=((RadialArmDistance*torque)/(m_AngularInertiaCoefficient*m_EntityMass*m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass));
+	}
+	return AngularAcceleration;
+}
+
+void PhysicsEntity_1D::ApplyFractionalTorque( double torque,double FrameDuration,double RadialArmDistance)
+{
+	double AccelerationDelta=GetAngularAccelerationDelta(torque,RadialArmDistance);
+	double VelocityDelta=AccelerationDelta*FrameDuration;
+	m_Velocity+=VelocityDelta;
 }
 
 double PhysicsEntity_1D::GetForceFromVelocity(double vDesiredVelocity,double DeltaTime_s)
@@ -254,4 +302,30 @@ void PhysicsEntity_1D::TimeChangeUpdate(double DeltaTime_s,double &PositionDispl
 {
 	//Transfer the velocity to displacement
 	PositionDisplacement = m_Velocity * DeltaTime_s;
+}
+
+__inline double PhysicsEntity_1D::GetForceNormal(double gravity) const
+{
+	//for now there is little tolerance to become kinetic, but we may want more
+	double fc = IsZero(m_Velocity)?m_StaticFriction:m_KineticFriction;
+	return (fc * m_EntityMass * gravity);
+}
+
+double PhysicsEntity_1D::GetFrictionalForce(double DeltaTime_s,double Ground,double gravity,double BrakeResistence) const
+{
+	if (!DeltaTime_s) return 0.0;  //since we divide by time avoid division by zero
+	double NormalForce=GetForceNormal(gravity) * cos(Ground);
+	const double StoppingForce=(fabs(m_Velocity) * m_EntityMass) / DeltaTime_s;
+	NormalForce=min(StoppingForce,NormalForce); //friction can never be greater than the stopping force
+	double GravityForce=(m_EntityMass * gravity * sin(Ground));
+	double FrictionForce= NormalForce;
+	//If the friction force overflows beyond stopping force, apply a scale to the overflow of force 
+	if (FrictionForce>StoppingForce) FrictionForce=(BrakeResistence * (FrictionForce-StoppingForce));
+
+	//Give the sense of fractional force in the *opposite* (i.e. greater = negative) direction of the current velocity
+	if (m_Velocity>0.0) 
+		FrictionForce=-FrictionForce;
+	//Add the Gravity force... it already has its direction
+	FrictionForce+=GravityForce;
+	return FrictionForce;
 }

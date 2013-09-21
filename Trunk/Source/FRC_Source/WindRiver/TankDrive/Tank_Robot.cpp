@@ -17,9 +17,10 @@
 #include "../Common/PIDController.h"
 #include "../Common/Poly.h"
 #include "Tank_Robot.h"
+#include "SmartDashboard/SmartDashboard.h"
 
-#ifdef AI_TesterCode
-using namespace AI_Tester;
+#ifdef Robot_TesterCode
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -37,6 +38,7 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	Ship_Tester(EntityName), 
 	m_IsAutonomous(IsAutonomous),m_RobotControl(robot_control),m_VehicleDrive(NULL),
 	m_PIDController_Left(0.0,0.0,0.0),	m_PIDController_Right(0.0,0.0,0.0),  //these will be overridden in properties
+	m_CalibratedScaler_Left(1.0),m_CalibratedScaler_Right(1.0),
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
 	m_UsingEncoders(IsAutonomous),
 	m_Heading(0.0), m_HeadingUpdateTimer(0.0),
@@ -80,6 +82,7 @@ void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
@@ -96,6 +99,7 @@ void Tank_Robot::Reset(bool ResetPosition)
 	m_RobotControl->Reset_Encoders();
 	m_PIDController_Left.Reset(),m_PIDController_Right.Reset();
 	//ensure teleop has these set properly
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	m_PreviousLeftVelocity=m_PreviousRightVelocity=0.0;
 }
@@ -134,6 +138,12 @@ void Tank_Robot::SetIsAutonomous(bool IsAutonomous)
 		SetUseEncoders(true);
 }
 
+bool Tank_Robot::GetUseAgressiveStop() const
+{
+	//Note: always use aggressive stop for autonomous driving!
+	return m_TankRobotProps.UseAggressiveStop || m_IsAutonomous;
+}
+
 void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
 {
 	double Encoder_LeftVelocity,Encoder_RightVelocity;
@@ -153,8 +163,27 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 
 	if (m_UsingEncoders)
 	{
-		m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
-		m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
+		if (!GetUseAgressiveStop())
+		{
+			double control_left=0.0,control_right=0.0;
+			//only adjust calibration when both velocities are in the same direction, or in the case where the encoder is stopped which will
+			//allow the scaler to normalize if it need to start up again.
+			if (((LeftVelocity * Encoder_LeftVelocity) > 0.0) || IsZero(Encoder_LeftVelocity) )
+			{
+				control_left=-m_PIDController_Left(fabs(LeftVelocity),fabs(Encoder_LeftVelocity),dTime_s);
+				m_CalibratedScaler_Left=MAX_SPEED+control_left;
+			}
+			if (((RightVelocity * Encoder_RightVelocity) > 0.0) || IsZero(Encoder_RightVelocity) )
+			{
+				control_right=-m_PIDController_Right(fabs(RightVelocity),fabs(Encoder_RightVelocity),dTime_s);
+				m_CalibratedScaler_Right=MAX_SPEED+control_right;
+			}
+		}
+		else
+		{
+			m_ErrorOffset_Left=m_PIDController_Left(LeftVelocity,Encoder_LeftVelocity,dTime_s);
+			m_ErrorOffset_Right=m_PIDController_Right(RightVelocity,Encoder_RightVelocity,dTime_s);
+		}
 
 		const double LeftAcceleration=(LeftVelocity-m_PreviousLeftVelocity)/dTime_s;
 		const double RightAcceleration=(RightVelocity-m_PreviousRightVelocity)/dTime_s;
@@ -179,7 +208,10 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		if (m_TankRobotProps.PID_Console_Dump &&  ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
 			double PosY=GetPos_m()[1];
-			printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+			if (!GetUseAgressiveStop())
+				printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
+			else
+				printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
 		}
 		#endif
 	}	
@@ -188,25 +220,32 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		#ifdef __DebugLUA__
 		if (m_TankRobotProps.PID_Console_Dump)
 		{
-			double PosY=GetPos_m()[1];
+			//TODO I can probably clean up the logic to show dump to one line
+			bool ShowDump=false;
 			if (!m_TankRobotProps.HasEncoders)
 			{
-				//No encoders... use only predicted velocity as mark of when to display... still want to see encoder readings in case there is some noise going on
 				if (!IsZero(LeftVelocity,1e-3)||!IsZero(RightVelocity,1e-3))
-					printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
+					ShowDump=true;
 			}
 			else
 			{
 				//passive reading... This is pretty much identical code of active encoder reading
 				if ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0) || (!IsZero(LeftVelocity,1e-3))||(!IsZero(RightVelocity,1e-3)) )
-				{
-					double PosY=GetPos_m()[1];
+					ShowDump=true;
+			}
+			if (ShowDump)
+			{
+				double PosY=GetPos_m()[1];
+				if (!GetUseAgressiveStop())
+					printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
+				else
 					printf("y=%.2f p=%.2f e=%.2f eo=%.2f p=%.2f e=%.2f eo=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_ErrorOffset_Left,RightVelocity,Encoder_RightVelocity,m_ErrorOffset_Right);
-				}
 			}
 		}
 		#endif
 	}
+	SmartDashboard::PutNumber("LeftEncoder",Encoder_LeftVelocity);
+	SmartDashboard::PutNumber("RightEncoder",Encoder_RightVelocity);
 	
 	//Update the physics with the actual velocity
 	Vec2d LocalVelocity;
@@ -311,8 +350,16 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 	//const double RightForce=RightAcceleration*ComputedMass;
 
 	//DOUT5("%f %f",LeftAcceleration,RightAcceleration);
-	LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
-	RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+	if (!GetUseAgressiveStop())
+	{
+		LeftVoltage=LeftVelocity/(m_CalibratedScaler_Left + m_TankRobotProps.LeftMaxSpeedOffset);
+		RightVoltage=RightVelocity/(m_CalibratedScaler_Right + m_TankRobotProps.RightMaxSpeedOffset);
+	}
+	else
+	{
+		LeftVoltage=(LeftVelocity+m_ErrorOffset_Left)/ (MAX_SPEED + m_TankRobotProps.LeftMaxSpeedOffset);
+		RightVoltage=(RightVelocity+m_ErrorOffset_Right)/ (MAX_SPEED + m_TankRobotProps.RightMaxSpeedOffset);
+	}
 	//Note: we accelerate when both the acceleration and velocity are both going in the same direction so we can multiply them together to determine this
 	const bool LeftAccel=(LeftAcceleration * LeftVelocity > 0);
 	const double LeftForceCurve=m_ForcePoly(LeftAccel?1.0-(fabs(LeftVelocity)/MAX_SPEED):fabs(LeftVelocity)/MAX_SPEED);
@@ -351,12 +398,23 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 			ComputeDeadZone(RightVoltage,m_TankRobotProps.Positive_DeadZone_Right,m_TankRobotProps.Negative_DeadZone_Right);
 	}
 
-	//if (fabs(RightVoltage)>0.0) printf("RV %f dzk=%d ",RightVoltage,m_UseDeadZoneSkip);
+	//To ensure we coast filter out any aggressive stop computations here at the last moment
+	if (!GetUseAgressiveStop())
+	{
+		//The logic is simply to never give opposite direction to the current velocity... however... in the case of intentional reverse direction... leave the aggressive stop intact
+		if ((LeftVoltage * LeftVelocity<0.0) && (LeftVoltage * m_RequestedVelocity[1]<=0.0))
+			LeftVoltage=0.0;
+		if ((RightVoltage * RightVelocity<0.0) && (RightVoltage * m_RequestedVelocity[1]<=0.0))
+			RightVoltage=0.0;
+	}
 
 	#ifdef __DebugLUA__
 	if (m_TankRobotProps.PID_Console_Dump && (!IsZero(LeftVoltage,1e-3)||!IsZero(RightVoltage,1e-3)))
 		printf("v=%.2f v=%.2f ",LeftVoltage,RightVoltage);
 	#endif
+
+	SmartDashboard::PutNumber("LeftVoltage",LeftVoltage);
+	SmartDashboard::PutNumber("RightVoltage",RightVoltage);
 
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
@@ -425,6 +483,7 @@ void Tank_Robot::UpdateTankProps(const Tank_Robot_Props &TankProps)
 	m_PIDController_Right.SetInputRange(-MAX_SPEED,MAX_SPEED);
 	m_PIDController_Right.SetOutputRange(-InputRange,OutputRange);
 	m_PIDController_Right.Enable();
+	m_CalibratedScaler_Left=m_CalibratedScaler_Right=ENGAGED_MAX_SPEED;
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
@@ -451,6 +510,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.IsOpen=true;  //Always true by default until control is fully functional
 	props.HasEncoders=true;  //no harm in having passive reading of them
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
+	props.UseAggressiveStop=false;  //This is usually in coast for most cases from many teams
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
 	props.ReverseSteering=false;
@@ -561,6 +621,12 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_TankRobotProps.PID_Console_Dump=true;
 		}
+		err = script.GetField("use_aggressive_stop",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_TankRobotProps.UseAggressiveStop=true;
+		}
 		err = script.GetField("reverse_steering",&sTest,NULL,NULL);
 		if (!err)
 		{
@@ -610,7 +676,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TankRobotProps.Negative_DeadZone_Right=-m_TankRobotProps.Negative_DeadZone_Right;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
 		if (!err)
 		{
@@ -631,7 +697,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 }
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 
   /***********************************************************************************************************************************/
  /*														Tank_Robot_Control															*/
@@ -662,7 +728,7 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		//Note: for max accel it needs to be powerful enough to handle curve equations
 		Rotary_Properties props("TankEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
 		props.RotaryProps().EncoderToRS_Ratio=m_TankRobotProps.MotorToWheelGearRatio;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		props.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
 		#endif
 		m_Encoders.Initialize(&props);
@@ -715,137 +781,6 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 		m_Encoders.UpdateLeftRightVoltage(RightVoltageToUse * m_TankRobotProps.VoltageScalar_Right,LeftVoltageToUse * m_TankRobotProps.VoltageScalar_Left);
 	}
 	m_Encoders.TimeChange();   //have this velocity immediately take effect
-}
-
-
-  /***************************************************************************************************************/
- /*												Tank_Wheel_UI													*/
-/***************************************************************************************************************/
-
-void Tank_Wheel_UI::Initialize(Entity2D::EventMap& em, const Wheel_Properties *props)
-{
-	m_props=*props;
-	m_Rotation=0.0;
-}
-
-void Tank_Wheel_UI::UI_Init(Actor_Text *parent) 
-{
-	m_UIParent=parent;
-
-	osg::Vec3 position(0.5*c_Scene_XRes_InPixels,0.5*c_Scene_YRes_InPixels,0.0f);
-
-	m_Tread= new osgText::Text;
-	m_Tread->setColor(osg::Vec4(1.0,1.0,1.0,1.0));
-	m_Tread->setCharacterSize(m_UIParent->GetFontSize());
-	m_Tread->setFontResolution(10,10);
-	m_Tread->setPosition(position);
-	m_Tread->setAlignment(osgText::Text::CENTER_CENTER);
-	m_Tread->setText(L"_");
-	m_Tread->setUpdateCallback(m_UIParent);
-}
-
-void Tank_Wheel_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
-{
-	if (AddOrRemove)
-		if (m_Tread.valid()) geode->addDrawable(m_Tread);
-	else
-		if (m_Tread.valid()) geode->removeDrawable(m_Tread);
-}
-
-void Tank_Wheel_UI::update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading)
-{
-	const double FS=m_UIParent->GetFontSize();
-	//Vec2d TreadRotPos(0.0,cos(m_Rotation)-0.3);  //good for " font
-	Vec2d TreadRotPos(sin(m_Rotation)*-0.25,(cos(m_Rotation)*.5)+0.4);
-	const Vec2d TreadOffset(m_props.m_Offset[0]+TreadRotPos[0],m_props.m_Offset[1]+TreadRotPos[1]);
-	const Vec2d TreadLocalOffset=GlobalToLocal(Heading,TreadOffset);
-	const osg::Vec3 TreadPos (parent_pos[0]+( TreadLocalOffset[0]*FS),parent_pos[1]+( TreadLocalOffset[1]*FS),parent_pos[2]);
-
-	const double TreadColor=((sin(-m_Rotation) + 1.0)/2.0) * 0.8 + 0.2;
-	m_Tread->setColor(osg::Vec4(TreadColor,TreadColor,TreadColor,1.0));
-
-	if (m_Tread.valid())
-	{
-		m_Tread->setPosition(TreadPos);
-		m_Tread->setRotation(FromLW_Rot_Radians(Heading,0.0,0.0));
-	}
-}
-
-void Tank_Wheel_UI::Text_SizeToUse(double SizeToUse)
-{
-	if (m_Tread.valid()) m_Tread->setCharacterSize(SizeToUse);
-}
-
-void Tank_Wheel_UI::AddRotation(double RadiansToAdd)
-{
-	m_Rotation+=RadiansToAdd;
-	if (m_Rotation>Pi2)
-		m_Rotation-=Pi2;
-	else if (m_Rotation<-Pi2)
-		m_Rotation+=Pi2;
-}
-
-  /***************************************************************************************************************/
- /*												Tank_Robot_UI													*/
-/***************************************************************************************************************/
-void Tank_Robot_UI::UI_Init(Actor_Text *parent)
-{
-	for (size_t i=0;i<6;i++)
-		m_Wheel[i].UI_Init(parent);
-}
-
-void Tank_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
-{
-	Vec2D Offsets[6]=
-	{
-		Vec2D(-1.6, 2.0),
-		Vec2D( 1.6, 2.0),
-		Vec2D(-1.6, 0.0),
-		Vec2D( 1.6, 0.0),
-		Vec2D(-1.6,-2.0),
-		Vec2D( 1.6,-2.0),
-	};
-	for (size_t i=0;i<6;i++)
-	{
-		Tank_Wheel_UI::Wheel_Properties props;
-		props.m_Offset=Offsets[i];
-		props.m_Wheel_Diameter=m_TankRobot->GetTankRobotProps().WheelDiameter;
-		m_Wheel[i].Initialize(em,&props);
-	}
-}
-
-void Tank_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos)
-{
-	//just dispatch the update to the wheels (for now)
-	for (size_t i=0;i<6;i++)
-		m_Wheel[i].update(nv,draw,parent_pos,-m_TankRobot->GetAtt_r());
-}
-
-void Tank_Robot_UI::Text_SizeToUse(double SizeToUse)
-{
-	for (size_t i=0;i<6;i++)
-		m_Wheel[i].Text_SizeToUse(SizeToUse);
-}
-
-void Tank_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
-{
-	for (size_t i=0;i<6;i++)
-		m_Wheel[i].UpdateScene(geode,AddOrRemove);
-}
-
-void Tank_Robot_UI::TimeChange(double dTime_s)
-{
-	Tank_Robot &_=*m_TankRobot;
-	for (size_t i=0;i<6;i++)
-	{
-		//For the linear velocities we'll convert to angular velocity and then extract the delta of this slice of time
-		const double LinearVelocity=(i&1)?_.GetRightVelocity():_.GetLeftVelocity();
-		const double PixelHackScale=m_Wheel[i].GetFontSize()/10.0;  //scale the wheels to be pixel aesthetic
-		//Note: for UI... to make it pixel friendly always use 6 inches with the hack and not _.GetTankRobotProps().WheelDiameter
-		const double RPS=LinearVelocity /  (PI * Inches2Meters(6.0) * PixelHackScale);
-		const double AngularVelocity=RPS * Pi2;
-		m_Wheel[i].AddRotation(AngularVelocity*dTime_s);
-	}
 }
 
 #endif

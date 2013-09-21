@@ -11,11 +11,20 @@ inline void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double Negat
 		Voltage=NegativeDeadZone;
 }
 
-inline Vec2D GlobalToLocal(double Heading,const Vec2D &GlobalVector);
-inline Vec2D LocalToGlobal(double Heading,const Vec2D &LocalVector);
+inline Vec2D LocalToGlobal(double Heading,const Vec2D &LocalVector)
+{
+	return Vec2D(sin(Heading)*LocalVector[1]+cos(-Heading)*LocalVector[0],
+		cos(Heading)*LocalVector[1]+sin(-Heading)*LocalVector[0]);
+}
+
+inline Vec2D GlobalToLocal(double Heading,const Vec2D &GlobalVector)
+{
+	return Vec2D(sin(-Heading)*GlobalVector[1]+cos(Heading)*GlobalVector[0],
+		cos(-Heading)*GlobalVector[1]+sin(Heading)*GlobalVector[0]);
+}
 
 //TODO AI should probably move this to Entity2D as well
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 inline void NormalizeRotation(double &Rotation)
 {
 	const double Pi2=M_PI*2.0;
@@ -68,7 +77,7 @@ struct Ship_Props
 
 	double MaxAccelLeft,MaxAccelRight,MaxAccelForward,MaxAccelReverse;
 	double MaxAccelForward_High,MaxAccelReverse_High;
-	double MaxTorqueYaw;
+	double MaxTorqueYaw,MaxTorqueYaw_High;
 	//These are used to avoid overshoot when trying to rotate to a heading
 	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
 	double Rotation_Tolerance;
@@ -85,12 +94,13 @@ struct Ship_Props
 		eNona_Robot,
 		eFRC2011_Robot,
 		eFRC2012_Robot,
-		eFRC2013_Robot
+		eFRC2013_Robot,
+		eHikingViking_Robot,
 	};
 	Ship_Type ShipType;
 };
 
-#ifndef AI_TesterCode
+#ifndef Robot_TesterCode
 typedef Entity2D Ship;
 #endif
 
@@ -108,7 +118,7 @@ class LUA_Controls_Properties_Interface
 };
 
 //This is a helper class that makes it easy to transfer LUA script to its own contained list (included within)
-class LUA_Controls_Properties
+class COMMON_API LUA_Controls_Properties
 {
 	public:
 		enum JoyAxis_enum
@@ -134,7 +144,9 @@ class LUA_Controls_Properties
 			enum ElementType
 			{
 				eJoystickAnalog,
-				eJoystickButton
+				eJoystickCulver,
+				eJoystickButton,
+				eKeyboard			//currently only available on simulation
 			} Type;
 			union ElementTypeSpecific
 			{
@@ -146,12 +158,30 @@ class LUA_Controls_Properties
 					double FilterRange;
 					double CurveIntensity;
 				} Analog;
+				struct CulverSpecifics_rw
+				{
+					JoyAxis_enum JoyAxis_X;
+					JoyAxis_enum JoyAxis_Y;
+					double MagnitudeScalarArc,MagnitudeScalarBase;
+					bool IsFlipped;
+					double Multiplier;
+					double FilterRange;
+					double CurveIntensity;
+				} Culver;
 				struct ButtonSpecifics_rw
 				{
 					size_t WhichButton;
+					size_t WhichKey;  //for keyboard... bundled together so events are duplicated -1 if not used
 					bool useOnOff;
 					bool dbl_click;
 				} Button;
+				struct KeyboardSpecifics_rw
+				{
+					size_t WhichKey;
+					bool useOnOff;
+					bool dbl_click;
+				} Keyboard;
+
 			} Specifics;
 		};
 
@@ -174,12 +204,12 @@ class LUA_Controls_Properties
 		//call from within GetFieldTable controls
 		void LoadFromScript(Scripting::Script& script);
 		//Just have the client (from ship) call this
-		void BindAdditionalUIControls(bool Bind,void *joy) const;
+		void BindAdditionalUIControls(bool Bind,void *joy,void *key) const;
 		LUA_Controls_Properties &operator= (const LUA_Controls_Properties &CopyFrom);
 };
 
 class Ship_2D;
-class Ship_Properties : public Entity_Properties
+class COMMON_API Ship_Properties : public Entity_Properties
 {
 	public:
 		Ship_Properties();
@@ -197,12 +227,13 @@ class Ship_Properties : public Entity_Properties
 
 		double GetMaxAccelForward(double Velocity) const;
 		double GetMaxAccelReverse(double Velocity) const;
+		double GetMaxTorqueYaw(double Velocity) const;
 		double GetRotateToScaler(double Distance) const;
 
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}
 		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Entity_Properties __super;
 		#endif
 		
@@ -217,7 +248,7 @@ class Ship_Properties : public Entity_Properties
 		LUA_Controls_Properties m_ShipControls;
 };
 
-class Ship_2D : public Ship
+class COMMON_API Ship_2D : public Ship
 {
 	public:
 		Ship_2D(const char EntityName[]);
@@ -246,10 +277,9 @@ class Ship_2D : public Ship
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
 
 		// virtual void ResetPos();
-		void SetStabilizeRotation(bool StabilizeRotation) { m_StabilizeRotation=StabilizeRotation;	}
 		void SetSimFlightMode(bool SimFlightMode);
 		void SetEnableAutoLevel(bool EnableAutoLevel);
-		bool GetStabilizeRotation() const { return m_StabilizeRotation;}
+		virtual bool GetStabilizeRotation() const { return m_StabilizeRotation;}
 		bool GetAlterTrajectory() const { return m_SimFlightMode;}
 		bool GetCoordinateTurns() const { return m_CoordinateTurns;}
 
@@ -283,7 +313,7 @@ class Ship_2D : public Ship
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		//Its possible that each ship may have its own specific controls
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 		//callback from UI_Controller for custom controls override if ship has specific controls... all outputs to be written are optional
 		//so derived classes can only write to things of interest
 		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s) {}
@@ -291,6 +321,7 @@ class Ship_2D : public Ship
 		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),GetPhysics().GetLinearVelocity());}
 		virtual double GetAngularVelocity_ToDisplay() {return GetPhysics().GetAngularVelocity();}
 	protected:
+		void SetStabilizeRotation(bool StabilizeRotation) { m_StabilizeRotation=StabilizeRotation;	}
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
 		///coordinates, but we can also present this in a form which does not have global orientation.
 		//virtual Vec2D GetArtificialHorizonComponent() const;
@@ -373,14 +404,14 @@ class Ship_2D : public Ship
 		Vec2D m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity from a speed delta change
 
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Entity2D __super;
 		#endif
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
 
 };
 
-class Ship_Tester : public Ship_2D
+class COMMON_API Ship_Tester : public Ship_2D
 {
 	public:
 		Ship_Tester(const char EntityName[]) : Ship_2D(EntityName) {}
@@ -392,8 +423,8 @@ class Ship_Tester : public Ship_2D
 		void SetGoal(Goal *goal);
 };
 
-#ifdef AI_TesterCode
-class UI_Ship_Properties : public Ship_Properties
+#ifdef Robot_TesterCode
+class COMMON_API UI_Ship_Properties : public Ship_Properties
 {
 	public:
 		UI_Ship_Properties();

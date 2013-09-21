@@ -25,7 +25,7 @@ Entity1D::~Entity1D()
 {
 }
 
-void Entity1D::Initialize(Framework::Base::EventMap& em, const Entity1D_Properties *props)
+void Entity1D::Initialize(Base::EventMap& em, const Entity1D_Properties *props)
 {
 	m_eventMap = &em;
 	if (props)
@@ -68,7 +68,7 @@ Entity2D::~Entity2D()
 {
 }
 
-void Entity2D::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
+void Entity2D::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	m_eventMap = &em;
 	if (props)

@@ -20,8 +20,8 @@
 #include "Robot_Control_Interface.h"
 #include "Rotary_System.h"
 
-#ifdef AI_TesterCode
-using namespace AI_Tester;
+#ifdef Robot_TesterCode
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
@@ -80,7 +80,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	if (!m_LastTime) 
 	{
 		m_LastTime=dTime_s;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		assert(dTime_s!=0.0);
 		#endif
 	}
@@ -100,7 +100,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		{
 			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity,dTime_s);
 			const double Acceleration=(CurrentVelocity-m_PreviousVelocity)/dTime_s;
-			const bool Decel=(Acceleration * CurrentVelocity <= 0);
+			const bool Decel=(Acceleration * CurrentVelocity < 0);
 			//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 			//Note: that it is important to bias towards deceleration this can help satisfy both requirements of avoiding oscillation as well
 			//As well as avoiding a potential overshoot when trying stop at a precise distance
@@ -206,6 +206,8 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 void Rotary_Position_Control::ResetPos()
 {
 	__super::ResetPos();  //Let the super do it stuff first
+	//We may need this if we use Kalman filters
+	m_RobotControl->Reset_Rotary(m_InstanceIndex);
 	if ((m_UsingPotentiometer)&&(!GetBypassPos_Update()))
 	{
 		m_PIDController.Reset();
@@ -346,7 +348,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 			{
 				m_ErrorOffset=m_PIDController(CurrentVelocity,Encoder_Velocity,dTime_s);
 				const double Acceleration=(CurrentVelocity-m_PreviousVelocity)/dTime_s;
-				const bool Decel=(Acceleration * CurrentVelocity <= 0);
+				const bool Decel=(Acceleration * CurrentVelocity < 0);
 				//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
 				//Note: that it is important to bias towards deceleration this can help satisfy both requirements of avoiding oscillation as well
 				//As well as avoiding a potential overshoot when trying stop at a precise distance
@@ -659,7 +661,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("slow_velocity_voltage", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocityVoltage);
 		script.GetField("slow_velocity", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocity);
 
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
 		if (!err)
 		{

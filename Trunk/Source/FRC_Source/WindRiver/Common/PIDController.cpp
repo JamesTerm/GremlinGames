@@ -1,13 +1,9 @@
 #include <math.h>
 #include <queue>
 #include <assert.h>
+#include "../Base/Misc.h"  //needed to define the declspec and IsZero
 #include "PIDController.h"
 
-
-inline bool IsZero(double value,double tolerance=1e-5)
-{
-	return fabs(value)<tolerance;
-}
 
   /***********************************************************************************************************/
  /*												LatencyFilter												*/

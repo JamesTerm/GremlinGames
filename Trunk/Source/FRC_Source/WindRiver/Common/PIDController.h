@@ -43,7 +43,7 @@ class LatencyPredictionFilter
 		double m_Latency_s;  //Latency in seconds
 };
 
-class KalmanFilter
+class COMMON_API KalmanFilter
 {
 	public:
 		KalmanFilter();
@@ -62,7 +62,7 @@ class KalmanFilter
 
 /// This manages a PID control loop.  This was originally written for First WPI library, but refactored to be non-threaded, where both input and output
 /// can be called on within this class.  It manages the integral calculations, and provides the PIDOutput
-class PIDController2
+class COMMON_API PIDController2
 {
 	public:
 		PIDController2(

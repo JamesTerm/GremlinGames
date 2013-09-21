@@ -22,9 +22,6 @@
 using namespace Framework::Base;
 using namespace std;
 
-namespace Base=Framework::Base;
-namespace Scripting=Framework::Scripting;
-
 
   /***********************************************************************************************************************************/
  /*														Servo_Position_Control														*/
@@ -48,14 +45,12 @@ void Servo_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Proper
 
 void Servo_Position_Control::TimeChange(double dTime_s)
 {
-	//const double CurrentVelocity=m_Physics.GetVelocity();
-
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 	if (!m_LastTime) 
 	{
 		m_LastTime=dTime_s;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		assert(dTime_s!=0.0);
 		#endif
 	}

@@ -8,14 +8,14 @@ using namespace Framework;
 using namespace std;
 using namespace Framework::Base;
 
-inline Framework::Base::Vec2d GlobalToLocal(double Heading,const Framework::Base::Vec2d &GlobalVector);
-inline Framework::Base::Vec2d LocalToGlobal(double Heading,const Framework::Base::Vec2d &LocalVector);
 
 //The actual force between two objects are f=(G m1 m2)/ r^2
 //For example g = ( G * (Me->5.98E+24)) / (Re->6.38E+6)^2 = 9.8 m/s^2
 //G is ideal to compute forces on ships from various planets
 const double G=6.673E-11;
 
+inline Vec2D GlobalToLocal(double Heading,const Vec2D &GlobalVector);
+inline Vec2D LocalToGlobal(double Heading,const Vec2D &LocalVector);
 
 inline bool PosBNE(double val,double t)
 {

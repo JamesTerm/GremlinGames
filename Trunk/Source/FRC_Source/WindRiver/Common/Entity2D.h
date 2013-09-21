@@ -1,5 +1,30 @@
 #pragma once
 
+
+#ifdef Robot_TesterCode
+class Actor_Text;
+
+class COMMON_API EntityPropertiesInterface
+{
+	public:
+		virtual const Vec2D &GetPos_m() const =0;
+		virtual double GetAtt_r() const=0;
+		virtual const std::string &GetName() const=0;
+		virtual const Vec2D &GetDimensions() const=0;
+		virtual const double &GetIntendedOrientation() const=0;
+		//perform an optional custom update on the ship
+		virtual void UI_Init(Actor_Text *parent) {}
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) {}
+		//This is called when it is detected the size has changed
+		virtual void Text_SizeToUse(double SizeToUse) {}
+		//AddOrRemove if true it is add false is remove
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {}
+};
+#else
+class COMMON_API EntityPropertiesInterface
+{
+};
+
 inline void NormalizeRotation(double &Rotation)
 {
 	const double Pi2=M_PI*2.0;
@@ -10,12 +35,14 @@ inline void NormalizeRotation(double &Rotation)
 		Rotation+=Pi2;
 }
 
-class Entity1D
+#endif
+
+class COMMON_API Entity1D
 {
 	private:
 		friend class Entity1D_Properties;
 
-		Framework::Base::EventMap* m_eventMap;
+		Base::EventMap* m_eventMap;
 		double m_Dimension;
 		double m_Position;
 		std::string m_Name;
@@ -24,7 +51,7 @@ class Entity1D
 		Entity1D(const char EntityName[]);
 
 		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(Framework::Base::EventMap& em, const Entity1D_Properties *props=NULL);
+		virtual void Initialize(Base::EventMap& em, const Entity1D_Properties *props=NULL);
 		virtual ~Entity1D(); //Game Client will be nuking this pointer
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
@@ -34,7 +61,7 @@ class Entity1D
 		virtual void ResetPos();
 		// This is where both the entity and camera need to align to, by default we use the actual position
 		virtual const double &GetIntendedPosition() const {return m_Position;}
-		Framework::Base::EventMap* GetEventMap(){return m_eventMap;}
+		Base::EventMap* GetEventMap(){return m_eventMap;}
 
 		virtual double GetPos_m() const {return m_Position;}
 		//This is used when a sensor need to correct for the actual position
@@ -55,17 +82,26 @@ class Entity1D
 class Ship_Tester;
 //This contains everything the AI needs for game play; Keeping this encapsulated will help keep a clear division
 //of what Entity3D looked like before applying AI with goals
+#ifdef Robot_TesterCode
+typedef Entity2D Entity2D_Kind;
+#else
+namespace Entity2D_Kind=Framework::Base;
+#endif
 
 //Note Entity2D should not know anything about an actor
-class Entity2D
+class COMMON_API Entity2D : public EntityPropertiesInterface
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-
+		#ifdef Robot_TesterCode
+		class EventMap : public GG_Framework::UI::EventMap
+		{
+		public:
+			EventMap(bool listOwned = false) : GG_Framework::UI::EventMap(listOwned) {}
+		};
+		#endif
 	private:
 		friend class Ship_Tester;
 		friend class Entity_Properties;
-
 		struct PosAtt
 		{
 			Vec2D m_pos_m;
@@ -86,7 +122,7 @@ class Entity2D
 
 		Vec2D m_DefaultPos;
 		double m_DefaultAtt;
-		Framework::Base::EventMap* m_eventMap;
+		Entity2D_Kind::EventMap* m_eventMap;
 	
 		Vec2D m_Dimensions;
 		std::string m_Name;
@@ -96,7 +132,7 @@ class Entity2D
 		Entity2D(const char EntityName[]);
 
 		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual ~Entity2D(); //Game Client will be nuking this pointer
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
@@ -106,7 +142,7 @@ class Entity2D
 		virtual void ResetPos();
 		// This is where both the vehicle entity and camera need to align to, by default we use the actual orientation
 		virtual const double &GetIntendedOrientation() const {return m_PosAtt_Read->m_att_r;}
-		Framework::Base::EventMap* GetEventMap(){return m_eventMap;}
+		Entity2D_Kind::EventMap* GetEventMap(){return m_eventMap;}
 
 		//from EntityPropertiesInterface
 		virtual const Vec2D &GetPos_m() const {return m_PosAtt_Read->m_pos_m;}
@@ -124,3 +160,4 @@ class Entity2D
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement) {return false;}
 };
 
+typedef Entity2D Ship;

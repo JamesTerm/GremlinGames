@@ -1,5 +1,5 @@
 struct Ship_Props;
-struct Ship_1D_Props
+struct COMMON_API Ship_1D_Props
 {
 	void SetFromShip_Properties(const Ship_Props & NewValue);
 
@@ -30,10 +30,10 @@ struct Ship_1D_Props
 
 
 class Ship_1D;
-class Ship_1D_Properties : public Entity1D_Properties
+class COMMON_API Ship_1D_Properties : public Entity1D_Properties
 {
 	private:
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Entity1D_Properties __super;
 		#endif
 		Ship_1D_Props m_Ship_1D_Props;
@@ -54,6 +54,8 @@ class Ship_1D_Properties : public Entity1D_Properties
 		Ship_Type GetShipType() const {return m_Ship_1D_Props.ShipType;}
 		double GetMaxSpeed() const {return m_Ship_1D_Props.MAX_SPEED;}
 		const Ship_1D_Props &GetShip_1D_Props() const {return m_Ship_1D_Props;}
+		//I don't need this yet, but keep this here in case I do
+		//Ship_1D_Props &Ship_1D_Props_rw() {return m_Ship_1D_Props;}
 	public:
 		//These are for testing purposes only (do not use)
 		void SetMinRange(double MinRange) {m_Ship_1D_Props.MinRange=MinRange;}
@@ -65,7 +67,7 @@ class Ship_1D_Properties : public Entity1D_Properties
 
 ///This is really stripped down from the Ship_2D.  Not only is their one dimension (given), but there is also no controller.  This class is intended
 ///To be controlled directly from a parent class which has controller support.
-class Ship_1D : public Entity1D
+class COMMON_API Ship_1D : public Entity1D
 {
 	public:
 		Ship_1D(const char EntityName[]);
@@ -169,7 +171,7 @@ class Ship_1D : public Entity1D
 		//Only used with SetRequestedVelocity_FromNormalized()
 		//this is managed direct from being set to avoid need for precision tolerance
 		double m_LastNormalizedVelocity;  
-		#ifndef AI_TesterCode
+		#ifndef Robot_TesterCode
 		typedef Entity1D __super;
 		#endif
 		bool m_LockShipToPosition; ///< Locks the ship to intended position (Joystick and Keyboard controls use this)
@@ -177,7 +179,7 @@ class Ship_1D : public Entity1D
 
 
 //This is similar to Traverse_Edge in book (not to be confused with its MoveToPosition)
-class Goal_Ship1D_MoveToPosition : public AtomicGoal
+class COMMON_API Goal_Ship1D_MoveToPosition : public AtomicGoal
 {
 	public:
 		Goal_Ship1D_MoveToPosition(Ship_1D &ship,double position,double tolerance=0.10);

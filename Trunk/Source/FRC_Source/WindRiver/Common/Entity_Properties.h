@@ -4,13 +4,13 @@
 #define __DebugLUA__
 
 class Entity1D;
-class Entity1D_Properties
+class COMMON_API Entity1D_Properties
 {
 	public:
 		Entity1D_Properties();
 		Entity1D_Properties(const char EntityName[],double Mass,double Dimension,bool IsAngular=false);
 		virtual ~Entity1D_Properties() {}
-		virtual void LoadFromScript(Framework::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 		void Initialize(Entity1D *NewEntity) const;
 		double GetMass() const {return m_Mass;}
 	protected:
@@ -23,15 +23,15 @@ class Entity1D_Properties
 };
 
 class Entity2D;
-class Entity_Properties
+class COMMON_API Entity_Properties
 {
 	public:
 		Entity_Properties();
 		virtual ~Entity_Properties() {}
 		//The prep script takes care of the outer layer global table setup
 		//override to search the appropriate global table
-		virtual const char *SetUpGlobalTable(Framework::Scripting::Script& script) {return script.GetGlobalTable(m_EntityName.c_str());}
-		virtual void LoadFromScript(Framework::Scripting::Script& script);
+		virtual const char *SetUpGlobalTable(Scripting::Script& script) {return script.GetGlobalTable(m_EntityName.c_str());}
+		virtual void LoadFromScript(Scripting::Script& script);
 		void Initialize(Entity2D *NewEntity) const;
 	protected:
 		std::string m_EntityName;  //derived classes can let base class know what type to read

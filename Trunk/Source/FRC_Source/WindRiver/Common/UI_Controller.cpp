@@ -17,15 +17,16 @@
 #include "../Base/JoystickBinder.h"
 #include "UI_Controller.h"
 #include "Debug.h"
+#include "SmartDashboard/SmartDashboard.h"
 
 #undef __EnableTestKeys__
 
-#ifdef AI_TesterCode
-using namespace AI_Tester;
+#ifdef Robot_TesterCode
+using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace GG_Framework::UI;
 using namespace osg;
-bool g_UseMouse=false;
+bool Robot_Tester::g_UseMouse=false;
 const double Pi=PI;
 #else
 using namespace Framework::Base;
@@ -34,7 +35,7 @@ using namespace Framework::UI;
 
 const double Half_Pi=M_PI/2.0;
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
   /***************************************************************************************************************/
  /*												Mouse_ShipDriver												*/
 /***************************************************************************************************************/
@@ -164,13 +165,13 @@ void UI_Controller::Init_AutoPilotControls()
 {
 }
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 UI_Controller::UI_Controller(AI_Base_Controller *base_controller,bool AddJoystickDefaults) : 
 #else
 UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_controller) : 
 #endif
 	m_Base(NULL),
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	m_mouseDriver(NULL),
 	#else
 	m_JoyStick_Binder(joy),
@@ -183,7 +184,7 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
 	m_LastSliderTime[0]=m_LastSliderTime[1]=0.0;
 
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	// Hard code these key bindings at first
 	KeyboardMouse_CB &kbm = MainWindow::GetMainWindow()->GetKeyboard_Mouse();	
 	JoyStick_Binder &joy = MainWindow::GetMainWindow()->GetJoystick();
@@ -304,7 +305,7 @@ const char *UI_Controller::ExtractControllerElementProperties(Controller_Element
 
 void UI_Controller::Flush_AI_BaseResources()
 {
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	if (m_mouseDriver)
 	{
 		delete m_mouseDriver;
@@ -322,10 +323,19 @@ UI_Controller::~UI_Controller()
 
 UI::JoyStick_Binder &UI_Controller::GetJoyStickBinder()
 {
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	return MainWindow::GetMainWindow()->GetJoystick();
 	#else
 	return m_JoyStick_Binder;
+	#endif
+}
+
+void *UI_Controller::GetKeyboardBinder()
+{
+	#ifdef Robot_TesterCode
+	return &MainWindow::GetMainWindow()->GetKeyboard_Mouse();
+	#else
+	return NULL;
 	#endif
 }
 
@@ -351,7 +361,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventOnOff_Map["StrafeRight"].Remove(*this, &UI_Controller::StrafeRight);
 		em->Event_Map["ToggleAutoPilot"].Remove(*this, &UI_Controller::TryToggleAutoPilot);
 		em->EventOnOff_Map["SPAWN"].Remove(*this, &UI_Controller::OnSpawn);
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		em->Event_Map["UseMouse"].Remove(*this, &UI_Controller::UseMouse);
 		#endif
 		em->EventOnOff_Map["Test1"].Remove(*this, &UI_Controller::Test1);
@@ -366,14 +376,14 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 		m_ship->BindAdditionalEventControls(false);
 		if (!m_IsBeingDestroyed)
-			m_ship->BindAdditionalUIControls(false,&GetJoyStickBinder());
+			m_ship->BindAdditionalUIControls(false,&GetJoyStickBinder(),GetKeyboardBinder());
 		Flush_AI_BaseResources();
 	}
 	m_Base=controller;
 	if (m_Base)
 	{
 		m_ship=&m_Base->m_ship;
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		m_mouseDriver=new Mouse_ShipDriver(*m_ship,this, 3);
 		#endif
 		Entity2D_Kind::EventMap *em = m_ship->GetEventMap();
@@ -394,7 +404,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["ToggleAutoPilot"].Subscribe(ehl, *this, &UI_Controller::TryToggleAutoPilot);
 		em->EventOnOff_Map["SPAWN"].Subscribe(ehl, *this, &UI_Controller::OnSpawn);
 
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		em->Event_Map["UseMouse"].Subscribe(ehl, *this, &UI_Controller::UseMouse);
 		#endif
 		em->EventOnOff_Map["Test1"].Subscribe(ehl, *this, &UI_Controller::Test1);
@@ -417,7 +427,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		//m_HUD_UI->m_addnText = m_ship->GetName();
 
 		m_ship->BindAdditionalEventControls(true);
-		m_ship->BindAdditionalUIControls(true,&GetJoyStickBinder());
+		m_ship->BindAdditionalUIControls(true,&GetJoyStickBinder(),GetKeyboardBinder());
 	}
 }
 
@@ -430,7 +440,7 @@ void UI_Controller::Test2(bool on)
 	m_Test2=on;
 }
 
-#ifdef AI_TesterCode
+#ifdef Robot_TesterCode
 void UI_Controller::UseMouse()
 {
 	g_UseMouse=!g_UseMouse;
@@ -584,17 +594,21 @@ bool UI_Controller::SetAutoPilot(bool autoPilot)
 	// When in autopilot, always use mouse POV
 	//ToggleMousePOV(m_autoPilot);
 
+	//Since we do not control stabilize we don't manage it here in the controller... we can only write things we can control.  The stabilize rotation should be managed at the lower level
+	//unless we really find a compelling reason to need to control it... 
+	//  [7/21/2013 Terminator]
+
 	// If we are in auto-pilot, we MUST set simulated flight mode if we have an auto-pilot route
 	if (m_autoPilot)
 	{
 		bool hasAutoPilotRoute = m_Base->HasAutoPilotRoute();
-		m_ship->SetStabilizeRotation(hasAutoPilotRoute);
+		//m_ship->SetStabilizeRotation(hasAutoPilotRoute);
 		m_ship->SetSimFlightMode(hasAutoPilotRoute);
 	}
 	else
 	{
-		m_ship->SetStabilizeRotation(true);
-		m_ship->SetSimFlightMode(true);
+		//m_ship->SetStabilizeRotation(true);
+		m_ship->SetSimFlightMode(!m_SlideButtonToggle);
 	}
 
 	// When turning on or OFF the auto pilot, stop firing and other actions
@@ -682,7 +696,7 @@ void UI_Controller::Joystick_SetCurrentSpeed(double Speed)
 			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
-			m_Ship_JoyMouse_currAccel[1]=Speed;
+			m_Ship_JoyMouse_currAccel[1]=Speed * (Speed>0.0?m_ship->GetAccelSpeed():m_ship->GetBrakeSpeed());
 	}
 }
 
@@ -698,7 +712,7 @@ void UI_Controller::Joystick_SetCurrentSpeed_2(double Speed)
 			m_CruiseSpeed+=SpeedCalibrated;
 		}
 		else
-			m_Ship_JoyMouse_currAccel[1]=Speed;
+			m_Ship_JoyMouse_currAccel[1]=Speed * (Speed>0.0?m_ship->GetAccelSpeed():m_ship->GetBrakeSpeed());
 	}
 }
 
@@ -718,7 +732,7 @@ void UI_Controller::UpdateController(double dTime_s)
 
 	if (m_isControlled)
 	{
-		#ifdef AI_TesterCode
+		#ifdef Robot_TesterCode
 		// Update Mouse Controller (This is ONLY allowed to update the POV in auto pilot)
 		m_mouseDriver->DriveShip();
 		#endif
@@ -801,8 +815,14 @@ void UI_Controller::UpdateUI(double dTime_s)
 		#if 1
 		Vec2d pos=m_ship->GetPos_m();
 		DOUT(1,"x=%.2f y=%.2f r=%.2f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
+		SmartDashboard::PutNumber("X_ft ",Meters2Feet(pos[0]));
+		SmartDashboard::PutNumber("Y_ft ",Meters2Feet(pos[1]));
+		SmartDashboard::PutNumber("Heading",RAD_2_DEG(m_ship->GetAtt_r()));
 		Vec2d Velocity=m_ship->GetLinearVelocity_ToDisplay();
 		DOUT(3,"Vel[0]=%.2f Vel[1]=%.2f Rot=%.2f mode=%s",Meters2Feet(Velocity[0]),Meters2Feet(Velocity[1]),m_ship->GetAngularVelocity_ToDisplay(),m_ship->GetAlterTrajectory()?"Sim":"Slide");
+		SmartDashboard::PutNumber("Velocity",Meters2Feet(Velocity[1]));
+		SmartDashboard::PutNumber("Rotation Velocity",m_ship->GetAngularVelocity_ToDisplay());
+		SmartDashboard::PutBoolean("IsSlide",!m_ship->GetAlterTrajectory());
 		#endif
 		#if 0
 		Vec2d pos=m_ship->GetPos_m();
@@ -827,7 +847,7 @@ void UI_Controller::UpdateUI(double dTime_s)
 void UI_Controller::HookUpUI(bool ui)
 {
 	m_isControlled = ui;
-	#ifdef AI_TesterCode
+	#ifdef Robot_TesterCode
 	UI::MainWindow& mainWin = *GG_Framework::UI::MainWindow::GetMainWindow();
 	if (m_isControlled)
 	{

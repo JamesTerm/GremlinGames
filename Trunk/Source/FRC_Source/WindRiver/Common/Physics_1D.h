@@ -1,6 +1,6 @@
 #pragma once
 
-class PhysicsEntity_1D
+class COMMON_API PhysicsEntity_1D
 {
 	public:
 		PhysicsEntity_1D();
@@ -31,6 +31,22 @@ class PhysicsEntity_1D
 			double KineticFriction ///<The amount of friction to be applied when object is moving
 			);
 
+		///This is the direct way to handle torque for various mass distributions
+		///Here are some examples:
+		/// - Disk rotating around its center				0.5
+		/// - Hollow cylinder rotating around its center	1.0
+		/// - Hollow sphere									0.66 (2/3)
+		/// - Hoop rotating around its center				1.0
+		/// - Point mass rotating at radius r				1.0
+		/// - Solid cylinder								0.5
+		/// - Solid sphere									0.4
+		/// \todo Provide helper methods to compute this value
+		void SetAngularInertiaCoefficient(double AngularInertiaCoefficient);
+		///This sets the radius for yaw axis, pitch axis, and roll axis.  Default = 1,1,1
+		///This may represent the object's bounding box when used in conjunction with the angular inertia coefficient
+		void SetRadiusOfConcentratedMass(double RadiusOfConcentratedMass);
+		double GetRadiusOfConcentratedMass() const;
+
 		void SetVelocity( double Velocity);
 		double GetVelocity() const;
 
@@ -44,6 +60,9 @@ class PhysicsEntity_1D
 		///should be <= 1/framerate.  Ideally these should be used for high precision movements like moving a ship, where the FrameDuration is
 		///typically the TimeDelta value
 		void ApplyFractionalForce( double force,double FrameDuration);
+		//This will give the acceleration delta given the torque which is: torque / AngularInertiaCoefficient * Mass
+		inline double GetAngularAccelerationDelta(double torque,double RadialArmDistance=1.0);
+		void ApplyFractionalTorque( double torque,double FrameDuration,double RadialArmDistance=1.0);
 
 		///You may prefer to set a desired speed instead of computing the forces.  These values returned are intended to be used with 
 		///ApplyFractionalForce, and ApplyFractionalTorque respectively.
@@ -57,10 +76,16 @@ class PhysicsEntity_1D
 		///It should be noted that this treats roll as a separate factor, which is best suited for avionic type of context
 		/// \Note all restraint parameters are positive (i.e. ForceRestraintNegative)
 		double ComputeRestrainedForce(double LocalForce,double ForceRestraintPositive,double ForceRestraintNegative,double dTime_s);
-
+		__inline double GetForceNormal(double gravity=9.80665) const;
+		/// \param Brake is a brake coast parameter where if gravity pulls it down it can apply a scalar to slow down the reversed rate
+		/// where 0 is full stop and 1 is full coast (range is 0 - 1)
+		double GetFrictionalForce(double DeltaTime_s,double Ground=0.0,double gravity=9.80665,double BrakeResistence=0.0) const;
 	protected:
 		double m_EntityMass;
 		double m_StaticFriction,m_KineticFriction;
+
+		double m_AngularInertiaCoefficient;
+		double m_RadiusOfConcentratedMass; //This is used to compute the moment of inertia for torque (default 1,1,1)
 
 		double m_Velocity;
 
