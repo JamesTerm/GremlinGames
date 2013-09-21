@@ -1,8 +1,8 @@
 #pragma once
 
+#ifdef Robot_TesterCode
 extern COMMON_API bool g_UseMouse;
 
-#ifdef Robot_TesterCode
 class Mouse_ShipDriver
 {
 public:
