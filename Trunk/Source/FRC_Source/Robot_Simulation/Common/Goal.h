@@ -101,7 +101,9 @@ class COMMON_API MultitaskGoal : public Goal
 class Generic_CompositeGoal : public CompositeGoal
 {
 	private:
-		//typedef CompositeGoal __super;
+		#ifndef Robot_TesterCode
+		typedef CompositeGoal __super;
+		#endif
 	public:
 		Generic_CompositeGoal()
 		{
