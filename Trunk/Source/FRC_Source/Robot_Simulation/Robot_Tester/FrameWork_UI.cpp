@@ -195,122 +195,6 @@ GameClient::~GameClient()
 	RemoveAllEntities();
 }
 
-Entity2D *GameClient::CreateEntity(const char EntityName[],Character_Type Type)
-{
-	Entity2D *NewEntity=NULL;
-	switch (Type)
-	{
-		case e_Default_Inert:
-			NewEntity=new Entity2D(EntityName);
-			break;
-		default:
-			Ship *NewShip;
-			if (!g_TestPhysics)
-				NewShip=new Ship_Tester(EntityName);
-			else
-				NewShip=new Physics_Tester(EntityName);
-
-			NewEntity=NewShip;
-			NewShip->GetGameAttributes().m_Character_Type=Type;
-			break;
-	}
-	//On our test using real sizes makes it difficult to see other ships
-	const bool UseRealSizes=false;
-
-	double SizeX_Meters=1.0;
-	double SizeY_Meters=1.0;
-	double Mass=10;
-	if (UseRealSizes)
-	{
-		switch (Type)
-		{
-		case e_CaptialShip:
-			//from orion with the aspect ratio switched
-			SizeX_Meters=2250,SizeY_Meters=600;
-			Mass = 134000000;
-			break;
-		case e_Bomber:
-			//from Ramora
-			SizeX_Meters=400,SizeY_Meters=356;
-			Mass = 45000000;
-			break;
-		case e_Fighter:
-			//from q33
-			SizeX_Meters=5,SizeY_Meters=11;
-			Mass = 14000;
-			break;
-		case e_Flak:
-			//from Ramora
-			SizeX_Meters=400,SizeY_Meters=356;
-			Mass = 45000000;
-			break;
-		case e_Scout:
-			//from q33
-			SizeX_Meters=5,SizeY_Meters=11;
-			Mass = 14000;
-			break;
-		case e_Sniper:
-			//from q33
-			SizeX_Meters=5,SizeY_Meters=11;
-			Mass = 14000;
-			break;
-		case e_SpawnShip:
-			//from 1/2 size/mass of orion
-			SizeX_Meters=300,SizeY_Meters=1125;
-			Mass = 67000000;
-			break;
-		}
-	}
-	else
-	{
-		switch (Type)
-		{
-		case e_Default_Inert:
-			SizeX_Meters=12*1,SizeY_Meters=12*1;
-			Mass = 10000;
-			break;
-		case e_CaptialShip:
-			SizeX_Meters=12*6,SizeY_Meters=12*2;
-			Mass = 134000000;
-			break;
-		case e_Bomber:
-			SizeX_Meters=10*7,SizeY_Meters=10*2;
-			Mass = 45000000;
-			break;
-		case e_Fighter:
-			SizeX_Meters=8*3,SizeY_Meters=8*3;
-			Mass = 14000;
-			break;
-		case e_Flak:
-			SizeX_Meters=10*4,SizeY_Meters=10*3;
-			Mass = 45000000;
-			break;
-		case e_Scout:
-			SizeX_Meters=8*3,SizeY_Meters=8*2;
-			Mass = 14000;
-			break;
-		case e_Sniper:
-			SizeX_Meters=8*3,SizeY_Meters=8*3;
-			Mass = 14000;
-			break;
-		case e_SpawnShip:
-			SizeX_Meters=10*5,SizeY_Meters=10*4;
-			Mass = 67000000;
-			break;
-		}
-	}
-
-	assert(NewEntity);
-	NewEntity->m_Dimensions[0]=SizeX_Meters;
-	NewEntity->m_Dimensions[1]=SizeY_Meters;
-	NewEntity->GetPhysics().SetMass(Mass);
-
-	Entity2D::EventMap* newEm = new Entity2D::EventMap(true);
-	m_MapList.push_back(newEm);
-	NewEntity->Initialize(*newEm);
-	return NewEntity;
-}
-
 Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properties &props)
 {
 	Entity2D *NewEntity=NULL;
@@ -351,7 +235,6 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 		}
 		assert(NewShip);
 		NewEntity=NewShip;
-		NewShip->GetGameAttributes().m_Character_Type=e_Default_Inert;
 	}
 	else
 	{
@@ -371,13 +254,6 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 void GameClient::AddEntity(Entity2D *Entity)
 {
 	m_Entities.push_back(Entity);
-}
-
-Entity2D *GameClient::AddEntity(const char EntityName[],Character_Type Type)
-{
-	Entity2D *NewEntity=CreateEntity(EntityName,Type);
-	AddEntity(NewEntity);
-	return NewEntity;
 }
 
 Entity2D *GameClient::GetEntity(const char EntityName[])
@@ -417,59 +293,6 @@ void GameClient::UpdateData(double dtime_s)
  /*																UI_GameClient														*/
 /***********************************************************************************************************************************/
 
-Entity2D *UI_GameClient::AddEntity(const char EntityName[],Character_Type Type)
-{
-	OpenThreads::ScopedLock<OpenThreads::Mutex> lock(m_BlockActorLists);
-	Entity2D *NewEntity=CreateEntity(EntityName,Type);
-	__super::AddEntity(NewEntity); //Added to game client
-	const char *TextImage=NULL;
-	osg::Vec2d Dimension;
-	switch (Type)
-	{
-		case e_Default_Inert:
-			TextImage="O";
-			Dimension[0]=1,Dimension[1]=1;
-			break;
-		case e_CaptialShip:
-			TextImage="|\\/\\/|\n+----+";
-			Dimension[0]=6,Dimension[1]=2;
-			break;
-		case e_Bomber:
-			TextImage="/^\\\n-||B||-";
-			Dimension[0]=7,Dimension[1]=2;
-			break;
-		case e_Fighter:
-			TextImage="|\n/F\\\nI";
-			Dimension[0]=3,Dimension[1]=3;
-			break;
-		case e_Flak:
-			TextImage="/\"\"\\\n0FL0\n^  ^";
-			Dimension[0]=4,Dimension[1]=3;
-			break;
-		case e_Scout:
-			TextImage="|\n/$\\";
-			Dimension[0]=3,Dimension[1]=2;
-			break;
-		case e_Sniper:
-			TextImage="|\nH\n/^\\";
-			Dimension[0]=3,Dimension[1]=3;
-			break;
-		case e_SpawnShip:
-			TextImage="/^\\\n|:|\nC|:|D\n/*\\";
-			Dimension[0]=5,Dimension[1]=4;
-			break;
-	}
-	assert(TextImage);
-	osg::ref_ptr<Actor_Text> NewActor=new Actor_Text(TextImage);
-	NewActor->GetCharacterDimensions()=Dimension;
-	//This can be removed if we do not want to see this image
-	if (Type!=e_Default_Inert)
-		NewActor->Init_IntendedOrientation();
-	m_NewActors.push_back(NewActor);
-	//Bind the Entity with its actor
-	NewActor->SetEntityProperties_Interface(NewEntity);
-	return NewEntity;
-}
 
 Entity2D *UI_GameClient::AddEntity(const char EntityName[],const Entity_Properties &props)
 {
