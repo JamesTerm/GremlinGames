@@ -164,6 +164,7 @@ void Actor_Text::update(osg::NodeVisitor *nv, osg::Drawable *draw)
 					m_FontSize=SizeToUse;
 				}
 			}
+			#if 0
 			{ //Now to determine the color based on the team name
 				if (m_TeamName!=m_EntityProperties_Interface->GetTeamName())
 				{
@@ -176,6 +177,7 @@ void Actor_Text::update(osg::NodeVisitor *nv, osg::Drawable *draw)
 						Text->setColor(osg::Vec4(0.0f,1.0f,0.5f,1.0f)); 
 				}
 			}
+			#endif
 		}
 	}
 }

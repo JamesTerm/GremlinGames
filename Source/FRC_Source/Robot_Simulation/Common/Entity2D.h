@@ -1,6 +1,7 @@
 #pragma once
 
-class GameClient;
+
+#ifdef Robot_TesterCode
 class Actor_Text;
 
 class COMMON_API EntityPropertiesInterface
@@ -11,8 +12,6 @@ class COMMON_API EntityPropertiesInterface
 		virtual const std::string &GetName() const=0;
 		virtual const Vec2D &GetDimensions() const=0;
 		virtual const double &GetIntendedOrientation() const=0;
-		//I'm not sure if this would be needed in the real game, I use it so the actor knows what color to paint itself
-		virtual const char *GetTeamName() const {return "";}
 		//perform an optional custom update on the ship
 		virtual void UI_Init(Actor_Text *parent) {}
 		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) {}
@@ -21,12 +20,27 @@ class COMMON_API EntityPropertiesInterface
 		//AddOrRemove if true it is add false is remove
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove) {}
 };
+#else
+class COMMON_API EntityPropertiesInterface
+{
+};
+
+inline void NormalizeRotation(double &Rotation)
+{
+	const double Pi2=M_PI*2.0;
+	//Normalize the rotation
+	if (Rotation>M_PI)
+		Rotation-=Pi2;
+	else if (Rotation<-M_PI)
+		Rotation+=Pi2;
+}
+
+#endif
 
 class COMMON_API Entity1D
 {
 	private:
 		friend class Entity1D_Properties;
-		friend GameClient; //For now the game client can set up initial settings like the dimension
 
 		Base::EventMap* m_eventMap;
 		double m_Dimension;
@@ -78,19 +92,16 @@ namespace Entity2D_Kind=Framework::Base;
 class COMMON_API Entity2D : public EntityPropertiesInterface
 {
 	public:
+		#ifdef Robot_TesterCode
 		class EventMap : public GG_Framework::UI::EventMap
 		{
 		public:
 			EventMap(bool listOwned = false) : GG_Framework::UI::EventMap(listOwned) {}
-
-			// The hit, the other entity, local collision point, impulse time of the collision (1 frame?)
-			//Event3<Entity3D&, const osg::Vec3d&, double> Collision;
 		};
-
+		#endif
 	private:
 		friend class Ship_Tester;
 		friend class Entity_Properties;
-		friend class GameClient; //For now the game client can set up initial settings like dimensions
 		struct PosAtt
 		{
 			Vec2D m_pos_m;
@@ -111,7 +122,7 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 
 		Vec2D m_DefaultPos;
 		double m_DefaultAtt;
-		Entity2D::EventMap* m_eventMap;
+		Entity2D_Kind::EventMap* m_eventMap;
 	
 		Vec2D m_Dimensions;
 		std::string m_Name;
@@ -121,7 +132,7 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 		Entity2D(const char EntityName[]);
 
 		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual ~Entity2D(); //Game Client will be nuking this pointer
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
@@ -131,7 +142,7 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 		virtual void ResetPos();
 		// This is where both the vehicle entity and camera need to align to, by default we use the actual orientation
 		virtual const double &GetIntendedOrientation() const {return ((PosAtt *)m_PosAtt_Read.get())->m_att_r;}
-		Entity2D::EventMap* GetEventMap(){return m_eventMap;}
+		Entity2D_Kind::EventMap* GetEventMap(){return m_eventMap;}
 
 		//from EntityPropertiesInterface
 		virtual const Vec2D &GetPos_m() const {return ((PosAtt *)m_PosAtt_Read.get())->m_pos_m;}
