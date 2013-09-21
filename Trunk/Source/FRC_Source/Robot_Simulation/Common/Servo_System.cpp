@@ -13,9 +13,6 @@ using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-namespace Base=GG_Framework::Base;
-namespace Scripting=GG_Framework::Logic::Scripting;
-
 
   /***********************************************************************************************************************************/
  /*														Servo_Position_Control														*/
@@ -35,14 +32,10 @@ void Servo_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Proper
 	assert(Props);
 	//This will copy all the props
 	m_Servo_Props=Props->GetServoProps();
-
-	const double MaxSpeedReference=Props->GetMaxSpeed();
 }
 
 void Servo_Position_Control::TimeChange(double dTime_s)
 {
-	const double CurrentVelocity=m_Physics.GetVelocity();
-
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
 	if (!m_LastTime) 
