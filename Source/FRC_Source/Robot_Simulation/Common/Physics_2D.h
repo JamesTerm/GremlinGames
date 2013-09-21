@@ -186,38 +186,7 @@ class COMMON_API FlightDynamics_2D : public PhysicsEntity_2D
 		/// These are overloaded to optionally factor in the acceleration period
 		virtual Vec2D GetForceFromVelocity(const Vec2D &vDesiredVelocity,double DeltaTime_s);
 		virtual Vec2D GetVelocityFromDistance_Linear(const Vec2D &Distance,const Vec2D &ForceRestraintPositive,const Vec2D &ForceRestraintNegative,double DeltaTime_s, const Vec2D& matchVel);
-		class Pilot
-		{
-			public:
-				Pilot (FlightDynamics_2D *parent);
-				const double Get_Gs() const {return m_Gs;}
-				const double Get_blackOUTredOUT() const {return m_blackOUTredOUT;}
-
-				double GLimit;	// How many G's can the pilot handle before starting to black out
-				double PassOutTime_s; // Time it takes to pass out
-				double PassOutRecoveryTime_s; // Time to get OUT of pass out and start recovery
-				double MaxRecoveryTime_s;	// So we do not pass out forever
-				
-			private:
-				friend FlightDynamics_2D;
-				FlightDynamics_2D * const m_pParent;
-				// This is called implicitly frame to determine G forces and current velocities
-				void Update(double dTime_s, double G_Dampener);
-				//This is also called implicity when parent is called
-				void ResetVectors();
-
-				enum {INITIALIZE_Gs = 1000};
-
-				// Tracking G's
-				double m_Gs;
-
-				Averager<double, 45> m_G_Averager;
-				double m_blackOUTredOUT;	// value between -1(red) and +1(black) most of the time 0.0
-		};
-		//Read only access to the pilot information
-		const Pilot &GetPilotInfo() const {return m_Pilot;}
-		Pilot &GetPilotInfo() {return m_Pilot;}
-
+		
 		double StructuralDmgGLimit;
 		double G_Dampener;
 
@@ -230,5 +199,4 @@ class COMMON_API FlightDynamics_2D : public PhysicsEntity_2D
 		LinearAccelerationRates m_LinearAccelerationRates;
 		//Some objects may not need to use this (by default they will not)
 		bool m_UsingAccelerationRate;
-		Pilot m_Pilot;
 };
