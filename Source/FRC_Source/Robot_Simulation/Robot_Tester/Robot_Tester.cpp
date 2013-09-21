@@ -221,7 +221,6 @@ void DisplayHelp()
 		"Start\n"
 		"timer <use synthetic deltas>\n"
 		"Stop\n"
-		"AddCharacter <name> <type> <x> <y>\n"
 		"0-inert 1-capital 2-bomber 3-fighter 4-flak 5-scout 6-sniper 7-spawn\n"
 		"LoadShip <filename> <ship name>\n"
 		"AddShip <unique name> <name> <x> <y>\n"
@@ -232,7 +231,6 @@ void DisplayHelp()
 		"MoveAtt <name> <degrees> \n"
 		"Control <name>\n"
 		"Mouse <1=use>\n"
-		"Join <ship name> <team name>\n"
 		"RemoveShip <name>\n"
 		"RampEngine <1=ramp>\n"
 		"Zoom <scale factor>"
@@ -548,37 +546,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	{
 		public:
 			commonStuff(GUIThread *_UI_thread,UI_Controller_GameClient &_game) : UI_thread(_UI_thread),game(_game)		{}
-			Ship_Tester *Control_A_Bomber()
-			{
-				SetUpUI(UI_thread,&game);
-				Entity2D *TestEntity=NULL;
-				TestEntity=game.AddEntity("test",e_Bomber);
-				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-				assert(ship);
-				ship->GetGameAttributes().GetTeamName()="blue";
-				game.SetControlledEntity(TestEntity);
-				return ship;
-			}
-			Ship_Tester *Create_A_Fighter(const char *Name)
-			{
-				SetUpUI(UI_thread,&game);
-				Entity2D *TestEntity=NULL;
-				TestEntity=game.AddEntity(Name,e_Fighter);
-				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-				assert(ship);
-				ship->GetGameAttributes().GetTeamName()="blue";
-				return ship;
-			}
-			Ship_Tester *Create_A_Sniper(const char *Name)
-			{
-				SetUpUI(UI_thread,&game);
-				Entity2D *TestEntity=NULL;
-				TestEntity=game.AddEntity(Name,e_Sniper);
-				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-				assert(ship);
-				ship->GetGameAttributes().GetTeamName()="red";
-				return ship;
-			}
 			void GiveSquareWayPointGoal(Ship_Tester *ship)
 			{
 				std::list <WayPoint> points;
@@ -661,10 +628,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eTestGoals_2013,
 		eTestFollowGod,
 		eTestLUAShip,
-		eControlABomber,
-		eFollowShipTest,
-		eFollowPathTest,
-		ePhysicsTest,
 		eActorUpdateTest,
 		eTextTest
 	};
@@ -684,10 +647,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"Goals2013",
 		"FollowGod",
 		"GodShip",
-		"bomber",
-		"FollowTest",
-		"FollowPathTest",
-		"PhysicsTest",
 		"ActorUpdateTest",
 		"TextTest"
 	};
@@ -946,9 +905,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				_command.LoadShip("TestShip.lua","TestShip");
 				Followship=dynamic_cast<Ship_Tester *>(_command.AddShip("GodShip","TestShip",str_3,str_4,str_5));
 			}
-			ship->GetGameAttributes().GetTeamName()="blue";
-			SwerveShip->GetGameAttributes().GetTeamName()="red";
-			NonaShip->GetGameAttributes().GetTeamName()="green";
 			_.ShipFollowShip(ship,Followship,0.0,-1.0,0.5);
 			_.ShipFollowShip(SwerveShip,Followship,-1.0,-1.0,5.0);
 			_.ShipFollowShip(NonaShip,Followship,1.0,-1.0,5.0);
@@ -963,50 +919,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			Entity2D *TestEntity=_command.AddShip("GodShip","TestShip",str_3,str_4,str_5);
 			_.GiveRobotSquareWayPointGoal(dynamic_cast<Ship_Tester *>(TestEntity));
 			game.SetControlledEntity(TestEntity);
-		}
-		break;
-	case eControlABomber:
-		{
-			Ship_Tester *ship=_.Control_A_Bomber();
-			//UI_thread->GetUI()->SetCallbackInterface(&game);
-			double ForceTorque=1.0*ship->GetPhysics().GetMass();
-			//TestEntity->GetPhysics().ApplyFractionalTorque(ForceTorque,1.0);
-			//TestEntity->GetPhysics().ApplyFractionalForce(osg::Vec2d(ForceTorque,ForceTorque),1.0);
-
-		}
-		break;
-	case eFollowShipTest:
-		{
-			Ship_Tester *ship=_.Control_A_Bomber();
-			_.GiveSquareWayPointGoal(ship);
-			Ship_Tester *F1=_.Create_A_Fighter("F1");
-			_.ShipFollowShip(F1,ship);
-			Ship_Tester *F2=_.Create_A_Fighter("F2");
-			_.ShipFollowShip(F2,ship,40);
-			Ship_Tester *F3=_.Create_A_Fighter("F3");
-			_.ShipFollowShip(F3,F1);
-			Ship_Tester *F4=_.Create_A_Fighter("F4");
-			_.ShipFollowShip(F4,F2,40);
-			Ship_Tester *Snip=_.Create_A_Sniper("Sn1");
-			_.ShipFollowShip(Snip,F4,0);
-		}
-		break;
-	case eFollowPathTest:
-		{
-			Ship_Tester *ship=_.Control_A_Bomber();
-			_.GiveSquareWayPointGoal(ship);
-		}
-		break;
-	case ePhysicsTest:
-		{
-			SetUpUI(UI_thread,&game);
-			Entity2D *TestEntity=NULL;
-			g_TestPhysics=true;
-			TestEntity=game.AddEntity("test",e_Bomber);
-			g_TestPhysics=false;
-			double ForceTorque=1.0*TestEntity->GetPhysics().GetMass();
-			//TestEntity->GetPhysics().ApplyFractionalTorque(ForceTorque,1.0);
-			TestEntity->GetPhysics().ApplyFractionalForce(osg::Vec2d(ForceTorque,ForceTorque),1.0);
 		}
 		break;
 	case eActorUpdateTest:
@@ -1100,21 +1012,6 @@ void CommandLineInterface(bool useUserPrefs=true)
 			{
 				assert(UI_thread && UI_thread->GetUI());
 				UI_thread->GetUI()->SetUseSyntheticTimeDeltas(atoi(str_1)==1);
-			}
-			else if (!_strnicmp( input_line, "AddCharacter", 4))
-			{
-				int ShipType=atoi(str_2);
-				double x=atof(str_3);
-				double y=atof(str_4);
-				double heading=atof(str_5);
-				Entity2D *TestEntity=NULL;
-				TestEntity=game.AddEntity(str_1,(Character_Type)ShipType);
-				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(TestEntity);
-				if (ship)
-				{
-					ship->SetPosition(x,y);
-					ship->SetAttitude(heading * (PI/180.0));
-				}
 			}
 			else if (!_strnicmp( input_line, "LoadShip", 5))
 			{
@@ -1225,12 +1122,6 @@ void CommandLineInterface(bool useUserPrefs=true)
 			{
 				bool UseMouse=atoi(str_1)==1;
 				g_UseMouse=UseMouse;
-			}
-			else if (!_strnicmp( input_line, "Join", 4))
-			{
-				Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity(str_1));
-				if (ship)
-					ship->GetGameAttributes().GetTeamName()=str_2;
 			}
 			else if (!_strnicmp( input_line, "Remove", 6))
 			{

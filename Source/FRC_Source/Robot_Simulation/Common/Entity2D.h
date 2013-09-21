@@ -6,10 +6,10 @@ class Actor_Text;
 class COMMON_API EntityPropertiesInterface
 {
 	public:
-		virtual const osg::Vec2d &GetPos_m() const =0;
+		virtual const Vec2D &GetPos_m() const =0;
 		virtual double GetAtt_r() const=0;
 		virtual const std::string &GetName() const=0;
-		virtual const osg::Vec2d &GetDimensions() const=0;
+		virtual const Vec2D &GetDimensions() const=0;
 		virtual const double &GetIntendedOrientation() const=0;
 		//I'm not sure if this would be needed in the real game, I use it so the actor knows what color to paint itself
 		virtual const char *GetTeamName() const {return "";}
@@ -28,7 +28,7 @@ class COMMON_API Entity1D
 		friend class Entity1D_Properties;
 		friend GameClient; //For now the game client can set up initial settings like the dimension
 
-		GG_Framework::Base::EventMap* m_eventMap;
+		Base::EventMap* m_eventMap;
 		double m_Dimension;
 		double m_Position;
 		std::string m_Name;
@@ -37,7 +37,7 @@ class COMMON_API Entity1D
 		Entity1D(const char EntityName[]);
 
 		//This allows the game client to setup the ship's characteristics
-		virtual void Initialize(GG_Framework::Base::EventMap& em, const Entity1D_Properties *props=NULL);
+		virtual void Initialize(Base::EventMap& em, const Entity1D_Properties *props=NULL);
 		virtual ~Entity1D(); //Game Client will be nuking this pointer
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
@@ -47,7 +47,7 @@ class COMMON_API Entity1D
 		virtual void ResetPos();
 		// This is where both the entity and camera need to align to, by default we use the actual position
 		virtual const double &GetIntendedPosition() const {return m_Position;}
-		GG_Framework::Base::EventMap* GetEventMap(){return m_eventMap;}
+		Base::EventMap* GetEventMap(){return m_eventMap;}
 
 		virtual double GetPos_m() const {return m_Position;}
 		//This is used when a sensor need to correct for the actual position
@@ -68,13 +68,16 @@ class COMMON_API Entity1D
 class Ship_Tester;
 //This contains everything the AI needs for game play; Keeping this encapsulated will help keep a clear division
 //of what Entity3D looked like before applying AI with goals
+#ifdef Robot_TesterCode
+typedef Entity2D Entity2D_Kind;
+#else
+namespace Entity2D_Kind=Framework::Base;
+#endif
 
 //Note Entity2D should not know anything about an actor
 class COMMON_API Entity2D : public EntityPropertiesInterface
 {
 	public:
-		typedef osg::Vec2d Vec2D;
-
 		class EventMap : public GG_Framework::UI::EventMap
 		{
 		public:
@@ -146,46 +149,4 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 		virtual bool InjectDisplacement(double DeltaTime_s,Vec2D &PositionDisplacement,double &RotationDisplacement) {return false;}
 };
 
-typedef Entity2D Entity2D_Kind;
-//TODO name these as content deems, we may want to have these scripted eventually... for now I'm keeping it simple
-enum Character_Type
-{
-	e_Default_Inert,  //Does not have any goals just sits there 
-	e_CaptialShip,
-	e_Bomber,
-	e_Fighter,
-	e_Flak,
-	e_Scout,
-	e_Sniper,
-	e_SpawnShip
-};
-
-class COMMON_API RimSpace_GameAttributes
-{
-	public:
-		//This can be dynamic as people can switch sides (Let the UI work out how to change its colors)
-		std::string &GetTeamName() {return m_TeamName;}
-		const std::string &GetTeamName() const {return m_TeamName;}
-		//Read only... only the game client should set this initially 
-		Character_Type GetCharacter_Type() const {return m_Character_Type;}
-	private:
-		friend GameClient;
-		std::string m_TeamName;
-		Character_Type m_Character_Type;
-};
-
-class COMMON_API Ship : public Entity2D
-{
-	public:
-		Ship(const char EntityName[]) : Entity2D(EntityName) {}
-		//Note this is technically in ThrusterShip (but it doesn't matter for our test simulation)
-		//AI_Base_Controller* GetController() {return &m_Controller;}
-		RimSpace_GameAttributes &GetGameAttributes() {return m_GameAttributes;}
-		virtual const char *GetTeamName() const {return m_GameAttributes.GetTeamName().c_str();}
-	protected:
-		//Note: Only server side will aggregate this type while the client side only aggregates the base type
-		//Note: It has been a struggle to find the optimum place to expose this... I originally wanted to keep this encapsulated within the controller, but
-		//later found that Ideally the game client needs to populate the types and other game characteristics.  Ship is the ideal access place, as it is still
-		//a part of the fringe project, and entity is too generic (i.e. a part of framework)
-		RimSpace_GameAttributes m_GameAttributes;
-};
+typedef Entity2D Ship;

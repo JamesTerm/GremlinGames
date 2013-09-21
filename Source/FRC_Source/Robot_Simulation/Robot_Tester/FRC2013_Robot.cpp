@@ -591,9 +591,9 @@ const double c_CourtLength=Feet2Meters(54);
 const double c_CourtWidth=Feet2Meters(27);
 const double c_HalfCourtLength=c_CourtLength/2.0;
 const double c_HalfCourtWidth=c_CourtWidth/2.0;
-const FRC_2013_Robot::Vec2D c_BridgeDimensions=FRC_2013_Robot::Vec2D(Inches2Meters(48),Inches2Meters(88)); //width x length
+const Vec2D c_BridgeDimensions=Vec2D(Inches2Meters(48),Inches2Meters(88)); //width x length
 
-const FRC_2013_Robot::Vec2D c_TargetBasePosition=FRC_2013_Robot::Vec2D(0.0,c_HalfCourtLength);
+const Vec2D c_TargetBasePosition=Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 const double c_Target_MidBase_Height= Inches2Meters(61.0 - c_BallShootHeight_inches);

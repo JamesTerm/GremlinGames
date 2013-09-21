@@ -68,7 +68,6 @@ class GameClient : public Viewer_Callback_Interface
 	public:
 		~GameClient();
 		//For now use Inert type to populate obstacles (will not be a ship entity)
-		virtual Entity2D *AddEntity(const char EntityName[],Character_Type Type=e_Default_Inert);
 		Entity2D *GetEntity(const char EntityName[]);
 		virtual void RemoveEntity(Entity2D *Entity);
 		void RemoveAllEntities();
@@ -78,7 +77,6 @@ class GameClient : public Viewer_Callback_Interface
 
 		//Derived classes may overload AddEntity and use these instead for the same functionality
 		void AddEntity(Entity2D *Entity);
-		Entity2D *CreateEntity(const char EntityName[],Character_Type Type=e_Default_Inert);
 		Entity2D *CreateEntity(const char EntityName[],const Entity_Properties &props);
 
 		//Note: we may need to put a critical section around this during a scene update
@@ -91,7 +89,6 @@ class GameClient : public Viewer_Callback_Interface
 class UI_GameClient : public GameClient
 {
 	public:
-		Entity2D *AddEntity(const char EntityName[],Character_Type Type=e_Default_Inert);
 		Entity2D *AddEntity(const char EntityName[],const Entity_Properties &props);
 		void RemoveEntity(Entity2D *Entity); 
 		void RemoveEntity(const char EntityName[]); 
