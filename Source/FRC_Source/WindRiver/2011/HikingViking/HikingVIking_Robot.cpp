@@ -1,34 +1,24 @@
-#include "Base/Base_Includes.h"
-#include <math.h>
-#include <assert.h>
-#include "Base/Vec2d.h"
-#include "Base/Misc.h"
-#include "Base/Event.h"
-#include "Base/EventMap.h"
-#include "Base/Script.h"
-#include "Common/Entity_Properties.h"
-#include "Common/Physics_1D.h"
-#include "Common/Physics_2D.h"
-#include "Common/Entity2D.h"
-#include "Common/Goal.h"
-#include "Common/Ship_1D.h"
-#include "Common/Ship.h"
-#include "Common/AI_Base_Controller.h"
-#include "Common/Vehicle_Drive.h"
-#include "Common/PIDController.h"
-#include "Common/Poly.h"
-#include "Drive/Tank_Robot.h"
-#include "Common/Robot_Control_Interface.h"
-#include "Common/Rotary_System.h"
-#include "Common/Servo_System.h"
-#include "Base/Joystick.h"
-#include "Base/JoystickBinder.h"
-#include "Common/UI_Controller.h"
-#include "Common/PIDController.h"
-#include "HikingViking_Robot.h"
+#include "stdafx.h"
+#include "Robot_Tester.h"
 
+#ifdef Robot_TesterCode
+namespace Robot_Tester
+{
+	#include "Tank_Robot_UI.h"
+	#include "HikingViking_Robot.h"
+}
+
+using namespace Robot_Tester;
+using namespace GG_Framework::Base;
+using namespace osg;
+using namespace std;
+
+const double Pi2=M_PI*2.0;
+#else
+#include "HikingViking_Robot.h"
 using namespace Framework::Base;
 using namespace std;
+#endif
 
 namespace Robot_Tester
 {
