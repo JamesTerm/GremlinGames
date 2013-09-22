@@ -1,4 +1,3 @@
-#undef  __EncoderHack__
 #define  __ShowPotentiometerReadings__
 #undef  __ShowEncoderReadings__
 #undef  __ShowRollerReadings__
@@ -9,41 +8,20 @@
 
 #include "WPILib.h"
 
-#include "Base/Base_Includes.h"
-#include <math.h>
-#include <assert.h>
-#include "Base/Vec2d.h"
-#include "Base/Misc.h"
-#include "Base/Event.h"
-#include "Base/EventMap.h"
-#include "Base/Script.h"
-#include "Common/Entity_Properties.h"
-#include "Common/Physics_1D.h"
-#include "Common/Physics_2D.h"
-#include "Common/Entity2D.h"
-#include "Common/Goal.h"
-#include "Common/Ship_1D.h"
-#include "Common/Ship.h"
-#include "Common/Vehicle_Drive.h"
-#include "Common/PIDController.h"
-#include "Common/AI_Base_Controller.h"
-#include "Drive/Tank_Robot.h"
-#include "Common/Robot_Control_Interface.h"
-#include "Base/Joystick.h"
-#include "Base/JoystickBinder.h"
-#include "Common/UI_Controller.h"
-#include "Common/PIDController.h"
-#include "FRC2011_Robot.h"
+#include "stdafx.h"
+#include "Robot_Tester.h"
+
+#include "HikingViking_Robot.h"
 #include "Common/InOut_Interface.h"
 #include "Drive/Tank_Robot_Control.h"
-#include "FRC2011_InOut_Interface.h"
+#include "HikingViking_InOut_Interface.h"
 
 
   /***********************************************************************************************************************************/
- /*														FRC_2011_Robot_Control														*/
+ /*														HikingViking_Robot_Control													*/
 /***********************************************************************************************************************************/
 
-void FRC_2011_Robot_Control::ResetPos()
+void HikingViking_Robot_Control::ResetPos()
 {
 	m_Compress.Stop();
 	//Allow driver station to control if they want to run the compressor
@@ -54,7 +32,7 @@ void FRC_2011_Robot_Control::ResetPos()
 	}
 }
 
-FRC_2011_Robot_Control::FRC_2011_Robot_Control(bool UseSafety) :
+HikingViking_Robot_Control::HikingViking_Robot_Control(bool UseSafety) :
 	m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
 	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
 	m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
@@ -71,7 +49,7 @@ FRC_2011_Robot_Control::FRC_2011_Robot_Control(bool UseSafety) :
 	#endif
 }
 
-FRC_2011_Robot_Control::~FRC_2011_Robot_Control() 
+HikingViking_Robot_Control::~HikingViking_Robot_Control() 
 {
 	m_Compress.Stop();
 	#ifndef __2011_TestCamera__
@@ -79,13 +57,19 @@ FRC_2011_Robot_Control::~FRC_2011_Robot_Control()
 	#endif
 }
 
-void FRC_2011_Robot_Control::Reset_Arm(size_t index)
+void HikingViking_Robot_Control::Reset_Rotary(size_t index)
 {
-	m_KalFilter_Arm.Reset();
+	switch (index)
+	{
+		case HikingViking_Robot::eArm:
+			m_KalFilter_Arm.Reset();
+			//m_Potentiometer.ResetPos();
+			break;
+	}
 }
 
 
-void FRC_2011_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+void HikingViking_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	#ifdef __ShowLCD__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
@@ -96,10 +80,11 @@ void FRC_2011_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#endif
 }
 
-void FRC_2011_Robot_Control::Initialize(const Entity_Properties *props)
+void HikingViking_Robot_Control::Initialize(const Entity_Properties *props)
 {
-	const FRC_2011_Robot_Properties *robot_props=static_cast<const FRC_2011_Robot_Properties *>(props);
+	const HikingViking_Robot_Properties *robot_props=static_cast<const HikingViking_Robot_Properties *>(props);
 	assert(robot_props);
+	m_RobotProps=*robot_props;  //save a copy
 	m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
@@ -110,29 +95,49 @@ void FRC_2011_Robot_Control::Initialize(const Entity_Properties *props)
 const double c_Arm_DeadZone=0.085;  //This has better results
 const double c_Arm_Range=1.0-c_Arm_DeadZone;
 
-double FRC_2011_Robot_Control::GetArmCurrentPosition(size_t index)
+double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 {	
-	double raw_value = (double)m_Potentiometer.GetAverageValue();
-	//raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
-	//Note the value is inverted with the negative operator
-	double ret=-FRC_2011_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(raw_value);
-	//I may keep these on as they should be useful feedback
-	#ifdef __ShowPotentiometerReadings__
-	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-	double height=FRC_2011_Robot::Robot_Arm::Arm_AngleToHeight_m(ret);
-	//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);
-	lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %f %.1fft ", RAD_2_DEG(ret),height,height*3.2808399);
-	//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
-	#endif
-	return ret;
+	double result=0.0;
+
+	switch (index)
+	{
+		case HikingViking_Robot::eArm:
+		{
+			const HikingViking_Robot_Props &props=m_RobotProps.GetHikingVikingRobotProps();
+			const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
+
+			double raw_value = (double)m_Potentiometer.GetAverageValue();
+			//raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
+			//Note the value is inverted with the negative operator
+			double PotentiometerRaw_To_Arm;
+			{
+				const int RawRangeHalf=512;
+				PotentiometerRaw_To_Arm=((raw_value / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
+				PotentiometerRaw_To_Arm*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
+			}
+			result=-PotentiometerRaw_To_Arm;
+			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
+			const double height= (sin(result*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
+			SmartDashboard::PutNumber("Height",height*3.2808399);
+			
+			//I may keep these on as they should be useful feedback
+			#ifdef __ShowPotentiometerReadings__
+			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+			//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %.1fft %.1fin", RAD_2_DEG(ret),height*3.2808399,height*39.3700787);
+			lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %f %.1fft ", RAD_2_DEG(result),height,height*3.2808399);
+			//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
+			#endif
+		}
+	}
+	return result;
 }
 
 
-void FRC_2011_Robot_Control::UpdateVoltage(size_t index,double Voltage)
+void HikingViking_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
-		case FRC_2011_Robot::eArm:
+		case HikingViking_Robot::eArm:
 		{
 			#if 0
 			float ToUse=DriverStation::GetInstance()->GetAnalogIn(1) - 1.0;
@@ -146,37 +151,42 @@ void FRC_2011_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 			lcd->PrintfLine(DriverStationLCD::kUser_Line4, "ArmVolt=%f ", Voltage);
 			#endif
+			SmartDashboard::PutNumber("ArmVoltage",Voltage);
 		}
 			break;
-		case FRC_2011_Robot::eRollers:
+		case HikingViking_Robot::eRollers:
 			m_RollerMotor.Set(Voltage);
 			#ifdef __ShowRollerReadings__
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 			lcd->PrintfLine(DriverStationLCD::kUser_Line4, "RollerVolt=%f ", Voltage);
 			#endif
+			SmartDashboard::PutNumber("RollerVoltage",Voltage);
 			break;
 	}
 }
 
 
-void FRC_2011_Robot_Control::CloseSolenoid(size_t index,bool Close)
+void HikingViking_Robot_Control::CloseSolenoid(size_t index,bool Close)
 {
 	//virtual void OpenDeploymentDoor(bool Open) {m_DeployDoor.SetAngle(Open?Servo::GetMaxAngle():Servo::GetMinAngle());}
 	//virtual void ReleaseLazySusan(bool Release) {m_LazySusan.SetAngle(Release?Servo::GetMaxAngle():Servo::GetMinAngle());}
 
 	switch (index)
 	{
-		case FRC_2011_Robot::eDeployment:
+		case HikingViking_Robot::eDeployment:
 			printf("CloseDeploymentDoor=%d\n",Close);
 			m_OnDeploy.Set(Close),m_OffDeploy.Set(!Close);
+			SmartDashboard::PutBoolean("Deployment",Close);
 			break;
-		case FRC_2011_Robot::eClaw:
+		case HikingViking_Robot::eClaw:
 			printf("CloseClaw=%d\n",Close);
 			m_OnClaw.Set(Close),m_OffClaw.Set(!Close);
+			SmartDashboard::PutBoolean("Claw",Close);
 			break;
-		case FRC_2011_Robot::eRist:
+		case HikingViking_Robot::eRist:
 			printf("CloseRist=%d\n",Close);
 			m_OnRist.Set(Close),m_OffRist.Set(!Close);
+			SmartDashboard::PutBoolean("Wrist",Close);
 			break;
 	}
 }
