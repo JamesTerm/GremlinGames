@@ -180,7 +180,7 @@ class SmartDashboard_coordinate_manager : public coodinate_manager_Interface
 			double lastXpos=m_Xpos,lastYpos=m_Ypos;
 			m_Xpos=SmartDashboard::GetNumber("X Position");
 			m_Ypos=SmartDashboard::GetNumber("Y Position");
-			return ((m_Xpos!=lastYpos)||(m_Ypos!=lastYpos));
+			return ((m_Xpos!=lastXpos)||(m_Ypos!=lastYpos));
 		}
 
 };
