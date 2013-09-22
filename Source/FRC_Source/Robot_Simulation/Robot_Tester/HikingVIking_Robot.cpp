@@ -1,13 +1,33 @@
 #include "stdafx.h"
 #include "Robot_Tester.h"
+
+#ifdef Robot_TesterCode
 namespace Robot_Tester
 {
 	#include "Tank_Robot_UI.h"
 	#include "HikingViking_Robot.h"
+}
 
+using namespace Robot_Tester;
+using namespace GG_Framework::Base;
+using namespace osg;
+using namespace std;
+
+const double Pi2=M_PI*2.0;
+#else
+#include "HikingViking_Robot.h"
+using namespace Framework::Base;
+using namespace std;
+#endif
+
+#ifdef Robot_TesterCode
+namespace Robot_Tester
+{
+#endif
 	namespace HikingViking_Goals
 	{
 
+#if 0
 static Goal *Get_TestLengthGoal_OLD(Ship_Tester *ship)
 {
 	//Construct a way point
@@ -19,6 +39,7 @@ static Goal *Get_TestLengthGoal_OLD(Ship_Tester *ship)
 	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp,true,true);
 	return goal;
 }
+#endif
 
 Goal *Get_TestLengthGoal(HikingViking_Robot *Robot)
 {
@@ -100,16 +121,12 @@ Goal *Get_UberTubeGoal(HikingViking_Robot *Robot)
 	return MainGoal;
 };
 	} // end namespace hiking viking goals
+	
+#ifdef Robot_TesterCode
 }
+#endif
 
 const bool c_UsingArmLimits=true;
-
-using namespace Robot_Tester;
-using namespace GG_Framework::Base;
-using namespace osg;
-using namespace std;
-
-const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
  /*													HikingViking_Robot::Robot_Claw													*/
@@ -146,7 +163,7 @@ void HikingViking_Robot::Robot_Claw::Squirt(bool on)
 
 void HikingViking_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
 {
-	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Claw_SetCurrentVelocity"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
@@ -194,12 +211,14 @@ void HikingViking_Robot::Robot_Arm::TimeChange(double dTime_s)
 	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
 	#endif
 	#endif
+	#ifdef Robot_TesterCode
 	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
 	const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
 	double Pos_m=GetPos_m();
 	double height=AngleToHeight_m(Pos_m);
 	DOUT4("Arm=%f Angle=%f %fft %fin",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio),height*3.2808399,height*39.3700787);
-}
+	#endif
+	}
 
 
 double HikingViking_Robot::Robot_Arm::AngleToHeight_m(double Angle_r) const
@@ -262,7 +281,7 @@ void HikingViking_Robot::Robot_Arm::CloseRist(bool Close)
 
 void HikingViking_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
-	GG_Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Subscribe(ehl,*this, &HikingViking_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
@@ -305,7 +324,7 @@ HikingViking_Robot::HikingViking_Robot(const char EntityName[],HikingViking_Cont
 {
 }
 
-void HikingViking_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+void HikingViking_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
@@ -347,7 +366,7 @@ void HikingViking_Robot::CloseDeploymentDoor(bool Close)
 
 void HikingViking_Robot::BindAdditionalEventControls(bool Bind)
 {
-	Entity2D::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Entity2D_Kind::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &HikingViking_Robot::CloseDeploymentDoor);
 	else
@@ -376,11 +395,11 @@ HikingViking_Robot_Properties::HikingViking_Robot_Properties() : m_RobotControls
 	const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 	const double c_ArmLength_m=1.8288;  //6 feet
 	const double c_ArmToGearRatio=72.0/28.0;
-	const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
+	//const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 	//const double c_PotentiometerToGearRatio=60.0/32.0;
 	//const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
 	const double c_PotentiometerToArmRatio=36.0/54.0;
-	const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
+	//const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
 	const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 	const double c_GearHeightOffset=1.397;  //55 inches
 	const double c_WheelDiameter=0.1524;  //6 inches
