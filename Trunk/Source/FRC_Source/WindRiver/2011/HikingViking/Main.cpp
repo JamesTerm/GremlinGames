@@ -25,10 +25,10 @@
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
-#include "FRC2011_Robot.h"
+#include "HikingViking_Robot.h"
 #include "Common/InOut_Interface.h"
 #include "Drive/Tank_Robot_Control.h"
-#include "FRC2011_InOut_Interface.h"
+#include "HikingViking_InOut_Interface.h"
 
 const bool c_UseDefaultControls=false;
 
