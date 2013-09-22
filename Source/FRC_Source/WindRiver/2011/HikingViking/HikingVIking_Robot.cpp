@@ -20,8 +20,10 @@ using namespace Framework::Base;
 using namespace std;
 #endif
 
+#ifdef Robot_TesterCode
 namespace Robot_Tester
 {
+#endif
 	namespace HikingViking_Goals
 	{
 
@@ -119,7 +121,10 @@ Goal *Get_UberTubeGoal(HikingViking_Robot *Robot)
 	return MainGoal;
 };
 	} // end namespace hiking viking goals
+	
+#ifdef Robot_TesterCode
 }
+#endif
 
 const bool c_UsingArmLimits=true;
 
