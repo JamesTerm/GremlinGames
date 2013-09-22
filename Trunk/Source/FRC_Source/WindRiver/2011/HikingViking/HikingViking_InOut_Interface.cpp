@@ -37,24 +37,13 @@ HikingViking_Robot_Control::HikingViking_Robot_Control(bool UseSafety) :
 	m_ArmMotor(5),m_RollerMotor(6),m_Compress(5,2),
 	m_OnRist(5),m_OffRist(6),m_OnClaw(3),m_OffClaw(4),m_OnDeploy(2),m_OffDeploy(1),
 	m_Potentiometer(1)
-	#ifndef __2011_TestCamera__
-	,m_Camera(NULL)
-	#endif
 {
 	ResetPos();
-	#ifndef __2011_TestCamera__
-	//Should not need to wait, fixed in 2012
-	//Wait(10.000);
-	m_Camera=&AxisCamera::GetInstance();
-	#endif
 }
 
 HikingViking_Robot_Control::~HikingViking_Robot_Control() 
 {
 	m_Compress.Stop();
-	#ifndef __2011_TestCamera__
-	m_Camera=NULL;  //We don't own this, but I do wish to treat it like we do
-	#endif
 }
 
 void HikingViking_Robot_Control::Reset_Rotary(size_t index)
@@ -74,9 +63,6 @@ void HikingViking_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifdef __ShowLCD__
 	DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 	lcd->UpdateLCD();
-	#endif
-	#ifdef __2011_TestCamera__
-	m_Camera.CameraProcessing_TimeChange(dTime_s);
 	#endif
 }
 

@@ -37,7 +37,7 @@ class SetUp_Manager
 			m_pRobot = new HikingViking_Robot("FRC2011_Robot",&m_Control,UseEncoders);
 			{
 				Framework::Scripting::Script script;
-				script.LoadScript("/FRC2011Robot.lua",true);
+				script.LoadScript("/HikingVikingRobot.lua",true);
 				script.NameMap["EXISTING_ENTITIES"] = "EXISTING_SHIPS";
 				m_RobotProps.SetUpGlobalTable(script);
 				m_RobotProps.LoadFromScript(script);

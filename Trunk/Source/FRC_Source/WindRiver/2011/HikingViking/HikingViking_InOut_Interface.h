@@ -15,12 +15,6 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 		
 		//Servo m_DeployDoor,m_LazySusan;
 		AnalogChannel m_Potentiometer;
-		#ifdef  __2011_TestCamera__
-		FRC_2012_CameraProcessing m_Camera;
-		#else
-		AxisCamera *m_Camera;
-		#endif
-		
 		double m_ArmMaxSpeed;
 	private:
 		HikingViking_Robot_Properties m_RobotProps;  //saves a copy of all the properties
