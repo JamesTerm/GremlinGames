@@ -70,11 +70,9 @@ class HikingViking_Robot : public Tank_Robot
 			eRollers
 		};
 
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 		HikingViking_Robot(const char EntityName[],HikingViking_Control_Interface *robot_control,bool UseEncoders=false);
 		IEvent::HandlerList ehl;
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 		void CloseDeploymentDoor(bool Close);
@@ -97,7 +95,9 @@ class HikingViking_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
 			private:
-				//typedef Ship_1D __super;
+				#ifndef Robot_TesterCode
+				typedef Rotary_Velocity_Control __super;
+				#endif
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				HikingViking_Robot * const m_pParent;
@@ -128,7 +128,9 @@ class HikingViking_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 
 			private:
-				//typedef Rotary_Position_Control __super;
+				#ifndef Robot_TesterCode
+				typedef Rotary_Position_Control __super;
+				#endif
 				void SetPosRest();
 				void SetPos0feet();
 				void SetPos3feet();
@@ -146,12 +148,37 @@ class HikingViking_Robot : public Tank_Robot
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 	private:
 		HikingViking_Robot_Properties m_RobotProps;
-		//typedef  Tank_Drive __super;
+		#ifndef Robot_TesterCode
+		typedef  Tank_Robot __super;
+		#endif
 		HikingViking_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Arm;
 		Robot_Claw m_Claw;
 		bool m_VoltageOverride;  //when true will kill voltage
 };
+
+
+namespace HikingViking_Goals
+{
+	class Goal_OperateSolenoid : public AtomicGoal
+	{
+		private:
+			HikingViking_Robot &m_Robot;
+			const HikingViking_Robot::SolenoidDevices m_SolenoidDevice;
+			bool m_Terminate;
+			bool m_IsClosed;
+		public:
+			Goal_OperateSolenoid(HikingViking_Robot &robot,HikingViking_Robot::SolenoidDevices SolenoidDevice,bool Close);
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s);
+			virtual void Terminate() {m_Terminate=true;}
+	};
+
+	Goal *Get_TestLengthGoal(HikingViking_Robot *Robot);
+	Goal *Get_UberTubeGoal(HikingViking_Robot *Robot);
+}
+
+#ifdef Robot_TesterCode
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
 ///are correct
@@ -223,23 +250,5 @@ class HikingViking_Robot_UI : public HikingViking_Robot, public HikingViking_Rob
 
 };
 
+#endif
 
-namespace HikingViking_Goals
-{
-	class Goal_OperateSolenoid : public AtomicGoal
-	{
-		private:
-			HikingViking_Robot &m_Robot;
-			const HikingViking_Robot::SolenoidDevices m_SolenoidDevice;
-			bool m_Terminate;
-			bool m_IsClosed;
-		public:
-			Goal_OperateSolenoid(HikingViking_Robot &robot,HikingViking_Robot::SolenoidDevices SolenoidDevice,bool Close);
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s);
-			virtual void Terminate() {m_Terminate=true;}
-	};
-
-	Goal *Get_TestLengthGoal(HikingViking_Robot *Robot);
-	Goal *Get_UberTubeGoal(HikingViking_Robot *Robot);
-}
