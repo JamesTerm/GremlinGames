@@ -4,7 +4,12 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 {
 	protected: //from Robot_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
+		#ifdef __UsingTestingKit__
+		Servo_Robot_Control m_TankRobotControl;  //for x-axis control
+		#else
 		Tank_Robot_Control m_TankRobotControl;
+		#endif
+
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 	
 		Victor m_ArmMotor,m_RollerMotor;
