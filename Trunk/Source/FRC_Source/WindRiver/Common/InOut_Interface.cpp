@@ -85,6 +85,7 @@ bool Driver_Station_Joystick::read_joystick (size_t nr, JoyState &Info)
 		Info.lZ=m_ds->GetStickAxis(nr,3);
 		Info.lRx=m_ds->GetStickAxis(nr,4);
 		Info.lRy=m_ds->GetStickAxis(nr,5);
+		Info.lRz=m_ds->GetStickAxis(nr,6);
 		Info.ButtonBank[0]=m_ds->GetStickButtons(nr);
 		ret=true;
 	}
