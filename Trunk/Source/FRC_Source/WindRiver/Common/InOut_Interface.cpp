@@ -100,7 +100,7 @@ Driver_Station_Joystick::Driver_Station_Joystick(int NoJoysticks,int StartingPor
 	common.InstanceName="Driver_Station";
 	common.JoyCapFlags=
 		JoystickInfo::fX_Axis|JoystickInfo::fY_Axis|JoystickInfo::fZ_Axis|
-		JoystickInfo::fX_Rot|JoystickInfo::fY_Rot;
+		JoystickInfo::fX_Rot|JoystickInfo::fY_Rot|JoystickInfo::fZ_Rot;
 	common.nSliderCount=0;
 	common.nPOVCount=0;
 	common.nButtonCount=12;
