@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.3;
+	version = 1.5;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -297,15 +297,21 @@ MainRobot = {
 
 	controls =
 	{
+		slotlist = {slot_1="airflo"},
+		--slotlist = {slot_1="logitech dual action"},
+		--slotlist = {slot_1="airflo", slot_2="none", slot_3="ch throttle quadrant"},  --I could use 2 but testing skip stress
+
 		Joystick_1 =
 		{
 			control = "airflo",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.90, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.90, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			--PowerWheels_SetCurrentVelocity_Axis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			--Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--To use this without surprises during calibration __DisableIntakeAutoPosition__ must be enabled
 			--Intake_Deployment_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.01, curve_intensity=1.0},
 			--Robot_SetClimbGearOff = {type="joystick_button", key=11, on_off=false},
@@ -354,9 +360,9 @@ MainRobot = {
 		{	
 			control = "ch throttle quadrant",
 			--todo the practice quatrant is rated at 1.173 check if the other quatrant is really 1.142
-			--Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
-			--PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
-			--Turret_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
+			Turret_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PowerWheels_FirstStage_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
 			Robot_SetClimbSpeed = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.173089, filter=0.0, curve_intensity=0.0},
