@@ -124,7 +124,7 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 			if (!err)
 				WhichKey=stringWhichButton.c_str()[0];
 			else
-				WhichKey=-1;
+				WhichKey=(size_t)-1;
 
 			//cast to int first, and then to the enumeration; The -1 allows for cardinal types (good since we can use numbers written on button)
 			WhichButton=(JoyAxis_enum)((int)dWhichButton-1);
@@ -198,9 +198,16 @@ void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 	while ( Controls="Joystick_",Controls+=itoa(i++,Buffer,10) ,	(err = script.GetFieldTable(Controls.c_str()))==NULL)
 	{
 		Control_Props control;
-		//Wind River uses generic name, and AI tester uses product name
 		#ifndef Robot_TesterCode
-		control.Controller=Controls.c_str();
+		//We can use the product name if we provided the slot list
+		if (m_DriverStation_SlotList.size()>0)
+			err=script.GetField("control", &control.Controller, NULL, NULL);
+		else
+		{
+			//Wind River uses generic name, and AI tester uses product name
+			control.Controller=Controls.c_str();
+		}
+		
 		#else
 		err=script.GetField("control", &control.Controller, NULL, NULL);
 		#endif
@@ -262,7 +269,7 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy,void 
 				{
 					const Controller_Element_Properties::ElementTypeSpecific::ButtonSpecifics_rw &button=element.Specifics.Button;
 					p_joy->AddJoy_Button_Default(button.WhichButton,element.Event.c_str(),button.useOnOff,button.dbl_click,control.Controller.c_str());
-					if ((p_key) && (button.WhichKey!=-1))
+					if ((p_key) && (button.WhichKey!=(size_t)-1))
 					{
 						if (Bind)
 							p_key->AddKeyBindingR(button.useOnOff,element.Event.c_str(),button.WhichKey);
