@@ -191,16 +191,19 @@ class COMMON_API LUA_Controls_Properties
 			std::string Controller;
 		};
 		typedef std::vector<Control_Props> Controls_List;
+		typedef std::vector<std::string> DriverStation_Slot_List;
 	private:
 		//Return if element was successfully created (be sure to check as some may not be present)
 		static const char *ExtractControllerElementProperties(Controller_Element_Properties &Element,const char *Eventname,Scripting::Script& script);
 
+		DriverStation_Slot_List m_DriverStation_SlotList;  //This stores the slot list as listed on the driver station (WindRiver only)
 		Controls_List m_Controls;
 		LUA_Controls_Properties_Interface * m_pParent;
 	public:
 		LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent);
 
 		const Controls_List &Get_Controls() const {return m_Controls;}
+		const DriverStation_Slot_List &GetDriverStation_SlotList() const {return m_DriverStation_SlotList;}
 		//call from within GetFieldTable controls
 		void LoadFromScript(Scripting::Script& script);
 		//Just have the client (from ship) call this

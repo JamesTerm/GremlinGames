@@ -171,15 +171,30 @@ const char *LUA_Controls_Properties::ExtractControllerElementProperties(Controll
 
 void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 {
+	const char* err=NULL;
+	char Buffer[4];
+
+	m_DriverStation_SlotList.clear();
+	err=script.GetFieldTable("slotlist");
+	if (!err)
+	{
+		//Note i is cardinal (more readable in LUA)
+		size_t i=1;
+		std::string Slot;
+		std::string SlotValue;
+		while ( Slot="slot_",Slot+=itoa(i++,Buffer,10) ,	(err = script.GetField(Slot.c_str(),&SlotValue,NULL,NULL))==NULL)
+			m_DriverStation_SlotList.push_back(SlotValue);
+		assert(m_DriverStation_SlotList.size()<=4); //only up to 4 slots supported
+		script.Pop();
+	}
+
 	//ensure the list is clean (incase it gets called again)
 	m_Controls.clear();
 
-	const char* err=NULL;
 	//Note i is cardinal (more readable in LUA)
 	size_t i=1,j=0;
 	std::string Controls;
 	const char * Events;
-	char Buffer[4];
 	while ( Controls="Joystick_",Controls+=itoa(i++,Buffer,10) ,	(err = script.GetFieldTable(Controls.c_str()))==NULL)
 	{
 		Control_Props control;
