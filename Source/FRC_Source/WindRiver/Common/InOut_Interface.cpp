@@ -69,6 +69,36 @@ size_t Driver_Station_Joystick::GetNoJoysticksFound()
 	return m_NoJoysticks;
 }
 
+void Driver_Station_Joystick::SetSlotList(const Driver_Station_SlotList &list)
+{
+	//if this is empty then we'll leave it as it was
+	if (list.size()==0)
+		return;
+	
+	m_SlotList=list;
+	m_NoJoysticks=list.size();
+	m_JoyInfo.clear();  //we'll repopulate with the slot names
+	
+	Framework::Base::IJoystick::JoystickInfo common;
+	common.ProductName=list[0];
+	common.InstanceName="Driver_Station";
+	common.JoyCapFlags=
+		JoystickInfo::fX_Axis|JoystickInfo::fY_Axis|JoystickInfo::fZ_Axis|
+		JoystickInfo::fX_Rot|JoystickInfo::fY_Rot|JoystickInfo::fZ_Rot;
+	common.nSliderCount=0;
+	common.nPOVCount=0;
+	common.nButtonCount=12;
+	common.bPresent=strcmp(common.ProductName.c_str(),"none")!=0;  //make use of this bool instead of doing a strcmp each iteration
+	m_JoyInfo.push_back(common);
+	//Go ahead and add other inputs
+	for (size_t i=1;i<list.size();i++)
+	{
+		common.ProductName=list[i];
+		common.bPresent=strcmp(common.ProductName.c_str(),"none")!=0;  //make use of this bool instead of doing a strcmp each iteration
+		m_JoyInfo.push_back(common);
+	}
+}
+
 bool Driver_Station_Joystick::read_joystick (size_t nr, JoyState &Info)
 {
 	//First weed out numbers not in range
@@ -76,7 +106,7 @@ bool Driver_Station_Joystick::read_joystick (size_t nr, JoyState &Info)
 	Number-=m_StartingPort;
 	bool ret=false;
 	nr++;  //DOH the number selection is cardinal!  :(
-	if ((Number>=0) && (Number<m_NoJoysticks))
+	if ((Number>=0) && (Number<m_NoJoysticks) && (m_JoyInfo[nr-1].bPresent))
 	{
 		memset(&Info,0,sizeof(JoyState));  //zero the memory
 		//The axis selection is also ordinal

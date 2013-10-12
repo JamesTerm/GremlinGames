@@ -20,9 +20,12 @@ class Encoder2 : public Encoder
 class Driver_Station_Joystick : public Framework::Base::IJoystick
 {	
 	public:
+		typedef std::vector<std::string> Driver_Station_SlotList;  //we'll just make our own type, but we could include ship.h
+
 		//Note: this current configuration requires the two joysticks reside in adjacent ports (e.g. 2,3)
 		Driver_Station_Joystick(int NoJoysticks,int StartingPort);
 		virtual ~Driver_Station_Joystick();
+		void SetSlotList(const Driver_Station_SlotList &list);
 	protected:  //from IJoystick
 		virtual size_t GetNoJoysticksFound();
 		virtual bool read_joystick (size_t nr, JoyState &Info);
@@ -30,6 +33,7 @@ class Driver_Station_Joystick : public Framework::Base::IJoystick
 		virtual const JoystickInfo &GetJoyInfo(size_t nr) const {return m_JoyInfo[nr];}
 	private:
 		std::vector<JoystickInfo> m_JoyInfo;
+		Driver_Station_SlotList m_SlotList;
 		DriverStation *m_ds;
 		int m_NoJoysticks,m_StartingPort;
 };
