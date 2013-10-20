@@ -30,7 +30,10 @@ Drive_MaxAccel=4
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
-TestShip = {
+MainRobot = {
+--Version helps to identify a positive update to lua
+	version = 1.1;
+	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
@@ -141,6 +144,9 @@ TestShip = {
 	},
 	controls =
 	{
+		slotlist = {slot_1="logitech dual action"},
+		--slotlist = {slot_1="airflo"},
+	
 		Joystick_1 =
 		{
 			control = "logitech dual action",
@@ -154,7 +160,7 @@ TestShip = {
 			Arm_SetPos3feet = {type="joystick_button", key=1, on_off=false},
 			Arm_SetPos6feet = {type="joystick_button", key=3, on_off=false},
 			Arm_SetPos9feet = {type="joystick_button", key=4, on_off=false},
-			--Arm_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Arm_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Arm_Rist={type="joystick_button", key=5, on_off=true},
 			
 			--Claw_SetCurrentVelocity  --not used
@@ -198,4 +204,4 @@ TestShip = {
 	}
 }
 
-RobotHikingViking = TestShip
+RobotHikingViking = MainRobot
