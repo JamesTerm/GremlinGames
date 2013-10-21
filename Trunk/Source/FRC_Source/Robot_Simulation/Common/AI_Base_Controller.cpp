@@ -199,10 +199,32 @@ void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 	{
 		Control_Props control;
 		#ifndef Robot_TesterCode
-		//We can use the product name if we provided the slot list
+		//We can use the product name if we provided the slot list... testing only if we used a slot list
 		if (m_DriverStation_SlotList.size()>0)
-			err=script.GetField("control", &control.Controller, NULL, NULL);
-		else
+		{
+			//now see if the controller we are on matches the slot list entry
+			std::string TestController;
+			err=script.GetField("control", &TestController, NULL, NULL);
+			bool MatchFound=false;
+			for (j=0;j<m_DriverStation_SlotList.size();j++)
+			{
+				if (strcmp(TestController.c_str(),m_DriverStation_SlotList[j].c_str())==0)
+				{
+					//rename the controls index to the slot index found
+					Controls="Joystick_";
+					Controls+=itoa(j+1,Buffer,10);  //j needs to be cardinal
+					control.Controller=Controls.c_str();
+					MatchFound=true;
+					break;
+				}
+			}
+			if (MatchFound==false)  //no match found
+			{
+				script.Pop();
+				continue;
+			}
+		}
+		else  //legacy matching
 		{
 			//Wind River uses generic name, and AI tester uses product name
 			control.Controller=Controls.c_str();
