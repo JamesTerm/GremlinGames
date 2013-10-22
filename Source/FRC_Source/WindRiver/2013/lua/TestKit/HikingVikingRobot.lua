@@ -157,11 +157,11 @@ MainRobot = {
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Turn_180 = {type="joystick_button", key=7, on_off=false},
 			
-			Arm_SetPos0feet = {type="joystick_button", key=2, on_off=false},
+			Arm_SetPos0feet = {type="joystick_button", key=3, on_off=false},
 			Arm_SetPos3feet = {type="joystick_button", key=1, on_off=false},
-			Arm_SetPos6feet = {type="joystick_button", key=3, on_off=false},
+			Arm_SetPos6feet = {type="joystick_button", key=2, on_off=false},
 			Arm_SetPos9feet = {type="joystick_button", key=4, on_off=false},
-			Arm_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Arm_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Arm_Rist={type="joystick_button", key=5, on_off=true},
 			
 			--Claw_SetCurrentVelocity  --not used
