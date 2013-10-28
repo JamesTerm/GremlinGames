@@ -179,7 +179,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	}
 
 	#ifdef __DebugLUA__
-	if ((m_Rotary_Props.PID_Console_Dump)&&(PotentiometerVelocity!=0.0))
+	if ((m_Rotary_Props.PID_Console_Dump)&&(PotentiometerVelocity!=0.0)&&(CurrentVelocity!=0.0))
 	{
 		double PosY=m_LastPosition;
 		//double PosY=RAD_2_DEG(m_LastPosition);
