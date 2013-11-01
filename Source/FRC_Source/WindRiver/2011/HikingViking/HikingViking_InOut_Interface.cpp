@@ -94,7 +94,8 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
 
 			double raw_value = (double)m_Potentiometer.GetAverageValue();
-			//raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
+			raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
+			raw_value=m_ArmAverager.GetAverage(raw_value); //and Ricks x element averager
 			//Note the value is inverted with the negative operator
 			double PotentiometerRaw_To_Arm;
 			{
