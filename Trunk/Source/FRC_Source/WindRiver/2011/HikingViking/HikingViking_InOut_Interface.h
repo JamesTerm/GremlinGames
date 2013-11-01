@@ -24,7 +24,7 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 	private:
 		HikingViking_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
-
+		Averager<double,5> m_ArmAverager;
 	public:
 		HikingViking_Robot_Control(bool UseSafety);
 		virtual ~HikingViking_Robot_Control(); 

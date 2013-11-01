@@ -34,6 +34,7 @@ class SetUp_Manager
 		SetUp_Manager(bool UseSafety,bool UseEncoders=false) : m_Joystick(2,0), //2 joysticks starting at port 0
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
+			SmartDashboard::init();
 			m_Control.AsControlInterface().Initialize(&m_RobotProps);
 			m_pRobot = new HikingViking_Robot("FRC2011_Robot",&m_Control,UseEncoders);
 			{
@@ -88,6 +89,7 @@ class SetUp_Manager
 				delete m_pRobot;
 				m_pRobot=NULL;
 			}
+			//SmartDashboard::shutdown();
 		}
 
 		void SetAutoPilot(bool autoPilot) {m_pUI->SetAutoPilot(autoPilot);}
