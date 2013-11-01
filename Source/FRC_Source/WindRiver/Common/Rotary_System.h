@@ -23,6 +23,7 @@ struct Rotary_Props
 		eNone, //Will never read them (ideal for systems that do not have any encoders)
 		eOpen,  //Will read them but never alter velocities
 		eClosed, //Will attempt to match predicted velocity to actual velocity
+		ePositionOnly  //Not used yet... TODO implement for position
 	} LoopState; //This should always be false once control is fully functional
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 
@@ -32,6 +33,15 @@ struct Rotary_Props
 	//Only supported in Rotary_Position_Control
 	struct Rotary_Arm_GainAssist_Props
 	{
+		double PID_Up[3]; //p,i,d
+		double PID_Down[3]; //p,i,d
+
+		double InverseMaxAccel_Up;
+		double InverseMaxDecel_Up;
+
+		double InverseMaxAccel_Down;
+		double InverseMaxDecel_Down;
+
 		double SlowVelocityVoltage;  //Empirically solved as the max voltage to keep load just above steady state for worst case scenario
 		double SlowVelocity;  //Rate at which the gain assist voltage gets blended out; This may be a bit more than the slow velocity used for SlowVelocityVoltage
 	} ArmGainAssist;
@@ -45,6 +55,9 @@ class COMMON_API Rotary_System : public Ship_1D
 		#endif
 		bool m_UsingRange_props;
 	protected:
+		static void InitNetworkProperties(const Rotary_Props &props,bool AddArmAssist=false);  //This will GetVariables of all properties needed to tweak PID and gain assists
+		static void NetworkEditProperties(Rotary_Props &props,bool AddArmAssist=false);  //This will GetVariables of all properties needed to tweak PID and gain assists
+
 		PolynomialEquation_forth m_VoltagePoly;
 	public:
 		Rotary_System(const char EntityName[]) : Ship_1D(EntityName),m_UsingRange_props(false) {}
@@ -63,6 +76,14 @@ class COMMON_API Rotary_System : public Ship_1D
 /// position setting... like a turret or arm
 class COMMON_API Rotary_Position_Control : public Rotary_System
 {
+	public:
+		enum PotUsage
+		{
+			eNoPot, //Will never read them (ideal for systems that do not have any encoders)
+			ePassive,  //Will read them but never alter velocities
+			eActive, //Will attempt to match predicted velocity to actual velocity
+		};
+
 	private:
 		#ifndef Robot_TesterCode
 		typedef Rotary_System __super;
@@ -84,7 +105,7 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		double m_LastTime; //used for calibration
 		double m_MaxSpeedReference; //used for calibration
 		double m_PreviousVelocity; //used to compute acceleration
-		bool m_UsingPotentiometer; //dynamically able to turn off (e.g. panic button)
+		PotUsage m_PotentiometerState; //dynamically able to turn off (e.g. panic button)
 	public:
 		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;
@@ -98,7 +119,7 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		//Intercept the time change to obtain current height as well as sending out the desired velocity
 		virtual void TimeChange(double dTime_s);
 		virtual void SetPotentiometerSafety(bool DisableFeedback);
-		bool GetIsUsingPotentiometer() const {return m_UsingPotentiometer;}
+		PotUsage GetPotUsage() const {return m_PotentiometerState;}
 		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 };
 
