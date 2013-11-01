@@ -50,7 +50,7 @@ FRC_2012_Robot::Turret::Turret(FRC_2012_Robot *parent,Rotary_Control_Interface *
 
 void FRC_2012_Robot::Turret::SetIntendedPosition_Plus(double Position)
 {
-	if (GetIsUsingPotentiometer())
+	if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
 	{
 		if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
 			return;
@@ -132,7 +132,7 @@ FRC_2012_Robot::PitchRamp::PitchRamp(FRC_2012_Robot *pParent,Rotary_Control_Inte
 
 void FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 {
-	if (GetIsUsingPotentiometer())
+	if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
 	{
 		bool IsTargeting=(m_pParent->m_IsTargeting);
 		if (!IsTargeting)
@@ -157,7 +157,7 @@ void FRC_2012_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
 
 void FRC_2012_Robot::PitchRamp::TimeChange(double dTime_s)
 {
-	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer());
+	bool IsTargeting=((m_pParent->m_IsTargeting) && (IsZero(GetRequestedVelocity())) && (GetPotUsage()!=Rotary_Position_Control::eNoPot) );
 	if (IsTargeting)
 	{
 		__super::SetIntendedPosition(m_pParent->m_PitchAngle);
