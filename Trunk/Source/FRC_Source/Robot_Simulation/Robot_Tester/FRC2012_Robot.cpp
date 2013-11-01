@@ -483,7 +483,7 @@ FRC_2012_Robot::FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interfac
 {
 }
 
-void FRC_2012_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+void FRC_2012_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	m_RobotControl->Initialize(props);
@@ -860,7 +860,7 @@ void FRC_2012_Robot::Robot_SetCreepMode(bool on)
 
 void FRC_2012_Robot::BindAdditionalEventControls(bool Bind)
 {
-	Entity2D::EventMap *em=GetEventMap(); 
+	Entity2D_Kind::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
 		em->EventOnOff_Map["Robot_IsTargeting"].Subscribe(ehl, *this, &FRC_2012_Robot::IsTargeting);
@@ -1592,6 +1592,7 @@ Goal *FRC_2012_Goals::Get_FRC2012_Autonomous(FRC_2012_Robot *Robot,size_t KeyInd
 	return MainGoal;
 }
 
+#ifdef Robot_TesterCode
   /***********************************************************************************************************************************/
  /*													FRC_2012_Robot_Control															*/
 /***********************************************************************************************************************************/
@@ -2091,3 +2092,5 @@ void FRC_2012_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 	m_MiddleConveyor.UpdateScene(geode,AddOrRemove);
 	m_FireConveyor.UpdateScene(geode,AddOrRemove);
 }
+
+#endif
