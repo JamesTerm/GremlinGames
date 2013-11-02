@@ -23,9 +23,6 @@ using namespace std;
 
 void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmAssist)
 {
-	SmartDashboard::PutNumber("velocity P",props.PID[0]);
-	SmartDashboard::PutNumber("velocity I",props.PID[1]);
-	SmartDashboard::PutNumber("velocity D",props.PID[2]);
 	switch (props.LoopState)
 	{
 		case Rotary_Props::eOpen:
@@ -37,53 +34,73 @@ void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmA
 		case Rotary_Props::eNone:
 			SmartDashboard::PutString("Loop State","none");
 			break;
-		case Rotary_Props::ePositionOnly:
-			SmartDashboard::PutString("Loop State","position");
-			break;
 	}
 
 
 	if (!AddArmAssist)
 	{
+		SmartDashboard::PutNumber("velocity P",props.PID[0]);
+		SmartDashboard::PutNumber("velocity I",props.PID[1]);
+		SmartDashboard::PutNumber("velocity D",props.PID[2]);
+		
 		SmartDashboard::PutNumber("gain accel",props.InverseMaxAccel);
 		SmartDashboard::PutNumber("gain decel",props.InverseMaxDecel);
 	}
 	else
 	{
-		SmartDashboard::PutNumber("gain accel up",props.ArmGainAssist.InverseMaxAccel_Up);
-		SmartDashboard::PutNumber("gain decel up",props.ArmGainAssist.InverseMaxDecel_Up);
-		SmartDashboard::PutNumber("gain accel down",props.ArmGainAssist.InverseMaxAccel_Down);
-		SmartDashboard::PutNumber("gain decel down",props.ArmGainAssist.InverseMaxDecel_Down);
+		const Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
 
-		SmartDashboard::PutNumber("gravity gain voltage",props.ArmGainAssist.SlowVelocityVoltage);
-		SmartDashboard::PutNumber("gravity gain velocity",props.ArmGainAssist.SlowVelocity);
+		SmartDashboard::PutNumber("Up P",arm.PID_Up[0]);
+		SmartDashboard::PutNumber("Up I",arm.PID_Up[1]);
+		SmartDashboard::PutNumber("Up D",arm.PID_Up[2]);
+
+		SmartDashboard::PutNumber("Down P",arm.PID_Down[0]);
+		SmartDashboard::PutNumber("Down I",arm.PID_Down[1]);
+		SmartDashboard::PutNumber("Down D",arm.PID_Down[2]);
+		
+		SmartDashboard::PutNumber("gain accel up",arm.InverseMaxAccel_Up);
+		SmartDashboard::PutNumber("gain decel up",arm.InverseMaxDecel_Up);
+		SmartDashboard::PutNumber("gain accel down",arm.InverseMaxAccel_Down);
+		SmartDashboard::PutNumber("gain decel down",arm.InverseMaxDecel_Down);
+
+		SmartDashboard::PutNumber("gravity gain voltage",arm.SlowVelocityVoltage);
+		SmartDashboard::PutNumber("gravity gain velocity",arm.SlowVelocity);
 	}
 }
 
 void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 {
-	props.PID[0]=SmartDashboard::GetNumber("velocity P");
-	props.PID[1]=SmartDashboard::GetNumber("velocity I");
-	props.PID[2]=SmartDashboard::GetNumber("velocity D");
 	string strValue=SmartDashboard::GetString("Loop State");
-	if (stricmp(strValue.c_str(),"open")==0) props.LoopState=Rotary_Props::eOpen;
-	else if (stricmp(strValue.c_str(),"closed")==0) props.LoopState=Rotary_Props::eClosed;
-	else if (stricmp(strValue.c_str(),"none")==0) props.LoopState=Rotary_Props::eNone;
-	else if (stricmp(strValue.c_str(),"position")==0) props.LoopState=Rotary_Props::ePositionOnly;
+	if (strcmp(strValue.c_str(),"open")==0) props.LoopState=Rotary_Props::eOpen;
+	else if (strcmp(strValue.c_str(),"closed")==0) props.LoopState=Rotary_Props::eClosed;
+	else if (strcmp(strValue.c_str(),"none")==0) props.LoopState=Rotary_Props::eNone;
 	if (!AddArmAssist)
 	{
+		props.PID[0]=SmartDashboard::GetNumber("velocity P");
+		props.PID[1]=SmartDashboard::GetNumber("velocity I");
+		props.PID[2]=SmartDashboard::GetNumber("velocity D");
+
 		props.InverseMaxAccel=SmartDashboard::GetNumber("gain accel");
 		props.InverseMaxDecel=SmartDashboard::GetNumber("gain decel");
 	}
 	else
 	{
-		props.ArmGainAssist.InverseMaxAccel_Up=SmartDashboard::GetNumber("gain accel up");
-		props.ArmGainAssist.InverseMaxDecel_Up=SmartDashboard::GetNumber("gain decel up");
-		props.ArmGainAssist.InverseMaxAccel_Down=SmartDashboard::GetNumber("gain accel down");
-		props.ArmGainAssist.InverseMaxDecel_Down=SmartDashboard::GetNumber("gain decel down");
+		Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
+		arm.PID_Up[0]=SmartDashboard::GetNumber("Up P");
+		arm.PID_Up[1]=SmartDashboard::GetNumber("Up I");
+		arm.PID_Up[2]=SmartDashboard::GetNumber("Up D");
 
-		props.ArmGainAssist.SlowVelocityVoltage=SmartDashboard::GetNumber("gravity gain voltage");
-		props.ArmGainAssist.SlowVelocity=SmartDashboard::GetNumber("gravity gain velocity");
+		arm.PID_Down[0]=SmartDashboard::GetNumber("Down P");
+		arm.PID_Down[1]=SmartDashboard::GetNumber("Down I");
+		arm.PID_Down[2]=SmartDashboard::GetNumber("Down D");
+		
+		arm.InverseMaxAccel_Up=SmartDashboard::GetNumber("gain accel up");
+		arm.InverseMaxDecel_Up=SmartDashboard::GetNumber("gain decel up");
+		arm.InverseMaxAccel_Down=SmartDashboard::GetNumber("gain accel down");
+		arm.InverseMaxDecel_Down=SmartDashboard::GetNumber("gain decel down");
+
+		arm.SlowVelocityVoltage=SmartDashboard::GetNumber("gravity gain voltage");
+		arm.SlowVelocity=SmartDashboard::GetNumber("gravity gain velocity");
 	}
 }
 
@@ -93,7 +110,8 @@ void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 
 Rotary_Position_Control::Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex) : 
 	Rotary_System(EntityName),m_RobotControl(robot_control),m_InstanceIndex(InstanceIndex),
-	m_PIDController(0.0,0.0,0.0), //This will be overridden in properties
+	m_PIDControllerUp(0.0,0.0,0.0), //This will be overridden in properties
+	m_PIDControllerDown(0.0,0.0,0.0),
 	m_LastPosition(0.0),m_MatchVelocity(0.0),
 	m_ErrorOffset(0.0),
 	m_LastTime(0.0),m_PreviousVelocity(0.0),
@@ -111,16 +129,23 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	m_VoltagePoly.Initialize(&Props->GetRotaryProps().Voltage_Terms);
 	//This will copy all the props
 	m_Rotary_Props=Props->GetRotaryProps();
-	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
+	m_PIDControllerUp.SetPID(m_Rotary_Props.ArmGainAssist.PID_Up[0],m_Rotary_Props.ArmGainAssist.PID_Up[1],m_Rotary_Props.ArmGainAssist.PID_Up[2]);
+	m_PIDControllerDown.SetPID(m_Rotary_Props.ArmGainAssist.PID_Down[0],m_Rotary_Props.ArmGainAssist.PID_Down[1],m_Rotary_Props.ArmGainAssist.PID_Down[2]);
 
 	const double MaxSpeedReference=Props->GetMaxSpeed();
-	m_PIDController.SetInputRange(-MaxSpeedReference,MaxSpeedReference);
+	m_PIDControllerUp.SetInputRange(-MaxSpeedReference,MaxSpeedReference);
+	m_PIDControllerDown.SetInputRange(-MaxSpeedReference,MaxSpeedReference);
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
-	m_PIDController.SetOutputRange(-MaxSpeedReference*tolerance,MaxSpeedReference*tolerance);
+	m_PIDControllerUp.SetOutputRange(-MaxSpeedReference*tolerance,MaxSpeedReference*tolerance);
+	m_PIDControllerDown.SetOutputRange(-MaxSpeedReference*tolerance,MaxSpeedReference*tolerance);
 	//The idea here is that the arm may rest at a stop point that needs consistent voltage to keep steady
 	if (m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage!=0.0)
-		m_PIDController.SetAutoResetI(false);
-	m_PIDController.Enable();
+	{
+		m_PIDControllerUp.SetAutoResetI(false);
+		m_PIDControllerDown.SetAutoResetI(false);
+	}
+	m_PIDControllerUp.Enable();
+	m_PIDControllerDown.Enable();
 	m_ErrorOffset=0.0;
 	switch (m_Rotary_Props.LoopState)
 	{
@@ -134,7 +159,9 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 		m_PotentiometerState=eActive;
 		break;
 	}
-	InitNetworkProperties(m_Rotary_Props,true);
+	//It is assumed that this property is constant throughout the whole session
+	if (m_Rotary_Props.PID_Console_Dump)
+		InitNetworkProperties(m_Rotary_Props,true);
 }
 
 void Rotary_Position_Control::TimeChange(double dTime_s)
@@ -158,28 +185,45 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	//Update the position to where the potentiometer says where it actually is
 	if (m_PotentiometerState==eActive)
 	{
-		//For now we'll keep it this way until we have tested it thoroughly... for manual control using the force should help with latency and clear the 'I' if it gets messed up
-		//We may however be able to omit the else case as in theory it should all work fine... if we don't use 'I' then it would probably be safe to make the change now
-		//We can tune without I if possible to have for manual control
-		//  [2/10/2013 James]
-		if ((m_PIDController.GetI()==0.0) || (!GetLockShipToPosition()))
+		//TODO we'll probably want velocity PID for turret no load type... we'll need to test to see
+		const bool TuneVelocity=false;
+		
+		if (!GetLockShipToPosition())
 		{
-			m_ErrorOffset=m_PIDController(CurrentVelocity,PotentiometerVelocity,dTime_s);
-			const double Acceleration=(CurrentVelocity-m_PreviousVelocity)/dTime_s;
-			const bool Decel=(Acceleration * CurrentVelocity < 0);
-			//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
-			//Note: that it is important to bias towards deceleration this can help satisfy both requirements of avoiding oscillation as well
-			//As well as avoiding a potential overshoot when trying stop at a precise distance
-			m_ErrorOffset=Decel || fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
+			if (TuneVelocity)
+			{
+				if (m_PIDControllerUp.GetI()==0.0)
+				{
+					m_ErrorOffset=m_PIDControllerUp(CurrentVelocity,PotentiometerVelocity,dTime_s);
+					const double Acceleration=(CurrentVelocity-m_PreviousVelocity)/dTime_s;
+					const bool Decel=(Acceleration * CurrentVelocity < 0);
+					//normalize errors... these will not be reflected for I so it is safe to normalize here to avoid introducing oscillation from P
+					//Note: that it is important to bias towards deceleration this can help satisfy both requirements of avoiding oscillation as well
+					//As well as avoiding a potential overshoot when trying stop at a precise distance
+					m_ErrorOffset=Decel || fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
+				}
+			}
+			else
+			{
+				//PID will correct for position... this may need to use I to compensate for latency
+				if (GetPos_m()>NewPosition)
+					m_ErrorOffset=m_PIDControllerUp(GetPos_m(),NewPosition,dTime_s);
+				else
+					m_ErrorOffset=m_PIDControllerDown(GetPos_m(),NewPosition,dTime_s);
+				m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
+			}
 		}
 		else
 		{
 			//If we are manually controlling, we should still update displacement to properly work with limits and maintain where the position really
 			//is to seamlessly transfer between manual and auto
 			m_ErrorOffset=0.0;
-			m_PIDController.ResetI();
+			m_PIDControllerUp.ResetI();
+			m_PIDControllerDown.ResetI();
 		}
-		SetPos_m(NewPosition);
+		//We do not want to alter position if we are using position control PID
+		if (TuneVelocity)
+			SetPos_m(NewPosition);
 	}
 	else if (m_PotentiometerState==ePassive)
 		SetPos_m(NewPosition);  //this will help min and max limits work properly even though we do not have PID
@@ -201,8 +245,8 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	else
 		Voltage+=Acceleration*(IsAccel? m_Rotary_Props.ArmGainAssist.InverseMaxAccel_Down : m_Rotary_Props.ArmGainAssist.InverseMaxDecel_Down);
 
-	//See if we are using the arm gain assist
-	if (m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage!=0.0)
+	//See if we are using the arm gain assist (only when going up)
+	if ((m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage!=0.0)&&(CurrentVelocity>0.0))
 	{
 		//first start out by allowing the max amount to correspond to the angle of the arm... this assumes the arm zero degrees is parallel to the ground
 		//90 is straight up... should work for angles below zero (e.g. hiking viking)... angles greater than 90 will be negative which is also correct
@@ -212,13 +256,13 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		//Now to compute blend strength... a simple linear distribution of how much slower it is from the slow velocity
 		if (MaxVoltage>0.0)
 		{
-			if (Velocity<SlowVelocity)
-				BlendStrength= (SlowVelocity-Velocity) / SlowVelocity;
+			if (PotentiometerVelocity<SlowVelocity)
+				BlendStrength= (SlowVelocity-PotentiometerVelocity) / SlowVelocity;
 		}
 		else
 		{
-			if (Velocity>-SlowVelocity)
-				BlendStrength= (SlowVelocity-fabs(Velocity)) / SlowVelocity;
+			if (PotentiometerVelocity>-SlowVelocity)
+				BlendStrength= (SlowVelocity-fabs(PotentiometerVelocity)) / SlowVelocity;
 		}
 		Voltage+= MaxVoltage * BlendStrength;
 	}
@@ -264,7 +308,8 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	if (m_Rotary_Props.PID_Console_Dump)
 	{
 		NetworkEditProperties(m_Rotary_Props,true);
-		m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
+		m_PIDControllerUp.SetPID(m_Rotary_Props.ArmGainAssist.PID_Up[0],m_Rotary_Props.ArmGainAssist.PID_Up[1],m_Rotary_Props.ArmGainAssist.PID_Up[2]);
+		m_PIDControllerDown.SetPID(m_Rotary_Props.ArmGainAssist.PID_Down[0],m_Rotary_Props.ArmGainAssist.PID_Down[1],m_Rotary_Props.ArmGainAssist.PID_Down[2]);
 		switch (m_Rotary_Props.LoopState)
 		{
 		case Rotary_Props::eNone:
@@ -279,11 +324,18 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		}
 
 		#ifdef __DebugLUA__
-		if ((m_Rotary_Props.PID_Console_Dump)&&(PotentiometerVelocity!=0.0)&&(Voltage!=0.0))
+		if ((m_Rotary_Props.PID_Console_Dump)&&((fabs(PotentiometerVelocity)>0.03)||(CurrentVelocity!=0.0)||(Voltage!=0.0)))
 		{
 			double PosY=m_LastPosition;
 			//double PosY=RAD_2_DEG(m_LastPosition);
 			printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
+			//These will be great if the plot could group them together
+			#if 0
+			std::string EntityName=GetName();
+			SmartDashboard::PutNumber(GetName()+"_predicted",CurrentVelocity);
+			SmartDashboard::PutNumber(GetName()+"_actual",PotentiometerVelocity);
+			SmartDashboard::PutNumber(GetName()+"_ErrorOffset",m_ErrorOffset);
+			#endif
 		}
 		#endif
 	}
@@ -299,7 +351,8 @@ void Rotary_Position_Control::ResetPos()
 	m_RobotControl->Reset_Rotary(m_InstanceIndex);
 	if ((m_PotentiometerState!=eNoPot)&&(!GetBypassPos_Update()))
 	{
-		m_PIDController.Reset();
+		m_PIDControllerUp.Reset();
+		m_PIDControllerDown.Reset();
 		m_RobotControl->Reset_Rotary(m_InstanceIndex);
 		double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 		Stop();
@@ -402,6 +455,8 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	case Rotary_Props::eClosed:
 		m_EncoderState=eActive;
 		break;
+	default:
+		assert(false);
 	}
 }
 
@@ -421,6 +476,8 @@ void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 	case Rotary_Props::eClosed:
 		m_EncoderState=eActive;
 		break;
+	default:
+		assert(false);
 	}
 }
 
@@ -627,6 +684,8 @@ void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 			case Rotary_Props::eClosed:
 				m_EncoderState=eActive;
 				break;
+			default:
+				assert(false);
 			}
 			//setup the initial value with the potentiometers value
 			printf("Enabling encoder for %s\n",GetName().c_str());
@@ -669,6 +728,9 @@ void Rotary_Properties::Init()
 	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
 	Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
 	arm.SlowVelocity=arm.SlowVelocityVoltage=0.0;
+	arm.InverseMaxAccel_Down=arm.InverseMaxAccel_Up=arm.InverseMaxDecel_Down=arm.InverseMaxDecel_Up=0.0;
+	for (size_t i=0;i<3;i++)
+		arm.PID_Down[i]=arm.PID_Up[i]=0.0;
 	m_RotaryProps=props;
 }
 
@@ -700,7 +762,33 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			err = script.GetField("d", NULL, NULL,&m_RotaryProps.PID[2]);
 			ASSERT_MSG(!err, err);
 			script.Pop();
+			for (size_t i=0;i<3;i++)
+				m_RotaryProps.ArmGainAssist.PID_Up[i]=m_RotaryProps.ArmGainAssist.PID_Down[i]=m_RotaryProps.PID[i];
 		}
+		err = script.GetFieldTable("pid_up");
+		if (!err)
+		{
+			err = script.GetField("p", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Up[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("i", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Up[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("d", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Up[2]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+
+		err = script.GetFieldTable("pid_down");
+		if (!err)
+		{
+			err = script.GetField("p", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Down[0]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("i", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Down[1]);
+			ASSERT_MSG(!err, err);
+			err = script.GetField("d", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Down[2]);
+			ASSERT_MSG(!err, err);
+			script.Pop();
+		}
+
 		script.GetField("tolerance", NULL, NULL, &m_RotaryProps.PrecisionTolerance);
 
 		double fDisplayRow;
