@@ -98,18 +98,18 @@ TestShip = {
 			
 			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
 			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
-			accel=10,						--We may indeed have a two button solution (match with max accel)
-			brake=10,
+			accel=0.5,						--We may indeed have a two button solution (match with max accel)
+			brake=0.5,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			max_range_deg= 70 * ArmToGearRatio,
 			min_range_deg=(-50) * ArmToGearRatio,
 			use_aggressive_stop = 'yes',
-			inv_max_accel_up = 0.0,
+			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
-			inv_max_accel_down = 0.0,
+			inv_max_accel_down = 0.4,
 			inv_max_decel_down = 0.0,
 			slow_velocity_voltage = 4.0,
 			slow_velocity = 1.0,

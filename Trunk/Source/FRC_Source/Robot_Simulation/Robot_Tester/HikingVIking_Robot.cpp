@@ -237,7 +237,8 @@ double HikingViking_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r) const
 double HikingViking_Robot::Robot_Arm::HeightToAngle_r(double Height_m) const
 {
 	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
-	return asin((Height_m-props.GearHeightOffset)/props.ArmLength) * props.ArmToGearRatio;
+	//return asin((Height_m-props.GearHeightOffset)/props.ArmLength) * props.ArmToGearRatio;
+	return asin((Height_m-props.GearHeightOffset)/props.ArmLength);
 }
 
 double HikingViking_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw) const

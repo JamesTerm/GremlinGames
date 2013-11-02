@@ -228,6 +228,10 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	else if (m_PotentiometerState==ePassive)
 		SetPos_m(NewPosition);  //this will help min and max limits work properly even though we do not have PID
 
+	//if we are heading for an intended position and we graze on it... turn off the corrections
+	if  ((!GetLockShipToPosition()) && (fabs(NewPosition-m_IntendedPosition)<m_Rotary_Props.PrecisionTolerance))
+		SetCurrentLinearAcceleration(0.0);  //lock ship to position
+
 	m_LastPosition=NewPosition;
 	m_LastTime=dTime_s;
 

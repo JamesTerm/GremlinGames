@@ -220,8 +220,9 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 		//point mass at radius is 1.0
 		const double I=mass * r2;
 		double Torque=I * 9.80665 * -0.55;  //the last scalar gets the direction correct with negative... and tones it down from surgical tubing
-		//double TorqueWithAngle=cos(GetDistance() * m_InvEncoderToRS_Ratio) * Torque * m_Time_s;  //gravity has most effect when the angle is zero
-		double TorqueWithAngle= Torque * m_Time_s;
+		double TorqueWithAngle=cos(GetDistance() * m_InvEncoderToRS_Ratio) * Torque * m_Time_s;  //gravity has most effect when the angle is zero
+		//add surgical tubing simulation... this works in both directions  //1.6 seemed closest but on weaker battery, and can't hit 9 feet well
+		TorqueWithAngle+=sin(GetDistance() * m_InvEncoderToRS_Ratio) * -1.5;
 		//The pin can protect it against going the wrong direction... if they are opposite... saturate the max opposing direction
 		if (((Torque * TorqueToApply)<0.0) && (fabs(TorqueWithAngle)>fabs(TorqueToApply)))
 			TorqueWithAngle=-TorqueToApply;
