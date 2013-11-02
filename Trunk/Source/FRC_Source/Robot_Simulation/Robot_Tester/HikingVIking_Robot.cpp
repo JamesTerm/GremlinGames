@@ -533,7 +533,7 @@ void HikingViking_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage
 		case HikingViking_Robot::eArm:
 			{
 				m_ArmVoltage=Voltage * m_RobotProps.GetArmProps().GetRotaryProps().VoltageScalar;
-				m_Potentiometer.UpdateEncoderVoltage(m_ArmVoltage);
+				m_Potentiometer.UpdatePotentiometerVoltage(m_ArmVoltage);
 				m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
@@ -594,8 +594,11 @@ void HikingViking_Robot_Control::Initialize(const Entity_Properties *props)
 	{
 		m_RobotProps=*robot_props;  //save a copy
 		assert(robot_props);
-		m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
-		m_Potentiometer.Initialize(&robot_props->GetArmProps());
+		Rotary_Properties writeable_arm_props=robot_props->GetArmProps();
+		m_ArmMaxSpeed=writeable_arm_props.GetMaxSpeed();
+		//This is not perfect but will work for our simulation purposes
+		writeable_arm_props.RotaryProps().EncoderToRS_Ratio=robot_props->GetHikingVikingRobotProps().ArmToGearRatio;
+		m_Potentiometer.Initialize(&writeable_arm_props);
 	}
 	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
 	tank_interface->Initialize(props);
@@ -632,11 +635,11 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
 			//result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
 			//no conversion needed in simulation
-			result=(m_Potentiometer.GetDistance()) + 0.0;
+			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) *c_GearToArmRatio;
 
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result*c_GearToArmRatio));
-			const double height= (sin(result*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
+			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
+			const double height= (sin(result)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
 		}
 		break;

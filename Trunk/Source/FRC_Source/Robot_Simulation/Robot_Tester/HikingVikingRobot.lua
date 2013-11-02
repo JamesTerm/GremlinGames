@@ -85,8 +85,8 @@ TestShip = {
 	{
 		arm =
 		{
-			is_closed=1,
-			show_pid_dump='n',
+			is_closed=0,
+			show_pid_dump='y',
 			ds_display_row=-1,
 			pid=
 			{p=100, i=0, d=0},
@@ -107,14 +107,17 @@ TestShip = {
 			max_range_deg= 70 * ArmToGearRatio,
 			min_range_deg=(-50) * ArmToGearRatio,
 			use_aggressive_stop = 'yes',
-			inv_max_accel = 1.0/17.0,
-			--inv_max_accel = 1.0/15.0,
-			--inv_max_decel = 1.0/24.0,
+			inv_max_accel_up = 0.0,
+			inv_max_decel_up = 0.0,
+			inv_max_accel_down = 0.0,
+			inv_max_decel_down = 0.0,
+			slow_velocity_voltage = 4.0,
+			slow_velocity = 1.0,
 			distance_scale = 0.5,
 			motor_specs =
 			{
 				wheel_mass=Pounds2Kilograms * 16.27,
-				cof_efficiency=1.0,
+				cof_efficiency=0.2,
 				gear_reduction=1.0,
 				torque_on_wheel_radius=Inches2Meters * 1.0,
 				drive_wheel_radius=Inches2Meters * 2.0,
@@ -179,7 +182,7 @@ TestShip = {
 			Arm_SetPos3feet = {type="joystick_button", key=3, keyboard='u', on_off=false},
 			Arm_SetPos6feet = {type="joystick_button", key=2, keyboard='l', on_off=false},
 			Arm_SetPos9feet = {type="joystick_button", key=4, keyboard=';', on_off=false},
-			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.6, filter=0.1, curve_intensity=3.0},
 			Arm_Rist={type="joystick_button", key=5, keyboard='r', on_off=true},
 			Arm_Advance={type="keyboard", key='k', on_off=true},
 			Arm_Retract={type="keyboard", key='j', on_off=true},
