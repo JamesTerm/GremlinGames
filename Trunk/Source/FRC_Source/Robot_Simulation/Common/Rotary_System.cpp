@@ -36,6 +36,7 @@ void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmA
 			break;
 	}
 
+	SmartDashboard::PutNumber("Tolerance",props.PrecisionTolerance);
 
 	if (!AddArmAssist)
 	{
@@ -74,6 +75,9 @@ void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 	if (strcmp(strValue.c_str(),"open")==0) props.LoopState=Rotary_Props::eOpen;
 	else if (strcmp(strValue.c_str(),"closed")==0) props.LoopState=Rotary_Props::eClosed;
 	else if (strcmp(strValue.c_str(),"none")==0) props.LoopState=Rotary_Props::eNone;
+
+	props.PrecisionTolerance=SmartDashboard::GetNumber("Tolerance");
+
 	if (!AddArmAssist)
 	{
 		props.PID[0]=SmartDashboard::GetNumber("velocity P");
@@ -328,7 +332,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		}
 
 		#ifdef __DebugLUA__
-		if ((m_Rotary_Props.PID_Console_Dump)&&((fabs(PotentiometerVelocity)>0.03)||(CurrentVelocity!=0.0)||(Voltage!=0.0)))
+		if ((fabs(PotentiometerVelocity)>0.03)||(CurrentVelocity!=0.0)||(Voltage!=0.0))
 		{
 			double PosY=m_LastPosition;
 			//double PosY=RAD_2_DEG(m_LastPosition);
@@ -462,6 +466,9 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	default:
 		assert(false);
 	}
+	//It is assumed that this property is constant throughout the whole session
+	if (m_Rotary_Props.PID_Console_Dump)
+		InitNetworkProperties(m_Rotary_Props);
 }
 
 void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
@@ -589,20 +596,38 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 		Voltage=-Voltage;
 	#endif
 
-	#ifdef __DebugLUA__
-	if (m_Rotary_Props.PID_Console_Dump && (Encoder_Velocity!=0.0))
+	if (m_Rotary_Props.PID_Console_Dump)
 	{
-		if (m_Rotary_Props.UseAggressiveStop)
-			printf("v=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset);
-		else
+		NetworkEditProperties(m_Rotary_Props);
+		m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
+		switch (m_Rotary_Props.LoopState)
 		{
-			if (m_PIDController.GetI()==0.0)
-				printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/m_MaxSpeed);
-			else
-				printf("v=%.2f p=%.2f e=%.2f i=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_PIDController.GetTotalError(),m_CalibratedScaler/m_MaxSpeed);
+		case Rotary_Props::eNone:
+			SetEncoderSafety(true);
+			break;
+		case Rotary_Props::eOpen:
+			m_EncoderState=ePassive;
+			break;
+		case Rotary_Props::eClosed:
+			m_EncoderState=eActive;
+			break;
 		}
+
+		#ifdef __DebugLUA__
+		if (Encoder_Velocity!=0.0)
+		{
+			if (m_Rotary_Props.UseAggressiveStop)
+				printf("v=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset);
+			else
+			{
+				if (m_PIDController.GetI()==0.0)
+					printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/m_MaxSpeed);
+				else
+					printf("v=%.2f p=%.2f e=%.2f i=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_PIDController.GetTotalError(),m_CalibratedScaler/m_MaxSpeed);
+			}
+		}
+		#endif
 	}
-	#endif
 
 	m_RobotControl->UpdateRotaryVoltage(m_InstanceIndex,Voltage);
 
