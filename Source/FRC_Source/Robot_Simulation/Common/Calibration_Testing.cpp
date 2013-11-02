@@ -27,6 +27,11 @@ const double c_GearToPotentiometer=1.0/c_PotentiometerToGearRatio;
 //const double c_Potentiometer_TestRate=18.0;
 const double c_Potentiometer_TestRate=24.0;
 //const double c_Potentiometer_TestRate=48.0;
+const double Polynomial[5]=
+{
+	//0.0,1.0   ,0.0    ,0.0   ,0.0
+	0.0,2.4878,-2.2091,0.7134,0.0
+};
 
 
   /***************************************************************************************************************/
@@ -165,6 +170,72 @@ void Potentiometer_Tester2::TimeChange()
 }
 
   /***************************************************************************************************************/
+ /*												Potentiometer_Tester3											*/
+/***************************************************************************************************************/
+
+Potentiometer_Tester3::Potentiometer_Tester3(const char *EntityName) : Encoder_Simulator2(EntityName),m_InvEncoderToRS_Ratio(1.0)
+{
+}
+
+void Potentiometer_Tester3::Initialize(const Ship_1D_Properties *props)
+{
+	__super::Initialize(props);
+	const Rotary_Properties *rotary=dynamic_cast<const Rotary_Properties *>(props);
+	if (rotary)
+		m_InvEncoderToRS_Ratio=1.0/rotary->GetRotaryProps().EncoderToRS_Ratio;
+}
+
+void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
+{
+	double Direction=Voltage<0 ? -1.0 : 1.0;
+	Voltage=fabs(Voltage); //make positive
+	//Apply the victor curve
+	//Apply the polynomial equation to the voltage to linearize the curve
+	{
+		const double *c=Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		Voltage *= Direction;
+	}
+	//From this point it is a percentage (hopefully linear distribution after applying the curve) of the max force to apply... This can be
+	//computed from stall torque ratings of motor with various gear reductions and so forth
+	//on JVN's spread sheet torque at wheel is (WST / DWR) * 2  (for nm)  (Wheel stall torque / Drive Wheel Radius * 2 sides)
+	//where stall torque is ST / GearReduction * DriveTrain efficiency
+	//This is all computed in the drive train
+	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
+	const double TorqueAbsorbed=m_DriveTrain.GetTorqueFromVelocity(m_Physics.GetVelocity());
+	TorqueToApply-=TorqueAbsorbed;
+	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
+	//If we have enough voltage and enough velocity the locking pin is not engaged... gravity can apply extra torque
+	//if ((fabs(Voltage)>0.04)&&(fabs(m_Physics.GetVelocity())>0.05))
+	if (fabs(Voltage)>0.04)
+	{
+		// t=Ia 
+		//I=sum(m*r^2) or sum(AngularCoef*m*r^2)
+		const double Pounds2Kilograms=0.453592;
+		const double mass=16.27*Pounds2Kilograms;
+		const double r2=1.82*1.82;  
+		//point mass at radius is 1.0
+		const double I=mass * r2;
+		double Torque=I * 9.80665 * -0.55;  //the last scalar gets the direction correct with negative... and tones it down from surgical tubing
+		//double TorqueWithAngle=cos(GetDistance() * m_InvEncoderToRS_Ratio) * Torque * m_Time_s;  //gravity has most effect when the angle is zero
+		double TorqueWithAngle= Torque * m_Time_s;
+		//The pin can protect it against going the wrong direction... if they are opposite... saturate the max opposing direction
+		if (((Torque * TorqueToApply)<0.0) && (fabs(TorqueWithAngle)>fabs(TorqueToApply)))
+			TorqueWithAngle=-TorqueToApply;
+		m_Physics.ApplyFractionalTorque(TorqueWithAngle,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
+	}
+}
+
+double Potentiometer_Tester3::GetPotentiometerCurrentPosition()
+{
+	return __super::GetDistance();
+}
+
+
+  /***************************************************************************************************************/
  /*												Encoder_Simulator												*/
 /***************************************************************************************************************/
 #define ENCODER_TEST_RATE 1
@@ -229,12 +300,6 @@ void Encoder_Simulator::UpdateEncoderVoltage(double Voltage)
 	SetCurrentLinearAcceleration((Accel * filter * filter) + friction); //square the filter (matches read out better)
 	#endif
 }
-
-const double Polynomial[5]=
-{
-	//0.0,1.0   ,0.0    ,0.0   ,0.0
-	  0.0,2.4878,-2.2091,0.7134,0.0
-};
 
 double Encoder_Simulator::GetEncoderVelocity()
 {

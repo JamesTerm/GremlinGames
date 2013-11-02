@@ -141,13 +141,27 @@ class COMMON_API Encoder_Simulator2
 		void ResetPos();
 		void SetGearReduction(double NewGearing) {m_DriveTrain.SetGearReduction(NewGearing);}
 	protected:
-	private:
-		double m_Time_s;
-		double m_Position;  //also keep track of position to simulate distance use case (i.e. used as a potentiometer)
 		PhysicsEntity_1D m_Physics;
+		Drive_Train_Characteristics m_DriveTrain;
+		double m_Time_s;
+	private:
+		double m_Position;  //also keep track of position to simulate distance use case (i.e. used as a potentiometer)
 		double m_EncoderScalar; //used for position updates
 		double m_ReverseMultiply; //used to implement set reverse direction
-		Drive_Train_Characteristics m_DriveTrain;
+};
+
+class COMMON_API Potentiometer_Tester3 : public Encoder_Simulator2
+{
+public:
+	Potentiometer_Tester3(const char *EntityName="PotSimulator3");
+	virtual void Initialize(const Ship_1D_Properties *props=NULL);
+
+	void UpdatePotentiometerVoltage(double Voltage);
+	virtual double GetPotentiometerCurrentPosition();
+	//void TimeChange();
+protected:
+	double m_InvEncoderToRS_Ratio;
+private:
 };
 
 class COMMON_API Encoder_Tester
