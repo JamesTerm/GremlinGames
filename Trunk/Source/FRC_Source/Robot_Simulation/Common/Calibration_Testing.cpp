@@ -183,6 +183,7 @@ void Potentiometer_Tester3::Initialize(const Ship_1D_Properties *props)
 	const Rotary_Properties *rotary=dynamic_cast<const Rotary_Properties *>(props);
 	if (rotary)
 		m_InvEncoderToRS_Ratio=1.0/rotary->GetRotaryProps().EncoderToRS_Ratio;
+	m_SlackedValue=GetDistance();
 }
 
 void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
@@ -232,7 +233,47 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 
 double Potentiometer_Tester3::GetPotentiometerCurrentPosition()
 {
-	return __super::GetDistance();
+	#if 1
+	return m_SlackedValue;
+	#else
+	return GetDistance();
+	#endif
+}
+
+void Potentiometer_Tester3::TimeChange()
+{
+	__super::TimeChange();
+	double CurrentVelociy=m_Physics.GetVelocity();
+	m_Slack.push(GetDistance());
+	const size_t MaxLatencyCount=40;
+
+	if (CurrentVelociy >= 0.0)  //going up or still shrink
+	{
+		if (m_Slack.size()> (MaxLatencyCount>>1))
+			m_Slack.pop();
+		if (!m_Slack.empty())
+		{
+			m_SlackedValue=m_Slack.front();
+			m_Slack.pop();
+		}
+		else
+			m_SlackedValue=GetDistance();
+	}
+	else  //going down expand
+	{
+		if (m_Slack.size()>=MaxLatencyCount)
+			m_Slack.pop();
+		m_SlackedValue=m_Slack.front();
+	}
+	//SmartDashboard::PutNumber("TestSlack",(double)m_Slack.size());
+}
+
+void Potentiometer_Tester3::ResetPos()
+{
+	__super::ResetPos();
+	while (!m_Slack.empty())
+		m_Slack.pop();
+	m_SlackedValue=GetDistance();
 }
 
 
