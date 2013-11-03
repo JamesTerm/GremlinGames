@@ -237,8 +237,7 @@ double HikingViking_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r) const
 double HikingViking_Robot::Robot_Arm::HeightToAngle_r(double Height_m) const
 {
 	const HikingViking_Robot_Props &props=m_pParent->GetRobotProps().GetHikingVikingRobotProps();
-	//return asin((Height_m-props.GearHeightOffset)/props.ArmLength) * props.ArmToGearRatio;
-	return asin((Height_m-props.GearHeightOffset)/props.ArmLength);
+	return asin((Height_m-props.GearHeightOffset)/props.ArmLength) * props.ArmToGearRatio;
 }
 
 double HikingViking_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw) const
@@ -636,11 +635,11 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
 			//result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
 			//no conversion needed in simulation
-			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) *c_GearToArmRatio;
+			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) + 0.0;
 
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
-			const double height= (sin(result)*props.ArmLength)+props.GearHeightOffset;
+			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result*c_GearToArmRatio));
+			const double height= (sin(result*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
 		}
 		break;

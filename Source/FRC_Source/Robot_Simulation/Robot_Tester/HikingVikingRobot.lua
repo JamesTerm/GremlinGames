@@ -113,6 +113,7 @@ TestShip = {
 			inv_max_decel_down = 0.0,
 			slow_velocity_voltage = 4.0,
 			slow_velocity = 1.0,
+			slow_angle_scalar = GearToArmRatio,
 			distance_scale = 0.5,
 			motor_specs =
 			{

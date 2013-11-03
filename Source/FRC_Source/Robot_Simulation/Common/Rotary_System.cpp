@@ -247,20 +247,21 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 
 	double Voltage=(Velocity+m_ErrorOffset)/m_MaxSpeed;
 
+	const Rotary_Props::Rotary_Arm_GainAssist_Props &arm= m_Rotary_Props.ArmGainAssist;
 	bool IsAccel=(Acceleration * Velocity > 0);
 	if (Velocity>0)
-		Voltage+=Acceleration*(IsAccel? m_Rotary_Props.ArmGainAssist.InverseMaxAccel_Up : m_Rotary_Props.ArmGainAssist.InverseMaxDecel_Up);
+		Voltage+=Acceleration*(IsAccel? arm.InverseMaxAccel_Up : arm.InverseMaxDecel_Up);
 	else
-		Voltage+=Acceleration*(IsAccel? m_Rotary_Props.ArmGainAssist.InverseMaxAccel_Down : m_Rotary_Props.ArmGainAssist.InverseMaxDecel_Down);
+		Voltage+=Acceleration*(IsAccel? arm.InverseMaxAccel_Down : arm.InverseMaxDecel_Down);
 
 	//See if we are using the arm gain assist (only when going up)
-	if ((m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage!=0.0)&&(CurrentVelocity>0.0))
+	if ((arm.SlowVelocityVoltage!=0.0)&&(CurrentVelocity>0.0))
 	{
 		//first start out by allowing the max amount to correspond to the angle of the arm... this assumes the arm zero degrees is parallel to the ground
 		//90 is straight up... should work for angles below zero (e.g. hiking viking)... angles greater than 90 will be negative which is also correct
-		const double MaxVoltage=cos(NewPosition) * m_Rotary_Props.ArmGainAssist.SlowVelocityVoltage;
+		const double MaxVoltage=cos(NewPosition * arm.GainAssistAngleScalar) * arm.SlowVelocityVoltage;
 		double BlendStrength=0.0;
-		const double SlowVelocity=m_Rotary_Props.ArmGainAssist.SlowVelocity;
+		const double SlowVelocity=arm.SlowVelocity;
 		//Now to compute blend strength... a simple linear distribution of how much slower it is from the slow velocity
 		if (MaxVoltage>0.0)
 		{
@@ -757,6 +758,7 @@ void Rotary_Properties::Init()
 	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
 	Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
 	arm.SlowVelocity=arm.SlowVelocityVoltage=0.0;
+	arm.GainAssistAngleScalar=1.0;
 	arm.InverseMaxAccel_Down=arm.InverseMaxAccel_Up=arm.InverseMaxDecel_Down=arm.InverseMaxDecel_Up=0.0;
 	for (size_t i=0;i<3;i++)
 		arm.PID_Down[i]=arm.PID_Up[i]=0.0;
@@ -888,6 +890,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 
 		script.GetField("slow_velocity_voltage", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocityVoltage);
 		script.GetField("slow_velocity", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocity);
+		script.GetField("slow_angle_scalar", NULL, NULL, &m_RotaryProps.ArmGainAssist.GainAssistAngleScalar);
 
 		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
