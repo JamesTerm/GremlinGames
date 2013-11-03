@@ -22,8 +22,7 @@ struct Rotary_Props
 	{
 		eNone, //Will never read them (ideal for systems that do not have any encoders)
 		eOpen,  //Will read them but never alter velocities
-		eClosed, //Will attempt to match predicted velocity to actual velocity
-		ePositionOnly  //Not used yet... TODO implement for position
+		eClosed //Will attempt to match predicted velocity to actual velocity
 	} LoopState; //This should always be false once control is fully functional
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 
@@ -44,6 +43,7 @@ struct Rotary_Props
 
 		double SlowVelocityVoltage;  //Empirically solved as the max voltage to keep load just above steady state for worst case scenario
 		double SlowVelocity;  //Rate at which the gain assist voltage gets blended out; This may be a bit more than the slow velocity used for SlowVelocityVoltage
+		double GainAssistAngleScalar;  //Convert gear ratio into the readable ratio for cos() (i.e. GearToArmRatio)
 	} ArmGainAssist;
 };
 
@@ -96,7 +96,8 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		/// \param DisableFeedback this allows ability to bypass feedback
 		Rotary_Control_Interface * const m_RobotControl;
 		const size_t m_InstanceIndex;
-		PIDController2 m_PIDController;
+		PIDController2 m_PIDControllerUp;
+		PIDController2 m_PIDControllerDown;
 		Rotary_Props m_Rotary_Props;
 
 		double m_LastPosition;  //used for calibration
