@@ -335,7 +335,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		#ifdef __DebugLUA__
 		if ((fabs(PotentiometerVelocity)>0.03)||(CurrentVelocity!=0.0)||(Voltage!=0.0))
 		{
-			double PosY=m_LastPosition;
+			double PosY=m_LastPosition * arm.GainAssistAngleScalar; //most likely this scalar is needed
 			//double PosY=RAD_2_DEG(m_LastPosition);
 			printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
 			//These will be great if the plot could group them together
