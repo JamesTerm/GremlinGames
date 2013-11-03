@@ -134,11 +134,11 @@ class COMMON_API Encoder_Simulator2
 
 		//This is broken up so that the real interface does not have to pass time
 		void SetTimeDelta(double dTime_s) {m_Time_s=dTime_s;}
-		void TimeChange();
+		virtual void TimeChange();
 		void SetReverseDirection(bool reverseDirection);  //emulates functionality of the encoder (needed because kids put them in differently)
 		void SetEncoderScalar(double value) {m_EncoderScalar=value;}  //This helps to simulate differences between sides
 		void SetFriction(double StaticFriction,double KineticFriction) {m_Physics.SetFriction(StaticFriction,KineticFriction);}
-		void ResetPos();
+		virtual void ResetPos();
 		void SetGearReduction(double NewGearing) {m_DriveTrain.SetGearReduction(NewGearing);}
 	protected:
 		PhysicsEntity_1D m_Physics;
@@ -158,10 +158,14 @@ public:
 
 	void UpdatePotentiometerVoltage(double Voltage);
 	virtual double GetPotentiometerCurrentPosition();
-	//void TimeChange();
+	virtual void TimeChange();
+	virtual void ResetPos();
 protected:
+
 	double m_InvEncoderToRS_Ratio;
 private:
+	std::queue<double> m_Slack;  //when going down this will grow to x frames, and going up with shrink... when not moving it will shrink to nothing
+	double m_SlackedValue; // ensure the pop of the slack only happens in the time change
 };
 
 class COMMON_API Encoder_Tester
