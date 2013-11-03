@@ -91,7 +91,6 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case HikingViking_Robot::eArm:
 		{
 			const HikingViking_Robot_Props &props=m_RobotProps.GetHikingVikingRobotProps();
-			const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
 
 			double raw_value = (double)m_Potentiometer.GetAverageValue();
 			raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
@@ -105,7 +104,7 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			}
 			result=-PotentiometerRaw_To_Arm;
 			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
-			const double height= (sin(result*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
+			const double height= (sin(result)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
 			
 			//I may keep these on as they should be useful feedback
@@ -115,6 +114,9 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			lcd->PrintfLine(DriverStationLCD::kUser_Line3, "%.1f %f %.1fft ", RAD_2_DEG(result),height,height*3.2808399);
 			//lcd->PrintfLine(DriverStationLCD::kUser_Line3, "1: Pot=%.1f ", raw_value);
 			#endif
+			
+			//Now to convert to the motor gear ratio as this is what we work in
+			result*=props.ArmToGearRatio;
 		}
 	}
 	return result;

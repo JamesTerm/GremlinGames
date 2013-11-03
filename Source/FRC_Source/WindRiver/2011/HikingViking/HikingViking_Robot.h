@@ -213,7 +213,7 @@ class HikingViking_Robot_Control : public HikingViking_Control_Interface
 		HikingViking_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		double m_ArmMaxSpeed;
-		Encoder_Simulator2 m_Potentiometer; //simulate a real potentiometer for calibration testing
+		Potentiometer_Tester3 m_Potentiometer; //simulate a real potentiometer for calibration testing
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
 		double m_ArmVoltage,m_RollerVoltage;
