@@ -208,13 +208,11 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
 	const double TorqueAbsorbed=m_DriveTrain.GetTorqueFromVelocity(m_Physics.GetVelocity());
 	TorqueToApply-=TorqueAbsorbed;
+	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
 	//If we have enough voltage and enough velocity the locking pin is not engaged... gravity can apply extra torque
-	//I have confirmed that 0.09 voltage is not enough (this converts to .22 after the conversion) to unlock the pin (going down)... it may be even more
-	if ((fabs(Voltage)>0.09)&&((fabs(Voltage)>0.22) || (!IsZero(m_Physics.GetVelocity())) ) )
-	//if (fabs(Voltage)>0.22)
+	//if ((fabs(Voltage)>0.04)&&(fabs(m_Physics.GetVelocity())>0.05))
+	if (fabs(Voltage)>0.04)
 	{
-		m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
-
 		// t=Ia 
 		//I=sum(m*r^2) or sum(AngularCoef*m*r^2)
 		const double Pounds2Kilograms=0.453592;
@@ -225,7 +223,7 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 		double Torque=I * 9.80665 * -0.55;  //the last scalar gets the direction correct with negative... and tones it down from surgical tubing
 		double TorqueWithAngle=cos(GetDistance() * m_InvEncoderToRS_Ratio) * Torque * m_Time_s;  //gravity has most effect when the angle is zero
 		//add surgical tubing simulation... this works in both directions  //1.6 seemed closest but on weaker battery, and can't hit 9 feet well
-		TorqueWithAngle+=sin(GetDistance() * m_InvEncoderToRS_Ratio) * -1.4;
+		TorqueWithAngle+=sin(GetDistance() * m_InvEncoderToRS_Ratio) * -1.5;
 		//The pin can protect it against going the wrong direction... if they are opposite... saturate the max opposing direction
 		if (((Torque * TorqueToApply)<0.0) && (fabs(TorqueWithAngle)>fabs(TorqueToApply)))
 			TorqueWithAngle=-TorqueToApply;
