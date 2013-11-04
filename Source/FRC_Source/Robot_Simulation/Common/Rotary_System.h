@@ -45,6 +45,9 @@ struct Rotary_Props
 		double SlowVelocity;  //Rate at which the gain assist voltage gets blended out; This may be a bit more than the slow velocity used for SlowVelocityVoltage
 		double GainAssistAngleScalar;  //Convert gear ratio into the readable ratio for cos() (i.e. GearToArmRatio)
 		double ToleranceConsecutiveCount;
+		//In milliseconds predict what the position will be by using the potentiometers velocity to help compensate for lag
+		double VelocityPredictUp;
+		double VelocityPredictDown;
 	} ArmGainAssist;
 };
 
