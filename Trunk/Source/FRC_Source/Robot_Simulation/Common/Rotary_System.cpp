@@ -67,6 +67,8 @@ void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmA
 		SmartDashboard::PutNumber("gravity gain voltage",arm.SlowVelocityVoltage);
 		SmartDashboard::PutNumber("gravity gain velocity",arm.SlowVelocity);
 		SmartDashboard::PutNumber("Tolerance Count",arm.ToleranceConsecutiveCount);
+		SmartDashboard::PutNumber("Lag Predict Up",arm.VelocityPredictUp);
+		SmartDashboard::PutNumber("Lag Predict Down",arm.VelocityPredictDown);
 	}
 }
 
@@ -107,6 +109,8 @@ void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 		arm.SlowVelocityVoltage=SmartDashboard::GetNumber("gravity gain voltage");
 		arm.SlowVelocity=SmartDashboard::GetNumber("gravity gain velocity");
 		arm.ToleranceConsecutiveCount=SmartDashboard::GetNumber("Tolerance Count");
+		arm.VelocityPredictUp=SmartDashboard::GetNumber("Lag Predict Up");
+		arm.VelocityPredictDown=SmartDashboard::GetNumber("Lag Predict Down");
 	}
 }
 
@@ -213,11 +217,19 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			}
 			else
 			{
+				const double PredictedPositionUp=NewPosition + (PotentiometerVelocity * arm.VelocityPredictUp);
 				//PID will correct for position... this may need to use I to compensate for latency
-				if (GetPos_m()>NewPosition)
-					m_ErrorOffset=m_PIDControllerUp(GetPos_m(),NewPosition,dTime_s);
+				if (GetPos_m()>PredictedPositionUp)
+				{
+					m_PIDControllerDown.ResetI();
+					m_ErrorOffset=m_PIDControllerUp(GetPos_m(),PredictedPositionUp,dTime_s);
+				}
 				else
-					m_ErrorOffset=m_PIDControllerDown(GetPos_m(),NewPosition,dTime_s);
+				{
+					const double PredictedPosition=NewPosition + (PotentiometerVelocity * arm.VelocityPredictDown);
+					m_PIDControllerUp.ResetI();
+					m_ErrorOffset=m_PIDControllerDown(GetPos_m(),PredictedPosition,dTime_s);
+				}
 				//unlike for velocity all error offset values are taken... two PIDs and I should help stabilize oscillation
 			}
 		}
@@ -782,6 +794,7 @@ void Rotary_Properties::Init()
 	for (size_t i=0;i<3;i++)
 		arm.PID_Down[i]=arm.PID_Up[i]=0.0;
 	arm.ToleranceConsecutiveCount=1;
+	arm.VelocityPredictUp=arm.VelocityPredictDown=0.0;
 	m_RotaryProps=props;
 }
 
@@ -914,6 +927,8 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("slow_velocity_voltage", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocityVoltage);
 		script.GetField("slow_velocity", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocity);
 		script.GetField("slow_angle_scalar", NULL, NULL, &m_RotaryProps.ArmGainAssist.GainAssistAngleScalar);
+		script.GetField("predict_up",NULL,NULL,&m_RotaryProps.ArmGainAssist.VelocityPredictUp);
+		script.GetField("predict_down",NULL,NULL,&m_RotaryProps.ArmGainAssist.VelocityPredictDown);
 
 		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
