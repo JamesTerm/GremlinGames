@@ -62,11 +62,12 @@ typedef struct tagBITMAPINFOHEADER{
 struct pixel_bgr_u8		{ typedef unsigned char value_type;		value_type m_b, m_g, m_r; };
 const pixel_bgr_u8 Pixel_Color[]=
 {
+	{0x10,0x10,0xF0}, //Red
 	{0x10,0xf0,0x10}, //Green
 	{0xf0,0x10,0xf0}, //Magenta
 	{0xf0,0xf0,0x10}, //Cyan
-	{0x10,0xf0,0xf0}, //Yellow
 	{0x80,0x80,0x80}, //Gray
+	{0x10,0xf0,0xf0}, //Yellow
 	{0xf0,0xf0,0xf0}, //white
 };
 
@@ -296,9 +297,10 @@ class MapPidDump
 				delete[] DestToUse;
 			}
 		}
+		//The order of these will determine the color for overlap case (i.e. zOrder) the last is on top
 		enum ColumnItems
 		{
-			eVoltage, ePredictedVelocity, eEncoderVelocity, eCalibratedScaler, eYPos, eNoItemsToGraph
+			ePredictedYPos, eVoltage, ePredictedVelocity, eEncoderVelocity, eYPos, eCalibratedScaler, eNoItemsToGraph
 		};
 
 		int GetYPos(double y)
@@ -341,7 +343,7 @@ class MapPidDump
 				for (size_t i=0;i<eMarker_NoItems;i++)
 				{
 					pixel_bgr_u8 &pixel=bitmap(x,Position[i]);
-					pixel=Pixel_Color[5];  
+					pixel=Pixel_Color[6];  
 				}
 			}
 			for (size_t x=5;x<10;x++)
@@ -349,7 +351,7 @@ class MapPidDump
 				for (size_t i=0;i<eMarker_NoItems;i+=2)
 				{
 					pixel_bgr_u8 &pixel=bitmap(x,Position[i]);
-					pixel=Pixel_Color[5];  
+					pixel=Pixel_Color[6];  
 				}
 			}
 		}
@@ -368,6 +370,7 @@ class MapPidDump
 				switch (i)
 				{
 					case eYPos:
+					case ePredictedYPos:
 						NormalizedValue*=m_YPos_Scaler;
 						break;
 					case ePredictedVelocity:
@@ -424,7 +427,11 @@ class MapPidDump
 				switch (Command)
 				{
 				case 'y':
-					m_ElementsColumn[m_ElementsColumnIndex[eYPos]][eYPos]=value,AdvanceElementsColumnIndex(eYPos);
+					//is it predicted velocity or predicted position
+					if (EqualPointer[-2]!='p')
+						m_ElementsColumn[m_ElementsColumnIndex[eYPos]][eYPos]=value,AdvanceElementsColumnIndex(eYPos);
+					else
+						m_ElementsColumn[m_ElementsColumnIndex[ePredictedYPos]][ePredictedYPos]=value,AdvanceElementsColumnIndex(ePredictedYPos);
 					break;
 				case 'v':
 					m_ElementsColumn[m_ElementsColumnIndex[eVoltage]][eVoltage]=value,AdvanceElementsColumnIndex(eVoltage);
