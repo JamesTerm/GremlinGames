@@ -210,8 +210,8 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 	TorqueToApply-=TorqueAbsorbed;
 	//If we have enough voltage and enough velocity the locking pin is not engaged... gravity can apply extra torque
 	//I have confirmed that 0.09 voltage is not enough (this converts to .22 after the conversion) to unlock the pin (going down)... it may be even more
-	//if ((fabs(Voltage)>0.09)&&(fabs(m_Physics.GetVelocity())>0.05))
-	if (fabs(Voltage)>0.22)
+	if ((fabs(Voltage)>0.09)&&((fabs(Voltage)>0.22) || (!IsZero(m_Physics.GetVelocity())) ) )
+	//if (fabs(Voltage)>0.22)
 	{
 		m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
 
