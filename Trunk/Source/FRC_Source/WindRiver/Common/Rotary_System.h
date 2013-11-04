@@ -44,6 +44,10 @@ struct Rotary_Props
 		double SlowVelocityVoltage;  //Empirically solved as the max voltage to keep load just above steady state for worst case scenario
 		double SlowVelocity;  //Rate at which the gain assist voltage gets blended out; This may be a bit more than the slow velocity used for SlowVelocityVoltage
 		double GainAssistAngleScalar;  //Convert gear ratio into the readable ratio for cos() (i.e. GearToArmRatio)
+		double ToleranceConsecutiveCount;
+		//In milliseconds predict what the position will be by using the potentiometers velocity to help compensate for lag
+		double VelocityPredictUp;
+		double VelocityPredictDown;
 	} ArmGainAssist;
 };
 
@@ -107,6 +111,8 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		double m_MaxSpeedReference; //used for calibration
 		double m_PreviousVelocity; //used to compute acceleration
 		PotUsage m_PotentiometerState; //dynamically able to turn off (e.g. panic button)
+		//A counter to count how many times the predicted position and intended position are withing tolerance consecutively
+		size_t m_ToleranceCounter;  
 	public:
 		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;

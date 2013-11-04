@@ -80,6 +80,9 @@ void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmA
 
 		SmartDashboard::PutNumber("gravity gain voltage",arm.SlowVelocityVoltage);
 		SmartDashboard::PutNumber("gravity gain velocity",arm.SlowVelocity);
+		SmartDashboard::PutNumber("Tolerance Count",arm.ToleranceConsecutiveCount);
+		SmartDashboard::PutNumber("Lag Predict Up",arm.VelocityPredictUp);
+		SmartDashboard::PutNumber("Lag Predict Down",arm.VelocityPredictDown);
 	}
 }
 
@@ -119,6 +122,9 @@ void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 
 		arm.SlowVelocityVoltage=SmartDashboard::GetNumber("gravity gain voltage");
 		arm.SlowVelocity=SmartDashboard::GetNumber("gravity gain velocity");
+		arm.ToleranceConsecutiveCount=SmartDashboard::GetNumber("Tolerance Count");
+		arm.VelocityPredictUp=SmartDashboard::GetNumber("Lag Predict Up");
+		arm.VelocityPredictDown=SmartDashboard::GetNumber("Lag Predict Down");
 	}
 }
 
@@ -133,7 +139,8 @@ Rotary_Position_Control::Rotary_Position_Control(const char EntityName[],Rotary_
 	m_LastPosition(0.0),m_MatchVelocity(0.0),
 	m_ErrorOffset(0.0),
 	m_LastTime(0.0),m_PreviousVelocity(0.0),
-	m_PotentiometerState(eNoPot) //to be safe
+	m_PotentiometerState(eNoPot), //to be safe
+	m_ToleranceCounter(0)
 {
 }
 
@@ -184,7 +191,11 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 
 void Rotary_Position_Control::TimeChange(double dTime_s)
 {
+	//TODO we'll probably want velocity PID for turret no load type... we'll need to test to see
+	const bool TuneVelocity=false;
 	const double CurrentVelocity=m_Physics.GetVelocity();
+	const Rotary_Props::Rotary_Arm_GainAssist_Props &arm= m_Rotary_Props.ArmGainAssist;
+	const bool NeedGainAssistForUp=((arm.SlowVelocityVoltage!=0.0)&&(CurrentVelocity>0.0));
 
 	//Note: the order has to be in this order where it grabs the potentiometer position first and then performs the time change and finally updates the
 	//new arm velocity.  Doing it this way avoids oscillating if the potentiometer and gear have been calibrated
@@ -203,9 +214,6 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	//Update the position to where the potentiometer says where it actually is
 	if (m_PotentiometerState==eActive)
 	{
-		//TODO we'll probably want velocity PID for turret no load type... we'll need to test to see
-		const bool TuneVelocity=false;
-		
 		if (!GetLockShipToPosition())
 		{
 			if (TuneVelocity)
@@ -223,12 +231,20 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			}
 			else
 			{
+				const double PredictedPositionUp=NewPosition + (PotentiometerVelocity * arm.VelocityPredictUp);
 				//PID will correct for position... this may need to use I to compensate for latency
-				if (GetPos_m()>NewPosition)
-					m_ErrorOffset=m_PIDControllerUp(GetPos_m(),NewPosition,dTime_s);
+				if (GetPos_m()>PredictedPositionUp)
+				{
+					m_PIDControllerDown.ResetI();
+					m_ErrorOffset=m_PIDControllerUp(GetPos_m(),PredictedPositionUp,dTime_s);
+				}
 				else
-					m_ErrorOffset=m_PIDControllerDown(GetPos_m(),NewPosition,dTime_s);
-				m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
+				{
+					const double PredictedPosition=NewPosition + (PotentiometerVelocity * arm.VelocityPredictDown);
+					m_PIDControllerUp.ResetI();
+					m_ErrorOffset=m_PIDControllerDown(GetPos_m(),PredictedPosition,dTime_s);
+				}
+				//unlike for velocity all error offset values are taken... two PIDs and I should help stabilize oscillation
 			}
 		}
 		else
@@ -240,15 +256,29 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			m_PIDControllerDown.ResetI();
 		}
 		//We do not want to alter position if we are using position control PID
-		if (TuneVelocity)
+		if ((TuneVelocity) || IsZero(NewPosition) || NeedGainAssistForUp)
 			SetPos_m(NewPosition);
 	}
+
 	else if (m_PotentiometerState==ePassive)
-		SetPos_m(NewPosition);  //this will help min and max limits work properly even though we do not have PID
+	{
+		//ensure the positions are calibrated when we are not moving
+		if (IsZero(NewPosition) || NeedGainAssistForUp)
+				SetPos_m(NewPosition);  //this will help min and max limits work properly even though we do not have PID
+	}
 
 	//if we are heading for an intended position and we graze on it... turn off the corrections
-	if  ((!GetLockShipToPosition()) && (fabs(NewPosition-m_IntendedPosition)<m_Rotary_Props.PrecisionTolerance))
-		SetCurrentLinearAcceleration(0.0);  //lock ship to position
+	if  (!GetLockShipToPosition())
+	{
+		
+		if (fabs(NewPosition-m_IntendedPosition)<m_Rotary_Props.PrecisionTolerance)
+			m_ToleranceCounter++;
+		else
+			m_ToleranceCounter=0;
+
+		if (m_ToleranceCounter >= arm.ToleranceConsecutiveCount)
+			SetCurrentLinearAcceleration(0.0);  //lock ship to position
+	}
 
 	m_LastPosition=NewPosition;
 	m_LastTime=dTime_s;
@@ -261,7 +291,6 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 
 	double Voltage=(Velocity+m_ErrorOffset)/m_MaxSpeed;
 
-	const Rotary_Props::Rotary_Arm_GainAssist_Props &arm= m_Rotary_Props.ArmGainAssist;
 	bool IsAccel=(Acceleration * Velocity > 0);
 	if (Velocity>0)
 		Voltage+=Acceleration*(IsAccel? arm.InverseMaxAccel_Up : arm.InverseMaxDecel_Up);
@@ -269,7 +298,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		Voltage+=Acceleration*(IsAccel? arm.InverseMaxAccel_Down : arm.InverseMaxDecel_Down);
 
 	//See if we are using the arm gain assist (only when going up)
-	if ((arm.SlowVelocityVoltage!=0.0)&&(CurrentVelocity>0.0))
+	if ((NeedGainAssistForUp) || ((arm.SlowVelocityVoltage!=0.0) && m_ErrorOffset>0.0))
 	{
 		//first start out by allowing the max amount to correspond to the angle of the arm... this assumes the arm zero degrees is parallel to the ground
 		//90 is straight up... should work for angles below zero (e.g. hiking viking)... angles greater than 90 will be negative which is also correct
@@ -349,9 +378,10 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		#ifdef __DebugLUA__
 		if ((fabs(PotentiometerVelocity)>0.03)||(CurrentVelocity!=0.0)||(Voltage!=0.0))
 		{
-			double PosY=m_LastPosition * arm.GainAssistAngleScalar; //most likely this scalar is needed
-			//double PosY=RAD_2_DEG(m_LastPosition);
-			printf("v=%.2f y=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
+			const double PosY=m_LastPosition * arm.GainAssistAngleScalar; //The scalar makes position more readable
+			const double PredictedPosY=GetPos_m()  * arm.GainAssistAngleScalar;
+			//double PosY=RAD_2_DEG(m_LastPosition * arm.GainAssistAngleScalar);
+			printf("v=%.2f y=%.2f py=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,PredictedPosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
 			//These will be great if the plot could group them together
 			#if 0
 			std::string EntityName=GetName();
@@ -382,6 +412,7 @@ void Rotary_Position_Control::ResetPos()
 		SetPos_m(NewPosition);
 		m_LastPosition=NewPosition;
 	}
+	m_ToleranceCounter=0;
 }
 
 void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
@@ -776,6 +807,8 @@ void Rotary_Properties::Init()
 	arm.InverseMaxAccel_Down=arm.InverseMaxAccel_Up=arm.InverseMaxDecel_Down=arm.InverseMaxDecel_Up=0.0;
 	for (size_t i=0;i<3;i++)
 		arm.PID_Down[i]=arm.PID_Up[i]=0.0;
+	arm.ToleranceConsecutiveCount=1;
+	arm.VelocityPredictUp=arm.VelocityPredictDown=0.0;
 	m_RotaryProps=props;
 }
 
@@ -835,11 +868,14 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		}
 
 		script.GetField("tolerance", NULL, NULL, &m_RotaryProps.PrecisionTolerance);
-
-		double fDisplayRow;
-		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		double fValue;
+		err=script.GetField("tolerance_count", NULL, NULL, &fValue);
 		if (!err)
-			m_RotaryProps.Feedback_DiplayRow=(size_t)fDisplayRow;
+			m_RotaryProps.ArmGainAssist.ToleranceConsecutiveCount=(size_t)fValue;
+
+		err=script.GetField("ds_display_row", NULL, NULL, &fValue);
+		if (!err)
+			m_RotaryProps.Feedback_DiplayRow=(size_t)fValue;
 
 		string sTest;
 		//I've made it closed so that typing no or NO stands out, but you can use bool as well
@@ -905,6 +941,8 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("slow_velocity_voltage", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocityVoltage);
 		script.GetField("slow_velocity", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocity);
 		script.GetField("slow_angle_scalar", NULL, NULL, &m_RotaryProps.ArmGainAssist.GainAssistAngleScalar);
+		script.GetField("predict_up",NULL,NULL,&m_RotaryProps.ArmGainAssist.VelocityPredictUp);
+		script.GetField("predict_down",NULL,NULL,&m_RotaryProps.ArmGainAssist.VelocityPredictDown);
 
 		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");
