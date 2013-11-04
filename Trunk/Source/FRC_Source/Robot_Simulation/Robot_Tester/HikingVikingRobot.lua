@@ -85,12 +85,15 @@ TestShip = {
 	{
 		arm =
 		{
-			is_closed=0,
+			is_closed=1,
 			show_pid_dump='y',
 			ds_display_row=-1,
-			pid=
+			pid_up=
 			{p=100, i=0, d=0},
-			tolerance=0.1,	
+			pid_down=
+			{p=0, i=0, d=0},
+			tolerance=0.05,
+			tolerance_count=20,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
 			curve_voltage=
@@ -112,7 +115,7 @@ TestShip = {
 			inv_max_accel_down = 0.4,
 			inv_max_decel_down = 0.0,
 			slow_velocity_voltage = 4.0,
-			slow_velocity = 1.0,
+			slow_velocity = 2.0,
 			slow_angle_scalar = GearToArmRatio,
 			distance_scale = 0.5,
 			motor_specs =
@@ -158,7 +161,7 @@ TestShip = {
 			Arm_SetPos3feet = {type="joystick_button", key=1, on_off=false},
 			Arm_SetPos6feet = {type="joystick_button", key=3, on_off=false},
 			Arm_SetPos9feet = {type="joystick_button", key=4, on_off=false},
-			Arm_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Arm_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=0.6, filter=0.1, curve_intensity=3.0},
 			Arm_Rist={type="joystick_button", key=5, on_off=true},
 			
 			--Claw_SetCurrentVelocity  --not used
