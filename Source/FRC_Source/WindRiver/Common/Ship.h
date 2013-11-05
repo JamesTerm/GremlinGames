@@ -3,12 +3,12 @@
 class UI_Controller;
 class AI_Base_Controller;
 
-inline void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double NegativeDeadZone)
+inline void ComputeDeadZone(double &Voltage,double PositiveDeadZone,double NegativeDeadZone,bool ZeroOut=false)
 {
 	if ((Voltage > 0.0) && (Voltage<PositiveDeadZone))
-		Voltage=PositiveDeadZone;
+		Voltage=ZeroOut?0.0:PositiveDeadZone;
 	else if ((Voltage < 0.0 ) && (Voltage>NegativeDeadZone))
-		Voltage=NegativeDeadZone;
+		Voltage=ZeroOut?0.0:NegativeDeadZone;
 }
 
 inline Vec2D LocalToGlobal(double Heading,const Vec2D &LocalVector)
