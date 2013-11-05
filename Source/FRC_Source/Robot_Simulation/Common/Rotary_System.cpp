@@ -58,9 +58,13 @@ void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmA
 		SmartDashboard::PutNumber("Up I",arm.PID_Up[1]);
 		SmartDashboard::PutNumber("Up D",arm.PID_Up[2]);
 
-		SmartDashboard::PutNumber("Down P",arm.PID_Down[0]);
-		SmartDashboard::PutNumber("Down I",arm.PID_Down[1]);
-		SmartDashboard::PutNumber("Down D",arm.PID_Down[2]);
+		SmartDashboard::PutBoolean("Use Up PID Only",arm.UsePID_Up_Only);
+		if (!arm.UsePID_Up_Only)
+		{
+			SmartDashboard::PutNumber("Down P",arm.PID_Down[0]);
+			SmartDashboard::PutNumber("Down I",arm.PID_Down[1]);
+			SmartDashboard::PutNumber("Down D",arm.PID_Down[2]);
+		}
 		
 		SmartDashboard::PutNumber("gain accel up",arm.InverseMaxAccel_Up);
 		SmartDashboard::PutNumber("gain decel up",arm.InverseMaxDecel_Up);
@@ -101,9 +105,22 @@ void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 		arm.PID_Up[1]=SmartDashboard::GetNumber("Up I");
 		arm.PID_Up[2]=SmartDashboard::GetNumber("Up D");
 
-		arm.PID_Down[0]=SmartDashboard::GetNumber("Down P");
-		arm.PID_Down[1]=SmartDashboard::GetNumber("Down I");
-		arm.PID_Down[2]=SmartDashboard::GetNumber("Down D");
+		bool OldCheckUpOnly=arm.UsePID_Up_Only;
+		arm.UsePID_Up_Only=SmartDashboard::GetBoolean("Use Up PID Only");
+		//Check for new case to populate
+		if (!arm.UsePID_Up_Only && OldCheckUpOnly)
+		{
+			SmartDashboard::PutNumber("Down P",arm.PID_Down[0]);
+			SmartDashboard::PutNumber("Down I",arm.PID_Down[1]);
+			SmartDashboard::PutNumber("Down D",arm.PID_Down[2]);
+		}
+
+		if (!arm.UsePID_Up_Only)
+		{
+			arm.PID_Down[0]=SmartDashboard::GetNumber("Down P");
+			arm.PID_Down[1]=SmartDashboard::GetNumber("Down I");
+			arm.PID_Down[2]=SmartDashboard::GetNumber("Down D");
+		}
 		
 		arm.InverseMaxAccel_Up=SmartDashboard::GetNumber("gain accel up");
 		arm.InverseMaxDecel_Up=SmartDashboard::GetNumber("gain decel up");
@@ -224,7 +241,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			{
 				const double PredictedPositionUp=NewPosition + (PotentiometerVelocity * arm.VelocityPredictUp);
 				//PID will correct for position... this may need to use I to compensate for latency
-				if (GetPos_m()>PredictedPositionUp)
+				if ((arm.UsePID_Up_Only)||(GetPos_m()>PredictedPositionUp))
 				{
 					m_PIDControllerDown.ResetI();
 					m_ErrorOffset=m_PIDControllerUp(GetPos_m(),PredictedPositionUp,dTime_s);
@@ -810,13 +827,15 @@ void Rotary_Properties::Init()
 		arm.PID_Down[i]=arm.PID_Up[i]=0.0;
 	arm.ToleranceConsecutiveCount=1;
 	arm.VelocityPredictUp=arm.VelocityPredictDown=0.0;
+	arm.UsePID_Up_Only=false;
 	m_RotaryProps=props;
 }
 
 void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 {
 	const char* err=NULL;
-
+	Rotary_Props::Rotary_Arm_GainAssist_Props &arm=m_RotaryProps.ArmGainAssist;
+	string sTest;
 	//I shouldn't need this nested field redundancy... just need to be sure all client cases like this
 	//err = script.GetFieldTable("rotary_settings");
 	//if (!err) 
@@ -842,16 +861,25 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			ASSERT_MSG(!err, err);
 			script.Pop();
 			for (size_t i=0;i<3;i++)
-				m_RotaryProps.ArmGainAssist.PID_Up[i]=m_RotaryProps.ArmGainAssist.PID_Down[i]=m_RotaryProps.PID[i];
+				m_RotaryProps.ArmGainAssist.PID_Up[i]=arm.PID_Down[i]=m_RotaryProps.PID[i];
 		}
+		err=script.GetField("use_pid_up_only", &sTest, NULL, NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+				arm.UsePID_Up_Only=false;
+			else if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				arm.UsePID_Up_Only=true;
+		}
+
 		err = script.GetFieldTable("pid_up");
 		if (!err)
 		{
-			err = script.GetField("p", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Up[0]);
+			err = script.GetField("p", NULL, NULL,&arm.PID_Up[0]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("i", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Up[1]);
+			err = script.GetField("i", NULL, NULL,&arm.PID_Up[1]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("d", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Up[2]);
+			err = script.GetField("d", NULL, NULL,&arm.PID_Up[2]);
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
@@ -859,11 +887,11 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		err = script.GetFieldTable("pid_down");
 		if (!err)
 		{
-			err = script.GetField("p", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Down[0]);
+			err = script.GetField("p", NULL, NULL,&arm.PID_Down[0]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("i", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Down[1]);
+			err = script.GetField("i", NULL, NULL,&arm.PID_Down[1]);
 			ASSERT_MSG(!err, err);
-			err = script.GetField("d", NULL, NULL,&m_RotaryProps.ArmGainAssist.PID_Down[2]);
+			err = script.GetField("d", NULL, NULL,&arm.PID_Down[2]);
 			ASSERT_MSG(!err, err);
 			script.Pop();
 		}
@@ -872,13 +900,12 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		double fValue;
 		err=script.GetField("tolerance_count", NULL, NULL, &fValue);
 		if (!err)
-			m_RotaryProps.ArmGainAssist.ToleranceConsecutiveCount=(size_t)fValue;
+			arm.ToleranceConsecutiveCount=(size_t)fValue;
 
 		err=script.GetField("ds_display_row", NULL, NULL, &fValue);
 		if (!err)
 			m_RotaryProps.Feedback_DiplayRow=(size_t)fValue;
 
-		string sTest;
 		//I've made it closed so that typing no or NO stands out, but you can use bool as well
 		//err = script.GetField("is_closed",&sTest,&bTest,NULL);
 		err = script.GetField("is_closed",&sTest,NULL,NULL);
@@ -916,15 +943,14 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 
 		script.GetField("inv_max_accel", NULL, NULL, &m_RotaryProps.InverseMaxAccel);
 		m_RotaryProps.InverseMaxDecel=m_RotaryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
-		m_RotaryProps.ArmGainAssist.InverseMaxAccel_Up=m_RotaryProps.ArmGainAssist.InverseMaxAccel_Down=
-			m_RotaryProps.ArmGainAssist.InverseMaxDecel_Up=m_RotaryProps.ArmGainAssist.InverseMaxDecel_Down=m_RotaryProps.InverseMaxAccel;
+		arm.InverseMaxAccel_Up=arm.InverseMaxAccel_Down=arm.InverseMaxDecel_Up=arm.InverseMaxDecel_Down=m_RotaryProps.InverseMaxAccel;
 		err=script.GetField("inv_max_decel", NULL, NULL, &m_RotaryProps.InverseMaxDecel);
 		if (!err)
-			m_RotaryProps.ArmGainAssist.InverseMaxDecel_Up=m_RotaryProps.ArmGainAssist.InverseMaxDecel_Down=m_RotaryProps.InverseMaxAccel;
-		script.GetField("inv_max_accel_up", NULL, NULL, &m_RotaryProps.ArmGainAssist.InverseMaxAccel_Up);
-		script.GetField("inv_max_accel_down", NULL, NULL, &m_RotaryProps.ArmGainAssist.InverseMaxAccel_Down);
-		script.GetField("inv_max_decel_up", NULL, NULL, &m_RotaryProps.ArmGainAssist.InverseMaxDecel_Up);
-		script.GetField("inv_max_decel_down", NULL, NULL, &m_RotaryProps.ArmGainAssist.InverseMaxDecel_Down);
+			arm.InverseMaxDecel_Up=arm.InverseMaxDecel_Down=m_RotaryProps.InverseMaxAccel;
+		script.GetField("inv_max_accel_up", NULL, NULL, &arm.InverseMaxAccel_Up);
+		script.GetField("inv_max_accel_down", NULL, NULL, &arm.InverseMaxAccel_Down);
+		script.GetField("inv_max_decel_up", NULL, NULL, &arm.InverseMaxDecel_Up);
+		script.GetField("inv_max_decel_down", NULL, NULL, &arm.InverseMaxDecel_Down);
 
 		script.GetField("forward_deadzone", NULL, NULL,&m_RotaryProps.Positive_DeadZone);
 		script.GetField("reverse_deadzone", NULL, NULL,&m_RotaryProps.Negative_DeadZone);
@@ -933,11 +959,11 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			m_RotaryProps.Negative_DeadZone=-m_RotaryProps.Negative_DeadZone;
 		//TODO may want to swap forward in reverse settings if the voltage multiply is -1  (I'll want to test this as it happens)
 
-		script.GetField("slow_velocity_voltage", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocityVoltage);
-		script.GetField("slow_velocity", NULL, NULL,&m_RotaryProps.ArmGainAssist.SlowVelocity);
-		script.GetField("slow_angle_scalar", NULL, NULL, &m_RotaryProps.ArmGainAssist.GainAssistAngleScalar);
-		script.GetField("predict_up",NULL,NULL,&m_RotaryProps.ArmGainAssist.VelocityPredictUp);
-		script.GetField("predict_down",NULL,NULL,&m_RotaryProps.ArmGainAssist.VelocityPredictDown);
+		script.GetField("slow_velocity_voltage", NULL, NULL,&arm.SlowVelocityVoltage);
+		script.GetField("slow_velocity", NULL, NULL,&arm.SlowVelocity);
+		script.GetField("slow_angle_scalar", NULL, NULL, &arm.GainAssistAngleScalar);
+		script.GetField("predict_up",NULL,NULL,&arm.VelocityPredictUp);
+		script.GetField("predict_down",NULL,NULL,&arm.VelocityPredictDown);
 
 		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");

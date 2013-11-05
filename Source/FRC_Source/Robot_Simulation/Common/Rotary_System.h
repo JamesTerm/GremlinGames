@@ -49,6 +49,7 @@ struct Rotary_Props
 		//In milliseconds predict what the position will be by using the potentiometers velocity to help compensate for lag
 		double VelocityPredictUp;
 		double VelocityPredictDown;
+		bool UsePID_Up_Only;
 	} ArmGainAssist;
 };
 
