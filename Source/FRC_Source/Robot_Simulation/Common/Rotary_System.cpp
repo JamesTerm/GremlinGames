@@ -656,6 +656,8 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 		case Rotary_Props::eClosed:
 			m_EncoderState=eActive;
 			break;
+		default:
+			assert(false);
 		}
 
 		#ifdef __DebugLUA__
