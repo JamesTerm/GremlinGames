@@ -101,8 +101,8 @@ MainRobot = {
 			
 			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
 			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
-			accel=10,						--We may indeed have a two button solution (match with max accel)
-			brake=10,
+			accel=0.5,						--We may indeed have a two button solution (match with max accel)
+			brake=0.5,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
@@ -116,11 +116,12 @@ MainRobot = {
 			inv_max_decel_down = 0.0,
 			slow_velocity_voltage = 4.0,
 			slow_velocity = 1.0,
+			slow_angle_scalar = GearToArmRatio,
 			distance_scale = 0.5,
 			motor_specs =
 			{
 				wheel_mass=Pounds2Kilograms * 16.27,
-				cof_efficiency=1.0,
+				cof_efficiency=0.2,
 				gear_reduction=1.0,
 				torque_on_wheel_radius=Inches2Meters * 1.0,
 				drive_wheel_radius=Inches2Meters * 2.0,
@@ -147,8 +148,8 @@ MainRobot = {
 	},
 	controls =
 	{
-		slotlist = {slot_1="gamepad f310 (controller)"},
-		--slotlist = {slot_1="logitech dual action"},
+		--slotlist = {slot_1="gamepad f310 (controller)"},
+		slotlist = {slot_1="logitech dual action"},
 		--slotlist = {slot_1="airflo"},
 	
 		Joystick_1 =
@@ -186,7 +187,7 @@ MainRobot = {
 			Arm_SetPos3feet = {type="joystick_button", key=1, on_off=false},
 			Arm_SetPos6feet = {type="joystick_button", key=3, on_off=false},
 			Arm_SetPos9feet = {type="joystick_button", key=4, on_off=false},
-			Arm_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Arm_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=0.6, filter=0.1, curve_intensity=3.0},
 			--Arm_Rist={type="joystick_button", key=5, on_off=true},
 			
 			--Claw_SetCurrentVelocity  --not used
