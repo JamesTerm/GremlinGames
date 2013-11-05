@@ -86,8 +86,9 @@ TestShip = {
 		arm =
 		{
 			is_closed=2,
-			show_pid_dump='y',
+			show_pid_dump='n',
 			ds_display_row=-1,
+			use_pid_up_only='n',
 			pid_up=
 			{p=100, i=0, d=0},
 			pid_down=
