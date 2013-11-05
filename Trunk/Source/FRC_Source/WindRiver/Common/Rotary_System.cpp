@@ -48,6 +48,9 @@ void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmA
 		case Rotary_Props::eNone:
 			SmartDashboard::PutString("Loop State","none");
 			break;
+		case Rotary_Props::eClosed_ManualAssist:
+			SmartDashboard::PutString("Loop State","closed2");
+			break;
 	}
 
 	SmartDashboard::PutNumber("Tolerance",props.PrecisionTolerance);
@@ -91,6 +94,7 @@ void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 	string strValue=SmartDashboard::GetString("Loop State");
 	if (strcmp(strValue.c_str(),"open")==0) props.LoopState=Rotary_Props::eOpen;
 	else if (strcmp(strValue.c_str(),"closed")==0) props.LoopState=Rotary_Props::eClosed;
+	else if (strcmp(strValue.c_str(),"closed2")==0) props.LoopState=Rotary_Props::eClosed_ManualAssist;
 	else if (strcmp(strValue.c_str(),"none")==0) props.LoopState=Rotary_Props::eNone;
 
 	props.PrecisionTolerance=SmartDashboard::GetNumber("Tolerance");
@@ -181,6 +185,7 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 		m_PotentiometerState=ePassive;
 		break;
 	case Rotary_Props::eClosed:
+	case Rotary_Props::eClosed_ManualAssist:
 		m_PotentiometerState=eActive;
 		break;
 	}
@@ -214,7 +219,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	//Update the position to where the potentiometer says where it actually is
 	if (m_PotentiometerState==eActive)
 	{
-		if (!GetLockShipToPosition())
+		if ((!GetLockShipToPosition()) || (m_Rotary_Props.LoopState==Rotary_Props::eClosed_ManualAssist))
 		{
 			if (TuneVelocity)
 			{
@@ -338,8 +343,14 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	Voltage=m_VoltagePoly(Voltage);
 	#endif
 
-	if ((IsZero(PotentiometerVelocity)) && IsAccel)
-		ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone);
+	if (IsZero(PotentiometerVelocity) && (CurrentVelocity==0.0))
+	{
+		//avoid dead zone... if we are accelerating set the dead zone to the minim value... all else zero out
+		if (IsAccel)
+			ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone);
+		else
+			ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone,true);
+	}
 
 	{
 		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
@@ -371,6 +382,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			m_PotentiometerState=ePassive;
 			break;
 		case Rotary_Props::eClosed:
+		case Rotary_Props::eClosed_ManualAssist:
 			m_PotentiometerState=eActive;
 			break;
 		}
@@ -450,6 +462,7 @@ void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 				m_PotentiometerState=ePassive;
 				break;
 			case Rotary_Props::eClosed:
+			case Rotary_Props::eClosed_ManualAssist:
 				m_PotentiometerState=eActive;
 				break;
 			}
@@ -657,6 +670,8 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 		case Rotary_Props::eClosed:
 			m_EncoderState=eActive;
 			break;
+		default:
+			assert(false);
 		}
 
 		#ifdef __DebugLUA__
@@ -887,6 +902,16 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 				m_RotaryProps.LoopState=Rotary_Props::eOpen;
 			else if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_RotaryProps.LoopState=Rotary_Props::eClosed;
+			else if (sTest.c_str()[0]=='2')		//support multiple ways to have this mode
+				m_RotaryProps.LoopState=Rotary_Props::eClosed_ManualAssist;
+		}
+		err = script.GetField("is_closed2",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+				m_RotaryProps.LoopState=Rotary_Props::eOpen;
+			else if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
+				m_RotaryProps.LoopState=Rotary_Props::eClosed_ManualAssist;
 		}
 		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
 		if (!err)
@@ -900,25 +925,9 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 			if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))
 				m_RotaryProps.UseAggressiveStop=true;
 		}
-		#if 0
-		err = script.GetFieldTable("curve_voltage");
-		if (!err)
-		{
-			err = script.GetField("c", NULL, NULL,&m_RotaryProps.Polynomial[0]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t1", NULL, NULL,&m_RotaryProps.Polynomial[1]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t2", NULL, NULL,&m_RotaryProps.Polynomial[2]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t3", NULL, NULL,&m_RotaryProps.Polynomial[3]);
-			ASSERT_MSG(!err, err);
-			err = script.GetField("t4", NULL, NULL,&m_RotaryProps.Polynomial[4]);
-			ASSERT_MSG(!err, err);
-			script.Pop();
-		}
-		#else
+
 		m_RotaryProps.Voltage_Terms.LoadFromScript(script,"curve_voltage");
-		#endif
+
 		script.GetField("inv_max_accel", NULL, NULL, &m_RotaryProps.InverseMaxAccel);
 		m_RotaryProps.InverseMaxDecel=m_RotaryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
 		m_RotaryProps.ArmGainAssist.InverseMaxAccel_Up=m_RotaryProps.ArmGainAssist.InverseMaxAccel_Down=
