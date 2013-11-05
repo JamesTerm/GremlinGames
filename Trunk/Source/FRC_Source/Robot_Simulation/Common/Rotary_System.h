@@ -22,7 +22,8 @@ struct Rotary_Props
 	{
 		eNone, //Will never read them (ideal for systems that do not have any encoders)
 		eOpen,  //Will read them but never alter velocities
-		eClosed //Will attempt to match predicted velocity to actual velocity
+		eClosed, //Will attempt to match predicted velocity to actual velocity
+		eClosed_ManualAssist //For position control this mode is also closed during manual assist
 	} LoopState; //This should always be false once control is fully functional
 	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
 
