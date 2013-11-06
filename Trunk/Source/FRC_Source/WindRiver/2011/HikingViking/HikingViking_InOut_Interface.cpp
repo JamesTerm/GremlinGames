@@ -102,7 +102,7 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				PotentiometerRaw_To_Arm=((raw_value / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
 				PotentiometerRaw_To_Arm*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
 			}
-			result=-PotentiometerRaw_To_Arm;
+			result=(-PotentiometerRaw_To_Arm) + m_RobotProps.GetArmProps().GetRotaryProps().PotentiometerOffset;
 			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
 			const double height= (sin(result)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
