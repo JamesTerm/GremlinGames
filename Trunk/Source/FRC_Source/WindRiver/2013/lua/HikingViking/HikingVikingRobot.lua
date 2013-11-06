@@ -32,7 +32,7 @@ gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) *
 
 MainRobot = {
 --Version helps to identify a positive update to lua
-	version = 1.3;
+	version = 1.1;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -96,6 +96,7 @@ MainRobot = {
 			tolerance=0.1,	
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
+			pot_offset=0.16,   --This is a reading measured when setting arm to 0 position
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
@@ -103,8 +104,8 @@ MainRobot = {
 			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
 			accel=0.5,						--We may indeed have a two button solution (match with max accel)
 			brake=0.5,
-			max_accel_forward=10,			--These are in radians, just go with what feels right
-			max_accel_reverse=10,
+			max_accel_forward=1,			--These are in radians, just go with what feels right
+			max_accel_reverse=1,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			max_range_deg= 70 * ArmToGearRatio,
@@ -112,8 +113,8 @@ MainRobot = {
 			use_aggressive_stop = 'yes',
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
-			inv_max_accel_down = 0.4,
-			inv_max_decel_down = 0.0,
+			inv_max_accel_down = 0.3,
+			inv_max_decel_down = 0.3,
 			slow_velocity_voltage = 4.0,
 			slow_velocity = 1.0,
 			slow_angle_scalar = GearToArmRatio,
