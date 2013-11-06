@@ -801,6 +801,7 @@ void Rotary_Properties::Init()
 
 	props.VoltageScalar=1.0;
 	props.EncoderToRS_Ratio=1.0;
+	props.PotentiometerOffset=0.0;
 	//Late assign this to override the initial default
 	props.PID[0]=1.0; //set PIDs to a safe default of 1,0,0
 	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
@@ -850,6 +851,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 
 		script.GetField("voltage_multiply", NULL, NULL, &m_RotaryProps.VoltageScalar);
 		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_RotaryProps.EncoderToRS_Ratio);
+		script.GetField("pot_offset", NULL, NULL, &m_RotaryProps.PotentiometerOffset);
 		err = script.GetFieldTable("pid");
 		if (!err)
 		{
