@@ -3,9 +3,13 @@
 struct Rotary_Props
 {
 	double VoltageScalar;		//Used to handle reversed voltage wiring
+	//Note: EncoderToRS_Ratio and PotentiometerOffset are place holder properties that are implemented in the robot control
+	//interface as needed for that control... they are not used in the rotary system code
 	//The gear reduction used when multiplied by the encoder RPS will equal the *Rotary System's* RPS
-	//Note: This is not necessarily the multiply to match the motor speed as there may be some gearing to the system as well
+	//This is typically the motor speed since this solves to apply voltage to it
 	double EncoderToRS_Ratio;
+	//This allows adjustment of the potentiometer in software to avoid manual recalibration (used only for position control)
+	double PotentiometerOffset;  
 	double PID[3]; //p,i,d
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	//Currently supporting 4 terms in polynomial equation
