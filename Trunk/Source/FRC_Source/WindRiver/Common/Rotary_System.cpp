@@ -411,12 +411,14 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			const double PredictedPosY=GetPos_m()  * arm.GainAssistAngleScalar;
 			//double PosY=RAD_2_DEG(m_LastPosition * arm.GainAssistAngleScalar);
 			printf("v=%.2f y=%.2f py=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,PredictedPosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
-			//These will be great if the plot could group them together
-			#if 0
-			std::string EntityName=GetName();
-			SmartDashboard::PutNumber(GetName()+"_predicted",CurrentVelocity);
-			SmartDashboard::PutNumber(GetName()+"_actual",PotentiometerVelocity);
-			SmartDashboard::PutNumber(GetName()+"_ErrorOffset",m_ErrorOffset);
+			//We may want a way to pick these separately 
+			#if 1
+			SmartDashboard::PutNumber("voltage",Voltage);
+			SmartDashboard::PutNumber("actual y",PosY);
+			SmartDashboard::PutNumber("desired y",PredictedPosY);
+			SmartDashboard::PutNumber("desired velocity",CurrentVelocity);
+			SmartDashboard::PutNumber("actual velocity",PotentiometerVelocity);
+			SmartDashboard::PutNumber("pid error offset",m_ErrorOffset);
 			#endif
 		}
 		#endif
