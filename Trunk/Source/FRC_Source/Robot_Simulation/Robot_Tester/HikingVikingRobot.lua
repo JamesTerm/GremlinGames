@@ -39,6 +39,7 @@ TestShip = {
 	MaxTorqueYaw =  gMaxTorqueYaw,
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
+	rotation_tolerance=0.25,
 
 	MAX_SPEED = GearSpeed, -- Maximum Speed (m/s) use to be 2.916 but computed to 2.974848
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
