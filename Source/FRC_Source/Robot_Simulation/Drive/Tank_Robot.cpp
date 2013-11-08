@@ -237,11 +237,11 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 
 		SmartDashboard::PutNumber("desired velocity-left",LeftVelocity);
 		SmartDashboard::PutNumber("pid error offset-left",m_ErrorOffset_Left);
-		SmartDashboard::PutNumber("pid cs-left",m_CalibratedScaler_Left);
+		SmartDashboard::PutNumber("pid cs-left",m_CalibratedScaler_Left-MAX_SPEED);
 
 		SmartDashboard::PutNumber("desired velocity-right",RightVelocity);
 		SmartDashboard::PutNumber("pid error offset-right",m_ErrorOffset_Right);
-		SmartDashboard::PutNumber("pid cs-right",m_CalibratedScaler_Right);
+		SmartDashboard::PutNumber("pid cs-right",m_CalibratedScaler_Right-MAX_SPEED);
 	}
 
 	//Update the physics with the actual velocity
