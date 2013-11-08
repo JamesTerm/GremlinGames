@@ -189,7 +189,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		#ifdef __DebugLUA__
 		if (m_TankRobotProps.PID_Console_Dump &&  ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
-			double PosY=GetPos_m()[1];
+			const double PosY=GetPos_m()[1];
 			if (!GetUseAgressiveStop())
 				printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
 			else
@@ -217,7 +217,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 			}
 			if (ShowDump)
 			{
-				double PosY=GetPos_m()[1];
+				const double PosY=GetPos_m()[1];
 				if (!GetUseAgressiveStop())
 					printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
 				else
@@ -228,7 +228,22 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	}
 	SmartDashboard::PutNumber("LeftEncoder",Encoder_LeftVelocity);
 	SmartDashboard::PutNumber("RightEncoder",Encoder_RightVelocity);
-	
+
+	if (m_TankRobotProps.PID_Console_Dump)
+	{
+		const double PosY=GetPos_m()[1];
+		//We may want a way to pick these separately 
+		SmartDashboard::PutNumber("actual y",PosY);
+
+		SmartDashboard::PutNumber("desired velocity-left",LeftVelocity);
+		SmartDashboard::PutNumber("pid error offset-left",m_ErrorOffset_Left);
+		SmartDashboard::PutNumber("pid cs-left",m_CalibratedScaler_Left);
+
+		SmartDashboard::PutNumber("desired velocity-right",RightVelocity);
+		SmartDashboard::PutNumber("pid error offset-right",m_ErrorOffset_Right);
+		SmartDashboard::PutNumber("pid cs-right",m_CalibratedScaler_Right);
+	}
+
 	//Update the physics with the actual velocity
 	Vec2d LocalVelocity;
 	double AngularVelocity;
