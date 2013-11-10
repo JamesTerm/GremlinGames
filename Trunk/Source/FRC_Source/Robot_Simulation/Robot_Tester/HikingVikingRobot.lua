@@ -94,7 +94,7 @@ TestShip = {
 			{p=100, i=0, d=0},
 			pid_down=
 			{p=100, i=0, d=0},
-			tolerance=0.05,
+			tolerance=0.15,
 			tolerance_count=20,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
@@ -120,6 +120,8 @@ TestShip = {
 			slow_velocity = 2.0,
 			predict_up=.400,
 			predict_down=.400,
+			pulse_burst_time=0.06,
+			pulse_burst_range=0.5,
 			reverse_deadzone=0.10,
 			slow_angle_scalar = GearToArmRatio,
 			distance_scale = 0.5,
