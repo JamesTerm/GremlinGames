@@ -90,6 +90,9 @@ void Rotary_System::InitNetworkProperties(const Rotary_Props &props,bool AddArmA
 		SmartDashboard::PutNumber("Tolerance Count",arm.ToleranceConsecutiveCount);
 		SmartDashboard::PutNumber("Lag Predict Up",arm.VelocityPredictUp);
 		SmartDashboard::PutNumber("Lag Predict Down",arm.VelocityPredictDown);
+
+		SmartDashboard::PutNumber("pulse burst time",arm.PulseBurstTimeMs);
+		SmartDashboard::PutNumber("pulse burst range",arm.PulseBurstRange);
 	}
 }
 
@@ -146,6 +149,8 @@ void Rotary_System::NetworkEditProperties(Rotary_Props &props,bool AddArmAssist)
 		arm.ToleranceConsecutiveCount=SmartDashboard::GetNumber("Tolerance Count");
 		arm.VelocityPredictUp=SmartDashboard::GetNumber("Lag Predict Up");
 		arm.VelocityPredictDown=SmartDashboard::GetNumber("Lag Predict Down");
+		arm.PulseBurstTimeMs=SmartDashboard::GetNumber("pulse burst time");
+		arm.PulseBurstRange=SmartDashboard::GetNumber("pulse burst range");
 	}
 }
 
@@ -160,6 +165,7 @@ Rotary_Position_Control::Rotary_Position_Control(const char EntityName[],Rotary_
 	m_LastPosition(0.0),m_MatchVelocity(0.0),
 	m_ErrorOffset(0.0),
 	m_LastTime(0.0),m_PreviousVelocity(0.0),
+	m_BurstIntensity(0.0),m_CurrentBurstTime(0.0),
 	m_PotentiometerState(eNoPot), //to be safe
 	m_ToleranceCounter(0)
 {
@@ -233,6 +239,8 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	const double Displacement=NewPosition-m_LastPosition;
 	const double PotentiometerVelocity=Displacement/m_LastTime;
 
+	double BurstIntensity=0.0;
+
 	//Update the position to where the potentiometer says where it actually is
 	if (m_PotentiometerState==eActive)
 	{
@@ -266,7 +274,54 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 					m_PIDControllerUp.ResetI();
 					m_ErrorOffset=m_PIDControllerDown(GetPos_m(),PredictedPosition,dTime_s);
 				}
+
 				//unlike for velocity all error offset values are taken... two PIDs and I should help stabilize oscillation
+				if ((arm.PulseBurstTimeMs>0.0)&&(fabs(m_ErrorOffset)<arm.PulseBurstRange)&&(fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance))
+				{
+					//we are in the pulse burst zone... now to manage the burst intensity
+					m_CurrentBurstTime+=dTime_s;  //increment the pulse burst time with this new time slice
+					//The off-time should really match the latency time where we can sample the change interval and get a reading
+					//This could be its own property if necessary
+					const double Off_Time=(GetPos_m()>PredictedPositionUp)?arm.VelocityPredictUp:arm.VelocityPredictDown;
+					//We use the negative sign bit to indicate it was turned off... or zero
+					if (m_BurstIntensity<=0.0)
+					{	//Burst has been off... is it time to turn it back on
+						if (m_CurrentBurstTime>=Off_Time)
+						{
+							//Turn on the pulse... the intensity here is computed by the overlap
+							const double overlap=m_CurrentBurstTime-Off_Time;
+							if (overlap<dTime_s)
+								BurstIntensity=overlap/dTime_s;
+							else
+							{
+								BurstIntensity=1.0;
+								//This shouldn't happen often... probably shouldn't matter much... but keep this for diagnostic testing
+								printf("test burst begin... overlap=%.2f vs delta slice=%.2f\n",overlap,dTime_s);
+							}
+							m_CurrentBurstTime=0.0;  //reset timer
+						}
+					}
+					else
+					{  //Burst has been on... is it time to turn it back off
+						if (m_CurrentBurstTime>=arm.PulseBurstTimeMs)
+						{
+							//Turn on the pulse... the intensity here is computed by the overlap
+							const double overlap=m_CurrentBurstTime-arm.PulseBurstTimeMs;
+							//We use the negative sign bit to indicate it was turned off... or zero
+							if (overlap<dTime_s)
+								BurstIntensity=-(overlap/dTime_s);
+							else
+							{
+								BurstIntensity=0.0;
+								//This shouldn't happen often... probably shouldn't matter much... but keep this for diagnostic testing
+								printf("test burst end... overlap=%.2f vs delta slice=%.2f\n",overlap,dTime_s);
+							}
+							m_CurrentBurstTime=0.0;  //reset timer
+						}
+						else
+							BurstIntensity=1.0;  //still on under time... so keep it on full
+					}
+				}
 			}
 		}
 		else
@@ -340,6 +395,24 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		}
 		Voltage+= MaxVoltage * BlendStrength;
 	}
+
+	//apply additional pulse burst as needed
+	m_BurstIntensity=BurstIntensity;
+	//The intensity we use is the same as full speed with the gain assist... we may want to have own properties for these if they do not work well
+	const double PulseBurst=fabs(m_BurstIntensity) * ((m_ErrorOffset>0.0)?m_MaxSpeed * 1.0 * arm.InverseMaxAccel_Up : (-m_MaxSpeed) * 1.0 * arm.InverseMaxAccel_Down);
+	Voltage+= PulseBurst;
+
+	//if (PulseBurst!=0.0)
+	//	printf("pb=%.2f\n",PulseBurst);
+	#if 0
+	if ((arm.PulseBurstTimeMs>0.0)&&(fabs(m_ErrorOffset)<arm.PulseBurstRange)&&(fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance))
+	{
+		if (BurstIntensity==0)
+			printf("\rOff %.2f       ",m_CurrentBurstTime);
+		else
+			printf("\n+On=%.2f  pb=%.2f from bi=%.2f\n",m_CurrentBurstTime,PulseBurst,m_BurstIntensity);
+	}
+	#endif
 
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousVelocity=Velocity;
@@ -845,6 +918,8 @@ void Rotary_Properties::Init()
 	arm.ToleranceConsecutiveCount=1;
 	arm.VelocityPredictUp=arm.VelocityPredictDown=0.0;
 	arm.UsePID_Up_Only=false;
+	arm.PulseBurstRange=0.0;
+	arm.PulseBurstTimeMs=0.0;
 	m_RotaryProps=props;
 }
 
@@ -982,6 +1057,8 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("slow_angle_scalar", NULL, NULL, &arm.GainAssistAngleScalar);
 		script.GetField("predict_up",NULL,NULL,&arm.VelocityPredictUp);
 		script.GetField("predict_down",NULL,NULL,&arm.VelocityPredictDown);
+		script.GetField("pulse_burst_range",NULL,NULL,&arm.PulseBurstRange);
+		script.GetField("pulse_burst_time",NULL,NULL,&arm.PulseBurstTimeMs);
 
 		#ifdef Robot_TesterCode
 		err = script.GetFieldTable("motor_specs");

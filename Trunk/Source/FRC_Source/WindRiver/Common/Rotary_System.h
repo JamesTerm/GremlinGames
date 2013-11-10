@@ -53,6 +53,9 @@ struct Rotary_Props
 		//In milliseconds predict what the position will be by using the potentiometers velocity to help compensate for lag
 		double VelocityPredictUp;
 		double VelocityPredictDown;
+
+		double PulseBurstTimeMs;  //Time in milliseconds for how long to enable pulse burst  (if zero this is disabled)
+		double PulseBurstRange;  //Extended tolerance time to activate pulse burst
 		bool UsePID_Up_Only;
 	} ArmGainAssist;
 };
@@ -116,9 +119,12 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		double m_LastTime; //used for calibration
 		double m_MaxSpeedReference; //used for calibration
 		double m_PreviousVelocity; //used to compute acceleration
+		//We use the negative sign bit to indicate it was turned off... or zero
+		double m_BurstIntensity;  //This keeps track of the current level of burst to apply... it usually is full 1.0 or 0.0 but will blend on unaligned frame boundaries
+		double m_CurrentBurstTime; //This keeps track of the time between bursts and the burst itself depending on the current state
 		PotUsage m_PotentiometerState; //dynamically able to turn off (e.g. panic button)
 		//A counter to count how many times the predicted position and intended position are withing tolerance consecutively
-		size_t m_ToleranceCounter;  
+		size_t m_ToleranceCounter;
 	public:
 		Rotary_Position_Control(const char EntityName[],Rotary_Control_Interface *robot_control,size_t InstanceIndex=0);
 		IEvent::HandlerList ehl;
