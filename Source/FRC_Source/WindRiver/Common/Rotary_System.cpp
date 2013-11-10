@@ -322,6 +322,11 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 							BurstIntensity=1.0;  //still on under time... so keep it on full
 					}
 				}
+				//When in eClosed_ManualAssist check the locked position to end weak voltage when it is within tolerance
+				//setpoint will turn locked position on once the tolerance is achieved with its count
+				if (GetLockShipToPosition())
+					m_ErrorOffset=fabs(m_ErrorOffset)>m_Rotary_Props.PrecisionTolerance?m_ErrorOffset:0.0;
+
 			}
 		}
 		else
@@ -478,22 +483,22 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		}
 
 		#ifdef __DebugLUA__
+		const double PosY=m_LastPosition * arm.GainAssistAngleScalar; //The scalar makes position more readable
+		const double PredictedPosY=GetPos_m()  * arm.GainAssistAngleScalar;
 		if ((fabs(PotentiometerVelocity)>0.03)||(CurrentVelocity!=0.0)||(Voltage!=0.0))
 		{
-			const double PosY=m_LastPosition * arm.GainAssistAngleScalar; //The scalar makes position more readable
-			const double PredictedPosY=GetPos_m()  * arm.GainAssistAngleScalar;
 			//double PosY=RAD_2_DEG(m_LastPosition * arm.GainAssistAngleScalar);
 			printf("v=%.2f y=%.2f py=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,PredictedPosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
-			//We may want a way to pick these separately 
-			#if 1
-			SmartDashboard::PutNumber("voltage",Voltage);
-			SmartDashboard::PutNumber("actual y",PosY);
-			SmartDashboard::PutNumber("desired y",PredictedPosY);
-			SmartDashboard::PutNumber("desired velocity",CurrentVelocity);
-			SmartDashboard::PutNumber("actual velocity",PotentiometerVelocity);
-			SmartDashboard::PutNumber("pid error offset",m_ErrorOffset);
-			#endif
 		}
+		//We may want a way to pick these separately 
+		#if 1
+		SmartDashboard::PutNumber("voltage",Voltage);
+		SmartDashboard::PutNumber("actual y",PosY);
+		SmartDashboard::PutNumber("desired y",PredictedPosY);
+		SmartDashboard::PutNumber("desired velocity",CurrentVelocity);
+		SmartDashboard::PutNumber("actual velocity",PotentiometerVelocity);
+		SmartDashboard::PutNumber("pid error offset",m_ErrorOffset);
+		#endif
 		#endif
 	}
 
