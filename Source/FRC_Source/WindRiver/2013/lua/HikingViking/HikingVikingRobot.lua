@@ -88,12 +88,13 @@ MainRobot = {
 	{
 		arm =
 		{
-			is_closed=0,
+			is_closed=2,
 			show_pid_dump='y',
 			ds_display_row=-1,
 			pid=
 			{p=100, i=0, d=0},
-			tolerance=0.1,	
+			tolerance=0.2,
+			tolerance_count=10,			
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
 			pot_offset=0.16,   --This is a reading measured when setting arm to 0 position
@@ -116,7 +117,11 @@ MainRobot = {
 			inv_max_accel_down = 0.3,
 			inv_max_decel_down = 0.3,
 			slow_velocity_voltage = 4.0,
-			slow_velocity = 1.0,
+			slow_velocity = 2.0,
+			predict_up=.400,
+			predict_down=.400,
+			pulse_burst_time=0.01,
+			pulse_burst_range=0.5,
 			slow_angle_scalar = GearToArmRatio,
 			distance_scale = 0.5,
 			motor_specs =
@@ -149,8 +154,8 @@ MainRobot = {
 	},
 	controls =
 	{
-		--slotlist = {slot_1="gamepad f310 (controller)"},
-		slotlist = {slot_1="logitech dual action"},
+		slotlist = {slot_1="gamepad f310 (controller)"},
+		--slotlist = {slot_1="logitech dual action"},
 		--slotlist = {slot_1="airflo"},
 	
 		Joystick_1 =
