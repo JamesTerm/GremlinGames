@@ -474,7 +474,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		if ((fabs(PotentiometerVelocity)>0.03)||(CurrentVelocity!=0.0)||(Voltage!=0.0))
 		{
 			//double PosY=RAD_2_DEG(m_LastPosition * arm.GainAssistAngleScalar);
-			printf("v=%.2f y=%.2f py=%.2f p=%f e=%.2f eo=%.2f\n",Voltage,PosY,PredictedPosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
+			printf("v=%.2f y=%.2f py=%.2f p=%.2f e=%.2f eo=%.2f\n",Voltage,PosY,PredictedPosY,CurrentVelocity,PotentiometerVelocity,m_ErrorOffset);
 		}
 		//We may want a way to pick these separately 
 		#if 1
