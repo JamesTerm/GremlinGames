@@ -223,10 +223,15 @@ void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 			{
 				if (strcmp(TestController.c_str(),m_DriverStation_SlotList[j].c_str())==0)
 				{
+					//TODO verify which is correct... in testing it is the control name that gets used
+					#if 0
 					//rename the controls index to the slot index found
 					Controls="Joystick_";
 					Controls+=itoa(j+1,Buffer,10);  //j needs to be cardinal
 					control.Controller=Controls.c_str();
+					#else
+					err=script.GetField("control", &control.Controller, NULL, NULL);
+					#endif
 					MatchFound=true;
 					break;
 				}
