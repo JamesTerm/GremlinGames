@@ -223,7 +223,12 @@ void LUA_Controls_Properties::LoadFromScript(Scripting::Script& script)
 			{
 				if (strcmp(TestController.c_str(),m_DriverStation_SlotList[j].c_str())==0)
 				{
-					//TODO verify which is correct... in testing it is the control name that gets used
+					//I'll keep this disabled code in just for reference, basically if I forget in main to add this line:
+					//m_Joystick.SetSlotList(m_RobotProps.Get_RobotControls().GetDriverStation_SlotList());
+					//Then the disabled code would work.  If a remembered to make this call then the enabled line
+					//below will work, and should work by itself since we would be working with product name
+					//I like this filtering for the correct case so I'll leave it in as it makes a clean map of just the stuff we
+					//want.
 					#if 0
 					//rename the controls index to the slot index found
 					Controls="Joystick_";
