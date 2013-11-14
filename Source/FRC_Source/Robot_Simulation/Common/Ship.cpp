@@ -4,6 +4,7 @@
 using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
+using namespace std;
 
 #undef __EnableOrientationResistance__  //This one can probably be removed
 #undef __DisableShipSpeedBoost__
@@ -585,7 +586,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	//If we are using set point we don't want the blend of torque high as this will throw off the computations
 	//Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
 	const double Ships_TorqueRestraint=m_LockShipHeadingToOrientation?
-		m_ShipProps.GetMaxTorqueYaw(std::min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass() :
+		m_ShipProps.GetMaxTorqueYaw(min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass() :
 		MaxTorqueYaw;
 
 	if (m_StabilizeRotation)
