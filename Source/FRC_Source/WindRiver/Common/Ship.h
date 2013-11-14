@@ -81,6 +81,9 @@ struct Ship_Props
 	//These are used to avoid overshoot when trying to rotate to a heading
 	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
 	double Rotation_Tolerance;
+	//If zero this has no effect, otherwise when rotating to intended position if it consecutively reaches the count it will flip the
+	//lock heading status to lock... to stop trying to rotate to intended position
+	double Rotation_ToleranceConsecutiveCount;
 	//This supersedes RotateTo_TorqueDegradeScalar to avoid overshoot without slowing down rate
 	//This applies linear blended scale against the current distance based on current velocity
 	//default using 1.0 will produce no change
@@ -221,6 +224,7 @@ class COMMON_API Ship_Properties : public Entity_Properties
 		virtual void LoadFromScript(Scripting::Script& script);
 		//This is depreciated (may need to review game use-case)
 		//void Initialize(Ship_2D *NewShip) const;
+		//This is depreciated... use GetShipProps_rw
 		void UpdateShipProperties(const Ship_Props &props);  //explicitly allow updating of ship props here
 		Ship_Props::Ship_Type GetShipType() const {return m_ShipProps.ShipType;}
 		double GetEngagedMaxSpeed() const {return m_ShipProps.ENGAGED_MAX_SPEED;}
@@ -234,6 +238,7 @@ class COMMON_API Ship_Properties : public Entity_Properties
 		double GetRotateToScaler(double Distance) const;
 
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}
+		Ship_Props &GetShipProps_rw() {return m_ShipProps;}
 		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
 	private:
 		#ifndef Robot_TesterCode
@@ -358,6 +363,9 @@ class COMMON_API Ship_2D : public Ship
 		//override to manipulate a distance force degrade, which is used to compensate for deceleration inertia
 		virtual Vec2D Get_DriveTo_ForceDegradeScalar() const {return Vec2D(1.0,1.0);}
 
+		static void InitNetworkProperties(const Ship_Props &ship_props);  //This will GetVariables of all properties needed to tweak PID and gain assists
+		static void NetworkEditProperties(Ship_Props &ship_props);  //This will GetVariables of all properties needed to tweak PID and gain assists
+
 		AI_Base_Controller* m_controller;
 		Ship_Properties m_ShipProps;
 		double MAX_SPEED,ENGAGED_MAX_SPEED;
@@ -410,8 +418,9 @@ class COMMON_API Ship_2D : public Ship
 		#ifndef Robot_TesterCode
 		typedef Entity2D __super;
 		#endif
+		//A counter to count how many times the predicted position and intended position are withing tolerance consecutively
+		size_t m_RotationToleranceCounter;  
 		bool m_LockShipHeadingToOrientation; ///< Locks the ship and intended orientation (Joystick and Keyboard controls use this)
-
 };
 
 class COMMON_API Ship_Tester : public Ship_2D
