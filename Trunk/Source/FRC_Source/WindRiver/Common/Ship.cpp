@@ -16,6 +16,7 @@
 #include "../Base/Joystick.h"
 #include "../Base/JoystickBinder.h"
 #include "UI_Controller.h"
+#include "SmartDashboard/SmartDashboard.h"
 
 using namespace Framework::Base;
 
@@ -55,6 +56,7 @@ Ship_2D::Ship_2D(const char EntityName[]) : Ship(EntityName),
 	m_LockShipHeadingToOrientation=false;  //usually this is false (especially for AI and Remote controllers)
 	m_thrustState=TS_NotVisible;
 	ResetPos();
+	m_RotationToleranceCounter=0;
 }
 
 Ship_2D::~Ship_2D()
@@ -80,6 +82,7 @@ void Ship_2D::ResetPos()
 	SetStabilizeRotation(true); //This should always be true unless there is some ship failure
 	//SetStabilizeRotation(false); //This is for testing
 	SetSimFlightMode(true);  //This one is a tough call... probably should do it on reset
+	m_RotationToleranceCounter=0;
 }
 
 void Ship_2D::SetSimFlightMode(bool SimFlightMode)	
@@ -224,6 +227,20 @@ void Ship_2D::UpdateShipProperties(const Ship_Props &props)
 	MaxAccelLeft=props.MaxAccelLeft;
 	MaxAccelRight=props.MaxAccelRight;
 	MaxTorqueYaw=props.MaxTorqueYaw * m_Physics.GetMass();
+}
+
+
+void Ship_2D::InitNetworkProperties(const Ship_Props &props)
+{
+	SmartDashboard::PutNumber("Rotation Tolerance",props.Rotation_Tolerance);
+	SmartDashboard::PutNumber("Rotation Tolerance Count",props.Rotation_ToleranceConsecutiveCount);
+}
+
+void Ship_2D::NetworkEditProperties(Ship_Props &props)
+{
+
+	props.Rotation_Tolerance=SmartDashboard::GetNumber("Rotation Tolerance");
+	props.Rotation_ToleranceConsecutiveCount=SmartDashboard::GetNumber("Rotation Tolerance Count");
 }
 
 void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *props)
@@ -388,7 +405,19 @@ void Ship_2D::TimeChange(double dTime_s)
 				m_rotDisplacement_rad*=scale;
 			}
 			if (fabs(m_rotDisplacement_rad)<ship_props.Rotation_Tolerance)
-				m_rotDisplacement_rad=0.0;
+			{
+				//If we are not using a tolerance counter we'll zero out anytime it hits the tolerance threshold
+				//If we are using it... then we keep feeding the displacement give PID and tolerance count a change to center into
+				//the tolerance threshold
+				if (m_RotationToleranceCounter==0.0)
+					m_rotDisplacement_rad=0.0;
+				m_RotationToleranceCounter++;
+			}
+			else
+				m_RotationToleranceCounter=0;
+
+			if ((m_RotationToleranceCounter>0.0)&&(m_RotationToleranceCounter >= ship_props.Rotation_ToleranceConsecutiveCount))
+				m_LockShipHeadingToOrientation=true; 
 		}
 		#endif
 	}
@@ -746,6 +775,7 @@ Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
 	props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
 	props.RotateTo_TorqueDegradeScalar=props.RotateTo_TorqueDegradeScalar_High=1.0;
 	props.Rotation_Tolerance=0.0;
+	props.Rotation_ToleranceConsecutiveCount=0.0;  //zero is disabled
 	props.Rotation_TargetDistanceScalar=1.0;
 	m_ShipProps=props;
 };
@@ -855,6 +885,7 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		if (err)
 			props.RotateTo_TorqueDegradeScalar_High=props.RotateTo_TorqueDegradeScalar;
 		script.GetField("rotation_tolerance", NULL, NULL, &props.Rotation_Tolerance);
+		script.GetField("rotation_tolerance_count", NULL, NULL, &props.Rotation_ToleranceConsecutiveCount);
 		script.GetField("rotation_distance_scalar", NULL, NULL, &props.Rotation_TargetDistanceScalar);
 	
 		err = script.GetField("MAX_SPEED", NULL, NULL, &props.MAX_SPEED);
@@ -902,6 +933,7 @@ void Ship_Properties::Initialize(Ship_2D *NewShip) const
 }
 #endif
 
+//This is depreciated... do not change... omit this and use GetShipProps_rw() instead
 void Ship_Properties::UpdateShipProperties(const Ship_Props &props)
 {
 	m_ShipProps=props;
