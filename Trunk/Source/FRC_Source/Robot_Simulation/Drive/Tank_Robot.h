@@ -56,6 +56,9 @@ struct Tank_Robot_Props
 };
 
 class Tank_Robot_UI;
+#ifndef Robot_TesterCode
+#define DRIVE_API
+#endif
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
