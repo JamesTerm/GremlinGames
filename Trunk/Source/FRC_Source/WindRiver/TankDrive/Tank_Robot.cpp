@@ -59,6 +59,54 @@ Tank_Robot::~Tank_Robot()
 	DestroyDrive();
 }
 
+void Tank_Robot::InitNetworkProperties(const Tank_Robot_Props &props,const Ship_Props &ship_props)
+{
+	Ship_2D::InitNetworkProperties(ship_props);
+	if (props.IsOpen)
+		SmartDashboard::PutString("Loop State","open");
+	else
+		SmartDashboard::PutString("Loop State","closed");
+
+	SmartDashboard::PutNumber("Tolerance",props.PrecisionTolerance);
+
+	SmartDashboard::PutNumber("Left P",props.LeftPID[0]);
+	SmartDashboard::PutNumber("Left I",props.LeftPID[1]);
+	SmartDashboard::PutNumber("Left D",props.LeftPID[2]);
+
+	SmartDashboard::PutNumber("Right P",props.RightPID[0]);
+	SmartDashboard::PutNumber("Right I",props.RightPID[1]);
+	SmartDashboard::PutNumber("Right D",props.RightPID[2]);
+	
+	SmartDashboard::PutNumber("gain accel Left",props.InverseMaxAccel_Left);
+	SmartDashboard::PutNumber("gain decel Left",props.InverseMaxDecel_Left);
+	SmartDashboard::PutNumber("gain accel Right",props.InverseMaxAccel_Right);
+	SmartDashboard::PutNumber("gain decel Right",props.InverseMaxDecel_Right);
+}
+
+void Tank_Robot::NetworkEditProperties(Tank_Robot_Props &props, Ship_Props &ship_props)
+{
+	Ship_2D::NetworkEditProperties(ship_props);
+	string strValue=SmartDashboard::GetString("Loop State");
+	if (strcmp(strValue.c_str(),"open")==0) props.IsOpen=true;
+	else if (strcmp(strValue.c_str(),"closed")==0) props.IsOpen=false;
+
+	props.PrecisionTolerance=SmartDashboard::GetNumber("Tolerance");
+
+	props.LeftPID[0]=SmartDashboard::GetNumber("Left P");
+	props.LeftPID[1]=SmartDashboard::GetNumber("Left I");
+	props.LeftPID[2]=SmartDashboard::GetNumber("Left D");
+
+	props.RightPID[0]=SmartDashboard::GetNumber("Right P");
+	props.RightPID[1]=SmartDashboard::GetNumber("Right I");
+	props.RightPID[2]=SmartDashboard::GetNumber("Right D");
+	
+	props.InverseMaxAccel_Left=SmartDashboard::GetNumber("gain accel Left");
+	props.InverseMaxDecel_Left=SmartDashboard::GetNumber("gain decel Left");
+	props.InverseMaxAccel_Right=SmartDashboard::GetNumber("gain accel Right");
+	props.InverseMaxDecel_Right=SmartDashboard::GetNumber("gain decel Right");
+}
+
+
 void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	m_VehicleDrive=CreateDrive();
@@ -87,6 +135,9 @@ void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
 	m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetTankRobotProps().TankSteering_Tolerance);
+	//It is assumed that this property is constant throughout the whole session
+	if (m_TankRobotProps.PID_Console_Dump)
+		InitNetworkProperties(m_TankRobotProps,m_ShipProps.GetShipProps());
 }
 void Tank_Robot::Reset(bool ResetPosition)
 {
@@ -207,7 +258,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 		#ifdef __DebugLUA__
 		if (m_TankRobotProps.PID_Console_Dump &&  ((Encoder_LeftVelocity!=0.0)||(Encoder_RightVelocity!=0.0)))
 		{
-			double PosY=GetPos_m()[1];
+			const double PosY=GetPos_m()[1];
 			if (!GetUseAgressiveStop())
 				printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
 			else
@@ -235,7 +286,7 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 			}
 			if (ShowDump)
 			{
-				double PosY=GetPos_m()[1];
+				const double PosY=GetPos_m()[1];
 				if (!GetUseAgressiveStop())
 					printf("y=%.2f p=%.2f e=%.2f cs=%.2f p=%.2f e=%.2f cs=%.2f\n",PosY,LeftVelocity,Encoder_LeftVelocity,m_CalibratedScaler_Left-MAX_SPEED,RightVelocity,Encoder_RightVelocity,m_CalibratedScaler_Right-MAX_SPEED);
 				else
@@ -246,7 +297,28 @@ void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,dou
 	}
 	SmartDashboard::PutNumber("LeftEncoder",Encoder_LeftVelocity);
 	SmartDashboard::PutNumber("RightEncoder",Encoder_RightVelocity);
-	
+
+	if (m_TankRobotProps.PID_Console_Dump)
+	{
+		NetworkEditProperties(m_TankRobotProps,m_ShipProps.GetShipProps_rw());
+		{
+			m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
+			m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
+			SetUseEncoders(!m_TankRobotProps.IsOpen);
+		}
+		const double PosY=GetPos_m()[1];
+		//We may want a way to pick these separately 
+		SmartDashboard::PutNumber("actual y",PosY);
+
+		SmartDashboard::PutNumber("desired velocity-left",LeftVelocity);
+		SmartDashboard::PutNumber("pid error offset-left",m_ErrorOffset_Left);
+		SmartDashboard::PutNumber("pid cs-left",m_CalibratedScaler_Left-MAX_SPEED);
+
+		SmartDashboard::PutNumber("desired velocity-right",RightVelocity);
+		SmartDashboard::PutNumber("pid error offset-right",m_ErrorOffset_Right);
+		SmartDashboard::PutNumber("pid cs-right",m_CalibratedScaler_Right-MAX_SPEED);
+	}
+
 	//Update the physics with the actual velocity
 	Vec2d LocalVelocity;
 	double AngularVelocity;
@@ -534,6 +606,8 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	err = script.GetFieldTable("tank_drive");
 	if (!err) 
 	{
+		double fValue;
+
 		//Quick snap shot of all the properties
 		//Vec2D WheelDimensions;
 		//double WheelDiameter;
@@ -554,10 +628,9 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			script.Pop();
 		}
 
-		double wheel_diameter;
-		err=script.GetField("wheel_diameter_in", NULL, NULL, &wheel_diameter);
+		err=script.GetField("wheel_diameter_in", NULL, NULL, &fValue);
 		if (!err)
-			m_TankRobotProps.WheelDiameter=Inches2Meters(wheel_diameter);
+			m_TankRobotProps.WheelDiameter=Inches2Meters(fValue);
 		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_TankRobotProps.MotorToWheelGearRatio);
 		double VoltageScalar;
 		err = script.GetField("voltage_multiply", NULL, NULL, &VoltageScalar);
@@ -595,10 +668,9 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		script.GetField("drive_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar[1]);
 		script.GetField("strafe_to_scale", NULL, NULL, &m_TankRobotProps.DriveTo_ForceDegradeScalar[0]);
 
-		double fDisplayRow;
-		err=script.GetField("ds_display_row", NULL, NULL, &fDisplayRow);
+		err=script.GetField("ds_display_row", NULL, NULL, &fValue);
 		if (!err)
-			m_TankRobotProps.Feedback_DiplayRow=(size_t)fDisplayRow;
+			m_TankRobotProps.Feedback_DiplayRow=(size_t)fValue;
 
 		string sTest;
 		err = script.GetField("is_closed",&sTest,NULL,NULL);
