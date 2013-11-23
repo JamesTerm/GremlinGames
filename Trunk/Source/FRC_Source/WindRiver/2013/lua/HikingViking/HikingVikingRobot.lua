@@ -88,7 +88,7 @@ MainRobot = {
 	{
 		arm =
 		{
-			is_closed=2,
+			is_closed=1,
 			show_pid_dump='y',
 			ds_display_row=-1,
 			pid=
@@ -115,13 +115,13 @@ MainRobot = {
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
 			inv_max_accel_down = 0.3,
-			inv_max_decel_down = 0.3,
-			slow_velocity_voltage = 4.0,
-			slow_velocity = 2.0,
+			inv_max_decel_down = 0.1,
+			slow_velocity_voltage = 2.0,
+			slow_velocity = 1.5,
 			predict_up=.400,
 			predict_down=.400,
 			pulse_burst_time=0.01,
-			pulse_burst_range=0.5,
+			pulse_burst_range=2.5,
 			slow_angle_scalar = GearToArmRatio,
 			distance_scale = 0.5,
 			motor_specs =
