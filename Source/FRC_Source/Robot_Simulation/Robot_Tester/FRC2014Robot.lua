@@ -33,15 +33,16 @@ MainRobot = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
+	--heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
+	heading_rad = 5.7,  --TODO automate lua to get correct number
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
 	
 	tank_drive =
 	{
-		is_closed=0,
-		show_pid_dump='y',
+		is_closed=1,
+		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
