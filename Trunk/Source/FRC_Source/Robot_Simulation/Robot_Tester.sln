@@ -45,6 +45,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{3B78
 		Robot_Tester\FRC2011Robot.lua = Robot_Tester\FRC2011Robot.lua
 		Robot_Tester\FRC2012Robot.lua = Robot_Tester\FRC2012Robot.lua
 		Robot_Tester\FRC2013Robot.lua = Robot_Tester\FRC2013Robot.lua
+		Robot_Tester\FRC2014Robot.lua = Robot_Tester\FRC2014Robot.lua
 		Robot_Tester\HikingVikingRobot.lua = Robot_Tester\HikingVikingRobot.lua
 		Robot_Tester\TestButterflyRobot.lua = Robot_Tester\TestButterflyRobot.lua
 		Robot_Tester\TestNonaRobot.lua = Robot_Tester\TestNonaRobot.lua
