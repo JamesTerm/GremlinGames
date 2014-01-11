@@ -298,6 +298,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
+	__super::BindAdditionalEventControls(Bind);
 }
 
 void FRC_2014_Robot::BindAdditionalUIControls(bool Bind,void *joy, void *key)
