@@ -286,6 +286,8 @@ private:
 	Robot2012Map Robot2012_Database;
 	typedef map<string ,FRC_2013_Robot_Properties,greater<string>> Robot2013Map;
 	Robot2013Map Robot2013_Database;
+	typedef map<string ,FRC_2014_Robot_Properties,greater<string>> Robot2014Map;
+	Robot2014Map Robot2014_Database;
 	typedef map<string ,HikingViking_Robot_Properties,greater<string>> RobotHikingVikingMap;
 	RobotHikingVikingMap RobotHikingViking_Database;
 
@@ -344,6 +346,7 @@ public:
 		e2011,
 		e2012,
 		e2013,
+		e2014,
 		eHikingViking
 	};
 	void LoadRobot(const char *FileName,const char *RobotName,RobotType type)
@@ -428,6 +431,17 @@ public:
 					}
 				}
 				break;
+			case e2014:
+				{
+					Robot2014Map::iterator iter=Robot2014_Database.find(RobotName);
+					if (iter==Robot2014_Database.end())
+					{
+						//New entry
+						Robot2014_Database[RobotName]=FRC_2014_Robot_Properties();
+						new_entry=&Robot2014_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
 			case eHikingViking:
 				{
 					RobotHikingVikingMap::iterator iter=RobotHikingViking_Database.find(RobotName);
@@ -499,6 +513,12 @@ public:
 		{
 			Robot2013Map::iterator iter=Robot2013_Database.find(str_2);
 			if (iter!=Robot2013_Database.end())
+				props=&((*iter).second);
+		}
+		if (props==NULL)
+		{
+			Robot2014Map::iterator iter=Robot2014_Database.find(str_2);
+			if (iter!=Robot2014_Database.end())
 				props=&((*iter).second);
 		}
 		if (props==NULL)
@@ -626,6 +646,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eTestGoals_2012,
 		eRobot2013,
 		eTestGoals_2013,
+		eRobot2014,
+		eTestGoals_2014,
 		eTestFollowGod,
 		eTestLUAShip,
 		eActorUpdateTest,
@@ -645,6 +667,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"Goals2012",
 		"Robot2013",
 		"Goals2013",
+		"Robot2014",
+		"Goals2014",
 		"FollowGod",
 		"GodShip",
 		"ActorUpdateTest",
@@ -753,7 +777,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			break;
 		}
 	case eRobotHikingViking:
-	case eCurrent:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
@@ -862,6 +885,70 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 		}
 		break;
+	case eRobot2014:
+	case eCurrent:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			_command.LoadRobot("FRC2014Robot.lua","FRC2014Robot",Commands::e2014);
+			Entity2D *TestEntity=_command.AddRobot("Robot2014","FRC2014Robot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity,false);
+		}
+		break;
+	case eTestGoals_2014:
+		{
+			FRC_2014_Robot *Robot=dynamic_cast<FRC_2014_Robot *>(game.GetEntity("Robot2014"));
+			if (Robot)
+			{
+				const int AutonomousValue=str_2[0]?atoi(str_2):2;
+				const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
+				Goal *oldgoal=Robot->ClearGoal();
+				if (oldgoal)
+					delete oldgoal;
+
+				if (DoAutonomous)
+				{
+					if (((AutonomousValue >> 6) & 1)==0)
+					{
+						//For this year we'll break up into 3 set pair of buttons (at least until vision is working)
+						//First set is the key, second the target, and last the ramps.  Once vision is working we can
+						//optionally remove key
+						const size_t Key_Selection=   (AutonomousValue >> 0) & 3;
+						const size_t Target_Selection=(AutonomousValue >> 2) & 3;
+						const size_t Ramp_Selection=  (AutonomousValue >> 4) & 3;
+						//Translate... the index is center left right, but we want right, left, and center
+						const size_t KeyTable[4] = {(size_t)-1,2,1,0};
+						const size_t Key=KeyTable[Key_Selection];
+						//We'll want to have no buttons also represent the top target to compensate for user error (should always have a target!)
+						const size_t TargetTable[4] = {0,2,1,0};
+						const size_t Target=TargetTable[Target_Selection];
+						const size_t Ramp=KeyTable[Ramp_Selection];
+						//Just to be safe check (if they had the other buttons selected)
+						if (Key!=(size_t)-1)
+						{
+							Goal *goal=NULL;
+							goal=FRC_2014_Goals::Get_FRC2014_Autonomous(Robot,Key,Target,Ramp);
+							if (goal)
+								goal->Activate(); //now with the goal(s) loaded activate it
+							Robot->SetGoal(goal);
+						}
+					}
+					else
+					{
+						Goal *goal=NULL;
+						goal=FRC_2014_Goals::Get_ShootBalls(Robot,true);
+						if (goal)
+							goal->Activate(); //now with the goal(s) loaded activate it
+						Robot->SetGoal(goal);
+					}
+				}
+			}
+			else
+				printf("Robot not found\n");
+			break;
+		}
 	case eTestFollowGod:
 		{
 			#ifdef _DEBUG

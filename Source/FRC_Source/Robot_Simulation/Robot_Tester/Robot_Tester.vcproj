@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\FRC2014_Robot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\HikingViking_Robot.cpp"
 				>
 			</File>
@@ -271,6 +275,10 @@
 			</File>
 			<File
 				RelativePath=".\FRC2013_Robot.h"
+				>
+			</File>
+			<File
+				RelativePath=".\FRC2014_Robot.h"
 				>
 			</File>
 			<File
