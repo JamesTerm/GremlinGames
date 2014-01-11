@@ -117,7 +117,6 @@ void FRC_2014_Robot::Turret::TimeChange(double dTime_s)
 void FRC_2014_Robot::Turret::ResetPos()
 {
 	__super::ResetPos();
-	SetPos_m(-Pi);  //It starts out backwards
 }
 
   /***********************************************************************************************************************************/
@@ -210,12 +209,7 @@ void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 }
 void FRC_2014_Robot::ResetPos()
 {
-	//We cannot reset position between auton and telop
-	SetBypassPosAtt_Update(true);
 	__super::ResetPos();
-	SetBypassPosAtt_Update(false);
-
-	//This should be false to avoid any conflicts during a reset
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
 }
