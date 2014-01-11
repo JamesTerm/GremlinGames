@@ -7,14 +7,15 @@ Meters2Feet=3.2808399
 Meters2Inches=39.3700787
 OunceInchToNewton=0.00706155183333
 
-FRC2014_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
---Parker claimed 20.38, but I've measured 22 5/16
-WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
-WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Width_In * WheelBase_Width_In) ) ^ 0.5
-HighGearSpeed = (427.68 / 60.0) * Pi * FRC2014_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (167.06 / 60.0) * Pi * FRC2014_wheel_diameter_in * Inches2Meters
-Drive_MaxAccel=4
-skid=math.cos(math.atan2(WheelBase_Width_In,WheelBase_Width_In))
+g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
+WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelBase_Length_In=9.625
+WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
+HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
+LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+Drive_MaxAccel=5
+skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
@@ -23,8 +24,9 @@ MainRobot = {
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
-	MaxAccelForward_High = 10, MaxAccelReverse_High = 10, 
-	MaxTorqueYaw =  (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid,
+	MaxAccelForward_High = Drive_MaxAccel * 2, MaxAccelReverse_High = Drive_MaxAccel * 2, 
+	MaxTorqueYaw =  gMaxTorqueYaw,
+	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	
 	MAX_SPEED = HighGearSpeed,
@@ -38,14 +40,14 @@ MainRobot = {
 	
 	tank_drive =
 	{
-		is_closed=1,
-		show_pid_dump='no',
+		is_closed=0,
+		show_pid_dump='y',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
-		wheel_diameter_in = FRC2014_wheel_diameter_in,
+		wheel_diameter_in = g_wheel_diameter_in,
 		left_pid=
 		{p=200, i=0, d=50},
 		right_pid=
@@ -59,6 +61,8 @@ MainRobot = {
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		force_voltage=
+		{t4=0, t3=0, t2=0, t1=0, c=1},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
@@ -66,7 +70,21 @@ MainRobot = {
 		forward_deadzone_left  = 0.02,
 		forward_deadzone_right = 0.02,
 		reverse_deadzone_left  = 0.02,
-		reverse_deadzone_right = 0.02
+		reverse_deadzone_right = 0.02,
+		motor_specs =
+		{
+			wheel_mass=1.5,
+			cof_efficiency=1.0,
+			gear_reduction=5310.0/733.14,
+			torque_on_wheel_radius=Inches2Meters * 1,
+			drive_wheel_radius=Inches2Meters * 2,
+			number_of_motors=1,
+			
+			free_speed_rpm=5310.0,
+			stall_torque=6.561,
+			stall_current_amp=399,
+			free_current_amp=8.1
+		}
 	},
 	
 	robot_settings =
@@ -181,6 +199,8 @@ MainRobot = {
 		Joystick_4 =
 		{
 			control = "airflo",
+			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
