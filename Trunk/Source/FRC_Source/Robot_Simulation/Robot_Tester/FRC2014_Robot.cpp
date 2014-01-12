@@ -43,137 +43,67 @@ static double PositionToVelocity_Tweak(double Value)
  /*														FRC_2014_Robot::Turret														*/
 /***********************************************************************************************************************************/
 
-FRC_2014_Robot::Turret::Turret(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("Turret",robot_control,eTurret),m_pParent(parent),m_Velocity(0.0),m_LastIntendedPosition(0.0)
+FRC_2014_Robot::Turret::Turret(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 	m_pParent(parent),m_Velocity(0.0)
 {
 }
 
-void FRC_2014_Robot::Turret::SetIntendedPosition_Plus(double Position)
-{
-	if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
-	{
-		if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
-			return;
-		{
-			m_LastIntendedPosition=Position; //grab it before all the conversions
-			Position=-Position; 
-			//By default this goes from -1 to 1.0 
-			//first get the range from 0 - 1
-			double positive_range = (Position * 0.5) + 0.5;
-			//positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=GetMaxRange();
-			const double Scale=(maxRange-minRange);
-			Position=(positive_range * Scale) + minRange;
-			//DOUT5("Test=%f",RAD_2_DEG(Position));
-			SetIntendedPosition(Position);
-		}
-	}
-	else
-		Turret_SetRequestedVelocity(PositionToVelocity_Tweak(Position));   //allow manual use of same control
-}
 
 void FRC_2014_Robot::Turret::BindAdditionalEventControls(bool Bind)
 {
-	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=m_pParent->GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Turret::Turret_SetRequestedVelocity);
-		em->EventValue_Map["Turret_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2014_Robot::Turret::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2014_Robot::Turret::SetPotentiometerSafety);
 	}
 	else
 	{
 		em->EventValue_Map["Turret_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Turret::Turret_SetRequestedVelocity);
-		em->EventValue_Map["Turret_SetIntendedPosition"].Remove(*this, &FRC_2014_Robot::Turret::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["Turret_SetPotentiometerSafety"].Remove(*this, &FRC_2014_Robot::Turret::SetPotentiometerSafety);
 	}
 }
 
 void FRC_2014_Robot::Turret::TimeChange(double dTime_s)
 {
-	SetRequestedVelocity_FromNormalized(m_Velocity);
 	m_Velocity=0.0;
 
-	#ifndef __DisableTurretTargeting__
-	if ((!m_pParent->m_DisableTurretTargetingValue) && (m_pParent->m_IsTargeting)&&(IsZero(GetRequestedVelocity())) && GetIsUsingPotentiometer())
-	{
-		Vec2D Target=m_pParent->m_TargetOffset;
-		Target-=m_pParent->GetPos_m();
-		const double Angle=atan2(Target[1],Target[0]);
-		double AngleToUse=-(Angle-PI_2);
-		AngleToUse-=m_pParent->GetAtt_r();
-		SetIntendedPosition(NormalizeRotation2(AngleToUse) * m_pParent->m_YawErrorCorrection);
-		//TODO factor in velocity once we have our ball velocity (to solve for time)
-	}
-	#endif
-
-	__super::TimeChange(dTime_s);
-	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	#endif
+	//#ifdef __DebugLUA__
+	//Dout(m_pParent->m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	//#endif
 }
 
 void FRC_2014_Robot::Turret::ResetPos()
 {
-	__super::ResetPos();
+	m_Velocity=0.0;
 }
 
   /***********************************************************************************************************************************/
  /*													FRC_2014_Robot::PitchRamp														*/
 /***********************************************************************************************************************************/
-FRC_2014_Robot::PitchRamp::PitchRamp(FRC_2014_Robot *pParent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("PitchRamp",robot_control,ePitchRamp),m_pParent(pParent)
+FRC_2014_Robot::PitchRamp::PitchRamp(FRC_2014_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),m_Velocity(0.0)
 {
 }
 
-void FRC_2014_Robot::PitchRamp::SetIntendedPosition_Plus(double Position)
-{
-	if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
-	{
-		{
-			Position=-Position; //flip this around I want the pitch and power to work in the same direction where far away is lower pitch
-			//By default this goes from -1 to 1.0 we'll scale this down to work out between 17-35
-			//first get the range from 0 - 1
-			double positive_range = (Position * 0.5) + 0.5;
-			//positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=GetMaxRange();
-			const double Scale=(maxRange-minRange) / maxRange;
-			Position=(positive_range * Scale) + minRange;
-		}
-		//DOUT5("Test=%f",RAD_2_DEG(Position));
-		SetIntendedPosition(Position);
-	}
-	else
-		SetRequestedVelocity_FromNormalized(PositionToVelocity_Tweak(Position));   //allow manual use of same control
-
-}
 
 void FRC_2014_Robot::PitchRamp::TimeChange(double dTime_s)
 {
-	__super::SetIntendedPosition(m_pParent->m_PitchAngle);
-	__super::TimeChange(dTime_s);
-	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	#endif
+	m_Velocity=0.0;
 }
 
 void FRC_2014_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
 {
-	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Base::EventMap *em=m_pParent->GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Subscribe(ehl,*this, &FRC_2014_Robot::PitchRamp::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2014_Robot::PitchRamp::SetPotentiometerSafety);
+		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::PitchRamp::Pitch_SetRequestedVelocity);
 	}
 	else
 	{
-		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::PitchRamp::SetRequestedVelocity_FromNormalized);
-		em->EventValue_Map["PitchRamp_SetIntendedPosition"].Remove(*this, &FRC_2014_Robot::PitchRamp::SetIntendedPosition_Plus);
-		em->EventOnOff_Map["PitchRamp_SetPotentiometerSafety"].Remove(*this, &FRC_2014_Robot::PitchRamp::SetPotentiometerSafety);
+		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::PitchRamp::Pitch_SetRequestedVelocity);
 	}
+}
+
+void FRC_2014_Robot::PitchRamp::ResetPos()
+{
+	m_Velocity=0.0;
 }
 
 
@@ -201,8 +131,6 @@ void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 
 	const FRC_2014_Robot_Properties *RobotProps=dynamic_cast<const FRC_2014_Robot_Properties *>(props);
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
-	m_Turret.Initialize(em,RobotProps?&RobotProps->GetTurretProps():NULL);
-	m_PitchRamp.Initialize(em,RobotProps?&RobotProps->GetPitchRampProps():NULL);
 
 	//set to the default key position
 	const FRC_2014_Robot_Props &robot2014props=RobotProps->GetFRC2014RobotProps();
@@ -221,8 +149,8 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
-	m_Turret.AsEntity1D().TimeChange(dTime_s);
-	m_PitchRamp.AsEntity1D().TimeChange(dTime_s);
+	m_Turret.TimeChange(dTime_s);
+	m_PitchRamp.TimeChange(dTime_s);
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -235,14 +163,14 @@ void FRC_2014_Robot::SetLowGear(bool on)
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
 	m_SetLowGear=on;
 	SetBypassPosAtt_Update(true);
-	m_Turret.SetBypassPos_Update(true);
-	m_PitchRamp.SetBypassPos_Update(true);
+	//m_Turret.SetBypassPos_Update(true);
+	//m_PitchRamp.SetBypassPos_Update(true);
 
 	//Now for some real magic with the properties!
 	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
 	SetBypassPosAtt_Update(false);
-	m_Turret.SetBypassPos_Update(false);
-	m_PitchRamp.SetBypassPos_Update(false);
+	//m_Turret.SetBypassPos_Update(false);
+	//m_PitchRamp.SetBypassPos_Update(false);
 
 	m_RobotControl->OpenSolenoid(eUseLowGear,on);
 }
@@ -299,6 +227,19 @@ void FRC_2014_Robot::BindAdditionalUIControls(bool Bind,void *joy, void *key)
 {
 	m_RobotProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy,key);
 	__super::BindAdditionalUIControls(Bind,joy,key);  //call super for more general control assignments
+}
+
+void FRC_2014_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s)
+{
+	//Call predecessor (e.g. tank steering) to get some preliminary values
+	__super::UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,LockShipHeadingToOrientation,dTime_s);
+	//Note: for now we'll just add the values in... we may wish to consider analyzing the existing direction and use the max, but this would require the joystick
+	//values from UI, for now I don't wish to add that complexity as I feel a simple add will suffice
+	//Now to add turret and pitch settings
+	const double TurretAcceleration=m_Turret.GetCurrentVelocity()*GetHeadingSpeed();
+	AngularAcceleration+=TurretAcceleration;
+	const double PitchVelocity=m_PitchRamp.GetCurrentVelocity()*GetEngaged_Max_Speed();
+	AuxVelocity+=PitchVelocity;
 }
 
   /***********************************************************************************************************************************/

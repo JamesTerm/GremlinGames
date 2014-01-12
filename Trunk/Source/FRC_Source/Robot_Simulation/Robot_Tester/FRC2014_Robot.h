@@ -72,42 +72,36 @@ class FRC_2014_Robot : public Tank_Robot
 		virtual void TimeChange(double dTime_s);
 
 	protected:
-		class Turret : public Rotary_Position_Control
+		class Turret
 		{
 			private:
 				FRC_2014_Robot * const m_pParent;
 				double m_Velocity; //adds all axis velocities then assigns on the time change
-				double m_LastIntendedPosition;
 			public:
 				Turret(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
-			protected:
-				//typedef Rotary_Position_Control __super;
-				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
-				void SetIntendedPosition_Plus(double Position);
-
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				double GetCurrentVelocity() const {return m_Velocity;}
 				virtual void TimeChange(double dTime_s);
+			protected:
+				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 		};
 
-		class PitchRamp : public Rotary_Position_Control
+		class PitchRamp
 		{
+			private:
+				FRC_2014_Robot * const m_pParent;
+				double m_Velocity; 
 			public:
 				PitchRamp(FRC_2014_Robot *pParent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
-			protected:
-				//typedef Rotary_Position_Control __super;
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-				void SetIntendedPosition_Plus(double Position);
-
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				virtual void ResetPos();
+				double GetCurrentVelocity() const {return m_Velocity;}
 				virtual void TimeChange(double dTime_s);
-			private:
-				FRC_2014_Robot * const m_pParent;
+			protected:
+				void Pitch_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 		};
 
 
@@ -116,6 +110,8 @@ class FRC_2014_Robot : public Tank_Robot
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
+		//used to blend turret and pitch controls into the drive itself
+		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s);
 	private:
 		//typedef  Tank_Robot __super;
 		FRC_2014_Control_Interface * const m_RobotControl;
