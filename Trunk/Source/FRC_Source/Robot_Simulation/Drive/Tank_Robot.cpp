@@ -846,12 +846,14 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 {
 	m_Encoders.GetLeftRightVelocity(LeftVelocity,RightVelocity);
 	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f",Meters2Feet(LeftVelocity),Meters2Feet(RightVelocity));
-	#if 0
+	#if 1
 	{
 		Vec2d LocalVelocity;
 		double AngularVelocity;
 		InterpolateVelocities(LeftVelocity,RightVelocity,LocalVelocity,AngularVelocity,m_dTime_s);
-		DOUT5("FWD=%f Omega=%f",Meters2Feet(LocalVelocity[1]),AngularVelocity);
+		//DOUT5("FWD=%f Omega=%f",Meters2Feet(LocalVelocity[1]),AngularVelocity);
+		SmartDashboard::PutNumber("Velocity",Meters2Feet(LocalVelocity[1]));
+		SmartDashboard::PutNumber("Rotation Velocity",AngularVelocity);
 	}
 	#endif
 }
