@@ -823,6 +823,7 @@ void Tank_Robot_Control::Tank_Drive_Control_TimeChange(double dTime_s)
 		//display voltages
 		DOUT2("l=%f r=%f\n",m_LeftVoltage,m_RightVoltage);
 	}
+	m_dTime_s=dTime_s;
 }
 
 double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
@@ -830,10 +831,49 @@ double Tank_Robot_Control::RPS_To_LinearVelocity(double RPS)
 	return RPS * m_TankRobotProps.MotorToWheelGearRatio * M_PI * m_TankRobotProps.WheelDiameter; 
 }
 
+void Tank_Robot_Control::InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2d &LocalVelocity,double &AngularVelocity,double dTime_s)
+{
+	const double D=m_TankRobotProps.WheelDimensions.length();
+
+	const double FWD = (LeftLinearVelocity + RightLinearVelocity) * 0.5;
+	const double STR = 0.0;
+
+
+	//Here we go it is finally working I just needed to take out the last division
+	const Vec2D &WheelDimensions=m_TankRobotProps.WheelDimensions;
+	//L is the vehicle’s wheelbase
+	const double L=WheelDimensions[1];
+	//W is the vehicle’s track width
+	const double W=WheelDimensions[0];
+	const double skid=cos(atan2(L,W));
+	const double omega = ((LeftLinearVelocity*skid) + (RightLinearVelocity*-skid)) * 0.5;
+
+	LocalVelocity[0]=STR;
+	LocalVelocity[1]=FWD;
+
+	AngularVelocity=(omega / (M_PI * D)) * Pi2;
+
+	#if 0
+	DOUT2("%f %f",FWD,omega);
+	DOUT4("%f %f ",m_LeftLinearVelocity,m_RightLinearVelocity);
+	#endif
+	//DOUT5("%f %f",FWD,omega);
+}
+
 void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity)
 {
 	m_Encoders.GetLeftRightVelocity(LeftVelocity,RightVelocity);
 	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f",Meters2Feet(LeftVelocity),Meters2Feet(RightVelocity));
+	#if 1
+	{
+		Vec2d LocalVelocity;
+		double AngularVelocity;
+		InterpolateVelocities(LeftVelocity,RightVelocity,LocalVelocity,AngularVelocity,m_dTime_s);
+		//DOUT5("FWD=%f Omega=%f",Meters2Feet(LocalVelocity[1]),AngularVelocity);
+		SmartDashboard::PutNumber("Velocity",Meters2Feet(LocalVelocity[1]));
+		SmartDashboard::PutNumber("Rotation Velocity",AngularVelocity);
+	}
+	#endif
 }
 
 void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage)

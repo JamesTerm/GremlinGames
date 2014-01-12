@@ -195,6 +195,10 @@ class DRIVE_API Tank_Robot_Control : public Tank_Drive_Control_Interface
 		double m_LeftVoltage,m_RightVoltage;
 		bool m_DisplayVoltage;
 		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
+	private:
+		//Used for diagnostics, but also may be used for path align information
+		void InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 };
 
 #endif

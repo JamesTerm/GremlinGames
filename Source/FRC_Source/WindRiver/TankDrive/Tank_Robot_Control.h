@@ -37,6 +37,9 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 		Averager<double,4> m_Averager_EncoderLeft, m_Averager_EncodeRight;
+	private:
+		//Used for diagnostics, but also may be used for path align information
+		void InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 	public:
 		double Get_dTime_s() const {return m_dTime_s;}
 };
