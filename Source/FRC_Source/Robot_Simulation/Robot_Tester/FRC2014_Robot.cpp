@@ -120,7 +120,7 @@ FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interfac
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
 		m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false)
+		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false)
 {
 }
 
@@ -197,6 +197,15 @@ void FRC_2014_Robot::SetLowGearValue(double Value)
 	}
 }
 
+void FRC_2014_Robot::SetDriverOverride(bool on) 
+{
+	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
+	//I am not yet certain if this if statement is necessary... I'll have to check what all is involved in setting a variable that is already equal
+	if (m_SetDriverOverride!=on)
+		SmartDashboard::PutBoolean("DriverOverride",on);
+	m_SetDriverOverride=on;
+}
+
 void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D_Kind::EventMap *em=GetEventMap(); 
@@ -206,6 +215,8 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &FRC_2014_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2014_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2014_Robot::SetLowGearValue);
+		em->EventOnOff_Map["Robot_SetDriverOverride"].Subscribe(ehl, *this, &FRC_2014_Robot::SetDriverOverride);
+		
 	}
 	else
 	{
@@ -213,6 +224,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &FRC_2014_Robot::SetLowGearOn);
 		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2014_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2014_Robot::SetLowGearValue);
+		em->EventOnOff_Map["Robot_SetDriverOverride"]  .Remove(*this, &FRC_2014_Robot::SetDriverOverride);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
@@ -233,13 +245,16 @@ void FRC_2014_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAccelerat
 {
 	//Call predecessor (e.g. tank steering) to get some preliminary values
 	__super::UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,LockShipHeadingToOrientation,dTime_s);
-	//Note: for now we'll just add the values in... we may wish to consider analyzing the existing direction and use the max, but this would require the joystick
-	//values from UI, for now I don't wish to add that complexity as I feel a simple add will suffice
-	//Now to add turret and pitch settings
-	const double TurretAcceleration=m_Turret.GetCurrentVelocity()*GetHeadingSpeed();
-	AngularAcceleration+=TurretAcceleration;
-	const double PitchVelocity=m_PitchRamp.GetCurrentVelocity()*GetEngaged_Max_Speed();
-	AuxVelocity+=PitchVelocity;
+	if (!m_SetDriverOverride)
+	{
+		//Note: for now we'll just add the values in... we may wish to consider analyzing the existing direction and use the max, but this would require the joystick
+		//values from UI, for now I don't wish to add that complexity as I feel a simple add will suffice
+		//Now to add turret and pitch settings
+		const double TurretAcceleration=m_Turret.GetCurrentVelocity()*GetHeadingSpeed();
+		AngularAcceleration+=TurretAcceleration;
+		const double PitchVelocity=m_PitchRamp.GetCurrentVelocity()*GetEngaged_Max_Speed();
+		AuxVelocity+=PitchVelocity;
+	}
 }
 
   /***********************************************************************************************************************************/
@@ -356,7 +371,8 @@ const char * const g_FRC_2014_Controls_Events[] =
 {
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
-	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue"
+	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
+	"Robot_SetDriverOverride"
 };
 
 const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
