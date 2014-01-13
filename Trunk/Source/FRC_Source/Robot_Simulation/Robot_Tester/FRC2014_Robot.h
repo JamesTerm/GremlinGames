@@ -133,6 +133,9 @@ class FRC_2014_Robot : public Tank_Robot
 		void SetLowGearOn() {SetLowGear(true);}
 		void SetLowGearOff() {SetLowGear(false);}
 		void SetLowGearValue(double Value);
+
+		bool  m_SetDriverOverride;
+		void SetDriverOverride(bool on);
 };
 
 class FRC_2014_Goals
