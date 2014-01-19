@@ -140,65 +140,6 @@ MainRobot = {
 	{
 		Joystick_1 =
 		{
-			--control = "ch flightstick pro",
-			control = "logitech attack 3",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			--Robot_SetLowGearValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
-			Flippers_Retract = {type="joystick_button", key=3, on_off=true},
-			Flippers_Advance = {type="joystick_button", key=4, on_off=true},
-			Robot_SetCreepMode = {type="joystick_button", key=1, on_off=true}
-		},
-
-		Joystick_2 =
-		{
-			control = "Joystick_2",
-			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
-			--Ball_Grip = {type="joystick_button", key=2, on_off=true},
-			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-			--Ball_Fire = {type="joystick_button", key=4, on_off=true},
-			--PowerWheels_IsRunning = {type="joystick_button", key=3, on_off=true},
-			--Robot_TurretSetTargetingOff = {type="joystick_button", key=6, on_off=true},
-			Ball_SlowWheel = {type="joystick_button", key=6, on_off=true},
-			Robot_SetPreset1 = {type="joystick_button", key=5, on_off=false},
-			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
-			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
-			
-			--Until we have the ball sensors working we'll need to re-assign the aim and fire buttons below to use all three button for the grip
-			Ball_Fire = {type="joystick_button", key=8, on_off=true},
-			PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
-			Ball_GripL = {type="joystick_button", key=2, on_off=true},
-			Ball_GripM = {type="joystick_button", key=3, on_off=true},
-			Ball_GripH = {type="joystick_button", key=4, on_off=true}
-		},
-
-		Joystick_3 =
-		{	
-			control = "ch throttle quadrant",
-			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
-			Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
-			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
-			Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, curve_intensity=1.0},
-			Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			
-			--Ball_Grip = {type="joystick_button", key=2, on_off=true},
-			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-			--Ball_Fire = {type="joystick_button", key=6, on_off=true},
-			--PowerWheels_IsRunning = {type="joystick_button", key=4, on_off=true},
-			Robot_SetDefensiveKeyOn = {type="joystick_button", key=11, on_off=false},
-			Robot_SetDefensiveKeyOff = {type="joystick_button", key=12, on_off=false},
-			
-			Ball_GripL = {type="joystick_button", key=2, on_off=true},
-			Ball_GripM = {type="joystick_button", key=4, on_off=true},
-			Ball_GripH = {type="joystick_button", key=6, on_off=true},
-			PowerWheels_IsRunning = {type="joystick_button", key=8, on_off=true},
-			Ball_Fire = {type="joystick_button", key=10, on_off=true}
-		},
-		
-		Joystick_4 =
-		{
 			control = "airflo",
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
@@ -214,7 +155,7 @@ MainRobot = {
 			Turn_180 = {type="joystick_button", key=7, on_off=false}
 		},
 		
-		Joystick_5 =
+		Joystick_2 =
 		{
 			control = "logitech dual action",
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
@@ -224,15 +165,20 @@ MainRobot = {
 			Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
-			Robot_SetPreset2 = {type="joystick_button", key=9, on_off=false},
-			Robot_SetPreset3 = {type="joystick_button", key=10, on_off=false},
 			Ball_Fire = {type="joystick_button", key=8, on_off=true},
 			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
-			Ball_GripL = {type="joystick_button", key=2, on_off=true},
-			Ball_GripM = {type="joystick_button", key=3, on_off=true},
-			Ball_GripH = {type="joystick_button", key=4, on_off=true},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			Turn_180 = {type="joystick_button", key=7, on_off=false}
+		},
+		Joystick_3 =
+		{
+			control = "gamepad f310 (controller)",
+			Analog_Turn = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=3.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 		}
 
 	},
