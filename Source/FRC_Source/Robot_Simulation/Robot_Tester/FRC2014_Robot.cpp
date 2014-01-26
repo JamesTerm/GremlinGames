@@ -232,8 +232,7 @@ void FRC_2014_Robot::ResetPos()
 	__super::ResetPos();
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
-	//TODO fix and enable this once everything is initialized properly
-	//m_Winch.ResetPos();
+	m_Winch.ResetPos();
 }
 
 void FRC_2014_Robot::TimeChange(double dTime_s)
@@ -245,7 +244,8 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
-	m_Winch.AsEntity1D().TimeChange(dTime_s);
+	//TODO fix and enable this once everything is initialized properly
+	//m_Winch.AsEntity1D().TimeChange(dTime_s);
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -476,7 +476,8 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
-	"Robot_SetDriverOverride"
+	"Robot_SetDriverOverride",
+	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance"
 };
 
 const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
