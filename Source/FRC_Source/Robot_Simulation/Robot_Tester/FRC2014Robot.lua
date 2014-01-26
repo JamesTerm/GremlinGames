@@ -106,7 +106,7 @@ MainRobot = {
 		
 		winch =
 		{
-			is_closed=0,
+			is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -242,7 +242,7 @@ MainRobot = {
 		Joystick_3 =
 		{
 			control = "gamepad f310 (controller)",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=3.0},
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
@@ -251,10 +251,10 @@ MainRobot = {
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 			
-			Winch_SetChipShot = {type="joystick_button", key=1, on_off=false},
-			Winch_SetGoalShot = {type="joystick_button", key=3, on_off=false},
+			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
+			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
 			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire={type="joystick_button", key=5, keyboard='j', on_off=true},
+			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
 			Winch_Advance={type="keyboard", key='k', on_off=true},
 		}
 
