@@ -6,6 +6,13 @@ Feet2Meters=0.3048
 Meters2Feet=3.2808399
 Meters2Inches=39.3700787
 OunceInchToNewton=0.00706155183333
+Pounds2Kilograms=0.453592
+Deg2Rad=(1/180) * Pi
+
+ArmToGearRatio=72.0/28.0
+GearToArmRatio=1.0/ArmToGearRatio
+PotentiometerToArmRatio=36.0/54.0
+PotentiometerToGearRatio=PotentiometerToArmRatio * ArmToGearRatio
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -97,6 +104,64 @@ MainRobot = {
 			move_forward_ft =0.0,
 		},
 		
+		winch =
+		{
+			is_closed=0,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='n',
+			pid_up=
+			{p=100, i=0, d=0},
+			pid_down=
+			{p=100, i=0, d=0},
+			tolerance=0.15,
+			tolerance_count=20,
+			voltage_multiply=1.0,			--May be reversed
+			encoder_to_wheel_ratio=1.0,
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			
+			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
+			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
+			accel=0.5,						--We may indeed have a two button solution (match with max accel)
+			brake=0.5,
+			max_accel_forward=1,			--These are in radians, just go with what feels right
+			max_accel_reverse=1,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			--These are arm converted to gear ratio
+			max_range_deg= 70 * ArmToGearRatio,
+			min_range_deg=(-50) * ArmToGearRatio,
+			use_aggressive_stop = 'yes',
+			inv_max_accel_up = 0.05,
+			inv_max_decel_up = 0.0,
+			inv_max_accel_down = 0.05,
+			inv_max_decel_down = 0.01,
+			slow_velocity_voltage = 4.0,
+			slow_velocity = 2.0,
+			predict_up=.400,
+			predict_down=.400,
+			pulse_burst_time=0.06,
+			pulse_burst_range=0.5,
+			reverse_deadzone=0.10,
+			slow_angle_scalar = GearToArmRatio,
+			distance_scale = 0.5,
+			motor_specs =
+			{
+				wheel_mass=Pounds2Kilograms * 16.27,
+				cof_efficiency=0.2,
+				gear_reduction=1.0,
+				torque_on_wheel_radius=Inches2Meters * 1.0,
+				drive_wheel_radius=Inches2Meters * 2.0,
+				number_of_motors=2,
+				
+				free_speed_rpm=84.0,
+				stall_torque=10.6,
+				stall_current_amp=18.6,
+				free_current_amp=1.8
+			}
+		},
+
+		
 		low_gear = 
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
@@ -178,9 +243,15 @@ MainRobot = {
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Turret_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
-			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
+			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
+			
+			Winch_SetChipShot = {type="joystick_button", key=1, on_off=false},
+			Winch_SetGoalShot = {type="joystick_button", key=3, on_off=false},
+			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Winch_Fire={type="joystick_button", key=5, keyboard='j', on_off=true},
+			Winch_Advance={type="keyboard", key='k', on_off=true},
 		}
 
 	},
