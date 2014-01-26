@@ -253,11 +253,12 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester2 m_Winch_Pot,m_Pitch_Pot,m_Flippers_Pot; //simulate the potentiometer and motor
+		Potentiometer_Tester3 m_Winch_Pot;
+		Potentiometer_Tester2 m_Pitch_Pot,m_Flippers_Pot; //simulate the potentiometer and motor
 		Encoder_Simulator m_PowerWheel_Enc,m_LowerConveyor_Enc,m_MiddleConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
-		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
+		double m_WinchVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
 		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 };
 

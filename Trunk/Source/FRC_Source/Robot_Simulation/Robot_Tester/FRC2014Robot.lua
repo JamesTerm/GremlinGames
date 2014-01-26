@@ -9,10 +9,10 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
-ArmToGearRatio=72.0/28.0
-GearToArmRatio=1.0/ArmToGearRatio
+ArmToMotorRatio=72.0/28.0
+MotorToArmRatio=1.0/ArmToMotorRatio
 PotentiometerToArmRatio=36.0/54.0
-PotentiometerToGearRatio=PotentiometerToArmRatio * ArmToGearRatio
+PotentiometerToMotorRatio=PotentiometerToArmRatio * ArmToMotorRatio
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -109,10 +109,8 @@ MainRobot = {
 			is_closed=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
-			use_pid_up_only='n',
+			use_pid_up_only='y',
 			pid_up=
-			{p=100, i=0, d=0},
-			pid_down=
 			{p=100, i=0, d=0},
 			tolerance=0.15,
 			tolerance_count=20,
@@ -129,8 +127,8 @@ MainRobot = {
 			max_accel_reverse=1,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
-			max_range_deg= 70 * ArmToGearRatio,
-			min_range_deg=(-50) * ArmToGearRatio,
+			max_range_deg= 80 * ArmToMotorRatio,
+			min_range_deg=(-10) * ArmToMotorRatio,
 			use_aggressive_stop = 'yes',
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
@@ -143,7 +141,7 @@ MainRobot = {
 			pulse_burst_time=0.06,
 			pulse_burst_range=0.5,
 			reverse_deadzone=0.10,
-			slow_angle_scalar = GearToArmRatio,
+			slow_angle_scalar = MotorToArmRatio,
 			distance_scale = 0.5,
 			motor_specs =
 			{
@@ -177,7 +175,7 @@ MainRobot = {
 			
 			tank_drive =
 			{
-				is_closed=0,						--By default false, and can be turned on dynamically
+				is_closed=1,
 				show_pid_dump='no',
 				ds_display_row=-1,
 				--We must NOT use I or D for low gear, we must keep it very responsive
@@ -212,12 +210,18 @@ MainRobot = {
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
-			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
+			--Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
+			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
 			Robot_SetLowGearOff = {type="joystick_button", key=8, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=6, on_off=false},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false}
+			Turn_180 = {type="joystick_button", key=7, on_off=false},
+			
+			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
+			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
+			Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
+			Winch_Advance={type="keyboard", key='k', on_off=true},
 		},
 		
 		Joystick_2 =

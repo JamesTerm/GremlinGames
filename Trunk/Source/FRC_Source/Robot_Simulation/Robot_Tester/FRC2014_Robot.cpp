@@ -162,7 +162,7 @@ void FRC_2014_Robot::Winch::SetGoalShot()
 }
 void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 {
-	m_pParent->m_RobotControl->CloseSolenoid(eReleaseClutch,ReleaseClutch);
+	m_pParent->m_RobotControl->OpenSolenoid(eReleaseClutch,ReleaseClutch);
 	//once released the encoder and position will be zero
 	if (ReleaseClutch)
 		ResetPos();
@@ -226,13 +226,16 @@ void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 
 	//set to the default key position
 	const FRC_2014_Robot_Props &robot2014props=RobotProps->GetFRC2014RobotProps();
+	m_Winch.Initialize(em,RobotProps?&RobotProps->GetWinchProps():NULL);
 }
 void FRC_2014_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
-	m_Winch.ResetPos();
+	//TODO this is tacky... will have better low gear method soon
+	if (!GetBypassPosAtt_Update())
+		m_Winch.ResetPos();
 }
 
 void FRC_2014_Robot::TimeChange(double dTime_s)
@@ -244,8 +247,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
-	//TODO fix and enable this once everything is initialized properly
-	//m_Winch.AsEntity1D().TimeChange(dTime_s);
+	m_Winch.AsEntity1D().TimeChange(dTime_s);
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -676,8 +678,9 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			{
 				//	printf("Turret=%f\n",Voltage);
 				//DOUT3("Turret Voltage=%f",Voltage);
-				m_TurretVoltage=Voltage;
-				m_Winch_Pot.UpdatePotentiometerVoltage(Voltage);
+				const double VoltageToUse=(Voltage>0.0)?Voltage:0.0;
+				m_WinchVoltage=VoltageToUse * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
+				m_Winch_Pot.UpdatePotentiometerVoltage(VoltageToUse);
 				m_Winch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
@@ -691,21 +694,9 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			}
 			break;
 	}
-
-	#ifdef __DebugLUA__
-	switch (index)
-	{
-	case FRC_2014_Robot::eWinch:
-		Dout(m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,1,"t=%.2f",Voltage);
-		break;
-	case FRC_2014_Robot::ePitchRamp:
-		Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,1,"p=%.2f",Voltage);
-		break;
-	}
-	#endif
 }
 
-FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_TurretVoltage(0.0),m_PowerWheelVoltage(0.0)
+FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_PowerWheelVoltage(0.0)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
@@ -767,7 +758,9 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	m_FireConveyor_Enc.SetTimeDelta(dTime_s);
 	//display voltages
 	DOUT(2,"l=%.2f r=%.2f t=%.2f pi=%.2f pw=%.2f lc=%.2f mc=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
-		m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage);
+		m_WinchVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage);
+
+	SmartDashboard::PutNumber("WinchVoltage",m_WinchVoltage);
 }
 
 
@@ -778,9 +771,16 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	switch (index)
 	{
 		case FRC_2014_Robot::eWinch:
-		
-			result=NormalizeRotation2(m_Winch_Pot.GetPotentiometerCurrentPosition() - Pi);
-			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
+			{
+				const FRC_2014_Robot_Props &props=m_RobotProps.GetFRC2014RobotProps();
+				const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
+				//result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
+				//no conversion needed in simulation
+				result=(m_Winch_Pot.GetPotentiometerCurrentPosition()) + 0.0;
+
+				//result = m_KalFilter_Arm(result);  //apply the Kalman filter
+				SmartDashboard::PutNumber("Catapult_Angle",90-RAD_2_DEG(result*c_GearToArmRatio));
+			}
 			break;
 		case FRC_2014_Robot::ePitchRamp:
 
@@ -810,7 +810,11 @@ void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	{
 	case FRC_2014_Robot::eUseLowGear:
 		printf("UseLowGear=%d\n",Open);
-		//m_UseLowGear=Open;
+		SmartDashboard::PutBoolean("UseHighGear",!Open);
+		break;
+	case FRC_2014_Robot::eReleaseClutch:
+		printf("ReleaseClutch=%d\n",Open);
+		SmartDashboard::PutBoolean("ClutchEngaged",!Open);
 		break;
 	}
 }
