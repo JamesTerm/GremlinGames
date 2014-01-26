@@ -19,7 +19,6 @@ namespace Base=GG_Framework::Base;
 namespace Scripting=GG_Framework::Logic::Scripting;
 
 
-#define __DisableTurretTargeting__
 #define __DisableEncoderTracking__
 
 //This will make the scale to half with a 0.1 dead zone
@@ -106,6 +105,98 @@ void FRC_2014_Robot::PitchRamp::ResetPos()
 	m_Velocity=0.0;
 }
 
+  /***********************************************************************************************************************************/
+ /*														FRC_2014_Robot::Winch														*/
+/***********************************************************************************************************************************/
+
+FRC_2014_Robot::Winch::Winch(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
+	Rotary_Position_Control("Winch",robot_control,eWinch),m_pParent(parent),m_Advance(false)
+{
+}
+
+
+void FRC_2014_Robot::Winch::Advance(bool on)
+{
+	m_Advance=on;
+}
+
+void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
+{
+	//Get in my button value
+	if (m_Advance)
+		SetCurrentLinearAcceleration(m_Accel);
+
+	__super::TimeChange(dTime_s);
+	#if 0
+	#ifdef __DebugLUA__
+	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
+	#endif
+	#endif
+	#ifdef Robot_TesterCode
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
+	double Pos_m=GetPos_m();
+	DOUT4("Arm=%f Angle=%f",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio));
+	#endif
+}
+
+
+double FRC_2014_Robot::Winch::PotentiometerRaw_To_Arm_r(double raw) const
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	const int RawRangeHalf=512;
+	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
+	ret*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
+	return ret;
+}
+
+void FRC_2014_Robot::Winch::SetChipShot()
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	SetIntendedPosition(props.Catapult_ChipShotAngle);
+}
+void FRC_2014_Robot::Winch::SetGoalShot()
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	SetIntendedPosition( props.Catapult_GoalShotAngle );
+}
+void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
+{
+	m_pParent->m_RobotControl->CloseSolenoid(eReleaseClutch,ReleaseClutch);
+	//once released the encoder and position will be zero
+	if (ReleaseClutch)
+		ResetPos();
+}
+
+void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=m_pParent->GetEventMap();
+	if (Bind)
+	{
+		em->EventValue_Map["Winch_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Winch::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Winch_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2014_Robot::Winch::SetPotentiometerSafety);
+		
+		em->Event_Map["Winch_SetChipShot"].Subscribe(ehl, *this, &FRC_2014_Robot::Winch::SetChipShot);
+		em->Event_Map["Winch_SetGoalShot"].Subscribe(ehl, *this, &FRC_2014_Robot::Winch::SetGoalShot);
+
+		em->EventOnOff_Map["Winch_Advance"].Subscribe(ehl,*this, &FRC_2014_Robot::Winch::Advance);
+
+		em->EventOnOff_Map["Winch_Fire"].Subscribe(ehl, *this, &FRC_2014_Robot::Winch::Fire_Catapult);
+	}
+	else
+	{
+		em->EventValue_Map["Winch_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Winch::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["Winch_SetPotentiometerSafety"].Remove(*this, &FRC_2014_Robot::Winch::SetPotentiometerSafety);
+
+		em->Event_Map["Winch_SetChipShot"].Remove(*this, &FRC_2014_Robot::Winch::SetChipShot);
+		em->Event_Map["Winch_SetGoalShot"].Remove(*this, &FRC_2014_Robot::Winch::SetGoalShot);
+
+		em->EventOnOff_Map["Winch_Advance"].Remove(*this, &FRC_2014_Robot::Winch::Advance);
+
+		em->EventOnOff_Map["Winch_Fire"]  .Remove(*this, &FRC_2014_Robot::Winch::Fire_Catapult);
+	}
+}
+
 
   /***********************************************************************************************************************************/
  /*															FRC_2014_Robot															*/
@@ -117,7 +208,8 @@ const double c_HalfCourtLength=c_CourtLength/2.0;
 const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous) : 
-	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
+	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
+		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),
 		m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false)
@@ -140,6 +232,8 @@ void FRC_2014_Robot::ResetPos()
 	__super::ResetPos();
 	m_Turret.ResetPos();
 	m_PitchRamp.ResetPos();
+	//TODO fix and enable this once everything is initialized properly
+	//m_Winch.ResetPos();
 }
 
 void FRC_2014_Robot::TimeChange(double dTime_s)
@@ -151,6 +245,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
+	m_Winch.AsEntity1D().TimeChange(dTime_s);
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -229,6 +324,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
+	m_Winch.AsShip1D().BindAdditionalEventControls(Bind);
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
@@ -289,12 +385,20 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 	m_RobotControls(&s_ControlsEvents)
 {
 	{
+		const double c_ArmToGearRatio=72.0/28.0;
+		const double c_PotentiometerToArmRatio=36.0/54.0;
+
 		FRC_2014_Robot_Props props;
 		const double KeyDistance=Inches2Meters(144);
 		const double KeyWidth=Inches2Meters(101);
 		//const double KeyDepth=Inches2Meters(48);   //not used (yet)
 		const double DefaultY=c_HalfCourtLength-KeyDistance;
 		const double HalfKeyWidth=KeyWidth/2.0;
+
+		props.ArmToGearRatio=c_ArmToGearRatio;
+		props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
+		props.Catapult_ChipShotAngle=DEG_2_RAD(45.0);
+		props.Catapult_GoalShotAngle=DEG_2_RAD(17.0);
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.MoveForward=0.0;
@@ -405,6 +509,12 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_PitchRampProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("winch");
+		if (!err)
+		{
+			m_WinchProps.LoadFromScript(script);
 			script.Pop();
 		}
 
@@ -561,13 +671,13 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 
 	switch (index)
 	{
-		case FRC_2014_Robot::eTurret:
+		case FRC_2014_Robot::eWinch:
 			{
 				//	printf("Turret=%f\n",Voltage);
 				//DOUT3("Turret Voltage=%f",Voltage);
 				m_TurretVoltage=Voltage;
-				m_Turret_Pot.UpdatePotentiometerVoltage(Voltage);
-				m_Turret_Pot.TimeChange();  //have this velocity immediately take effect
+				m_Winch_Pot.UpdatePotentiometerVoltage(Voltage);
+				m_Winch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
 		case FRC_2014_Robot::ePitchRamp:
@@ -584,7 +694,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-	case FRC_2014_Robot::eTurret:
+	case FRC_2014_Robot::eWinch:
 		Dout(m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,1,"t=%.2f",Voltage);
 		break;
 	case FRC_2014_Robot::ePitchRamp:
@@ -610,8 +720,8 @@ void FRC_2014_Robot_Control::Reset_Rotary(size_t index)
 {
 	switch (index)
 	{
-		case FRC_2014_Robot::eTurret:
-			m_Turret_Pot.ResetPos();
+		case FRC_2014_Robot::eWinch:
+			m_Winch_Pot.ResetPos();
 			break;
 		case FRC_2014_Robot::ePitchRamp:
 			m_Pitch_Pot.ResetPos();
@@ -640,14 +750,14 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 		//turret_props.SetMinRange(0);
 		//turret_props.SetMaxRange(Pi2);
 		turret_props.SetUsingRange(false);
-		m_Turret_Pot.Initialize(&turret_props);
+		m_Winch_Pot.Initialize(&turret_props);
 		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
 	}
 }
 
 void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
-	m_Turret_Pot.SetTimeDelta(dTime_s);
+	m_Winch_Pot.SetTimeDelta(dTime_s);
 	m_Pitch_Pot.SetTimeDelta(dTime_s);
 	m_Flippers_Pot.SetTimeDelta(dTime_s);
 	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
@@ -666,9 +776,9 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 	switch (index)
 	{
-		case FRC_2014_Robot::eTurret:
+		case FRC_2014_Robot::eWinch:
 		
-			result=NormalizeRotation2(m_Turret_Pot.GetPotentiometerCurrentPosition() - Pi);
+			result=NormalizeRotation2(m_Winch_Pot.GetPotentiometerCurrentPosition() - Pi);
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 			break;
 		case FRC_2014_Robot::ePitchRamp:
@@ -681,7 +791,7 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	#ifdef __DebugLUA__
 	switch (index)
 	{
-		case FRC_2014_Robot::eTurret:
+		case FRC_2014_Robot::eWinch:
 			Dout(m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
 			break;
 		case FRC_2014_Robot::ePitchRamp:
