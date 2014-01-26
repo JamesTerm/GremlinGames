@@ -153,6 +153,7 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 		void SetDefaultAttitude(double att) {m_DefaultAtt=att;}
 		//Be sure to always set this back to false!
 		void SetBypassPosAtt_Update(bool bypass) {m_BypassPosAtt_Update=bypass;}
+		bool GetBypassPosAtt_Update() const {return m_BypassPosAtt_Update;}
 	protected: 
 		FlightDynamics_2D m_Physics;
 		///This gives derived class the ability to manipulate the displacement
