@@ -9,9 +9,9 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
-ArmToMotorRatio=72.0/28.0
+ArmToMotorRatio=5 * 8.3
 MotorToArmRatio=1.0/ArmToMotorRatio
-PotentiometerToArmRatio=36.0/54.0
+PotentiometerToArmRatio=1/3
 PotentiometerToMotorRatio=PotentiometerToArmRatio * ArmToMotorRatio
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
@@ -152,9 +152,9 @@ MainRobot = {
 				drive_wheel_radius=Inches2Meters * 2.0,
 				number_of_motors=2,
 				
-				free_speed_rpm=84.0,
-				stall_torque=10.6,
-				stall_current_amp=18.6,
+				free_speed_rpm=233.0,
+				stall_torque=0.4,
+				stall_current_amp=41,
 				free_current_amp=1.8
 			}
 		},
