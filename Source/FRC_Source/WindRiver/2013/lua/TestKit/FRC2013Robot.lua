@@ -27,7 +27,7 @@ HalfKeyWidth_in=KeyWidth_in/2.0
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.5;
+	version = 1.6;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -297,9 +297,10 @@ MainRobot = {
 
 	controls =
 	{
-		slotlist = {slot_1="airflo"},
+		--slotlist = {slot_1="airflo"},
 		--slotlist = {slot_1="logitech dual action"},
-		--slotlist = {slot_1="airflo", slot_2="none", slot_3="ch throttle quadrant"},  --I could use 2 but testing skip stress
+		slotlist = {slot_1="none", slot_2="logitech dual action", slot_3="ch throttle quadrant"},  --I could use 2 but testing skip stress
+		--slotlist = {slot_1="airflo", slot_2="none", slot_3="ch throttle quadrant"},
 
 		Joystick_1 =
 		{
