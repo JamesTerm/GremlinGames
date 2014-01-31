@@ -232,14 +232,14 @@ void Ship_2D::UpdateShipProperties(const Ship_Props &props)
 
 void Ship_2D::InitNetworkProperties(const Ship_Props &props)
 {
-	SmartDashboard::PutNumber("Rotation Tolerance",props.Rotation_Tolerance);
+	SmartDashboard::PutNumber("Rotation Tolerance",RAD_2_DEG(props.Rotation_Tolerance));
 	SmartDashboard::PutNumber("Rotation Tolerance Count",props.Rotation_ToleranceConsecutiveCount);
 }
 
 void Ship_2D::NetworkEditProperties(Ship_Props &props)
 {
 
-	props.Rotation_Tolerance=SmartDashboard::GetNumber("Rotation Tolerance");
+	props.Rotation_Tolerance=DEG_2_RAD(SmartDashboard::GetNumber("Rotation Tolerance"));
 	props.Rotation_ToleranceConsecutiveCount=SmartDashboard::GetNumber("Rotation Tolerance Count");
 }
 
@@ -409,16 +409,23 @@ void Ship_2D::TimeChange(double dTime_s)
 				//If we are not using a tolerance counter we'll zero out anytime it hits the tolerance threshold
 				//If we are using it... then we keep feeding the displacement give PID and tolerance count a change to center into
 				//the tolerance threshold
-				if (m_RotationToleranceCounter==0.0)
+				if (ship_props.Rotation_ToleranceConsecutiveCount==0.0)
 					m_rotDisplacement_rad=0.0;
 				m_RotationToleranceCounter++;
 			}
 			else
 				m_RotationToleranceCounter=0;
 
+			//Normalize this
+			if (IsZero(m_rotDisplacement_rad,1e-2))
+				m_rotDisplacement_rad=0.0;
+
+			//SmartDashboard::PutBoolean("Test m_rotDisplacement_rad",m_rotDisplacement_rad==0.0);
+
 			if ((m_RotationToleranceCounter>0.0)&&(m_RotationToleranceCounter >= ship_props.Rotation_ToleranceConsecutiveCount))
 				m_LockShipHeadingToOrientation=true; 
 		}
+		//SmartDashboard::PutBoolean("m_LockShipHeadingToOrientation",m_LockShipHeadingToOrientation);
 		#endif
 	}
 	else
