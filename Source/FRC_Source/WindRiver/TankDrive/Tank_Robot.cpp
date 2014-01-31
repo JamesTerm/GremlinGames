@@ -81,6 +81,7 @@ void Tank_Robot::InitNetworkProperties(const Tank_Robot_Props &props,const Ship_
 	SmartDashboard::PutNumber("gain decel Left",props.InverseMaxDecel_Left);
 	SmartDashboard::PutNumber("gain accel Right",props.InverseMaxAccel_Right);
 	SmartDashboard::PutNumber("gain decel Right",props.InverseMaxDecel_Right);
+	SmartDashboard::PutBoolean("Use Aggressive Stop",props.UseAggressiveStop);
 }
 
 void Tank_Robot::NetworkEditProperties(Tank_Robot_Props &props, Ship_Props &ship_props)
@@ -104,6 +105,7 @@ void Tank_Robot::NetworkEditProperties(Tank_Robot_Props &props, Ship_Props &ship
 	props.InverseMaxDecel_Left=SmartDashboard::GetNumber("gain decel Left");
 	props.InverseMaxAccel_Right=SmartDashboard::GetNumber("gain accel Right");
 	props.InverseMaxDecel_Right=SmartDashboard::GetNumber("gain decel Right");
+	props.UseAggressiveStop=SmartDashboard::GetBoolean("Use Aggressive Stop");
 }
 
 
