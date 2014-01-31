@@ -39,13 +39,15 @@ TestShip = {
 	MaxTorqueYaw =  gMaxTorqueYaw,
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
-	rotation_tolerance=0.25,
+	rotation_tolerance=Deg2Rad * 2,
 
 	MAX_SPEED = GearSpeed, -- Maximum Speed (m/s) use to be 2.916 but computed to 2.974848
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,     -- Brake Deceleration m/s2 (1g = 9.8)
 	-- Turn Rates (radians/sec) This is always correct do not change
-	heading_rad = (2 * GearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,  --was originally computed to 514
+	--heading_rad = (2 * GearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,  --was originally computed to 514
+	--TODO automate lua to get correct number
+	heading_rad = 8.847,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
