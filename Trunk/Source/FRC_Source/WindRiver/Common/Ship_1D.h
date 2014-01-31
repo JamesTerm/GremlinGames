@@ -121,6 +121,7 @@ class COMMON_API Ship_1D : public Entity1D
 		bool GetUsingRange() const {return m_UsingRange;}
 
 		Entity1D &AsEntity1D() {return *this;}
+		Ship_1D &AsShip1D() {return *this;}
 
 	protected:
 		///override if the intended position has a known velocity to match (this is great for locking)

@@ -137,7 +137,7 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 		const std::string &GetName() const {return m_Name;}
 		virtual void TimeChange(double dTime_s);
 		FlightDynamics_2D &GetPhysics() {return m_Physics;}
-		const FlightDynamics_2D &GetPhysics() const {return m_Physics;}
+		const PhysicsEntity_2D &GetPhysics() const {return m_Physics;}
 		virtual const Vec2D &GetDimensions() const {return m_Dimensions;}
 		virtual void ResetPos();
 		// This is where both the vehicle entity and camera need to align to, by default we use the actual orientation
@@ -153,6 +153,7 @@ class COMMON_API Entity2D : public EntityPropertiesInterface
 		void SetDefaultAttitude(double att) {m_DefaultAtt=att;}
 		//Be sure to always set this back to false!
 		void SetBypassPosAtt_Update(bool bypass) {m_BypassPosAtt_Update=bypass;}
+		bool GetBypassPosAtt_Update() const {return m_BypassPosAtt_Update;}
 	protected: 
 		FlightDynamics_2D m_Physics;
 		///This gives derived class the ability to manipulate the displacement

@@ -147,6 +147,10 @@ void Tank_Drive::InterpolateVelocities(double LeftLinearVelocity,double RightLin
 	LocalVelocity[1]=FWD;
 
 	AngularVelocity=(omega / (Pi * D)) * Pi2;
+
+	//This is a sanity check of what the max heading can be
+	//SmartDashboard::PutNumber("drive AngularVelocity",AngularVelocity);
+
 	//This is a safety to avoid instability
 	#if 0
 	AngularVelocity=IsZero(omega)?0.0:omega;
