@@ -40,6 +40,7 @@ TestShip = {
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
 	rotation_tolerance=Deg2Rad * 2,
+	rotation_distance_scalar=1.0,
 
 	MAX_SPEED = GearSpeed, -- Maximum Speed (m/s) use to be 2.916 but computed to 2.974848
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
@@ -54,8 +55,9 @@ TestShip = {
 
 	tank_drive =
 	{
-		is_closed=0,						--This should always be false for high gear
-		show_pid_dump='no',
+		is_closed=1,						--This should always be false for high gear
+		show_pid_dump='n',
+		use_aggressive_stop = 'yes',
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
@@ -164,7 +166,7 @@ TestShip = {
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			--Turn_180 = {type="joystick_button", key=7, on_off=false},
+			Turn_180 = {type="joystick_button", key=7, on_off=false},
 			
 			Arm_SetPos0feet = {type="joystick_button", key=2, on_off=false},
 			Arm_SetPos3feet = {type="joystick_button", key=1, on_off=false},
@@ -176,7 +178,7 @@ TestShip = {
 			--Claw_SetCurrentVelocity  --not used
 			Claw_Close =	 {type="joystick_button", key=6, on_off=true},
 			Claw_Grip =		 {type="joystick_button", key=8, on_off=true},
-			Claw_Squirt =	 {type="joystick_button", key=7, on_off=true},
+			--Claw_Squirt =	 {type="joystick_button", key=7, on_off=true},
 			Robot_CloseDoor= {type="joystick_button", key=9, on_off=true}
 		},
 		
