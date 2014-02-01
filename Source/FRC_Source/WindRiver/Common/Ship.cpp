@@ -234,6 +234,7 @@ void Ship_2D::InitNetworkProperties(const Ship_Props &props)
 {
 	SmartDashboard::PutNumber("Rotation Tolerance",RAD_2_DEG(props.Rotation_Tolerance));
 	SmartDashboard::PutNumber("Rotation Tolerance Count",props.Rotation_ToleranceConsecutiveCount);
+	SmartDashboard::PutNumber("rotation_distance_scalar",props.Rotation_TargetDistanceScalar);
 }
 
 void Ship_2D::NetworkEditProperties(Ship_Props &props)
@@ -241,6 +242,7 @@ void Ship_2D::NetworkEditProperties(Ship_Props &props)
 
 	props.Rotation_Tolerance=DEG_2_RAD(SmartDashboard::GetNumber("Rotation Tolerance"));
 	props.Rotation_ToleranceConsecutiveCount=SmartDashboard::GetNumber("Rotation Tolerance Count");
+	props.Rotation_TargetDistanceScalar=SmartDashboard::GetNumber("rotation_distance_scalar");
 }
 
 void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *props)
@@ -395,13 +397,20 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			UpdateIntendedOrientaton(dTime_s);
 			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
+			//SmartDashboard::PutNumber("m_IntendedOrientation",m_IntendedOrientation);
+			//SmartDashboard::PutNumber("Heading from Physics",m_Physics.GetHeading());
 			const double TargetDistanceScalar=ship_props.Rotation_TargetDistanceScalar;
 			if (TargetDistanceScalar!=1.0)
 			{
 				//a simple linear blend on the scalar should be fine (could upgrade to poly if needed)
 				const double ratio = fabs(m_Physics.GetAngularVelocity())/dHeading;
-				const double scale=(ratio * TargetDistanceScalar) + ((1.0-ratio) * 1.0);
-				//printf("%.2f %.2f\n",ratio,scale);
+				//Note the slower it goes the more blend of the TargetDistanceScalar needs to become to slow it down more towards
+				//the last moments
+				const double scale=(ratio * 1.0) + ((1.0-ratio) * TargetDistanceScalar);
+				#if 0
+				if (ratio!=0.0)
+					printf("%.2f %.2f %.2f\n",m_Physics.GetAngularVelocity(),ratio,scale);
+				#endif
 				m_rotDisplacement_rad*=scale;
 			}
 			if (fabs(m_rotDisplacement_rad)<ship_props.Rotation_Tolerance)
