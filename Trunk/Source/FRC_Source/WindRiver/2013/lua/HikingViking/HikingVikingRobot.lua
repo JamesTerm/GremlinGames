@@ -42,6 +42,8 @@ MainRobot = {
 	MaxTorqueYaw =  gMaxTorqueYaw,
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
+	rotation_tolerance=Deg2Rad * 5,
+	rotation_distance_scalar=0.2,
 
 	MAX_SPEED = GearSpeed, -- Maximum Speed (m/s) use to be 2.916 but computed to 2.974848
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
@@ -54,8 +56,9 @@ MainRobot = {
 
 	tank_drive =
 	{
-		is_closed=0,						--This should always be false for high gear
-		show_pid_dump='no',
+		is_closed=1,						--This should always be false for high gear
+		show_pid_dump='y',
+		use_aggressive_stop = 'yes',  --use for autonomous and turning
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
@@ -63,9 +66,9 @@ MainRobot = {
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = FRC2011_wheel_diameter_in,
 		left_pid=
-		{p=200, i=0, d=50},
+		{p=100, i=0, d=25},
 		right_pid=
-		{p=200, i=0, d=50},					--These should always match, but able to be made different
+		{p=100, i=0, d=25},					--These should always match, but able to be made different
 		latency=0.0,
 		heading_latency=0.0,
 		drive_to_scale=0.50,
@@ -75,10 +78,13 @@ MainRobot = {
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		force_voltage=
+		{t4=0, t3=0, t2=0, t1=0, c=1},
 		reverse_steering='yes',
 		left_encoder_reversed='no',
 		right_encoder_reversed='no',
 		inv_max_accel = 1.0/15.0,  --solved empiracally
+		inv_max_decel = 0.0,
 		forward_deadzone_left  = 0.02,
 		forward_deadzone_right = 0.110,
 		reverse_deadzone_left  = 0.115,
@@ -89,7 +95,7 @@ MainRobot = {
 		arm =
 		{
 			is_closed=1,
-			show_pid_dump='y',
+			show_pid_dump='n',
 			ds_display_row=-1,
 			pid=
 			{p=100, i=0, d=0},
@@ -165,7 +171,7 @@ MainRobot = {
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			--POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			--Turn_180 = {type="joystick_button", key=7, on_off=false},
+			Turn_180 = {type="joystick_button", key=5, on_off=false},
 			
 			Arm_SetPos0feet = {type="joystick_button", key=1, on_off=false},
 			Arm_SetPos3feet = {type="joystick_button", key=3, on_off=false},
@@ -177,7 +183,7 @@ MainRobot = {
 			Claw_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Claw_Close =	 {type="joystick_button", key=6, on_off=true},
 			Claw_Grip =		 {type="joystick_button", key=9, on_off=true},
-			Claw_Squirt =	 {type="joystick_button", key=7, on_off=true},
+			--Claw_Squirt =	 {type="joystick_button", key=7, on_off=true},
 			--Robot_CloseDoor= {type="joystick_button", key=8, on_off=true}
 		},
 		Joystick_2 =
