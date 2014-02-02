@@ -9,10 +9,10 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
-ArmToMotorRatio=5 * 8.3
-MotorToArmRatio=1.0/ArmToMotorRatio
-PotentiometerToArmRatio=1/3
-PotentiometerToMotorRatio=PotentiometerToArmRatio * ArmToMotorRatio
+Catapult_ArmToMotorRatio=5 * 8.3
+Catapult_MotorToArmRatio=1.0/Catapult_ArmToMotorRatio
+Catapult_PotentiometerToArmRatio=1/3
+Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -127,8 +127,8 @@ MainRobot = {
 			max_accel_reverse=1,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
-			max_range_deg= 80 * ArmToMotorRatio,
-			min_range_deg=(-10) * ArmToMotorRatio,
+			max_range_deg= 80 * Catapult_ArmToMotorRatio,
+			min_range_deg=(-10) * Catapult_ArmToMotorRatio,
 			use_aggressive_stop = 'yes',
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
@@ -141,7 +141,7 @@ MainRobot = {
 			pulse_burst_time=0.06,
 			pulse_burst_range=0.5,
 			reverse_deadzone=0.10,
-			slow_angle_scalar = MotorToArmRatio,
+			slow_angle_scalar = Catapult_MotorToArmRatio,
 			distance_scale = 0.5,
 			motor_specs =
 			{

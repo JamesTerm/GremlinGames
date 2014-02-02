@@ -127,17 +127,13 @@ void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
 		SetCurrentLinearAcceleration(m_Accel);
 
 	__super::TimeChange(dTime_s);
-	#if 0
-	#ifdef __DebugLUA__
-	Dout(m_pParent->m_RobotProps.GetIntakeDeploymentProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	#endif
-	#endif
-	#ifdef Robot_TesterCode
-	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
-	const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
-	double Pos_m=GetPos_m();
-	DOUT4("Arm=%f Angle=%f",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio));
-	#endif
+	//Trying to get away from debug outs... however keeping this around for reference to how the gear ratios are used
+	//#ifdef Robot_TesterCode
+	//const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	//const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
+	//double Pos_m=GetPos_m();
+	//DOUT4("Arm=%f Angle=%f",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio));
+	//#endif
 }
 
 
@@ -146,7 +142,7 @@ double FRC_2014_Robot::Winch::PotentiometerRaw_To_Arm_r(double raw) const
 	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
 	const int RawRangeHalf=512;
 	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-	ret*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
+	ret*=props.Catapult_Robot_Props.PotentiometerToArmRatio;  //convert to arm's gear ratio
 	return ret;
 }
 
@@ -397,10 +393,13 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		const double DefaultY=c_HalfCourtLength-KeyDistance;
 		const double HalfKeyWidth=KeyWidth/2.0;
 
-		props.ArmToGearRatio=c_ArmToGearRatio;
-		props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
+		props.Catapult_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
+		props.Catapult_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
 		props.Catapult_ChipShotAngle=DEG_2_RAD(45.0);
 		props.Catapult_GoalShotAngle=DEG_2_RAD(17.0);
+
+		props.Intake_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
+		props.Intake_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.MoveForward=0.0;
@@ -684,19 +683,20 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_Winch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
-		case FRC_2014_Robot::ePitchRamp:
+		case FRC_2014_Robot::eIntake_Arm:
 			{
 				//	printf("Pitch=%f\n",Voltage);
 				//DOUT3("Pitch Voltage=%f",Voltage);
-				m_PitchRampVoltage=Voltage;
-				m_Pitch_Pot.UpdatePotentiometerVoltage(Voltage);
-				m_Pitch_Pot.TimeChange();  //have this velocity immediately take effect
+				m_IntakeArmVoltage=Voltage;
+				m_WinchVoltage=Voltage * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
+				m_IntakeArm_Pot.UpdatePotentiometerVoltage(Voltage);
+				m_IntakeArm_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
 	}
 }
 
-FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_PowerWheelVoltage(0.0)
+FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_IntakeArmVoltage(0.0),m_PowerWheelVoltage(0.0)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
@@ -715,8 +715,8 @@ void FRC_2014_Robot_Control::Reset_Rotary(size_t index)
 		case FRC_2014_Robot::eWinch:
 			m_Winch_Pot.ResetPos();
 			break;
-		case FRC_2014_Robot::ePitchRamp:
-			m_Pitch_Pot.ResetPos();
+		case FRC_2014_Robot::eIntake_Arm:
+			m_IntakeArm_Pot.ResetPos();
 			//We may want this for more accurate simulation
 			//m_Pitch_Pot.SetPos_m((m_Pitch_Pot.GetMinRange()+m_Pitch_Pot.GetMaxRange()) / 2.0);
 			break;
@@ -743,37 +743,40 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 		//turret_props.SetMaxRange(Pi2);
 		turret_props.SetUsingRange(false);
 		m_Winch_Pot.Initialize(&turret_props);
-		m_Pitch_Pot.Initialize(&robot_props->GetPitchRampProps());
+		m_IntakeArm_Pot.Initialize(&robot_props->GetPitchRampProps());
 	}
 }
 
 void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Winch_Pot.SetTimeDelta(dTime_s);
-	m_Pitch_Pot.SetTimeDelta(dTime_s);
+	m_IntakeArm_Pot.SetTimeDelta(dTime_s);
 	m_Flippers_Pot.SetTimeDelta(dTime_s);
 	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
 	m_LowerConveyor_Enc.SetTimeDelta(dTime_s);
 	m_MiddleConveyor_Enc.SetTimeDelta(dTime_s);
 	m_FireConveyor_Enc.SetTimeDelta(dTime_s);
-	//display voltages
-	DOUT(2,"l=%.2f r=%.2f t=%.2f pi=%.2f pw=%.2f lc=%.2f mc=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
-		m_WinchVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage);
+
+	//Let's do away with this since we are using the smart dashboard
+	////display voltages
+	//DOUT(2,"l=%.2f r=%.2f t=%.2f pi=%.2f pw=%.2f lc=%.2f mc=%.2f fc=%.2f\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),
+	//	m_WinchVoltage,m_IntakeArmVoltage,m_PowerWheelVoltage,m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage);
 
 	SmartDashboard::PutNumber("WinchVoltage",m_WinchVoltage);
+	SmartDashboard::PutNumber("IntakeArmVoltage",m_IntakeArmVoltage);
 }
 
 
 double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 {
 	double result=0.0;
+	const FRC_2014_Robot_Props &props=m_RobotProps.GetFRC2014RobotProps();
 
 	switch (index)
 	{
 		case FRC_2014_Robot::eWinch:
 			{
-				const FRC_2014_Robot_Props &props=m_RobotProps.GetFRC2014RobotProps();
-				const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
+				const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
 				//result=(m_Potentiometer.GetDistance() * m_RobotProps.GetArmProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
 				//no conversion needed in simulation
 				result=(m_Winch_Pot.GetPotentiometerCurrentPosition()) + 0.0;
@@ -782,24 +785,27 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				SmartDashboard::PutNumber("Catapult_Angle",90-RAD_2_DEG(result*c_GearToArmRatio));
 			}
 			break;
-		case FRC_2014_Robot::ePitchRamp:
-
-			result=m_Pitch_Pot.GetPotentiometerCurrentPosition();
-			DOUT (4,"pitch=%f flippers=%f",RAD_2_DEG(result),RAD_2_DEG(m_Flippers_Pot.GetPotentiometerCurrentPosition()));
+		case FRC_2014_Robot::eIntake_Arm:
+			{
+				const double c_GearToArmRatio=1.0/props.Intake_Robot_Props.ArmToGearRatio;
+				result=m_IntakeArm_Pot.GetPotentiometerCurrentPosition();
+				SmartDashboard::PutNumber("IntakeArm_Angle",90-RAD_2_DEG(result*c_GearToArmRatio));
+			}
 			break;
 	}
 
-	#ifdef __DebugLUA__
-	switch (index)
-	{
-		case FRC_2014_Robot::eWinch:
-			Dout(m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
-			break;
-		case FRC_2014_Robot::ePitchRamp:
-			Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
-			break;
-	}
-	#endif
+	//Let's do away with this and use smart dashboard instead... enable if team doesn't want to use it
+	//#ifdef __DebugLUA__
+	//switch (index)
+	//{
+	//	case FRC_2014_Robot::eWinch:
+	//		Dout(m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,14,"d=%.1f",RAD_2_DEG(result));
+	//		break;
+	//	case FRC_2014_Robot::eIntake_Arm:
+	//		Dout(m_RobotProps.GetPitchRampProps().GetRotaryProps().Feedback_DiplayRow,14,"p=%.1f",RAD_2_DEG(result));
+	//		break;
+	//}
+	//#endif
 
 	return result;
 }

@@ -19,8 +19,16 @@ public:
 struct FRC_2014_Robot_Props
 {
 public:
-	double ArmToGearRatio;
-	double PotentiometerToArmRatio;
+	struct Catapult
+	{
+		double ArmToGearRatio;
+		double PotentiometerToArmRatio;
+	} Catapult_Robot_Props;
+	struct Intake
+	{
+		double ArmToGearRatio;
+		double PotentiometerToArmRatio;
+	} Intake_Robot_Props;
 	double Catapult_ChipShotAngle;
 	double Catapult_GoalShotAngle;
 	struct Autonomous_Properties
@@ -38,13 +46,14 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetWinchProps() const {return m_WinchProps;}
+		const Rotary_Properties &GetIntake_ArmProps() const {return m_Intake_ArmProps;}
 
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2014_Robot_Props &GetFRC2014RobotProps() const {return m_FRC2014RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
 		//typedef Tank_Robot_Properties __super;
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2014_Robot_Props m_FRC2014RobotProps;
 
@@ -63,7 +72,7 @@ class FRC_2014_Robot : public Tank_Robot
 		enum SpeedControllerDevices
 		{
 			eWinch,
-			ePitchRamp,
+			eIntake_Arm,
 		};
 
 		enum SolenoidDevices
@@ -104,6 +113,41 @@ class FRC_2014_Robot : public Tank_Robot
 				void SetGoalShot();
 				FRC_2014_Robot * const m_pParent;
 				bool m_Advance;
+		};
+
+		class Intake_Arm : public Rotary_Position_Control
+		{
+			public:
+				Intake_Arm(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
+				IEvent::HandlerList ehl;
+				//The parent needs to call initialize
+				double HeightToAngle_r(double Height_m) const;
+				double Arm_AngleToHeight_m(double Angle_r) const;
+				double AngleToHeight_m(double Angle_r) const;
+				double GetPosRest();
+				//given the raw potentiometer converts to the arm angle
+				double PotentiometerRaw_To_Arm_r(double raw) const;
+				void CloseRist(bool Close);
+			protected:
+				//Intercept the time change to obtain current height as well as sending out the desired velocity
+				virtual void BindAdditionalEventControls(bool Bind);
+				void Advance(bool on);
+				void Retract(bool on);
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+
+				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
+				virtual void TimeChange(double dTime_s);
+
+			private:
+				#ifndef Robot_TesterCode
+				typedef Rotary_Position_Control __super;
+				#endif
+				void SetStowed();
+				void SetDeployed();
+				void SetSquirt();  //optional if we need to go back further to eject balls
+				FRC_2014_Robot * const m_pParent;
+				bool m_Advance, m_Retract;
 		};
 
 	protected:
@@ -153,6 +197,7 @@ class FRC_2014_Robot : public Tank_Robot
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
 		Winch m_Winch;
+		//Intake_Arm m_Intake_Arm;
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Vec2D m_DefensiveKeyPosition;
 
@@ -253,12 +298,12 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester3 m_Winch_Pot;
-		Potentiometer_Tester2 m_Pitch_Pot,m_Flippers_Pot; //simulate the potentiometer and motor
+		Potentiometer_Tester3 m_Winch_Pot, m_IntakeArm_Pot;
+		Potentiometer_Tester2 m_Flippers_Pot; //simulate the potentiometer and motor
 		Encoder_Simulator m_PowerWheel_Enc,m_LowerConveyor_Enc,m_MiddleConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
-		double m_WinchVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
+		double m_WinchVoltage,m_IntakeArmVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
 		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 };
 
