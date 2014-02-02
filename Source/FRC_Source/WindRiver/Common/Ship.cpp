@@ -397,8 +397,8 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			UpdateIntendedOrientaton(dTime_s);
 			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
-			//SmartDashboard::PutNumber("m_IntendedOrientation",m_IntendedOrientation);
-			//SmartDashboard::PutNumber("Heading from Physics",m_Physics.GetHeading());
+			//SmartDashboard::PutNumber("m_IntendedOrientation",RAD_2_DEG(m_IntendedOrientation));
+			//SmartDashboard::PutNumber("Heading from Physics",RAD_2_DEG(NormalizeRotation2(m_Physics.GetHeading())));
 			const double TargetDistanceScalar=ship_props.Rotation_TargetDistanceScalar;
 			if (TargetDistanceScalar!=1.0)
 			{
