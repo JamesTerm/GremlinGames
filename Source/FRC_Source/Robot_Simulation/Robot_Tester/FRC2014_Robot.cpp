@@ -149,12 +149,12 @@ double FRC_2014_Robot::Winch::PotentiometerRaw_To_Arm_r(double raw) const
 void FRC_2014_Robot::Winch::SetChipShot()
 {
 	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
-	SetIntendedPosition(props.Catapult_ChipShotAngle);
+	SetIntendedPosition(props.Catapult_Robot_Props.ChipShotAngle);
 }
 void FRC_2014_Robot::Winch::SetGoalShot()
 {
 	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
-	SetIntendedPosition( props.Catapult_GoalShotAngle );
+	SetIntendedPosition( props.Catapult_Robot_Props.GoalShotAngle );
 }
 void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 {
@@ -192,6 +192,91 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Winch_Fire"]  .Remove(*this, &FRC_2014_Robot::Winch::Fire_Catapult);
 	}
 }
+  /***********************************************************************************************************************************/
+ /*													FRC_2014_Robot::Intake_Arm													*/
+/***********************************************************************************************************************************/
+
+FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
+	Rotary_Position_Control("IntakeArm",robot_control,eIntake_Arm),m_pParent(parent),m_Advance(false),m_Retract(false)
+{
+}
+
+
+void FRC_2014_Robot::Intake_Arm::Advance(bool on)
+{
+	m_Advance=on;
+}
+void FRC_2014_Robot::Intake_Arm::Retract(bool on)
+{
+	m_Retract=on;
+}
+
+void FRC_2014_Robot::Intake_Arm::TimeChange(double dTime_s)
+{
+	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
+	if (m_Advance ^ m_Retract)
+		SetCurrentLinearAcceleration(m_Advance?m_Accel:-m_Brake);
+
+	__super::TimeChange(dTime_s);
+	}
+
+
+double FRC_2014_Robot::Intake_Arm::PotentiometerRaw_To_Arm_r(double raw) const
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	const int RawRangeHalf=512;
+	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
+	ret*=props.Intake_Robot_Props.PotentiometerToArmRatio;  //convert to arm's gear ratio
+	return ret;
+}
+
+void FRC_2014_Robot::Intake_Arm::SetStowed()
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	SetIntendedPosition(props.Intake_Robot_Props.Stowed_Angle);
+}
+
+void FRC_2014_Robot::Intake_Arm::SetDeployed()
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	SetIntendedPosition(props.Intake_Robot_Props.Deployed_Angle);
+}
+
+void FRC_2014_Robot::Intake_Arm::SetSquirt()
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	SetIntendedPosition(props.Intake_Robot_Props.Squirt_Angle);
+}
+
+
+void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["IntakeArm_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["IntakeArm_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Arm::SetPotentiometerSafety);
+		
+		em->Event_Map["IntakeArm_SetStowed"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Arm::SetStowed);
+		em->Event_Map["IntakeArm_SetDeployed"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Arm::SetDeployed);
+		em->Event_Map["IntakeArm_SetSquirt"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Arm::SetSquirt);
+
+		em->EventOnOff_Map["IntakeArm_Advance"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Arm::Advance);
+		em->EventOnOff_Map["IntakeArm_Retract"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Arm::Retract);
+	}
+	else
+	{
+		em->EventValue_Map["IntakeArm_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Intake_Arm::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["IntakeArm_SetPotentiometerSafety"].Remove(*this, &FRC_2014_Robot::Intake_Arm::SetPotentiometerSafety);
+
+		em->Event_Map["IntakeArm_SetStowed"].Remove(*this, &FRC_2014_Robot::Intake_Arm::SetStowed);
+		em->Event_Map["IntakeArm_SetDeployed"].Remove(*this, &FRC_2014_Robot::Intake_Arm::SetDeployed);
+		em->Event_Map["IntakeArm_SetSquirt"].Remove(*this, &FRC_2014_Robot::Intake_Arm::SetSquirt);
+
+		em->EventOnOff_Map["IntakeArm_Advance"].Remove(*this, &FRC_2014_Robot::Intake_Arm::Advance);
+		em->EventOnOff_Map["IntakeArm_Retract"].Remove(*this, &FRC_2014_Robot::Intake_Arm::Retract);
+	}
+}
 
 
   /***********************************************************************************************************************************/
@@ -205,7 +290,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
-		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),
+		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),m_Intake_Arm(this,robot_control),
 		m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false)
@@ -223,6 +308,7 @@ void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 	//set to the default key position
 	const FRC_2014_Robot_Props &robot2014props=RobotProps->GetFRC2014RobotProps();
 	m_Winch.Initialize(em,RobotProps?&RobotProps->GetWinchProps():NULL);
+	m_Intake_Arm.Initialize(em,RobotProps?&RobotProps->GetIntake_ArmProps():NULL);
 }
 void FRC_2014_Robot::ResetPos()
 {
@@ -231,7 +317,10 @@ void FRC_2014_Robot::ResetPos()
 	m_PitchRamp.ResetPos();
 	//TODO this is tacky... will have better low gear method soon
 	if (!GetBypassPosAtt_Update())
+	{
 		m_Winch.ResetPos();
+		m_Intake_Arm.ResetPos();
+	}
 }
 
 void FRC_2014_Robot::TimeChange(double dTime_s)
@@ -244,6 +333,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
 	m_Winch.AsEntity1D().TimeChange(dTime_s);
+	m_Intake_Arm.AsEntity1D().TimeChange(dTime_s);
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -323,6 +413,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
 	m_Winch.AsShip1D().BindAdditionalEventControls(Bind);
+	m_Intake_Arm.AsShip1D().BindAdditionalEventControls(Bind);
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
@@ -395,11 +486,14 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 
 		props.Catapult_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Catapult_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
-		props.Catapult_ChipShotAngle=DEG_2_RAD(45.0);
-		props.Catapult_GoalShotAngle=DEG_2_RAD(17.0);
+		props.Catapult_Robot_Props.ChipShotAngle=DEG_2_RAD(45.0);
+		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(17.0);
 
 		props.Intake_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Intake_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
+		props.Intake_Robot_Props.Stowed_Angle=DEG_2_RAD(90.0);
+		props.Intake_Robot_Props.Deployed_Angle=DEG_2_RAD(30.0);
+		props.Intake_Robot_Props.Squirt_Angle=DEG_2_RAD(100.0);
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.MoveForward=0.0;
@@ -478,7 +572,8 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 	"Robot_SetDriverOverride",
-	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance"
+	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance",
+	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract"
 };
 
 const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
@@ -517,6 +612,12 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_WinchProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("intake_arm");
+		if (!err)
+		{
+			m_Intake_ArmProps.LoadFromScript(script);
 			script.Pop();
 		}
 
@@ -687,8 +788,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			{
 				//	printf("Pitch=%f\n",Voltage);
 				//DOUT3("Pitch Voltage=%f",Voltage);
-				m_IntakeArmVoltage=Voltage;
-				m_WinchVoltage=Voltage * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
+				m_IntakeArmVoltage=Voltage * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
 				m_IntakeArm_Pot.UpdatePotentiometerVoltage(Voltage);
 				m_IntakeArm_Pot.TimeChange();  //have this velocity immediately take effect
 			}
