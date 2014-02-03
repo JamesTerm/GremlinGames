@@ -87,6 +87,39 @@ class FRC_2014_Robot : public Tank_Robot
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 
+	protected:
+		class Turret
+		{
+			private:
+				FRC_2014_Robot * const m_pParent;
+				double m_Velocity; //adds all axis velocities then assigns on the time change
+			public:
+				Turret(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
+				IEvent::HandlerList ehl;
+				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void ResetPos();
+				double GetCurrentVelocity() const {return m_Velocity;}
+				virtual void TimeChange(double dTime_s);
+			protected:
+				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
+		};
+
+		class PitchRamp
+		{
+			private:
+				FRC_2014_Robot * const m_pParent;
+				double m_Velocity; 
+			public:
+				PitchRamp(FRC_2014_Robot *pParent,Rotary_Control_Interface *robot_control);
+				IEvent::HandlerList ehl;
+				virtual void BindAdditionalEventControls(bool Bind);
+				virtual void ResetPos();
+				double GetCurrentVelocity() const {return m_Velocity;}
+				virtual void TimeChange(double dTime_s);
+			protected:
+				void Pitch_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
+		};
+
 		class Winch : public Rotary_Position_Control
 		{
 			public:
@@ -149,40 +182,6 @@ class FRC_2014_Robot : public Tank_Robot
 				FRC_2014_Robot * const m_pParent;
 				bool m_Advance, m_Retract;
 		};
-
-	protected:
-		class Turret
-		{
-			private:
-				FRC_2014_Robot * const m_pParent;
-				double m_Velocity; //adds all axis velocities then assigns on the time change
-			public:
-				Turret(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
-				IEvent::HandlerList ehl;
-				virtual void BindAdditionalEventControls(bool Bind);
-				virtual void ResetPos();
-				double GetCurrentVelocity() const {return m_Velocity;}
-				virtual void TimeChange(double dTime_s);
-			protected:
-				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
-		};
-
-		class PitchRamp
-		{
-			private:
-				FRC_2014_Robot * const m_pParent;
-				double m_Velocity; 
-			public:
-				PitchRamp(FRC_2014_Robot *pParent,Rotary_Control_Interface *robot_control);
-				IEvent::HandlerList ehl;
-				virtual void BindAdditionalEventControls(bool Bind);
-				virtual void ResetPos();
-				double GetCurrentVelocity() const {return m_Velocity;}
-				virtual void TimeChange(double dTime_s);
-			protected:
-				void Pitch_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
-		};
-
 
 	public: //Autonomous public access (wind river has problems with friend technique)
 		const FRC_2014_Robot_Properties &GetRobotProps() const;
