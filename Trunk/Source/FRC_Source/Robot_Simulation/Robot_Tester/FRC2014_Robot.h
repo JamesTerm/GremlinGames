@@ -23,14 +23,17 @@ public:
 	{
 		double ArmToGearRatio;
 		double PotentiometerToArmRatio;
+		double ChipShotAngle;
+		double GoalShotAngle;
 	} Catapult_Robot_Props;
 	struct Intake
 	{
 		double ArmToGearRatio;
 		double PotentiometerToArmRatio;
+		double Stowed_Angle;
+		double Deployed_Angle;
+		double Squirt_Angle;
 	} Intake_Robot_Props;
-	double Catapult_ChipShotAngle;
-	double Catapult_GoalShotAngle;
 	struct Autonomous_Properties
 	{
 		double MoveForward;				//Optional to move forward to use less power to shoot
@@ -196,7 +199,7 @@ class FRC_2014_Robot : public Tank_Robot
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
 		Winch m_Winch;
-		//Intake_Arm m_Intake_Arm;
+		Intake_Arm m_Intake_Arm;
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Vec2D m_DefensiveKeyPosition;
 
