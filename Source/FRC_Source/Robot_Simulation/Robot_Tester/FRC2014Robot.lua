@@ -20,8 +20,8 @@ Intake_PotentiometerToArmRatio=1/3
 Intake_PotentiometerToMotorRatio=Intake_PotentiometerToArmRatio * Intake_ArmToMotorRatio
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
-WheelBase_Width_In=27.25	  --The wheel base will determine the turn rate, must be as accurate as possible!
-WheelBase_Length_In=9.625
+WheelBase_Width_In=26.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelBase_Length_In=10  --was 9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
@@ -45,8 +45,7 @@ MainRobot = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
 	-- Turn Rates (radians/sec) This is always correct do not change
-	--heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
-	heading_rad = 5.7,  --TODO automate lua to get correct number
+	heading_rad = (2 * HighGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
@@ -57,7 +56,7 @@ MainRobot = {
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
+		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = g_wheel_diameter_in,
