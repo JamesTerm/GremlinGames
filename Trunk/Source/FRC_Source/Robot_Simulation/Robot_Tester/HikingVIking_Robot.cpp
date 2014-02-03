@@ -376,6 +376,7 @@ void HikingViking_Robot::BindAdditionalEventControls(bool Bind)
 	ArmShip_Access.BindAdditionalEventControls(Bind);
 	Ship_1D &ClawShip_Access=m_Claw;
 	ClawShip_Access.BindAdditionalEventControls(Bind);
+	__super::BindAdditionalEventControls(Bind);
 }
 
 void HikingViking_Robot::BindAdditionalUIControls(bool Bind,void *joy,void *key)
