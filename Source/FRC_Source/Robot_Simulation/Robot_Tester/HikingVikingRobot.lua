@@ -20,11 +20,12 @@ GearHeightOffset_m=55 * Inches2Meters
 MotorToWheelGearRatio=12.0/36.0
 
 
-FRC2011_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
+g_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-GearSpeed = (372.63 / 60.0) * Pi * FRC2011_wheel_diameter_in * Inches2Meters
+GearSpeedRPM = 600  --this had 372.63 but this seemed too slow according to the encoder readings
+GearSpeed = (GearSpeedRPM / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
 
 Drive_MaxAccel=4
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
@@ -46,9 +47,7 @@ TestShip = {
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,     -- Brake Deceleration m/s2 (1g = 9.8)
 	-- Turn Rates (radians/sec) This is always correct do not change
-	--heading_rad = (2 * GearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,  --was originally computed to 514
-	--TODO automate lua to get correct number
-	heading_rad = 8.847,
+	heading_rad = (2 * GearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,  --was originally computed to 514
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (will matter for turning radius!
@@ -60,10 +59,10 @@ TestShip = {
 		use_aggressive_stop = 'yes',
 		ds_display_row=-1,
 		wheel_base_dimensions =
-		{length_in=WheelBase_Width_In, width_in=WheelBase_Width_In},	--The length is measure for 4 wheels (so it is half of the wheel base)
+		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
-		wheel_diameter_in = FRC2011_wheel_diameter_in,
+		wheel_diameter_in = g_wheel_diameter_in,
 		left_pid=
 		{p=200, i=0, d=50},
 		right_pid=
@@ -84,13 +83,28 @@ TestShip = {
 		forward_deadzone_left  = 0.02,
 		forward_deadzone_right = 0.110,
 		reverse_deadzone_left  = 0.115,
-		reverse_deadzone_right = 0.04
+		reverse_deadzone_right = 0.04,
+		motor_specs =
+		{
+			wheel_mass=1.5,
+			cof_efficiency=1.0,
+			gear_reduction=5310.0/GearSpeedRPM,
+			torque_on_wheel_radius=Inches2Meters * 1,
+			drive_wheel_radius=Inches2Meters * 2,
+			number_of_motors=1,
+			
+			free_speed_rpm=5310.0,
+			stall_torque=343.4 * OunceInchToNewton,
+			stall_current_amp=133.0,
+			free_current_amp=2.7
+		}
+
 	},
 	robot_settings =
 	{
 		arm =
 		{
-			is_closed=2,
+			is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='n',
@@ -162,6 +176,8 @@ TestShip = {
 		Joystick_1 =
 		{
 			control = "logitech dual action",
+			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Joystick_SetRightVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
