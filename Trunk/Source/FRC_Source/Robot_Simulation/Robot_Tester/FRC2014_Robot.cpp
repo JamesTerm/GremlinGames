@@ -73,9 +73,36 @@ void FRC_2014_Robot::Turret::TimeChange(double dTime_s)
 {
 	m_Velocity=0.0;
 
-	//#ifdef __DebugLUA__
-	//Dout(m_pParent->m_RobotProps.GetTurretProps().GetRotaryProps().Feedback_DiplayRow,7,"p%.1f",RAD_2_DEG(GetPos_m()));
-	//#endif
+	//Note: GetRequestedVelocity tests for manual override, giving the tolerance a bit more grace for joystick dead-zone
+	const bool IsTargeting=m_pParent->IsBallTargeting();
+	//const bool IsTargeting=false;
+	if (IsTargeting)
+	{
+			//if (m_AutoDriveState==eAutoDrive_YawOnly)
+			{
+				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
+				//if (fabs(m_YawAngle)>m_RobotProps.GetFRC2014RobotProps().YawTolerance)
+					m_pParent->m_controller->GetUIController_RW()->Turn_RelativeOffset(m_pParent->m_YawAngle,true);
+			}
+			//else if (m_AutoDriveState==eAutoDrive_FullAuto)
+			//{
+			//	bool HitWayPoint;
+			//	{
+			//		const double tolerance=GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+			//		const Vec2d &currPos = GetPos_m();
+			//		double position_delta=(m_TargetOffset-currPos).length();
+			//		HitWayPoint=position_delta<tolerance;
+			//	}
+			//	if (!HitWayPoint)
+			//	{
+			//		Vec2d Temp(0,0);
+			//		GetController()->DriveToLocation(m_TargetOffset, m_TargetOffset, 1.0, dTime_s,&Temp);
+			//	}
+			//	else
+			//		GetController()->SetShipVelocity(0.0);
+			//}
+
+	}
 }
 
 void FRC_2014_Robot::Turret::ResetPos()
@@ -202,7 +229,7 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 	}
 }
   /***********************************************************************************************************************************/
- /*													FRC_2014_Robot::Intake_Arm													*/
+ /*													FRC_2014_Robot::Intake_Arm														*/
 /***********************************************************************************************************************************/
 
 FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
@@ -301,8 +328,10 @@ FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interfac
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),m_Intake_Arm(this,robot_control),
 		m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),m_AutonPresetIndex(0),
-		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false)
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
+		m_AutonPresetIndex(0),m_YawAngle(0.0),
+		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false),
+		m_IsBallTargeting(false)
 {
 }
 
@@ -330,6 +359,67 @@ void FRC_2014_Robot::ResetPos()
 		m_Winch.ResetPos();
 		m_Intake_Arm.ResetPos();
 	}
+}
+
+namespace VisionConversion
+{
+	const double c_TargetBaseHeight=Feet2Meters(2.0);
+	//Note: for this camera we use square pixels, so we need not worry about pixel aspect ratio
+	const double c_X_Image_Res=640.0;		//X Image resolution in pixels, should be 160, 320 or 640
+	const double c_Y_Image_Res=480.0;
+	const double c_AspectRatio=c_X_Image_Res/c_Y_Image_Res;
+	const double c_AspectRatio_recip=c_Y_Image_Res/c_X_Image_Res;
+	//const double c_ViewAngle=43.5;  //Axis M1011 camera (in code sample)
+	const double c_ViewAngle_x=DEG_2_RAD(45);		//These are the angles I've measured
+	const double c_ViewAngle_y=DEG_2_RAD(45);
+	const double c_HalfViewAngle_y=c_ViewAngle_y/2.0;
+
+	//doing it this way is faster since it never changes
+	const double c_ez_y=(tan(c_ViewAngle_y/2.0));
+	const double c_ez_y_recip=1.0/c_ez_y;
+	const double c_ez_x=(tan(c_ViewAngle_x/2.0));
+	const double c_ez_x_recip=1.0/c_ez_x;
+
+	//For example if the target height is 22.16 feet the distance would be 50, or 10 foot height would be around 22 feet for distance
+	//this constant is used to check my pitch math below (typically will be disabled)
+	const double c_DistanceCheck=c_TargetBaseHeight*c_ez_y_recip;
+
+	__inline void GetYawAndDistance(double bx,double by,double &dx,double dy,double &dz)
+	{
+		//Note: the camera angle for x is different than for y... thus for example we have 4:3 aspect ratio
+		dz = (dy * c_ez_y_recip) / by;
+		dx = (bx * dz) * c_ez_x;
+	}
+
+	//This transform is simplified to only works with pitch
+	__inline void CameraTransform(double ThetaY,double dx, double dy, double dz, double &ax, double &ay, double &az)
+	{
+		//assert(ThetaY<PI);
+		//ax=(dz*sin(ThetaY) + dx) / cos(ThetaY);
+		ax=dx;  //I suspect that I may be interpreting the equation wrong... it seems to go in the wrong direction, but may need to retest 
+		ay=dy;
+		az=cos(ThetaY)*dz - sin(ThetaY)*dx;
+	}
+
+	__inline bool computeDistanceAndYaw (double Ax1,double Ay1,double currentPitch,double &ax1,double &az1) 
+	{
+		if (IsZero(Ay1)) return false;  //avoid division by zero
+		//Now to input the aiming system for the d (x,y,z) equations prior to camera transformation
+		const double dy = c_TargetBaseHeight;
+		double dx,dz;
+		GetYawAndDistance(Ax1,Ay1,dx,dy,dz);
+		double ay1;
+		CameraTransform(currentPitch,dx,dy,dz,ax1,ay1,az1);
+		//TODO see if we want kalman
+		//printf("\r x=%.2f y=%.2f dx=%.2f dz=%.2f       ",m_Dx(Ax1),m_Dz(Ay1),m_Ax(dx),m_Az(dz));
+		//printf("\r dx=%.2f dz=%.2f ax=%.2f az=%.2f       ",m_Dx(dx),m_Dz(dz),m_Ax(ax1),m_Az(az1));
+
+		//printf("x=%.2f y=%.2f dx=%.2f dz=%.2f ax=%.2f az=%.2f\n",Ax1,Ay1,dx,dz,ax1,az1);
+
+		return true;
+		//return c_X_Image_Res * c_TargetBaseHeight / (height * 12 * 2 * tan(DEG_2_RAD(c_ViewAngle)));
+	}
+
 }
 
 void FRC_2014_Robot::TimeChange(double dTime_s)
@@ -361,6 +451,35 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		SmartDashboard::PutNumber(sBuild,UnitMeasure2UI(0.3048));  //always 1 foot high from center point
 	}
 	#endif
+
+	const double  YOffset=-SmartDashboard::GetNumber("Y Position");
+	const double XOffset=SmartDashboard::GetNumber("X Position");
+	
+	using namespace VisionConversion;
+
+	SmartDashboard::PutBoolean("IsBallTargeting",IsBallTargeting());
+	if (IsBallTargeting())
+	{
+		const double CurrentYaw=GetAtt_r();
+		//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
+		#ifndef __UseFileTargetTracking__
+		const double SmoothingYaw=0.20; //hard coded for now
+		//const double NewYaw=CurrentYaw+atan(yaw/distance);
+		const double NewYaw=CurrentYaw+(atan(XOffset * c_AspectRatio_recip * c_ez_x)*SmoothingYaw);
+		#else
+		//Enable this for playback of file since it cannot really cannot control the pitch
+		//const double NewYaw=atan(yaw/distance)-GetAtt_r();
+		const double NewYaw=atan(XOffset * c_AspectRatio_recip * c_ez_x)-GetAtt_r();
+		#endif
+
+		//Use precision tolerance asset to determine whether to make the change
+		//m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetRotaryProps().PrecisionTolerance)?NewYaw:CurrentYaw;
+		const double PrecisionTolerance=DEG_2_RAD(0.5); //TODO put in properties try to keep as low as possible if we need to drive straight
+		m_YawAngle=(fabs(NewYaw-CurrentYaw)>PrecisionTolerance)?NewYaw:CurrentYaw;
+		//Note: limits will be solved at ship level
+		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(m_YawAngle));
+	}
+
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -426,7 +545,9 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2014_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2014_Robot::SetLowGearValue);
 		em->EventOnOff_Map["Robot_SetDriverOverride"].Subscribe(ehl, *this, &FRC_2014_Robot::SetDriverOverride);
-		
+		em->EventOnOff_Map["Robot_BallTargeting"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargeting);
+		em->Event_Map["Robot_BallTargeting_On"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargetingOn);
+		em->Event_Map["Robot_BallTargeting_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargetingOff);
 	}
 	else
 	{
@@ -435,6 +556,9 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2014_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2014_Robot::SetLowGearValue);
 		em->EventOnOff_Map["Robot_SetDriverOverride"]  .Remove(*this, &FRC_2014_Robot::SetDriverOverride);
+		em->EventOnOff_Map["Robot_BallTargeting"]  .Remove(*this, &FRC_2014_Robot::SetBallTargeting);
+		em->Event_Map["Robot_BallTargeting_On"]  .Remove(*this, &FRC_2014_Robot::SetBallTargetingOn);
+		em->Event_Map["Robot_BallTargeting_Off"]  .Remove(*this, &FRC_2014_Robot::SetBallTargetingOff);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
@@ -600,7 +724,8 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 	"Robot_SetDriverOverride",
 	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance",
-	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract"
+	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
+	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off"
 };
 
 const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const

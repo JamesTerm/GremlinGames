@@ -208,6 +208,9 @@ class FRC_2014_Robot : public Tank_Robot
 		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
 		size_t m_AutonPresetIndex;  //used only because encoder tracking is disabled
+		//cached during robot time change and applied to other systems when targeting is true
+		double m_YawAngle;
+
 		bool m_DisableTurretTargetingValue;
 		bool m_POVSetValve;
 
@@ -219,6 +222,13 @@ class FRC_2014_Robot : public Tank_Robot
 
 		bool  m_SetDriverOverride;
 		void SetDriverOverride(bool on);
+
+		bool m_IsBallTargeting;
+		bool IsBallTargeting() const {return m_IsBallTargeting;}
+		void SetBallTargeting(bool on) {m_IsBallTargeting=on;}
+		void SetBallTargeting_Off(bool off) {SetBallTargeting(!off);}
+		void SetBallTargetingOn() {SetBallTargeting(true);}
+		void SetBallTargetingOff() {SetBallTargeting(false);}
 };
 
 class FRC_2014_Goals

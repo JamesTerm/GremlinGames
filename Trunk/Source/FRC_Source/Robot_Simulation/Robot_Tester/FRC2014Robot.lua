@@ -285,6 +285,8 @@ MainRobot = {
 			Winch_Advance={type="keyboard", key='k', on_off=true},
 			IntakeArm_SetDeployed={type="keyboard", key='l', on_off=false},
 			IntakeArm_SetStowed={type="keyboard", key=';', on_off=false},
+			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},
+			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false}
 		},
 		
 		Joystick_2 =
