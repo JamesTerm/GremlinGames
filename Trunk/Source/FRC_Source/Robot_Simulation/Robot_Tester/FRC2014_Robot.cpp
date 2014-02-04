@@ -20,6 +20,15 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 
 
 #define __DisableEncoderTracking__
+//Enable this to send remote coordinate to network variables to manipulate a shape for tracking
+#define __EnableShapeTrackingSimulation__
+#if 0
+#define UnitMeasure2UI Meters2Feet
+#define UI2UnitMeasure Feet2Meters
+#else
+#define UnitMeasure2UI Meters2Inches
+#define UI2UnitMeasure Inches2Meters
+#endif
 
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
@@ -334,6 +343,24 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	m_PitchRamp.TimeChange(dTime_s);
 	m_Winch.AsEntity1D().TimeChange(dTime_s);
 	m_Intake_Arm.AsEntity1D().TimeChange(dTime_s);
+
+	#ifdef __EnableShapeTrackingSimulation__
+	{
+		const char * const csz_remote_name="land_reticle";
+		Vec2D TargetPos(0.0,0.0);
+		Vec2D GlobalPos=TargetPos-GetPos_m();
+		Vec2D LocalPos=GlobalToLocal(GetAtt_r(),GlobalPos);
+		std::string sBuild=csz_remote_name;
+		sBuild+="_x";
+		SmartDashboard::PutNumber(sBuild,UnitMeasure2UI(LocalPos[0]));
+		sBuild=csz_remote_name;
+		sBuild+="_z";
+		SmartDashboard::PutNumber(sBuild,UnitMeasure2UI(LocalPos[1]));
+		sBuild=csz_remote_name;
+		sBuild+="_y";
+		SmartDashboard::PutNumber(sBuild,UnitMeasure2UI(0.3048));  //always 1 foot high from center point
+	}
+	#endif
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
