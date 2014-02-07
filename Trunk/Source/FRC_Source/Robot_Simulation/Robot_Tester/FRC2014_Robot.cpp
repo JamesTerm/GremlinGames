@@ -480,7 +480,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		//Use precision tolerance asset to determine whether to make the change
 		//m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetRotaryProps().PrecisionTolerance)?NewYaw:CurrentYaw;
 		const double PrecisionTolerance=DEG_2_RAD(0.5); //TODO put in properties try to keep as low as possible if we need to drive straight
-		m_YawAngle=(fabs(NewYaw-CurrentYaw)>PrecisionTolerance)?NewYaw:CurrentYaw;
+		m_YawAngle=NormalizeRotation2((fabs(NewYaw-CurrentYaw)>PrecisionTolerance)?NewYaw:CurrentYaw);
 		//Note: limits will be solved at ship level
 		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(m_YawAngle));
 	}
