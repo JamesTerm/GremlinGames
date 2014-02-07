@@ -14,9 +14,9 @@ Catapult_MotorToArmRatio=1.0/Catapult_ArmToMotorRatio
 Catapult_PotentiometerToArmRatio=1/3
 Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
 
-Intake_ArmToMotorRatio=5 * 8.3
+Intake_ArmToMotorRatio=1.0
 Intake_MotorToArmRatio=1.0/Intake_ArmToMotorRatio
-Intake_PotentiometerToArmRatio=1/3
+Intake_PotentiometerToArmRatio=1.0
 Intake_PotentiometerToMotorRatio=Intake_PotentiometerToArmRatio * Intake_ArmToMotorRatio
 
 g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too

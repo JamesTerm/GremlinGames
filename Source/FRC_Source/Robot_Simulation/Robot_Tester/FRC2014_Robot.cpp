@@ -643,13 +643,13 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		props.Catapult_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Catapult_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
 		props.Catapult_Robot_Props.ChipShotAngle=DEG_2_RAD(45.0);
-		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(17.0);
+		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(90.0);
 
 		props.Intake_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Intake_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
-		props.Intake_Robot_Props.Stowed_Angle=DEG_2_RAD(90.0);
-		props.Intake_Robot_Props.Deployed_Angle=DEG_2_RAD(30.0);
-		props.Intake_Robot_Props.Squirt_Angle=DEG_2_RAD(100.0);
+		props.Intake_Robot_Props.Stowed_Angle=DEG_2_RAD(0.0);
+		props.Intake_Robot_Props.Deployed_Angle=DEG_2_RAD(90.0-61.0);
+		props.Intake_Robot_Props.Squirt_Angle=DEG_2_RAD(90.0-100.0);
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.MoveForward=0.0;
