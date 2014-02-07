@@ -333,6 +333,11 @@ FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interfac
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false),
 		m_IsBallTargeting(false)
 {
+	//ensure the variables are initialized before calling get
+	SmartDashboard::PutNumber("X Position",0.0);
+	SmartDashboard::PutNumber("Y Position",0.0);
+	//Note: The processing vision is setup to use these same variables for both tracking processes (i.e. front and rear camera) we should only need to be tracking one of them at a time
+	//We may want to add a prefix window to identify which window they are coming from, but this may not be necessary.
 }
 
 void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
