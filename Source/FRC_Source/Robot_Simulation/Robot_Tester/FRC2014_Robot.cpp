@@ -158,9 +158,12 @@ void FRC_2014_Robot::Winch::Advance(bool on)
 
 void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
 {
+	const double Accel=m_Ship_1D_Props.ACCEL;
+	const double Brake=m_Ship_1D_Props.BRAKE;
+
 	//Get in my button value
 	if (m_Advance)
-		SetCurrentLinearAcceleration(m_Accel);
+		SetCurrentLinearAcceleration(Accel);
 
 	__super::TimeChange(dTime_s);
 	//Trying to get away from debug outs... however keeping this around for reference to how the gear ratios are used
@@ -253,9 +256,12 @@ void FRC_2014_Robot::Intake_Arm::Retract(bool on)
 
 void FRC_2014_Robot::Intake_Arm::TimeChange(double dTime_s)
 {
+	const double Accel=m_Ship_1D_Props.ACCEL;
+	const double Brake=m_Ship_1D_Props.BRAKE;
+
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Advance ^ m_Retract)
-		SetCurrentLinearAcceleration(m_Advance?m_Accel:-m_Brake);
+		SetCurrentLinearAcceleration(m_Advance?Accel:-Brake);
 
 	__super::TimeChange(dTime_s);
 	//Since we have no potentiometer we can feedback where we think the arm angle is from the entity
@@ -751,6 +757,8 @@ FRC_2014_Robot_Properties::ControlEvents FRC_2014_Robot_Properties::s_ControlsEv
 
 void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
+	FRC_2014_Robot_Props &props=m_FRC2014RobotProps;
+
 	const char* err=NULL;
 	{
 		double version;
@@ -763,6 +771,48 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	err = script.GetFieldTable("robot_settings");
 	if (!err) 
 	{
+		err = script.GetFieldTable("catapult");
+		if (!err)
+		{
+			FRC_2014_Robot_Props::Catapult &cat_props=props.Catapult_Robot_Props;
+			double fTest;
+			err=script.GetField("arm_to_motor", NULL, NULL, &fTest);
+			if (!err)
+				cat_props.ArmToGearRatio=fTest;
+			err=script.GetField("pot_to_arm", NULL, NULL, &fTest);
+			if (!err)
+				cat_props.PotentiometerToArmRatio=fTest;
+			err=script.GetField("chipshot_angle_deg", NULL, NULL, &fTest);
+			if (!err)
+				cat_props.ChipShotAngle=DEG_2_RAD(fTest);
+			err=script.GetField("goalshot_angle_deg", NULL, NULL, &fTest);
+			if (!err)
+				cat_props.GoalShotAngle=DEG_2_RAD(fTest);
+			script.Pop();
+		}
+		err = script.GetFieldTable("intake");
+		if (!err)
+		{
+			FRC_2014_Robot_Props::Intake &intake_props=props.Intake_Robot_Props;
+			double fTest;
+			err=script.GetField("arm_to_motor", NULL, NULL, &fTest);
+			if (!err)
+				intake_props.ArmToGearRatio=fTest;
+			err=script.GetField("pot_to_arm", NULL, NULL, &fTest);
+			if (!err)
+				intake_props.PotentiometerToArmRatio=fTest;
+			err=script.GetField("stowed_angle_deg", NULL, NULL, &fTest);
+			if (!err)
+				intake_props.Stowed_Angle=DEG_2_RAD(fTest);
+			err=script.GetField("deployed_angle", NULL, NULL, &fTest);
+			if (!err)
+				intake_props.Deployed_Angle=DEG_2_RAD(fTest);
+			err=script.GetField("squirt_angle", NULL, NULL, &fTest);
+			if (!err)
+				intake_props.Squirt_Angle=DEG_2_RAD(fTest);
+			script.Pop();
+		}
+
 		err = script.GetFieldTable("turret");
 		if (!err)
 		{

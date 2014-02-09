@@ -183,14 +183,17 @@ FRC_2011_Robot::Robot_Claw::Robot_Claw(const char EntityName[],Robot_Control_Int
 
 void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
 {
+	const double Accel=m_Ship_1D_Props.ACCEL;
+	const double Brake=m_Ship_1D_Props.BRAKE;
+	const double MaxSpeed=m_Ship_1D_Props.MAX_SPEED;
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Grip ^ m_Squirt)
-		SetCurrentLinearAcceleration(m_Grip?m_Accel:-m_Brake);
+		SetCurrentLinearAcceleration(m_Grip?Accel:-Brake);
 
 	__super::TimeChange(dTime_s);
 	//send out the voltage
 	double CurrentVelocity=m_Physics.GetVelocity();
-	double Voltage=CurrentVelocity/m_MaxSpeed;
+	double Voltage=CurrentVelocity/MaxSpeed;
 
 	//Clamp range
 	if (Voltage>0.0)
@@ -271,7 +274,7 @@ void FRC_2011_Robot::Robot_Arm::Initialize(GG_Framework::Base::EventMap& em,cons
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
-	m_CalibratedScaler=m_MaxSpeed;
+	m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 }
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
@@ -318,7 +321,7 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 			double control=0.0;
 			control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			m_CalibratedScaler=m_MaxSpeed+control;
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED+control;
 
 			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,m_MaxSpeed);
 			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,m_MaxSpeed);
@@ -435,9 +438,9 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			//This is no longer necessary
 			//m_MaxSpeed=m_MaxSpeedReference;
 			m_LastPosition=0.0;
-			m_CalibratedScaler=m_MaxSpeed;
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 			m_LastTime=0.0;
-			m_UsingRange=false;
+			m_Ship_1D_Props.UsingRange=false;
 		}
 	}
 	else
@@ -448,8 +451,8 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			//setup the initial value with the potentiometers value
 			printf("Enabling potentiometer\n");
 			ResetPos();
-			m_UsingRange=true;
-			m_CalibratedScaler=m_MaxSpeed;
+			m_Ship_1D_Props.UsingRange=true;
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 		}
 	}
 }

@@ -25,6 +25,19 @@ Ship_1D::~Ship_1D()
 }
 
 
+
+void Ship_1D::InitNetworkProperties(const Ship_1D_Props &props)
+{
+	SmartDashboard::PutNumber("max_accel_forward",props.MaxAccelForward);
+	SmartDashboard::PutNumber("max_accel_reverse",props.MaxAccelReverse);
+
+}
+void Ship_1D::NetworkEditProperties(Ship_1D_Props &props)
+{
+	props.MaxAccelForward=SmartDashboard::GetNumber("max_accel_forward");
+	props.MaxAccelReverse=SmartDashboard::GetNumber("max_accel_reverse");
+}
+
 void Ship_1D::ResetPos()
 {
 	__super::ResetPos();
@@ -61,9 +74,9 @@ void Ship_1D::SetRequestedVelocity(double Velocity)
 	SetSimFlightMode(true);
 	m_LockShipToPosition=true;  //unlike in 2D/3D setting this has an impact on the locking management
 	if (Velocity>0.0)
-		m_RequestedVelocity=MIN(Velocity,m_MaxSpeed_Forward);
+		m_RequestedVelocity=MIN(Velocity,m_Ship_1D_Props.MaxSpeed_Forward);
 	else
-		m_RequestedVelocity=MAX(Velocity,m_MaxSpeed_Reverse);
+		m_RequestedVelocity=MAX(Velocity,m_Ship_1D_Props.MaxSpeed_Reverse);
 }
 
 void Ship_1D::SetRequestedVelocity_FromNormalized(double Velocity)
@@ -80,17 +93,20 @@ void Ship_1D::SetRequestedVelocity_FromNormalized(double Velocity)
 
 void Ship_1D::UpdateShip1DProperties(const Ship_1D_Props &props)
 {
-	m_MaxSpeed=props.MAX_SPEED;
-	m_MaxSpeed_Forward=props.MaxSpeed_Forward;
-	m_MaxSpeed_Reverse=props.MaxSpeed_Reverse;
-	m_Accel=props.ACCEL;
-	m_Brake=props.BRAKE;
-	m_MaxAccelForward=props.MaxAccelForward;
-	m_MaxAccelReverse=props.MaxAccelReverse;
-	m_MinRange=props.MinRange;
-	m_MaxRange=props.MaxRange;
-	m_UsingRange=props.UsingRange;
-	m_DistanceDegradeScalar=props.DistanceDegradeScalar;
+	//m_MaxSpeed=props.MAX_SPEED;
+	//m_MaxSpeed_Forward=props.MaxSpeed_Forward;
+	//m_MaxSpeed_Reverse=props.MaxSpeed_Reverse;
+	//m_Accel=props.ACCEL;
+	//m_Brake=props.BRAKE;
+	//m_MaxAccelForward=props.MaxAccelForward;
+	//m_MaxAccelReverse=props.MaxAccelReverse;
+	//m_MinRange=props.MinRange;
+	//m_MaxRange=props.MaxRange;
+	//m_UsingRange=props.UsingRange;
+	//m_DistanceDegradeScalar=props.DistanceDegradeScalar;
+
+	//This is depreciated... all calls to this may be able to skip doing this
+	m_Ship_1D_Props=props;
 }
 
 void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
@@ -99,19 +115,20 @@ void Ship_1D::Initialize(EventMap& em,const Entity1D_Properties *props)
 	const Ship_1D_Properties *ship_props=dynamic_cast<const Ship_1D_Properties *>(props);
 	if (ship_props)
 	{
-		UpdateShip1DProperties(ship_props->GetShip_1D_Props());
-		//m_ShipProps=*ship_props;  //if we support it
+		//UpdateShip1DProperties(ship_props->GetShip_1D_Props());  depreciated
+		m_Ship_1D_Props=ship_props->GetShip_1D_Props();  //if we support it
 	}
 	else
 	{
-		m_MaxSpeed = 1.0;
-		m_Accel = 1.0;
-		m_Brake = 1.0;
+		Ship_1D_Props &_=m_Ship_1D_Props;
+		_.MAX_SPEED = 1.0;
+		_.ACCEL = 1.0;
+		_.BRAKE = 1.0;
 
-		m_MaxAccelForward=1.0;
-		m_MaxAccelReverse=1.0;
-		m_UsingRange=false;
-		m_MinRange=m_MaxRange=0;
+		_.MaxAccelForward=1.0;
+		_.MaxAccelReverse=1.0;
+		_.UsingRange=false;
+		_.MinRange=_.MaxRange=0;
 		m_IsAngular=false;
 	}
 	m_Mass  = m_Physics.GetMass();
@@ -136,7 +153,7 @@ void Ship_1D::UpdateIntendedPosition(double dTime_s)
 
 void Ship_1D::TimeChange(double dTime_s)
 {
-
+	const Ship_1D_Props &props=m_Ship_1D_Props;
 	// Find the current velocity and use to determine the flight characteristics we will WANT to us
 	double LocalVelocity=m_Physics.GetVelocity();
 	double currFwdVel = LocalVelocity;
@@ -153,11 +170,11 @@ void Ship_1D::TimeChange(double dTime_s)
 	}
 
 	//Apply the restraints now... I need this to compute my roll offset
-	const double AccRestraintPositive=m_MaxAccelForward;
-	const double AccRestraintNegative=m_MaxAccelReverse;
+	const double AccRestraintPositive=props.MaxAccelForward;
+	const double AccRestraintNegative=props.MaxAccelReverse;
 
-	const double DistanceRestraintPositive=m_MaxAccelForward*m_DistanceDegradeScalar;
-	const double DistanceRestraintNegative=m_MaxAccelReverse*m_DistanceDegradeScalar;
+	const double DistanceRestraintPositive=props.MaxAccelForward*props.DistanceDegradeScalar;
+	const double DistanceRestraintNegative=props.MaxAccelReverse*props.DistanceDegradeScalar;
 
 	//Unlike in 2D the intended position and velocity control now resides in the same vector to apply force.  To implement, we'll branch depending on
 	//which last LockShipToPosition was used.  Typically speaking the mouse, AI, or SetIntendedPosition() will branch to the non locked mode, while the
@@ -187,32 +204,32 @@ void Ship_1D::TimeChange(double dTime_s)
 			#ifndef __DisableSpeedControl__
 			{
 				// Watch for braking too far backwards, we do not want to go beyond -ENGAGED_MAX_SPEED
-				if ((VelocityToUse) < m_MaxSpeed_Reverse)
+				if ((VelocityToUse) < props.MaxSpeed_Reverse)
 				{
-					m_RequestedVelocity = VelocityToUse = m_MaxSpeed_Reverse;
+					m_RequestedVelocity = VelocityToUse = props.MaxSpeed_Reverse;
 					m_currAccel=0.0;
 				}
-				else if ((VelocityToUse) > m_MaxSpeed_Forward)
+				else if ((VelocityToUse) > props.MaxSpeed_Forward)
 				{
-					m_RequestedVelocity = VelocityToUse=m_MaxSpeed_Forward;
+					m_RequestedVelocity = VelocityToUse=props.MaxSpeed_Forward;
 					m_currAccel=0.0;
 				}
 			}
 			#endif
 
-			if (m_UsingRange)
+			if (props.UsingRange)
 			{
 				double Position=GetPos_m();
 				//check to see if we are going reach limit
 				if (VelocityToUse>0.0)
 				{
-					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
+					double Vel=m_Physics.GetVelocityFromDistance_Linear(props.MaxRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
 					if (Vel<VelocityToUse)
 						VelocityToUse=Vel;
 				}
 				else
 				{
-					double Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
+					double Vel=m_Physics.GetVelocityFromDistance_Linear(props.MinRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
 					if (fabs(Vel)<fabs(VelocityToUse))
 						VelocityToUse=Vel;
 				}
@@ -229,10 +246,10 @@ void Ship_1D::TimeChange(double dTime_s)
 			{
 				{
 					double VelocityDelta=m_currAccel*dTime_s;
-					if ((LocalVelocity+VelocityDelta>m_MaxSpeed_Forward)&&(m_currAccel>0))
-						m_currAccel= (m_MaxSpeed_Forward-LocalVelocity) / dTime_s;  //saturate the delta
-					else if ((LocalVelocity+VelocityDelta<m_MaxSpeed_Reverse)&&(m_currAccel<0))
-						m_currAccel=(m_MaxSpeed_Reverse-LocalVelocity) / dTime_s;  //saturate the delta
+					if ((LocalVelocity+VelocityDelta>props.MaxSpeed_Forward)&&(m_currAccel>0))
+						m_currAccel= (props.MaxSpeed_Forward-LocalVelocity) / dTime_s;  //saturate the delta
+					else if ((LocalVelocity+VelocityDelta<props.MaxSpeed_Forward)&&(m_currAccel<0))
+						m_currAccel=(props.MaxSpeed_Reverse-LocalVelocity) / dTime_s;  //saturate the delta
 				}
 			}
 			#endif
@@ -240,15 +257,15 @@ void Ship_1D::TimeChange(double dTime_s)
 
 			//Note: in this case lock to position should not have set point operations when it is angular... this logic should be sound, as it has no effect with position
 			//This will be managed in the speed control section
-			if ((m_UsingRange)&&(!m_IsAngular))
+			if ((props.UsingRange)&&(!m_IsAngular))
 			{
 				double Position=GetPos_m();
 				double Vel;
 				//check to see if we are going reach limit
 				if (ForceToApply>0.0)
-					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MaxRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
+					Vel=m_Physics.GetVelocityFromDistance_Linear(props.MaxRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
 				else
-					Vel=m_Physics.GetVelocityFromDistance_Linear(m_MinRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
+					Vel=m_Physics.GetVelocityFromDistance_Linear(props.MinRange-Position,DistanceRestraintPositive*m_Mass,DistanceRestraintNegative*m_Mass,dTime_s,0.0);
 				double TestForce=m_Physics.GetForceFromVelocity(Vel,dTime_s);
 				if (fabs(ForceToApply)>fabs(TestForce)) 
 					ForceToApply=TestForce;
@@ -264,12 +281,12 @@ void Ship_1D::TimeChange(double dTime_s)
 			double DistanceToUse=posDisplacement_m;
 			double MatchVelocity=GetMatchVelocity();
 			//Most likely these should never get triggered unless there is some kind of control like the mouse that can go beyond the limit
-			if (m_UsingRange)
+			if (props.UsingRange)
 			{
-				if (m_IntendedPosition>m_MaxRange)
-					DistanceToUse=m_MaxRange-GetPos_m();
-				else if(m_IntendedPosition<m_MinRange)
-					DistanceToUse=m_MinRange-GetPos_m();
+				if (m_IntendedPosition>props.MaxRange)
+					DistanceToUse=props.MaxRange-GetPos_m();
+				else if(m_IntendedPosition<props.MinRange)
+					DistanceToUse=props.MinRange-GetPos_m();
 			}
 			if (!m_IsAngular)
 			{
@@ -282,15 +299,15 @@ void Ship_1D::TimeChange(double dTime_s)
 
 		#ifndef __DisableSpeedControl__
 		{
-			if ((Vel) < m_MaxSpeed_Reverse)
+			if ((Vel) < props.MaxSpeed_Reverse)
 			{
-				Vel = m_MaxSpeed_Reverse;
+				Vel = props.MaxSpeed_Reverse;
 				m_currAccel=0.0;
 			}
-			else if ((Vel) > m_MaxSpeed_Forward) 
+			else if ((Vel) > props.MaxSpeed_Forward) 
 			{
-				Vel=m_MaxSpeed_Forward;
-				m_RequestedVelocity=m_MaxSpeed_Forward;
+				Vel=props.MaxSpeed_Forward;
+				m_RequestedVelocity=props.MaxSpeed_Forward;
 				m_currAccel=0.0;
 			}
 		}
