@@ -68,7 +68,7 @@ class COMMON_API Rotary_System : public Ship_1D
 		#endif
 		bool m_UsingRange_props;
 	protected:
-		static void InitNetworkProperties(const Rotary_Props &props,bool AddArmAssist=false);  //This will GetVariables of all properties needed to tweak PID and gain assists
+		static void InitNetworkProperties(const Rotary_Props &props,bool AddArmAssist=false);  //This will PutVariables of all properties needed to tweak PID and gain assists
 		static void NetworkEditProperties(Rotary_Props &props,bool AddArmAssist=false);  //This will GetVariables of all properties needed to tweak PID and gain assists
 
 		PolynomialEquation_forth m_VoltagePoly;
@@ -78,7 +78,7 @@ class COMMON_API Rotary_System : public Ship_1D
 		virtual void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL) 
 		{
 			__super::Initialize(em,props);  //must call predecessor first!
-			m_UsingRange_props=m_UsingRange;
+			m_UsingRange_props=m_Ship_1D_Props.UsingRange;
 		}
 		//This is basically like m_UsingRange from Ship_1D except that it is dynamic, and disabled when potentiometer is disabled (as we cannot detect limits)
 		bool GetUsingRange_Props() const {return m_UsingRange_props;}

@@ -139,9 +139,12 @@ HikingViking_Robot::Robot_Claw::Robot_Claw(HikingViking_Robot *parent,Rotary_Con
 
 void HikingViking_Robot::Robot_Claw::TimeChange(double dTime_s)
 {
+	const double Accel=m_Ship_1D_Props.ACCEL;
+	const double Brake=m_Ship_1D_Props.BRAKE;
+
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Grip ^ m_Squirt)
-		SetCurrentLinearAcceleration(m_Grip?m_Accel:-m_Brake);
+		SetCurrentLinearAcceleration(m_Grip?Accel:-Brake);
 
 	__super::TimeChange(dTime_s);
 }
@@ -201,9 +204,12 @@ void HikingViking_Robot::Robot_Arm::Retract(bool on)
 
 void HikingViking_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
+	const double Accel=m_Ship_1D_Props.ACCEL;
+	const double Brake=m_Ship_1D_Props.BRAKE;
+
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Advance ^ m_Retract)
-		SetCurrentLinearAcceleration(m_Advance?m_Accel:-m_Brake);
+		SetCurrentLinearAcceleration(m_Advance?Accel:-Brake);
 
 	__super::TimeChange(dTime_s);
 	#if 0

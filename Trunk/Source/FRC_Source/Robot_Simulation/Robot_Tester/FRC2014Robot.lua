@@ -103,6 +103,27 @@ MainRobot = {
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 		
+		
+		catapult=
+		{
+			arm_to_motor=Catapult_ArmToMotorRatio,
+			pot_to_arm=Catapult_PotentiometerToArmRatio,
+			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
+			--This allows gain assist to apply max voltage to its descent
+			chipshot_angle_deg=45,
+			goalshot_angle_deg=90,
+		},
+		intake=
+		{
+			arm_to_motor=Intake_ArmToMotorRatio,
+			pot_to_arm=Intake_PotentiometerToArmRatio,
+			--The intake uses a starting point of 90 to force numbers down from 90 - 0 where zero is pointing straight out
+			--This allows the gain assist to apply max force when it goes from deployed to stowed
+			stowed_angle=90,
+			deployed_angle=61,
+			squirt_angle=90
+		},
+
 		auton =
 		{
 			move_forward_ft =0.0,
@@ -119,16 +140,15 @@ MainRobot = {
 			tolerance=0.15,
 			tolerance_count=20,
 			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=1.0,
+			encoder_to_wheel_ratio=Catapult_PotentiometerToArmRatio,
 			curve_voltage=
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
-			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
-			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
+			max_speed=(8000.0/60.0) * Pi2,	--loaded max speed TODO find BAG motor
 			accel=0.5,						--We may indeed have a two button solution (match with max accel)
 			brake=0.5,
-			max_accel_forward=1,			--These are in radians, just go with what feels right
-			max_accel_reverse=1,
+			max_accel_forward=400,			--These are in radians, just go with what feels right
+			max_accel_reverse=400,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
