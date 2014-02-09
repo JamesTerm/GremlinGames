@@ -131,7 +131,7 @@ MainRobot = {
 			max_accel_reverse=1,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
-			max_range_deg= 80 * Catapult_ArmToMotorRatio,
+			max_range_deg= 92 * Catapult_ArmToMotorRatio,
 			min_range_deg=(-10) * Catapult_ArmToMotorRatio,
 			use_aggressive_stop = 'yes',
 			inv_max_accel_up = 0.05,
@@ -142,8 +142,8 @@ MainRobot = {
 			slow_velocity = 2.0,
 			predict_up=.400,
 			predict_down=.400,
-			pulse_burst_time=0.06,
-			pulse_burst_range=0.5,
+			--pulse_burst_time=0.06,
+			--pulse_burst_range=0.5,
 			reverse_deadzone=0.10,
 			slow_angle_scalar = Catapult_MotorToArmRatio,
 			distance_scale = 0.5,
@@ -165,7 +165,7 @@ MainRobot = {
 		
 		intake_arm =
 		{
-			is_closed=1,
+			starting_position_deg=90,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='n',
@@ -186,10 +186,10 @@ MainRobot = {
 			brake=0.5,
 			max_accel_forward=1,			--These are in radians, just go with what feels right
 			max_accel_reverse=1,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=1,					--Warning Only use range if we have a potentiometer! or limit switch
 			--These are arm converted to gear ratio
-			max_range_deg= 100 * Intake_ArmToMotorRatio,
-			min_range_deg=(45) * Intake_ArmToMotorRatio,
+			max_range_deg= (95) * Intake_ArmToMotorRatio,
+			min_range_deg= 45 * Intake_ArmToMotorRatio,
 			use_aggressive_stop = 'yes',
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,

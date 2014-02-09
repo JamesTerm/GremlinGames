@@ -30,7 +30,7 @@ void Entity1D::ResetPos()
 	//CancelAllControls();
 	m_Physics.ResetVectors();
 	if (!m_BypassPos_Update)
-		m_Position=0.0;
+		m_Position=m_StartingPosition;
 }
 
 void Entity1D::TimeChange(double dTime_s)

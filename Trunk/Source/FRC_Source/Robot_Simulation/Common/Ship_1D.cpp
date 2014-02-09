@@ -32,7 +32,7 @@ void Ship_1D::ResetPos()
 	m_RequestedVelocity = m_currAccel =0.0;
 	//See case 397... for the 1D this is not really an issue as once we get it started it works itself out... it just cannot be zero to get it started
 	m_Last_RequestedVelocity=-1.0;
-	m_IntendedPosition=0.0;
+	m_IntendedPosition=GetStartingPosition();
 	m_IntendedPositionPhysics.ResetVectors();
 	m_LastNormalizedVelocity=0.0;
 	//m_Physics.ResetVectors(); called from entity 1D's reset
