@@ -221,7 +221,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		#endif
 	}
 
-	const double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	const double NewPosition=(m_PotentiometerState!=eNoPot)?m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex):GetPos_m();
 	const double Displacement=NewPosition-m_LastPosition;
 	const double PotentiometerVelocity=Displacement/m_LastTime;
 

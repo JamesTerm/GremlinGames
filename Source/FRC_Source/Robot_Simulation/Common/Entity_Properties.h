@@ -17,6 +17,7 @@ class COMMON_API Entity1D_Properties
 		std::string m_EntityName;  //derived classes can let base class know what type to read
 	private:
 		//Stuff needed for physics
+		double m_StartingPosition;  //the position used when reset position is called
 		double m_Mass;
 		double m_Dimension; //Dimension- Length for linear and diameter for angular
 		bool m_IsAngular;

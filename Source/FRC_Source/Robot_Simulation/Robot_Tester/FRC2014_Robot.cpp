@@ -170,6 +170,10 @@ void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
 	//double Pos_m=GetPos_m();
 	//DOUT4("Arm=%f Angle=%f",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio));
 	//#endif
+
+	//const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	//const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
+	//SmartDashboard::PutNumber("Catapult_Angle2",RAD_2_DEG(GetPos_m()*c_GearToArmRatio));
 }
 
 
@@ -185,12 +189,12 @@ double FRC_2014_Robot::Winch::PotentiometerRaw_To_Arm_r(double raw) const
 void FRC_2014_Robot::Winch::SetChipShot()
 {
 	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
-	SetIntendedPosition(props.Catapult_Robot_Props.ChipShotAngle);
+	SetIntendedPosition(props.Catapult_Robot_Props.ChipShotAngle * props.Catapult_Robot_Props.ArmToGearRatio);
 }
 void FRC_2014_Robot::Winch::SetGoalShot()
 {
 	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
-	SetIntendedPosition( props.Catapult_Robot_Props.GoalShotAngle );
+	SetIntendedPosition( props.Catapult_Robot_Props.GoalShotAngle * props.Catapult_Robot_Props.ArmToGearRatio);
 }
 void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 {
@@ -254,7 +258,9 @@ void FRC_2014_Robot::Intake_Arm::TimeChange(double dTime_s)
 		SetCurrentLinearAcceleration(m_Advance?m_Accel:-m_Brake);
 
 	__super::TimeChange(dTime_s);
-	}
+	//Since we have no potentiometer we can feedback where we think the arm angle is from the entity
+	SmartDashboard::PutNumber("IntakeArm_Angle",RAD_2_DEG(GetPos_m()));
+}
 
 
 double FRC_2014_Robot::Intake_Arm::PotentiometerRaw_To_Arm_r(double raw) const
@@ -642,14 +648,18 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 
 		props.Catapult_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Catapult_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
+		//The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
+		//This allows gain assist to apply max voltage to its descent
 		props.Catapult_Robot_Props.ChipShotAngle=DEG_2_RAD(45.0);
 		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(90.0);
 
 		props.Intake_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Intake_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
-		props.Intake_Robot_Props.Stowed_Angle=DEG_2_RAD(0.0);
-		props.Intake_Robot_Props.Deployed_Angle=DEG_2_RAD(90.0-61.0);
-		props.Intake_Robot_Props.Squirt_Angle=DEG_2_RAD(90.0-100.0);
+		//The intake uses a starting point of 90 to force numbers down from 90 - 0 where zero is pointing straight out
+		//This allows the gain assist to apply max force when it goes from deployed to stowed
+		props.Intake_Robot_Props.Stowed_Angle=DEG_2_RAD(90.0);
+		props.Intake_Robot_Props.Deployed_Angle=DEG_2_RAD(61.0);
+		props.Intake_Robot_Props.Squirt_Angle=DEG_2_RAD(90.0);
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.MoveForward=0.0;
@@ -937,6 +947,8 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				//DOUT3("Turret Voltage=%f",Voltage);
 				const double VoltageToUse=(Voltage>0.0)?Voltage:0.0;
 				m_WinchVoltage=VoltageToUse * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
+				//if (m_WinchVoltage>0.08)
+				//	printf("%f\n",m_WinchVoltage);
 				m_Winch_Pot.UpdatePotentiometerVoltage(VoltageToUse);
 				m_Winch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
@@ -945,7 +957,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			{
 				//	printf("Pitch=%f\n",Voltage);
 				//DOUT3("Pitch Voltage=%f",Voltage);
-				m_IntakeArmVoltage=Voltage * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
+				m_IntakeArmVoltage=Voltage * m_RobotProps.GetIntake_ArmProps().GetRotaryProps().VoltageScalar;
 				m_IntakeArm_Pot.UpdatePotentiometerVoltage(Voltage);
 				m_IntakeArm_Pot.TimeChange();  //have this velocity immediately take effect
 			}
@@ -1040,10 +1052,12 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 				//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 				SmartDashboard::PutNumber("Catapult_Angle",90-RAD_2_DEG(result*c_GearToArmRatio));
+				//SmartDashboard::PutNumber("Catapult_Angle",RAD_2_DEG(result*c_GearToArmRatio));
 			}
 			break;
 		case FRC_2014_Robot::eIntake_Arm:
 			{
+				assert(false);  //no potentiometer 
 				const double c_GearToArmRatio=1.0/props.Intake_Robot_Props.ArmToGearRatio;
 				result=m_IntakeArm_Pot.GetPotentiometerCurrentPosition();
 				SmartDashboard::PutNumber("IntakeArm_Angle",90-RAD_2_DEG(result*c_GearToArmRatio));

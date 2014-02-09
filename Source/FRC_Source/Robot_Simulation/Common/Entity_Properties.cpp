@@ -13,6 +13,7 @@ Entity1D_Properties::Entity1D_Properties()
 	m_Mass=10000.0;
 	m_Dimension=12.0;
 	m_IsAngular=false;
+	m_StartingPosition=0.0;
 };
 
 Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,double Dimension,bool IsAngular)
@@ -46,7 +47,14 @@ void Entity1D_Properties::LoadFromScript(Scripting::Script& script)
 					m_Dimension=Feet2Meters(dimension);
 			}
 		}
-	
+		err=script.GetField("starting_position", NULL, NULL,&m_StartingPosition);
+		if (err)
+		{
+			double fTest;
+			err=script.GetField("starting_position_deg", NULL, NULL,&fTest);
+			if (!err)
+				m_StartingPosition=DEG_2_RAD(fTest);
+		}
 	}
 }
 
@@ -55,6 +63,7 @@ void Entity1D_Properties::Initialize(Entity1D *NewEntity) const
 	NewEntity->m_Dimension=m_Dimension;
 	NewEntity->GetPhysics().SetMass(m_Mass);
 	NewEntity->m_IsAngular=m_IsAngular;
+	NewEntity->m_StartingPosition=m_StartingPosition;
 }
 
   /***********************************************************************************************************************************/
