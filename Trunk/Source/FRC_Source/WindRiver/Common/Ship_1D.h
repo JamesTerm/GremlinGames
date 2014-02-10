@@ -54,6 +54,7 @@ class COMMON_API Ship_1D_Properties : public Entity1D_Properties
 		Ship_Type GetShipType() const {return m_Ship_1D_Props.ShipType;}
 		double GetMaxSpeed() const {return m_Ship_1D_Props.MAX_SPEED;}
 		const Ship_1D_Props &GetShip_1D_Props() const {return m_Ship_1D_Props;}
+		Ship_1D_Props &GetShip_1D_Props_rw() {return m_Ship_1D_Props;}
 		//I don't need this yet, but keep this here in case I do
 		//Ship_1D_Props &Ship_1D_Props_rw() {return m_Ship_1D_Props;}
 	public:
@@ -104,9 +105,9 @@ class COMMON_API Ship_1D : public Entity1D
 		// virtual void ResetPos();
 		bool GetAlterTrajectory() const { return m_SimFlightMode;}
 		//Note:  This returns the maximum speed possible and not the desired max speed
-		double GetMaxSpeed() const		{return m_MaxSpeed;}
-		double GetACCEL() const			{return m_Accel;}
-		double GetBRAKE() const			{return m_Brake;}
+		double GetMaxSpeed() const		{return m_Ship_1D_Props.MAX_SPEED;}
+		double GetACCEL() const			{return m_Ship_1D_Props.ACCEL;}
+		double GetBRAKE() const			{return m_Ship_1D_Props.BRAKE;}
 
 		// Places the ship back at its initial position and resets all vectors
 		virtual void ResetPos();
@@ -116,14 +117,17 @@ class COMMON_API Ship_1D : public Entity1D
 		//should be no member variables needed to implement the bindings
 		virtual void BindAdditionalEventControls(bool Bind) {}
 		bool GetLockShipToPosition() const;
-		double GetMinRange() const {return m_MinRange;}
-		double GetMaxRange() const {return m_MaxRange;}
-		bool GetUsingRange() const {return m_UsingRange;}
+		double GetMinRange() const {return m_Ship_1D_Props.MinRange;}
+		double GetMaxRange() const {return m_Ship_1D_Props.MaxRange;}
+		bool GetUsingRange() const {return m_Ship_1D_Props.UsingRange;}
 
 		Entity1D &AsEntity1D() {return *this;}
 		Ship_1D &AsShip1D() {return *this;}
 
 	protected:
+		static void InitNetworkProperties(const Ship_1D_Props &props);  //This will PutVariables of all properties needed 
+		static void NetworkEditProperties(Ship_1D_Props &props);  //This will GetVariables of all properties needed
+
 		///override if the intended position has a known velocity to match (this is great for locking)
 		virtual double GetMatchVelocity() const {return 0.0;}
 		///This will apply turn pitch and roll to the intended orientation
@@ -140,19 +144,23 @@ class COMMON_API Ship_1D : public Entity1D
 
 		friend class Ship_1D_Properties;
 
-		double m_MaxSpeed;
-		// Used in Keyboard acceleration and braking
-		double m_Accel, m_Brake;
+		Ship_1D_Props m_Ship_1D_Props;
+
+		//m_MaxSpeed=props.MAX_SPEED;
+		//m_MaxSpeed_Forward=props.MaxSpeed_Forward;
+		//m_MaxSpeed_Reverse=props.MaxSpeed_Reverse;
+		//m_Accel=props.ACCEL;
+		//m_Brake=props.BRAKE;
+		//m_MaxAccelForward=props.MaxAccelForward;
+		//m_MaxAccelReverse=props.MaxAccelReverse;
+		//m_MinRange=props.MinRange;
+		//m_MaxRange=props.MaxRange;
+		//m_UsingRange=props.UsingRange;
+		//m_DistanceDegradeScalar=props.DistanceDegradeScalar;
+
 
 		//Stuff needed for physics
 		double m_Mass;
-		double m_MaxAccelForward,m_MaxAccelReverse;
-		double m_MaxSpeed_Forward,m_MaxSpeed_Reverse;
-
-		//I don't think we would need this for the game, but it is possible, (certainly not for the robot arm)
-		//! We can break this up even more if needed
-		//double EngineRampForward,EngineRampReverse,EngineRampAfterBurner;
-		//double EngineDeceleration,EngineRampStrafe;
 	
 		//Use this technique when m_AlterTrajectory is true
 		double m_RequestedVelocity;
@@ -164,10 +172,7 @@ class COMMON_API Ship_1D : public Entity1D
 		//For slide mode all strafe is applied here
 		double m_currAccel;  //This is the immediate request for thruster levels
 		double m_Last_RequestedVelocity;  ///< This monitors the last caught requested velocity  from a speed delta change
-		double m_MinRange,m_MaxRange;
-		double m_DistanceDegradeScalar;
 		bool m_SimFlightMode;  ///< If true auto strafing will occur to keep ship in line with its position
-		bool m_UsingRange; 
 	private:
 		//Only used with SetRequestedVelocity_FromNormalized()
 		//this is managed direct from being set to avoid need for precision tolerance

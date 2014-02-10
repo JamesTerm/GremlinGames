@@ -43,6 +43,7 @@ class COMMON_API Entity1D
 		friend class Entity1D_Properties;
 
 		Base::EventMap* m_eventMap;
+		double m_StartingPosition;  //the position used when reset position is called
 		double m_Dimension;
 		double m_Position;
 		std::string m_Name;
@@ -58,6 +59,7 @@ class COMMON_API Entity1D
 		PhysicsEntity_1D &GetPhysics() {return m_Physics;}
 		const PhysicsEntity_1D &GetPhysics() const {return m_Physics;}
 		virtual double GetDimension() const {return m_Dimension;}
+		virtual double GetStartingPosition() const {return m_StartingPosition;}
 		virtual void ResetPos();
 		// This is where both the entity and camera need to align to, by default we use the actual position
 		virtual const double &GetIntendedPosition() const {return m_Position;}

@@ -214,7 +214,10 @@ void Rotary_Position_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	}
 	//It is assumed that this property is constant throughout the whole session
 	if (m_Rotary_Props.PID_Console_Dump)
+	{
+		Ship_1D::InitNetworkProperties(Props->GetShip_1D_Props());
 		InitNetworkProperties(m_Rotary_Props,true);
+	}
 }
 
 void Rotary_Position_Control::TimeChange(double dTime_s)
@@ -235,7 +238,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		#endif
 	}
 
-	const double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
+	const double NewPosition=(m_PotentiometerState!=eNoPot)?m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex):GetPos_m();
 	const double Displacement=NewPosition-m_LastPosition;
 	const double PotentiometerVelocity=Displacement/m_LastTime;
 
@@ -371,7 +374,8 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	const double Velocity=m_Physics.GetVelocity();
 	const double Acceleration=(Velocity-m_PreviousVelocity)/dTime_s;
 
-	double Voltage=(Velocity+m_ErrorOffset)/m_MaxSpeed;
+	const double MaxSpeed=m_Ship_1D_Props.MAX_SPEED;
+	double Voltage=(Velocity+m_ErrorOffset)/MaxSpeed;
 
 	bool IsAccel=(Acceleration * Velocity > 0);
 	if (Velocity>0)
@@ -404,7 +408,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	//apply additional pulse burst as needed
 	m_BurstIntensity=BurstIntensity;
 	//The intensity we use is the same as full speed with the gain assist... we may want to have own properties for these if they do not work well
-	const double PulseBurst=fabs(m_BurstIntensity) * ((m_ErrorOffset>0.0)?m_MaxSpeed * 1.0 * arm.InverseMaxAccel_Up : (-m_MaxSpeed) * 1.0 * arm.InverseMaxAccel_Down);
+	const double PulseBurst=fabs(m_BurstIntensity) * ((m_ErrorOffset>0.0)?MaxSpeed * 1.0 * arm.InverseMaxAccel_Up : (-MaxSpeed) * 1.0 * arm.InverseMaxAccel_Down);
 	Voltage+= PulseBurst;
 
 	//if (PulseBurst!=0.0)
@@ -466,6 +470,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 	if (m_Rotary_Props.PID_Console_Dump)
 	{
 		NetworkEditProperties(m_Rotary_Props,true);
+		Ship_1D::NetworkEditProperties(m_Ship_1D_Props);
 		m_PIDControllerUp.SetPID(m_Rotary_Props.ArmGainAssist.PID_Up[0],m_Rotary_Props.ArmGainAssist.PID_Up[1],m_Rotary_Props.ArmGainAssist.PID_Up[2]);
 		m_PIDControllerDown.SetPID(m_Rotary_Props.ArmGainAssist.PID_Down[0],m_Rotary_Props.ArmGainAssist.PID_Down[1],m_Rotary_Props.ArmGainAssist.PID_Down[2]);
 		switch (m_Rotary_Props.LoopState)
@@ -541,7 +546,7 @@ void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 			m_LastPosition=0.0;
 			m_ErrorOffset=0.0;
 			m_LastTime=0.0;
-			m_UsingRange=false;
+			m_Ship_1D_Props.UsingRange=false;
 		}
 	}
 	else
@@ -567,7 +572,7 @@ void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 			//setup the initial value with the potentiometers value
 			printf("Enabling potentiometer for %s\n",GetName().c_str());
 			ResetPos();
-			m_UsingRange=GetUsingRange_Props();
+			m_Ship_1D_Props.UsingRange=GetUsingRange_Props();
 			m_ErrorOffset=0.0;
 		}
 	}
@@ -601,11 +606,13 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	//but this turned out to be problematic when using other angular rotary systems... therefore I am going to use the same computation
 	//I do for linear, where it allows as slow to max speed as possible.
 	//  [3/20/2012 Terminator]
-	m_PIDController.SetInputRange(m_MaxSpeed_Reverse,m_MaxSpeed_Forward);
+	const double MaxSpeed_Forward=m_Ship_1D_Props.MaxSpeed_Forward;
+	const double MaxSpeed_Reverse=m_Ship_1D_Props.MaxSpeed_Reverse;
+	m_PIDController.SetInputRange(MaxSpeed_Reverse,MaxSpeed_Forward);
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
-	m_PIDController.SetOutputRange(m_MaxSpeed_Reverse*tolerance,m_MaxSpeed_Forward*tolerance);
+	m_PIDController.SetOutputRange(MaxSpeed_Reverse*tolerance,MaxSpeed_Forward*tolerance);
 	m_PIDController.Enable();
-	m_CalibratedScaler=m_MaxSpeed;
+	m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 	m_ErrorOffset=0.0;
 
 	switch (m_Rotary_Props.LoopState)
@@ -630,7 +637,7 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 {
 	m_Rotary_Props=RotaryProps;
-	m_CalibratedScaler=m_MaxSpeed;
+	m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 	m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 	switch (m_Rotary_Props.LoopState)
 	{
@@ -651,6 +658,7 @@ void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
 void Rotary_Velocity_Control::TimeChange(double dTime_s)
 {
 	const double CurrentVelocity=m_Physics.GetVelocity();
+	const double MaxSpeed=m_Ship_1D_Props.MAX_SPEED;
 
 	double Encoder_Velocity=0.0;
 	if ((m_EncoderState==eActive)||(m_EncoderState==ePassive))
@@ -668,7 +676,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 				if (((CurrentVelocity * Encoder_Velocity) > 0.0) || IsZero(Encoder_Velocity) )
 				{
 					control=-m_PIDController(fabs(CurrentVelocity),fabs(Encoder_Velocity),dTime_s);
-					m_CalibratedScaler=m_MaxSpeed+control;
+					m_CalibratedScaler=MaxSpeed+control;
 				}
 			}
 			else
@@ -755,6 +763,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 	if (m_Rotary_Props.PID_Console_Dump)
 	{
 		NetworkEditProperties(m_Rotary_Props);
+		Ship_1D::NetworkEditProperties(m_Ship_1D_Props);
 		m_PIDController.SetPID(m_Rotary_Props.PID[0],m_Rotary_Props.PID[1],m_Rotary_Props.PID[2]);
 		switch (m_Rotary_Props.LoopState)
 		{
@@ -779,9 +788,9 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 			else
 			{
 				if (m_PIDController.GetI()==0.0)
-					printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/m_MaxSpeed);
+					printf("v=%.2f p=%.2f e=%.2f eo=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_ErrorOffset,m_CalibratedScaler/MaxSpeed);
 				else
-					printf("v=%.2f p=%.2f e=%.2f i=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_PIDController.GetTotalError(),m_CalibratedScaler/m_MaxSpeed);
+					printf("v=%.2f p=%.2f e=%.2f i=%.2f cs=%.2f\n",Voltage,CurrentVelocity,Encoder_Velocity,m_PIDController.GetTotalError(),m_CalibratedScaler/MaxSpeed);
 			}
 		}
 		#endif
@@ -828,7 +837,7 @@ void Rotary_Velocity_Control::ResetPos()
 		m_EncoderVelocity=0.0;
 
 	//ensure teleop has these set properly
-	m_CalibratedScaler=m_MaxSpeed;
+	m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 	m_ErrorOffset=0.0;
 	m_RequestedVelocity_Difference=0.0;
 }
@@ -849,9 +858,9 @@ void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 			//This is no longer necessary
 			//m_MaxSpeed=m_MaxSpeedReference;
 			m_EncoderVelocity=0.0;
-			m_CalibratedScaler=m_MaxSpeed;
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 			m_ErrorOffset=0;
-			m_UsingRange=false;
+			m_Ship_1D_Props.UsingRange=false;
 		}
 	}
 	else
@@ -877,8 +886,8 @@ void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
 			//setup the initial value with the potentiometers value
 			printf("Enabling encoder for %s\n",GetName().c_str());
 			ResetPos();
-			m_UsingRange=GetUsingRange_Props();
-			m_CalibratedScaler=m_MaxSpeed;
+			m_Ship_1D_Props.UsingRange=GetUsingRange_Props();
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 			m_ErrorOffset=0;
 		}
 	}
