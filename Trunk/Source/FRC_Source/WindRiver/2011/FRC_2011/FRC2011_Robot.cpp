@@ -16,47 +16,185 @@
 #include "Common/AI_Base_Controller.h"
 #include "Common/Vehicle_Drive.h"
 #include "Common/PIDController.h"
+#include "Common/Poly.h"
 #include "Drive/Tank_Robot.h"
 #include "Common/Robot_Control_Interface.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
+#include "Common/Debug.h"
 #include "FRC2011_Robot.h"
 
 #undef __UseTestKitArmRatios__
-const bool c_UsingArmLimits=true;
-const double PI=M_PI;
+namespace Robot_Tester
+{
+	namespace FRC_2011_Goals
+	{
+	
+static Goal *Get_TestLengthGoal_OLD(Ship_Tester *ship)
+{
+	//Construct a way point
+	WayPoint wp;
+	wp.Position[0]=0.0;
+	wp.Position[1]=1.0;
+	wp.Power=1.0;
+	//Now to setup the goal
+	Goal_Ship_MoveToPosition *goal=new Goal_Ship_MoveToPosition(ship->GetController(),wp,true,true);
+	return goal;
+}
 
-using namespace Framework::Base;
+Goal *Get_TestLengthGoal(FRC_2011_Robot *Robot)
+{
+	//float position=DriverStation::GetInstance()->GetAnalogIn(1);
+	float position=1.0;
+	//Construct a way point
+	WayPoint wp;
+	wp.Position[0]=0.0;
+	wp.Position[1]=position;
+	wp.Power=1.0;
+	//Now to setup the goal
+	Goal_Ship_MoveToPosition *goal_move1=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	Goal_Wait *goal_wait=new Goal_Wait(2.0); //wait
+	wp.Position[1]=0;
+	Goal_Ship_MoveToPosition *goal_move2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+
+	MainGoal->AddSubgoal(goal_move2);
+	MainGoal->AddSubgoal(goal_wait);
+	MainGoal->AddSubgoal(goal_move1);
+	return MainGoal;
+}
+
+static Goal *Get_UberTubeGoal_OLD(FRC_2011_Robot *Robot)
+{
+	Ship_1D &Arm=Robot->GetArm();
+	//Now to setup the goal
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);
+	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	//Construct a way point
+	WayPoint wp;
+	wp.Position[0]=0;
+	wp.Position[1]=8.5;
+	wp.Power=1.0;
+	//Now to setup the goal
+	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
+	Initial_Start_Goal->AddGoal(goal_arm);
+	Initial_Start_Goal->AddGoal(goal_drive);
+
+	wp.Position[1]=9;
+	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	wp.Position[1]=8.5;
+	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
+	wp.Position[1]=0;
+	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	MultitaskGoal *End_Goal=new MultitaskGoal;
+	End_Goal->AddGoal(goal_arm2);
+	End_Goal->AddGoal(goal_drive4);
+
+	//wrap the goal in a notify goal
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete"); //will fire Complete once it is done
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(End_Goal);
+	MainGoal->AddSubgoal(goal_drive3);
+	MainGoal->AddSubgoal(goal_waitfordrop);
+	//TODO drop claw here
+	MainGoal->AddSubgoal(goal_drive2);
+	MainGoal->AddSubgoal(Initial_Start_Goal);
+	MainGoal->Activate(); //now with the goal(s) loaded activate it
+	//Now to subscribe to this event... it will call Stop Loop when the goal is finished
+	//Robot->GetEventMap()->Event_Map["Complete"].Subscribe(ehl,*this,&SetUp_Autonomous::StopLoop);
+	return MainGoal;
+}
+
+Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
+{
+	Ship_1D &Arm=Robot->GetArm();
+	//Now to setup the goal
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(2.7432);  //9 feet
+	//double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.7018);   //67 inches
+	double position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(1.08712);   //42.8 inches
+	Goal_Ship1D_MoveToPosition *goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	//Construct a way point
+	//Note: full length is 232 inches or 5.89 meters
+	const double starting_line=5.49656;  //18.03333
+	//const double starting_line=2.3; //hack not calibrated
+	WayPoint wp;
+	wp.Position[0]=0;
+	wp.Position[1]=starting_line;
+	wp.Power=1.0;
+	//Now to setup the goal
+	Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	MultitaskGoal *Initial_Start_Goal=new MultitaskGoal;
+	Initial_Start_Goal->AddGoal(goal_arm);
+	Initial_Start_Goal->AddGoal(goal_drive);
+
+	wp.Position[1]=starting_line+0.1;
+	Goal_Ship_MoveToPosition *goal_drive2=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.83312);  //32.8 TODO find how much to lower
+	Goal_Ship1D_MoveToPosition *goal_arm2=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	Goal_Wait *goal_waitfordrop=new Goal_Wait(0.5); //wait a half a second
+
+	wp.Position[1]=starting_line;
+	Goal_Ship_MoveToPosition *goal_drive3=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+
+	wp.Position[1]=0;
+	Goal_Ship_MoveToPosition *goal_drive4=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,true);
+	position=FRC_2011_Robot::Robot_Arm::HeightToAngle_r(0.0);
+	Goal_Ship1D_MoveToPosition *goal_arm3=new Goal_Ship1D_MoveToPosition(Arm,position);
+
+	MultitaskGoal *End_Goal=new MultitaskGoal;
+	End_Goal->AddGoal(goal_arm3);
+	End_Goal->AddGoal(goal_drive4);
+
+	//wrap the goal in a notify goal (Note: we don't need the notify, but we need a composite goal that is prepped properly)
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	//Inserted in reverse since this is LIFO stack list
+	MainGoal->AddSubgoal(End_Goal);
+	MainGoal->AddSubgoal(goal_drive3);
+	MainGoal->AddSubgoal(goal_waitfordrop);
+	MainGoal->AddSubgoal(goal_arm2);
+	MainGoal->AddSubgoal(goal_drive2);
+	MainGoal->AddSubgoal(Initial_Start_Goal);
+	return MainGoal;
+};
+
+	} // end namespace FRC 2011 goals
+}
+
+const bool c_UsingArmLimits=true;
+
+using namespace Robot_Tester;
+//using namespace GG_Framework::Base;
+//using namespace osg;
 using namespace std;
 
-const double c_OptimalAngleUp_r=DEG_2_RAD(44.3);  //70
-const double c_OptimalAngleDn_r=DEG_2_RAD(58.0);  //50
+const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
+const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
 const double c_ArmLength_m=1.8288;  //6 feet
-
-#ifndef __UseTestKitArmRatios__
 const double c_ArmToGearRatio=72.0/28.0;
-#else
-const double c_ArmToGearRatio=54.0/12.0;
-#endif
-
 const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
-
-#ifndef __UseTestKitArmRatios__
-const double c_PotentiometerToArmRatio=c_GearToArmRatio * (60.0/36.0);
-const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
 //const double c_PotentiometerToGearRatio=60.0/32.0;
 //const double c_PotentiometerToArmRatio=c_PotentiometerToGearRatio * c_GearToArmRatio;
-#else
 const double c_PotentiometerToArmRatio=36.0/54.0;
 const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
-#endif
-
 const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
 const double c_GearHeightOffset=1.397;  //55 inches
 const double c_WheelDiameter=0.1524;  //6 inches
 const double c_MotorToWheelGearRatio=12.0/36.0;
+//const double Pi2=M_PI*2.0;
 
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot::Robot_Claw														*/
@@ -69,14 +207,17 @@ FRC_2011_Robot::Robot_Claw::Robot_Claw(const char EntityName[],Robot_Control_Int
 
 void FRC_2011_Robot::Robot_Claw::TimeChange(double dTime_s)
 {
+	const double Accel=m_Ship_1D_Props.ACCEL;
+	const double Brake=m_Ship_1D_Props.BRAKE;
+	const double MaxSpeed=m_Ship_1D_Props.MAX_SPEED;
 	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
 	if (m_Grip ^ m_Squirt)
-		SetCurrentLinearAcceleration(m_Grip?ACCEL:-BRAKE);
+		SetCurrentLinearAcceleration(m_Grip?Accel:-Brake);
 
 	__super::TimeChange(dTime_s);
 	//send out the voltage
 	double CurrentVelocity=m_Physics.GetVelocity();
-	double Voltage=CurrentVelocity/MAX_SPEED;
+	double Voltage=CurrentVelocity/MaxSpeed;
 
 	//Clamp range
 	if (Voltage>0.0)
@@ -112,7 +253,7 @@ void FRC_2011_Robot::Robot_Claw::Squirt(bool on)
 
 void FRC_2011_Robot::Robot_Claw::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Entity2D_Kind::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Claw_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Claw::SetRequestedVelocity_FromNormalized);
@@ -146,18 +287,18 @@ FRC_2011_Robot::Robot_Arm::Robot_Arm(const char EntityName[],Arm_Control_Interfa
 	m_UsingPotentiometer=true;  //for testing on AI simulator (unless I make a control for this)
 }
 
-void FRC_2011_Robot::Robot_Arm::Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props)
+void FRC_2011_Robot::Robot_Arm::Initialize(Entity2D_Kind::EventMap& em,const Entity1D_Properties *props)
 {
 	m_LastPosition=m_RobotControl->GetArmCurrentPosition(m_InstanceIndex)*c_ArmToGearRatio;
 	__super::Initialize(em,props);
-	const Ship_1D_Properties *ship=static_cast<const Ship_1D_Properties *>(props);
+	const Ship_1D_Properties *ship=dynamic_cast<const Ship_1D_Properties *>(props);
 	assert(ship);
 	m_MaxSpeedReference=ship->GetMaxSpeed();
 	m_PIDController.SetInputRange(-m_MaxSpeedReference,m_MaxSpeedReference);
 	double tolerance=0.99; //we must be less than one (on the positive range) to avoid lockup
 	m_PIDController.SetOutputRange(-m_MaxSpeedReference*tolerance,m_MaxSpeedReference*tolerance);
 	m_PIDController.Enable();
-	m_CalibratedScaler=MAX_SPEED;
+	m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 }
 
 double FRC_2011_Robot::Robot_Arm::AngleToHeight_m(double Angle_r)
@@ -204,10 +345,10 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 			double control=0.0;
 			control=-m_PIDController(LastSpeed,PotentiometerSpeed,dTime_s);
-			m_CalibratedScaler=MAX_SPEED+control;
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED+control;
 
-			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
-			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,MAX_SPEED);
+			//DOUT5("pSpeed=%f cal=%f Max=%f",PotentiometerSpeed,m_CalibratedScaler,m_MaxSpeed);
+			//printf("\rpSp=%f cal=%f Max=%f                 ",PotentiometerSpeed,m_CalibratedScaler,m_MaxSpeed);
 
 			SetPos_m(NewPosition);
 			m_LastPosition=NewPosition;
@@ -219,20 +360,19 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 		//Test potentiometer readings without applying to current position (disabled by default)
 		m_RobotControl->GetArmCurrentPosition(m_InstanceIndex);
 		//This is only as a sanity fix for manual mode... it should be this already (I'd assert if I could)
-		//MAX_SPEED=m_CalibratedScaler=1.0;
+		//m_MaxSpeed=m_CalibratedScaler=1.0;
 	}
 	__super::TimeChange(dTime_s);
 	double CurrentVelocity=m_Physics.GetVelocity();
-	
-	//TODO this should be fixed omit this code once confirmed
 	//Unfortunately something happened when the wires got crossed during the texas round up, now needing to reverse the voltage
 	//This was also reversed for the testing kit.  We apply reverse on current velocity for squaring operation to work properly, and
 	//must not do this in the interface, since that will support next year's robot.
-	//CurrentVelocity*=-1.0; 
-	
+	CurrentVelocity*=-1.0; 
 	double Voltage=CurrentVelocity/m_CalibratedScaler;
 
-	if (!m_VoltageOverride)
+	//Keep voltage override disabled for simulation to test precision stability
+	//if (!m_VoltageOverride)
+	if (true)
 	{
 		//Clamp range, PID (i.e. integral) controls may saturate the amount needed
 		if (Voltage>0.0)
@@ -273,8 +413,8 @@ void FRC_2011_Robot::Robot_Arm::TimeChange(double dTime_s)
 	#endif
 
 	m_RobotControl->UpdateArmVoltage(m_InstanceIndex,Voltage);
-	//Show current height (only in AI Tester)
-	#if 0
+	//Show current height (only in Robot Tester)
+	#ifdef Robot_TesterCode
 	double Pos_m=GetPos_m();
 	double height=AngleToHeight_m(Pos_m);
 	if (!m_VoltageOverride)
@@ -288,7 +428,7 @@ void FRC_2011_Robot::Robot_Arm::PosDisplacementCallback(double posDisplacement_m
 {
 	m_VoltageOverride=false;
 	//note 0.02 is fine for arm without claw
-	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.20))
+	if ((m_UsingPotentiometer)&&(!GetLockShipToPosition())&&(fabs(posDisplacement_m)<0.1))
 		m_VoltageOverride=true;
 }
 
@@ -320,11 +460,11 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			//m_PIDController.Reset();
 			ResetPos();
 			//This is no longer necessary
-			//MAX_SPEED=m_MaxSpeedReference;
+			//m_MaxSpeed=m_MaxSpeedReference;
 			m_LastPosition=0.0;
-			m_CalibratedScaler=MAX_SPEED;
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 			m_LastTime=0.0;
-			m_UsingRange=false;
+			m_Ship_1D_Props.UsingRange=false;
 		}
 	}
 	else
@@ -335,15 +475,15 @@ void FRC_2011_Robot::Robot_Arm::SetPotentiometerSafety(double Value)
 			//setup the initial value with the potentiometers value
 			printf("Enabling potentiometer\n");
 			ResetPos();
-			m_UsingRange=true;
-			m_CalibratedScaler=MAX_SPEED;
+			m_Ship_1D_Props.UsingRange=true;
+			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
 		}
 	}
 }
 
-double ArmHeightToBack(double value)
+static double ArmHeightToBack(double value)
 {
-	const double Vertical=PI/2.0*c_ArmToGearRatio;
+	const double Vertical=Pi/2.0*c_ArmToGearRatio;
 	return Vertical + (Vertical-value);
 }
 
@@ -357,31 +497,21 @@ void FRC_2011_Robot::Robot_Arm::SetPosRest()
 }
 void FRC_2011_Robot::Robot_Arm::SetPos0feet()
 {
-	//SetIntendedPosition( HeightToAngle_r(0.02) );
-	SetIntendedPosition( HeightToAngle_r(-0.4) ); //about 31 - 39 inches with raptor claw
+	SetIntendedPosition( HeightToAngle_r(0.0) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos3feet()
 {
 	//Not used, but kept for reference
 	//SetIntendedPosition(ArmHeightToBack( HeightToAngle_r(1.143)) );
-	//SetIntendedPosition(HeightToAngle_r(0.9144));  //actual
-	//SetIntendedPosition(HeightToAngle_r(0.80001));  //31.5 inches
-	//SetIntendedPosition(HeightToAngle_r(0.94800));  //36 inches
-	SetIntendedPosition(HeightToAngle_r(0.812842));  //67 inches with raptor claw
+	SetIntendedPosition(HeightToAngle_r(0.9144));
 }
 void FRC_2011_Robot::Robot_Arm::SetPos6feet()
 {
-	//SetIntendedPosition( HeightToAngle_r(1.8288) );  //actual
-	//SetIntendedPosition( HeightToAngle_r(1.7018) );  //67 inches
-	//SetIntendedPosition( HeightToAngle_r(1.08712) );  //42.8 inches
-	//SetIntendedPosition( HeightToAngle_r(0.71000) );  //72 inches with wrist up
-	SetIntendedPosition( HeightToAngle_r(2.193113) );  //104.5 inches 9 side raptor claw
+	SetIntendedPosition( HeightToAngle_r(1.8288) );
 }
 void FRC_2011_Robot::Robot_Arm::SetPos9feet()
 {
-	//SetIntendedPosition( HeightToAngle_r(2.7432) );  //actual
-	//SetIntendedPosition( HeightToAngle_r(2.6543) ); //104.5 inches
-	SetIntendedPosition( HeightToAngle_r(2.715686) ); //112 inches middle raptor claw
+	SetIntendedPosition( HeightToAngle_r(2.7432) );
 }
 void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 {
@@ -390,7 +520,7 @@ void FRC_2011_Robot::Robot_Arm::CloseRist(bool Close)
 
 void FRC_2011_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Entity2D_Kind::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2011_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
@@ -425,13 +555,13 @@ FRC_2011_Robot::FRC_2011_Robot(const char EntityName[],FRC_2011_Control_Interfac
 {
 }
 
-void FRC_2011_Robot::Initialize(Framework::Base::EventMap& em, const Entity_Properties *props)
+void FRC_2011_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
 	//TODO construct Arm-Ship1D properties from FRC 2011 Robot properties and pass this into the robot control and arm
 	m_RobotControl->Initialize(props);
 
-	const FRC_2011_Robot_Properties *RobotProps=static_cast<const FRC_2011_Robot_Properties *>(props);
+	const FRC_2011_Robot_Properties *RobotProps=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
 	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
 	m_Claw.Initialize(em,RobotProps?&RobotProps->GetClawProps():NULL);
 }
@@ -460,7 +590,7 @@ void FRC_2011_Robot::CloseDeploymentDoor(bool Close)
 
 void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 {
-	Framework::Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	Entity2D_Kind::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 		em->EventOnOff_Map["Robot_CloseDoor"].Subscribe(ehl, *this, &FRC_2011_Robot::CloseDeploymentDoor);
 	else
@@ -472,6 +602,103 @@ void FRC_2011_Robot::BindAdditionalEventControls(bool Bind)
 	ClawShip_Access.BindAdditionalEventControls(Bind);
 }
 
+#ifdef Robot_TesterCode
+  /***********************************************************************************************************************************/
+ /*													FRC_2011_Robot_Control															*/
+/***********************************************************************************************************************************/
+
+void FRC_2011_Robot_Control::UpdateVoltage(size_t index,double Voltage)
+{
+	switch (index)
+	{
+		case FRC_2011_Robot::eArm:
+		{
+			//	printf("Arm=%f\n",Voltage);
+			//DOUT3("Arm Voltage=%f",Voltage);
+			m_ArmVoltage=Voltage;
+			//Note: I have to reverse the voltage again since the wires are currently crossed on the robot
+			m_Potentiometer.UpdatePotentiometerVoltage(-Voltage);
+			m_Potentiometer.TimeChange();  //have this velocity immediately take effect
+		}
+			break;
+		case FRC_2011_Robot::eRollers:
+			m_RollerVoltage=Voltage;
+			//DOUT3("Arm Voltage=%f",Voltage);
+			break;
+	}
+}
+void FRC_2011_Robot_Control::CloseSolenoid(size_t index,bool Close)
+{
+	switch (index)
+	{
+		case FRC_2011_Robot::eDeployment:
+			DebugOutput("CloseDeploymentDoor=%d\n",Close);
+			m_Deployment=Close;
+			break;
+		case FRC_2011_Robot::eClaw:
+			DebugOutput("CloseClaw=%d\n",Close);
+			m_Claw=Close;
+			//This was used to test error with the potentiometer
+			//m_Potentiometer.SetBypass(Close);
+			break;
+		case FRC_2011_Robot::eRist:
+			DebugOutput("CloseRist=%d\n",Close);
+			m_Rist=Close;
+			break;
+	}
+}
+
+
+FRC_2011_Robot_Control::FRC_2011_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_ArmVoltage(0.0),m_RollerVoltage(0.0),
+	m_Deployment(false),m_Claw(false),m_Rist(false)
+{
+	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
+}
+
+void FRC_2011_Robot_Control::Reset_Arm(size_t index)
+{
+	m_KalFilter_Arm.Reset();
+}
+
+void FRC_2011_Robot_Control::Initialize(const Entity_Properties *props)
+{
+	const FRC_2011_Robot_Properties *robot_props=dynamic_cast<const FRC_2011_Robot_Properties *>(props);
+
+	//For now robot_props can be NULL since the swerve robot is borrowing it
+	if (robot_props)
+	{
+		assert(robot_props);
+		m_ArmMaxSpeed=robot_props->GetArmProps().GetMaxSpeed();
+	}
+	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
+	tank_interface->Initialize(props);
+}
+
+void FRC_2011_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+{
+	m_Potentiometer.SetTimeDelta(dTime_s);
+	//display voltages
+	DOUT2("l=%f r=%f a=%f r=%f D%dC%dR%d\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),m_ArmVoltage,m_RollerVoltage,
+		m_Deployment,m_Claw,m_Rist
+		);
+}
+
+//const double c_Arm_DeadZone=0.150;  //was 0.085 for out off
+const double c_Arm_DeadZone=0.085;   //This has better results
+const double c_Arm_Range=1.0-c_Arm_DeadZone;
+
+//void Robot_Control::UpdateVoltage(size_t index,double Voltage)
+//{
+//}
+
+double FRC_2011_Robot_Control::GetArmCurrentPosition(size_t index)
+{
+	double result=m_Potentiometer.GetPotentiometerCurrentPosition()*c_PotentiometerToArmRatio;
+	//result = m_KalFilter_Arm(result);  //apply the Kalman filter
+	return result;
+}
+
+#endif
 
   /***********************************************************************************************************************************/
  /*													FRC_2011_Robot_Properties														*/
@@ -510,82 +737,13 @@ FRC_2011_Robot_Properties::FRC_2011_Robot_Properties() : m_ArmProps(
 	props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
 	m_TankRobotProps=props;
 }
-  /***********************************************************************************************************************************/
- /*														FRC_2011_UI_Controller														*/
-/***********************************************************************************************************************************/
-#define __WindRiverJoysticks__
-#undef __AirFlo__
-#undef __UsingXTerminator__
-#undef __UsingWPTH_UI__ //The WPLib Testing Harness UI (where the second joystick is on the UI itself)
-
-FRC_2011_UI_Controller::FRC_2011_UI_Controller(Framework::UI::JoyStick_Binder &joy,AI_Base_Controller *base_controller) : UI_Controller(joy,base_controller)
-{
-	using namespace Framework::UI;
-	#if 0
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Joystick_SetCurrentSpeed_2",true,1.0,0.1,0.0,"joystick_1");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Analog_Turn",false,1.0,0.1,1.0,"joystick_1");
-	//joy.AddJoy_Button_Default(6,"Slide",false);
-	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Rot,"Analog_StrafeRight");
-	#endif
-
-	#ifdef __UsingXTerminator__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Rot,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_1");
-	joy.AddJoy_Button_Default(6,"Arm_SetPos0feet",false);
-	joy.AddJoy_Button_Default(5,"Arm_SetPos3feet",false);
-	joy.AddJoy_Button_Default(4,"Arm_SetPos6feet",false);
-	joy.AddJoy_Button_Default(8,"Arm_SetPos9feet",false);
-	#endif
-	#ifdef __UsingWPTH_UI__
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eX_Axis,"Arm_SetCurrentVelocity",false,1.0,0.04,true,"Joystick_2");
-	//joy.AddJoy_Button_Default(0,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default(0,"Arm_Claw",true,false,"Joystick_2");
-	//Not sure why the simulator skipped 1
-	joy.AddJoy_Button_Default(2,"Robot_OpenDoor",true,false,"Joystick_2");
-	joy.AddJoy_Button_Default(3,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default(4,"Arm_SetPos9feet",false,false,"Joystick_2");
-	#endif
-	#ifdef __AirFlo__
-	//For the Y Axis 3rd paramter false = down for up like flying a plane
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,true,"Joystick_1");
-	//joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,false,"Joystick_2");
-	//This is no longer needed as the zero and the rest are the same
-	//joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 0,"Arm_SetPos0feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 2,"Arm_SetPos3feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 1,"Arm_SetPos6feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 3,"Arm_SetPos9feet",false,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 4,"Claw_Grip",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 5,"Claw_Squirt",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 7,"Claw_Close",true,false,"Joystick_1");
-	joy.AddJoy_Button_Default( 6,"Arm_Rist",true,false,"Joystick_1");
-	
-	joy.AddJoy_Button_Default( 8,"Robot_CloseDoor",true,false,"Joystick_1");
-	#endif
-	#ifdef __WindRiverJoysticks__
-	//For the Y Axis 3rd paramter false = down for up like flying a plane
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eY_Axis,"Arm_SetCurrentVelocity",false,1.0,0.1,1.0,"joystick_2");
-	joy.AddJoy_Analog_Default(JoyStick_Binder::eZ_Axis,"Arm_SetPotentiometerSafety",false,1.0,0.04,0.0,"joystick_2");
-	//This is no longer needed as the zero and the rest are the same
-	//joy.AddJoy_Button_Default( 7,"Arm_SetPosRest",false,false,"Joystick_2");
-	#if 0
-	//disabled for safety
-	joy.AddJoy_Button_Default( 5,"Arm_SetPos0feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 6,"Arm_SetPos3feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default(10,"Arm_SetPos6feet",false,false,"Joystick_2");
-	joy.AddJoy_Button_Default( 9,"Arm_SetPos9feet",false,false,"Joystick_2");
-	#endif
-	joy.AddJoy_Button_Default( 0,"Claw_Grip",true,false,"joystick_2");
-	joy.AddJoy_Button_Default( 2,"Claw_Squirt",true,false,"joystick_2");
-	joy.AddJoy_Button_Default( 8,"Claw_Close",true,false,"joystick_2");
-	//joy.AddJoy_Button_Default( 7,"Arm_Rist",true,false,"Joystick_2"); //disabled for safety
-	
-	//joy.AddJoy_Button_Default( 7,"Robot_CloseDoor",true,false,"Joystick_1"); //disabled for safety
-	#endif
-}
 
   /***********************************************************************************************************************************/
  /*														Goal_OperateSolenoid														*/
 /***********************************************************************************************************************************/
+
+namespace FRC_2011_Goals
+{
 
 Goal_OperateSolenoid::Goal_OperateSolenoid(FRC_2011_Robot &robot,FRC_2011_Robot::SolenoidDevices SolenoidDevice,bool Close) : m_Robot(robot),
 	m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsClosed(Close) 
@@ -616,4 +774,6 @@ Goal_OperateSolenoid::Goal_Status Goal_OperateSolenoid::Process(double dTime_s)
 	}
 	m_Status=eCompleted;
 	return m_Status;
+}
+
 }

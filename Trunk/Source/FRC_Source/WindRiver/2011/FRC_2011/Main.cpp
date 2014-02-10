@@ -17,6 +17,7 @@
 #include "Common/Ship.h"
 #include "Common/Vehicle_Drive.h"
 #include "Common/PIDController.h"
+#include "Common/Poly.h"
 #include "Common/AI_Base_Controller.h"
 #include "Drive/Tank_Robot.h"
 #include "Common/Robot_Control_Interface.h"
@@ -44,7 +45,7 @@ class SetUp_Manager
 		FRC_2011_Robot *m_pRobot; //This is a scoped pointer with late binding
 		Framework::Base::EventMap m_EventMap;
 		IEvent::HandlerList ehl;
-		FRC_2011_UI_Controller *m_pUI;
+		UI_Controller *m_pUI;
 	public:
 		
 		void GoalComplete()
@@ -71,7 +72,7 @@ class SetUp_Manager
 			//To to bind the UI controller to the robot
 			AI_Base_Controller *controller=m_pRobot->GetController();
 			assert(controller);
-			m_pUI=new FRC_2011_UI_Controller(m_JoyBinder,controller); 
+			m_pUI=new UI_Controller(m_JoyBinder,controller); 
 			if (controller->Try_SetUIController(m_pUI))
 			{
 				//Success... now to let the entity set things up
@@ -174,6 +175,7 @@ Goal *Get_TestRotationGoal(Ship_Tester *ship)
 
 Goal *Get_UberTubeGoal(FRC_2011_Robot *Robot)
 {
+	using namespace FRC_2011_Goals;
 	Ship_1D &Arm=Robot->GetArm();
 
 	//Now to setup the goal
@@ -353,6 +355,7 @@ Goal *Test_Arm(FRC_2011_Robot *Robot)
 
 Goal *Get_TestArmElbowClaw(FRC_2011_Robot *Robot)
 {
+	using namespace FRC_2011_Goals;
 	Ship_1D &Arm=Robot->GetArm();
 
 	//Now to setup the goal
