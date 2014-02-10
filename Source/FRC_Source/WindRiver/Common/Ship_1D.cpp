@@ -12,6 +12,7 @@
 #include "Entity2D.h"
 #include "Goal.h"
 #include "Ship_1D.h"
+#include "SmartDashboard/SmartDashboard.h"
 
 using namespace Framework::Base;
 
