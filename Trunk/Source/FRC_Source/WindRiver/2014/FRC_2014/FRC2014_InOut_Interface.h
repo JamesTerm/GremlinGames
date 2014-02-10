@@ -1,9 +1,9 @@
 #pragma once
 
-class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
+class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 {
 	protected: //from Robot_Control_Interface
-		FRC_2013_Robot_Properties m_RobotProps;  //saves a copy of all the properties
+		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		
 		#ifdef __UsingTestingKit__
 		Servo_Robot_Control m_TankRobotControl;  //for x-axis control
@@ -40,15 +40,15 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		double m_PitchRampAngle,m_TurretAngle;
 		bool m_IsDriveEngaged;
 	public:
-		FRC_2013_Robot_Control(bool UseSafety);
-		virtual ~FRC_2013_Robot_Control();
+		FRC_2014_Robot_Control(bool UseSafety);
+		virtual ~FRC_2014_Robot_Control();
 		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
 		void ResetPos();
 		void SetSafety(bool UseSafety) {m_TankRobotControl.SetSafety(UseSafety);}
 
-		FRC_2013_Control_Interface &AsControlInterface() {return *this;}
+		FRC_2014_Control_Interface &AsControlInterface() {return *this;}
 
-		const FRC_2013_Robot_Properties &GetRobotProps() {return m_RobotProps;}
+		const FRC_2014_Robot_Properties &GetRobotProps() {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
 		virtual bool GetBoolSensorState(size_t index);
