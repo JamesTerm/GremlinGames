@@ -44,7 +44,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
 		FRC_2014_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 
 		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
@@ -55,7 +55,9 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		const FRC_2014_Robot_Props &GetFRC2014RobotProps() const {return m_FRC2014RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
-		//typedef Tank_Robot_Properties __super;
+		#ifndef Robot_TesterCode
+		typedef Tank_Robot_Properties __super;
+		#endif
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2014_Robot_Props m_FRC2014RobotProps;
@@ -86,7 +88,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 		FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 
@@ -98,6 +100,7 @@ class FRC_2014_Robot : public Tank_Robot
 				double m_Velocity; //adds all axis velocities then assigns on the time change
 			public:
 				Turret(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
+				virtual ~Turret() {}
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
@@ -114,6 +117,7 @@ class FRC_2014_Robot : public Tank_Robot
 				double m_Velocity; 
 			public:
 				PitchRamp(FRC_2014_Robot *pParent,Rotary_Control_Interface *robot_control);
+				virtual ~PitchRamp() {}
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
@@ -194,7 +198,9 @@ class FRC_2014_Robot : public Tank_Robot
 		//used to blend turret and pitch controls into the drive itself
 		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s);
 	private:
-		//typedef  Tank_Robot __super;
+		#ifndef Robot_TesterCode
+		typedef  Tank_Robot __super;
+		#endif
 		FRC_2014_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
@@ -280,6 +286,8 @@ class FRC_2014_Goals
 		};
 };
 
+#ifdef Robot_TesterCode
+
 class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 {
 	public:
@@ -338,3 +346,4 @@ class FRC_2014_Robot_UI : public FRC_2014_Robot, public FRC_2014_Robot_Control
 	private:
 		Tank_Robot_UI m_TankUI;
 };
+#endif //Robot_TesterCode

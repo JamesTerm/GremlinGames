@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "Robot_Tester.h"
+
+#ifdef Robot_TesterCode
 namespace Robot_Tester
 {
 	#include "Tank_Robot_UI.h"
@@ -15,8 +17,13 @@ using namespace std;
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
-namespace Base=GG_Framework::Base;
-namespace Scripting=GG_Framework::Logic::Scripting;
+#else
+#include "Common/Debug.h"
+#include "FRC2014_Robot.h"
+#include "SmartDashboard/SmartDashboard.h"
+using namespace Framework::Base;
+using namespace std;
+#endif
 
 
 #define __DisableEncoderTracking__
@@ -30,6 +37,7 @@ namespace Scripting=GG_Framework::Logic::Scripting;
 #define UI2UnitMeasure Inches2Meters
 #endif
 
+#if 0
 //This will make the scale to half with a 0.1 dead zone
 static double PositionToVelocity_Tweak(double Value)
 {
@@ -46,6 +54,7 @@ static double PositionToVelocity_Tweak(double Value)
 	Value=(Value<0.0)?-Temp:Temp;
 	return Value;
 }
+#endif
 
   /***********************************************************************************************************************************/
  /*														FRC_2014_Robot::Turret														*/
@@ -159,7 +168,7 @@ void FRC_2014_Robot::Winch::Advance(bool on)
 void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
 {
 	const double Accel=m_Ship_1D_Props.ACCEL;
-	const double Brake=m_Ship_1D_Props.BRAKE;
+	//const double Brake=m_Ship_1D_Props.BRAKE;
 
 	//Get in my button value
 	if (m_Advance)
@@ -361,7 +370,7 @@ void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 
 	//set to the default key position
-	const FRC_2014_Robot_Props &robot2014props=RobotProps->GetFRC2014RobotProps();
+	//const FRC_2014_Robot_Props &robot2014props=RobotProps->GetFRC2014RobotProps();
 	m_Winch.Initialize(em,RobotProps?&RobotProps->GetWinchProps():NULL);
 	m_Intake_Arm.Initialize(em,RobotProps?&RobotProps->GetIntake_ArmProps():NULL);
 }
@@ -441,7 +450,7 @@ namespace VisionConversion
 
 void FRC_2014_Robot::TimeChange(double dTime_s)
 {
-	const FRC_2014_Robot_Props &robot_props=m_RobotProps.GetFRC2014RobotProps();
+	//const FRC_2014_Robot_Props &robot_props=m_RobotProps.GetFRC2014RobotProps();
 
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
@@ -469,7 +478,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	}
 	#endif
 
-	const double  YOffset=-SmartDashboard::GetNumber("Y Position");
+	//const double  YOffset=-SmartDashboard::GetNumber("Y Position");
 	const double XOffset=SmartDashboard::GetNumber("X Position");
 	
 	using namespace VisionConversion;
@@ -646,11 +655,11 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		const double c_PotentiometerToArmRatio=36.0/54.0;
 
 		FRC_2014_Robot_Props props;
-		const double KeyDistance=Inches2Meters(144);
-		const double KeyWidth=Inches2Meters(101);
+		//const double KeyDistance=Inches2Meters(144);
+		//const double KeyWidth=Inches2Meters(101);
 		//const double KeyDepth=Inches2Meters(48);   //not used (yet)
-		const double DefaultY=c_HalfCourtLength-KeyDistance;
-		const double HalfKeyWidth=KeyWidth/2.0;
+		//const double DefaultY=c_HalfCourtLength-KeyDistance;
+		//const double HalfKeyWidth=KeyWidth/2.0;
 
 		props.Catapult_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Catapult_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
@@ -941,6 +950,8 @@ FRC_2014_Goals::OperateSolenoid::Goal_Status FRC_2014_Goals::OperateSolenoid::Pr
 	{
 		case FRC_2014_Robot::eUseLowGear:
 			assert(false);
+			break;
+		case FRC_2014_Robot::eReleaseClutch:
 			break;
 	}
 	m_Status=eCompleted;
