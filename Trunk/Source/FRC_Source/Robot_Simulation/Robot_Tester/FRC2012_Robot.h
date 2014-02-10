@@ -19,8 +19,6 @@ public:
 struct FRC_2012_Robot_Props
 {
 public:
-	//typedef Framework::Base::Vec2d Vec2D;
-	typedef osg::Vec2d Vec2D;
 	
 	Vec2D PresetPositions[3];
 	Vec2D KeyGrid[3][3];
@@ -56,11 +54,9 @@ public:
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 
 		FRC_2012_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 
 		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
@@ -71,7 +67,9 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
-		//typedef Tank_Robot_Properties __super;
+		#ifndef Robot_TesterCode
+		typedef Tank_Robot_Properties __super;
+		#endif
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
@@ -114,8 +112,6 @@ class FRC_2012_Robot : public Tank_Robot
 			eRampDeployment
 		};
 
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 
 		enum Targets
 		{
@@ -126,7 +122,7 @@ class FRC_2012_Robot : public Tank_Robot
 		};
 		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 
@@ -143,7 +139,9 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
 			protected:
-				//typedef Rotary_Position_Control __super;
+				#ifndef Robot_TesterCode
+				typedef Rotary_Position_Control __super;
+				#endif
 				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 				void SetIntendedPosition_Plus(double Position);
 
@@ -158,7 +156,9 @@ class FRC_2012_Robot : public Tank_Robot
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
-				//typedef Rotary_Position_Control __super;
+				#ifndef Robot_TesterCode
+				typedef Rotary_Position_Control __super;
+				#endif
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetIntendedPosition_Plus(double Position);
@@ -177,7 +177,9 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
 			protected:
-				//typedef Rotary_Velocity_Control __super;
+				#ifndef Robot_TesterCode
+				typedef Rotary_Velocity_Control __super;
+				#endif
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
@@ -213,7 +215,7 @@ class FRC_2012_Robot : public Tank_Robot
 				} m_ControlSignals;
 			public:
 				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
-				void Initialize(GG_Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+				void Initialize(Entity2D_Kind::EventMap& em,const Entity1D_Properties *props=NULL);
 				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
 
@@ -237,7 +239,9 @@ class FRC_2012_Robot : public Tank_Robot
 		class Flippers : public Rotary_Position_Control
 		{
 			private:
-				//typedef Rotary_Position_Control __super;
+				#ifndef Robot_TesterCode
+				typedef Rotary_Position_Control __super;
+				#endif
 				FRC_2012_Robot * const m_pParent;
 				bool m_Advance,m_Retract;
 			public:
@@ -248,8 +252,9 @@ class FRC_2012_Robot : public Tank_Robot
 
 				void Advance(bool on) {m_Advance=on;}
 				void Retract(bool on) {m_Retract=on;}
-
-				//typedef Rotary_Position_Control __super;
+				#ifndef Robot_TesterCode
+				typedef Rotary_Position_Control __super;
+				#endif
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetIntendedPosition(double Position);
@@ -271,7 +276,9 @@ class FRC_2012_Robot : public Tank_Robot
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 	private:
 		void ApplyErrorCorrection();
-		//typedef  Tank_Robot __super;
+		#ifndef Robot_TesterCode
+		typedef  Tank_Robot __super;
+		#endif
 		FRC_2012_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
@@ -369,6 +376,8 @@ class FRC_2012_Goals
 			virtual void Terminate() {m_Terminate=true;}
 		};
 };
+
+#ifdef Robot_TesterCode
 
 class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
 {
@@ -509,3 +518,6 @@ class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
 		FRC_2012_Middle_Conveyor_UI m_MiddleConveyor;
 		FRC_2012_Fire_Conveyor_UI m_FireConveyor;
 };
+
+#endif
+
