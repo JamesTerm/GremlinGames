@@ -13,6 +13,10 @@ using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
+
+const double Pi=M_PI;
+const double Pi2=M_PI*2.0;
+
 #else
 #include "Common/Debug.h"
 #include "FRC2014_Robot.h"
@@ -52,7 +56,7 @@ static double PositionToVelocity_Tweak(double Value)
 }
 #endif
 
-/***********************************************************************************************************************************/
+  /***********************************************************************************************************************************/
  /*														FRC_2014_Robot::Turret														*/
 /***********************************************************************************************************************************/
 
