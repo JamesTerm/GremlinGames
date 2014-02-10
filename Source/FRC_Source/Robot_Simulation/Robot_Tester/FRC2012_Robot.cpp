@@ -15,10 +15,6 @@ using namespace std;
 const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
-namespace Base=GG_Framework::Base;
-namespace Scripting=GG_Framework::Logic::Scripting;
-
-
 #define __DisableTurretTargeting__
 #define __DisableEncoderTracking__
 
@@ -284,7 +280,7 @@ FRC_2012_Robot::BallConveyorSystem::BallConveyorSystem(FRC_2012_Robot *pParent,R
 	//This are always open loop as there is no encoder and this is specified by default
 }
 
-void FRC_2012_Robot::BallConveyorSystem::Initialize(Base::EventMap& em,const Entity1D_Properties *props)
+void FRC_2012_Robot::BallConveyorSystem::Initialize(Entity2D_Kind::EventMap& em,const Entity1D_Properties *props)
 {
 	//These share the same props and fire is scaled from this level
 	m_LowerConveyor.Initialize(em,props);
@@ -457,9 +453,9 @@ const double c_CourtLength=Feet2Meters(54);
 const double c_CourtWidth=Feet2Meters(27);
 const double c_HalfCourtLength=c_CourtLength/2.0;
 const double c_HalfCourtWidth=c_CourtWidth/2.0;
-const FRC_2012_Robot::Vec2D c_BridgeDimensions=FRC_2012_Robot::Vec2D(Inches2Meters(48),Inches2Meters(88)); //width x length
+const Vec2D c_BridgeDimensions=Vec2D(Inches2Meters(48),Inches2Meters(88)); //width x length
 
-const FRC_2012_Robot::Vec2D c_TargetBasePosition=FRC_2012_Robot::Vec2D(0.0,c_HalfCourtLength);
+const Vec2D c_TargetBasePosition=Vec2D(0.0,c_HalfCourtLength);
 const double c_BallShootHeight_inches=55.0;
 const double c_TargetBaseHeight= Inches2Meters(98.0 - c_BallShootHeight_inches);
 const double c_Target_MidBase_Height= Inches2Meters(61.0 - c_BallShootHeight_inches);
@@ -468,7 +464,7 @@ const double c_Target_MiddleHoop_XOffset=Inches2Meters(27+3/8);
 //http://www.sciencedaily.com/releases/2011/03/110310151224.htm
 //The results show the optimal aim points make a "V" shape near the top center of the backboard's "square," which is actually a 
 //24-inch by 18-inch rectangle which surrounds the rim
-const FRC_2012_Robot::Vec2D c_BankShot_Box=FRC_2012_Robot::Vec2D(Inches2Meters(24),Inches2Meters(18)); //width x length
+const Vec2D c_BankShot_Box=Vec2D(Inches2Meters(24),Inches2Meters(18)); //width x length
 //http://esciencenews.com/articles/2011/03/10/the.physics.bank.shots
 const double c_BankShot_BackboardY_Offset=Inches2Meters(3.327);
 const double c_BankShot_V_Angle=0.64267086025537;
@@ -1076,7 +1072,6 @@ FRC_2012_Robot_Properties::FRC_2012_Robot_Properties()  : m_TurretProps(
 const char *ProcessVec2D(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,Vec2d &Dest)
 {
 	const char *err;
-	typedef FRC_2012_Robot_Properties::Vec2D Vec2D;
 	double length, width;	
 	//If someone is going through the trouble of providing the dimension field I should expect them to provide all the fields!
 	err = script.GetField("y", NULL, NULL,&length);
@@ -1116,7 +1111,6 @@ const char *ProcessVec2D(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Sc
 const char *ProcessKey(FRC_2012_Robot_Props &m_FRC2012RobotProps,Scripting::Script& script,size_t index)
 {
 	const char *err;
-	typedef FRC_2012_Robot_Properties::Vec2D Vec2D;
 	Vec2D PresetPosition;
 	err=ProcessVec2D(m_FRC2012RobotProps,script,PresetPosition);
 	ASSERT_MSG(!err, err);
