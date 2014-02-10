@@ -11,13 +11,14 @@ public:
 	//We need to pass the properties to the Robot Control to be able to make proper conversions.
 	//The client code may cast the properties to obtain the specific data 
 	virtual void Initialize(const Entity_Properties *props)=0;
+	#ifdef Robot_TesterCode
+	virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl)=0;
+	#endif
 };
 
 struct FRC_2012_Robot_Props
 {
 public:
-	typedef Framework::Base::Vec2d Vec2D;
-	//typedef osg::Vec2d Vec2D;
 	
 	Vec2D PresetPositions[3];
 	Vec2D KeyGrid[3][3];
@@ -53,11 +54,9 @@ public:
 class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 {
 	public:
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
 
 		FRC_2012_Robot_Properties();
-		virtual void LoadFromScript(Framework::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 
 		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
@@ -68,7 +67,9 @@ class FRC_2012_Robot_Properties : public Tank_Robot_Properties
 		const FRC_2012_Robot_Props &GetFRC2012RobotProps() const {return m_FRC2012RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 	private:
+		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
+		#endif
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_PowerWheelProps,m_ConveyorProps,m_FlipperProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2012_Robot_Props m_FRC2012RobotProps;
@@ -111,8 +112,6 @@ class FRC_2012_Robot : public Tank_Robot
 			eRampDeployment
 		};
 
-		typedef Framework::Base::Vec2d Vec2D;
-		//typedef osg::Vec2d Vec2D;
 
 		enum Targets
 		{
@@ -123,7 +122,7 @@ class FRC_2012_Robot : public Tank_Robot
 		};
 		FRC_2012_Robot(const char EntityName[],FRC_2012_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
-		virtual void Initialize(Framework::Base::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 
@@ -140,7 +139,9 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
 			protected:
+				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
+				#endif
 				void Turret_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 				void SetIntendedPosition_Plus(double Position);
 
@@ -155,7 +156,9 @@ class FRC_2012_Robot : public Tank_Robot
 				IEvent::HandlerList ehl;
 				virtual void BindAdditionalEventControls(bool Bind);
 			protected:
+				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
+				#endif
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetIntendedPosition_Plus(double Position);
@@ -174,7 +177,9 @@ class FRC_2012_Robot : public Tank_Robot
 				virtual void BindAdditionalEventControls(bool Bind);
 				virtual void ResetPos();
 			protected:
+				#ifndef Robot_TesterCode
 				typedef Rotary_Velocity_Control __super;
+				#endif
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity);
 				void SetEncoderSafety(bool DisableFeedback) {__super::SetEncoderSafety(DisableFeedback);}
@@ -210,7 +215,7 @@ class FRC_2012_Robot : public Tank_Robot
 				} m_ControlSignals;
 			public:
 				BallConveyorSystem(FRC_2012_Robot *pParent,Rotary_Control_Interface *robot_control);
-				void Initialize(Framework::Base::EventMap& em,const Entity1D_Properties *props=NULL);
+				void Initialize(Entity2D_Kind::EventMap& em,const Entity1D_Properties *props=NULL);
 				bool GetIsFireRequested() const {return m_ControlSignals.bits.Fire==1;}
 				IEvent::HandlerList ehl;
 
@@ -234,7 +239,9 @@ class FRC_2012_Robot : public Tank_Robot
 		class Flippers : public Rotary_Position_Control
 		{
 			private:
+				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
+				#endif
 				FRC_2012_Robot * const m_pParent;
 				bool m_Advance,m_Retract;
 			public:
@@ -245,8 +252,9 @@ class FRC_2012_Robot : public Tank_Robot
 
 				void Advance(bool on) {m_Advance=on;}
 				void Retract(bool on) {m_Retract=on;}
-
+				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
+				#endif
 				//events are a bit picky on what to subscribe so we'll just wrap from here
 				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				void SetIntendedPosition(double Position);
@@ -265,10 +273,12 @@ class FRC_2012_Robot : public Tank_Robot
 		void SetFlipperPneumatic(bool on) {m_RobotControl->OpenSolenoid(eFlipperDown,on);}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
-		virtual void BindAdditionalUIControls(bool Bind, void *joy);
+		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
 	private:
 		void ApplyErrorCorrection();
+		#ifndef Robot_TesterCode
 		typedef  Tank_Robot __super;
+		#endif
 		FRC_2012_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
@@ -367,4 +377,147 @@ class FRC_2012_Goals
 		};
 };
 
+#ifdef Robot_TesterCode
+
+class FRC_2012_Robot_Control : public FRC_2012_Control_Interface
+{
+	public:
+		FRC_2012_Robot_Control();
+		const FRC_2012_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
+	protected: //from Robot_Control_Interface
+		virtual void UpdateVoltage(size_t index,double Voltage);
+		virtual bool GetBoolSensorState(size_t index);
+		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
+		virtual void OpenSolenoid(size_t index,bool Open);
+	protected: //from Tank_Drive_Control_Interface
+		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
+		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
+	protected: //from Rotary Interface
+		virtual void Reset_Rotary(size_t index=0); 
+		virtual double GetRotaryCurrentPorV(size_t index=0);
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
+
+	protected: //from FRC_2012_Control_Interface
+		//Will reset various members as needed (e.g. Kalman filters)
+		virtual void Robot_Control_TimeChange(double dTime_s);
+		virtual void Initialize(const Entity_Properties *props);
+		//Note: This is only for Robot Tester
+		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+
+		void TriggerLower(bool on) {m_LowerSensor=on;}
+		void TriggerMiddle(bool on) {m_MiddleSensor=on;}
+		void TriggerFire(bool on) {m_FireSensor=on;}
+		void SlowWheel(bool on) {m_SlowWheel=on;}
+
+	protected:
+		FRC_2012_Robot_Properties m_RobotProps;  //saves a copy of all the properties
+		Tank_Robot_Control m_TankRobotControl;
+		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
+		Potentiometer_Tester2 m_Turret_Pot,m_Pitch_Pot,m_Flippers_Pot; //simulate the potentiometer and motor
+		Encoder_Simulator m_PowerWheel_Enc,m_LowerConveyor_Enc,m_MiddleConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
+		KalmanFilter m_KalFilter_Arm;
+		//cache voltage values for display
+		double m_TurretVoltage,m_PitchRampVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
+		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
+		bool m_LowerSensor,m_MiddleSensor,m_FireSensor;
+		bool m_SlowWheel;
+};
+
+class FRC_2012_Turret_UI
+{
+	public:
+		typedef osg::Vec2d Vec2D;
+
+		struct Turret_Properties
+		{
+			double YOffset;
+		};
+
+		FRC_2012_Turret_UI(FRC_2012_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		virtual void Initialize(Entity2D::EventMap& em, const Turret_Properties *props=NULL);
+
+		virtual void UI_Init(Actor_Text *parent);
+		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos,double Heading);
+		virtual void Text_SizeToUse(double SizeToUse);
+
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+	private:
+		FRC_2012_Robot_Control * const m_RobotControl;
+		Actor_Text *m_UIParent;
+		Turret_Properties m_props;
+		osg::ref_ptr<osgText::Text> m_Turret; 
+};
+
+class FRC_2012_Power_Wheel_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2012_Power_Wheel_UI(FRC_2012_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2012_Robot_Control * const m_RobotControl;
+		double m_PowerWheelMaxSpeed;  //cache to avoid all the hoops of getting it (its constant)
+};
+
+class FRC_2012_Lower_Conveyor_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2012_Lower_Conveyor_UI(FRC_2012_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2012_Robot_Control * const m_RobotControl;
+};
+
+class FRC_2012_Middle_Conveyor_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2012_Middle_Conveyor_UI(FRC_2012_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2012_Robot_Control * const m_RobotControl;
+};
+
+class FRC_2012_Fire_Conveyor_UI : public Side_Wheel_UI
+{
+	public:
+		FRC_2012_Fire_Conveyor_UI(FRC_2012_Robot_Control *robot_control) : m_RobotControl(robot_control) {}
+		//Client code can manage the properties
+		virtual void Initialize(Entity2D::EventMap& em, const Wheel_Properties *props=NULL);
+		virtual void TimeChange(double dTime_s);
+	private:
+		FRC_2012_Robot_Control * const m_RobotControl;
+};
+
+///This is only for the simulation where we need not have client code instantiate a Robot_Control
+class FRC_2012_Robot_UI : public FRC_2012_Robot, public FRC_2012_Robot_Control
+{
+	public:
+		FRC_2012_Robot_UI(const char EntityName[]);
+	protected:
+		virtual void TimeChange(double dTime_s);
+		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+
+	protected:   //from EntityPropertiesInterface
+		virtual void UI_Init(Actor_Text *parent);
+		virtual void custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos); 
+		virtual void Text_SizeToUse(double SizeToUse);
+		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
+
+	private:
+		Tank_Robot_UI m_TankUI;
+		FRC_2012_Turret_UI m_TurretUI;
+		FRC_2012_Power_Wheel_UI m_PowerWheelUI;
+		FRC_2012_Lower_Conveyor_UI m_LowerConveyor;
+		FRC_2012_Middle_Conveyor_UI m_MiddleConveyor;
+		FRC_2012_Fire_Conveyor_UI m_FireConveyor;
+};
+
+#endif
 
