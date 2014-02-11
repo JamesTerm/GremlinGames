@@ -1001,6 +1001,11 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	//This will not be in the wind river... this adds stress to simulate stall on low values
 	if ((fabs(Voltage)<0.01) && (Voltage!=0)) Voltage=0.0;
 
+
+	#ifdef __TestControlAssignments__
+	Victor_UpdateVoltage(index,Voltage);
+	#endif
+
 	switch (index)
 	{
 		case FRC_2014_Robot::eWinch:
@@ -1075,6 +1080,9 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 		turret_props.SetUsingRange(false);
 		m_Winch_Pot.Initialize(&turret_props);
 		m_IntakeArm_Pot.Initialize(&robot_props->GetPitchRampProps());
+#ifdef __TestControlAssignments__
+		RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
+#endif
 	}
 }
 

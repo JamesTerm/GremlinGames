@@ -54,6 +54,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2014_Robot_Props &GetFRC2014RobotProps() const {return m_FRC2014RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
+		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
 	private:
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
@@ -72,6 +73,11 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		LUA_Controls_Properties m_RobotControls;
 };
 
+const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
+{
+	"winch","intake_arm","left_drive_3","right_drive_3"
+};
+
 class FRC_2014_Robot : public Tank_Robot
 {
 	public:
@@ -80,6 +86,10 @@ class FRC_2014_Robot : public Tank_Robot
 			eWinch,
 			eIntake_Arm,
 		};
+
+		static SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)
+		{	return Enum_GetValue<SpeedControllerDevices> (value,csz_FRC_2014_Robot_SpeedControllerDevices_Enum,_countof(csz_FRC_2014_Robot_SpeedControllerDevices_Enum));
+		}
 
 		enum SolenoidDevices
 		{
@@ -288,8 +298,14 @@ class FRC_2014_Goals
 };
 
 #ifdef Robot_TesterCode
+//TODO: this will eventually have its own class if/else which will run in wind-river or simulation
+#undef __TestControlAssignments__
 
+#ifdef __TestControlAssignments__
+class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Control_Interface
+#else
 class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
+#endif
 {
 	public:
 		FRC_2014_Robot_Control();
@@ -307,7 +323,14 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		virtual void Reset_Rotary(size_t index=0); 
 		virtual double GetRotaryCurrentPorV(size_t index=0);
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
-
+#ifdef __TestControlAssignments__
+	protected: //from RobotControlCommon
+		virtual size_t RobotControlCommon_Get_Victor_EnumValue(const char *name) const
+		{	return FRC_2014_Robot::GetSpeedControllerDevices_Enum(name);
+		}
+		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  {return -1;}
+		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const  {return -1;}
+#endif
 	protected: //from FRC_2014_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
