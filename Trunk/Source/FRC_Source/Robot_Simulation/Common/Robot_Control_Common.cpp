@@ -115,3 +115,40 @@ void Control_Assignment_Properties::LoadFromScript(Scripting::Script& script)
 		script.Pop();
 	}
 }
+
+
+  /***********************************************************************************************************************************/
+ /*														RobotControlCommon															*/
+/***********************************************************************************************************************************/
+
+RobotControlCommon::~RobotControlCommon()
+{
+
+}
+
+void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_Properties &props)
+{
+	m_Props=props;
+	typedef Control_Assignment_Properties::Controls_1C Controls_1C;
+	typedef Control_Assignment_Properties::Control_Element_1C Control_Element_1C;
+	//create control elements and their LUT's
+	{
+		//victors
+		const Controls_1C &control_props=props.GetVictors();
+		for (size_t i=0;i<control_props.size();i++)
+		{
+			const Control_Element_1C &element=control_props[i];
+			//create the new Victor
+			Victor *NewVictor=new Victor(element.Module,element.Channel);
+			const size_t PopulationIndex=m_Victors.size();  //get the ordinal value before we add it
+			m_Victors.push_back(NewVictor);  //add it to our list of victors
+			//Now to work out the new LUT
+			size_t enumIndex=RobotControlCommon_Get_Victor_EnumValue(element.name.c_str());
+			//our LUT is the EnumIndex position set to the value of i... make sure we have the slots created
+			assert(enumIndex<10);  //sanity check we have a limit to how many victors we have
+			while(m_VictorLUT.size()<=enumIndex)
+				m_VictorLUT.push_back(-1);  //fill with -1 as a way to indicate nothing is located for that slot
+			m_VictorLUT[enumIndex]=i;
+		}
+	}
+}
