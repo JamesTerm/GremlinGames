@@ -35,12 +35,21 @@ class COMMON_API Control_Assignment_Properties
 typedef unsigned     int uint32_t;
 typedef unsigned    char uint8_t;
 
-class Victor
+class Control_1C_Element_UI
+{
+	public:
+		Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name);
+		void display(double value);
+	private:
+	std::string m_Name;
+};
+
+class Victor : public Control_1C_Element_UI
 {
 public:
-	explicit Victor(uint32_t channel) : m_ModuleNumber(1),m_Channel(channel) {}
-	Victor(uint8_t moduleNumber, uint32_t channel) : m_ModuleNumber(moduleNumber), m_Channel(channel) {}
-	virtual void Set(float value, uint8_t syncGroup=0) {m_CurrentVoltage=value;}
+	Victor(uint8_t moduleNumber, uint32_t channel,const char *name) : Control_1C_Element_UI(moduleNumber,channel,name),
+	  m_ModuleNumber(moduleNumber), m_Channel(channel) {}
+	virtual void Set(float value, uint8_t syncGroup=0) {m_CurrentVoltage=value; display(value);}
 	virtual float Get() {return m_CurrentVoltage;}
 	virtual void Disable() {}
 	//virtual void PIDWrite(float output);
@@ -53,8 +62,7 @@ private:
 class DigitalInput
 {
 public:
-	explicit DigitalInput(uint32_t channel) : m_ModuleNumber(1),m_Channel(channel) {}
-	DigitalInput(uint8_t moduleNumber, uint32_t channel) : m_ModuleNumber(moduleNumber), m_Channel(channel) {}
+	DigitalInput(uint8_t moduleNumber, uint32_t channel,const char *name) : m_ModuleNumber(moduleNumber), m_Channel(channel) {}
 	uint32_t Get() {return 0;}
 	uint32_t GetChannel() {return m_Channel;}
 private:
@@ -66,9 +74,7 @@ class DoubleSolenoid
 {
 public:
 	typedef enum {kOff, kForward, kReverse} Value;
-	explicit DoubleSolenoid(uint32_t forwardChannel, uint32_t reverseChannel) : m_ModuleNumber(1),
-		m_forwardChannel(forwardChannel),m_reverseChannel(reverseChannel) {}
-	DoubleSolenoid(uint8_t moduleNumber, uint32_t forwardChannel, uint32_t reverseChannel) : m_ModuleNumber(moduleNumber),
+	DoubleSolenoid(uint8_t moduleNumber, uint32_t forwardChannel, uint32_t reverseChannel,const char *name) : m_ModuleNumber(moduleNumber),
 		m_forwardChannel(forwardChannel),m_reverseChannel(reverseChannel) {}
 	virtual void Set(Value value) {m_CurrentValue=value;}
 	virtual Value Get() {return m_CurrentValue;}

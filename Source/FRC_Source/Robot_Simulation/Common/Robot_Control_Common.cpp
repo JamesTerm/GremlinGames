@@ -139,7 +139,11 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 		{
 			const Control_Element_1C &element=control_props[i];
 			//create the new Victor
+			#ifdef Robot_TesterCode
+			Victor *NewVictor=new Victor(element.Module,element.Channel,element.name.c_str());  //adding name for UI
+			#else
 			Victor *NewVictor=new Victor(element.Module,element.Channel);
+			#endif
 			const size_t PopulationIndex=m_Victors.size();  //get the ordinal value before we add it
 			m_Victors.push_back(NewVictor);  //add it to our list of victors
 			//Now to work out the new LUT
@@ -152,3 +156,27 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 		}
 	}
 }
+
+#ifdef Robot_TesterCode
+  /***********************************************************************************************************************************/
+ /*														Control_1C_Element_UI														*/
+/***********************************************************************************************************************************/
+
+Control_1C_Element_UI::Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name)
+{
+	m_Name=name;
+	char Buffer[4];
+	m_Name+="_";
+	itoa(channel,Buffer,10);
+	m_Name+=Buffer;
+	m_Name+="_";
+	itoa(moduleNumber,Buffer,10);
+	m_Name+=Buffer;
+}
+
+void Control_1C_Element_UI::display(double value)
+{
+	SmartDashboard::PutNumber(m_Name,value);
+}
+
+#endif
