@@ -776,6 +776,7 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			printf ("Version=%.2f\n",version);
 	}
 
+	m_ControlAssignmentProps.LoadFromScript(script);
 	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
 	if (!err) 

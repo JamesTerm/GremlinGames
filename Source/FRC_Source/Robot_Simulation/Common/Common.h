@@ -70,4 +70,5 @@ namespace Robot_Tester
 	#include "Poly.h"
 	#include "Debug.h"
 	#include "UDP_Listener.h"
+	#include "Robot_Control_Common.h"
 }
