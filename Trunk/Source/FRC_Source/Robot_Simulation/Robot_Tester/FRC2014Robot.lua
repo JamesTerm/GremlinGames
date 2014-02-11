@@ -30,6 +30,27 @@ skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 MainRobot = {
+	control_assignments =
+	{
+		--by default module is 1, so only really need it for 2
+		victor =
+		{
+			id_1 = { name="left_drive_3",  channel=5, module=1}, 
+			id_2 = { name="right_drive_3", channel=6},
+			id_3 = { name="winch",         channel=7}, 
+			id_4 = { name="intake_arm",    channel=8}
+		},
+		double_solenoid =
+		{
+			id_1 = { name="use_low_gear",   forward_channel=1, reverse_channel=2},
+			id_2 = { name="release_clutch", forward_channel=3, reverse_channel=4}
+		},
+		digital_input =
+		{
+			id_1 = { name="intake_max",  channel=1}, 
+			id_2 = { name="intake_min",  channel=2}
+		},
+	},
 	--Version helps to identify a positive update to lua
 	--version = 1;
 	

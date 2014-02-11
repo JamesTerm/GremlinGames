@@ -234,6 +234,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Robot_Control_Common.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Rotary_System.cpp"
 				>
 			</File>
@@ -329,6 +333,10 @@
 			</File>
 			<File
 				RelativePath=".\Poly.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Robot_Control_Common.h"
 				>
 			</File>
 			<File
