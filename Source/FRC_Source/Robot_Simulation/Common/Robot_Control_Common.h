@@ -39,8 +39,10 @@ class Control_1C_Element_UI
 {
 	public:
 		Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name);
-		void display(double value);
+		void display_number(double value);
 		void display_bool(bool value);
+		bool get_bool() const;
+		double get_number() const;
 	private:
 	std::string m_Name;
 };
@@ -60,7 +62,7 @@ class Victor : public Control_1C_Element_UI
 public:
 	Victor(uint8_t moduleNumber, uint32_t channel,const char *name) : Control_1C_Element_UI(moduleNumber,channel,name),
 	  m_ModuleNumber(moduleNumber), m_Channel(channel) {}
-	virtual void Set(float value, uint8_t syncGroup=0) {m_CurrentVoltage=value; display(value);}
+	virtual void Set(float value, uint8_t syncGroup=0) {m_CurrentVoltage=value; display_number(value);}
 	virtual float Get() {return m_CurrentVoltage;}
 	virtual void Disable() {}
 	//virtual void PIDWrite(float output);
@@ -70,11 +72,12 @@ private:
 	float m_CurrentVoltage;
 };
 
-class DigitalInput
+class DigitalInput : public Control_1C_Element_UI
 {
 public:
-	DigitalInput(uint8_t moduleNumber, uint32_t channel,const char *name) : m_ModuleNumber(moduleNumber), m_Channel(channel) {}
-	uint32_t Get() {return 0;}
+	DigitalInput(uint8_t moduleNumber, uint32_t channel,const char *name) : Control_1C_Element_UI(moduleNumber,channel,name),
+		m_ModuleNumber(moduleNumber), m_Channel(channel) {}
+	uint32_t Get() {return get_number();}
 	uint32_t GetChannel() {return m_Channel;}
 private:
 	uint8_t m_ModuleNumber;

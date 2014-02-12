@@ -157,13 +157,13 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 			m_VictorLUT[enumIndex]=i;
 		}
 	}
-		{
+	{
 		//double solenoids
 		const Controls_2C &control_props=props.GetDoubleSolenoids();
 		for (size_t i=0;i<control_props.size();i++)
 		{
 			const Control_Element_2C &element=control_props[i];
-			//create the new Victor
+			//create the new Control
 			#ifdef Robot_TesterCode
 			DoubleSolenoid *NewElement=new DoubleSolenoid(element.Module,element.ForwardChannel,element.ReverseChannel,element.name.c_str());
 			#else
@@ -178,6 +178,29 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 			while(m_DoubleSolenoidLUT.size()<=enumIndex)
 				m_DoubleSolenoidLUT.push_back(-1);  //fill with -1 as a way to indicate nothing is located for that slot
 			m_DoubleSolenoidLUT[enumIndex]=i;
+		}
+	}
+	{
+		//digital inputs
+		const Controls_1C &control_props=props.GetDigitalInputs();
+		for (size_t i=0;i<control_props.size();i++)
+		{
+			const Control_Element_1C &element=control_props[i];
+			//create the new Control
+			#ifdef Robot_TesterCode
+			DigitalInput *NewElement=new DigitalInput(element.Module,element.Channel,element.name.c_str());  //adding name for UI
+			#else
+			DigitalInput *NewElement=new DigitalInput(element.Module,element.Channel);
+			#endif
+			const size_t PopulationIndex=m_DigitalInputs.size();  //get the ordinal value before we add it
+			m_DigitalInputs.push_back(NewElement);  //add it to our list of victors
+			//Now to work out the new LUT
+			size_t enumIndex=RobotControlCommon_Get_DigitalInput_EnumValue(element.name.c_str());
+			//our LUT is the EnumIndex position set to the value of i... make sure we have the slots created
+			assert(enumIndex<10);  //sanity check we have a limit to how many victors we have
+			while(m_DigitalInputLUT.size()<=enumIndex)
+				m_DigitalInputLUT.push_back(-1);  //fill with -1 as a way to indicate nothing is located for that slot
+			m_DigitalInputLUT[enumIndex]=i;
 		}
 	}
 
@@ -200,7 +223,7 @@ Control_1C_Element_UI::Control_1C_Element_UI(uint8_t moduleNumber, uint32_t chan
 	m_Name+=Buffer;
 }
 
-void Control_1C_Element_UI::display(double value)
+void Control_1C_Element_UI::display_number(double value)
 {
 	SmartDashboard::PutNumber(m_Name,value);
 }
@@ -208,6 +231,15 @@ void Control_1C_Element_UI::display(double value)
 void Control_1C_Element_UI::display_bool(bool value)
 {
 	SmartDashboard::PutBoolean(m_Name,value);
+}
+
+bool Control_1C_Element_UI::get_bool() const
+{
+	return SmartDashboard::GetBoolean(m_Name);
+}
+double Control_1C_Element_UI::get_number() const
+{
+	return (double)SmartDashboard::GetNumber(m_Name);
 }
 
   /***********************************************************************************************************************************/
