@@ -1153,6 +1153,10 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
 {
+	#ifdef __TestControlAssignments__
+	Solenoid_Open(index,Open);
+	#endif
+
 	switch (index)
 	{
 	case FRC_2014_Robot::eUseLowGear:
