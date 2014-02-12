@@ -78,6 +78,17 @@ const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
 	"winch","intake_arm","left_drive_3","right_drive_3"
 };
 
+const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
+{
+	"use_low_gear","release_clutch"
+};
+
+const char * const csz_FRC_2014_Robot_BoolSensorDevices_Enum[] =
+{
+	"intake_min","intake_max"
+};
+
+
 class FRC_2014_Robot : public Tank_Robot
 {
 	public:
@@ -96,6 +107,20 @@ class FRC_2014_Robot : public Tank_Robot
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
 			eReleaseClutch,     //If true it is released if false it is engaged
 		};
+
+		static SolenoidDevices GetSolenoidDevices_Enum (const char *value)
+		{	return Enum_GetValue<SolenoidDevices> (value,csz_FRC_2014_Robot_SolenoidDevices_Enum,_countof(csz_FRC_2014_Robot_SolenoidDevices_Enum));
+		}
+
+		enum BoolSensorDevices
+		{
+			eIntake_Min,
+			eIntake_Max,
+		};
+
+		static BoolSensorDevices GetBoolSensorDevices_Enum (const char *value)
+		{	return Enum_GetValue<BoolSensorDevices> (value,csz_FRC_2014_Robot_BoolSensorDevices_Enum,_countof(csz_FRC_2014_Robot_BoolSensorDevices_Enum));
+		}
 
 		FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
@@ -299,7 +324,7 @@ class FRC_2014_Goals
 
 #ifdef Robot_TesterCode
 //TODO: this will eventually have its own class if/else which will run in wind-river or simulation
-#undef __TestControlAssignments__
+#define __TestControlAssignments__
 
 #ifdef __TestControlAssignments__
 class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Control_Interface
@@ -328,8 +353,12 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		virtual size_t RobotControlCommon_Get_Victor_EnumValue(const char *name) const
 		{	return FRC_2014_Robot::GetSpeedControllerDevices_Enum(name);
 		}
-		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  {return -1;}
-		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const  {return -1;}
+		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  
+		{	return FRC_2014_Robot::GetBoolSensorDevices_Enum(name);
+		}
+		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const  
+		{	return FRC_2014_Robot::GetSolenoidDevices_Enum(name);
+		}
 #endif
 	protected: //from FRC_2014_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)

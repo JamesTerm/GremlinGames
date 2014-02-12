@@ -131,6 +131,8 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 	m_Props=props;
 	typedef Control_Assignment_Properties::Controls_1C Controls_1C;
 	typedef Control_Assignment_Properties::Control_Element_1C Control_Element_1C;
+	typedef Control_Assignment_Properties::Controls_2C Controls_2C;
+	typedef Control_Assignment_Properties::Control_Element_2C Control_Element_2C;
 	//create control elements and their LUT's
 	{
 		//victors
@@ -155,6 +157,30 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 			m_VictorLUT[enumIndex]=i;
 		}
 	}
+		{
+		//double solenoids
+		const Controls_2C &control_props=props.GetDoubleSolenoids();
+		for (size_t i=0;i<control_props.size();i++)
+		{
+			const Control_Element_2C &element=control_props[i];
+			//create the new Victor
+			#ifdef Robot_TesterCode
+			DoubleSolenoid *NewElement=new DoubleSolenoid(element.Module,element.ForwardChannel,element.ReverseChannel,element.name.c_str());
+			#else
+			DoubleSolenoid *NewElement=new DoubleSolenoid(element.Module,element.ForwardChannel,element.ReverseChannel);
+			#endif
+			const size_t PopulationIndex=m_DoubleSolenoids.size();  //get the ordinal value before we add it
+			m_DoubleSolenoids.push_back(NewElement);  //add it to our list of victors
+			//Now to work out the new LUT
+			size_t enumIndex=RobotControlCommon_Get_DoubleSolenoid_EnumValue(element.name.c_str());
+			//our LUT is the EnumIndex position set to the value of i... make sure we have the slots created
+			assert(enumIndex<10);  //sanity check we have a limit to how many victors we have
+			while(m_DoubleSolenoidLUT.size()<=enumIndex)
+				m_DoubleSolenoidLUT.push_back(-1);  //fill with -1 as a way to indicate nothing is located for that slot
+			m_DoubleSolenoidLUT[enumIndex]=i;
+		}
+	}
+
 }
 
 #ifdef Robot_TesterCode
@@ -179,4 +205,37 @@ void Control_1C_Element_UI::display(double value)
 	SmartDashboard::PutNumber(m_Name,value);
 }
 
+void Control_1C_Element_UI::display_bool(bool value)
+{
+	SmartDashboard::PutBoolean(m_Name,value);
+}
+
+  /***********************************************************************************************************************************/
+ /*														Control_2C_Element_UI														*/
+/***********************************************************************************************************************************/
+
+Control_2C_Element_UI::Control_2C_Element_UI(uint8_t moduleNumber, uint32_t forward_channel, uint32_t reverse_channel,const char *name)
+{
+	m_Name=name;
+	char Buffer[4];
+	m_Name+="_";
+	itoa(forward_channel,Buffer,10);
+	m_Name+=Buffer;
+	m_Name+="_";
+	itoa(reverse_channel,Buffer,10);
+	m_Name+=Buffer;
+	m_Name+="_";
+	itoa(moduleNumber,Buffer,10);
+	m_Name+=Buffer;
+}
+
+void Control_2C_Element_UI::display_bool(bool value)
+{
+	SmartDashboard::PutBoolean(m_Name,value);
+}
+
+bool Control_2C_Element_UI::get_bool() const
+{
+	return SmartDashboard::GetBoolean(m_Name);
+}
 #endif

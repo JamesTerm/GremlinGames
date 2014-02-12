@@ -40,7 +40,18 @@ class Control_1C_Element_UI
 	public:
 		Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name);
 		void display(double value);
+		void display_bool(bool value);
 	private:
+	std::string m_Name;
+};
+
+class Control_2C_Element_UI
+{
+public:
+	Control_2C_Element_UI(uint8_t moduleNumber, uint32_t forward_channel, uint32_t reverse_channel,const char *name);
+	void display_bool(bool value);
+	bool get_bool() const;
+private:
 	std::string m_Name;
 };
 
@@ -70,14 +81,15 @@ private:
 	uint32_t m_Channel;
 };
 
-class DoubleSolenoid
+class DoubleSolenoid : public Control_2C_Element_UI
 {
 public:
 	typedef enum {kOff, kForward, kReverse} Value;
-	DoubleSolenoid(uint8_t moduleNumber, uint32_t forwardChannel, uint32_t reverseChannel,const char *name) : m_ModuleNumber(moduleNumber),
-		m_forwardChannel(forwardChannel),m_reverseChannel(reverseChannel) {}
-	virtual void Set(Value value) {m_CurrentValue=value;}
-	virtual Value Get() {return m_CurrentValue;}
+	DoubleSolenoid(uint8_t moduleNumber, uint32_t forwardChannel, uint32_t reverseChannel,const char *name) : 
+		Control_2C_Element_UI(moduleNumber,forwardChannel,reverseChannel,name),
+		m_ModuleNumber(moduleNumber),m_forwardChannel(forwardChannel),m_reverseChannel(reverseChannel) {}
+	virtual void Set(Value value) {m_CurrentValue=value; display_bool(value==kForward);}
+	virtual Value Get() {return m_CurrentValue=get_bool()?kForward:kReverse;}
 private:
 	uint8_t m_ModuleNumber;
 	uint32_t m_forwardChannel; ///< The forward channel on the module to control.
@@ -98,18 +110,18 @@ class COMMON_API RobotControlCommon
 		void Victor_UpdateVoltage(size_t index,double Voltage) {m_Victors[m_VictorLUT[index]]->Set(Voltage);}
 
 		//solenoid methods
-		void OpenSolenoid(size_t index,bool Open=true) 
+		void Solenoid_Open(size_t index,bool Open=true) 
 		{	DoubleSolenoid::Value value=Open ? DoubleSolenoid::kForward : DoubleSolenoid::kReverse;
 			m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Set(value);
 		}
-		void CloseSolenoid(size_t index,bool Close=true) {OpenSolenoid(index,!Close);}
-		bool GetIsSolenoidOpen(size_t index) const 
+		void Solenoid_Close(size_t index,bool Close=true) {Solenoid_Open(index,!Close);}
+		bool Solenoid_GetIsOpen(size_t index) const 
 		{	return m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Get()==DoubleSolenoid::kForward;
 		}
-		bool GetIsSolenoidClosed(size_t index) const {return !GetIsSolenoidOpen(index);}
+		bool Solenoid_GetIsClosed(size_t index) const {return !Solenoid_GetIsOpen(index);}
 
 		//digital input method
-		virtual bool GetBoolSensorState(size_t index) {return m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0;}
+		virtual bool BoolSensor_GetState(size_t index) {return m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0;}
 
 	protected:
 		virtual void RobotControlCommon_Initialize(const Control_Assignment_Properties &props);
