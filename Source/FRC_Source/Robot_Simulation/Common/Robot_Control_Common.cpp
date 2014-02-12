@@ -112,6 +112,13 @@ void Control_Assignment_Properties::LoadFromScript(Scripting::Script& script)
 			LoadControlElement_2C_Internal(script,m_Double_Solenoids);
 			script.Pop();
 		}
+		err = script.GetFieldTable("digital_input_encoder");
+		if (!err)
+		{
+			LoadControlElement_2C_Internal(script,m_Encoders);
+			script.Pop();
+		}
+
 		script.Pop();
 	}
 }
@@ -195,9 +202,45 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 	Initialize_2C_LUT<DoubleSolenoid>(props.GetDoubleSolenoids(),m_DoubleSolenoids,m_DoubleSolenoidLUT,this,&RobotControlCommon::RobotControlCommon_Get_DoubleSolenoid_EnumValue);
 	//digital inputs
 	Initialize_1C_LUT<DigitalInput>(props.GetDigitalInputs(),m_DigitalInputs,m_DigitalInputLUT,this,&RobotControlCommon::RobotControlCommon_Get_DigitalInput_EnumValue);
+	//encoders
+	Initialize_2C_LUT<Encoder2>(props.GetEncoders(),m_Encoders,m_EncoderLUT,this,&RobotControlCommon::RobotControlCommon_Get_Victor_EnumValue);
 }
 
 #ifdef Robot_TesterCode
+  /***********************************************************************************************************************************/
+ /*																Encoder2															*/
+/***********************************************************************************************************************************/
+
+Encoder2::Encoder2(uint8_t ModuleNumber,UINT32 aChannel, UINT32 bChannel,const char *name) :	m_LastDistance(0.0)
+{
+}
+
+void Encoder2::Reset2()
+{
+	m_LastDistance=0.0;
+	Reset();
+}
+
+double Encoder2::GetRate2(double dTime_s)
+{
+	//Using distance will yield the same rate as GetRate, without precision loss to GetRaw()
+	const double CurrentDistance=GetDistance();
+	const double delta=CurrentDistance - m_LastDistance;
+	m_LastDistance=CurrentDistance;
+	return delta/dTime_s;
+}
+
+void Encoder2::Start() {}
+int32_t Encoder2::Get() {return 0;}
+int32_t Encoder2::GetRaw() {return 0;}
+void Encoder2::Reset() {}
+void Encoder2::Stop() {}
+double Encoder2::GetDistance() {return 0.0;}
+double Encoder2::GetRate() {return 0.0;}
+void Encoder2::SetMinRate(double minRate) {}
+void Encoder2::SetDistancePerPulse(double distancePerPulse) {}
+void Encoder2::SetReverseDirection(bool reverseDirection) {}
+
   /***********************************************************************************************************************************/
  /*														Control_1C_Element_UI														*/
 /***********************************************************************************************************************************/
