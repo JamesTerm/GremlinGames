@@ -13,6 +13,8 @@ Catapult_ArmToMotorRatio=5 * 8.3
 Catapult_MotorToArmRatio=1.0/Catapult_ArmToMotorRatio
 Catapult_PotentiometerToArmRatio=1/3
 Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
+--TODO get max speed of bag motor under load
+Catapult_MaxSpeed=(8000.0/60.0) * Pi2
 
 Intake_ArmToMotorRatio=1.0
 Intake_MotorToArmRatio=1.0/Intake_ArmToMotorRatio
@@ -157,7 +159,7 @@ MainRobot = {
 		
 		winch =
 		{
-			is_closed=1,
+			is_closed=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -166,33 +168,35 @@ MainRobot = {
 			tolerance=0.15,
 			tolerance_count=20,
 			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=Catapult_PotentiometerToArmRatio,
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			encoder_to_wheel_ratio=Catapult_PotentiometerToMotorRatio,
+			--curve_voltage=
+			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
-			max_speed=(8000.0/60.0) * Pi2,	--loaded max speed TODO find BAG motor
-			accel=0.5,						--We may indeed have a two button solution (match with max accel)
-			brake=0.5,
-			max_accel_forward=400,			--These are in radians, just go with what feels right
-			max_accel_reverse=400,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			max_speed=Catapult_MaxSpeed,
+			accel=100.0,						--We may indeed have a two button solution (match with max accel)
+			brake=100.0,
+			--This will be about a second and then some for entire retraction should be fast... the second scalar is 1/x of a second to
+			--reach full speed which should be very quick
+			max_accel_forward=Catapult_MaxSpeed * 10,
+			max_accel_reverse=Catapult_MaxSpeed * 10,
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
 			min_range_deg=(-10) * Catapult_ArmToMotorRatio,
-			use_aggressive_stop = 'yes',
+			use_aggressive_stop = 'no',
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
 			inv_max_accel_down = 0.05,
 			inv_max_decel_down = 0.01,
-			slow_velocity_voltage = 4.0,
-			slow_velocity = 2.0,
-			predict_up=.400,
-			predict_down=.400,
+			--slow_velocity_voltage = 4.0,
+			--slow_velocity = 2.0,
+			--predict_up=.400,
+			--predict_down=.400,
 			--pulse_burst_time=0.06,
 			--pulse_burst_range=0.5,
-			reverse_deadzone=0.10,
+			--reverse_deadzone=0.10,
 			slow_angle_scalar = Catapult_MotorToArmRatio,
-			distance_scale = 0.5,
+			--distance_scale = 0.5,
 			motor_specs =
 			{
 				wheel_mass=Pounds2Kilograms * 16.27,
