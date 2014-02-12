@@ -50,6 +50,11 @@ MainRobot = {
 			id_1 = { name="intake_max",  channel=1}, 
 			id_2 = { name="intake_min",  channel=2}
 		},
+		digital_input_encoder =
+		{	
+			--encoder names must be the same name list from the victor (or other speed controls)
+			id_1 = { name="winch",  a_channel=3, b_channel=4}
+		}
 	},
 	--Version helps to identify a positive update to lua
 	--version = 1;

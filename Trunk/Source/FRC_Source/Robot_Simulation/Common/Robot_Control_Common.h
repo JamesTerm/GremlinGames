@@ -24,9 +24,10 @@ class COMMON_API Control_Assignment_Properties
 		const Controls_1C &GetVictors() const {return m_Victors;}
 		const Controls_1C &GetDigitalInputs() const {return m_Digital_Inputs;}
 		const Controls_2C &GetDoubleSolenoids() const {return m_Double_Solenoids;}
+		const Controls_2C &GetEncoders() const {return m_Encoders;}
 	private:
 		Controls_1C m_Victors,m_Digital_Inputs;
-		Controls_2C m_Double_Solenoids;
+		Controls_2C m_Double_Solenoids,m_Encoders;
 };
 
 
@@ -34,6 +35,8 @@ class COMMON_API Control_Assignment_Properties
 #ifdef Robot_TesterCode
 typedef unsigned     int uint32_t;
 typedef unsigned    char uint8_t;
+typedef unsigned	 int UINT32;
+typedef              int int32_t;
 
 class Control_1C_Element_UI
 {
@@ -100,8 +103,30 @@ private:
 	Value m_CurrentValue;
 };
 
-#endif
+class Encoder2
+{
+public:
+	//Note: Encoder allows two module numbers... we'll skip that support since double solenoid doesn't have it, and we can reuse 2C
+	//for both... we can change if needed
+	Encoder2(uint8_t ModuleNumber,UINT32 aChannel, UINT32 bChannel,const char *name);
+	double GetRate2(double dTime_s);
+	void Reset2();
 
+	void Start();
+	int32_t Get();
+	int32_t GetRaw();
+	void Reset();
+	void Stop();
+	double GetDistance();
+	double GetRate();
+	void SetMinRate(double minRate);
+	void SetDistancePerPulse(double distancePerPulse);
+	void SetReverseDirection(bool reverseDirection);
+private:
+	double m_LastDistance;  //keep note of last distance
+};
+
+#endif
 
 class COMMON_API RobotControlCommon
 {
@@ -127,6 +152,11 @@ class COMMON_API RobotControlCommon
 		//digital input method
 		virtual bool BoolSensor_GetState(size_t index) {return m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0;}
 
+		virtual double Encoder_GetRate(size_t index=0) {return m_Encoders[m_EncoderLUT[index]]->GetRate();}
+		virtual double Encoder_GetDistance(size_t index=0) {return m_Encoders[m_EncoderLUT[index]]->GetDistance();}
+		virtual void Encoder_Start(size_t index=0) { m_Encoders[m_EncoderLUT[index]]->Start();}
+		virtual void Encoder_Stop(size_t index=0) { m_Encoders[m_EncoderLUT[index]]->Stop();}
+		virtual void Encoder_Reset(size_t index=0) { m_Encoders[m_EncoderLUT[index]]->Reset();}
 	protected:
 		virtual void RobotControlCommon_Initialize(const Control_Assignment_Properties &props);
 		//Override by derived class
@@ -138,6 +168,7 @@ class COMMON_API RobotControlCommon
 		std::vector<Victor *> m_Victors;
 		std::vector<DigitalInput *> m_DigitalInputs;
 		std::vector<DoubleSolenoid *> m_DoubleSolenoids;
+		std::vector<Encoder2 *> m_Encoders;
 
-		Controls_LUT m_VictorLUT,m_DigitalInputLUT,m_DoubleSolenoidLUT;
+		Controls_LUT m_VictorLUT,m_DigitalInputLUT,m_DoubleSolenoidLUT,m_EncoderLUT;
 };
