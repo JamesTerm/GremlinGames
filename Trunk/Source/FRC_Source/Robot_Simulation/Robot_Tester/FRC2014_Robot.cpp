@@ -1233,8 +1233,7 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	#ifdef __TestControlAssignments__
 	const Rotary_Props &rotary=m_RobotProps.GetWinchProps().GetRotaryProps();
-	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s *
-		rotary.ArmGainAssist.GainAssistAngleScalar * (1.0/rotary.EncoderToRS_Ratio);
+	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s * (1.0/rotary.EncoderToRS_Ratio);
 	Encoder_TimeChange(FRC_2014_Robot::eWinch,adjustment);
 	#endif
 }
