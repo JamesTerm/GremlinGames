@@ -106,6 +106,7 @@ private:
 class COMMON_API RobotControlCommon
 {
 	public:
+		typedef std::vector<size_t> Controls_LUT;
 		virtual ~RobotControlCommon();
 
 		//victor methods
@@ -138,6 +139,5 @@ class COMMON_API RobotControlCommon
 		std::vector<DigitalInput *> m_DigitalInputs;
 		std::vector<DoubleSolenoid *> m_DoubleSolenoids;
 
-		typedef std::vector<size_t> Controls_LUT;
 		Controls_LUT m_VictorLUT,m_DigitalInputLUT,m_DoubleSolenoidLUT;
 };
