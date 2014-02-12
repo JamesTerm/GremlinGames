@@ -70,9 +70,13 @@ static void LoadControlElement_2C_Internal(Scripting::Script& script,Control_Ass
 			{
 				double fTest;
 				err = script.GetField("forward_channel",NULL,NULL,&fTest);
+				if (err)
+					err=script.GetField("a_channel",NULL,NULL,&fTest);
 				assert(!err);
 				newElement.ForwardChannel=(size_t)fTest;
 				err = script.GetField("reverse_channel",NULL,NULL,&fTest);
+				if (err)
+					err=script.GetField("b_channel",NULL,NULL,&fTest);
 				assert(!err);
 				newElement.ReverseChannel=(size_t)fTest;
 				err = script.GetField("name",&newElement.name,NULL,NULL);
@@ -211,10 +215,18 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
  /*																Encoder2															*/
 /***********************************************************************************************************************************/
 
-Encoder2::Encoder2(uint8_t ModuleNumber,UINT32 aChannel, UINT32 bChannel,const char *name) :	m_LastDistance(0.0)
+Encoder2::Encoder2(uint8_t ModuleNumber,UINT32 aChannel, UINT32 bChannel,const char *name) : 
+	Control_2C_Element_UI(ModuleNumber,aChannel,bChannel,name), m_LastDistance(0.0)
 {
+	m_Name+="_encoder";
 }
 
+void Encoder2::TimeChange(double dTime_s,double adjustment_delta)
+{
+	m_LastTime=dTime_s;
+	m_Distance+=adjustment_delta;
+	display_number(m_Distance);
+}
 void Encoder2::Reset2()
 {
 	m_LastDistance=0.0;
@@ -233,10 +245,13 @@ double Encoder2::GetRate2(double dTime_s)
 void Encoder2::Start() {}
 int32_t Encoder2::Get() {return 0;}
 int32_t Encoder2::GetRaw() {return 0;}
-void Encoder2::Reset() {}
+void Encoder2::Reset() 
+{
+	m_Distance=0;
+}
 void Encoder2::Stop() {}
-double Encoder2::GetDistance() {return 0.0;}
-double Encoder2::GetRate() {return 0.0;}
+double Encoder2::GetDistance() {return m_Distance;}
+double Encoder2::GetRate() {return GetRate2(m_LastTime);}
 void Encoder2::SetMinRate(double minRate) {}
 void Encoder2::SetDistancePerPulse(double distancePerPulse) {}
 void Encoder2::SetReverseDirection(bool reverseDirection) {}
@@ -298,6 +313,11 @@ Control_2C_Element_UI::Control_2C_Element_UI(uint8_t moduleNumber, uint32_t forw
 void Control_2C_Element_UI::display_bool(bool value)
 {
 	SmartDashboard::PutBoolean(m_Name,value);
+}
+
+void Control_2C_Element_UI::display_number(double value)
+{
+	SmartDashboard::PutNumber(m_Name,value);
 }
 
 bool Control_2C_Element_UI::get_bool() const

@@ -40,13 +40,13 @@ typedef              int int32_t;
 
 class Control_1C_Element_UI
 {
-	public:
-		Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name);
-		void display_number(double value);
-		void display_bool(bool value);
-		bool get_bool() const;
-		double get_number() const;
-	private:
+public:
+	Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name);
+	void display_number(double value);
+	void display_bool(bool value);
+	bool get_bool() const;
+	double get_number() const;
+protected:
 	std::string m_Name;
 };
 
@@ -55,8 +55,9 @@ class Control_2C_Element_UI
 public:
 	Control_2C_Element_UI(uint8_t moduleNumber, uint32_t forward_channel, uint32_t reverse_channel,const char *name);
 	void display_bool(bool value);
+	void display_number(double value);
 	bool get_bool() const;
-private:
+protected:
 	std::string m_Name;
 };
 
@@ -103,12 +104,13 @@ private:
 	Value m_CurrentValue;
 };
 
-class Encoder2
+class Encoder2 : public Control_2C_Element_UI
 {
 public:
 	//Note: Encoder allows two module numbers... we'll skip that support since double solenoid doesn't have it, and we can reuse 2C
 	//for both... we can change if needed
 	Encoder2(uint8_t ModuleNumber,UINT32 aChannel, UINT32 bChannel,const char *name);
+	void TimeChange(double dTime_s,double current_voltage); //only used in simulation
 	double GetRate2(double dTime_s);
 	void Reset2();
 
@@ -124,6 +126,8 @@ public:
 	void SetReverseDirection(bool reverseDirection);
 private:
 	double m_LastDistance;  //keep note of last distance
+	double m_Distance;
+	double m_LastTime;
 };
 
 #endif
@@ -135,28 +139,35 @@ class COMMON_API RobotControlCommon
 		virtual ~RobotControlCommon();
 
 		//victor methods
-		double Victor_GetCurrentPorV(size_t index) {return m_Victors[m_VictorLUT[index]]->Get();}
-		void Victor_UpdateVoltage(size_t index,double Voltage) {m_Victors[m_VictorLUT[index]]->Set(Voltage);}
+		__inline double Victor_GetCurrentPorV(size_t index) {return m_Victors[m_VictorLUT[index]]->Get();}
+		__inline void Victor_UpdateVoltage(size_t index,double Voltage) {m_Victors[m_VictorLUT[index]]->Set(Voltage);}
 
 		//solenoid methods
-		void Solenoid_Open(size_t index,bool Open=true) 
+		__inline void Solenoid_Open(size_t index,bool Open=true) 
 		{	DoubleSolenoid::Value value=Open ? DoubleSolenoid::kForward : DoubleSolenoid::kReverse;
 			m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Set(value);
 		}
-		void Solenoid_Close(size_t index,bool Close=true) {Solenoid_Open(index,!Close);}
-		bool Solenoid_GetIsOpen(size_t index) const 
+		__inline void Solenoid_Close(size_t index,bool Close=true) {Solenoid_Open(index,!Close);}
+		__inline bool Solenoid_GetIsOpen(size_t index) const 
 		{	return m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Get()==DoubleSolenoid::kForward;
 		}
-		bool Solenoid_GetIsClosed(size_t index) const {return !Solenoid_GetIsOpen(index);}
+		__inline bool Solenoid_GetIsClosed(size_t index) const {return !Solenoid_GetIsOpen(index);}
 
 		//digital input method
-		virtual bool BoolSensor_GetState(size_t index) {return m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0;}
+		__inline bool BoolSensor_GetState(size_t index) {return m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0;}
 
-		virtual double Encoder_GetRate(size_t index=0) {return m_Encoders[m_EncoderLUT[index]]->GetRate();}
-		virtual double Encoder_GetDistance(size_t index=0) {return m_Encoders[m_EncoderLUT[index]]->GetDistance();}
-		virtual void Encoder_Start(size_t index=0) { m_Encoders[m_EncoderLUT[index]]->Start();}
-		virtual void Encoder_Stop(size_t index=0) { m_Encoders[m_EncoderLUT[index]]->Stop();}
-		virtual void Encoder_Reset(size_t index=0) { m_Encoders[m_EncoderLUT[index]]->Reset();}
+		__inline double Encoder_GetRate(size_t index) {return m_Encoders[m_EncoderLUT[index]]->GetRate();}
+		__inline double Encoder_GetDistance(size_t index) {return m_Encoders[m_EncoderLUT[index]]->GetDistance();}
+		__inline void Encoder_Start(size_t index) { m_Encoders[m_EncoderLUT[index]]->Start();}
+		__inline void Encoder_Stop(size_t index) { m_Encoders[m_EncoderLUT[index]]->Stop();}
+		__inline void Encoder_Reset(size_t index) 
+		{	if ((index<m_EncoderLUT.size()) && (m_EncoderLUT[index]!=-1)) 	m_Encoders[m_EncoderLUT[index]]->Reset();
+		}
+		__inline void Encoder_SetDistancePerPulse(size_t index,double distancePerPulse) {m_Encoders[m_EncoderLUT[index]]->SetDistancePerPulse(distancePerPulse);}
+		__inline void Encoder_SetReverseDirection(size_t index,bool reverseDirection) {m_Encoders[m_EncoderLUT[index]]->SetReverseDirection(reverseDirection);}
+		#ifdef Robot_TesterCode
+		__inline void Encoder_TimeChange(size_t index,double adjustment_delta) {m_Encoders[m_EncoderLUT[index]]->TimeChange(index,adjustment_delta);}
+		#endif
 	protected:
 		virtual void RobotControlCommon_Initialize(const Control_Assignment_Properties &props);
 		//Override by derived class
