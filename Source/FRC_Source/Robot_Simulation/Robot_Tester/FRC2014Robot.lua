@@ -14,7 +14,8 @@ Catapult_MotorToArmRatio=1.0/Catapult_ArmToMotorRatio
 Catapult_PotentiometerToArmRatio=1/3
 Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
 --TODO get max speed of bag motor under load
-Catapult_MaxSpeed=(8000.0/60.0) * Pi2
+--Catapult_MaxSpeed=(8000.0/60.0) * Pi2
+Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125
 
 Intake_ArmToMotorRatio=1.0
 Intake_MotorToArmRatio=1.0/Intake_ArmToMotorRatio
@@ -159,7 +160,7 @@ MainRobot = {
 		
 		winch =
 		{
-			is_closed=0,
+			is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
