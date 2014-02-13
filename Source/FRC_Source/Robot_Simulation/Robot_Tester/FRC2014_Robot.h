@@ -95,7 +95,9 @@ class FRC_2014_Robot : public Tank_Robot
 		enum SpeedControllerDevices
 		{
 			eWinch,
-			eIntake_Arm
+			eIntake_Arm,
+			eLeftDrive3,
+			eRightDrive3
 		};
 
 		static SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)
@@ -369,6 +371,15 @@ class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Contro
 	public:
 		FRC_2014_Robot_Control();
 		virtual ~FRC_2014_Robot_Control();
+
+		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
+		void ResetPos();
+		#ifndef Robot_TesterCode
+		void SetSafety(bool UseSafety) {m_TankRobotControl.SetSafety(UseSafety);}
+		#endif
+
+		FRC_2014_Control_Interface &AsControlInterface() {return *this;}
+
 		const FRC_2014_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
@@ -405,6 +416,7 @@ class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Contro
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
+		Compressor *m_Compressor;
 		double m_WinchVoltage;  //used in simulation but no harm in leaving enabled for wind-river
 };
 

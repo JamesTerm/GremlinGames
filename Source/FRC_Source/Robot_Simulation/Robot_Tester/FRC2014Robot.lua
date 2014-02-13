@@ -57,7 +57,8 @@ MainRobot = {
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
 			id_1 = { name="winch",  a_channel=3, b_channel=4}
-		}
+		},
+		compressor	=	{ relay=8, limit=14 }
 	},
 	--Version helps to identify a positive update to lua
 	--version = 1;

@@ -994,11 +994,11 @@ Goal *FRC_2014_Goals::Get_FRC2014_Autonomous(FRC_2014_Robot *Robot,size_t KeyInd
 	return NULL;
 }
 
-#if defined Robot_TesterCode && !defined __TestControlAssignments__
   /***********************************************************************************************************************************/
  /*													FRC_2014_Robot_Control															*/
 /***********************************************************************************************************************************/
 
+#if defined Robot_TesterCode && !defined __TestControlAssignments__
 void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	//This will not be in the wind river... this adds stress to simulate stall on low values
@@ -1163,6 +1163,21 @@ void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
 
 #else
 
+
+void FRC_2014_Robot_Control::ResetPos()
+{
+	//Enable this code if we have a compressor 
+	m_Compressor->Stop();
+	#ifndef Robot_TesterCode
+	//Allow driver station to control if they want to run the compressor
+	if (DriverStation::GetInstance()->GetDigitalIn(8))
+	#endif
+	{
+		printf("RobotControl reset compressor\n");
+		m_Compressor->Start();
+	}
+}
+
 void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	//This will not be in the wind river... this adds stress to simulate stall on low values
@@ -1188,13 +1203,15 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
-FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0)
+FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_Compressor(NULL)
 {
 }
 
 FRC_2014_Robot_Control::~FRC_2014_Robot_Control()
 {
 	Encoder_Stop(FRC_2014_Robot::eWinch);
+	DestroyCompressor(m_Compressor);
+	m_Compressor=NULL;
 }
 
 void FRC_2014_Robot_Control::Reset_Rotary(size_t index)
@@ -1227,6 +1244,8 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 	const double EncoderPulseRate=(1.0/360.0);
 	Encoder_SetDistancePerPulse(FRC_2014_Robot::eWinch,EncoderPulseRate);
 	Encoder_Start(FRC_2014_Robot::eWinch);
+	m_Compressor=CreateCompressor();
+	ResetPos(); //must be called after compressor is created
 }
 
 void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
@@ -1235,6 +1254,13 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	const Rotary_Props &rotary=m_RobotProps.GetWinchProps().GetRotaryProps();
 	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s * (1.0/rotary.EncoderToRS_Ratio);
 	Encoder_TimeChange(FRC_2014_Robot::eWinch,adjustment);
+	#endif
+
+	#ifndef Robot_TesterCode
+		#ifdef __ShowLCD__
+			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+			lcd->UpdateLCD();
+		#endif
 	#endif
 }
 
@@ -1285,7 +1311,7 @@ void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
 #endif
 
 #ifdef Robot_TesterCode
-/***************************************************************************************************************/
+  /***************************************************************************************************************/
  /*												FRC_2014_Robot_UI												*/
 /***************************************************************************************************************/
 
