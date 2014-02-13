@@ -104,6 +104,12 @@ void Control_Assignment_Properties::LoadFromScript(Scripting::Script& script)
 			LoadControlElement_1C_Internal(script,m_Victors);
 			script.Pop();
 		}
+		err = script.GetFieldTable("relay");
+		if (!err)
+		{
+			LoadControlElement_1C_Internal(script,m_Relays);
+			script.Pop();
+		}
 		err = script.GetFieldTable("digital_input");
 		if (!err)
 		{
@@ -122,6 +128,20 @@ void Control_Assignment_Properties::LoadFromScript(Scripting::Script& script)
 			LoadControlElement_2C_Internal(script,m_Encoders);
 			script.Pop();
 		}
+		err = script.GetFieldTable("compressor");
+		if (!err)
+		{
+			double fTest;
+			err = script.GetField("relay",NULL,NULL,&fTest);
+			assert(!err);
+			m_Compressor_Relay=(size_t)fTest;
+			err = script.GetField("limit",NULL,NULL,&fTest);
+			assert(!err);
+			m_Compressor_Limit=(size_t)fTest;
+			script.Pop();
+		}
+		else
+			m_Compressor_Relay=8,m_Compressor_Limit=14;
 
 		script.Pop();
 	}
@@ -202,12 +222,28 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 	//create control elements and their LUT's
 	//victors
 	Initialize_1C_LUT<Victor>(props.GetVictors(),m_Victors,m_VictorLUT,this,&RobotControlCommon::RobotControlCommon_Get_Victor_EnumValue);
+	//relays
+	Initialize_1C_LUT<Relay>(props.GetRelays(),m_Relays,m_RelayLUT,this,&RobotControlCommon::RobotControlCommon_Get_Victor_EnumValue);
 	//double solenoids
 	Initialize_2C_LUT<DoubleSolenoid>(props.GetDoubleSolenoids(),m_DoubleSolenoids,m_DoubleSolenoidLUT,this,&RobotControlCommon::RobotControlCommon_Get_DoubleSolenoid_EnumValue);
 	//digital inputs
 	Initialize_1C_LUT<DigitalInput>(props.GetDigitalInputs(),m_DigitalInputs,m_DigitalInputLUT,this,&RobotControlCommon::RobotControlCommon_Get_DigitalInput_EnumValue);
 	//encoders
 	Initialize_2C_LUT<Encoder2>(props.GetEncoders(),m_Encoders,m_EncoderLUT,this,&RobotControlCommon::RobotControlCommon_Get_Victor_EnumValue);
+}
+
+
+void RobotControlCommon::TranslateToRelay(size_t index,double Voltage)
+{
+	Relay::Value value=Relay::kOff;  //*NEVER* want both on!
+	const double Threshold=0.08;  //This value is based on dead voltage for arm... feel free to adjust, but keep high enough to avoid noise
+
+	if (Voltage>Threshold)
+		value=Relay::kForward;
+	else if (Voltage<-Threshold)
+		value=Relay::kReverse;
+
+	m_Relays[m_RelayLUT[index]]->Set(value);
 }
 
 #ifdef Robot_TesterCode
