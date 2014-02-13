@@ -54,10 +54,12 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2014_Robot_Props &GetFRC2014RobotProps() const {return m_FRC2014RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
+		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
 	private:
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
+		Control_Assignment_Properties m_ControlAssignmentProps;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2014_Robot_Props m_FRC2014RobotProps;
@@ -71,6 +73,22 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		LUA_Controls_Properties m_RobotControls;
 };
 
+const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
+{
+	"winch","intake_arm","left_drive_3","right_drive_3"
+};
+
+const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
+{
+	"use_low_gear","release_clutch"
+};
+
+const char * const csz_FRC_2014_Robot_BoolSensorDevices_Enum[] =
+{
+	"intake_min","intake_max"
+};
+
+
 class FRC_2014_Robot : public Tank_Robot
 {
 	public:
@@ -78,13 +96,33 @@ class FRC_2014_Robot : public Tank_Robot
 		{
 			eWinch,
 			eIntake_Arm,
+			eLeftDrive3,
+			eRightDrive3
 		};
+
+		static SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)
+		{	return Enum_GetValue<SpeedControllerDevices> (value,csz_FRC_2014_Robot_SpeedControllerDevices_Enum,_countof(csz_FRC_2014_Robot_SpeedControllerDevices_Enum));
+		}
 
 		enum SolenoidDevices
 		{
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
-			eReleaseClutch,     //If true it is released if false it is engaged
+			eReleaseClutch     //If true it is released if false it is engaged
 		};
+
+		static SolenoidDevices GetSolenoidDevices_Enum (const char *value)
+		{	return Enum_GetValue<SolenoidDevices> (value,csz_FRC_2014_Robot_SolenoidDevices_Enum,_countof(csz_FRC_2014_Robot_SolenoidDevices_Enum));
+		}
+
+		enum BoolSensorDevices
+		{
+			eIntake_Min,
+			eIntake_Max
+		};
+
+		static BoolSensorDevices GetBoolSensorDevices_Enum (const char *value)
+		{	return Enum_GetValue<BoolSensorDevices> (value,csz_FRC_2014_Robot_BoolSensorDevices_Enum,_countof(csz_FRC_2014_Robot_BoolSensorDevices_Enum));
+		}
 
 		FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous=false);
 		IEvent::HandlerList ehl;
@@ -286,7 +324,8 @@ class FRC_2014_Goals
 		};
 };
 
-#ifdef Robot_TesterCode
+#define __TestControlAssignments__
+#if defined Robot_TesterCode && !defined __TestControlAssignments__
 
 class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 {
@@ -306,7 +345,6 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		virtual void Reset_Rotary(size_t index=0); 
 		virtual double GetRotaryCurrentPorV(size_t index=0);
 		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
-
 	protected: //from FRC_2014_Control_Interface
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
@@ -326,8 +364,65 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		double m_WinchVoltage,m_IntakeArmVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
 		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
 };
+#else
 
+class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Control_Interface
+{
+	public:
+		FRC_2014_Robot_Control(bool UseSafety=true);
+		virtual ~FRC_2014_Robot_Control();
 
+		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
+		void ResetPos();
+		#ifndef Robot_TesterCode
+		void SetSafety(bool UseSafety) {m_TankRobotControl.SetSafety(UseSafety);}
+		#endif
+
+		FRC_2014_Control_Interface &AsControlInterface() {return *this;}
+
+		const FRC_2014_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
+	protected: //from Robot_Control_Interface
+		virtual void UpdateVoltage(size_t index,double Voltage);
+		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
+		virtual void OpenSolenoid(size_t index,bool Open);
+	protected: //from Tank_Drive_Control_Interface
+		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
+		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
+	protected: //from Rotary Interface
+		virtual void Reset_Rotary(size_t index=0); 
+		virtual double GetRotaryCurrentPorV(size_t index=0);
+		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
+	protected: //from RobotControlCommon
+		virtual size_t RobotControlCommon_Get_Victor_EnumValue(const char *name) const
+		{	return FRC_2014_Robot::GetSpeedControllerDevices_Enum(name);
+		}
+		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  
+		{	return FRC_2014_Robot::GetBoolSensorDevices_Enum(name);
+		}
+		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const  
+		{	return FRC_2014_Robot::GetSolenoidDevices_Enum(name);
+		}
+	protected: //from FRC_2014_Control_Interface
+		//Will reset various members as needed (e.g. Kalman filters)
+		virtual void Robot_Control_TimeChange(double dTime_s);
+		virtual void Initialize(const Entity_Properties *props);
+		#ifdef Robot_TesterCode
+		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
+		#endif
+
+	protected:
+		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
+		Tank_Robot_Control m_TankRobotControl;
+		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
+		Compressor *m_Compressor;
+		double m_WinchVoltage;  //used in simulation but no harm in leaving enabled for wind-river
+};
+
+#endif //Robot_TesterCode
+
+#ifdef Robot_TesterCode
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control
 class FRC_2014_Robot_UI : public FRC_2014_Robot, public FRC_2014_Robot_Control
 {

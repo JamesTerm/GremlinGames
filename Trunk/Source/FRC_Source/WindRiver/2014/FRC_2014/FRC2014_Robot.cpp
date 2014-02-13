@@ -18,7 +18,7 @@ const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
 #else
-#include "Common/Debug.h"
+
 #include "FRC2014_Robot.h"
 #include "SmartDashboard/SmartDashboard.h"
 using namespace Framework::Base;
@@ -213,7 +213,10 @@ void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 	m_pParent->m_RobotControl->OpenSolenoid(eReleaseClutch,ReleaseClutch);
 	//once released the encoder and position will be zero
 	if (ReleaseClutch)
+	{
 		ResetPos();
+		m_pParent->m_RobotControl->Reset_Rotary(eWinch);
+	}
 }
 
 void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
@@ -776,6 +779,7 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			printf ("Version=%.2f\n",version);
 	}
 
+	m_ControlAssignmentProps.LoadFromScript(script);
 	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
 	if (!err) 
@@ -990,11 +994,11 @@ Goal *FRC_2014_Goals::Get_FRC2014_Autonomous(FRC_2014_Robot *Robot,size_t KeyInd
 	return NULL;
 }
 
-#ifdef Robot_TesterCode
   /***********************************************************************************************************************************/
  /*													FRC_2014_Robot_Control															*/
 /***********************************************************************************************************************************/
 
+#if defined Robot_TesterCode && !defined __TestControlAssignments__
 void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	//This will not be in the wind river... this adds stress to simulate stall on low values
@@ -1157,6 +1161,155 @@ void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	}
 }
 
+#else
+
+
+void FRC_2014_Robot_Control::ResetPos()
+{
+	//Enable this code if we have a compressor 
+	m_Compressor->Stop();
+	#ifndef Robot_TesterCode
+	//Allow driver station to control if they want to run the compressor
+	if (DriverStation::GetInstance()->GetDigitalIn(8))
+	#endif
+	{
+		printf("RobotControl reset compressor\n");
+		m_Compressor->Start();
+	}
+}
+
+void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
+{
+	//This will not be in the wind river... this adds stress to simulate stall on low values
+	if ((fabs(Voltage)<0.01) && (Voltage!=0)) Voltage=0.0;
+
+	switch (index)
+	{
+	case FRC_2014_Robot::eWinch:
+		{
+			double VoltageToUse=(Voltage>0.0)?Voltage:0.0;
+			m_WinchVoltage=VoltageToUse=VoltageToUse * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
+			Victor_UpdateVoltage(index,VoltageToUse);
+			SmartDashboard::PutNumber("WinchVoltage",VoltageToUse);
+		}
+		break;
+	case FRC_2014_Robot::eIntake_Arm:
+		{
+			Voltage=Voltage * m_RobotProps.GetIntake_ArmProps().GetRotaryProps().VoltageScalar;
+			Victor_UpdateVoltage(index,Voltage);
+			SmartDashboard::PutNumber("IntakeArmVoltage",Voltage);
+		}
+		break;
+	}
+}
+
+FRC_2014_Robot_Control::FRC_2014_Robot_Control(bool UseSafety) : m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
+		m_Compressor(NULL),m_WinchVoltage(0.0)
+{
+}
+
+FRC_2014_Robot_Control::~FRC_2014_Robot_Control()
+{
+	Encoder_Stop(FRC_2014_Robot::eWinch);
+	DestroyCompressor(m_Compressor);
+	m_Compressor=NULL;
+}
+
+void FRC_2014_Robot_Control::Reset_Rotary(size_t index)
+{
+	Encoder_Reset(index);  //This will check for encoder existence implicitly
+}
+
+#ifdef Robot_TesterCode
+void FRC_2014_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
+{
+}
+#endif
+
+void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
+{
+	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
+	tank_interface->Initialize(props);
+
+	const FRC_2014_Robot_Properties *robot_props=dynamic_cast<const FRC_2014_Robot_Properties *>(props);
+	assert(robot_props);
+	
+	m_RobotProps=*robot_props;  //save a copy
+
+	Rotary_Properties turret_props=robot_props->GetTurretProps();
+	turret_props.SetUsingRange(false); //TODO why is this here?
+
+	RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
+
+	//Note: RobotControlCommon_Initialize() must occur before calling any encoder startup code
+	const double EncoderPulseRate=(1.0/360.0);
+	Encoder_SetDistancePerPulse(FRC_2014_Robot::eWinch,EncoderPulseRate);
+	Encoder_Start(FRC_2014_Robot::eWinch);
+	m_Compressor=CreateCompressor();
+	ResetPos(); //must be called after compressor is created
+}
+
+void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
+{
+	#ifdef Robot_TesterCode
+	const Rotary_Props &rotary=m_RobotProps.GetWinchProps().GetRotaryProps();
+	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s * (1.0/rotary.EncoderToRS_Ratio);
+	Encoder_TimeChange(FRC_2014_Robot::eWinch,adjustment);
+	#else
+		#ifdef __ShowLCD__
+			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
+			lcd->UpdateLCD();
+		#endif
+	#endif
+}
+
+
+double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
+{
+	double result=0.0;
+	const FRC_2014_Robot_Props &props=m_RobotProps.GetFRC2014RobotProps();
+
+	switch (index)
+	{
+	case FRC_2014_Robot::eWinch:
+		{
+			const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
+			const double distance=Encoder_GetDistance(index);
+			result=(distance * m_RobotProps.GetWinchProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
+
+			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
+			SmartDashboard::PutNumber("Catapult_Angle",90-RAD_2_DEG(result*c_GearToArmRatio));
+			//SmartDashboard::PutNumber("Catapult_Angle",RAD_2_DEG(result));
+		}
+		break;
+	case FRC_2014_Robot::eIntake_Arm:
+		assert(false);  //no potentiometer 
+		break;
+	}
+
+	return result;
+}
+
+void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
+{
+	switch (index)
+	{
+	case FRC_2014_Robot::eUseLowGear:
+		//printf("UseLowGear=%d\n",Open);
+		SmartDashboard::PutBoolean("UseHighGear",!Open);
+		Solenoid_Open(index,Open);
+		break;
+	case FRC_2014_Robot::eReleaseClutch:
+		//printf("ReleaseClutch=%d\n",Open);
+		SmartDashboard::PutBoolean("ClutchEngaged",!Open);
+		Solenoid_Open(index,Open);
+		break;
+	}
+}
+
+#endif
+
+#ifdef Robot_TesterCode
   /***************************************************************************************************************/
  /*												FRC_2014_Robot_UI												*/
 /***************************************************************************************************************/

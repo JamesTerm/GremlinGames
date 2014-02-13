@@ -1,5 +1,5 @@
 #pragma once
-
+#if 0
 class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 {
 	protected: //from Robot_Control_Interface
@@ -75,3 +75,4 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
 };
+#endif

@@ -1,4 +1,4 @@
-
+#if 0
 #include "WPILib.h"
 
 #include "stdafx.h"
@@ -290,4 +290,6 @@ void FRC_2014_Robot_Control::SetServoAngle(size_t index,double radians)
 	//{
 	//}
 }
+
+#endif
 
