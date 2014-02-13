@@ -4,6 +4,7 @@
 class COMMON_API Control_Assignment_Properties
 {
 	public:
+		virtual ~Control_Assignment_Properties() {}
 		struct Control_Element_1C
 		{
 			std::string name;
@@ -203,7 +204,7 @@ class COMMON_API RobotControlCommon
 		__inline void Encoder_Start(size_t index) { m_Encoders[m_EncoderLUT[index]]->Start();}
 		__inline void Encoder_Stop(size_t index) { m_Encoders[m_EncoderLUT[index]]->Stop();}
 		__inline void Encoder_Reset(size_t index) 
-		{	if ((index<m_EncoderLUT.size()) && (m_EncoderLUT[index]!=-1)) 	m_Encoders[m_EncoderLUT[index]]->Reset();
+		{	if ((index<m_EncoderLUT.size()) && (m_EncoderLUT[index]!=(size_t)-1)) 	m_Encoders[m_EncoderLUT[index]]->Reset();
 		}
 		__inline void Encoder_SetDistancePerPulse(size_t index,double distancePerPulse) {m_Encoders[m_EncoderLUT[index]]->SetDistancePerPulse(distancePerPulse);}
 		__inline void Encoder_SetReverseDirection(size_t index,bool reverseDirection) {m_Encoders[m_EncoderLUT[index]]->SetReverseDirection(reverseDirection);}

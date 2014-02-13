@@ -369,7 +369,7 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Control_Interface
 {
 	public:
-		FRC_2014_Robot_Control();
+		FRC_2014_Robot_Control(bool UseSafety=true);
 		virtual ~FRC_2014_Robot_Control();
 
 		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
@@ -408,7 +408,7 @@ class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Contro
 		//Will reset various members as needed (e.g. Kalman filters)
 		virtual void Robot_Control_TimeChange(double dTime_s);
 		virtual void Initialize(const Entity_Properties *props);
-		#ifdef __TestControlAssignments__
+		#ifdef Robot_TesterCode
 		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
 		#endif
 

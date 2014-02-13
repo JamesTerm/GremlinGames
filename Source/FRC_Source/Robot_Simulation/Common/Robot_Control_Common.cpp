@@ -29,7 +29,7 @@ static void LoadControlElement_1C_Internal(Scripting::Script& script,Control_Ass
 	size_t index=1;  //keep the lists cardinal in LUA
 	do 
 	{
-		sprintf_s(Buffer,128,"id_%d",index);
+		sprintf(Buffer,"id_%d",index);
 		fieldtable_err = script.GetFieldTable(Buffer);
 		if (!fieldtable_err)
 		{
@@ -62,7 +62,7 @@ static void LoadControlElement_2C_Internal(Scripting::Script& script,Control_Ass
 	size_t index=1;  //keep the lists cardinal in LUA
 	do 
 	{
-		sprintf_s(Buffer,128,"id_%d",index);
+		sprintf(Buffer,"id_%d",index);
 		fieldtable_err = script.GetFieldTable(Buffer);
 		if (!fieldtable_err)
 		{
@@ -172,7 +172,7 @@ __inline void Initialize_1C_LUT(const Control_Assignment_Properties::Controls_1C
 		#else
 		T *NewElement=new T(element.Module,element.Channel);
 		#endif
-		const size_t PopulationIndex=constrols.size();  //get the ordinal value before we add it
+		//const size_t PopulationIndex=constrols.size();  //get the ordinal value before we add it
 		constrols.push_back(NewElement);  //add it to our list of victors
 		//Now to work out the new LUT
 		size_t enumIndex=(instance->*delegate)(element.name.c_str());
@@ -199,7 +199,7 @@ __inline void Initialize_2C_LUT(const Control_Assignment_Properties::Controls_2C
 		#else
 		T *NewElement=new T(element.Module,element.ForwardChannel,element.ReverseChannel);
 		#endif
-		const size_t PopulationIndex=constrols.size();  //get the ordinal value before we add it
+		//const size_t PopulationIndex=constrols.size();  //get the ordinal value before we add it
 		constrols.push_back(NewElement);  //add it to our list of victors
 		//Now to work out the new LUT
 		size_t enumIndex=(instance->*delegate)(element.name.c_str());
@@ -361,3 +361,4 @@ bool Control_2C_Element_UI::get_bool() const
 	return SmartDashboard::GetBoolean(m_Name);
 }
 #endif
+

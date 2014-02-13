@@ -18,7 +18,7 @@ const double Pi=M_PI;
 const double Pi2=M_PI*2.0;
 
 #else
-#include "Common/Debug.h"
+
 #include "FRC2014_Robot.h"
 #include "SmartDashboard/SmartDashboard.h"
 using namespace Framework::Base;
@@ -1203,7 +1203,8 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
-FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_Compressor(NULL)
+FRC_2014_Robot_Control::FRC_2014_Robot_Control(bool UseSafety) : m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
+		m_Compressor(NULL),m_WinchVoltage(0.0)
 {
 }
 
@@ -1219,7 +1220,7 @@ void FRC_2014_Robot_Control::Reset_Rotary(size_t index)
 	Encoder_Reset(index);  //This will check for encoder existence implicitly
 }
 
-#ifdef __TestControlAssignments__
+#ifdef Robot_TesterCode
 void FRC_2014_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
 {
 }
@@ -1250,13 +1251,11 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 
 void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
-	#ifdef __TestControlAssignments__
+	#ifdef Robot_TesterCode
 	const Rotary_Props &rotary=m_RobotProps.GetWinchProps().GetRotaryProps();
 	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s * (1.0/rotary.EncoderToRS_Ratio);
 	Encoder_TimeChange(FRC_2014_Robot::eWinch,adjustment);
-	#endif
-
-	#ifndef Robot_TesterCode
+	#else
 		#ifdef __ShowLCD__
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
 			lcd->UpdateLCD();
