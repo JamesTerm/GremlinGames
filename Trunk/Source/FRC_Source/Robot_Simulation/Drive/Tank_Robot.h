@@ -171,7 +171,7 @@ class DRIVE_API Tank_Robot_Properties : public UI_Ship_Properties
 class DRIVE_API Tank_Robot_Control : public Tank_Drive_Control_Interface
 {
 	public:
-		Tank_Robot_Control();
+		Tank_Robot_Control(bool UseSafety=true);
 		//This is only needed for simulation
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s);
 		double GetLeftVoltage() const {return m_LeftVoltage;}

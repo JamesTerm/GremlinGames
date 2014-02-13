@@ -759,7 +759,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
  /*														Tank_Robot_Control															*/
 /***********************************************************************************************************************************/
 
-Tank_Robot_Control::Tank_Robot_Control() : m_LeftVoltage(0.0),m_RightVoltage(0.0),m_DisplayVoltage(true)
+Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) : m_LeftVoltage(0.0),m_RightVoltage(0.0),m_DisplayVoltage(true)
 {
 }
 
