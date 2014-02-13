@@ -215,6 +215,19 @@ class Priority_Averager
 	}
 };
 
+template<class T>
+__inline T Enum_GetValue(const char *value,const char * const Table[],size_t NoItems)
+{
+	//assert(value);  //If this fails... somebody forgot to enter a value 
+	T ret=(T) 0;
+	for (size_t i=0;i<NoItems;i++)
+	{
+		if (strcmp(value,Table[i])==0)
+			ret=(T)i;
+	}
+	return ret;
+}
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
