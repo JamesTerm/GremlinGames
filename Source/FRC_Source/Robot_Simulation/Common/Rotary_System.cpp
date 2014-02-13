@@ -327,14 +327,14 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 			m_PIDControllerDown.ResetI();
 		}
 		//We do not want to alter position if we are using position control PID
-		if ((TuneVelocity) || IsZero(NewPosition) || NeedGainAssistForUp)
+		if ((TuneVelocity) || IsZero(NewPosition-m_LastPosition) || NeedGainAssistForUp)
 			SetPos_m(NewPosition);
 	}
 
 	else if (m_PotentiometerState==ePassive)
 	{
 		//ensure the positions are calibrated when we are not moving
-		if (IsZero(NewPosition) || NeedGainAssistForUp)
+		if (IsZero(NewPosition-m_LastPosition) || NeedGainAssistForUp)
 				SetPos_m(NewPosition);  //this will help min and max limits work properly even though we do not have PID
 	}
 
