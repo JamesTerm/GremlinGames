@@ -1168,12 +1168,13 @@ void FRC_2014_Robot_Control::ResetPos()
 {
 	//Enable this code if we have a compressor 
 	m_Compressor->Stop();
+	printf("RobotControl::ResetPos Compressor->Stop()\n");
 	#ifndef Robot_TesterCode
 	//Allow driver station to control if they want to run the compressor
 	if (DriverStation::GetInstance()->GetDigitalIn(8))
 	#endif
 	{
-		printf("RobotControl reset compressor\n");
+		printf("RobotControl::ResetPos Compressor->Start()\n");
 		m_Compressor->Start();
 	}
 }
@@ -1263,6 +1264,21 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#endif
 }
 
+void FRC_2014_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
+{
+	const Tank_Robot_Props &TankRobotProps=m_RobotProps.GetTankRobotProps();
+	if (!TankRobotProps.ReverseSteering)
+	{
+		Victor_UpdateVoltage(FRC_2014_Robot::eLeftDrive3,(float)LeftVoltage * TankRobotProps.VoltageScalar_Left);
+		Victor_UpdateVoltage(FRC_2014_Robot::eRightDrive3,-(float)RightVoltage * TankRobotProps.VoltageScalar_Right);
+	}
+	else
+	{
+		Victor_UpdateVoltage(FRC_2014_Robot::eLeftDrive3,(float)RightVoltage * TankRobotProps.VoltageScalar_Right);
+		Victor_UpdateVoltage(FRC_2014_Robot::eRightDrive3,-(float)LeftVoltage * TankRobotProps.VoltageScalar_Left);
+	}
+	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+}
 
 double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 {
