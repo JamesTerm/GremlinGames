@@ -166,21 +166,26 @@ __inline void Initialize_1C_LUT(const Control_Assignment_Properties::Controls_1C
 	for (size_t i=0;i<control_props.size();i++)
 	{
 		const Control_Element_1C &element=control_props[i];
+		//ensure this name exists in the list
+		size_t enumIndex=(instance->*delegate)(element.name.c_str());
+		//The name may not exist in this list (it may be a name specific to the robot)... in which case there is no work to do
+		if (enumIndex==-1)
+			continue;
 		//create the new Control
 		#ifdef Robot_TesterCode
 		T *NewElement=new T(element.Module,element.Channel,element.name.c_str());  //adding name for UI
 		#else
 		T *NewElement=new T(element.Module,element.Channel);
 		#endif
+		const size_t LUT_index=constrols.size(); //get size before we add it in
 		//const size_t PopulationIndex=constrols.size();  //get the ordinal value before we add it
 		constrols.push_back(NewElement);  //add it to our list of victors
 		//Now to work out the new LUT
-		size_t enumIndex=(instance->*delegate)(element.name.c_str());
 		//our LUT is the EnumIndex position set to the value of i... make sure we have the slots created
 		assert(enumIndex<10);  //sanity check we have a limit to how many victors we have
 		while(control_LUT.size()<=enumIndex)
 			control_LUT.push_back(-1);  //fill with -1 as a way to indicate nothing is located for that slot
-		control_LUT[enumIndex]=i;
+		control_LUT[enumIndex]=LUT_index;
 	}
 }
 
@@ -193,21 +198,26 @@ __inline void Initialize_2C_LUT(const Control_Assignment_Properties::Controls_2C
 	for (size_t i=0;i<control_props.size();i++)
 	{
 		const Control_Element_2C &element=control_props[i];
+		//ensure this name exists in the list
+		size_t enumIndex=(instance->*delegate)(element.name.c_str());
+		//The name may not exist in this list (it may be a name specific to the robot)... in which case there is no work to do
+		if (enumIndex==-1)
+			continue;
 		//create the new Control
 		#ifdef Robot_TesterCode
 		T *NewElement=new T(element.Module,element.ForwardChannel,element.ReverseChannel,element.name.c_str());
 		#else
 		T *NewElement=new T(element.Module,element.ForwardChannel,element.ReverseChannel);
 		#endif
+		const size_t LUT_index=constrols.size(); //get size before we add it in
 		//const size_t PopulationIndex=constrols.size();  //get the ordinal value before we add it
 		constrols.push_back(NewElement);  //add it to our list of victors
 		//Now to work out the new LUT
-		size_t enumIndex=(instance->*delegate)(element.name.c_str());
 		//our LUT is the EnumIndex position set to the value of i... make sure we have the slots created
 		assert(enumIndex<10);  //sanity check we have a limit to how many victors we have
 		while(control_LUT.size()<=enumIndex)
 			control_LUT.push_back(-1);  //fill with -1 as a way to indicate nothing is located for that slot
-		control_LUT[enumIndex]=i;
+		control_LUT[enumIndex]=LUT_index;
 	}
 }
 
@@ -252,7 +262,7 @@ void RobotControlCommon::TranslateToRelay(size_t index,double Voltage)
 /***********************************************************************************************************************************/
 
 Encoder2::Encoder2(uint8_t ModuleNumber,UINT32 aChannel, UINT32 bChannel,const char *name) : 
-	Control_2C_Element_UI(ModuleNumber,aChannel,bChannel,name), m_LastDistance(0.0)
+	Control_2C_Element_UI(ModuleNumber,aChannel,bChannel,name), m_LastDistance(0.0), m_Distance(0.0),m_LastTime(0.010), m_ValueScalar(1.0)
 {
 	m_Name+="_encoder";
 }
@@ -275,7 +285,7 @@ double Encoder2::GetRate2(double dTime_s)
 	const double CurrentDistance=GetDistance();
 	const double delta=CurrentDistance - m_LastDistance;
 	m_LastDistance=CurrentDistance;
-	return delta/dTime_s;
+	return (delta/dTime_s) * m_ValueScalar;
 }
 
 void Encoder2::Start() {}
@@ -290,7 +300,180 @@ double Encoder2::GetDistance() {return m_Distance;}
 double Encoder2::GetRate() {return GetRate2(m_LastTime);}
 void Encoder2::SetMinRate(double minRate) {}
 void Encoder2::SetDistancePerPulse(double distancePerPulse) {}
-void Encoder2::SetReverseDirection(bool reverseDirection) {}
+void Encoder2::SetReverseDirection(bool reverseDirection) 
+{
+	m_ValueScalar?1.0:-1.0;
+}
+
+
+  /***********************************************************************************************************************************/
+ /*																RobotDrive															*/
+/***********************************************************************************************************************************/
+
+const int32_t kMaxNumberOfMotors=4;
+
+void RobotDrive::InitRobotDrive() {
+	m_frontLeftMotor = NULL;
+	m_frontRightMotor = NULL;
+	m_rearRightMotor = NULL;
+	m_rearLeftMotor = NULL;
+	m_sensitivity = 0.5;
+	m_maxOutput = 1.0;
+	m_LeftOutput=0.0,m_RightOutput=0.0;
+}
+
+RobotDrive::RobotDrive(Victor *frontLeftMotor, Victor *rearLeftMotor,
+						Victor *frontRightMotor, Victor *rearRightMotor)
+{
+	InitRobotDrive();
+	if (frontLeftMotor == NULL || rearLeftMotor == NULL || frontRightMotor == NULL || rearRightMotor == NULL)
+	{
+		//wpi_setWPIError(NullParameter);
+		assert(false);
+		return;
+	}
+	m_frontLeftMotor = frontLeftMotor;
+	m_rearLeftMotor = rearLeftMotor;
+	m_frontRightMotor = frontRightMotor;
+	m_rearRightMotor = rearRightMotor;
+	for (int32_t i=0; i < kMaxNumberOfMotors; i++)
+	{
+		m_invertedMotors[i] = 1;
+	}
+	m_deleteSpeedControllers = false;
+}
+
+RobotDrive::RobotDrive(Victor &frontLeftMotor, Victor &rearLeftMotor,
+						Victor &frontRightMotor, Victor &rearRightMotor)
+{
+	InitRobotDrive();
+	m_frontLeftMotor = &frontLeftMotor;
+	m_rearLeftMotor = &rearLeftMotor;
+	m_frontRightMotor = &frontRightMotor;
+	m_rearRightMotor = &rearRightMotor;
+	for (int32_t i=0; i < kMaxNumberOfMotors; i++)
+	{
+		m_invertedMotors[i] = 1;
+	}
+	m_deleteSpeedControllers = false;
+}
+
+RobotDrive::~RobotDrive()
+{
+	if (m_deleteSpeedControllers)
+	{
+		delete m_frontLeftMotor;
+		delete m_rearLeftMotor;
+		delete m_frontRightMotor;
+		delete m_rearRightMotor;
+	}
+}
+
+void RobotDrive::SetLeftRightMotorOutputs(float leftOutput, float rightOutput)
+{
+	//this is added for convenience in simulation
+	m_LeftOutput=leftOutput,m_RightOutput=rightOutput;
+
+	assert(m_rearLeftMotor != NULL && m_rearRightMotor != NULL);
+
+	uint8_t syncGroup = 0x80;
+
+	if (m_frontLeftMotor != NULL)
+		m_frontLeftMotor->Set(Limit(leftOutput) * m_invertedMotors[kFrontLeftMotor] * m_maxOutput, syncGroup);
+	m_rearLeftMotor->Set(Limit(leftOutput) * m_invertedMotors[kRearLeftMotor] * m_maxOutput, syncGroup);
+
+	if (m_frontRightMotor != NULL)
+		m_frontRightMotor->Set(-Limit(rightOutput) * m_invertedMotors[kFrontRightMotor] * m_maxOutput, syncGroup);
+	m_rearRightMotor->Set(-Limit(rightOutput) * m_invertedMotors[kRearRightMotor] * m_maxOutput, syncGroup);
+
+	//CANJaguar::UpdateSyncGroup(syncGroup);  ah ha... sync group only works with CAN / Jaguar
+}
+
+float RobotDrive::Limit(float num)
+{
+	if (num > 1.0)
+	{
+		return 1.0;
+	}
+	if (num < -1.0)
+	{
+		return -1.0;
+	}
+	return num;
+}
+
+void RobotDrive::Normalize(double *wheelSpeeds)
+{
+	double maxMagnitude = fabs(wheelSpeeds[0]);
+	int32_t i;
+	for (i=1; i<kMaxNumberOfMotors; i++)
+	{
+		double temp = fabs(wheelSpeeds[i]);
+		if (maxMagnitude < temp) maxMagnitude = temp;
+	}
+	if (maxMagnitude > 1.0)
+	{
+		for (i=0; i<kMaxNumberOfMotors; i++)
+		{
+			wheelSpeeds[i] = wheelSpeeds[i] / maxMagnitude;
+		}
+	}
+}
+
+void RobotDrive::RotateVector(double &x, double &y, double angle)
+{
+	double cosA = cos(angle * (3.14159 / 180.0));
+	double sinA = sin(angle * (3.14159 / 180.0));
+	double xOut = x * cosA - y * sinA;
+	double yOut = x * sinA + y * cosA;
+	x = xOut;
+	y = yOut;
+}
+
+void RobotDrive::SetInvertedMotor(MotorType motor, bool isInverted)
+{
+	if (motor < 0 || motor > 3)
+	{
+		//wpi_setWPIError(InvalidMotorIndex);
+		assert(false);
+		return;
+	}
+	m_invertedMotors[motor] = isInverted ? -1 : 1;
+}
+
+void RobotDrive::SetExpiration(float timeout){}
+
+float RobotDrive::GetExpiration()
+{
+	return 0.0;
+}
+
+bool RobotDrive::IsAlive()
+{
+	return true;
+}
+
+bool RobotDrive::IsSafetyEnabled()
+{
+	return true;
+}
+
+void RobotDrive::SetSafetyEnabled(bool enabled) {}
+
+void RobotDrive::GetDescription(char *desc)
+{
+	sprintf(desc, "RobotDrive");
+}
+
+void RobotDrive::StopMotor()
+{
+	if (m_frontLeftMotor != NULL) m_frontLeftMotor->Disable();
+	if (m_frontRightMotor != NULL) m_frontRightMotor->Disable();
+	if (m_rearLeftMotor != NULL) m_rearLeftMotor->Disable();
+	if (m_rearRightMotor != NULL) m_rearRightMotor->Disable();
+}
+
+
 
   /***********************************************************************************************************************************/
  /*														Control_1C_Element_UI														*/

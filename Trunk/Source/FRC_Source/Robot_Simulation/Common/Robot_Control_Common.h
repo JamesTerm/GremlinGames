@@ -133,6 +133,7 @@ private:
 	double m_LastDistance;  //keep note of last distance
 	double m_Distance;
 	double m_LastTime;
+	double m_ValueScalar;  //used to reverse direction
 };
 
 class Relay : public Control_1C_Element_UI
@@ -173,6 +174,65 @@ private:
 	bool m_enabled;
 };
 
+class COMMON_API RobotDrive
+{
+public:
+	enum MotorType
+	{
+		kFrontLeftMotor = 0,
+		kFrontRightMotor = 1,
+		kRearLeftMotor = 2,
+		kRearRightMotor = 3
+	};
+
+	RobotDrive(Victor *frontLeftMotor, Victor *rearLeftMotor,Victor *frontRightMotor, Victor *rearRightMotor);
+	RobotDrive(Victor &frontLeftMotor, Victor &rearLeftMotor,Victor &frontRightMotor, Victor &rearRightMotor);
+	virtual ~RobotDrive();
+
+	virtual void SetLeftRightMotorOutputs(float leftOutput, float rightOutput);
+	virtual void GetLeftRightMotorOutputs(float &leftOutput, float &rightOutput) //I added this one for convenience
+	{	leftOutput=m_LeftOutput,rightOutput=m_RightOutput;
+	}
+	void SetInvertedMotor(MotorType motor, bool isInverted);
+	void SetExpiration(float timeout);
+	float GetExpiration();
+	bool IsAlive();
+	void StopMotor();
+	bool IsSafetyEnabled();
+	void SetSafetyEnabled(bool enabled);
+	void GetDescription(char *desc);
+
+protected:
+	void InitRobotDrive();
+	float Limit(float num);
+	void Normalize(double *wheelSpeeds);
+	void RotateVector(double &x, double &y, double angle);
+
+	//static const int32_t kMaxNumberOfMotors = 4;
+
+	int32_t m_invertedMotors[4];
+	float m_sensitivity;
+	double m_maxOutput;
+	bool m_deleteSpeedControllers;
+	Victor *m_frontLeftMotor;
+	Victor *m_frontRightMotor;
+	Victor *m_rearLeftMotor;
+	Victor *m_rearRightMotor;
+
+private:
+	int32_t GetNumMotors()
+	{
+		int motors = 0;
+		if (m_frontLeftMotor) motors++;
+		if (m_frontRightMotor) motors++;
+		if (m_rearLeftMotor) motors++;
+		if (m_rearRightMotor) motors++;
+		return motors;
+	}
+	float m_LeftOutput,m_RightOutput;
+};
+
+
 #endif
 
 #define LUT_VALID(x) ((index<x.size()) && (x[index]!=(size_t)-1))
@@ -187,6 +247,7 @@ class COMMON_API RobotControlCommon
 		//victor methods
 		__inline double Victor_GetCurrentPorV(size_t index) {return LUT_VALID(m_VictorLUT)?m_Victors[m_VictorLUT[index]]->Get() : 0.0;}
 		__inline void Victor_UpdateVoltage(size_t index,double Voltage) {IF_LUT(m_VictorLUT) m_Victors[m_VictorLUT[index]]->Set(Voltage);}
+		__inline Victor *Victor_GetInstance(size_t index) {return LUT_VALID(m_VictorLUT)?m_Victors[m_VictorLUT[index]] : NULL;}
 
 		//solenoid methods
 		__inline void Solenoid_Open(size_t index,bool Open=true) 
@@ -201,9 +262,11 @@ class COMMON_API RobotControlCommon
 		{	return LUT_VALID(m_DoubleSolenoidLUT)?m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Get()==DoubleSolenoid::kForward : false;
 		}
 		__inline bool Solenoid_GetIsClosed(size_t index) const {return !Solenoid_GetIsOpen(index);}
+		__inline DoubleSolenoid *Solenoid_GetInstance(size_t index) {return LUT_VALID(m_DoubleSolenoidLUT)?m_DoubleSolenoids[m_DoubleSolenoidLUT[index]] : NULL;}
 
 		//digital input method
 		__inline bool BoolSensor_GetState(size_t index) {return LUT_VALID(m_DigitalInputLUT)?m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0:false;}
+		__inline DigitalInput *BoolSensor_GetInstance(size_t index) {return LUT_VALID(m_DigitalInputLUT)?m_DigitalInputs[m_DigitalInputLUT[index]] : NULL;}
 
 		//digital input encoders
 		__inline double Encoder_GetRate(size_t index) {return LUT_VALID(m_EncoderLUT)?m_Encoders[m_EncoderLUT[index]]->GetRate():0.0;}
@@ -214,8 +277,10 @@ class COMMON_API RobotControlCommon
 		__inline void Encoder_SetDistancePerPulse(size_t index,double distancePerPulse) {IF_LUT(m_EncoderLUT) m_Encoders[m_EncoderLUT[index]]->SetDistancePerPulse(distancePerPulse);}
 		__inline void Encoder_SetReverseDirection(size_t index,bool reverseDirection)   {IF_LUT(m_EncoderLUT) m_Encoders[m_EncoderLUT[index]]->SetReverseDirection(reverseDirection);}
 		#ifdef Robot_TesterCode
-		__inline void Encoder_TimeChange(size_t index,double adjustment_delta) {m_Encoders[m_EncoderLUT[index]]->TimeChange(index,adjustment_delta);}
+		__inline void Encoder_TimeChange(size_t index,double dTime_s,double adjustment_delta) {m_Encoders[m_EncoderLUT[index]]->TimeChange(dTime_s,adjustment_delta);}
 		#endif
+		__inline Encoder2 *Encoder_GetInstance(size_t index) {return LUT_VALID(m_EncoderLUT)?m_Encoders[m_EncoderLUT[index]] : NULL;}
+
 		void TranslateToRelay(size_t index,double Voltage);
 		__inline Compressor *CreateCompressor()
 		{	return new Compressor(m_Props.GetCompressorLimit(),m_Props.GetCompressorRelay());

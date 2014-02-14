@@ -38,10 +38,14 @@ MainRobot = {
 		--by default module is 1, so only really need it for 2
 		victor =
 		{
-			id_1 = { name="left_drive_3",  channel=5, module=1}, 
-			id_2 = { name="right_drive_3", channel=6},
-			id_3 = { name="winch",         channel=7}, 
-			id_4 = { name="intake_arm",    channel=8}
+			id_1 = { name= "left_drive_1", channel=1, module=1}, 
+			id_2 = { name= "left_drive_2", channel=2}, 
+			id_3 = { name= "left_drive_3", channel=5}, 
+			id_4 = { name="right_drive_1", channel=3},
+			id_5 = { name="right_drive_2", channel=4},
+			id_6 = { name="right_drive_3", channel=6},
+			id_7 = { name="winch",         channel=7}, 
+			id_8 = { name="intake_arm",    channel=8}
 		},
 		double_solenoid =
 		{
@@ -56,7 +60,9 @@ MainRobot = {
 		digital_input_encoder =
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
-			id_1 = { name="winch",  a_channel=3, b_channel=4}
+			id_1 = { name= "left_drive_1",  a_channel=1, b_channel=2},
+			id_2 = { name="right_drive_1",  a_channel=3, b_channel=4},
+			id_3 = { name="winch",  a_channel=5, b_channel=6}
 		},
 		compressor	=	{ relay=8, limit=14 }
 	},
