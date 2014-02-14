@@ -59,7 +59,6 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
-		Control_Assignment_Properties m_ControlAssignmentProps;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2014_Robot_Props m_FRC2014RobotProps;

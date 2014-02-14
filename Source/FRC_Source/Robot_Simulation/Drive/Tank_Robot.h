@@ -60,12 +60,29 @@ class Tank_Robot_UI;
 #define DRIVE_API
 #endif
 
+const char * const csz_Tank_Robot_SpeedControllerDevices_Enum[] =
+{
+	"left_drive_1","left_drive_2","right_drive_1","right_drive_2"
+};
+
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
 class DRIVE_API Tank_Robot : public Ship_Tester,
 				   public Vehicle_Drive_Common_Interface
 {
 	public:
+		enum SpeedControllerDevices
+		{
+			eLeftDrive1,
+			eLeftDrive2,
+			eRightDrive1,
+			eRightDrive2
+		};
+
+		static SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)
+		{	return Enum_GetValue<SpeedControllerDevices> (value,csz_Tank_Robot_SpeedControllerDevices_Enum,_countof(csz_Tank_Robot_SpeedControllerDevices_Enum));
+		}
+
 		Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
 		virtual ~Tank_Robot();
 		IEvent::HandlerList ehl;
@@ -156,7 +173,10 @@ class DRIVE_API Tank_Robot_Properties : public UI_Ship_Properties
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		EncoderSimulation_Props &EncoderSimulationProps() {return m_EncoderSimulation.EncoderSimulationProps();}
 		#endif
+		//note derived class will populate these properties because of where it is in the script 
+		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
 	protected:
+		Control_Assignment_Properties m_ControlAssignmentProps;
 		Tank_Robot_Props m_TankRobotProps;
 	private:
 		#ifndef Robot_TesterCode
@@ -166,7 +186,8 @@ class DRIVE_API Tank_Robot_Properties : public UI_Ship_Properties
 		#endif
 };
 
-#ifdef Robot_TesterCode
+#undef __Tank_TestControlAssignments__
+#if defined Robot_TesterCode && !defined __Tank_TestControlAssignments__
 
 class DRIVE_API Tank_Robot_Control : public Tank_Drive_Control_Interface
 {
@@ -200,5 +221,55 @@ class DRIVE_API Tank_Robot_Control : public Tank_Drive_Control_Interface
 		void InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
 		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
 };
+#else
+class DRIVE_API Tank_Robot_Control :  public RobotControlCommon, public Tank_Drive_Control_Interface
+{
+	public:
+		Tank_Robot_Control(bool UseSafety=true);
+		virtual ~Tank_Robot_Control(); 
+		void SetSafety(bool UseSafety);
 
+		virtual void Tank_Drive_Control_TimeChange(double dTime_s);
+		#ifdef Robot_TesterCode
+		double GetLeftVoltage() const {return 0.0;}
+		double GetRightVoltage() const {return 0.0;}
+		void SetDisplayVoltage(bool display) {}
+		#endif
+	protected: //from RobotControlCommon
+		virtual size_t RobotControlCommon_Get_Victor_EnumValue(const char *name) const
+		{	return Tank_Robot::GetSpeedControllerDevices_Enum(name);
+		}
+		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  	{	return -1;	}
+		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const 	{	return -1;	}
+
+	protected: //from Robot_Control_Interface
+		virtual void Reset_Encoders();
+		virtual void Initialize(const Entity_Properties *props);
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity);
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
+		__inline double RPS_To_LinearVelocity(double RPS);
+		__inline double LinearVelocity_To_RPS(double Velocity);
+	protected:
+		RobotDrive *m_RobotDrive;
+
+		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
+		double m_ArmMaxSpeed;
+		double m_dTime_s;  //Stamp the current time delta slice for other functions to use
+		
+		#ifdef __UseOwnEncoderScalar__
+		double m_EncoderLeftScalar, m_EncoderRightScalar;
+		#endif
+		Tank_Robot_Props m_TankRobotProps; //cached in the Initialize from specific robot
+		#ifdef Robot_TesterCode
+		Ship_Props m_ShipProps; //used to simulate encoder
+		#endif
+	private:
+		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
+		Averager<double,4> m_Averager_EncoderLeft, m_Averager_EncodeRight;
+	private:
+		//Used for diagnostics, but also may be used for path align information
+		void InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
+	public:
+		double Get_dTime_s() const {return m_dTime_s;}
+};
 #endif

@@ -1240,6 +1240,7 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 	Rotary_Properties turret_props=robot_props->GetTurretProps();
 	turret_props.SetUsingRange(false); //TODO why is this here?
 
+	//This one one must also be called for the lists that are specific to the robot
 	RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
 
 	//Note: RobotControlCommon_Initialize() must occur before calling any encoder startup code
@@ -1255,7 +1256,7 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifdef Robot_TesterCode
 	const Rotary_Props &rotary=m_RobotProps.GetWinchProps().GetRotaryProps();
 	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s * (1.0/rotary.EncoderToRS_Ratio);
-	Encoder_TimeChange(FRC_2014_Robot::eWinch,adjustment);
+	Encoder_TimeChange(FRC_2014_Robot::eWinch,dTime_s,adjustment);
 	#else
 		#ifdef __ShowLCD__
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
