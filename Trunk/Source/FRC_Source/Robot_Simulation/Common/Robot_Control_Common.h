@@ -175,6 +175,9 @@ private:
 
 #endif
 
+#define LUT_VALID(x) ((index<x.size()) && (x[index]!=(size_t)-1))
+#define IF_LUT(x) if ((index<x.size()) && (x[index]!=(size_t)-1))
+
 class COMMON_API RobotControlCommon
 {
 	public:
@@ -182,32 +185,34 @@ class COMMON_API RobotControlCommon
 		virtual ~RobotControlCommon();
 
 		//victor methods
-		__inline double Victor_GetCurrentPorV(size_t index) {return m_Victors[m_VictorLUT[index]]->Get();}
-		__inline void Victor_UpdateVoltage(size_t index,double Voltage) {m_Victors[m_VictorLUT[index]]->Set(Voltage);}
+		__inline double Victor_GetCurrentPorV(size_t index) {return LUT_VALID(m_VictorLUT)?m_Victors[m_VictorLUT[index]]->Get() : 0.0;}
+		__inline void Victor_UpdateVoltage(size_t index,double Voltage) {IF_LUT(m_VictorLUT) m_Victors[m_VictorLUT[index]]->Set(Voltage);}
 
 		//solenoid methods
 		__inline void Solenoid_Open(size_t index,bool Open=true) 
-		{	DoubleSolenoid::Value value=Open ? DoubleSolenoid::kForward : DoubleSolenoid::kReverse;
-			m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Set(value);
+		{	IF_LUT(m_DoubleSolenoidLUT)
+			{
+				DoubleSolenoid::Value value=Open ? DoubleSolenoid::kForward : DoubleSolenoid::kReverse;
+				m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Set(value);
+			}
 		}
 		__inline void Solenoid_Close(size_t index,bool Close=true) {Solenoid_Open(index,!Close);}
 		__inline bool Solenoid_GetIsOpen(size_t index) const 
-		{	return m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Get()==DoubleSolenoid::kForward;
+		{	return LUT_VALID(m_DoubleSolenoidLUT)?m_DoubleSolenoids[m_DoubleSolenoidLUT[index]]->Get()==DoubleSolenoid::kForward : false;
 		}
 		__inline bool Solenoid_GetIsClosed(size_t index) const {return !Solenoid_GetIsOpen(index);}
 
 		//digital input method
-		__inline bool BoolSensor_GetState(size_t index) {return m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0;}
+		__inline bool BoolSensor_GetState(size_t index) {return LUT_VALID(m_DigitalInputLUT)?m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0:false;}
 
-		__inline double Encoder_GetRate(size_t index) {return m_Encoders[m_EncoderLUT[index]]->GetRate();}
-		__inline double Encoder_GetDistance(size_t index) {return m_Encoders[m_EncoderLUT[index]]->GetDistance();}
-		__inline void Encoder_Start(size_t index) { m_Encoders[m_EncoderLUT[index]]->Start();}
-		__inline void Encoder_Stop(size_t index) { m_Encoders[m_EncoderLUT[index]]->Stop();}
-		__inline void Encoder_Reset(size_t index) 
-		{	if ((index<m_EncoderLUT.size()) && (m_EncoderLUT[index]!=(size_t)-1)) 	m_Encoders[m_EncoderLUT[index]]->Reset();
-		}
-		__inline void Encoder_SetDistancePerPulse(size_t index,double distancePerPulse) {m_Encoders[m_EncoderLUT[index]]->SetDistancePerPulse(distancePerPulse);}
-		__inline void Encoder_SetReverseDirection(size_t index,bool reverseDirection) {m_Encoders[m_EncoderLUT[index]]->SetReverseDirection(reverseDirection);}
+		//digital input encoders
+		__inline double Encoder_GetRate(size_t index) {return LUT_VALID(m_EncoderLUT)?m_Encoders[m_EncoderLUT[index]]->GetRate():0.0;}
+		__inline double Encoder_GetDistance(size_t index) {return LUT_VALID(m_EncoderLUT)?m_Encoders[m_EncoderLUT[index]]->GetDistance():0.0;}
+		__inline void Encoder_Start(size_t index) { IF_LUT(m_EncoderLUT) m_Encoders[m_EncoderLUT[index]]->Start();}
+		__inline void Encoder_Stop(size_t index)  { IF_LUT(m_EncoderLUT) m_Encoders[m_EncoderLUT[index]]->Stop();}
+		__inline void Encoder_Reset(size_t index) {	IF_LUT(m_EncoderLUT) m_Encoders[m_EncoderLUT[index]]->Reset();}
+		__inline void Encoder_SetDistancePerPulse(size_t index,double distancePerPulse) {IF_LUT(m_EncoderLUT) m_Encoders[m_EncoderLUT[index]]->SetDistancePerPulse(distancePerPulse);}
+		__inline void Encoder_SetReverseDirection(size_t index,bool reverseDirection)   {IF_LUT(m_EncoderLUT) m_Encoders[m_EncoderLUT[index]]->SetReverseDirection(reverseDirection);}
 		#ifdef Robot_TesterCode
 		__inline void Encoder_TimeChange(size_t index,double adjustment_delta) {m_Encoders[m_EncoderLUT[index]]->TimeChange(index,adjustment_delta);}
 		#endif
