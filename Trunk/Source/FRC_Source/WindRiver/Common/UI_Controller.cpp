@@ -517,6 +517,7 @@ void UI_Controller::Ship_Turn(double dir,bool UseHeadingSpeed)
 	m_Ship_JoyMouse_rotAcc_rad_s=(UseHeadingSpeed?dir*m_ship->GetHeadingSpeed():dir)*m_ship->GetCameraRestraintScaler();
 }
 
+#define __TWEAK180__
 void UI_Controller::Ship_Turn(Directions dir)
 {
 	switch (dir)
@@ -536,7 +537,14 @@ void UI_Controller::Ship_Turn(Directions dir)
 			m_Ship_UseHeadingSpeed=false;
 			break;
 		case Dir_180:
+			#ifdef __TWEAK180__
+			struct SetUp { SetUp() {SmartDashboard::PutNumber("Tweak180",180.0);} };
+			static SetUp init;
+			const double TurnAmount=SmartDashboard::GetNumber("Tweak180");
+			m_ship->SetIntendedOrientation(DEG_2_RAD(TurnAmount),false);
+			#else
 			m_ship->SetIntendedOrientation(Pi,false);
+			#endif
 			m_Ship_UseHeadingSpeed=false;
 			break;
 	}
