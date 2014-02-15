@@ -59,7 +59,6 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
-		Control_Assignment_Properties m_ControlAssignmentProps;
 		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2014_Robot_Props m_FRC2014RobotProps;
@@ -388,7 +387,7 @@ class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Contro
 	protected: //from Tank_Drive_Control_Interface
 		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
 		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
+		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
 		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
 	protected: //from Rotary Interface
 		virtual void Reset_Rotary(size_t index=0); 

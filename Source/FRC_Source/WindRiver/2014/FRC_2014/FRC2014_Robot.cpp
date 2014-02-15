@@ -1168,12 +1168,13 @@ void FRC_2014_Robot_Control::ResetPos()
 {
 	//Enable this code if we have a compressor 
 	m_Compressor->Stop();
+	printf("RobotControl::ResetPos Compressor->Stop()\n");
 	#ifndef Robot_TesterCode
 	//Allow driver station to control if they want to run the compressor
 	if (DriverStation::GetInstance()->GetDigitalIn(8))
 	#endif
 	{
-		printf("RobotControl reset compressor\n");
+		printf("RobotControl::ResetPos Compressor->Start()\n");
 		m_Compressor->Start();
 	}
 }
@@ -1239,6 +1240,7 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 	Rotary_Properties turret_props=robot_props->GetTurretProps();
 	turret_props.SetUsingRange(false); //TODO why is this here?
 
+	//This one one must also be called for the lists that are specific to the robot
 	RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
 
 	//Note: RobotControlCommon_Initialize() must occur before calling any encoder startup code
@@ -1254,7 +1256,7 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifdef Robot_TesterCode
 	const Rotary_Props &rotary=m_RobotProps.GetWinchProps().GetRotaryProps();
 	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s * (1.0/rotary.EncoderToRS_Ratio);
-	Encoder_TimeChange(FRC_2014_Robot::eWinch,adjustment);
+	Encoder_TimeChange(FRC_2014_Robot::eWinch,dTime_s,adjustment);
 	#else
 		#ifdef __ShowLCD__
 			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
@@ -1263,6 +1265,21 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#endif
 }
 
+void FRC_2014_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
+{
+	const Tank_Robot_Props &TankRobotProps=m_RobotProps.GetTankRobotProps();
+	if (!TankRobotProps.ReverseSteering)
+	{
+		Victor_UpdateVoltage(FRC_2014_Robot::eLeftDrive3,(float)LeftVoltage * TankRobotProps.VoltageScalar_Left);
+		Victor_UpdateVoltage(FRC_2014_Robot::eRightDrive3,-(float)RightVoltage * TankRobotProps.VoltageScalar_Right);
+	}
+	else
+	{
+		Victor_UpdateVoltage(FRC_2014_Robot::eLeftDrive3,(float)RightVoltage * TankRobotProps.VoltageScalar_Right);
+		Victor_UpdateVoltage(FRC_2014_Robot::eRightDrive3,-(float)LeftVoltage * TankRobotProps.VoltageScalar_Left);
+	}
+	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+}
 
 double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 {
