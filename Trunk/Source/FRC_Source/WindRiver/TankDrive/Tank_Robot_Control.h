@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 //TODO this may be omitted once we confirm encoder directions are working properly
 #undef __UseOwnEncoderScalar__
@@ -43,3 +44,4 @@ class Tank_Robot_Control : public Tank_Drive_Control_Interface
 	public:
 		double Get_dTime_s() const {return m_dTime_s;}
 };
+#endif
