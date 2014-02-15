@@ -169,7 +169,7 @@ __inline void Initialize_1C_LUT(const Control_Assignment_Properties::Controls_1C
 		//ensure this name exists in the list
 		size_t enumIndex=(instance->*delegate)(element.name.c_str());
 		//The name may not exist in this list (it may be a name specific to the robot)... in which case there is no work to do
-		if (enumIndex==-1)
+		if (enumIndex==(size_t)-1)
 			continue;
 		//create the new Control
 		#ifdef Robot_TesterCode
@@ -201,7 +201,7 @@ __inline void Initialize_2C_LUT(const Control_Assignment_Properties::Controls_2C
 		//ensure this name exists in the list
 		size_t enumIndex=(instance->*delegate)(element.name.c_str());
 		//The name may not exist in this list (it may be a name specific to the robot)... in which case there is no work to do
-		if (enumIndex==-1)
+		if (enumIndex==(size_t)-1)
 			continue;
 		//create the new Control
 		#ifdef Robot_TesterCode
