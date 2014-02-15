@@ -35,7 +35,6 @@ class SetUp_Manager
 			m_JoyBinder(m_Joystick),m_Control(UseSafety),m_pRobot(NULL),m_pUI(NULL)
 		{
 			SmartDashboard::init();
-			m_Control.AsControlInterface().Initialize(&m_RobotProps);
 			m_pRobot = new FRC_2014_Robot("FRC2014_Robot",&m_Control,UseEncoders);
 			{
 				Framework::Scripting::Script script;
@@ -46,6 +45,9 @@ class SetUp_Manager
 				m_Joystick.SetSlotList(m_RobotProps.Get_RobotControls().GetDriverStation_SlotList());
 				m_pRobot->Initialize(m_EventMap,&m_RobotProps);
 			}
+			//The script must be loaded before initializing control since the wiring assignments are set there
+			m_Control.AsControlInterface().Initialize(&m_RobotProps);
+
 			//Bind the ship's eventmap to the joystick
 			m_JoyBinder.SetControlledEventMap(m_pRobot->GetEventMap());
 
