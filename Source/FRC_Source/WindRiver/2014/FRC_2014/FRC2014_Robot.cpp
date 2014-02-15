@@ -1233,22 +1233,28 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 	tank_interface->Initialize(props);
 
 	const FRC_2014_Robot_Properties *robot_props=dynamic_cast<const FRC_2014_Robot_Properties *>(props);
-	assert(robot_props);
+	//TODO this is to be changed to an assert once we handle low gear properly
+	if (robot_props)
+	{
+		m_RobotProps=*robot_props;  //save a copy
+
+		Rotary_Properties turret_props=robot_props->GetTurretProps();
+		turret_props.SetUsingRange(false); //TODO why is this here?		
+	}
 	
-	m_RobotProps=*robot_props;  //save a copy
+	//Note: Initialize may be called multiple times so we'll only set this stuff up on first run
+	if (!m_Compressor)
+	{
+		//This one one must also be called for the lists that are specific to the robot
+		RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());		
+		m_Compressor=CreateCompressor();
+		//Note: RobotControlCommon_Initialize() must occur before calling any encoder startup code
+		const double EncoderPulseRate=(1.0/360.0);
+		Encoder_SetDistancePerPulse(FRC_2014_Robot::eWinch,EncoderPulseRate);
+		Encoder_Start(FRC_2014_Robot::eWinch);
+		ResetPos(); //must be called after compressor is created
+	}
 
-	Rotary_Properties turret_props=robot_props->GetTurretProps();
-	turret_props.SetUsingRange(false); //TODO why is this here?
-
-	//This one one must also be called for the lists that are specific to the robot
-	RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
-
-	//Note: RobotControlCommon_Initialize() must occur before calling any encoder startup code
-	const double EncoderPulseRate=(1.0/360.0);
-	Encoder_SetDistancePerPulse(FRC_2014_Robot::eWinch,EncoderPulseRate);
-	Encoder_Start(FRC_2014_Robot::eWinch);
-	m_Compressor=CreateCompressor();
-	ResetPos(); //must be called after compressor is created
 }
 
 void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
