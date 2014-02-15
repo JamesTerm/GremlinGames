@@ -927,13 +927,12 @@ void Tank_Robot_Control::SetSafety(bool UseSafety)
 		m_RobotDrive->SetSafetyEnabled(false);
 }
 
-Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) : m_RobotDrive(NULL),m_dTime_s(0.0)
+Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) : m_RobotDrive(NULL),m_dTime_s(0.0),m_UseSafety(UseSafety)
 	#ifdef __UseOwnEncoderScalar__
 	,m_EncoderLeftScalar(1.0),m_EncoderRightScalar(1.0)
 	#endif
 {
 	//ResetPos();  may need this later
-	SetSafety(UseSafety);
 	const double EncoderPulseRate=(1.0/360.0);
 	Encoder_SetDistancePerPulse(Tank_Robot::eLeftDrive1,EncoderPulseRate),Encoder_SetDistancePerPulse(Tank_Robot::eRightDrive1,EncoderPulseRate);
 	Encoder_Start(Tank_Robot::eLeftDrive1),Encoder_Start(Tank_Robot::eRightDrive1);
@@ -958,10 +957,14 @@ void Tank_Robot_Control::Reset_Encoders()
 void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const Tank_Robot_Properties *robot_props=static_cast<const Tank_Robot_Properties *>(props);
-	RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
-	m_RobotDrive = new RobotDrive(Victor_GetInstance(Tank_Robot::eLeftDrive1),Victor_GetInstance(Tank_Robot::eLeftDrive2),
-		Victor_GetInstance(Tank_Robot::eRightDrive1),Victor_GetInstance(Tank_Robot::eRightDrive2));
-
+	//Note: Initialize may be called multiple times so we'll only set this stuff up on first run
+	if (!m_RobotDrive)
+	{
+		RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
+		m_RobotDrive = new RobotDrive(Victor_GetInstance(Tank_Robot::eLeftDrive1),Victor_GetInstance(Tank_Robot::eLeftDrive2),
+			Victor_GetInstance(Tank_Robot::eRightDrive1),Victor_GetInstance(Tank_Robot::eRightDrive2));
+		SetSafety(m_UseSafety);
+	}
 	assert(robot_props);
 	m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
 	//This will copy all the props
