@@ -21,7 +21,7 @@
 #include "../Common/PIDController.h"
 #include "../Common/Poly.h"
 #include "../Common/AI_Base_Controller.h"
-#include "Tank_Robot.h"
+
 #include "../Base/Joystick.h"
 #include "../Base/JoystickBinder.h"
 #include "../Common/InOut_Interface.h"
@@ -31,6 +31,8 @@
 #include "../Common/PIDController.h"
 #include "../Common/InOut_Interface.h"
 #include "../Common/Debug.h"
+#include "../Common/Robot_Control_Common.h"
+#include "Tank_Robot.h"
 
 #ifdef __UsingTestingKit__
 
