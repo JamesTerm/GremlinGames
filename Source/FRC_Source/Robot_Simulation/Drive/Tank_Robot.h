@@ -239,8 +239,8 @@ class DRIVE_API Tank_Robot_Control :  public RobotControlCommon, public Tank_Dri
 		virtual size_t RobotControlCommon_Get_Victor_EnumValue(const char *name) const
 		{	return Tank_Robot::GetSpeedControllerDevices_Enum(name);
 		}
-		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  	{	return -1;	}
-		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const 	{	return -1;	}
+		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  	{	return (size_t)-1;	}
+		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const 	{	return (size_t)-1;	}
 
 	protected: //from Robot_Control_Interface
 		virtual void Reset_Encoders();
@@ -266,6 +266,7 @@ class DRIVE_API Tank_Robot_Control :  public RobotControlCommon, public Tank_Dri
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 		Averager<double,4> m_Averager_EncoderLeft, m_Averager_EncodeRight;
+		const bool m_UseSafety;
 	private:
 		//Used for diagnostics, but also may be used for path align information
 		void InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
