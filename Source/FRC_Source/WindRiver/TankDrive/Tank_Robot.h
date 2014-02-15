@@ -266,6 +266,7 @@ class DRIVE_API Tank_Robot_Control :  public RobotControlCommon, public Tank_Dri
 	private:
 		KalmanFilter m_KalFilter_Arm,m_KalFilter_EncodeLeft,m_KalFilter_EncodeRight;
 		Averager<double,4> m_Averager_EncoderLeft, m_Averager_EncodeRight;
+		const bool m_UseSafety;
 	private:
 		//Used for diagnostics, but also may be used for path align information
 		void InterpolateVelocities(double LeftLinearVelocity,double RightLinearVelocity,Vec2D &LocalVelocity,double &AngularVelocity,double dTime_s);
