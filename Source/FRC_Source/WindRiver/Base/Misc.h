@@ -219,7 +219,7 @@ template<class T>
 __inline T Enum_GetValue(const char *value,const char * const Table[],size_t NoItems)
 {
 	//assert(value);  //If this fails... somebody forgot to enter a value 
-	T ret=(T) 0;
+	T ret=(T) -1;
 	for (size_t i=0;i<NoItems;i++)
 	{
 		if (strcmp(value,Table[i])==0)
