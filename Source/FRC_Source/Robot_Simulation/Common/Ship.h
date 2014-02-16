@@ -280,7 +280,7 @@ class COMMON_API Ship_2D : public Ship
 		void SetCurrentAngularAcceleration(double Acceleration,bool LockShipHeadingToOrientation);
 		///This is used by AI controller (this will have LockShipHeadingToOrientation set to false)
 		///This allows setting the desired heading directly either relative to the current heading or absolute
-		void SetIntendedOrientation(double IntendedOrientation,bool Absolute=true);
+		virtual void SetIntendedOrientation(double IntendedOrientation,bool Absolute=true);
 
 		/// This is where both the vehicle entity and camera need to align to
 		virtual const double &GetIntendedOrientation() const {return m_IntendedOrientation;}
