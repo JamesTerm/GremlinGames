@@ -130,6 +130,7 @@ void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties
 	m_TankRobotProps=RobotProps->GetTankRobotProps();
 	m_VoltagePoly.Initialize(&m_TankRobotProps.Voltage_Terms);
 	m_ForcePoly.Initialize(&m_TankRobotProps.Force_Terms);
+	m_OrientationPoly.Initialize(&m_TankRobotProps.Orientation_Terms);
 	m_PIDController_Left.SetPID(m_TankRobotProps.LeftPID[0],m_TankRobotProps.LeftPID[1],m_TankRobotProps.LeftPID[2]);
 	m_PIDController_Right.SetPID(m_TankRobotProps.RightPID[0],m_TankRobotProps.RightPID[1],m_TankRobotProps.RightPID[2]);
 
@@ -550,6 +551,12 @@ void Tank_Robot::SetAttitude(double radians)
 	m_Heading=radians;
 	__super::SetAttitude(radians);
 }
+void Tank_Robot::SetIntendedOrientation(double IntendedOrientation,bool Absolute)
+{
+	const double OrientationScalar=m_OrientationPoly(fabs(NormalizeRotation2(IntendedOrientation))/Pi);
+	//SmartDashboard::PutNumber("TestOrientation",RAD_2_DEG(IntendedOrientation * OrientationScalar));
+	__super::SetIntendedOrientation(IntendedOrientation * OrientationScalar,Absolute);
+}
 
 void Tank_Robot::UpdateTankProps(const Tank_Robot_Props &TankProps)
 {
@@ -599,6 +606,9 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.ReverseSteering=false;
 	props.Voltage_Terms.Init();
 	props.Force_Terms.Init();
+	props.Orientation_Terms.Init();
+	props.Orientation_Terms.Term[0]=1.0;
+	props.Orientation_Terms.Term[1]=0.0;
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
@@ -731,6 +741,7 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 
 		m_TankRobotProps.Voltage_Terms.LoadFromScript(script,"curve_voltage");
 		m_TankRobotProps.Force_Terms.LoadFromScript(script,"force_voltage");
+		m_TankRobotProps.Orientation_Terms.LoadFromScript(script,"turning_adjustment");
 
 		script.GetField("inv_max_accel", NULL, NULL, &m_TankRobotProps.InverseMaxAccel_Left);
 		m_TankRobotProps.InverseMaxAccel_Right=m_TankRobotProps.InverseMaxAccel_Left;
