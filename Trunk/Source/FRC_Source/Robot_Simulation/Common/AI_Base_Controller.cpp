@@ -6,6 +6,7 @@ using namespace GG_Framework::Base;
 using namespace osg;
 
 const double Pi2=M_PI*2.0;
+const double Pi=M_PI;
 
   /***********************************************************************************************************************************/
  /*														LUA_Controls_Properties														*/
@@ -468,8 +469,12 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 			m_ship.SetIntendedOrientation(lookDir_radians);
 		else
 		{
-			//Using a half pi normalization will allow it to use reverse whenever it is more efficient to do so
-			m_ship.SetIntendedOrientation(NormalizeRotation_HalfPi(lookDir_radians));
+			//evaluate delta offset to see if we want to use the reverse absolute position
+			const double OrientationDelta=lookDir_radians-m_ship.GetAtt_r();
+			double orientation_to_use=lookDir_radians;
+			if (fabs(OrientationDelta)>PI_2)
+				orientation_to_use=NormalizeRotation_HalfPi(lookDir_radians);
+			m_ship.SetIntendedOrientation(orientation_to_use);
 		}
 		#endif
 	}

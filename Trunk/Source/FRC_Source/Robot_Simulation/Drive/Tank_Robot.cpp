@@ -323,6 +323,7 @@ void Tank_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Tank_Drive_Control_TimeChange(dTime_s);
+	//SmartDashboard::PutNumber("TestTankHeading",m_Heading);
 	__super::TimeChange(dTime_s);
 }
 
@@ -366,6 +367,7 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 		{
 			m_Heading+=RotationDisplacement;  // else always pull heading from the injected displacement (always in sync with entity)
 		}
+		NormalizeRotation(m_Heading);
 		//We must set this back so that the PID can compute the entire error
 		m_Physics.SetLinearVelocity(computedVelocity);
 		m_Physics.SetAngularVelocity(computedAngularVelocity);
@@ -518,6 +520,7 @@ void Tank_Robot::ResetPos()
 {
 	m_VehicleDrive->ResetPos();
 	__super::ResetPos();
+	m_Heading=GetAtt_r();
 }
 
 void Tank_Robot::SetAttitude(double radians)

@@ -639,17 +639,17 @@ void FRC_2014_Robot::Robot_TestWaypoint(bool on)
 			//Construct a way point
 			WayPoint wp;
 			const Vec2d &pos=GetPos_m();
-			const Vec2d Global_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
-			const Vec2d Local_GoalTarget=GlobalToLocal(-GetAtt_r(),Global_GoalTarget);
-			wp.Position=Local_GoalTarget+pos;
+			const Vec2d Local_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
+			const Vec2d Global_GoalTarget=LocalToGlobal(GetAtt_r(),Local_GoalTarget);
+			wp.Position=Global_GoalTarget+pos;
 			wp.Power=1.0;
 			//Now to setup the goal
 			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,false,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
 			//set the trajectory point
-			double lookDir_radians= atan2(Global_GoalTarget[0],Global_GoalTarget[1]);
-			const Vec2d GlobalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
-			const Vec2D  LocalTrajectoryOffset=GlobalToLocal(-GetAtt_r(),GlobalTrajectoryOffset);
-			goal_drive->SetTrajectoryPoint(Local_GoalTarget+LocalTrajectoryOffset);
+			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
+			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
+			const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(GetAtt_r(),LocalTrajectoryOffset);
+			goal_drive->SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
 			SetGoal(goal_drive);
 		}
 	}
