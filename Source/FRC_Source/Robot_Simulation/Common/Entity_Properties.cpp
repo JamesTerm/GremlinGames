@@ -22,6 +22,7 @@ Entity1D_Properties::Entity1D_Properties(const char EntityName[],double Mass,dou
 	m_Mass=Mass;
 	m_Dimension=Dimension;
 	m_IsAngular=IsAngular;
+	m_StartingPosition=0.0;
 }
 
 void Entity1D_Properties::LoadFromScript(Scripting::Script& script)
