@@ -23,8 +23,8 @@ Intake_PotentiometerToArmRatio=1.0
 Intake_PotentiometerToMotorRatio=Intake_PotentiometerToArmRatio * Intake_ArmToMotorRatio
 
 g_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
-WheelBase_Width_In=22.3125	  --The wheel base will determine the turn rate, must be as accurate as possible!
-WheelBase_Length_In=12.5
+WheelBase_Width_In=22.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelBase_Length_In=13
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (427.68 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
 LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
@@ -38,18 +38,19 @@ MainRobot = {
 		--by default module is 1, so only really need it for 2
 		victor =
 		{
-			id_1 = { name= "left_drive_1", channel=1, module=1}, 
-			id_2 = { name= "left_drive_2", channel=2}, 
-			--id_3 = { name= "left_drive_3", channel=5}, 
-			id_4 = { name="right_drive_1", channel=3},
-			id_5 = { name="right_drive_2", channel=4},
+			id_1 = { name= "left_drive_1", channel=3, module=1}, 
+			id_2 = { name= "left_drive_2", channel=4}, 
+			id_3 = { name="right_drive_1", channel=1},
+			id_4 = { name="right_drive_2", channel=2},
+			--id_5 = { name= "left_drive_3", channel=5}, 
 			--id_6 = { name="right_drive_3", channel=6},
 			--id_7 = { name="winch",         channel=7}, 
 			--id_8 = { name="intake_arm",    channel=8}
 		},
 		double_solenoid =
 		{
-			id_1 = { name="use_low_gear",   forward_channel=1, reverse_channel=2},
+			--Grrrr why is this on 4?
+			id_1 = { name="use_low_gear",   forward_channel=1, reverse_channel=4},
 			--id_2 = { name="release_clutch", forward_channel=3, reverse_channel=4}
 		},
 		digital_input =
@@ -60,12 +61,13 @@ MainRobot = {
 		digital_input_encoder =
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
-			--id_1 = { name="winch",  a_channel=3, b_channel=4}
+			id_1 = { name= "left_drive_1",  a_channel=1, b_channel=2},
+			id_2 = { name="right_drive_1",  a_channel=3, b_channel=4},
 		},
 		compressor	=	{ relay=8, limit=14 }
 	},
 	--Version helps to identify a positive update to lua
-	version = 1.0;
+	version = 1.2;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -109,6 +111,8 @@ MainRobot = {
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		force_voltage=
 		{t4=0, t3=0, t2=0, t1=0, c=1},
+		turning_adjustment=
+		{t4=0, t3=-1.1156, t2=3.9877, t1=-4.4098, c=2.043},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
@@ -371,15 +375,16 @@ MainRobot = {
 		Joystick_3 =
 		{
 			control = "gamepad f310 (controller)",
-			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			--Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Turret_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 			
+			Turn_180 = {type="joystick_button", key=1, on_off=false},
 			--Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
 			--Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
 			--Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
