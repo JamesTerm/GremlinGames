@@ -609,11 +609,17 @@ Goal_Ship_MoveToPosition::Goal_Ship_MoveToPosition(AI_Base_Controller *controlle
 	bool LockOrientation,double safestop_tolerance) : m_Point(waypoint), m_Controller(controller),
 	m_ship(controller->GetShip()),m_SafeStopTolerance(safestop_tolerance),m_Terminate(false),m_UseSafeStop(UseSafeStop),m_LockOrientation(LockOrientation)
 {
+	m_TrajectoryPoint=waypoint.Position;  //set it for default
 	m_Status=eInactive;
 }
 Goal_Ship_MoveToPosition::~Goal_Ship_MoveToPosition()
 {
 	Terminate(); //more for completion
+}
+
+void Goal_Ship_MoveToPosition::SetTrajectoryPoint(const Vec2D &TrajectoryPoint)
+{
+	m_TrajectoryPoint=TrajectoryPoint;
 }
 
 void Goal_Ship_MoveToPosition::Activate() 
@@ -654,7 +660,7 @@ Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
 		if (!HitWayPoint())
 		{
 			Vec2d Temp(0,0);
-			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &Temp:NULL,m_LockOrientation);
+			m_Controller->DriveToLocation(m_TrajectoryPoint , m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &Temp:NULL,m_LockOrientation);
 		}
 		else
 		{

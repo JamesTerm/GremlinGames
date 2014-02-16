@@ -578,6 +578,7 @@ void UI_Controller::TryToggleAutoPilot()
 
 bool UI_Controller::SetAutoPilot(bool autoPilot)
 {
+	SmartDashboard::PutBoolean("AutoPilot",autoPilot);
 	// Note that Autopilot MUST be on if the ship is not being controlled
 	m_autoPilot = autoPilot || !m_isControlled || !m_Base->GetCanUserPilot();
 
