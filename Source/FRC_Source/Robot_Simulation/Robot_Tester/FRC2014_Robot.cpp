@@ -25,7 +25,6 @@ using namespace Framework::Base;
 using namespace std;
 #endif
 
-
 #define __DisableEncoderTracking__
 //Enable this to send remote coordinate to network variables to manipulate a shape for tracking
 #define __EnableShapeTrackingSimulation__
@@ -577,6 +576,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_BallTargeting"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargeting);
 		em->Event_Map["Robot_BallTargeting_On"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargetingOn);
 		em->Event_Map["Robot_BallTargeting_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargetingOff);
+		em->EventOnOff_Map["Robot_TestWaypoint"].Subscribe(ehl, *this, &FRC_2014_Robot::Robot_TestWaypoint);
 	}
 	else
 	{
@@ -588,6 +588,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_BallTargeting"]  .Remove(*this, &FRC_2014_Robot::SetBallTargeting);
 		em->Event_Map["Robot_BallTargeting_On"]  .Remove(*this, &FRC_2014_Robot::SetBallTargetingOn);
 		em->Event_Map["Robot_BallTargeting_Off"]  .Remove(*this, &FRC_2014_Robot::SetBallTargetingOff);
+		em->EventOnOff_Map["Robot_TestWaypoint"]  .Remove(*this, &FRC_2014_Robot::Robot_TestWaypoint);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
@@ -619,6 +620,49 @@ void FRC_2014_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAccelerat
 		AngularAcceleration+=TurretAcceleration;
 		const double PitchVelocity=m_PitchRamp.GetCurrentVelocity()*GetEngaged_Max_Speed();
 		AuxVelocity+=PitchVelocity;
+	}
+}
+
+void FRC_2014_Robot::Robot_TestWaypoint(bool on)
+{
+	if (on)
+	{
+		if (!GetGoal())
+		{
+			m_controller->GetUIController_RW()->SetAutoPilot(true);
+			static size_t FirstRun=0;
+			if (FirstRun++==0)
+			{
+				SmartDashboard::PutNumber("Waypoint_x",0.0);
+				SmartDashboard::PutNumber("Waypoint_y",3.0);
+			}
+			//Construct a way point
+			WayPoint wp;
+			const Vec2d &pos=GetPos_m();
+			const Vec2d Global_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
+			const Vec2d Local_GoalTarget=GlobalToLocal(-GetAtt_r(),Global_GoalTarget);
+			wp.Position=Local_GoalTarget+pos;
+			wp.Power=1.0;
+			//Now to setup the goal
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,false,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
+			//set the trajectory point
+			double lookDir_radians= atan2(Global_GoalTarget[0],Global_GoalTarget[1]);
+			const Vec2d GlobalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
+			const Vec2D  LocalTrajectoryOffset=GlobalToLocal(-GetAtt_r(),GlobalTrajectoryOffset);
+			goal_drive->SetTrajectoryPoint(Local_GoalTarget+LocalTrajectoryOffset);
+			SetGoal(goal_drive);
+		}
+	}
+	else
+	{
+		//if we had a goal clear it
+		if (GetGoal())
+		{
+			m_controller->GetUIController_RW()->SetAutoPilot(false);
+			ClearGoal();
+			GetController()->SetShipVelocity(0.0);
+			SetGoal(NULL);
+		}
 	}
 }
 
@@ -758,7 +802,8 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"Robot_SetDriverOverride",
 	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance",
 	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
-	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off"
+	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
+	"Robot_TestWaypoint"
 };
 
 const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const

@@ -108,6 +108,8 @@ class COMMON_API Goal_Ship_MoveToPosition : public AtomicGoal
 		Goal_Ship_MoveToPosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true,
 				bool LockOrientation=false,double safestop_tolerance=0.03);
 		~Goal_Ship_MoveToPosition();
+		//optionally set the trajectory point... it is the same as the waypoint by default
+		void SetTrajectoryPoint(const Vec2D &TrajectoryPoint);
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate();
@@ -118,6 +120,7 @@ class COMMON_API Goal_Ship_MoveToPosition : public AtomicGoal
 
 	private:
 		WayPoint m_Point;
+		Vec2D m_TrajectoryPoint;
 		AI_Base_Controller * const m_Controller;
 		Ship_2D &m_ship;
 		double m_SafeStopTolerance;

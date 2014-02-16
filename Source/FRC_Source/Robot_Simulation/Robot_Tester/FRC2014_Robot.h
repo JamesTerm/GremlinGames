@@ -272,6 +272,8 @@ class FRC_2014_Robot : public Tank_Robot
 		void SetBallTargeting_Off(bool off) {SetBallTargeting(!off);}
 		void SetBallTargetingOn() {SetBallTargeting(true);}
 		void SetBallTargetingOff() {SetBallTargeting(false);}
+
+		void Robot_TestWaypoint(bool on);
 };
 
 class FRC_2014_Goals
@@ -323,7 +325,7 @@ class FRC_2014_Goals
 		};
 };
 
-#define __TestControlAssignments__
+#undef __TestControlAssignments__
 #if defined Robot_TesterCode && !defined __TestControlAssignments__
 
 class FRC_2014_Robot_Control : public FRC_2014_Control_Interface

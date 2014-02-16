@@ -575,7 +575,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.HasEncoders=true;  //no harm in having passive reading of them
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is usually in coast for most cases from many teams
-	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.PrecisionTolerance=Inches2Meters(6);  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
 	props.ReverseSteering=false;
 	props.Voltage_Terms.Init();
