@@ -41,6 +41,7 @@ struct Tank_Robot_Props
 	//Currently supporting 4 terms in polynomial equation
 	PolynomialEquation_forth_Props Voltage_Terms;  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 	PolynomialEquation_forth_Props Force_Terms;
+	PolynomialEquation_forth_Props Orientation_Terms;
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel_Left,InverseMaxAccel_Right;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
@@ -123,7 +124,8 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 
 		static void InitNetworkProperties(const Tank_Robot_Props &props,const Ship_Props &ship_props);  //This will GetVariables of all properties needed to tweak PID and gain assists
 		static void NetworkEditProperties(Tank_Robot_Props &props,Ship_Props &ship_props);  //This will GetVariables of all properties needed to tweak PID and gain assists
-
+		//This adds ability to tune the turning
+		virtual void SetIntendedOrientation(double IntendedOrientation,bool Absolute=true);
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		//Note by default a 6WD Tank Robot is assumed to set length for a 4WD (or half the total length of 6)
@@ -153,7 +155,7 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 		double m_HeadingUpdateTimer;
 		double m_PreviousLeftVelocity,m_PreviousRightVelocity; //used to compute acceleration
 		Tank_Steering m_TankSteering;  //adding controls for tank steering
-		PolynomialEquation_forth m_VoltagePoly,m_ForcePoly;
+		PolynomialEquation_forth m_VoltagePoly,m_ForcePoly,m_OrientationPoly;
 	public:
 		double GetLeftVelocity() const {return m_VehicleDrive->GetLeftVelocity();}
 		double GetRightVelocity() const {return m_VehicleDrive->GetRightVelocity();}
