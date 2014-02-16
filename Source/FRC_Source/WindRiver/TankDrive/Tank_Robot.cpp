@@ -35,6 +35,7 @@ using namespace osg;
 using namespace std;
 
 const double Pi2=M_PI*2.0;
+const double Pi=M_PI;
 #else
 using namespace Framework::Base;
 using namespace std;
@@ -349,6 +350,7 @@ void Tank_Robot::TimeChange(double dTime_s)
 {
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Tank_Drive_Control_TimeChange(dTime_s);
+	//SmartDashboard::PutNumber("TestTankHeading",m_Heading);
 	__super::TimeChange(dTime_s);
 }
 
@@ -392,6 +394,7 @@ bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplaceme
 		{
 			m_Heading+=RotationDisplacement;  // else always pull heading from the injected displacement (always in sync with entity)
 		}
+		NormalizeRotation(m_Heading);
 		//We must set this back so that the PID can compute the entire error
 		m_Physics.SetLinearVelocity(computedVelocity);
 		m_Physics.SetAngularVelocity(computedAngularVelocity);
@@ -544,6 +547,7 @@ void Tank_Robot::ResetPos()
 {
 	m_VehicleDrive->ResetPos();
 	__super::ResetPos();
+	m_Heading=GetAtt_r();
 }
 
 void Tank_Robot::SetAttitude(double radians)
@@ -601,7 +605,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.HasEncoders=true;  //no harm in having passive reading of them
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is usually in coast for most cases from many teams
-	props.PrecisionTolerance=0.01;  //It is really hard to say what the default should be
+	props.PrecisionTolerance=Inches2Meters(6);  //It is really hard to say what the default should be
 	props.LeftMaxSpeedOffset=props.RightMaxSpeedOffset=0.0;
 	props.ReverseSteering=false;
 	props.Voltage_Terms.Init();

@@ -126,6 +126,7 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 		static void NetworkEditProperties(Tank_Robot_Props &props,Ship_Props &ship_props);  //This will GetVariables of all properties needed to tweak PID and gain assists
 		//This adds ability to tune the turning
 		virtual void SetIntendedOrientation(double IntendedOrientation,bool Absolute=true);
+		virtual const bool CanStrafe() {return false;}
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		//Note by default a 6WD Tank Robot is assumed to set length for a 4WD (or half the total length of 6)

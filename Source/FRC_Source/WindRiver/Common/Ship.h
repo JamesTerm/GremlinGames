@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef Robot_TesterCode
+const double PI_2 = 1.57079632679489661923;
+#endif
+
 class UI_Controller;
 class AI_Base_Controller;
 
@@ -45,6 +49,15 @@ inline double NormalizeRotation2(double Rotation)
 	else if (Rotation<-M_PI)
 		Rotation+=Pi2;
 	return Rotation;
+}
+
+inline double NormalizeRotation_HalfPi(double Orientation)
+{
+	if (Orientation>PI_2)
+		Orientation-=M_PI;
+	else if (Orientation<-PI_2)
+		Orientation+=M_PI;
+	return Orientation;
 }
 
 inline double SaturateRotation(double Rotation)
@@ -329,6 +342,8 @@ class COMMON_API Ship_2D : public Ship
 		//Override to get sensor/encoder's real velocity
 		virtual Vec2D GetLinearVelocity_ToDisplay() {return GlobalToLocal(GetAtt_r(),GetPhysics().GetLinearVelocity());}
 		virtual double GetAngularVelocity_ToDisplay() {return GetPhysics().GetAngularVelocity();}
+		//Override if the ship is not able to strafe... used for DriveToLocation()
+		virtual const bool CanStrafe() {return true;}
 	protected:
 		void SetStabilizeRotation(bool StabilizeRotation) { m_StabilizeRotation=StabilizeRotation;	}
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global

@@ -468,7 +468,26 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
 		#else
 		double lookDir_radians= atan2(VectorOffset[0],VectorOffset[1]);
-		m_ship.SetIntendedOrientation(lookDir_radians);
+
+		//if (!m_ship.CanStrafe())
+		//{
+		//	SmartDashboard::PutNumber("TestDirection",RAD_2_DEG(lookDir_radians));
+		//	SmartDashboard::PutNumber("TestDirection_HalfPi",RAD_2_DEG(NormalizeRotation_HalfPi(lookDir_radians)));
+		//	const double PositionDistance=(PositionPoint-m_ship.GetPos_m()).length();
+		//	SmartDashboard::PutNumber("TestDistance",Meters2Feet(PositionDistance));
+		//}
+
+		if (m_ship.CanStrafe())
+			m_ship.SetIntendedOrientation(lookDir_radians);
+		else
+		{
+			//evaluate delta offset to see if we want to use the reverse absolute position
+			const double OrientationDelta=lookDir_radians-m_ship.GetAtt_r();
+			double orientation_to_use=lookDir_radians;
+			if (fabs(OrientationDelta)>PI_2)
+				orientation_to_use=NormalizeRotation_HalfPi(lookDir_radians);
+			m_ship.SetIntendedOrientation(orientation_to_use);
+		}
 		#endif
 	}
 
@@ -504,7 +523,7 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		//Usually if the trajectory point is the same as the position point it will perform coordinated turns most of the time while the nose is pointing
 		//towards its goal.  If the nose trajectory is different it may well indeed use the strafing technique more so.
 
-		if (fabs(LocalVelocity[0])<fabs(LocalVelocity[1]))
+		if (!m_ship.CanStrafe() || (fabs(LocalVelocity[0])<fabs(LocalVelocity[1])))
 		{
 			//This first technique only works with the forward and partial reverse thrusters (may be useful for some ships)
 			//Note: Even though this controls forward and reverse thrusters, the strafe thrusters are still working implicitly to correct turn velocity
@@ -607,11 +626,17 @@ Goal_Ship_MoveToPosition::Goal_Ship_MoveToPosition(AI_Base_Controller *controlle
 	bool LockOrientation,double safestop_tolerance) : m_Point(waypoint), m_Controller(controller),
 	m_ship(controller->GetShip()),m_SafeStopTolerance(safestop_tolerance),m_Terminate(false),m_UseSafeStop(UseSafeStop),m_LockOrientation(LockOrientation)
 {
+	m_TrajectoryPoint=waypoint.Position;  //set it for default
 	m_Status=eInactive;
 }
 Goal_Ship_MoveToPosition::~Goal_Ship_MoveToPosition()
 {
 	Terminate(); //more for completion
+}
+
+void Goal_Ship_MoveToPosition::SetTrajectoryPoint(const Vec2D &TrajectoryPoint)
+{
+	m_TrajectoryPoint=TrajectoryPoint;
 }
 
 void Goal_Ship_MoveToPosition::Activate() 
@@ -652,7 +677,7 @@ Goal::Goal_Status Goal_Ship_MoveToPosition::Process(double dTime_s)
 		if (!HitWayPoint())
 		{
 			Vec2d Temp(0,0);
-			m_Controller->DriveToLocation(m_Point.Position, m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &Temp:NULL,m_LockOrientation);
+			m_Controller->DriveToLocation(m_TrajectoryPoint , m_Point.Position, m_Point.Power, dTime_s,m_UseSafeStop? &Temp:NULL,m_LockOrientation);
 		}
 		else
 		{
