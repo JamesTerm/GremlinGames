@@ -491,7 +491,7 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		//Usually if the trajectory point is the same as the position point it will perform coordinated turns most of the time while the nose is pointing
 		//towards its goal.  If the nose trajectory is different it may well indeed use the strafing technique more so.
 
-		if (fabs(LocalVelocity[0])<fabs(LocalVelocity[1]))
+		if (!m_ship.CanStrafe() || (fabs(LocalVelocity[0])<fabs(LocalVelocity[1])))
 		{
 			//This first technique only works with the forward and partial reverse thrusters (may be useful for some ships)
 			//Note: Even though this controls forward and reverse thrusters, the strafe thrusters are still working implicitly to correct turn velocity
