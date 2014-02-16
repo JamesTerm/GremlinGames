@@ -974,7 +974,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				_command.LoadShip("TestShip.lua","TestShip");
 				Followship=dynamic_cast<Ship_Tester *>(_command.AddShip("GodShip","TestShip",str_3,str_4,str_5));
 			}
-			_.ShipFollowShip(ship,Followship,0.0,-1.0,0.5);
+			_.ShipFollowShip(ship,Followship,0.0,-1.0,1.0);
 			_.GiveRobotSquareWayPointGoal(Followship);
 			game.SetControlledEntity(Followship,UI_thread->GetUseUserPrefs());
 		}
