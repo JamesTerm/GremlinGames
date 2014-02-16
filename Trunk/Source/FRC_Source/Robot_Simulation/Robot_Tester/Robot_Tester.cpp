@@ -224,6 +224,8 @@ void DisplayHelp()
 		"0-inert 1-capital 2-bomber 3-fighter 4-flak 5-scout 6-sniper 7-spawn\n"
 		"LoadShip <filename> <ship name>\n"
 		"AddShip <unique name> <name> <x> <y>\n"
+		"LoadRobot <filename> <ship name>\n"
+		"AddRobot <unique name> <name> <x> <y>\n"
 		"Follow <name> <FollowShip> <rel x=-40> <rel y=-40>\n"
 		"SetPos <name> <x> <y>\n"
 		"MovePos <name> <x> <y>\n"
@@ -648,6 +650,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eTestGoals_2013,
 		eRobot2014,
 		eTestGoals_2014,
+		eTestTankFollowGod,
 		eTestFollowGod,
 		eTestLUAShip,
 		eActorUpdateTest,
@@ -669,6 +672,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"Goals2013",
 		"Robot2014",
 		"Goals2014",
+		"TankFollowGod",
 		"FollowGod",
 		"GodShip",
 		"ActorUpdateTest",
@@ -949,6 +953,32 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 			break;
 		}
+	case eTestTankFollowGod:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+
+			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("Robot2014"));
+
+			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
+			if (!ship)
+			{
+				_command.LoadRobot("FRC2014Robot.lua","FRC2014Robot",Commands::e2014);
+				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("Robot2014","FRC2014Robot",str_3,str_4,str_5));
+			}
+
+			if (!Followship)
+			{
+				_command.LoadShip("TestShip.lua","TestShip");
+				Followship=dynamic_cast<Ship_Tester *>(_command.AddShip("GodShip","TestShip",str_3,str_4,str_5));
+			}
+			_.ShipFollowShip(ship,Followship,0.0,-1.0,0.5);
+			_.GiveRobotSquareWayPointGoal(Followship);
+			game.SetControlledEntity(Followship,UI_thread->GetUseUserPrefs());
+		}
+		break;
 	case eTestFollowGod:
 		{
 			#ifdef _DEBUG
