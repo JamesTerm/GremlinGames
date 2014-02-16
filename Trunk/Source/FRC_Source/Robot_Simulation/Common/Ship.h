@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef Robot_TesterCode
+const double PI_2 = 1.57079632679489661923;
+#endif
+
 class UI_Controller;
 class AI_Base_Controller;
 
@@ -45,6 +49,15 @@ inline double NormalizeRotation2(double Rotation)
 	else if (Rotation<-M_PI)
 		Rotation+=Pi2;
 	return Rotation;
+}
+
+inline double NormalizeRotation_HalfPi(double Orientation)
+{
+	if (Orientation>PI_2)
+		Orientation-=M_PI;
+	else if (Orientation<-PI_2)
+		Orientation+=M_PI;
+	return Orientation;
 }
 
 inline double SaturateRotation(double Rotation)

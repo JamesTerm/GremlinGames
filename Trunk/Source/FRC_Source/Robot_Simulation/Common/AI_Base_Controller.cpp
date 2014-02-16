@@ -455,7 +455,22 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		m_ship.SetCurrentAngularAcceleration(-AngularDistance,false);
 		#else
 		double lookDir_radians= atan2(VectorOffset[0],VectorOffset[1]);
-		m_ship.SetIntendedOrientation(lookDir_radians);
+
+		//if (!m_ship.CanStrafe())
+		//{
+		//	SmartDashboard::PutNumber("TestDirection",RAD_2_DEG(lookDir_radians));
+		//	SmartDashboard::PutNumber("TestDirection_HalfPi",RAD_2_DEG(NormalizeRotation_HalfPi(lookDir_radians)));
+		//	const double PositionDistance=(PositionPoint-m_ship.GetPos_m()).length();
+		//	SmartDashboard::PutNumber("TestDistance",Meters2Feet(PositionDistance));
+		//}
+
+		if (m_ship.CanStrafe())
+			m_ship.SetIntendedOrientation(lookDir_radians);
+		else
+		{
+			//Using a half pi normalization will allow it to use reverse whenever it is more efficient to do so
+			m_ship.SetIntendedOrientation(NormalizeRotation_HalfPi(lookDir_radians));
+		}
 		#endif
 	}
 
