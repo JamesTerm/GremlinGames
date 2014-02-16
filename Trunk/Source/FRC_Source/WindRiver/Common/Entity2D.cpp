@@ -16,7 +16,7 @@
  /*																	Entity1D														*/
 /***********************************************************************************************************************************/
 
-Entity1D::Entity1D(const char EntityName[]) : m_Dimension(1.0),m_Position(0.0),m_Name(EntityName),m_BypassPos_Update(false)
+Entity1D::Entity1D(const char EntityName[]) : m_StartingPosition(0.0),m_Dimension(1.0),m_Position(0.0),m_Name(EntityName),m_BypassPos_Update(false)
 {
 	ResetPos();
 }
