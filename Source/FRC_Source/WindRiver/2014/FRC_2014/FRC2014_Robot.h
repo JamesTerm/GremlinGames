@@ -38,6 +38,11 @@ public:
 	{
 		double MoveForward;				//Optional to move forward to use less power to shoot
 	} Autonomous_Props;
+	struct BallTargeting
+	{
+		double CameraOffsetScalar;  //used to tweak the reduced deltas
+		double LatencyCounterThreshold;  //Used to control interval of camera samples
+	} BallTargeting_Props;
 };
 
 class FRC_2014_Robot_Properties : public Tank_Robot_Properties
@@ -245,6 +250,7 @@ class FRC_2014_Robot : public Tank_Robot
 		Intake_Arm m_Intake_Arm;
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Vec2D m_DefensiveKeyPosition;
+		double m_LatencyCounter;
 
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
 		double m_YawErrorCorrection,m_PowerErrorCorrection;
