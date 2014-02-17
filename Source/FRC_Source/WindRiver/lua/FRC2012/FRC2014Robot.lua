@@ -385,7 +385,8 @@ MainRobot = {
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 			
-			Turn_180 = {type="joystick_button", key=1, on_off=false},
+			--Turn_180 = {type="joystick_button", key=1, on_off=false},
+			Robot_BallTargeting = {type="joystick_button", key=1, on_off=true},
 			Robot_TestWaypoint={type="joystick_button", key=3, on_off=true},
 			--Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
 			--Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
