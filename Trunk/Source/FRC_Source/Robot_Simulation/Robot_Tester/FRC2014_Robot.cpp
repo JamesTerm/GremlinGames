@@ -352,7 +352,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),m_Intake_Arm(this,robot_control),
-		m_DefensiveKeyPosition(Vec2D(0.0,0.0)),
+		m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_LatencyCounter(0.0),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
 		m_AutonPresetIndex(0),m_YawAngle(0.0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false),
@@ -511,11 +511,11 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		#if 1
 		if (IsBallTargeting())
 		{
-			static size_t LatencyCounter=0;
-			if (LatencyCounter++>=20)
+			m_LatencyCounter+=dTime_s;
+			if ((double)m_LatencyCounter>(0.200))
 			{
 				m_YawAngle=YawAngle-CurrentYaw;
-				LatencyCounter=0;
+				m_LatencyCounter=0.0;
 			}
 			else
 				m_YawAngle=0.0;

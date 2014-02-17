@@ -245,6 +245,7 @@ class FRC_2014_Robot : public Tank_Robot
 		Intake_Arm m_Intake_Arm;
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Vec2D m_DefensiveKeyPosition;
+		double m_LatencyCounter;
 
 		double m_PitchAngle,m_LinearVelocity,m_HangTime;
 		double m_YawErrorCorrection,m_PowerErrorCorrection;
