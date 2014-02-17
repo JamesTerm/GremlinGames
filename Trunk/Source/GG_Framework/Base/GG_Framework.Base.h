@@ -28,6 +28,7 @@
 #include "ArgumentParser.h"
 #include "AVI_Writer.h"
 #include "ReleaseDebugFile.h"
+#include "Time_Type.h"
 
 namespace GG_Framework
 {
