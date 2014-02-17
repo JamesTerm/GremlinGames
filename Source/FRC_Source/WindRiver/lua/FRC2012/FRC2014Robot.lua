@@ -27,7 +27,7 @@ WheelBase_Width_In=22.5	  --The wheel base will determine the turn rate, must be
 WheelBase_Length_In=13
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 HighGearSpeed = (427.68 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters * 2.0  --the last multply is an empirical tweak
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
@@ -67,7 +67,7 @@ MainRobot = {
 		compressor	=	{ relay=8, limit=14 }
 	},
 	--Version helps to identify a positive update to lua
-	version = 1.2;
+	version = 1.3;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -110,9 +110,10 @@ MainRobot = {
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		force_voltage=
-		{t4=0, t3=0, t2=0, t1=0, c=1},
+		{t4=0, t3=0, t2=0, t1=1, c=0},
 		turning_adjustment=
-		{t4=0, t3=-1.1156, t2=3.9877, t1=-4.4098, c=2.043},
+		{t4=0, t3=-47.187, t2=81.9, t1=-40.878, c=7.8572},
+		--{t4=0, t3=-3.0257, t2=10.642, t1=-10.764, c=4.8641},
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
@@ -315,7 +316,7 @@ MainRobot = {
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
-				inv_max_accel = 0.0  --solved empiracally
+				inv_max_accel = 0.02  --solved empiracally
 			}
 		}
 	},
@@ -385,7 +386,7 @@ MainRobot = {
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 			
 			Turn_180 = {type="joystick_button", key=1, on_off=false},
-			--Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
+			Robot_TestWaypoint={type="joystick_button", key=3, on_off=true},
 			--Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
 			--Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
