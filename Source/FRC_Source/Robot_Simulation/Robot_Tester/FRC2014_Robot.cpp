@@ -86,11 +86,13 @@ void FRC_2014_Robot::Turret::TimeChange(double dTime_s)
 	//const bool IsTargeting=false;
 	if (IsTargeting)
 	{
-			//if (m_AutoDriveState==eAutoDrive_YawOnly)
+			//if (m_AutoDriveState==eAutoDrive_YawOnly)		
 			{
 				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
 				//if (fabs(m_YawAngle)>m_RobotProps.GetFRC2014RobotProps().YawTolerance)
-					m_pParent->m_controller->GetUIController_RW()->Turn_RelativeOffset(m_pParent->m_YawAngle,true);
+				if (fabs(m_pParent->m_YawAngle)>DEG_2_RAD(1))
+					m_pParent->m_controller->GetUIController_RW()->Turn_RelativeOffset(m_pParent->m_YawAngle,false);
+				m_pParent->m_YawAngle=0;
 			}
 			//else if (m_AutoDriveState==eAutoDrive_FullAuto)
 			//{
@@ -486,7 +488,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	using namespace VisionConversion;
 
 	SmartDashboard::PutBoolean("IsBallTargeting",IsBallTargeting());
-	if (IsBallTargeting())
+	//if (IsBallTargeting())
 	{
 		const double CurrentYaw=GetAtt_r();
 		//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
@@ -503,9 +505,24 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		//Use precision tolerance asset to determine whether to make the change
 		//m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetRotaryProps().PrecisionTolerance)?NewYaw:CurrentYaw;
 		const double PrecisionTolerance=DEG_2_RAD(0.5); //TODO put in properties try to keep as low as possible if we need to drive straight
-		m_YawAngle=NormalizeRotation2((fabs(NewYaw-CurrentYaw)>PrecisionTolerance)?NewYaw:CurrentYaw);
+		const double YawAngle=NormalizeRotation2((fabs(NewYaw-CurrentYaw)>PrecisionTolerance)?NewYaw:CurrentYaw);
 		//Note: limits will be solved at ship level
-		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(m_YawAngle));
+		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(YawAngle-CurrentYaw));
+		#if 1
+		if (IsBallTargeting())
+		{
+			static size_t LatencyCounter=0;
+			if (LatencyCounter++>=20)
+			{
+				m_YawAngle=YawAngle-CurrentYaw;
+				LatencyCounter=0;
+			}
+			else
+				m_YawAngle=0.0;
+		}
+		#else
+		m_YawAngle=YawAngle;
+		#endif
 	}
 
 }
