@@ -662,7 +662,12 @@ void FRC_2014_Robot::Robot_TestWaypoint(bool on)
 			wp.Position=Global_GoalTarget+pos;
 			wp.Power=1.0;
 			//Now to setup the goal
-			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,false,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
+			//Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,false,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
+			//TODO for now we'll have to lock to orientation... this is because the solution of turning adjustments is solved incorrectly... to
+			//solve correctly would entail the curve be applied on a read back from the encoders or something along these lines to inject the displacement
+			//to where it should be... I may add this later but for now this solution will work for a the turn then move solution
+			//  [2/17/2014 JamesK]
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,true,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
 			//set the trajectory point
 			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
 			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
