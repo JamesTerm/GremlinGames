@@ -30,7 +30,11 @@ struct time_type
 		time_type operator- (const time_type &NewValue) const;
 		time_type operator+ (const time_type &NewValue) const;
 		void operator+= (const __int64 &NewValue);
+		void operator+= (double NewValue);
+		void operator+= (const time_type &NewValue);
 		void operator-= (const __int64 &NewValue);
+		void operator-= (double NewValue);
+		void operator-= (const time_type &NewValue);
 		bool operator>  (const time_type &Value) const;
 		bool operator>= (const time_type &Value) const;
 		bool operator<  (const time_type &Value) const;
