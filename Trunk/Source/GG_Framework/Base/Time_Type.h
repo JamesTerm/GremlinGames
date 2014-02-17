@@ -7,7 +7,7 @@ double FRAMEWORK_BASE_API get_current_time( void );*/
 ///10,000,000 to 1 to a 64bit integer (i.e. __int64).  Overloaded operators have been provided for ease of conversion between various types
 ///The two primary types are __int64 and double.  \note This fixed precision standard is native to Direct Show sometimes in the form of
 ///LARGE_INTEGER
-struct time_type
+struct FRAMEWORK_BASE_API time_type
 {
 	public:
 		/// \note The default does not do anything except initialize the internal time to 0xcdcdcdcd
@@ -30,7 +30,11 @@ struct time_type
 		time_type operator- (const time_type &NewValue) const;
 		time_type operator+ (const time_type &NewValue) const;
 		void operator+= (const __int64 &NewValue);
+		void operator+= (double NewValue);
+		void operator+= (const time_type &NewValue);
 		void operator-= (const __int64 &NewValue);
+		void operator-= (double NewValue);
+		void operator-= (const time_type &NewValue);
 		bool operator>  (const time_type &Value) const;
 		bool operator>= (const time_type &Value) const;
 		bool operator<  (const time_type &Value) const;

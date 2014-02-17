@@ -70,9 +70,25 @@ void time_type::operator+= (const __int64 &NewValue)
 {
 	m_Time+=NewValue;
 }
+void time_type::operator+= (double NewValue)
+{
+	m_Time+=(__int64)(NewValue*10000000.0);
+}
+void time_type::operator+= (const time_type &NewValue)
+{
+	m_Time+=(__int64)NewValue;
+}
 void time_type::operator-= (const __int64 &NewValue)
 {
 	m_Time-=NewValue;
+}
+void time_type::operator-= (double NewValue)
+{
+	m_Time-=(__int64)(NewValue*10000000.0);
+}
+void time_type::operator-= (const time_type &NewValue)
+{
+	m_Time-=(__int64)NewValue;
 }
 bool time_type::operator> (const time_type &Value) const
 {
