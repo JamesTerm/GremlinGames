@@ -490,10 +490,11 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	SmartDashboard::PutBoolean("IsBallTargeting",IsBallTargeting());
 	//if (IsBallTargeting())
 	{
+		const FRC_2014_Robot_Props::BallTargeting &ball_props=m_RobotProps.GetFRC2014RobotProps().BallTargeting_Props;
 		const double CurrentYaw=GetAtt_r();
 		//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
 		#ifndef __UseFileTargetTracking__
-		const double SmoothingYaw=0.20; //hard coded for now
+		const double SmoothingYaw=ball_props.CameraOffsetScalar;
 		//const double NewYaw=CurrentYaw+atan(yaw/distance);
 		const double NewYaw=CurrentYaw+(atan(XOffset * c_AspectRatio_recip * c_ez_x)*SmoothingYaw);
 		#else
@@ -512,7 +513,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		if (IsBallTargeting())
 		{
 			m_LatencyCounter+=dTime_s;
-			if ((double)m_LatencyCounter>(0.200))
+			if ((double)m_LatencyCounter>(ball_props.LatencyCounterThreshold))
 			{
 				m_YawAngle=YawAngle-CurrentYaw;
 				m_LatencyCounter=0.0;
@@ -740,6 +741,9 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		props.Intake_Robot_Props.Deployed_Angle=DEG_2_RAD(61.0);
 		props.Intake_Robot_Props.Squirt_Angle=DEG_2_RAD(90.0);
 
+		props.BallTargeting_Props.CameraOffsetScalar=0.20;
+		props.BallTargeting_Props.LatencyCounterThreshold=0.200; //A bit slow but confirmed
+
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.MoveForward=0.0;
 		m_FRC2014RobotProps=props;
@@ -844,13 +848,13 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	m_ControlAssignmentProps.LoadFromScript(script);
 	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
+	double fTest;
 	if (!err) 
 	{
 		err = script.GetFieldTable("catapult");
 		if (!err)
 		{
 			FRC_2014_Robot_Props::Catapult &cat_props=props.Catapult_Robot_Props;
-			double fTest;
 			err=script.GetField("arm_to_motor", NULL, NULL, &fTest);
 			if (!err)
 				cat_props.ArmToGearRatio=fTest;
@@ -869,7 +873,6 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			FRC_2014_Robot_Props::Intake &intake_props=props.Intake_Robot_Props;
-			double fTest;
 			err=script.GetField("arm_to_motor", NULL, NULL, &fTest);
 			if (!err)
 				intake_props.ArmToGearRatio=fTest;
@@ -933,6 +936,14 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			}
 			script.Pop();
 		}
+
+		err=script.GetField("ball_camera_scalar", NULL, NULL, &fTest);
+		if (!err)
+			props.BallTargeting_Props.CameraOffsetScalar=fTest;
+		err=script.GetField("ball_latency_count", NULL, NULL, &fTest);
+		if (!err)
+			props.BallTargeting_Props.LatencyCounterThreshold=fTest;
+
 		//This is the main robot settings pop
 		script.Pop();
 	}

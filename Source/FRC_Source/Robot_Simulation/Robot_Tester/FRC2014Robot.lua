@@ -138,7 +138,8 @@ MainRobot = {
 	robot_settings =
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
-		
+		ball_camera_scalar=0.20,
+		ball_latency_count=0.100,
 		
 		catapult=
 		{
