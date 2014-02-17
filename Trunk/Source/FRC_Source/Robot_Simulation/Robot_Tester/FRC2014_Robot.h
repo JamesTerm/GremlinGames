@@ -38,6 +38,11 @@ public:
 	{
 		double MoveForward;				//Optional to move forward to use less power to shoot
 	} Autonomous_Props;
+	struct BallTargeting
+	{
+		double CameraOffsetScalar;  //used to tweak the reduced deltas
+		double LatencyCounterThreshold;  //Used to control interval of camera samples
+	} BallTargeting_Props;
 };
 
 class FRC_2014_Robot_Properties : public Tank_Robot_Properties
