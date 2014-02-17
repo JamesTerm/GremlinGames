@@ -7,22 +7,6 @@
   /*******************************************************************************************************/
  /*												time_type												*/
 /*******************************************************************************************************/
-/*double FrameWork::Base::get_current_time( void )
-{	// Make sure that we have the update frequency
-	static double inv_freq = 0.0f;
-	if ( !inv_freq )
-	{	LARGE_INTEGER freq;
-		QueryPerformanceFrequency( &freq );
-		inv_freq = 1.0 / (double)freq.QuadPart;
-	}
-
-	// Get the current time
-	LARGE_INTEGER current;
-	QueryPerformanceCounter(&current);
-
-	// Return the time in seconds.
-	return inv_freq*(double)current.QuadPart;
-}*/
 
 time_type::time_type()
 {
@@ -87,9 +71,25 @@ void time_type::operator+= (const __int64 &NewValue)
 {
 	m_Time+=NewValue;
 }
+void time_type::operator+= (double NewValue)
+{
+	m_Time+=(__int64)(NewValue*10000000.0);
+}
+void time_type::operator+= (const time_type &NewValue)
+{
+	m_Time+=(__int64)NewValue;
+}
 void time_type::operator-= (const __int64 &NewValue)
 {
 	m_Time-=NewValue;
+}
+void time_type::operator-= (double NewValue)
+{
+	m_Time-=(__int64)(NewValue*10000000.0);
+}
+void time_type::operator-= (const time_type &NewValue)
+{
+	m_Time-=(__int64)NewValue;
 }
 bool time_type::operator> (const time_type &Value) const
 {
