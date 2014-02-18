@@ -25,12 +25,17 @@ void Entity1D::Initialize(Base::EventMap& em, const Entity1D_Properties *props)
 		props->Initialize(this);
 }
 
-void Entity1D::ResetPos()
+void Entity1D::ResetPosition(double Position)
 {
 	//CancelAllControls();
 	m_Physics.ResetVectors();
 	if (!m_BypassPos_Update)
-		m_Position=m_StartingPosition;
+		m_Position=Position;
+}
+
+void Entity1D::ResetPos()
+{
+	ResetPosition(m_StartingPosition);
 }
 
 void Entity1D::TimeChange(double dTime_s)

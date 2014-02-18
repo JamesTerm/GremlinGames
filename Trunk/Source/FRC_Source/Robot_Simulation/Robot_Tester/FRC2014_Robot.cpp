@@ -220,6 +220,11 @@ void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 	}
 }
 
+bool FRC_2014_Robot::Winch::DidHitMaxLimit()
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eCatapultLimit);
+}
+
 void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 {
 	Base::EventMap *em=m_pParent->GetEventMap();
@@ -309,6 +314,15 @@ void FRC_2014_Robot::Intake_Arm::SetSquirt()
 	SetIntendedPosition(props.Intake_Robot_Props.Squirt_Angle);
 }
 
+bool FRC_2014_Robot::Intake_Arm::DidHitMinLimit()
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMin1);
+}
+
+bool FRC_2014_Robot::Intake_Arm::DidHitMaxLimit()
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMax1);
+}
 
 void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
 {
@@ -1283,6 +1297,26 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
+bool FRC_2014_Robot_Control::GetBoolSensorState(size_t index)
+{
+	bool ret;
+	switch (index)
+	{
+	case FRC_2014_Robot::eIntakeMin1:
+		ret=(m_Limit_IntakeMin1||m_Limit_IntakeMin2);
+		break;
+	case FRC_2014_Robot::eIntakeMax1:
+		ret=(m_Limit_IntakeMax1||m_Limit_IntakeMax2);
+		break;
+	case FRC_2014_Robot::eCatapultLimit:
+		ret=m_Limit_Catapult;
+		break;
+	default:
+		assert (false);
+	}
+	return ret;
+}
+
 FRC_2014_Robot_Control::FRC_2014_Robot_Control(bool UseSafety) : m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
 		m_Compressor(NULL),m_WinchVoltage(0.0)
 {
@@ -1348,6 +1382,16 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 			lcd->UpdateLCD();
 		#endif
 	#endif
+	m_Limit_IntakeMin1=BoolSensor_GetState(FRC_2014_Robot::eIntakeMin1);
+	m_Limit_IntakeMin2=BoolSensor_GetState(FRC_2014_Robot::eIntakeMin2);
+	m_Limit_IntakeMax1=BoolSensor_GetState(FRC_2014_Robot::eIntakeMax1);
+	m_Limit_IntakeMax2=BoolSensor_GetState(FRC_2014_Robot::eIntakeMax2);
+	m_Limit_Catapult=BoolSensor_GetState(FRC_2014_Robot::eCatapultLimit);
+	SmartDashboard::PutBoolean("LimitIntakeMin1",m_Limit_IntakeMin1);
+	SmartDashboard::PutBoolean("LimitIntakeMax1",m_Limit_IntakeMax1);
+	SmartDashboard::PutBoolean("LimitIntakeMin2",m_Limit_IntakeMin2);
+	SmartDashboard::PutBoolean("LimitIntakeMax2",m_Limit_IntakeMax2);
+	SmartDashboard::PutBoolean("LimitCatapult",m_Limit_Catapult);
 }
 
 void FRC_2014_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 

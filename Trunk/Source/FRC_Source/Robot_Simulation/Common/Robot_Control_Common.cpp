@@ -479,7 +479,7 @@ void RobotDrive::StopMotor()
  /*														Control_1C_Element_UI														*/
 /***********************************************************************************************************************************/
 
-Control_1C_Element_UI::Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name)
+Control_1C_Element_UI::Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name) : m_PutNumber_Used(false),m_PutBoolUsed(false)
 {
 	m_Name=name;
 	char Buffer[4];
@@ -501,12 +501,26 @@ void Control_1C_Element_UI::display_bool(bool value)
 	SmartDashboard::PutBoolean(m_Name,value);
 }
 
+//Note: For the get implementation, I restrict use of the bool used members to these functions as a first run
+//It's just makes there use-case more restricted
+
 bool Control_1C_Element_UI::get_bool() const
 {
+	if (!m_PutBoolUsed)
+	{
+		SmartDashboard::PutBoolean(m_Name,false);
+		m_PutBoolUsed=true;
+	}
 	return SmartDashboard::GetBoolean(m_Name);
 }
+
 double Control_1C_Element_UI::get_number() const
 {
+	if (!m_PutNumber_Used)
+	{
+		SmartDashboard::PutNumber(m_Name,0.0);
+		m_PutNumber_Used=true;
+	}
 	return (double)SmartDashboard::GetNumber(m_Name);
 }
 

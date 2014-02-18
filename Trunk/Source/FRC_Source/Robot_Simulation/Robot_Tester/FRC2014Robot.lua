@@ -195,9 +195,11 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
+			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
+			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
+			max_limit_deg=88 * Catapult_ArmToMotorRatio,  --The angle the limit switch is placed (this is offset from maxrange to determine final velocity when hit)
 			min_range_deg=(-10) * Catapult_ArmToMotorRatio,
 			use_aggressive_stop = 'no',
 			inv_max_accel_up = 0.05,
@@ -254,8 +256,11 @@ MainRobot = {
 			max_accel_reverse=1,
 			using_range=1,					--Warning Only use range if we have a potentiometer! or limit switch
 			--These are arm converted to gear ratio
+			--The intake uses a starting point of 90 to force numbers down from 90 - 0 where zero is pointing straight out
 			max_range_deg= (95) * Intake_ArmToMotorRatio,
+			max_limit_deg=90 * Intake_ArmToMotorRatio,  --The angle the limit switch is placed when intake is stowed
 			min_range_deg= 45 * Intake_ArmToMotorRatio,
+			min_limit_deg=60 * Intake_ArmToMotorRatio,  --The angle the limit switch is placed when intake is deployed
 			use_aggressive_stop = 'yes',
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
@@ -347,9 +352,10 @@ MainRobot = {
 			
 			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
 			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
-			Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
 			Winch_Advance={type="keyboard", key='k', on_off=true},
+			IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			IntakeArm_SetDeployed={type="keyboard", key='l', on_off=false},
 			IntakeArm_SetStowed={type="keyboard", key=';', on_off=false},
 			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},
