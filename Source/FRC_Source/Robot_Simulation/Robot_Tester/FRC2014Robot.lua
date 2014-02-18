@@ -40,12 +40,13 @@ MainRobot = {
 		{
 			id_1 = { name= "left_drive_1", channel=1, module=1}, 
 			id_2 = { name= "left_drive_2", channel=2}, 
-			id_3 = { name= "left_drive_3", channel=5}, 
-			id_4 = { name="right_drive_1", channel=3},
-			id_5 = { name="right_drive_2", channel=4},
+			id_3 = { name="right_drive_1", channel=3},
+			id_4 = { name="right_drive_2", channel=4},
+			id_5 = { name= "left_drive_3", channel=5}, 
 			id_6 = { name="right_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
-			id_8 = { name="intake_arm",    channel=8}
+			id_8 = { name="intake_arm_1",  channel=8},
+			id_9 = { name="intake_arm_2",  channel=9}
 		},
 		double_solenoid =
 		{
@@ -54,12 +55,18 @@ MainRobot = {
 		},
 		digital_input =
 		{
-			id_1 = { name="intake_max",  channel=1}, 
-			id_2 = { name="intake_min",  channel=2}
+			--These channels must be unique to digital input encoder channels as well
+			--Also ensure you do not use the slot for the compressor ;)
+			id_1 = { name="intake_min_1",  channel=7},
+			id_2 = { name="intake_max_1",  channel=8}, 
+			id_3 = { name="intake_min_2",  channel=9},
+			id_4 = { name="intake_max_2",  channel=10}, 
+			id_5 = { name="catapult_limit",channel=11} 
 		},
 		digital_input_encoder =
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
+			--These channels must be unique to digital input channels as well
 			id_1 = { name= "left_drive_1",  a_channel=1, b_channel=2},
 			id_2 = { name="right_drive_1",  a_channel=3, b_channel=4},
 			id_3 = { name="winch",  a_channel=5, b_channel=6}

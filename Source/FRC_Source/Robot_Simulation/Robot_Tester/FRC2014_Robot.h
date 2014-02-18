@@ -79,7 +79,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 
 const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
 {
-	"winch","intake_arm","left_drive_3","right_drive_3"
+	"winch","intake_arm_1","intake_arm_2","left_drive_3","right_drive_3"
 };
 
 const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
@@ -89,7 +89,7 @@ const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
 
 const char * const csz_FRC_2014_Robot_BoolSensorDevices_Enum[] =
 {
-	"intake_min","intake_max"
+	"intake_min_1","intake_max_1","intake_min_2","intake_max_2","catapult_limit"
 };
 
 
@@ -99,7 +99,8 @@ class FRC_2014_Robot : public Tank_Robot
 		enum SpeedControllerDevices
 		{
 			eWinch,
-			eIntake_Arm,
+			eIntakeArm1,
+			eIntakeArm2,
 			eLeftDrive3,
 			eRightDrive3
 		};
@@ -120,8 +121,11 @@ class FRC_2014_Robot : public Tank_Robot
 
 		enum BoolSensorDevices
 		{
-			eIntake_Min,
-			eIntake_Max
+			eIntakeMin1,
+			eIntakeMax1,
+			eIntakeMin2,
+			eIntakeMax2,
+			eCatapultLimit
 		};
 
 		static BoolSensorDevices GetBoolSensorDevices_Enum (const char *value)
