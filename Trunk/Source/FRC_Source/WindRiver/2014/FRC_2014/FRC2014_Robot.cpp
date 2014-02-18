@@ -220,6 +220,11 @@ void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 	}
 }
 
+bool FRC_2014_Robot::Winch::DidHitMaxLimit()
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eCatapultLimit);
+}
+
 void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 {
 	Base::EventMap *em=m_pParent->GetEventMap();
@@ -253,7 +258,7 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("IntakeArm",robot_control,eIntake_Arm),m_pParent(parent),m_Advance(false),m_Retract(false)
+	Rotary_Position_Control("IntakeArm",robot_control,eIntakeArm1),m_pParent(parent),m_Advance(false),m_Retract(false)
 {
 }
 
@@ -309,6 +314,15 @@ void FRC_2014_Robot::Intake_Arm::SetSquirt()
 	SetIntendedPosition(props.Intake_Robot_Props.Squirt_Angle);
 }
 
+bool FRC_2014_Robot::Intake_Arm::DidHitMinLimit()
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMin1);
+}
+
+bool FRC_2014_Robot::Intake_Arm::DidHitMaxLimit()
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMax1);
+}
 
 void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
 {
@@ -1096,7 +1110,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_Winch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
-		case FRC_2014_Robot::eIntake_Arm:
+		case FRC_2014_Robot::eIntakeArm1:
 			{
 				//	printf("Pitch=%f\n",Voltage);
 				//DOUT3("Pitch Voltage=%f",Voltage);
@@ -1127,7 +1141,7 @@ void FRC_2014_Robot_Control::Reset_Rotary(size_t index)
 		case FRC_2014_Robot::eWinch:
 			m_Winch_Pot.ResetPos();
 			break;
-		case FRC_2014_Robot::eIntake_Arm:
+		case FRC_2014_Robot::eIntakeArm1:
 			m_IntakeArm_Pot.ResetPos();
 			//We may want this for more accurate simulation
 			//m_Pitch_Pot.SetPos_m((m_Pitch_Pot.GetMinRange()+m_Pitch_Pot.GetMaxRange()) / 2.0);
@@ -1198,7 +1212,7 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				//SmartDashboard::PutNumber("Catapult_Angle",RAD_2_DEG(result*c_GearToArmRatio));
 			}
 			break;
-		case FRC_2014_Robot::eIntake_Arm:
+		case FRC_2014_Robot::eIntakeArm1:
 			{
 				assert(false);  //no potentiometer 
 				const double c_GearToArmRatio=1.0/props.Intake_Robot_Props.ArmToGearRatio;
@@ -1272,14 +1286,35 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			SmartDashboard::PutNumber("WinchVoltage",VoltageToUse);
 		}
 		break;
-	case FRC_2014_Robot::eIntake_Arm:
+	case FRC_2014_Robot::eIntakeArm1:
 		{
 			Voltage=Voltage * m_RobotProps.GetIntake_ArmProps().GetRotaryProps().VoltageScalar;
-			Victor_UpdateVoltage(index,Voltage);
+			Victor_UpdateVoltage(FRC_2014_Robot::eIntakeArm1,Voltage);
+			Victor_UpdateVoltage(FRC_2014_Robot::eIntakeArm2,Voltage);
 			SmartDashboard::PutNumber("IntakeArmVoltage",Voltage);
 		}
 		break;
 	}
+}
+
+bool FRC_2014_Robot_Control::GetBoolSensorState(size_t index)
+{
+	bool ret;
+	switch (index)
+	{
+	case FRC_2014_Robot::eIntakeMin1:
+		ret=(m_Limit_IntakeMin1||m_Limit_IntakeMin2);
+		break;
+	case FRC_2014_Robot::eIntakeMax1:
+		ret=(m_Limit_IntakeMax1||m_Limit_IntakeMax2);
+		break;
+	case FRC_2014_Robot::eCatapultLimit:
+		ret=m_Limit_Catapult;
+		break;
+	default:
+		assert (false);
+	}
+	return ret;
 }
 
 FRC_2014_Robot_Control::FRC_2014_Robot_Control(bool UseSafety) : m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
@@ -1347,6 +1382,16 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 			lcd->UpdateLCD();
 		#endif
 	#endif
+	m_Limit_IntakeMin1=BoolSensor_GetState(FRC_2014_Robot::eIntakeMin1);
+	m_Limit_IntakeMin2=BoolSensor_GetState(FRC_2014_Robot::eIntakeMin2);
+	m_Limit_IntakeMax1=BoolSensor_GetState(FRC_2014_Robot::eIntakeMax1);
+	m_Limit_IntakeMax2=BoolSensor_GetState(FRC_2014_Robot::eIntakeMax2);
+	m_Limit_Catapult=BoolSensor_GetState(FRC_2014_Robot::eCatapultLimit);
+	SmartDashboard::PutBoolean("LimitIntakeMin1",m_Limit_IntakeMin1);
+	SmartDashboard::PutBoolean("LimitIntakeMax1",m_Limit_IntakeMax1);
+	SmartDashboard::PutBoolean("LimitIntakeMin2",m_Limit_IntakeMin2);
+	SmartDashboard::PutBoolean("LimitIntakeMax2",m_Limit_IntakeMax2);
+	SmartDashboard::PutBoolean("LimitCatapult",m_Limit_Catapult);
 }
 
 void FRC_2014_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
@@ -1383,7 +1428,8 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//SmartDashboard::PutNumber("Catapult_Angle",RAD_2_DEG(result));
 		}
 		break;
-	case FRC_2014_Robot::eIntake_Arm:
+	case FRC_2014_Robot::eIntakeArm1:
+	case FRC_2014_Robot::eIntakeArm2:
 		assert(false);  //no potentiometer 
 		break;
 	}
