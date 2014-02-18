@@ -46,7 +46,8 @@ MainRobot = {
 			id_6 = { name="right_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
 			id_8 = { name="intake_arm_1",  channel=8},
-			id_9 = { name="intake_arm_2",  channel=9}
+			id_9 = { name="intake_arm_2",  channel=9},
+			id_10= { name="rollers",       channel=10},
 		},
 		double_solenoid =
 		{
@@ -392,6 +393,11 @@ MainRobot = {
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Turret_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
+			
+			--IntakeRollers_Grip = {type="joystick_button", key=?, on_off=true},
+			--IntakeRollers_Squirt = {type="joystick_button", key=?, on_off=true},
+			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 			Robot_TestWaypoint={type="joystick_button", key=3, on_off=true},
