@@ -48,7 +48,8 @@ MainRobot = {
 			id_6 = { name="right_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
 			id_8 = { name="intake_arm_1",  channel=8},
-			id_9 = { name="intake_arm_2",  channel=9}
+			id_9 = { name="intake_arm_2",  channel=9},
+			id_10= { name="rollers",       channel=10}
 		},
 		double_solenoid =
 		{
@@ -367,9 +368,9 @@ MainRobot = {
 			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
 
 			--If we want other buttons for the intake rollers here they are	
-			--Ball_Grip = {type="joystick_button", key=?, on_off=true},
-			--Ball_Squirt = {type="joystick_button", key=?, on_off=true},
-			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--IntakeRollers_Grip = {type="joystick_button", key=?, on_off=true},
+			--IntakeRollers_Squirt = {type="joystick_button", key=?, on_off=true},
+			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			IntakeArm_SetDeployed={type="joystick_button", key=2, on_off=false},
 			IntakeArm_SetStowed={type="joystick_button", key=4, on_off=false},
 		}
