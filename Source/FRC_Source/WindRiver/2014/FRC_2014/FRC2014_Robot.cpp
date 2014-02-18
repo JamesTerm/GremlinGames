@@ -353,6 +353,53 @@ void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
 	}
 }
 
+  /***********************************************************************************************************************************/
+ /*													FRC_2014_Robot::Intake_Rollers													*/
+/***********************************************************************************************************************************/
+
+FRC_2014_Robot::Intake_Rollers::Intake_Rollers(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) :
+	Rotary_Velocity_Control("IntakeRollers",robot_control,eRollers),m_pParent(parent),m_Grip(false),m_Squirt(false)
+{
+}
+
+void FRC_2014_Robot::Intake_Rollers::TimeChange(double dTime_s)
+{
+	const double Accel=m_Ship_1D_Props.ACCEL;
+	const double Brake=m_Ship_1D_Props.BRAKE;
+
+	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
+	if (m_Grip ^ m_Squirt)
+		SetCurrentLinearAcceleration(m_Grip?Accel:-Brake);
+
+	__super::TimeChange(dTime_s);
+}
+
+void FRC_2014_Robot::Intake_Rollers::Grip(bool on)
+{
+	m_Grip=on;
+}
+
+void FRC_2014_Robot::Intake_Rollers::Squirt(bool on)
+{
+	m_Squirt=on;
+}
+
+void FRC_2014_Robot::Intake_Rollers::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
+	if (Bind)
+	{
+		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Rollers::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["IntakeRollers_Grip"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Rollers::Grip);
+		em->EventOnOff_Map["IntakeRollers_Squirt"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Rollers::Squirt);
+	}
+	else
+	{
+		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Intake_Rollers::SetRequestedVelocity_FromNormalized);
+		em->EventOnOff_Map["IntakeRollers_Grip"]  .Remove(*this, &FRC_2014_Robot::Intake_Rollers::Grip);
+		em->EventOnOff_Map["IntakeRollers_Squirt"]  .Remove(*this, &FRC_2014_Robot::Intake_Rollers::Squirt);
+	}
+}
 
   /***********************************************************************************************************************************/
  /*															FRC_2014_Robot															*/
@@ -366,7 +413,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),m_Intake_Arm(this,robot_control),
-		m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_LatencyCounter(0.0),
+		m_Intake_Rollers(this,robot_control),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_LatencyCounter(0.0),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
 		m_AutonPresetIndex(0),m_YawAngle(0.0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false),
@@ -391,6 +438,7 @@ void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 	//const FRC_2014_Robot_Props &robot2014props=RobotProps->GetFRC2014RobotProps();
 	m_Winch.Initialize(em,RobotProps?&RobotProps->GetWinchProps():NULL);
 	m_Intake_Arm.Initialize(em,RobotProps?&RobotProps->GetIntake_ArmProps():NULL);
+	m_Intake_Rollers.Initialize(em,RobotProps?&RobotProps->GetIntakeRollersProps():NULL);
 }
 void FRC_2014_Robot::ResetPos()
 {
@@ -403,6 +451,7 @@ void FRC_2014_Robot::ResetPos()
 		m_Winch.ResetPos();
 		m_Intake_Arm.ResetPos();
 	}
+	m_Intake_Rollers.ResetPos();  //ha pedantic
 }
 
 namespace VisionConversion
@@ -477,6 +526,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	m_PitchRamp.TimeChange(dTime_s);
 	m_Winch.AsEntity1D().TimeChange(dTime_s);
 	m_Intake_Arm.AsEntity1D().TimeChange(dTime_s);
+	m_Intake_Rollers.AsEntity1D().TimeChange(dTime_s);
 
 	#ifdef __EnableShapeTrackingSimulation__
 	{
@@ -627,6 +677,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 	m_PitchRamp.BindAdditionalEventControls(Bind);
 	m_Winch.AsShip1D().BindAdditionalEventControls(Bind);
 	m_Intake_Arm.AsShip1D().BindAdditionalEventControls(Bind);
+	m_Intake_Rollers.AsShip1D().BindAdditionalEventControls(Bind);
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
@@ -731,6 +782,18 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 	Ship_1D_Props::eRobotArm,
 	true,	//Using the range
 	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
+	),
+	m_IntakeRollersProps(
+	"Rollers",
+	2.0,    //Mass
+	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
+	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
+	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
+	28,   //Max Speed (rounded as we need not have precision)
+	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
+	Ship_1D_Props::eSimpleMotor,
+	false	//No limit ever!
 	),
 	m_RobotControls(&s_ControlsEvents)
 {
@@ -843,6 +906,7 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance",
 	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
 	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
+	"IntakeRollers_Grip","IntakeRollers_Squirt","IntakeRollers_SetCurrentVelocity",
 	"Robot_TestWaypoint"
 };
 
@@ -1119,6 +1183,9 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_IntakeArm_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
+		case FRC_2014_Robot::eRollers:
+			SmartDashboard::PutNumber("RollerVoltage",Voltage);
+			break;
 	}
 }
 
@@ -1293,6 +1360,10 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			Victor_UpdateVoltage(FRC_2014_Robot::eIntakeArm2,Voltage);
 			SmartDashboard::PutNumber("IntakeArmVoltage",Voltage);
 		}
+		break;
+	case FRC_2014_Robot::eRollers:
+		Victor_UpdateVoltage(index,Voltage);
+		SmartDashboard::PutNumber("RollerVoltage",Voltage);
 		break;
 	}
 }
