@@ -110,7 +110,7 @@ class COMMON_API Ship_1D : public Entity1D
 		double GetBRAKE() const			{return m_Ship_1D_Props.BRAKE;}
 
 		// Places the ship back at its initial position and resets all vectors
-		virtual void ResetPos();
+		virtual void ResetPosition(double Position);
 
 		//The UI controller will call this when attaching or detaching control.  The Bind parameter will either bind or unbind.  Since these are 
 		//specific controls to a specific ship there is currently no method to transfer these specifics from one ship to the next.  Ideally there

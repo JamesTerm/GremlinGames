@@ -53,6 +53,8 @@ public:
 	double get_number() const;
 protected:
 	std::string m_Name;
+	//Check first run to avoid mucking up the SmartDashboard (i.e. only populate with the inital get is called)
+	mutable bool m_PutNumber_Used,m_PutBoolUsed;
 };
 
 class Control_2C_Element_UI

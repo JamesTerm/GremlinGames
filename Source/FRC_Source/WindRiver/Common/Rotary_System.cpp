@@ -425,22 +425,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 
 	//Keep track of previous velocity to compute acceleration
 	m_PreviousVelocity=Velocity;
-
-	#if 0
-	//Apply the polynomial equation to the voltage to linearize the curve
-	{
-		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
-		double y=fabs(Voltage);
-		double *c=m_Rotary_Props.Polynomial;
-		double x2=y*y;
-		double x3=y*x2;
-		double x4=x2*x2;
-		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
-		Voltage=(Voltage<0)?-y:y;
-	}
-	#else
 	Voltage=m_VoltagePoly(Voltage);
-	#endif
 
 	if (IsZero(PotentiometerVelocity) && (CurrentVelocity==0.0))
 	{
@@ -507,20 +492,36 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 		#endif
 	}
 
+	//Finally check to see if limit switches have been activated
+	if ((Voltage>0.0)&&DidHitMaxLimit())
+	{
+		Voltage=0.0;  // disallow voltage in this direction
+		ResetPosition(m_Rotary_Props.MaxLimitRange);
+	}
+	else if ((Voltage<0.0)&&DidHitMinLimit())
+	{
+		Voltage=0.0;
+		ResetPosition(m_Rotary_Props.MinLimitRange);
+	}
 	m_RobotControl->UpdateRotaryVoltage(m_InstanceIndex,Voltage);
 }
 
-
-void Rotary_Position_Control::ResetPos()
+void Rotary_Position_Control::ResetPosition(double Position)
 {
-	__super::ResetPos();  //Let the super do it stuff first
+	__super::ResetPosition(Position);  //Let the super do it stuff first
+
+	//TODO find case where I had this duplicate call to reset rotary I may omit this... but want to find if it needs to be here
+	//  [2/18/2014 James]
 	//We may need this if we use Kalman filters
-	m_RobotControl->Reset_Rotary(m_InstanceIndex);
+	//m_RobotControl->Reset_Rotary(m_InstanceIndex);
+
 	if ((m_PotentiometerState!=eNoPot)&&(!GetBypassPos_Update()))
 	{
 		m_PIDControllerUp.Reset();
 		m_PIDControllerDown.Reset();
-		m_RobotControl->Reset_Rotary(m_InstanceIndex);
+		//Only reset the encoder if we are reseting the position to the starting position
+		if (Position==GetStartingPosition())
+			m_RobotControl->Reset_Rotary(m_InstanceIndex);
 		double NewPosition=m_RobotControl->GetRotaryCurrentPorV(m_InstanceIndex);
 		Stop();
 		SetPos_m(NewPosition);
@@ -528,6 +529,7 @@ void Rotary_Position_Control::ResetPos()
 	}
 	m_ToleranceCounter=0;
 }
+
 
 void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 {
@@ -711,20 +713,7 @@ void Rotary_Velocity_Control::TimeChange(double dTime_s)
 	m_PreviousVelocity=Velocity;
 
 	//Apply the polynomial equation to the voltage to linearize the curve
-	#if 0
-	{
-		//Note: equations most-likely will not be symmetrical with the -1 - 0 range so we'll work with the positive range and restore the sign
-		double y=fabs(Voltage);
-		double *c=m_Rotary_Props.Polynomial;
-		double x2=y*y;
-		double x3=y*x2;
-		double x4=x2*x2;
-		y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
-		Voltage=(Voltage<0)?-y:y;
-	}
-	#else
 	Voltage=m_VoltagePoly(Voltage);
-	#endif
 
 	if ((IsZero(m_EncoderVelocity)) && IsAccel)
 		ComputeDeadZone(Voltage,m_Rotary_Props.Positive_DeadZone,m_Rotary_Props.Negative_DeadZone);
@@ -912,17 +901,10 @@ void Rotary_Properties::Init()
 	props.LoopState=Rotary_Props::eNone;  //Always false when control is fully functional
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is only for angular so false is a good default (must be explicit in script otherwise)
-	#if 0
-	props.Polynomial[0]=0.0;
-	props.Polynomial[1]=1.0;
-	props.Polynomial[2]=0.0;
-	props.Polynomial[3]=0.0;
-	props.Polynomial[4]=0.0;
-	#else
 	props.Voltage_Terms.Init();
-	#endif
 	props.InverseMaxAccel=props.InverseMaxAccel=0.0;
 	props.Positive_DeadZone=props.Negative_DeadZone=0.0;
+	props.MaxLimitRange=props.MinLimitRange=0.0;  //just zero out; these are optionally used and explicitly set when used
 	Rotary_Props::Rotary_Arm_GainAssist_Props &arm=props.ArmGainAssist; 
 	arm.SlowVelocity=arm.SlowVelocityVoltage=0.0;
 	arm.GainAssistAngleScalar=1.0;
@@ -945,14 +927,10 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 	//I shouldn't need this nested field redundancy... just need to be sure all client cases like this
 	//err = script.GetFieldTable("rotary_settings");
 	//if (!err) 
-
+	//  [2/18/2014 James]
+	//------------------------------------------------------------------------------------------------
 	{
-		//double EncoderToRS_Ratio;
-		//double PID[3]; //p,i,d
-		//double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
-		//int Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
-		//bool IsOpen;  //This should always be false once control is fully functional
-		//bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
+		double fValue;
 
 		script.GetField("voltage_multiply", NULL, NULL, &m_RotaryProps.VoltageScalar);
 		script.GetField("encoder_to_wheel_ratio", NULL, NULL, &m_RotaryProps.EncoderToRS_Ratio);
@@ -1004,7 +982,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		}
 
 		script.GetField("tolerance", NULL, NULL, &m_RotaryProps.PrecisionTolerance);
-		double fValue;
+
 		err=script.GetField("tolerance_count", NULL, NULL, &fValue);
 		if (!err)
 			arm.ToleranceConsecutiveCount=(size_t)fValue;
@@ -1047,6 +1025,21 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 		}
 
 		m_RotaryProps.Voltage_Terms.LoadFromScript(script,"curve_voltage");
+
+		err=script.GetField("min_limit_deg", NULL, NULL, &fValue);
+		if (!err) m_RotaryProps.MinLimitRange=DEG_2_RAD(fValue);
+		else
+		{
+			err=script.GetField("min_limit", NULL, NULL, &fValue);
+			if (!err) m_RotaryProps.MinLimitRange=fValue;
+		}
+		err=script.GetField("max_limit_deg", NULL, NULL, &fValue);
+		if (!err) m_RotaryProps.MaxLimitRange=DEG_2_RAD(fValue);
+		else
+		{
+			err=script.GetField("max_limit", NULL, NULL, &fValue);
+			if (!err) m_RotaryProps.MaxLimitRange=fValue;
+		}
 
 		script.GetField("inv_max_accel", NULL, NULL, &m_RotaryProps.InverseMaxAccel);
 		m_RotaryProps.InverseMaxDecel=m_RotaryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
