@@ -253,7 +253,7 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 /***********************************************************************************************************************************/
 
 FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("IntakeArm",robot_control,eIntake_Arm),m_pParent(parent),m_Advance(false),m_Retract(false)
+	Rotary_Position_Control("IntakeArm",robot_control,eIntakeArm1),m_pParent(parent),m_Advance(false),m_Retract(false)
 {
 }
 
@@ -1096,7 +1096,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 				m_Winch_Pot.TimeChange();  //have this velocity immediately take effect
 			}
 			break;
-		case FRC_2014_Robot::eIntake_Arm:
+		case FRC_2014_Robot::eIntakeArm1:
 			{
 				//	printf("Pitch=%f\n",Voltage);
 				//DOUT3("Pitch Voltage=%f",Voltage);
@@ -1127,7 +1127,7 @@ void FRC_2014_Robot_Control::Reset_Rotary(size_t index)
 		case FRC_2014_Robot::eWinch:
 			m_Winch_Pot.ResetPos();
 			break;
-		case FRC_2014_Robot::eIntake_Arm:
+		case FRC_2014_Robot::eIntakeArm1:
 			m_IntakeArm_Pot.ResetPos();
 			//We may want this for more accurate simulation
 			//m_Pitch_Pot.SetPos_m((m_Pitch_Pot.GetMinRange()+m_Pitch_Pot.GetMaxRange()) / 2.0);
@@ -1198,7 +1198,7 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				//SmartDashboard::PutNumber("Catapult_Angle",RAD_2_DEG(result*c_GearToArmRatio));
 			}
 			break;
-		case FRC_2014_Robot::eIntake_Arm:
+		case FRC_2014_Robot::eIntakeArm1:
 			{
 				assert(false);  //no potentiometer 
 				const double c_GearToArmRatio=1.0/props.Intake_Robot_Props.ArmToGearRatio;
@@ -1272,10 +1272,11 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 			SmartDashboard::PutNumber("WinchVoltage",VoltageToUse);
 		}
 		break;
-	case FRC_2014_Robot::eIntake_Arm:
+	case FRC_2014_Robot::eIntakeArm1:
 		{
 			Voltage=Voltage * m_RobotProps.GetIntake_ArmProps().GetRotaryProps().VoltageScalar;
-			Victor_UpdateVoltage(index,Voltage);
+			Victor_UpdateVoltage(FRC_2014_Robot::eIntakeArm1,Voltage);
+			Victor_UpdateVoltage(FRC_2014_Robot::eIntakeArm2,Voltage);
 			SmartDashboard::PutNumber("IntakeArmVoltage",Voltage);
 		}
 		break;
@@ -1383,7 +1384,8 @@ double FRC_2014_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//SmartDashboard::PutNumber("Catapult_Angle",RAD_2_DEG(result));
 		}
 		break;
-	case FRC_2014_Robot::eIntake_Arm:
+	case FRC_2014_Robot::eIntakeArm1:
+	case FRC_2014_Robot::eIntakeArm2:
 		assert(false);  //no potentiometer 
 		break;
 	}
