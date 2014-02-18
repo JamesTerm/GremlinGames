@@ -60,6 +60,7 @@ class COMMON_API Entity1D
 		const PhysicsEntity_1D &GetPhysics() const {return m_Physics;}
 		virtual double GetDimension() const {return m_Dimension;}
 		virtual double GetStartingPosition() const {return m_StartingPosition;}
+		virtual void ResetPosition(double Position);
 		virtual void ResetPos();
 		// This is where both the entity and camera need to align to, by default we use the actual position
 		virtual const double &GetIntendedPosition() const {return m_Position;}

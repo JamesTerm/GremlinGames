@@ -20,6 +20,7 @@ struct Rotary_Props
 	double InverseMaxDecel;  //used for deceleration case
 	double Positive_DeadZone;
 	double Negative_DeadZone;  //These must be in negative form
+	double MinLimitRange,MaxLimitRange; //for position control these are the angles reset to when limit switches are triggered (only works for open loop)
 
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	enum LoopStates
@@ -130,7 +131,7 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		IEvent::HandlerList ehl;
 		//The parent needs to call initialize
 		virtual void Initialize(Base::EventMap& em,const Entity1D_Properties *props=NULL);
-		virtual void ResetPos();
+		virtual void ResetPosition(double Position);
 		const Rotary_Props &GetRotary_Properties() const {return m_Rotary_Props;}
 		//This is optionally used to lock to another ship (e.g. drive using rotary system)
 		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
@@ -140,6 +141,9 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		virtual void SetPotentiometerSafety(bool DisableFeedback);
 		PotUsage GetPotUsage() const {return m_PotentiometerState;}
 		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
+		//Override these methods if the rotary system has some limit switches included in its setup
+		virtual bool DidHitMinLimit() {return false;}
+		virtual bool DidHitMaxLimit() {return false;}
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback

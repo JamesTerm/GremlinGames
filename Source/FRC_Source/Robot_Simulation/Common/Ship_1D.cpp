@@ -38,19 +38,19 @@ void Ship_1D::NetworkEditProperties(Ship_1D_Props &props)
 	props.MaxAccelReverse=SmartDashboard::GetNumber("max_accel_reverse");
 }
 
-void Ship_1D::ResetPos()
+void Ship_1D::ResetPosition(double Position)
 {
-	__super::ResetPos();
-
+	__super::ResetPosition(Position);
 	m_RequestedVelocity = m_currAccel =0.0;
 	//See case 397... for the 1D this is not really an issue as once we get it started it works itself out... it just cannot be zero to get it started
 	m_Last_RequestedVelocity=-1.0;
-	m_IntendedPosition=GetStartingPosition();
+	m_IntendedPosition=Position;
 	m_IntendedPositionPhysics.ResetVectors();
 	m_LastNormalizedVelocity=0.0;
 	//m_Physics.ResetVectors(); called from entity 1D's reset
 	SetSimFlightMode(true);  //This one is a tough call... probably should do it on reset
 }
+
 
 bool Ship_1D::GetLockShipToPosition() const
 {
