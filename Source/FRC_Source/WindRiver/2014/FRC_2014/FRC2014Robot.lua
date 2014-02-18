@@ -40,12 +40,13 @@ MainRobot = {
 		{
 			id_1 = { name= "left_drive_1", channel=1, module=1}, 
 			id_2 = { name= "left_drive_2", channel=2}, 
-			id_3 = { name= "left_drive_3", channel=5}, 
-			id_4 = { name="right_drive_1", channel=3},
-			id_5 = { name="right_drive_2", channel=4},
+			id_3 = { name="right_drive_1", channel=3},
+			id_4 = { name="right_drive_2", channel=4},
+			id_5 = { name= "left_drive_3", channel=5}, 
 			id_6 = { name="right_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
-			id_8 = { name="intake_arm",    channel=8}
+			id_8 = { name="intake_arm_1",  channel=8},
+			id_9 = { name="intake_arm_2",  channel=9}
 		},
 		double_solenoid =
 		{
@@ -54,12 +55,18 @@ MainRobot = {
 		},
 		digital_input =
 		{
-			id_1 = { name="intake_max",  channel=1}, 
-			id_2 = { name="intake_min",  channel=2}
+			--These channels must be unique to digital input encoder channels as well
+			--Also ensure you do not use the slot for the compressor ;)
+			id_1 = { name="intake_min_1",  channel=7},
+			id_2 = { name="intake_max_1",  channel=8}, 
+			id_3 = { name="intake_min_2",  channel=9},
+			id_4 = { name="intake_max_2",  channel=10}, 
+			id_5 = { name="catapult_limit",channel=11} 
 		},
 		digital_input_encoder =
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
+			--These channels must be unique to digital input channels as well
 			id_1 = { name= "left_drive_1",  a_channel=1, b_channel=2},
 			id_2 = { name="right_drive_1",  a_channel=3, b_channel=4},
 			id_3 = { name="winch",  a_channel=5, b_channel=6}
@@ -188,9 +195,11 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
+			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
+			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
+			max_limit_deg=88 * Catapult_ArmToMotorRatio,  --The angle the limit switch is placed (this is offset from maxrange to determine final velocity when hit)
 			min_range_deg=(-10) * Catapult_ArmToMotorRatio,
 			use_aggressive_stop = 'no',
 			inv_max_accel_up = 0.05,
@@ -247,8 +256,11 @@ MainRobot = {
 			max_accel_reverse=1,
 			using_range=1,					--Warning Only use range if we have a potentiometer! or limit switch
 			--These are arm converted to gear ratio
+			--The intake uses a starting point of 90 to force numbers down from 90 - 0 where zero is pointing straight out
 			max_range_deg= (95) * Intake_ArmToMotorRatio,
+			max_limit_deg=90 * Intake_ArmToMotorRatio,  --The angle the limit switch is placed when intake is stowed
 			min_range_deg= 45 * Intake_ArmToMotorRatio,
+			min_limit_deg=60 * Intake_ArmToMotorRatio,  --The angle the limit switch is placed when intake is deployed
 			use_aggressive_stop = 'yes',
 			inv_max_accel_up = 0.05,
 			inv_max_decel_up = 0.0,
@@ -340,9 +352,10 @@ MainRobot = {
 			
 			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
 			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
-			Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
 			Winch_Advance={type="keyboard", key='k', on_off=true},
+			IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			IntakeArm_SetDeployed={type="keyboard", key='l', on_off=false},
 			IntakeArm_SetStowed={type="keyboard", key=';', on_off=false},
 			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},

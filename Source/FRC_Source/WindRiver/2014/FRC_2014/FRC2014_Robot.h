@@ -79,7 +79,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 
 const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
 {
-	"winch","intake_arm","left_drive_3","right_drive_3"
+	"winch","intake_arm_1","intake_arm_2","left_drive_3","right_drive_3"
 };
 
 const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
@@ -89,7 +89,7 @@ const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
 
 const char * const csz_FRC_2014_Robot_BoolSensorDevices_Enum[] =
 {
-	"intake_min","intake_max"
+	"intake_min_1","intake_max_1","intake_min_2","intake_max_2","catapult_limit"
 };
 
 
@@ -99,7 +99,8 @@ class FRC_2014_Robot : public Tank_Robot
 		enum SpeedControllerDevices
 		{
 			eWinch,
-			eIntake_Arm,
+			eIntakeArm1,
+			eIntakeArm2,
 			eLeftDrive3,
 			eRightDrive3
 		};
@@ -120,8 +121,11 @@ class FRC_2014_Robot : public Tank_Robot
 
 		enum BoolSensorDevices
 		{
-			eIntake_Min,
-			eIntake_Max
+			eIntakeMin1,
+			eIntakeMax1,
+			eIntakeMin2,
+			eIntakeMax2,
+			eCatapultLimit
 		};
 
 		static BoolSensorDevices GetBoolSensorDevices_Enum (const char *value)
@@ -186,6 +190,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
+				virtual bool DidHitMaxLimit();
 
 			private:
 				#ifndef Robot_TesterCode
@@ -221,6 +226,8 @@ class FRC_2014_Robot : public Tank_Robot
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
 
+				virtual bool DidHitMinLimit();
+				virtual bool DidHitMaxLimit();
 			private:
 				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
@@ -390,6 +397,7 @@ class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Contro
 		const FRC_2014_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
+		virtual bool GetBoolSensorState(size_t index);
 		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
 		virtual void OpenSolenoid(size_t index,bool Open);
 	protected: //from Tank_Drive_Control_Interface
@@ -425,6 +433,9 @@ class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Contro
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		Compressor *m_Compressor;
 		double m_WinchVoltage;  //used in simulation but no harm in leaving enabled for wind-river
+		//All digital input reads are done on time change and cached to avoid multiple reads to the FPGA
+		bool m_Limit_IntakeMin1,m_Limit_IntakeMin2,m_Limit_IntakeMax1,m_Limit_IntakeMax2;
+		bool m_Limit_Catapult;
 };
 
 #endif //Robot_TesterCode
