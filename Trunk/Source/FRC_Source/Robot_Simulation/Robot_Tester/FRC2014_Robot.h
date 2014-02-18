@@ -55,6 +55,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
 		const Rotary_Properties &GetWinchProps() const {return m_WinchProps;}
 		const Rotary_Properties &GetIntake_ArmProps() const {return m_Intake_ArmProps;}
+		const Rotary_Properties &GetIntakeRollersProps() const {return m_IntakeRollersProps;}
 
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2014_Robot_Props &GetFRC2014RobotProps() const {return m_FRC2014RobotProps;}
@@ -64,7 +65,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps,m_IntakeRollersProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2014_Robot_Props m_FRC2014RobotProps;
 
@@ -79,7 +80,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 
 const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
 {
-	"winch","intake_arm_1","intake_arm_2","left_drive_3","right_drive_3"
+	"winch","intake_arm_1","intake_arm_2","left_drive_3","right_drive_3","rollers"
 };
 
 const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
@@ -102,7 +103,8 @@ class FRC_2014_Robot : public Tank_Robot
 			eIntakeArm1,
 			eIntakeArm2,
 			eLeftDrive3,
-			eRightDrive3
+			eRightDrive3,
+			eRollers
 		};
 
 		static SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)
@@ -238,6 +240,27 @@ class FRC_2014_Robot : public Tank_Robot
 				FRC_2014_Robot * const m_pParent;
 				bool m_Advance, m_Retract;
 		};
+		class Intake_Rollers : public Rotary_Velocity_Control
+		{
+			public:
+				Intake_Rollers(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
+				IEvent::HandlerList ehl;
+				//Using meaningful terms to assert the correct direction at this level
+				void Grip(bool on);
+				void Squirt(bool on);
+			protected:
+				//Intercept the time change to send out voltage
+				virtual void TimeChange(double dTime_s);
+				virtual void BindAdditionalEventControls(bool Bind);
+			private:
+				#ifndef Robot_TesterCode
+				typedef Rotary_Velocity_Control __super;
+				#endif
+				//events are a bit picky on what to subscribe so we'll just wrap from here
+				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
+				FRC_2014_Robot * const m_pParent;
+				bool m_Grip,m_Squirt;
+		};
 
 	public: //Autonomous public access (wind river has problems with friend technique)
 		const FRC_2014_Robot_Properties &GetRobotProps() const;
@@ -255,6 +278,7 @@ class FRC_2014_Robot : public Tank_Robot
 		PitchRamp m_PitchRamp;
 		Winch m_Winch;
 		Intake_Arm m_Intake_Arm;
+		Intake_Rollers m_Intake_Rollers;
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Vec2D m_DefensiveKeyPosition;
 		double m_LatencyCounter;
