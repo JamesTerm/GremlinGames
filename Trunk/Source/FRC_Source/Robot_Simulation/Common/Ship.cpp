@@ -807,7 +807,8 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 //declared as global to avoid allocation on stack each iteration
 const char * const g_Ship_Controls_Events[] = 
 {
-	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","POV_Turn","Turn_180",
+	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","POV_Turn",
+	"Turn_180","Turn_90R","Turn_90L",
 	"Joystick_SetLeftVelocity","Joystick_SetRightVelocity",
 	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None"
 };
