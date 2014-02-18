@@ -346,9 +346,11 @@ MainRobot = {
 			
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--optionally comment out once robot is calibrated (it may be offered from POV
+			Turn_90R = {type="joystick_button", key=3, on_off=false},
+			Turn_90L = {type="joystick_button", key=1, on_off=false},
 			Turn_180 = {type="joystick_button", key=2, on_off=false},
 			--comment out once robot is calibrated
-			Robot_TestWaypoint={type="joystick_button", key=1, on_off=true},
+			Robot_TestWaypoint={type="joystick_button", key=4, on_off=true},
 		},
 		Joystick_2 =
 		{
