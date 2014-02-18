@@ -352,6 +352,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["Stop"].Remove(*this, &UI_Controller::Stop);
 		em->EventOnOff_Map["Turn_R"].Remove(*this, &UI_Controller::Turn_R);
 		em->EventOnOff_Map["Turn_L"].Remove(*this, &UI_Controller::Turn_L);
+		em->Event_Map["Turn_90R"].Remove(*this, &UI_Controller::Turn_90R);
+		em->Event_Map["Turn_90L"].Remove(*this, &UI_Controller::Turn_90L);
 		em->Event_Map["Turn_180"].Remove(*this, &UI_Controller::Turn_180);
 		em->Event_Map["UserResetPos"].Remove(*this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Remove(*this, &UI_Controller::ResetPos);
@@ -394,6 +396,8 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["Stop"].Subscribe(ehl, *this, &UI_Controller::Stop);
 		em->EventOnOff_Map["Turn_R"].Subscribe(ehl, *this, &UI_Controller::Turn_R);
 		em->EventOnOff_Map["Turn_L"].Subscribe(ehl, *this, &UI_Controller::Turn_L);
+		em->Event_Map["Turn_90R"].Subscribe(ehl, *this, &UI_Controller::Turn_90R);
+		em->Event_Map["Turn_90L"].Subscribe(ehl, *this, &UI_Controller::Turn_90L);
 		em->Event_Map["Turn_180"].Subscribe(ehl, *this, &UI_Controller::Turn_180);
 		em->Event_Map["UserResetPos"].Subscribe(ehl, *this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Subscribe(ehl, *this, &UI_Controller::ResetPos);

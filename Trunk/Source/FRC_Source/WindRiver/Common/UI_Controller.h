@@ -65,6 +65,8 @@ class COMMON_API UI_Controller
 
 		void Turn_R(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Right:Dir_None);}
 		void Turn_L(bool on){if (AreControlsDisabled() && on) return; Ship_Turn(on?Dir_Left:Dir_None);}
+		void Turn_90R() {if (AreControlsDisabled()) return; Ship_Turn(Dir_90Right);}
+		void Turn_90L() {if (AreControlsDisabled()) return; Ship_Turn(Dir_90Left);}
 		void Turn_180() {if (AreControlsDisabled()) return; Ship_Turn(Dir_180);}
 		/// \param Absolute you can use method to set absolute positions as well
 		void Turn_RelativeOffset(double value,bool Absolute=false);
