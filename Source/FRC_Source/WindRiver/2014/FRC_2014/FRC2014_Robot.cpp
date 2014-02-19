@@ -636,6 +636,19 @@ void FRC_2014_Robot::SetLowGearValue(double Value)
 	}
 }
 
+void FRC_2014_Robot::SetCatcherShooter(bool on)
+{
+	m_CatcherShooter=on;
+	m_RobotControl->OpenSolenoid(eCatcherShooter,on);
+}
+
+void FRC_2014_Robot::SetCatcherIntake(bool on)
+{
+	m_CatcherIntake=on;
+	m_RobotControl->OpenSolenoid(eCatcherIntake,on);
+}
+
+
 void FRC_2014_Robot::SetDriverOverride(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
@@ -658,6 +671,15 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_BallTargeting"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargeting);
 		em->Event_Map["Robot_BallTargeting_On"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargetingOn);
 		em->Event_Map["Robot_BallTargeting_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetBallTargetingOff);
+
+		em->EventOnOff_Map["Robot_CatcherShooter"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherShooter);
+		em->Event_Map["Robot_CatcherShooter_On"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherShooterOn);
+		em->Event_Map["Robot_CatcherShooter_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherShooterOff);
+
+		em->EventOnOff_Map["Robot_CatcherIntake"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntake);
+		em->Event_Map["Robot_CatcherIntake_On"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOn);
+		em->Event_Map["Robot_CatcherIntake_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOff);
+
 		em->EventOnOff_Map["Robot_TestWaypoint"].Subscribe(ehl, *this, &FRC_2014_Robot::Robot_TestWaypoint);
 	}
 	else
@@ -670,6 +692,15 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_BallTargeting"]  .Remove(*this, &FRC_2014_Robot::SetBallTargeting);
 		em->Event_Map["Robot_BallTargeting_On"]  .Remove(*this, &FRC_2014_Robot::SetBallTargetingOn);
 		em->Event_Map["Robot_BallTargeting_Off"]  .Remove(*this, &FRC_2014_Robot::SetBallTargetingOff);
+
+		em->EventOnOff_Map["Robot_CatcherShooter"]  .Remove(*this, &FRC_2014_Robot::SetCatcherShooter);
+		em->Event_Map["Robot_CatcherShooter_On"]  .Remove(*this, &FRC_2014_Robot::SetCatcherShooterOn);
+		em->Event_Map["Robot_CatcherShooter_Off"]  .Remove(*this, &FRC_2014_Robot::SetCatcherShooterOff);
+
+		em->EventOnOff_Map["Robot_CatcherIntake"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntake);
+		em->Event_Map["Robot_CatcherIntake_On"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOn);
+		em->Event_Map["Robot_CatcherIntake_Off"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOff);
+
 		em->EventOnOff_Map["Robot_TestWaypoint"]  .Remove(*this, &FRC_2014_Robot::Robot_TestWaypoint);
 	}
 
@@ -906,6 +937,8 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance",
 	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
 	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
+	"Robot_CatcherShooter","Robot_CatcherShooter_On","Robot_CatcherShooter_Off",
+	"Robot_CatcherIntake","Robot_CatcherIntake_On","Robot_CatcherIntake_Off",
 	"IntakeRollers_Grip","IntakeRollers_Squirt","IntakeRollers_SetCurrentVelocity",
 	"Robot_TestWaypoint"
 };
@@ -1112,6 +1145,8 @@ FRC_2014_Goals::OperateSolenoid::Goal_Status FRC_2014_Goals::OperateSolenoid::Pr
 			assert(false);
 			break;
 		case FRC_2014_Robot::eReleaseClutch:
+		case FRC_2014_Robot::eCatcherShooter:
+		case FRC_2014_Robot::eCatcherIntake:
 			break;
 	}
 	m_Status=eCompleted;
@@ -1317,6 +1352,14 @@ void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
 		printf("ReleaseClutch=%d\n",Open);
 		SmartDashboard::PutBoolean("ClutchEngaged",!Open);
 		break;
+	case FRC_2014_Robot::eCatcherShooter:
+		printf("CatcherShooter=%d\n",Open);
+		SmartDashboard::PutBoolean("CatcherShooter",Open);
+		break;
+	case  FRC_2014_Robot::eCatcherIntake:
+		printf("CatcherIntake=%d\n",Open);
+		SmartDashboard::PutBoolean("CatcherIntake",Open);
+		break;
 	}
 }
 
@@ -1513,13 +1556,19 @@ void FRC_2014_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	switch (index)
 	{
 	case FRC_2014_Robot::eUseLowGear:
-		//printf("UseLowGear=%d\n",Open);
 		SmartDashboard::PutBoolean("UseHighGear",!Open);
 		Solenoid_Open(index,Open);
 		break;
 	case FRC_2014_Robot::eReleaseClutch:
-		//printf("ReleaseClutch=%d\n",Open);
 		SmartDashboard::PutBoolean("ClutchEngaged",!Open);
+		Solenoid_Open(index,Open);
+		break;
+	case FRC_2014_Robot::eCatcherShooter:
+		SmartDashboard::PutBoolean("CatcherShooter",Open);
+		Solenoid_Open(index,Open);
+		break;
+	case  FRC_2014_Robot::eCatcherIntake:
+		SmartDashboard::PutBoolean("CatcherIntake",Open);
 		Solenoid_Open(index,Open);
 		break;
 	}

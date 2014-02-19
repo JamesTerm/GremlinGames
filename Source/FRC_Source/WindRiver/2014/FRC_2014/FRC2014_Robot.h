@@ -85,7 +85,7 @@ const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
 
 const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
 {
-	"use_low_gear","release_clutch"
+	"use_low_gear","release_clutch","catcher_shooter","catcher_intake"
 };
 
 const char * const csz_FRC_2014_Robot_BoolSensorDevices_Enum[] =
@@ -114,7 +114,9 @@ class FRC_2014_Robot : public Tank_Robot
 		enum SolenoidDevices
 		{
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
-			eReleaseClutch     //If true it is released if false it is engaged
+			eReleaseClutch,     //If true it is released if false it is engaged
+			eCatcherShooter,
+			eCatcherIntake
 		};
 
 		static SolenoidDevices GetSolenoidDevices_Enum (const char *value)
@@ -309,6 +311,16 @@ class FRC_2014_Robot : public Tank_Robot
 		void SetBallTargeting_Off(bool off) {SetBallTargeting(!off);}
 		void SetBallTargetingOn() {SetBallTargeting(true);}
 		void SetBallTargetingOff() {SetBallTargeting(false);}
+
+		bool m_CatcherShooter;
+		void SetCatcherShooter(bool on);
+		void SetCatcherShooterOn() {SetCatcherShooter(true);}
+		void SetCatcherShooterOff() {SetCatcherShooter(false);}
+
+		bool m_CatcherIntake;
+		void SetCatcherIntake(bool on);
+		void SetCatcherIntakeOn() {SetCatcherIntake(true);}
+		void SetCatcherIntakeOff() {SetCatcherIntake(false);}
 
 		void Robot_TestWaypoint(bool on);
 };
