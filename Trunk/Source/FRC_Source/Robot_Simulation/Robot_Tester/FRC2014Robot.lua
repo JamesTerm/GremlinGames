@@ -51,8 +51,10 @@ MainRobot = {
 		},
 		double_solenoid =
 		{
-			id_1 = { name="use_low_gear",   forward_channel=1, reverse_channel=2},
-			id_2 = { name="release_clutch", forward_channel=3, reverse_channel=4}
+			id_1 = { name="use_low_gear",    forward_channel=1, reverse_channel=2},
+			id_2 = { name="release_clutch",  forward_channel=3, reverse_channel=4},
+			id_3 = { name="catcher_shooter", forward_channel=5, reverse_channel=6},
+			id_4 = { name="catcher_intake",	 forward_channel=7, reverse_channel=8}
 		},
 		digital_input =
 		{
@@ -360,7 +362,10 @@ MainRobot = {
 			IntakeArm_SetDeployed={type="keyboard", key='l', on_off=false},
 			IntakeArm_SetStowed={type="keyboard", key=';', on_off=false},
 			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},
-			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false}
+			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false},
+			Winch_Advance={type="keyboard", key='k', on_off=true},
+			Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
+			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
 		},
 		
 		Joystick_2 =
@@ -406,7 +411,6 @@ MainRobot = {
 			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
 			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
-			Winch_Advance={type="keyboard", key='k', on_off=true},
 		}
 
 	},
