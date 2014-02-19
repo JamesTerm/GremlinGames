@@ -42,9 +42,9 @@ MainRobot = {
 		{
 			id_1 = { name= "left_drive_1", channel=1, module=1}, 
 			id_2 = { name= "left_drive_2", channel=2}, 
-			id_3 = { name="right_drive_1", channel=3},
-			id_4 = { name="right_drive_2", channel=4},
-			id_5 = { name= "left_drive_3", channel=5}, 
+			id_3 = { name= "left_drive_3", channel=3}, 
+			id_4 = { name="right_drive_1", channel=4},
+			id_5 = { name="right_drive_2", channel=5},
 			id_6 = { name="right_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
 			id_8 = { name="intake_arm_1",  channel=8},
