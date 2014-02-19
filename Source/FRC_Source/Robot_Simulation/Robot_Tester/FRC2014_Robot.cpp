@@ -1145,6 +1145,8 @@ FRC_2014_Goals::OperateSolenoid::Goal_Status FRC_2014_Goals::OperateSolenoid::Pr
 			assert(false);
 			break;
 		case FRC_2014_Robot::eReleaseClutch:
+		case FRC_2014_Robot::eCatcherShooter:
+		case FRC_2014_Robot::eCatcherIntake:
 			break;
 	}
 	m_Status=eCompleted;
