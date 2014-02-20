@@ -321,8 +321,6 @@ class FRC_2014_Robot : public Tank_Robot
 		void SetCatcherIntake(bool on);
 		void SetCatcherIntakeOn() {SetCatcherIntake(true);}
 		void SetCatcherIntakeOff() {SetCatcherIntake(false);}
-
-		void Robot_TestWaypoint(bool on);
 };
 
 class FRC_2014_Goals
