@@ -1054,28 +1054,100 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 	private:
 		FRC_2014_Robot &m_Robot;
 		double m_Timer;
-	public:
-		FRC_2014_Goals_Impl(FRC_2014_Robot &robot) : m_Robot(robot), m_Timer(0.0)
+
+		class goal_clock : public AtomicGoal
 		{
-			m_Status=eActive;
+		private:
+			FRC_2014_Goals_Impl *m_Parent;
+		public:
+			goal_clock(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent) {	m_Status=eActive;	}
+			void Activate()  {	m_Status=eActive;	}
+			Goal_Status Process(double dTime_s)
+			{
+				double &Timer=m_Parent->m_Timer;
+				if (m_Status==eActive)
+				{
+					SmartDashboard::PutNumber("Auton Timer",10.0-Timer);
+					Timer+=dTime_s;
+					if (Timer>=10.0)
+						m_Status=eCompleted;
+				}
+				return m_Status;
+			}
+			void Terminate() {	m_Status=eFailed;	}
+		};
+		MultitaskGoal m_Primer;
+
+		enum AutonType
+		{
+			eDoNothing,
+			eOneBall,
+			eTwoBall,
+			eThreeBall,
+			eNoAutonTypes
+		} m_AutonType;
+		enum Robot_Position
+		{
+			ePosition_Center,
+			ePosition_Left,
+			ePosition_Right
+		} m_RobotPosition;
+	public:
+		FRC_2014_Goals_Impl(FRC_2014_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
+			m_Primer(false) //who ever is done first on this will complete the goals (i.e. if time runs out)
+		{
+			m_Status=eInactive;
 		}
 		void Activate() 
 		{
+			m_Primer.AsGoal().Terminate();  //sanity check clear previous session
+
+			//pull parameters from SmartDashboard
+			try
+			{
+				const double fBallCount=SmartDashboard::GetNumber("Auton BallCount");
+				int BallCount=(size_t)fBallCount;
+				if ((BallCount<0)||(BallCount>eNoAutonTypes))
+					BallCount=eDoNothing;
+				m_AutonType=(AutonType)BallCount;
+			}
+			catch (...)
+			{
+				m_AutonType=eDoNothing;
+				SmartDashboard::PutNumber("Auton BallCount",0.0);
+			}
+
+			try
+			{
+				const double fPosition=SmartDashboard::GetNumber("Auton Position");
+				int Position=(size_t)fPosition;
+				if ((Position<0)||(Position>eNoAutonTypes))
+					Position=eDoNothing;
+				m_RobotPosition=(Robot_Position)Position;
+			}
+			catch (...)
+			{
+				m_RobotPosition=ePosition_Center;
+				SmartDashboard::PutNumber("Auton Position",0.0);
+			}
+
+			printf("ball count=%d position=%d\n",m_AutonType,m_RobotPosition);
+
+			m_Primer.AddGoal(new goal_clock(this));
+			m_Primer.Activate();
 			m_Status=eActive;
 		}
+
 		Goal_Status Process(double dTime_s)
 		{
+			ActivateIfInactive();
 			if (m_Status==eActive)
-			{
-				SmartDashboard::PutNumber("Auton Timer",10.0-m_Timer);
-				m_Timer+=dTime_s;
-				if (m_Timer>=10.0)
-					m_Status=eCompleted;
-			}
+				m_Status=m_Primer.AsGoal().Process(dTime_s);
 			return m_Status;
 		}
 		void Terminate() 
 		{
+			m_Primer.AsGoal().Terminate();
 			m_Status=eFailed;
 		}
 };
