@@ -679,8 +679,6 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_CatcherIntake"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntake);
 		em->Event_Map["Robot_CatcherIntake_On"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOn);
 		em->Event_Map["Robot_CatcherIntake_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOff);
-
-		em->EventOnOff_Map["Robot_TestWaypoint"].Subscribe(ehl, *this, &FRC_2014_Robot::Robot_TestWaypoint);
 	}
 	else
 	{
@@ -700,8 +698,6 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_CatcherIntake"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntake);
 		em->Event_Map["Robot_CatcherIntake_On"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOn);
 		em->Event_Map["Robot_CatcherIntake_Off"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOff);
-
-		em->EventOnOff_Map["Robot_TestWaypoint"]  .Remove(*this, &FRC_2014_Robot::Robot_TestWaypoint);
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
@@ -737,61 +733,6 @@ void FRC_2014_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAccelerat
 	}
 }
 
-void FRC_2014_Robot::Robot_TestWaypoint(bool on)
-{
-	if (on)
-	{
-		if (!GetGoal())
-		{
-			m_controller->GetUIController_RW()->SetAutoPilot(true);
-			//Construct a way point
-			WayPoint wp;
-			const Vec2d &pos=GetPos_m();
-
-			//Using a a try/catch technique makes it possible to use the last entered value from a previous session
-			#if 1
-			Vec2d Local_GoalTarget;
-			try
-			{
-				Local_GoalTarget=Vec2d(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
-			}
-			catch (...)
-			{
-				Local_GoalTarget=Vec2d(0.0,3.0);
-				SmartDashboard::PutNumber("Waypoint_x",Local_GoalTarget[0]);
-				SmartDashboard::PutNumber("Waypoint_y",Local_GoalTarget[1]);
-			}
-			#else
-			const Vec2d Local_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
-			#endif
-
-			const Vec2d Global_GoalTarget=LocalToGlobal(GetAtt_r(),Local_GoalTarget);
-			wp.Position=Global_GoalTarget+pos;
-			wp.Power=1.0;
-			//Now to setup the goal
-			//For open loop we must use lock orientation 
-			const bool LockOrientation=m_RobotProps.GetTankRobotProps().IsOpen;
-			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,LockOrientation,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
-			//set the trajectory point
-			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
-			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
-			const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(GetAtt_r(),LocalTrajectoryOffset);
-			goal_drive->SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
-			SetGoal(goal_drive);
-		}
-	}
-	else
-	{
-		//if we had a goal clear it
-		if (GetGoal())
-		{
-			m_controller->GetUIController_RW()->SetAutoPilot(false);
-			ClearGoal();
-			GetController()->SetShipVelocity(0.0);
-			SetGoal(NULL);
-		}
-	}
-}
 
   /***********************************************************************************************************************************/
  /*													FRC_2014_Robot_Properties														*/
@@ -947,8 +888,7 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
 	"Robot_CatcherShooter","Robot_CatcherShooter_On","Robot_CatcherShooter_Off",
 	"Robot_CatcherIntake","Robot_CatcherIntake_On","Robot_CatcherIntake_Off",
-	"IntakeRollers_Grip","IntakeRollers_Squirt","IntakeRollers_SetCurrentVelocity",
-	"Robot_TestWaypoint"
+	"IntakeRollers_Grip","IntakeRollers_Squirt","IntakeRollers_SetCurrentVelocity"
 };
 
 const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
