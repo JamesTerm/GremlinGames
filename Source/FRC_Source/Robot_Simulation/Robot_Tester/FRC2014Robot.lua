@@ -367,6 +367,7 @@ MainRobot = {
 			Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
 			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
 			TestWaypoint={type="keyboard", key='q', on_off=true},
+			TestAuton={type="keyboard", key='g', on_off=false},
 		},
 		
 		Joystick_2 =
