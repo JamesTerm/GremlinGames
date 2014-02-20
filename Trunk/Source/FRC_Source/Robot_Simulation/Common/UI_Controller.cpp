@@ -189,7 +189,8 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	kbm.AddKeyBindingR(true, "StrafeRight", 'e');
 	kbm.AddKeyBindingR(true, "StrafeLeft", 'q');
 	kbm.AddKeyBindingR(false, "UserResetPos", ' ');
-	kbm.AddKeyBindingR(false, "Slide", 'g');
+	//Using g for goal now ;)
+	//kbm.AddKeyBindingR(false, "Slide", 'g');
 	kbm.AddKeyBindingR(true, "StrafeLeft", osgGA::GUIEventAdapter::KEY_Left);
 	kbm.AddKeyBindingR(true, "StrafeRight", osgGA::GUIEventAdapter::KEY_Right);
 	kbm.AddKeyBindingR(false, "ToggleAutoPilot", 'z');

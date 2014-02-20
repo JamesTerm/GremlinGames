@@ -321,55 +321,15 @@ class FRC_2014_Robot : public Tank_Robot
 		void SetCatcherIntake(bool on);
 		void SetCatcherIntakeOn() {SetCatcherIntake(true);}
 		void SetCatcherIntakeOff() {SetCatcherIntake(false);}
+
+		#ifdef Robot_TesterCode
+		void TestAutonomous();
+		#endif
 };
 
-class FRC_2014_Goals
+namespace FRC_2014_Goals
 {
-	public:
-		static Goal *Get_ShootBalls(FRC_2014_Robot *Robot,bool DoSquirt=false);
-		static Goal *Get_ShootBalls_WithPreset(FRC_2014_Robot *Robot,size_t KeyIndex);
-		static Goal *Get_FRC2014_Autonomous(FRC_2014_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex);
-	private:
-		class Fire : public AtomicGoal
-		{
-		private:
-			FRC_2014_Robot &m_Robot;
-			bool m_Terminate;
-			bool m_IsOn;
-			bool m_DoSquirt;  //If True it does the feed instead of fire
-		public:
-			Fire(FRC_2014_Robot &robot, bool On, bool DoSquirt=false);
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s);
-			virtual void Terminate() {m_Terminate=true;}
-		};
-
-		class WaitForBall : public AtomicGoal
-		{
-		private:
-			FRC_2014_Robot &m_Robot;
-			double m_Tolerance;
-			bool m_Terminate;
-		public:
-			WaitForBall(FRC_2014_Robot &robot,double Tolerance);
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s);
-			virtual void Terminate() {m_Terminate=true;}
-		};
-
-		class OperateSolenoid : public AtomicGoal
-		{
-		private:
-			FRC_2014_Robot &m_Robot;
-			const FRC_2014_Robot::SolenoidDevices m_SolenoidDevice;
-			bool m_Terminate;
-			bool m_IsOpen;
-		public:
-			OperateSolenoid(FRC_2014_Robot &robot,FRC_2014_Robot::SolenoidDevices SolenoidDevice,bool Open);
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s);
-			virtual void Terminate() {m_Terminate=true;}
-		};
+	Goal *Get_FRC2014_Autonomous(FRC_2014_Robot *Robot);
 };
 
 #undef __TestControlAssignments__
