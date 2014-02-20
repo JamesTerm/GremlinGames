@@ -366,6 +366,7 @@ MainRobot = {
 			Winch_Advance={type="keyboard", key='k', on_off=true},
 			Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
 			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
+			Robot_TestWaypoint={type="keyboard", key='q', on_off=true},
 		},
 		
 		Joystick_2 =

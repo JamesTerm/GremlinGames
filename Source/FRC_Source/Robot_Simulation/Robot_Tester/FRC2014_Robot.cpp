@@ -744,26 +744,34 @@ void FRC_2014_Robot::Robot_TestWaypoint(bool on)
 		if (!GetGoal())
 		{
 			m_controller->GetUIController_RW()->SetAutoPilot(true);
-			static size_t FirstRun=0;
-			if (FirstRun++==0)
-			{
-				SmartDashboard::PutNumber("Waypoint_x",0.0);
-				SmartDashboard::PutNumber("Waypoint_y",3.0);
-			}
 			//Construct a way point
 			WayPoint wp;
 			const Vec2d &pos=GetPos_m();
+
+			//Using a a try/catch technique makes it possible to use the last entered value from a previous session
+			#if 1
+			Vec2d Local_GoalTarget;
+			try
+			{
+				Local_GoalTarget=Vec2d(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
+			}
+			catch (...)
+			{
+				Local_GoalTarget=Vec2d(0.0,3.0);
+				SmartDashboard::PutNumber("Waypoint_x",Local_GoalTarget[0]);
+				SmartDashboard::PutNumber("Waypoint_y",Local_GoalTarget[1]);
+			}
+			#else
 			const Vec2d Local_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
+			#endif
+
 			const Vec2d Global_GoalTarget=LocalToGlobal(GetAtt_r(),Local_GoalTarget);
 			wp.Position=Global_GoalTarget+pos;
 			wp.Power=1.0;
 			//Now to setup the goal
-			//Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,false,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
-			//TODO for now we'll have to lock to orientation... this is because the solution of turning adjustments is solved incorrectly... to
-			//solve correctly would entail the curve be applied on a read back from the encoders or something along these lines to inject the displacement
-			//to where it should be... I may add this later but for now this solution will work for a the turn then move solution
-			//  [2/17/2014 JamesK]
-			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,true,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
+			//For open loop we must use lock orientation 
+			const bool LockOrientation=m_RobotProps.GetTankRobotProps().IsOpen;
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,LockOrientation,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
 			//set the trajectory point
 			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
 			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
