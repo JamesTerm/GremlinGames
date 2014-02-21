@@ -5,7 +5,9 @@ class COMMON_API Tank_Steering
 {
 	private:
 		double m_LeftVelocity, m_RightVelocity;  //for tank steering
+		double m_LeftXAxis,m_RightXAxis;
 		double m_StraightDeadZone_Tolerance;  //used to help controls drive straight
+		bool m_90DegreeTurnValve;
 		bool m_AreControlsDisabled;
 	public:
 		Tank_Steering();
@@ -21,6 +23,8 @@ class COMMON_API Tank_Steering
 	protected:
 		void Joystick_SetLeftVelocity(double Velocity);
 		void Joystick_SetRightVelocity(double Velocity);
+		void Joystick_SetLeft_XAxis(double Value);
+		void Joystick_SetRight_XAxis(double Value);
 };
 
 class COMMON_API AI_Base_Controller
