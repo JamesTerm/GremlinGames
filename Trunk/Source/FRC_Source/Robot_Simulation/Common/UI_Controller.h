@@ -68,6 +68,9 @@ class COMMON_API UI_Controller
 		void Turn_90R() {if (AreControlsDisabled()) return; Ship_Turn(Dir_90Right);}
 		void Turn_90L() {if (AreControlsDisabled()) return; Ship_Turn(Dir_90Left);}
 		void Turn_180() {if (AreControlsDisabled()) return; Ship_Turn(Dir_180);}
+		void Turn_180_Hold(bool on);
+		void FlipY();
+		void FlipY_Hold(bool on) {if (on) FlipY();}
 		/// \param Absolute you can use method to set absolute positions as well
 		void Turn_RelativeOffset(double value,bool Absolute=false);
 
@@ -199,6 +202,7 @@ class COMMON_API UI_Controller
 		bool m_SlideButtonToggle;
 		bool m_FireButton;
 		double m_CruiseSpeed; ///< This is used with the Joystick control to only apply speed changes when a change occurs
+		double m_YFlipScalar;  ///< Used to dynamically flip the orientation of the Y controls (Always 1.0 or -1.0)
 
 		// Are we flying in auto-pilot?
 		bool m_autoPilot;
