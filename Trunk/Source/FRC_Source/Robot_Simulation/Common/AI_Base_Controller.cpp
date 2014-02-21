@@ -332,9 +332,14 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy,void 
  /*															Tank_Steering															*/
 /***********************************************************************************************************************************/
 
-Tank_Steering::Tank_Steering() : m_LeftVelocity(0.0),m_RightVelocity(0.0),m_StraightDeadZone_Tolerance(0.05),m_AreControlsDisabled(false)
+Tank_Steering::Tank_Steering() : m_LeftVelocity(0.0),m_RightVelocity(0.0),m_LeftXAxis(0.0),m_RightXAxis(0.0),
+	m_StraightDeadZone_Tolerance(0.05),m_90DegreeTurnValve(false),m_AreControlsDisabled(false)
 {
 }
+
+  //We may want to tweak these in LUA
+const double Tank_Steering_XAxisSignal_Threshold=0.9;
+const double Tank_Steering_XAxisSignal_MinThreshold=0.2;
 
 void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s)
 {
@@ -352,7 +357,29 @@ void Tank_Steering::UpdateController(double &AuxVelocity,Vec2D &LinearAccelerati
 	AngularAcceleration=omega*ship.GetHeadingSpeed();
 	if (!IsZero(omega))
 		LockShipHeadingToOrientation=true;
+
 	//DOUT4("%f %f %f",m_LeftVelocity,m_RightVelocity,difference);
+
+	if (m_90DegreeTurnValve==false)
+	{
+		Ship_2D *ship_rw=const_cast<Ship_2D *>(&ship); //Grrr this is not a perfect solution :(
+		UI_Controller* controller=ship_rw->GetController()->GetUIController_RW();
+		if (controller)
+		{
+			if ((m_LeftXAxis>Tank_Steering_XAxisSignal_Threshold)||(m_RightXAxis>Tank_Steering_XAxisSignal_Threshold))
+			{
+				m_90DegreeTurnValve=true;
+				controller->Turn_90R();
+			}
+			else if ((m_LeftXAxis<-Tank_Steering_XAxisSignal_Threshold)||(m_RightXAxis<-Tank_Steering_XAxisSignal_Threshold))
+			{
+				m_90DegreeTurnValve=true;
+				controller->Turn_90L();
+			}
+		}
+	}
+	else if ((fabs(m_LeftXAxis)<Tank_Steering_XAxisSignal_MinThreshold)&&(fabs(m_RightXAxis)<Tank_Steering_XAxisSignal_MinThreshold))
+		m_90DegreeTurnValve=false;
 }
 
 void Tank_Steering::Joystick_SetLeftVelocity(double Velocity)
@@ -370,17 +397,41 @@ void Tank_Steering::Joystick_SetRightVelocity(double Velocity)
 		m_RightVelocity=0.0;
 }
 
+void Tank_Steering::Joystick_SetLeft_XAxis(double Value)
+{
+	if (!m_AreControlsDisabled)
+	{
+		m_LeftXAxis=Value;
+	}
+	else
+		m_LeftXAxis=0.0;
+}
+
+void Tank_Steering::Joystick_SetRight_XAxis(double Value)
+{
+	if (!m_AreControlsDisabled)
+	{
+		m_RightXAxis=Value;
+	}
+	else
+		m_RightXAxis=0.0;
+}
+
 void Tank_Steering::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
 {
 	if (Bind)
 	{
 		em->EventValue_Map["Joystick_SetLeftVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetLeftVelocity);
 		em->EventValue_Map["Joystick_SetRightVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetRightVelocity);
+		em->EventValue_Map["Joystick_SetLeft_XAxis"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetLeft_XAxis);
+		em->EventValue_Map["Joystick_SetRight_XAxis"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetRight_XAxis);
 	}
 	else
 	{
 		em->EventValue_Map["Joystick_SetLeftVelocity"].Remove(*this, &Tank_Steering::Joystick_SetLeftVelocity);
 		em->EventValue_Map["Joystick_SetRightVelocity"].Remove(*this, &Tank_Steering::Joystick_SetRightVelocity);
+		em->EventValue_Map["Joystick_SetLeft_XAxis"].Remove(*this, &Tank_Steering::Joystick_SetLeft_XAxis);
+		em->EventValue_Map["Joystick_SetRight_XAxis"].Remove(*this, &Tank_Steering::Joystick_SetRight_XAxis);
 	}
 }
 
