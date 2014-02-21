@@ -368,6 +368,7 @@ MainRobot = {
 			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
 			TestWaypoint={type="keyboard", key='q', on_off=true},
 			TestAuton={type="keyboard", key='g', on_off=false},
+			--Slide={type="keyboard", key='g', on_off=false},
 		},
 		
 		Joystick_2 =
@@ -375,7 +376,8 @@ MainRobot = {
 			control = "logitech dual action",
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_culver", key_x=2, key_y=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
@@ -389,7 +391,9 @@ MainRobot = {
 			--Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false}
+			Turn_180_Hold = {type="joystick_button", key=7, on_off=true},
+			FlipY_Hold = {type="joystick_button", key=7, on_off=true},
+			SlideHold = {type="joystick_button", key=7, on_off=true}
 		},
 		Joystick_3 =
 		{

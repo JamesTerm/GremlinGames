@@ -158,7 +158,7 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	#else
 	m_JoyStick_Binder(joy),
 	#endif
-	m_isControlled(false),m_ShipKeyVelocity(0.0),m_SlideButtonToggle(false),m_CruiseSpeed(0.0),
+	m_isControlled(false),m_ShipKeyVelocity(0.0),m_SlideButtonToggle(false),m_CruiseSpeed(0.0),m_YFlipScalar(1.0),
 	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Ship_UseHeadingSpeed(true),m_Test1(false),m_Test2(false),m_IsBeingDestroyed(false),
 	m_POVSetValve(false)
 {
@@ -338,6 +338,9 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["Turn_90R"].Remove(*this, &UI_Controller::Turn_90R);
 		em->Event_Map["Turn_90L"].Remove(*this, &UI_Controller::Turn_90L);
 		em->Event_Map["Turn_180"].Remove(*this, &UI_Controller::Turn_180);
+		em->EventOnOff_Map["Turn_180_Hold"].Remove(*this, &UI_Controller::Turn_180_Hold);
+		em->Event_Map["FlipY"].Remove(*this, &UI_Controller::FlipY);
+		em->EventOnOff_Map["FlipY_Hold"].Remove(*this, &UI_Controller::FlipY_Hold);
 		em->Event_Map["UserResetPos"].Remove(*this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Remove(*this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Remove(*this, &UI_Controller::ToggleSlide);
@@ -382,6 +385,9 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->Event_Map["Turn_90R"].Subscribe(ehl, *this, &UI_Controller::Turn_90R);
 		em->Event_Map["Turn_90L"].Subscribe(ehl, *this, &UI_Controller::Turn_90L);
 		em->Event_Map["Turn_180"].Subscribe(ehl, *this, &UI_Controller::Turn_180);
+		em->EventOnOff_Map["Turn_180_Hold"].Subscribe(ehl, *this, &UI_Controller::Turn_180_Hold);
+		em->Event_Map["FlipY"].Subscribe(ehl, *this, &UI_Controller::FlipY);
+		em->EventOnOff_Map["FlipY_Hold"].Subscribe(ehl, *this, &UI_Controller::FlipY_Hold);
 		em->Event_Map["UserResetPos"].Subscribe(ehl, *this, &UI_Controller::UserResetPos);
 		em->Event_Map["ResetPos"].Subscribe(ehl, *this, &UI_Controller::ResetPos);
 		em->Event_Map["Slide"].Subscribe(ehl, *this, &UI_Controller::ToggleSlide);
@@ -524,7 +530,7 @@ void UI_Controller::Ship_Turn(Directions dir)
 			m_Ship_UseHeadingSpeed=false;
 			break;
 		case Dir_180:
-			#ifdef __TWEAK180__
+			#if defined( __TWEAK180__) && !defined (__DisableSmartDashboard__)
 			struct SetUp { SetUp() {SmartDashboard::PutNumber("Tweak180",180.0);} };
 			static SetUp init;
 			const double TurnAmount=SmartDashboard::GetNumber("Tweak180");
@@ -560,6 +566,22 @@ void UI_Controller::Ship_Turn90_POV (double value)
 		m_POVSetValve=false;
 }
 
+void UI_Controller::Turn_180_Hold(bool on) 
+{
+	if (AreControlsDisabled()) return; 
+	if (on)
+		Ship_Turn(Dir_180);
+	else
+	{
+		m_Ship_UseHeadingSpeed=true;
+		m_ship->SetCurrentAngularAcceleration(0.0,true);
+	}
+}
+
+void UI_Controller::FlipY()
+{
+	m_YFlipScalar=-m_YFlipScalar;
+}
 
 void UI_Controller::CancelAllControls()
 {
@@ -749,14 +771,15 @@ void UI_Controller::UpdateController(double dTime_s)
 			// Normally we pass the the ship the addition of the keyboard and mouse accel
 			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
 
+			const double ReverseScalar=m_YFlipScalar;
 			// apply various input sources to current acceleration
 			if (m_ship->GetAlterTrajectory())
 			{
 				m_ShipKeyVelocity+=(shipAccel[1]*dTime_s);
-				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],m_CruiseSpeed+AuxiliaryVelocity+m_ShipKeyVelocity)); //this will check implicitly for which mode to use
+				m_ship->SetRequestedVelocity(Vec2d(shipAccel[0],(m_CruiseSpeed+AuxiliaryVelocity+m_ShipKeyVelocity)*ReverseScalar)); //this will check implicitly for which mode to use
 			}
 			else
-				m_ship->SetCurrentLinearAcceleration(shipAccel); 
+				m_ship->SetCurrentLinearAcceleration(Vec2d(shipAccel[0],shipAccel[1]*ReverseScalar)); 
 
 			
 			//flush the JoyMouse current acceleration vec2 since it works on an additive nature
