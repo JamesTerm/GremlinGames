@@ -457,6 +457,10 @@ class COMMON_API Ship_Tester : public Ship_2D
 		virtual double TestWaypoint_GetPrecisionTolerance() const {return Feet2Meters(0.5);}
 
 		virtual void BindAdditionalEventControls(bool Bind);
+	private:
+		#ifndef Robot_TesterCode
+		typedef Ship_2D __super;
+		#endif
 };
 
 #ifdef Robot_TesterCode
