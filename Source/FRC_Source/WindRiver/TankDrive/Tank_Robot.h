@@ -117,7 +117,8 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 			{m_TankSteering.UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,*this,LockShipHeadingToOrientation,dTime_s);
 			}
 		virtual void BindAdditionalEventControls(bool Bind) 
-			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
+			{	m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
+				__super::BindAdditionalEventControls(Bind);
 			}
 		//this may need to be overridden for robots that need it on for certain cases like 2012 needing it on for low gear
 		virtual bool GetUseAgressiveStop() const;
@@ -127,6 +128,8 @@ class DRIVE_API Tank_Robot : public Ship_Tester,
 		//This adds ability to tune the turning
 		virtual void SetIntendedOrientation(double IntendedOrientation,bool Absolute=true);
 		virtual const bool CanStrafe() {return false;}
+		virtual bool TestWaypoint_GetLockOrientation() const;
+		virtual double TestWaypoint_GetPrecisionTolerance() const;
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_TankRobotProps.WheelDimensions;}
 		//Note by default a 6WD Tank Robot is assumed to set length for a 4WD (or half the total length of 6)
