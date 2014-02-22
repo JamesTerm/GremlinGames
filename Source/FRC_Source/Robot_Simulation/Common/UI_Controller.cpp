@@ -784,7 +784,9 @@ void UI_Controller::UpdateController(double dTime_s)
 			
 			//flush the JoyMouse current acceleration vec2 since it works on an additive nature
 			m_Ship_JoyMouse_currAccel=Vec2d(0.0,0.0);
-		
+			//reset m_ShipKeyVelocity if it got its value from joystick
+			if (m_Ship_Keyboard_currAccel.length2()==0.0)
+				m_ShipKeyVelocity=0.0;
 		
 			//add all the various input types to the main rotation velocity
 			double rotAcc=(m_Ship_Keyboard_rotAcc_rad_s+m_Ship_JoyMouse_rotAcc_rad_s);
