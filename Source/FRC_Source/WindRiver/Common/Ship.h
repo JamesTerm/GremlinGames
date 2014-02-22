@@ -449,6 +449,18 @@ class COMMON_API Ship_Tester : public Ship_2D
 		Goal *ClearGoal();
 		const Goal *GetGoal() const;
 		void SetGoal(Goal *goal);
+
+		void TestWaypoint(bool on);
+		IEvent::HandlerList ehl;
+	protected:
+		virtual bool TestWaypoint_GetLockOrientation() const {return false;}
+		virtual double TestWaypoint_GetPrecisionTolerance() const {return Feet2Meters(0.5);}
+
+		virtual void BindAdditionalEventControls(bool Bind);
+	private:
+		#ifndef Robot_TesterCode
+		typedef Ship_2D __super;
+		#endif
 };
 
 #ifdef Robot_TesterCode
