@@ -824,9 +824,10 @@ const char *Ship_Properties::SetUpGlobalTable(Scripting::Script& script)
 const char * const g_Ship_Controls_Events[] = 
 {
 	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","POV_Turn",
-	"Turn_180","Turn_90R","Turn_90L",
-	"Joystick_SetLeftVelocity","Joystick_SetRightVelocity",
-	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None"
+	"Turn_180","Turn_180_Hold","Turn_90R","Turn_90L","FlipY","FlipY_Hold",
+	"Joystick_SetLeftVelocity","Joystick_SetRightVelocity","Joystick_SetLeft_XAxis","Joystick_SetRight_XAxis",
+	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None",
+	"TestWaypoint"
 };
 
 const char *Ship_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
@@ -1061,6 +1062,76 @@ Goal *Ship_Tester::ClearGoal()
 void Ship_Tester::SetGoal(Goal *goal) 
 {
 	GetController()->m_Goal=goal;
+}
+
+void Ship_Tester::TestWaypoint(bool on)
+{
+	if (on)
+	{
+		if (!GetGoal())
+		{
+			m_controller->GetUIController_RW()->SetAutoPilot(true);
+			//Construct a way point
+			WayPoint wp;
+			const Vec2d &pos=GetPos_m();
+
+			//Using a a try/catch technique makes it possible to use the last entered value from a previous session
+			#if 1
+			Vec2d Local_GoalTarget;
+			try
+			{
+				Local_GoalTarget=Vec2d(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
+			}
+			catch (...)
+			{
+				Local_GoalTarget=Vec2d(0.0,3.0);
+				SmartDashboard::PutNumber("Waypoint_x",Local_GoalTarget[0]);
+				SmartDashboard::PutNumber("Waypoint_y",Local_GoalTarget[1]);
+			}
+			#else
+			const Vec2d Local_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
+			#endif
+
+			const Vec2d Global_GoalTarget=LocalToGlobal(GetAtt_r(),Local_GoalTarget);
+			wp.Position=Global_GoalTarget+pos;
+			wp.Power=1.0;
+			//Now to setup the goal
+			const bool LockOrientation=TestWaypoint_GetLockOrientation();
+			const double PrecisionTolerance=TestWaypoint_GetPrecisionTolerance();
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,LockOrientation,PrecisionTolerance);
+			//set the trajectory point
+			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
+			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
+			const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(GetAtt_r(),LocalTrajectoryOffset);
+			goal_drive->SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
+			SetGoal(goal_drive);
+		}
+	}
+	else
+	{
+		//if we had a goal clear it
+		if (GetGoal())
+		{
+			m_controller->GetUIController_RW()->SetAutoPilot(false);
+			ClearGoal();
+			GetController()->SetShipVelocity(0.0);
+			SetGoal(NULL);
+		}
+	}
+}
+
+void Ship_Tester::BindAdditionalEventControls(bool Bind)
+{
+	Entity2D_Kind::EventMap *em=GetEventMap(); 
+	if (Bind)
+	{
+		em->EventOnOff_Map["TestWaypoint"].Subscribe(ehl, *this, &Ship_Tester::TestWaypoint);
+	}
+	else
+	{
+		em->EventOnOff_Map["TestWaypoint"]  .Remove(*this, &Ship_Tester::TestWaypoint);
+	}
+	__super::BindAdditionalEventControls(Bind);
 }
 
 #ifdef Robot_TesterCode

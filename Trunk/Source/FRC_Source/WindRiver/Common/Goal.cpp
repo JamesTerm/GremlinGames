@@ -73,6 +73,7 @@ Goal::Goal_Status CompositeGoal::ProcessSubgoals(double dTime_s)
 
 MultitaskGoal::MultitaskGoal(bool WaitAll) : m_WaitAll(WaitAll)
 {
+	m_Status=eInactive;
 }
 
 void MultitaskGoal::RemoveAllGoals()
