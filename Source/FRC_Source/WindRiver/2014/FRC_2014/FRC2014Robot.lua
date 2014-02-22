@@ -340,8 +340,11 @@ MainRobot = {
 		{
 			control = "airflo",
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Joystick_SetRight_XAxis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Analog_Turn = {type="joystick_culver", key_x=5, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
@@ -350,7 +353,10 @@ MainRobot = {
 			Robot_SetLowGearOff = {type="joystick_button", key=8, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=6, on_off=false},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false},
+			--Turn_180 = {type="joystick_button", key=7, on_off=false},
+			Turn_180_Hold = {type="joystick_button", key=7, on_off=true},
+			FlipY_Hold = {type="joystick_button", key=7, on_off=true},
+			SlideHold = {type="joystick_button", key=7, on_off=true},
 			Robot_TestWaypoint={type="joystick_button", key=3, on_off=true},
 			
 			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
@@ -366,16 +372,22 @@ MainRobot = {
 			Winch_Advance={type="keyboard", key='k', on_off=true},
 			Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
 			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
+			TestWaypoint={type="keyboard", key='q', on_off=true},
+			TestAuton={type="keyboard", key='g', on_off=false},
+			--Slide={type="keyboard", key='g', on_off=false},
 		},
 		
 		Joystick_2 =
 		{
 			control = "logitech dual action",
 			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Joystick_SetRightVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_culver", key_x=2, key_y=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
+			--Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 			
@@ -387,7 +399,9 @@ MainRobot = {
 			--Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180 = {type="joystick_button", key=7, on_off=false}
+			Turn_180_Hold = {type="joystick_button", key=7, on_off=true},
+			FlipY_Hold = {type="joystick_button", key=7, on_off=true},
+			SlideHold = {type="joystick_button", key=7, on_off=true}
 		},
 		Joystick_3 =
 		{
