@@ -583,6 +583,16 @@ void Tank_Robot::UpdateTankProps(const Tank_Robot_Props &TankProps)
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
 }
 
+bool Tank_Robot::TestWaypoint_GetLockOrientation() const
+{
+	//For open loop we must use lock orientation 
+	return m_TankRobotProps.IsOpen;
+}
+double Tank_Robot::TestWaypoint_GetPrecisionTolerance() const
+{
+	return m_TankRobotProps.PrecisionTolerance;
+}
+
   /***********************************************************************************************************************************/
  /*													Tank_Robot_Properties															*/
 /***********************************************************************************************************************************/
