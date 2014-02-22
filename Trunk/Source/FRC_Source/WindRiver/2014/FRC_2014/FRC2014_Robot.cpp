@@ -679,8 +679,9 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_CatcherIntake"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntake);
 		em->Event_Map["Robot_CatcherIntake_On"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOn);
 		em->Event_Map["Robot_CatcherIntake_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOff);
-
-		em->EventOnOff_Map["Robot_TestWaypoint"].Subscribe(ehl, *this, &FRC_2014_Robot::Robot_TestWaypoint);
+		#ifdef Robot_TesterCode
+		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &FRC_2014_Robot::TestAutonomous);
+		#endif
 	}
 	else
 	{
@@ -700,8 +701,9 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Robot_CatcherIntake"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntake);
 		em->Event_Map["Robot_CatcherIntake_On"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOn);
 		em->Event_Map["Robot_CatcherIntake_Off"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOff);
-
-		em->EventOnOff_Map["Robot_TestWaypoint"]  .Remove(*this, &FRC_2014_Robot::Robot_TestWaypoint);
+		#ifdef Robot_TesterCode
+		em->Event_Map["TestAuton"]  .Remove(*this, &FRC_2014_Robot::TestAutonomous);
+		#endif
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
@@ -737,53 +739,24 @@ void FRC_2014_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAccelerat
 	}
 }
 
-void FRC_2014_Robot::Robot_TestWaypoint(bool on)
+#ifdef Robot_TesterCode
+void FRC_2014_Robot::TestAutonomous()
 {
-	if (on)
+	Goal *oldgoal=ClearGoal();
+	if (oldgoal)
+		delete oldgoal;
+
 	{
-		if (!GetGoal())
-		{
-			m_controller->GetUIController_RW()->SetAutoPilot(true);
-			static size_t FirstRun=0;
-			if (FirstRun++==0)
-			{
-				SmartDashboard::PutNumber("Waypoint_x",0.0);
-				SmartDashboard::PutNumber("Waypoint_y",3.0);
-			}
-			//Construct a way point
-			WayPoint wp;
-			const Vec2d &pos=GetPos_m();
-			const Vec2d Local_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
-			const Vec2d Global_GoalTarget=LocalToGlobal(GetAtt_r(),Local_GoalTarget);
-			wp.Position=Global_GoalTarget+pos;
-			wp.Power=1.0;
-			//Now to setup the goal
-			//Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,false,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
-			//TODO for now we'll have to lock to orientation... this is because the solution of turning adjustments is solved incorrectly... to
-			//solve correctly would entail the curve be applied on a read back from the encoders or something along these lines to inject the displacement
-			//to where it should be... I may add this later but for now this solution will work for a the turn then move solution
-			//  [2/17/2014 JamesK]
-			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,true,m_RobotProps.GetTankRobotProps().PrecisionTolerance);
-			//set the trajectory point
-			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
-			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
-			const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(GetAtt_r(),LocalTrajectoryOffset);
-			goal_drive->SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
-			SetGoal(goal_drive);
-		}
-	}
-	else
-	{
-		//if we had a goal clear it
-		if (GetGoal())
-		{
-			m_controller->GetUIController_RW()->SetAutoPilot(false);
-			ClearGoal();
-			GetController()->SetShipVelocity(0.0);
-			SetGoal(NULL);
-		}
+		Goal *goal=NULL;
+		goal=FRC_2014_Goals::Get_FRC2014_Autonomous(this);
+		if (goal)
+			goal->Activate(); //now with the goal(s) loaded activate it
+		SetGoal(goal);
+		//enable autopilot (note windriver does this in main)
+		m_controller->GetUIController_RW()->SetAutoPilot(true);
 	}
 }
+#endif
 
   /***********************************************************************************************************************************/
  /*													FRC_2014_Robot_Properties														*/
@@ -940,7 +913,7 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"Robot_CatcherShooter","Robot_CatcherShooter_On","Robot_CatcherShooter_Off",
 	"Robot_CatcherIntake","Robot_CatcherIntake_On","Robot_CatcherIntake_Off",
 	"IntakeRollers_Grip","IntakeRollers_Squirt","IntakeRollers_SetCurrentVelocity",
-	"Robot_TestWaypoint"
+	"TestAuton"
 };
 
 const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
@@ -1071,118 +1044,121 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	}
 }
 
-
-  /***********************************************************************************************************************************/
- /*														FRC_2014_Goals::Fire														*/
-/***********************************************************************************************************************************/
-
-FRC_2014_Goals::Fire::Fire(FRC_2014_Robot &robot,bool On, bool DoSquirt) : m_Robot(robot),m_Terminate(false),m_IsOn(On),m_DoSquirt(DoSquirt)
-{
-	m_Status=eInactive;
-}
-FRC_2014_Goals::Fire::Goal_Status FRC_2014_Goals::Fire::Process(double dTime_s)
-{
-	if (m_Terminate)
-	{
-		if (m_Status==eActive)
-			m_Status=eFailed;
-		return m_Status;
-	}
-	ActivateIfInactive();
-		
-	m_Status=eCompleted;
-	return m_Status;
-}
-
-  /***********************************************************************************************************************************/
- /*													FRC_2014_Goals::WaitForBall														*/
-/***********************************************************************************************************************************/
-
-FRC_2014_Goals::WaitForBall::WaitForBall(FRC_2014_Robot &robot,double Tolerance) :  m_Robot(robot),m_Tolerance(Tolerance),m_Terminate(false)
-{
-	m_Status=eInactive;
-}
-Goal::Goal_Status FRC_2014_Goals::WaitForBall::Process(double dTime_s)
-{
-	if (m_Terminate)
-	{
-		if (m_Status==eActive)
-			m_Status=eFailed;
-		return m_Status;
-	}
-	ActivateIfInactive();
-	//TODO
-	if (true)
-	{
-		printf("Ball Deployed\n");
-		m_Status=eCompleted;
-	}
-	return m_Status;
-}
-
-  /***********************************************************************************************************************************/
- /*													FRC_2014_Goals::OperateSolenoid													*/
-/***********************************************************************************************************************************/
-
-FRC_2014_Goals::OperateSolenoid::OperateSolenoid(FRC_2014_Robot &robot,FRC_2014_Robot::SolenoidDevices SolenoidDevice,bool Open) : m_Robot(robot),
-m_SolenoidDevice(SolenoidDevice),m_Terminate(false),m_IsOpen(Open) 
-{	
-	m_Status=eInactive;
-}
-
-FRC_2014_Goals::OperateSolenoid::Goal_Status FRC_2014_Goals::OperateSolenoid::Process(double dTime_s)
-{
-	if (m_Terminate)
-	{
-		if (m_Status==eActive)
-			m_Status=eFailed;
-		return m_Status;
-	}
-	ActivateIfInactive();
-	switch (m_SolenoidDevice)
-	{
-		case FRC_2014_Robot::eUseLowGear:
-			assert(false);
-			break;
-		case FRC_2014_Robot::eReleaseClutch:
-		case FRC_2014_Robot::eCatcherShooter:
-		case FRC_2014_Robot::eCatcherIntake:
-			break;
-	}
-	m_Status=eCompleted;
-	return m_Status;
-}
-
   /***********************************************************************************************************************************/
  /*															FRC_2014_Goals															*/
 /***********************************************************************************************************************************/
 
-Goal *FRC_2014_Goals::Get_ShootBalls(FRC_2014_Robot *Robot,bool DoSquirt)
+
+class FRC_2014_Goals_Impl : public AtomicGoal
 {
-	//Goal_Wait *goal_waitforturret=new Goal_Wait(1.0); //wait for turret
-	Goal_Wait *goal_waitforballs1=new Goal_Wait(8.0); //wait for balls
-	Fire *FireOn=new Fire(*Robot,true,DoSquirt);
-	Goal_Wait *goal_waitforballs2=new Goal_Wait(7.0); //wait for balls
-	Fire *FireOff=new Fire(*Robot,false,DoSquirt);
+	private:
+		FRC_2014_Robot &m_Robot;
+		double m_Timer;
+
+		class goal_clock : public AtomicGoal
+		{
+		private:
+			FRC_2014_Goals_Impl *m_Parent;
+		public:
+			goal_clock(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent) {	m_Status=eActive;	}
+			void Activate()  {	m_Status=eActive;	}
+			Goal_Status Process(double dTime_s)
+			{
+				double &Timer=m_Parent->m_Timer;
+				if (m_Status==eActive)
+				{
+					SmartDashboard::PutNumber("Auton Timer",10.0-Timer);
+					Timer+=dTime_s;
+					if (Timer>=10.0)
+						m_Status=eCompleted;
+				}
+				return m_Status;
+			}
+			void Terminate() {	m_Status=eFailed;	}
+		};
+		MultitaskGoal m_Primer;
+
+		enum AutonType
+		{
+			eDoNothing,
+			eOneBall,
+			eTwoBall,
+			eThreeBall,
+			eNoAutonTypes
+		} m_AutonType;
+		enum Robot_Position
+		{
+			ePosition_Center,
+			ePosition_Left,
+			ePosition_Right
+		} m_RobotPosition;
+	public:
+		FRC_2014_Goals_Impl(FRC_2014_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
+			m_Primer(false) //who ever is done first on this will complete the goals (i.e. if time runs out)
+		{
+			m_Status=eInactive;
+		}
+		void Activate() 
+		{
+			m_Primer.AsGoal().Terminate();  //sanity check clear previous session
+
+			//pull parameters from SmartDashboard
+			try
+			{
+				const double fBallCount=SmartDashboard::GetNumber("Auton BallCount");
+				int BallCount=(size_t)fBallCount;
+				if ((BallCount<0)||(BallCount>eNoAutonTypes))
+					BallCount=eDoNothing;
+				m_AutonType=(AutonType)BallCount;
+			}
+			catch (...)
+			{
+				m_AutonType=eDoNothing;
+				SmartDashboard::PutNumber("Auton BallCount",0.0);
+			}
+
+			try
+			{
+				const double fPosition=SmartDashboard::GetNumber("Auton Position");
+				int Position=(size_t)fPosition;
+				if ((Position<0)||(Position>eNoAutonTypes))
+					Position=eDoNothing;
+				m_RobotPosition=(Robot_Position)Position;
+			}
+			catch (...)
+			{
+				m_RobotPosition=ePosition_Center;
+				SmartDashboard::PutNumber("Auton Position",0.0);
+			}
+
+			printf("ball count=%d position=%d\n",m_AutonType,m_RobotPosition);
+
+			m_Primer.AddGoal(new goal_clock(this));
+			m_Primer.Activate();
+			m_Status=eActive;
+		}
+
+		Goal_Status Process(double dTime_s)
+		{
+			ActivateIfInactive();
+			if (m_Status==eActive)
+				m_Status=m_Primer.AsGoal().Process(dTime_s);
+			return m_Status;
+		}
+		void Terminate() 
+		{
+			m_Primer.AsGoal().Terminate();
+			m_Status=eFailed;
+		}
+};
+
+Goal *FRC_2014_Goals::Get_FRC2014_Autonomous(FRC_2014_Robot *Robot)
+{
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
 	//Inserted in reverse since this is LIFO stack list
-	MainGoal->AddSubgoal(FireOff);
-	MainGoal->AddSubgoal(goal_waitforballs2);
-	MainGoal->AddSubgoal(FireOn);
-	MainGoal->AddSubgoal(goal_waitforballs1);
+	MainGoal->AddSubgoal(new FRC_2014_Goals_Impl(*Robot));
 	//MainGoal->AddSubgoal(goal_waitforturret);
 	return MainGoal;
-}
-
-Goal *FRC_2014_Goals::Get_ShootBalls_WithPreset(FRC_2014_Robot *Robot,size_t KeyIndex)
-{
-	return Get_ShootBalls(Robot);
-}
-
-Goal *FRC_2014_Goals::Get_FRC2014_Autonomous(FRC_2014_Robot *Robot,size_t KeyIndex,size_t TargetIndex,size_t RampIndex)
-{
-	//TODO
-	return NULL;
 }
 
   /***********************************************************************************************************************************/
