@@ -1314,7 +1314,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
-FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_IntakeArmVoltage(0.0),m_PowerWheelVoltage(0.0)
+FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_IntakeArmVoltage(0.0)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
@@ -1360,8 +1360,8 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 		//turret_props.SetMinRange(0);
 		//turret_props.SetMaxRange(Pi2);
 		turret_props.SetUsingRange(false);
-		m_Winch_Pot.Initialize(&turret_props);
-		m_IntakeArm_Pot.Initialize(&robot_props->GetPitchRampProps());
+		m_Winch_Pot.Initialize(&robot_props->GetWinchProps());
+		m_IntakeArm_Pot.Initialize(&robot_props->GetIntake_ArmProps());
 	}
 }
 
@@ -1369,11 +1369,6 @@ void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Winch_Pot.SetTimeDelta(dTime_s);
 	m_IntakeArm_Pot.SetTimeDelta(dTime_s);
-	m_Flippers_Pot.SetTimeDelta(dTime_s);
-	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
-	m_LowerConveyor_Enc.SetTimeDelta(dTime_s);
-	m_MiddleConveyor_Enc.SetTimeDelta(dTime_s);
-	m_FireConveyor_Enc.SetTimeDelta(dTime_s);
 
 	//Let's do away with this since we are using the smart dashboard
 	////display voltages
