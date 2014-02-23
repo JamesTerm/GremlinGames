@@ -42,9 +42,9 @@ MainRobot = {
 		{
 			id_1 = { name= "left_drive_1", channel=1, module=1}, 
 			id_2 = { name= "left_drive_2", channel=2}, 
-			id_3 = { name="right_drive_1", channel=3},
-			id_4 = { name="right_drive_2", channel=4},
-			id_5 = { name= "left_drive_3", channel=5}, 
+			id_3 = { name= "left_drive_3", channel=3}, 
+			id_4 = { name="right_drive_1", channel=4},
+			id_5 = { name="right_drive_2", channel=5},
 			id_6 = { name="right_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
 			id_8 = { name="intake_arm_1",  channel=8},
@@ -53,8 +53,10 @@ MainRobot = {
 		},
 		double_solenoid =
 		{
-			id_1 = { name="use_low_gear",   forward_channel=1, reverse_channel=2},
-			id_2 = { name="release_clutch", forward_channel=3, reverse_channel=4}
+			id_1 = { name="use_low_gear",    forward_channel=1, reverse_channel=2},
+			id_2 = { name="release_clutch",  forward_channel=3, reverse_channel=4},
+			id_3 = { name="catcher_shooter", forward_channel=5, reverse_channel=6},
+			id_4 = { name="catcher_intake",	 forward_channel=7, reverse_channel=8}
 		},
 		digital_input =
 		{
@@ -335,8 +337,9 @@ MainRobot = {
 		Joystick_1 =
 		{
 			control = "logitech dual action",
+			--Note for the Y right axis... it is 5 on the simulation and 3 for the driver station (i.e. using real robot)
 			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			
@@ -375,6 +378,8 @@ MainRobot = {
 			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			IntakeArm_SetDeployed={type="joystick_button", key=2, on_off=false},
 			IntakeArm_SetStowed={type="joystick_button", key=4, on_off=false},
+			Robot_CatcherShooter={type="joystick_button", key=5, on_off=true},
+			Robot_CatcherIntake={type="joystick_button", key=6, on_off=true}
 		}
 
 	},
