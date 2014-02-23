@@ -831,7 +831,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		props.BallTargeting_Props.LatencyCounterThreshold=0.200; //A bit slow but confirmed
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
-		auton.MoveForward=0.0;
+		auton.BallTargetDistance=Feet2Meters(4.0);
 		m_FRC2014RobotProps=props;
 	}
 	{
@@ -938,6 +938,7 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
 	double fTest;
+	std::string sTest;
 	if (!err) 
 	{
 		err = script.GetFieldTable("catapult");
@@ -1018,10 +1019,10 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			struct FRC_2014_Robot_Props::Autonomous_Properties &auton=m_FRC2014RobotProps.Autonomous_Props;
 			{
-				double length;
-				err = script.GetField("move_forward_ft", NULL, NULL,&length);
+				err = script.GetField("ball_target_distance_ft", NULL, NULL,&fTest);
 				if (!err)
-					auton.MoveForward=Feet2Meters(length);
+					auton.BallTargetDistance=Feet2Meters(fTest);
+				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
 			}
 			script.Pop();
 		}
@@ -1055,6 +1056,19 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 		FRC_2014_Robot &m_Robot;
 		double m_Timer;
 
+		class SetUpProps
+		{
+		protected:
+			FRC_2014_Goals_Impl *m_Parent;
+			FRC_2014_Robot &m_Robot;
+			FRC_2014_Robot_Props::Autonomous_Properties m_AutonProps;
+		public:
+			SetUpProps(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot) 
+			{	
+				m_AutonProps=m_Robot.GetRobotProps().GetFRC2014RobotProps().Autonomous_Props;
+			}
+		};
+
 		class goal_clock : public AtomicGoal
 		{
 		private:
@@ -1077,6 +1091,49 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			void Terminate() {	m_Status=eFailed;	}
 		};
 		MultitaskGoal m_Primer;
+
+		static Goal * Move(FRC_2014_Robot *Robot,double length_ft)
+		{
+			//Construct a way point
+			WayPoint wp;
+			const Vec2d &pos=Robot->GetPos_m();
+
+			const Vec2d Local_GoalTarget(0.0,Feet2Meters(length_ft));
+
+			const Vec2d Global_GoalTarget=LocalToGlobal(Robot->GetAtt_r(),Local_GoalTarget);
+			wp.Position=Global_GoalTarget+pos;
+			wp.Power=1.0;
+			//Now to setup the goal
+			const bool LockOrientation=true;
+			const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
+			//set the trajectory point
+			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
+			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
+			const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(Robot->GetAtt_r(),LocalTrajectoryOffset);
+			goal_drive->SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
+			return goal_drive;
+		}
+
+		class OneBallAuton : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			OneBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			virtual void Activate()
+			{
+				//m_Status=eActive; 
+				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				if (SupporingHotSpot)
+					m_Status=eFailed;  //not yet supported
+				else
+				{
+					AddSubgoal(Move(&m_Robot,4.0));
+					AddSubgoal(Move(&m_Robot,2.0));
+					m_Status=eActive;
+				}
+			}
+
+		};
 
 		enum AutonType
 		{
@@ -1132,10 +1189,18 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 
 			printf("ball count=%d position=%d\n",m_AutonType,m_RobotPosition);
-
+			Goal *BallAuton=NULL;
+			switch(m_AutonType)
+			{
+			case eOneBall:
+				m_Primer.AddGoal(BallAuton=new OneBallAuton(this));
+				break;
+			}
 			m_Primer.AddGoal(new goal_clock(this));
 			m_Primer.Activate();
 			m_Status=eActive;
+			if (BallAuton)
+				BallAuton->Activate();
 		}
 
 		Goal_Status Process(double dTime_s)
