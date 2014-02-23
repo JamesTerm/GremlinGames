@@ -105,8 +105,9 @@ class Generic_CompositeGoal : public CompositeGoal
 		#ifndef Robot_TesterCode
 		typedef CompositeGoal __super;
 		#endif
+		bool m_AutoActivate;
 	public:
-		Generic_CompositeGoal()
+		Generic_CompositeGoal(bool AutoActivate=false) : m_AutoActivate(AutoActivate)
 		{
 			m_Status=eInactive;
 		}
@@ -120,7 +121,9 @@ class Generic_CompositeGoal : public CompositeGoal
 
 		virtual Goal_Status Process(double dTime_s)
 		{
-			//Client will activate
+			//Client will activate if m_AutoActivate is not enabled
+			if (m_AutoActivate)
+				ActivateIfInactive();
 			if (m_Status==eInactive)
 				return m_Status;
 

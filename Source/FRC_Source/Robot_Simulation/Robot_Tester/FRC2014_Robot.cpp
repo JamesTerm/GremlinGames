@@ -1121,12 +1121,46 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 		private:
 			bool m_IsOn;
 		public:
-			Fire(FRC_2014_Goals_Impl *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eActive;	}
+			Fire(FRC_2014_Goals_Impl *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
 			virtual void Activate() {m_Status=eActive;}
 			virtual Goal_Status Process(double dTime_s)
 			{
 				ActivateIfInactive();
 				m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
+		class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			Fire_Sequence(FRC_2014_Goals_Impl *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate()
+			{
+				//m_Status=eActive; 
+				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				if (SupporingHotSpot)
+					m_Status=eFailed;  //not yet supported
+				else
+				{
+					AddSubgoal(new Fire(m_Parent,false));
+					AddSubgoal(new Goal_Wait(.100));
+					AddSubgoal(new Fire(m_Parent,true));
+					m_Status=eActive;
+				}
+			}
+		};
+
+		class Reset_Catapult : public AtomicGoal, public SetUpProps
+		{
+		public:
+			Reset_Catapult(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_EventMap.Event_Map["Winch_SetGoalShot"].Fire();
 				m_Status=eCompleted;
 				return m_Status;
 			}
@@ -1146,15 +1180,12 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				{
 					//Note: these are reversed
 					AddSubgoal(Move_Straight(&m_Robot,4.0));
-					AddSubgoal(new Fire(m_Parent,false));
-					AddSubgoal(new Goal_Wait(.100));
-					AddSubgoal(new Fire(m_Parent,true));
-					//TODO may want to reset catapult here
+					AddSubgoal(new Reset_Catapult(m_Parent));
+					AddSubgoal(new Fire_Sequence(m_Parent));
 					AddSubgoal(Move_Straight(&m_Robot,2.0));
 					m_Status=eActive;
 				}
 			}
-
 		};
 
 		enum AutonType
