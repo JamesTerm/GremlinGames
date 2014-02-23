@@ -240,6 +240,25 @@ __inline T Enum_GetValue(const char *value,const char * const Table[],size_t NoI
 	return ret;
 }
 
+
+#define SCRIPT_TEST_BOOL_YES(x,y)  			err = script.GetField(y,&sTest,NULL,NULL);\
+	x=false;\
+	if (!err)\
+{\
+	if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))\
+	x=true;\
+}
+
+
+
+#define SCRIPT_TEST_BOOL_NO(x,y)  			err = script.GetField(y,&sTest,NULL,NULL);\
+	x=true;\
+	if (!err)\
+{\
+	if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))\
+	x=false;\
+}
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
