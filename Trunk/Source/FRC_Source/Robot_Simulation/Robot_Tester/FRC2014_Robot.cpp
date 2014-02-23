@@ -1070,8 +1070,9 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			FRC_2014_Goals_Impl *m_Parent;
 			FRC_2014_Robot &m_Robot;
 			FRC_2014_Robot_Props::Autonomous_Properties m_AutonProps;
+			Entity2D_Kind::EventMap &m_EventMap;
 		public:
-			SetUpProps(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot) 
+			SetUpProps(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot),m_EventMap(*m_Robot.GetEventMap())
 			{	
 				m_AutonProps=m_Robot.GetRobotProps().GetFRC2014RobotProps().Autonomous_Props;
 			}
@@ -1114,6 +1115,23 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			return goal_drive;
 		}
 
+
+		class Fire : public AtomicGoal, public SetUpProps
+		{
+		private:
+			bool m_IsOn;
+		public:
+			Fire(FRC_2014_Goals_Impl *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eActive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
 		class OneBallAuton : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
@@ -1126,7 +1144,12 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					m_Status=eFailed;  //not yet supported
 				else
 				{
+					//Note: these are reversed
 					AddSubgoal(Move_Straight(&m_Robot,4.0));
+					AddSubgoal(new Fire(m_Parent,false));
+					AddSubgoal(new Goal_Wait(.100));
+					AddSubgoal(new Fire(m_Parent,true));
+					//TODO may want to reset catapult here
 					AddSubgoal(Move_Straight(&m_Robot,2.0));
 					m_Status=eActive;
 				}
