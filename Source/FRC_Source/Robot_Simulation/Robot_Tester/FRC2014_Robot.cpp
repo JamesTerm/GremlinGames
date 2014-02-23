@@ -681,6 +681,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_CatcherIntake_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOff);
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &FRC_2014_Robot::TestAutonomous);
+		em->Event_Map["Complete"].Subscribe(ehl,*this,&FRC_2014_Robot::GoalComplete);
 		#endif
 	}
 	else
@@ -703,6 +704,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_CatcherIntake_Off"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOff);
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"]  .Remove(*this, &FRC_2014_Robot::TestAutonomous);
+		em->Event_Map["Complete"]  .Remove(*this, &FRC_2014_Robot::GoalComplete);
 		#endif
 	}
 
@@ -755,6 +757,12 @@ void FRC_2014_Robot::TestAutonomous()
 		//enable autopilot (note windriver does this in main)
 		m_controller->GetUIController_RW()->SetAutoPilot(true);
 	}
+}
+
+void FRC_2014_Robot::GoalComplete()
+{
+	printf("Goals completed!\n");
+	m_controller->GetUIController_RW()->SetAutoPilot(false);
 }
 #endif
 
@@ -1092,26 +1100,17 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 		};
 		MultitaskGoal m_Primer;
 
-		static Goal * Move(FRC_2014_Robot *Robot,double length_ft)
+		static Goal * Move_Straight(FRC_2014_Robot *Robot,double length_ft)
 		{
 			//Construct a way point
 			WayPoint wp;
-			const Vec2d &pos=Robot->GetPos_m();
-
 			const Vec2d Local_GoalTarget(0.0,Feet2Meters(length_ft));
-
-			const Vec2d Global_GoalTarget=LocalToGlobal(Robot->GetAtt_r(),Local_GoalTarget);
-			wp.Position=Global_GoalTarget+pos;
+			wp.Position=Local_GoalTarget;
 			wp.Power=1.0;
 			//Now to setup the goal
 			const bool LockOrientation=true;
 			const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
-			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
-			//set the trajectory point
-			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
-			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
-			const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(Robot->GetAtt_r(),LocalTrajectoryOffset);
-			goal_drive->SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
 			return goal_drive;
 		}
 
@@ -1127,8 +1126,8 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					m_Status=eFailed;  //not yet supported
 				else
 				{
-					AddSubgoal(Move(&m_Robot,4.0));
-					AddSubgoal(Move(&m_Robot,2.0));
+					AddSubgoal(Move_Straight(&m_Robot,4.0));
+					AddSubgoal(Move_Straight(&m_Robot,2.0));
 					m_Status=eActive;
 				}
 			}
@@ -1189,18 +1188,14 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 
 			printf("ball count=%d position=%d\n",m_AutonType,m_RobotPosition);
-			Goal *BallAuton=NULL;
 			switch(m_AutonType)
 			{
 			case eOneBall:
-				m_Primer.AddGoal(BallAuton=new OneBallAuton(this));
+				m_Primer.AddGoal(new OneBallAuton(this));
 				break;
 			}
 			m_Primer.AddGoal(new goal_clock(this));
-			m_Primer.Activate();
 			m_Status=eActive;
-			if (BallAuton)
-				BallAuton->Activate();
 		}
 
 		Goal_Status Process(double dTime_s)

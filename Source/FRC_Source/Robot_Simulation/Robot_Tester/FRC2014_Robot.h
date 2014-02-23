@@ -325,6 +325,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 		#ifdef Robot_TesterCode
 		void TestAutonomous();
+		void GoalComplete();
 		#endif
 };
 
