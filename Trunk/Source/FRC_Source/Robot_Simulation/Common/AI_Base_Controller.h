@@ -122,7 +122,6 @@ class COMMON_API Goal_Ship_MoveToPosition : public AtomicGoal
 		//Similar to FlyWayPoints, except it only checks for the tolerance
 		bool HitWayPoint();  
 
-	private:
 		WayPoint m_Point;
 		Vec2D m_TrajectoryPoint;
 		AI_Base_Controller * const m_Controller;
@@ -131,6 +130,21 @@ class COMMON_API Goal_Ship_MoveToPosition : public AtomicGoal
 		bool m_Terminate;
 		bool m_UseSafeStop;
 		bool m_LockOrientation;
+};
+
+//This is like Goal_Ship_MoveToPosition except it will set the waypoint relative to its current position and orientation
+//This will also set the trajectory point x distance (1 meter default) beyond the the point to help assist in orientation
+class COMMON_API Goal_Ship_MoveToRelativePosition : public Goal_Ship_MoveToPosition
+{
+public:
+	Goal_Ship_MoveToRelativePosition(AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true,
+		bool LockOrientation=false,double safestop_tolerance=0.03) : Goal_Ship_MoveToPosition(controller,waypoint,UseSafeStop,LockOrientation,safestop_tolerance) {}
+	//Note: It is important for client code not to activate this... let process activate it... so that it sets the point at the correct time and current position
+	virtual void Activate();
+private:
+	#ifndef Robot_TesterCode
+	typedef Goal_Ship_MoveToPosition __super;
+	#endif
 };
 
 class COMMON_API Goal_Ship_FollowPath : public CompositeGoal
