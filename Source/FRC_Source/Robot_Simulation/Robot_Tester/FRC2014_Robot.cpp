@@ -1464,6 +1464,11 @@ void FRC_2014_Robot_Control::ResetPos()
 		printf("RobotControl::ResetPos Compressor->Start()\n");
 		m_Compressor->Start();
 	}
+	//Set the solenoids to their default positions
+	OpenSolenoid(FRC_2014_Robot::eUseLowGear,true);
+	CloseSolenoid(FRC_2014_Robot::eReleaseClutch,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherShooter,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherIntake,true);
 }
 
 void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
