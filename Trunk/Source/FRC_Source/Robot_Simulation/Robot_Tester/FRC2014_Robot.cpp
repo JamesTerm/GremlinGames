@@ -27,7 +27,7 @@ using namespace std;
 
 #define __DisableEncoderTracking__
 //Enable this to send remote coordinate to network variables to manipulate a shape for tracking
-#define __EnableShapeTrackingSimulation__
+#undef __EnableShapeTrackingSimulation__
 #if 0
 #define UnitMeasure2UI Meters2Feet
 #define UI2UnitMeasure Feet2Meters
@@ -552,7 +552,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	using namespace VisionConversion;
 
 	SmartDashboard::PutBoolean("IsBallTargeting",IsBallTargeting());
-	//if (IsBallTargeting())
+	if (IsBallTargeting())
 	{
 		const FRC_2014_Robot_Props::BallTargeting &ball_props=m_RobotProps.GetFRC2014RobotProps().BallTargeting_Props;
 		const double CurrentYaw=GetAtt_r();
@@ -574,7 +574,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		//Note: limits will be solved at ship level
 		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(YawAngle-CurrentYaw));
 		#if 1
-		if (IsBallTargeting())
+		//if (IsBallTargeting())
 		{
 			m_LatencyCounter+=dTime_s;
 			if ((double)m_LatencyCounter>(ball_props.LatencyCounterThreshold))
@@ -1090,7 +1090,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				double &Timer=m_Parent->m_Timer;
 				if (m_Status==eActive)
 				{
-					SmartDashboard::PutNumber("Auton Timer",10.0-Timer);
+					SmartDashboard::PutNumber("Timer",10.0-Timer);
 					Timer+=dTime_s;
 					if (Timer>=10.0)
 						m_Status=eCompleted;
