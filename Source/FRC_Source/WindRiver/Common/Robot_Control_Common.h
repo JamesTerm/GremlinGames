@@ -267,7 +267,7 @@ class COMMON_API RobotControlCommon
 		__inline DoubleSolenoid *Solenoid_GetInstance(size_t index) {return LUT_VALID(m_DoubleSolenoidLUT)?m_DoubleSolenoids[m_DoubleSolenoidLUT[index]] : NULL;}
 
 		//digital input method
-		__inline bool BoolSensor_GetState(size_t index) {return LUT_VALID(m_DigitalInputLUT)?m_DigitalInputs[m_DigitalInputLUT[index]]->Get()!=0:false;}
+		__inline bool BoolSensor_GetState(size_t index) {return LUT_VALID(m_DigitalInputLUT)?m_DigitalInputs[m_DigitalInputLUT[index]]->Get()==0:false;}
 		__inline DigitalInput *BoolSensor_GetInstance(size_t index) {return LUT_VALID(m_DigitalInputLUT)?m_DigitalInputs[m_DigitalInputLUT[index]] : NULL;}
 
 		//digital input encoders
