@@ -450,6 +450,7 @@ void FRC_2014_Robot::ResetPos()
 	{
 		m_Winch.ResetPos();
 		m_Intake_Arm.ResetPos();
+		SetLowGear(true);
 	}
 	m_Intake_Rollers.ResetPos();  //ha pedantic
 }
