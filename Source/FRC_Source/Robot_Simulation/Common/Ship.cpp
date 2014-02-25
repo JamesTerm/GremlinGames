@@ -1059,8 +1059,6 @@ void Ship_Tester::TestWaypoint(bool on)
 			m_controller->GetUIController_RW()->SetAutoPilot(true);
 			//Construct a way point
 			WayPoint wp;
-			const Vec2d &pos=GetPos_m();
-
 			//Using a a try/catch technique makes it possible to use the last entered value from a previous session
 			#if 1
 			Vec2d Local_GoalTarget;
@@ -1078,18 +1076,12 @@ void Ship_Tester::TestWaypoint(bool on)
 			const Vec2d Local_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
 			#endif
 
-			const Vec2d Global_GoalTarget=LocalToGlobal(GetAtt_r(),Local_GoalTarget);
-			wp.Position=Global_GoalTarget+pos;
+			wp.Position=Local_GoalTarget;
 			wp.Power=1.0;
 			//Now to setup the goal
 			const bool LockOrientation=TestWaypoint_GetLockOrientation();
 			const double PrecisionTolerance=TestWaypoint_GetPrecisionTolerance();
-			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToPosition(this->GetController(),wp,true,LockOrientation,PrecisionTolerance);
-			//set the trajectory point
-			double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
-			const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
-			const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(GetAtt_r(),LocalTrajectoryOffset);
-			goal_drive->SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToRelativePosition(this->GetController(),wp,true,LockOrientation,PrecisionTolerance);
 			SetGoal(goal_drive);
 		}
 	}
