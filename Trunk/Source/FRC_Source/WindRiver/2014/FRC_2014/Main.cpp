@@ -144,33 +144,21 @@ public:
 		//Now to set up our goal
 		FRC_2014_Robot *Robot=m_Manager.GetRobot();  //we can always cast down
 		Robot->SetIsAutonomous(true);
-		//m_Manager.GetRobot()->SetUseEncoders(false);
+		m_Manager.GetRobot()->SetUseEncoders(false);
 
 		//assert(ship);
-		size_t AutonomousValue=0;
-		DriverStation *ds = DriverStation::GetInstance();
-		AutonomousValue+=ds->GetDigitalIn(1)? 0x01 : 0x00;
-		AutonomousValue+=ds->GetDigitalIn(2)? 0x02 : 0x00;
-		AutonomousValue+=ds->GetDigitalIn(3)? 0x04 : 0x00;
-		AutonomousValue+=ds->GetDigitalIn(4)? 0x08 : 0x00;
-		AutonomousValue+=ds->GetDigitalIn(5)? 0x10 : 0x00;
-		AutonomousValue+=ds->GetDigitalIn(6)? 0x20 : 0x00;
-		AutonomousValue+=ds->GetDigitalIn(7)? 0x40 : 0x00;
-		printf("Autonomous mode= %d \n",AutonomousValue);
-		const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
 		Goal *oldgoal=Robot->ClearGoal();
 		if (oldgoal)
 			delete oldgoal;
-
+		
+		const bool DoAutonomous=true;
 		if (DoAutonomous)
 		{
-			{
-				//Goal *goal=NULL;
-				//goal=FRC_2014_Goals::Get_ShootFrisbees(Robot,ds->GetDigitalIn(2)?true:false);
-				//if (goal)
-				//	goal->Activate(); //now with the goal(s) loaded activate it
-				//Robot->SetGoal(goal);				
-			}
+			Goal *goal=NULL;
+			goal=FRC_2014_Goals::Get_FRC2014_Autonomous(Robot);
+			if (goal)
+				goal->Activate(); //now with the goal(s) loaded activate it
+			Robot->SetGoal(goal);
 		}
 		
 		double LastTime = GetTime();

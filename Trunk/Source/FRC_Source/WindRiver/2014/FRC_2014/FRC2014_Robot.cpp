@@ -27,7 +27,7 @@ using namespace std;
 
 #define __DisableEncoderTracking__
 //Enable this to send remote coordinate to network variables to manipulate a shape for tracking
-#define __EnableShapeTrackingSimulation__
+#undef __EnableShapeTrackingSimulation__
 #if 0
 #define UnitMeasure2UI Meters2Feet
 #define UI2UnitMeasure Feet2Meters
@@ -552,7 +552,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	using namespace VisionConversion;
 
 	SmartDashboard::PutBoolean("IsBallTargeting",IsBallTargeting());
-	//if (IsBallTargeting())
+	if (IsBallTargeting())
 	{
 		const FRC_2014_Robot_Props::BallTargeting &ball_props=m_RobotProps.GetFRC2014RobotProps().BallTargeting_Props;
 		const double CurrentYaw=GetAtt_r();
@@ -574,7 +574,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		//Note: limits will be solved at ship level
 		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(YawAngle-CurrentYaw));
 		#if 1
-		if (IsBallTargeting())
+		//if (IsBallTargeting())
 		{
 			m_LatencyCounter+=dTime_s;
 			if ((double)m_LatencyCounter>(ball_props.LatencyCounterThreshold))
@@ -681,6 +681,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_CatcherIntake_Off"].Subscribe(ehl, *this, &FRC_2014_Robot::SetCatcherIntakeOff);
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &FRC_2014_Robot::TestAutonomous);
+		em->Event_Map["Complete"].Subscribe(ehl,*this,&FRC_2014_Robot::GoalComplete);
 		#endif
 	}
 	else
@@ -703,6 +704,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_CatcherIntake_Off"]  .Remove(*this, &FRC_2014_Robot::SetCatcherIntakeOff);
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"]  .Remove(*this, &FRC_2014_Robot::TestAutonomous);
+		em->Event_Map["Complete"]  .Remove(*this, &FRC_2014_Robot::GoalComplete);
 		#endif
 	}
 
@@ -755,6 +757,12 @@ void FRC_2014_Robot::TestAutonomous()
 		//enable autopilot (note windriver does this in main)
 		m_controller->GetUIController_RW()->SetAutoPilot(true);
 	}
+}
+
+void FRC_2014_Robot::GoalComplete()
+{
+	printf("Goals completed!\n");
+	m_controller->GetUIController_RW()->SetAutoPilot(false);
 }
 #endif
 
@@ -831,7 +839,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		props.BallTargeting_Props.LatencyCounterThreshold=0.200; //A bit slow but confirmed
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
-		auton.MoveForward=0.0;
+		auton.BallTargetDistance=Feet2Meters(4.0);
 		m_FRC2014RobotProps=props;
 	}
 	{
@@ -938,6 +946,7 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
 	double fTest;
+	std::string sTest;
 	if (!err) 
 	{
 		err = script.GetFieldTable("catapult");
@@ -1018,10 +1027,10 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			struct FRC_2014_Robot_Props::Autonomous_Properties &auton=m_FRC2014RobotProps.Autonomous_Props;
 			{
-				double length;
-				err = script.GetField("move_forward_ft", NULL, NULL,&length);
+				err = script.GetField("ball_target_distance_ft", NULL, NULL,&fTest);
 				if (!err)
-					auton.MoveForward=Feet2Meters(length);
+					auton.BallTargetDistance=Feet2Meters(fTest);
+				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
 			}
 			script.Pop();
 		}
@@ -1055,6 +1064,20 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 		FRC_2014_Robot &m_Robot;
 		double m_Timer;
 
+		class SetUpProps
+		{
+		protected:
+			FRC_2014_Goals_Impl *m_Parent;
+			FRC_2014_Robot &m_Robot;
+			FRC_2014_Robot_Props::Autonomous_Properties m_AutonProps;
+			Entity2D_Kind::EventMap &m_EventMap;
+		public:
+			SetUpProps(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot),m_EventMap(*m_Robot.GetEventMap())
+			{	
+				m_AutonProps=m_Robot.GetRobotProps().GetFRC2014RobotProps().Autonomous_Props;
+			}
+		};
+
 		class goal_clock : public AtomicGoal
 		{
 		private:
@@ -1067,7 +1090,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				double &Timer=m_Parent->m_Timer;
 				if (m_Status==eActive)
 				{
-					SmartDashboard::PutNumber("Auton Timer",10.0-Timer);
+					SmartDashboard::PutNumber("Timer",10.0-Timer);
 					Timer+=dTime_s;
 					if (Timer>=10.0)
 						m_Status=eCompleted;
@@ -1077,6 +1100,93 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			void Terminate() {	m_Status=eFailed;	}
 		};
 		MultitaskGoal m_Primer;
+
+		static Goal * Move_Straight(FRC_2014_Robot *Robot,double length_ft)
+		{
+			//Construct a way point
+			WayPoint wp;
+			const Vec2d Local_GoalTarget(0.0,Feet2Meters(length_ft));
+			wp.Position=Local_GoalTarget;
+			wp.Power=1.0;
+			//Now to setup the goal
+			const bool LockOrientation=true;
+			const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
+			return goal_drive;
+		}
+
+
+		class Fire : public AtomicGoal, public SetUpProps
+		{
+		private:
+			bool m_IsOn;
+		public:
+			Fire(FRC_2014_Goals_Impl *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
+		class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			Fire_Sequence(FRC_2014_Goals_Impl *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate()
+			{
+				//m_Status=eActive; 
+				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				if (SupporingHotSpot)
+					m_Status=eFailed;  //not yet supported
+				else
+				{
+					AddSubgoal(new Fire(m_Parent,false));
+					AddSubgoal(new Goal_Wait(.100));
+					AddSubgoal(new Fire(m_Parent,true));
+					m_Status=eActive;
+				}
+			}
+		};
+
+		class Reset_Catapult : public AtomicGoal, public SetUpProps
+		{
+		public:
+			Reset_Catapult(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_EventMap.Event_Map["Winch_SetGoalShot"].Fire();
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
+		class OneBallAuton : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			OneBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			virtual void Activate()
+			{
+				//m_Status=eActive; 
+				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				if (SupporingHotSpot)
+					m_Status=eFailed;  //not yet supported
+				else
+				{
+					//Note: these are reversed
+					AddSubgoal(Move_Straight(&m_Robot,4.0));
+					AddSubgoal(new Reset_Catapult(m_Parent));
+					AddSubgoal(new Fire_Sequence(m_Parent));
+					AddSubgoal(Move_Straight(&m_Robot,2.0));
+					m_Status=eActive;
+				}
+			}
+		};
 
 		enum AutonType
 		{
@@ -1132,9 +1242,18 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 
 			printf("ball count=%d position=%d\n",m_AutonType,m_RobotPosition);
-
+			switch(m_AutonType)
+			{
+			case eOneBall:
+				m_Primer.AddGoal(new OneBallAuton(this));
+				break;
+			case eTwoBall:
+			case eThreeBall:
+			case eDoNothing:
+			case eNoAutonTypes: //grrr windriver and warning 1250
+				break;
+			}
 			m_Primer.AddGoal(new goal_clock(this));
-			m_Primer.Activate();
 			m_Status=eActive;
 		}
 
@@ -1166,6 +1285,16 @@ Goal *FRC_2014_Goals::Get_FRC2014_Autonomous(FRC_2014_Robot *Robot)
 /***********************************************************************************************************************************/
 
 #if defined Robot_TesterCode && !defined __TestControlAssignments__
+
+void FRC_2014_Robot_Control::ResetPos()
+{
+	//Set the solenoids to their default positions
+	OpenSolenoid(FRC_2014_Robot::eUseLowGear,true);
+	CloseSolenoid(FRC_2014_Robot::eReleaseClutch,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherShooter,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherIntake,true);
+}
+
 void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	//This will not be in the wind river... this adds stress to simulate stall on low values
@@ -1200,7 +1329,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
-FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_IntakeArmVoltage(0.0),m_PowerWheelVoltage(0.0)
+FRC_2014_Robot_Control::FRC_2014_Robot_Control() : m_pTankRobotControl(&m_TankRobotControl),m_WinchVoltage(0.0),m_IntakeArmVoltage(0.0)
 {
 	m_TankRobotControl.SetDisplayVoltage(false); //disable display there so we can do it here
 	#if 0
@@ -1246,20 +1375,16 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 		//turret_props.SetMinRange(0);
 		//turret_props.SetMaxRange(Pi2);
 		turret_props.SetUsingRange(false);
-		m_Winch_Pot.Initialize(&turret_props);
-		m_IntakeArm_Pot.Initialize(&robot_props->GetPitchRampProps());
+		m_Winch_Pot.Initialize(&robot_props->GetWinchProps());
+		m_IntakeArm_Pot.Initialize(&robot_props->GetIntake_ArmProps());
 	}
+	ResetPos();
 }
 
 void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Winch_Pot.SetTimeDelta(dTime_s);
 	m_IntakeArm_Pot.SetTimeDelta(dTime_s);
-	m_Flippers_Pot.SetTimeDelta(dTime_s);
-	m_PowerWheel_Enc.SetTimeDelta(dTime_s);
-	m_LowerConveyor_Enc.SetTimeDelta(dTime_s);
-	m_MiddleConveyor_Enc.SetTimeDelta(dTime_s);
-	m_FireConveyor_Enc.SetTimeDelta(dTime_s);
 
 	//Let's do away with this since we are using the smart dashboard
 	////display voltages
@@ -1355,6 +1480,11 @@ void FRC_2014_Robot_Control::ResetPos()
 		printf("RobotControl::ResetPos Compressor->Start()\n");
 		m_Compressor->Start();
 	}
+	//Set the solenoids to their default positions
+	OpenSolenoid(FRC_2014_Robot::eUseLowGear,true);
+	CloseSolenoid(FRC_2014_Robot::eReleaseClutch,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherShooter,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherIntake,true);
 }
 
 void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)

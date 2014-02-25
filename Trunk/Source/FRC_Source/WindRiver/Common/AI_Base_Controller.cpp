@@ -746,6 +746,29 @@ void Goal_Ship_MoveToPosition::Terminate()
 }
 
   /***********************************************************************************************************************************/
+ /*												Goal_Ship_MoveToRelativePosition													*/
+/***********************************************************************************************************************************/
+
+void Goal_Ship_MoveToRelativePosition::Activate()
+{
+	//Construct a way point
+	WayPoint wp=m_Point;  //set up all the other fields
+	const Vec2d &pos=m_ship.GetPos_m();
+
+	const Vec2d Local_GoalTarget=m_Point.Position;
+
+	const Vec2d Global_GoalTarget=LocalToGlobal(m_ship.GetAtt_r(),Local_GoalTarget);
+	wp.Position=Global_GoalTarget+pos;
+	//set the trajectory point
+	double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
+	const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
+	const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(m_ship.GetAtt_r(),LocalTrajectoryOffset);
+	SetTrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
+	m_Point=wp;  //This should be a one-time assignment
+	__super::Activate();
+}
+
+  /***********************************************************************************************************************************/
  /*													Goal_Ship_FollowPath															*/
 /***********************************************************************************************************************************/
 
