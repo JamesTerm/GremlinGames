@@ -359,7 +359,7 @@ MainRobot = {
 			Turn_180_Hold = {type="joystick_button", key=7, on_off=true},
 			FlipY_Hold = {type="joystick_button", key=7, on_off=true},
 			SlideHold = {type="joystick_button", key=7, on_off=true},
-			Robot_TestWaypoint={type="joystick_button", key=3, on_off=true},
+			TestWaypoint={type="joystick_button", key=3, keyboard='q', on_off=true},
 			
 			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
 			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
@@ -374,7 +374,6 @@ MainRobot = {
 			Winch_Advance={type="keyboard", key='k', on_off=true},
 			Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
 			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
-			TestWaypoint={type="keyboard", key='q', on_off=true},
 			TestAuton={type="keyboard", key='g', on_off=false},
 			--Slide={type="keyboard", key='g', on_off=false},
 		},
