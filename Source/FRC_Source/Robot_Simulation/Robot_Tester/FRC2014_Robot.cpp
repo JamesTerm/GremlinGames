@@ -1280,6 +1280,16 @@ Goal *FRC_2014_Goals::Get_FRC2014_Autonomous(FRC_2014_Robot *Robot)
 /***********************************************************************************************************************************/
 
 #if defined Robot_TesterCode && !defined __TestControlAssignments__
+
+void FRC_2014_Robot_Control::ResetPos()
+{
+	//Set the solenoids to their default positions
+	OpenSolenoid(FRC_2014_Robot::eUseLowGear,true);
+	CloseSolenoid(FRC_2014_Robot::eReleaseClutch,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherShooter,true);
+	CloseSolenoid(FRC_2014_Robot::eCatcherIntake,true);
+}
+
 void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	//This will not be in the wind river... this adds stress to simulate stall on low values
@@ -1363,6 +1373,7 @@ void FRC_2014_Robot_Control::Initialize(const Entity_Properties *props)
 		m_Winch_Pot.Initialize(&robot_props->GetWinchProps());
 		m_IntakeArm_Pot.Initialize(&robot_props->GetIntake_ArmProps());
 	}
+	ResetPos();
 }
 
 void FRC_2014_Robot_Control::Robot_Control_TimeChange(double dTime_s)

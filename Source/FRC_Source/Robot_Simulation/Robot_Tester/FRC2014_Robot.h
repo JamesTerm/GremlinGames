@@ -341,6 +341,11 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 {
 	public:
 		FRC_2014_Robot_Control();
+
+		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
+		void ResetPos();
+		FRC_2014_Control_Interface &AsControlInterface() {return *this;}
+
 		const FRC_2014_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
