@@ -325,6 +325,16 @@ void Tank_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Tank_Drive_Control_TimeChange(dTime_s);
 	//SmartDashboard::PutNumber("TestTankHeading",m_Heading);
 	__super::TimeChange(dTime_s);
+
+	#if 1
+	//For open loop we'll use the internal methods to account for velocities
+	if (m_TankRobotProps.IsOpen)
+	{
+		Vec2d Velocity=GetLinearVelocity_ToDisplay();
+		SmartDashboard::PutNumber("Velocity",Meters2Feet(Velocity[1]));
+		SmartDashboard::PutNumber("Rotation Velocity",GetAngularVelocity_ToDisplay());
+	}
+	#endif
 }
 
 bool Tank_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
@@ -879,8 +889,11 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 		double AngularVelocity;
 		InterpolateVelocities(LeftVelocity,RightVelocity,LocalVelocity,AngularVelocity,m_dTime_s);
 		//DOUT5("FWD=%f Omega=%f",Meters2Feet(LocalVelocity[1]),AngularVelocity);
-		SmartDashboard::PutNumber("Velocity",Meters2Feet(LocalVelocity[1]));
-		SmartDashboard::PutNumber("Rotation Velocity",AngularVelocity);
+		if (!m_TankRobotProps.IsOpen)
+		{
+			SmartDashboard::PutNumber("Velocity",Meters2Feet(LocalVelocity[1]));
+			SmartDashboard::PutNumber("Rotation Velocity",AngularVelocity);
+		}
 	}
 	#endif
 }
@@ -1051,6 +1064,7 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 	Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", LeftVelocity,RightVelocity);
 	//Dout(m_TankRobotProps.Feedback_DiplayRow, "l=%.1f r=%.1f", Encoder_GetRate(Tank_Robot::eRightDrive1,)/3.0,Encoder_GetRate()/3.0);
 	#if 1
+	if (!m_TankRobotProps.IsOpen)
 	{
 		Vec2d LocalVelocity;
 		double AngularVelocity;
