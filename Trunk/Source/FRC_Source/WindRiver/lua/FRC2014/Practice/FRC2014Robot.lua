@@ -86,7 +86,9 @@ MainRobot = {
 	MaxTorqueYaw =  gMaxTorqueYaw,
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
-	
+	rotation_tolerance=Deg2Rad * 2,
+	rotation_distance_scalar=1.0,
+
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
@@ -334,26 +336,26 @@ MainRobot = {
 
 	controls =
 	{
+		--This first one is official
+		slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)"},
+		--slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)", slot_3="logitech dual action"},
+
 		Joystick_1 =
 		{
-			control = "logitech dual action",
-			--Note for the Y right axis... it is 5 on the simulation and 3 for the driver station (i.e. using real robot)
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			control = "controller (xbox 360 for windows)",
+			Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			
-			Robot_SetDriverOverride = {type="joystick_button", key=8, on_off=true},
-			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
-			
+			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Robot_SetLowGearOff = {type="joystick_button", key=2, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=1, on_off=false},
+						
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			--optionally comment out once robot is calibrated (it may be offered from POV
-			Turn_90R = {type="joystick_button", key=3, on_off=false},
-			Turn_90L = {type="joystick_button", key=1, on_off=false},
-			Turn_180 = {type="joystick_button", key=2, on_off=false},
-			--comment out once robot is calibrated
-			Robot_TestWaypoint={type="joystick_button", key=4, on_off=true},
+			Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
+			Turn_180_Hold = {type="joystick_button", key=6, on_off=true},
+			FlipY_Hold = {type="joystick_button", key=6, on_off=true},
+			SlideHold = {type="joystick_button", key=6, on_off=true}
 		},
 		Joystick_2 =
 		{
@@ -380,8 +382,28 @@ MainRobot = {
 			IntakeArm_SetStowed={type="joystick_button", key=4, on_off=false},
 			Robot_CatcherShooter={type="joystick_button", key=5, on_off=true},
 			Robot_CatcherIntake={type="joystick_button", key=6, on_off=true}
-		}
-
+		},
+		Joystick_3 =
+		{
+			control = "logitech dual action",
+			--Note for the Y right axis... it is 5 on the simulation and 3 for the driver station (i.e. using real robot)
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			
+			Robot_SetDriverOverride = {type="joystick_button", key=8, on_off=true},
+			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
+			
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--optionally comment out once robot is calibrated (it may be offered from POV
+			Turn_90R = {type="joystick_button", key=3, on_off=false},
+			Turn_90L = {type="joystick_button", key=1, on_off=false},
+			Turn_180 = {type="joystick_button", key=2, on_off=false},
+			--comment out once robot is calibrated
+			Robot_TestWaypoint={type="joystick_button", key=4, on_off=true},
+		},
 	},
 	
 	--This is only used in the AI tester, can be ignored
