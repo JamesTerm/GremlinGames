@@ -33,6 +33,8 @@ skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 MainRobot = {
+	--Version helps to identify a positive update to lua
+	version = 1;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -76,8 +78,6 @@ MainRobot = {
 		},
 		compressor	=	{ relay=8, limit=14 }
 	},
-	--Version helps to identify a positive update to lua
-	--version = 1;
 	
 	Mass = 25, -- Weight kg
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
@@ -100,7 +100,7 @@ MainRobot = {
 	
 	tank_drive =
 	{
-		is_closed=1,
+		is_closed=0,
 		show_pid_dump='no',
 		ds_display_row=-1,
 		wheel_base_dimensions =
@@ -119,8 +119,8 @@ MainRobot = {
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
-		curve_voltage=
-		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		--curve_voltage=
+		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		force_voltage=
 		{t4=0, t3=0, t2=0, t1=0, c=1},
 		reverse_steering='no',
@@ -175,7 +175,7 @@ MainRobot = {
 
 		auton =
 		{
-			ball_target_distance_ft=4,
+			move_forward_ft =0.0,
 		},
 		
 		winch =
@@ -312,7 +312,7 @@ MainRobot = {
 			
 			tank_drive =
 			{
-				is_closed=1,
+				is_closed=0,
 				show_pid_dump='no',
 				ds_display_row=-1,
 				--We must NOT use I or D for low gear, we must keep it very responsive
@@ -326,8 +326,6 @@ MainRobot = {
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 				voltage_multiply=1.0,				--May be reversed using -1.0
-				curve_voltage=
-				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
@@ -338,97 +336,11 @@ MainRobot = {
 
 	controls =
 	{
-		Joystick_1 =
-		{
-			control = "airflo",
-			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			--Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			--Joystick_SetRightVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			--Joystick_SetRight_XAxis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Analog_Turn = {type="joystick_culver", key_x=5, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
-			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			--Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
-			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
-			Robot_SetLowGearOff = {type="joystick_button", key=8, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=6, on_off=false},
-			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			--Turn_180 = {type="joystick_button", key=7, on_off=false},
-			Turn_180_Hold = {type="joystick_button", key=7, on_off=true},
-			FlipY_Hold = {type="joystick_button", key=7, on_off=true},
-			SlideHold = {type="joystick_button", key=7, on_off=true},
-			Robot_TestWaypoint={type="joystick_button", key=3, on_off=true},
-			
-			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
-			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
-			--Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
-			Winch_Advance={type="keyboard", key='k', on_off=true},
-			IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			IntakeArm_SetDeployed={type="keyboard", key='l', on_off=false},
-			IntakeArm_SetStowed={type="keyboard", key=';', on_off=false},
-			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},
-			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false},
-			Winch_Advance={type="keyboard", key='k', on_off=true},
-			Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
-			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
-			TestWaypoint={type="keyboard", key='q', on_off=true},
-			TestAuton={type="keyboard", key='g', on_off=false},
-			--Slide={type="keyboard", key='g', on_off=false},
-		},
-		
-		Joystick_2 =
-		{
-			control = "logitech dual action",
-			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			--Joystick_SetRightVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
-			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Analog_Turn = {type="joystick_culver", key_x=2, key_y=5, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			--Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
-			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
-			
-			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
-			Winch_SetGoalShot = {type="joystick_button", key=3, on_off=false},
-			Winch_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire = {type="joystick_button", key=2, on_off=true},
-			
-			--Ball_Squirt = {type="joystick_button", key=1, on_off=true},
-			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
-			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Turn_180_Hold = {type="joystick_button", key=7, on_off=true},
-			FlipY_Hold = {type="joystick_button", key=7, on_off=true},
-			SlideHold = {type="joystick_button", key=7, on_off=true}
-		},
-		Joystick_3 =
-		{
-			control = "gamepad f310 (controller)",
-			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			--Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			--Joystick_SetRightVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Turret_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
-			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
-			
-			--IntakeRollers_Grip = {type="joystick_button", key=?, on_off=true},
-			--IntakeRollers_Squirt = {type="joystick_button", key=?, on_off=true},
-			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+		--This first one is official
+		slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)"},
+		--slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)", slot_3="logitech dual action"},
 
-			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
-			Robot_TestWaypoint={type="joystick_button", key=3, on_off=true},
-			
-			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
-			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
-			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
-		},
-		Joystick_4 =
+		Joystick_1 =
 		{
 			control = "controller (xbox 360 for windows)",
 			Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
@@ -444,7 +356,54 @@ MainRobot = {
 			Turn_180_Hold = {type="joystick_button", key=6, on_off=true},
 			FlipY_Hold = {type="joystick_button", key=6, on_off=true},
 			SlideHold = {type="joystick_button", key=6, on_off=true}
-		}
+		},
+		Joystick_2 =
+		{
+			control = "gamepad f310 (controller)",
+			--3 is right x axis
+			--Enable these for targeting assist
+			--Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
+			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
+			--Once the arm is tuned this can be commented out for the target assist
+			IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			
+			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			
+			--TODO see if chip shot is in the cards
+			--Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
+			Winch_SetGoalShot = {type="joystick_button", key=3, on_off=false},
+			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
+
+			--If we want other buttons for the intake rollers here they are	
+			--IntakeRollers_Grip = {type="joystick_button", key=?, on_off=true},
+			--IntakeRollers_Squirt = {type="joystick_button", key=?, on_off=true},
+			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			IntakeArm_SetDeployed={type="joystick_button", key=2, on_off=false},
+			IntakeArm_SetStowed={type="joystick_button", key=4, on_off=false},
+			Robot_CatcherShooter={type="joystick_button", key=5, on_off=true},
+			Robot_CatcherIntake={type="joystick_button", key=6, on_off=true}
+		},
+		Joystick_3 =
+		{
+			control = "logitech dual action",
+			--Note for the Y right axis... it is 5 on the simulation and 3 for the driver station (i.e. using real robot)
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			
+			Robot_SetDriverOverride = {type="joystick_button", key=8, on_off=true},
+			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
+			
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--optionally comment out once robot is calibrated (it may be offered from POV
+			Turn_90R = {type="joystick_button", key=3, on_off=false},
+			Turn_90L = {type="joystick_button", key=1, on_off=false},
+			Turn_180 = {type="joystick_button", key=2, on_off=false},
+			--comment out once robot is calibrated
+			Robot_TestWaypoint={type="joystick_button", key=4, on_off=true},
+		},
 	},
 	
 	--This is only used in the AI tester, can be ignored
