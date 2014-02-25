@@ -1247,6 +1247,11 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			case eOneBall:
 				m_Primer.AddGoal(new OneBallAuton(this));
 				break;
+			case eTwoBall:
+			case eThreeBall:
+			case eDoNothing:
+			case eNoAutonTypes: //grrr windriver and warning 1250
+				break;
 			}
 			m_Primer.AddGoal(new goal_clock(this));
 			m_Status=eActive;
