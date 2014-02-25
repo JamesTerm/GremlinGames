@@ -495,7 +495,8 @@ void RobotDrive::StopMotor()
  /*														Control_1C_Element_UI														*/
 /***********************************************************************************************************************************/
 
-Control_1C_Element_UI::Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name) : m_PutNumber_Used(false),m_PutBoolUsed(false)
+Control_1C_Element_UI::Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name,double DefaultNumber) : m_DefaultNumber(DefaultNumber),
+	m_PutNumber_Used(false),m_PutBoolUsed(false)
 {
 	m_Name=name;
 	char Buffer[4];
@@ -534,7 +535,7 @@ double Control_1C_Element_UI::get_number() const
 {
 	if (!m_PutNumber_Used)
 	{
-		SmartDashboard::PutNumber(m_Name,0.0);
+		SmartDashboard::PutNumber(m_Name,m_DefaultNumber);
 		m_PutNumber_Used=true;
 	}
 	return (double)SmartDashboard::GetNumber(m_Name);

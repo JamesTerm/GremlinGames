@@ -36,7 +36,8 @@ public:
 	} Intake_Robot_Props;
 	struct Autonomous_Properties
 	{
-		double MoveForward;				//Optional to move forward to use less power to shoot
+		double BallTargetDistance; //used to tweak desired distance away from ball for targeting
+		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
 	} Autonomous_Props;
 	struct BallTargeting
 	{
@@ -324,6 +325,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 		#ifdef Robot_TesterCode
 		void TestAutonomous();
+		void GoalComplete();
 		#endif
 };
 
@@ -339,6 +341,11 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 {
 	public:
 		FRC_2014_Robot_Control();
+
+		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
+		void ResetPos();
+		FRC_2014_Control_Interface &AsControlInterface() {return *this;}
+
 		const FRC_2014_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
@@ -364,13 +371,10 @@ class FRC_2014_Robot_Control : public FRC_2014_Control_Interface
 		FRC_2014_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester3 m_Winch_Pot, m_IntakeArm_Pot;
-		Potentiometer_Tester2 m_Flippers_Pot; //simulate the potentiometer and motor
-		Encoder_Simulator m_PowerWheel_Enc,m_LowerConveyor_Enc,m_MiddleConveyor_Enc,m_FireConveyor_Enc;  //simulate the encoder and motor
+		Potentiometer_Tester2 m_Winch_Pot, m_IntakeArm_Pot;
 		KalmanFilter m_KalFilter_Arm;
 		//cache voltage values for display
-		double m_WinchVoltage,m_IntakeArmVoltage,m_PowerWheelVoltage,m_FlipperVoltage;
-		double m_LowerConveyorVoltage,m_MiddleConveyorVoltage,m_FireConveyorVoltage;
+		double m_WinchVoltage,m_IntakeArmVoltage;
 };
 #else
 

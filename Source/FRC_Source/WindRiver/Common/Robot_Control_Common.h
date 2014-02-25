@@ -46,13 +46,14 @@ typedef              int int32_t;
 class Control_1C_Element_UI
 {
 public:
-	Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name);
+	Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name,double DefaultNumber=0.0);
 	void display_number(double value);
 	void display_bool(bool value);
 	bool get_bool() const;
 	double get_number() const;
 protected:
 	std::string m_Name;
+	double m_DefaultNumber;
 	//Check first run to avoid mucking up the SmartDashboard (i.e. only populate with the inital get is called)
 	mutable bool m_PutNumber_Used,m_PutBoolUsed;
 };
@@ -86,7 +87,7 @@ private:
 class DigitalInput : public Control_1C_Element_UI
 {
 public:
-	DigitalInput(uint8_t moduleNumber, uint32_t channel,const char *name) : Control_1C_Element_UI(moduleNumber,channel,name),
+	DigitalInput(uint8_t moduleNumber, uint32_t channel,const char *name) : Control_1C_Element_UI(moduleNumber,channel,name,1.0),
 		m_ModuleNumber(moduleNumber), m_Channel(channel) {}
 	uint32_t Get() {return get_number();}
 	uint32_t GetChannel() {return m_Channel;}

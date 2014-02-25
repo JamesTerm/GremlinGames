@@ -108,6 +108,9 @@ Goal::Goal_Status MultitaskGoal::Process(double dTime_s)
 	for (GoalList::iterator it = m_GoalsToProcess.begin(); it!=m_GoalsToProcess.end(); ++it)
 	{
 		status=(*it)->Process(dTime_s);
+		//If any subgoal fails... bail
+		if (status==eFailed)
+			return eFailed;
 		if (status!=eActive)
 		{
 			NonActiveCount++;
