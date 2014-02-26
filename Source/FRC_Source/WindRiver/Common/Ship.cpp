@@ -1082,7 +1082,7 @@ void Ship_Tester::TestWaypoint(bool on)
 			}
 			catch (...)
 			{
-				Local_GoalTarget=Vec2d(0.0,3.0);
+				Local_GoalTarget=Vec2d(0.0,Feet2Meters(3.0));
 				SmartDashboard::PutNumber("Waypoint_x",Local_GoalTarget[0]);
 				SmartDashboard::PutNumber("Waypoint_y",Local_GoalTarget[1]);
 			}
@@ -1095,7 +1095,7 @@ void Ship_Tester::TestWaypoint(bool on)
 			if (UsePolyConversion)
 			{
 				double x=Local_GoalTarget[1];
-				double Term[5];
+				double Term[5]={0.0,1.0,0.0,0.0,0.0};
 				try
 				{
 					Term[0]=SmartDashboard::GetNumber("Waypoint_y_c");
@@ -1106,7 +1106,6 @@ void Ship_Tester::TestWaypoint(bool on)
 				}
 				catch (...)
 				{
-					Local_GoalTarget=Vec2d(0.0,3.0);
 					SmartDashboard::PutNumber("Waypoint_y_c",0.0);
 					SmartDashboard::PutNumber("Waypoint_y_t1",1.0);
 					SmartDashboard::PutNumber("Waypoint_y_t2",0.0);
