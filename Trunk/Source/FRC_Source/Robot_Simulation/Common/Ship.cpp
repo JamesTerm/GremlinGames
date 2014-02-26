@@ -1076,6 +1076,41 @@ void Ship_Tester::TestWaypoint(bool on)
 			const Vec2d Local_GoalTarget(Feet2Meters(SmartDashboard::GetNumber("Waypoint_x")),Feet2Meters(SmartDashboard::GetNumber("Waypoint_y")));
 			#endif
 
+			const bool UsePolyConversion=true;
+
+			if (UsePolyConversion)
+			{
+				double x=Local_GoalTarget[1];
+				double Term[5];
+				try
+				{
+					Term[0]=SmartDashboard::GetNumber("Waypoint_y_c");
+					Term[1]=SmartDashboard::GetNumber("Waypoint_y_t1");
+					Term[2]=SmartDashboard::GetNumber("Waypoint_y_t2");
+					Term[3]=SmartDashboard::GetNumber("Waypoint_y_t3");
+					Term[4]=SmartDashboard::GetNumber("Waypoint_y_t4");
+				}
+				catch (...)
+				{
+					Local_GoalTarget=Vec2d(0.0,3.0);
+					SmartDashboard::PutNumber("Waypoint_y_c",0.0);
+					SmartDashboard::PutNumber("Waypoint_y_t1",1.0);
+					SmartDashboard::PutNumber("Waypoint_y_t2",0.0);
+					SmartDashboard::PutNumber("Waypoint_y_t3",0.0);
+					SmartDashboard::PutNumber("Waypoint_y_t4",0.0);
+				}
+
+				double y=fabs(x);
+				const double *c=Term;
+				const double x2=y*y;
+				const double x3=y*x2;
+				const double x4=x2*x2;
+				y = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*y) + c[0]; 
+				const double result=(x<0)?-y:y;
+				Local_GoalTarget[1]=result;
+				SmartDashboard::PutNumber("Waypoint_y_Converted",Meters2Feet(result));
+			}
+
 			wp.Position=Local_GoalTarget;
 			wp.Power=1.0;
 			//Now to setup the goal
