@@ -34,18 +34,18 @@ gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) *
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1;
+	version = 1.2;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
 		victor =
 		{
-			id_1 = { name= "left_drive_1", channel=1, module=1}, 
-			id_2 = { name= "left_drive_2", channel=2}, 
-			id_3 = { name= "left_drive_3", channel=3}, 
-			id_4 = { name="right_drive_1", channel=4},
-			id_5 = { name="right_drive_2", channel=5},
-			id_6 = { name="right_drive_3", channel=6},
+			id_1 = { name= "right_drive_1", channel=1, module=1}, 
+			id_2 = { name= "right_drive_2", channel=2}, 
+			id_3 = { name= "right_drive_3", channel=3}, 
+			id_4 = { name="left_drive_1", channel=4},
+			id_5 = { name="left_drive_2", channel=5},
+			id_6 = { name="left_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
 			id_8 = { name="intake_arm_1",  channel=8},
 			id_9 = { name="intake_arm_2",  channel=9},
@@ -118,7 +118,7 @@ MainRobot = {
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply=1.0,				--May be reversed using -1.0
+		voltage_multiply=-1.0,				--May be reversed using -1.0
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		force_voltage=
@@ -325,7 +325,7 @@ MainRobot = {
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=1.0,				--May be reversed using -1.0
+				voltage_multiply=-1.0,				--May be reversed using -1.0
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
@@ -337,13 +337,13 @@ MainRobot = {
 	controls =
 	{
 		--This first one is official
-		slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)"},
-		--slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)", slot_3="logitech dual action"},
+		--slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)"},
+		slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)", slot_3="logitech dual action"},
 
 		Joystick_1 =
 		{
 			control = "controller (xbox 360 for windows)",
-			Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetLeft_XAxis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
