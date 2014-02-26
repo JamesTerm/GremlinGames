@@ -492,7 +492,12 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 void Tank_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &LocalForce,double LocalTorque,double TorqueRestraint,double dTime_s)
 {
 	Vec2D LocalForceToUse;
-	#if 1
+	const UI_Controller *UI_controls=GetController()->GetUIController();
+	//This is one of the cases where we can assume that auto-pilot would never want to use the scaled force/torque technique as it messes
+	//with the ability to align turns and distances properly.  Since it will most-likely do efficient turns to waypoints in autonomous it
+	//shouldn't have a problem with the rates either.
+	//  [2/26/2014 JamesK]
+	if (UI_controls && !UI_controls->GetAutoPilot())
 	{
 		const double NormalizedForce=(LocalForce[1]/Mass) / m_ShipProps.GetShipProps().MaxAccelForward;
 		const double NormalizedTorque=(LocalTorque*dTime_s)/TorqueRestraint;
@@ -513,9 +518,9 @@ void Tank_Robot::ApplyThrusters(PhysicsEntity_2D &PhysicsToUse,const Vec2D &Loca
 		Vec2d AccRestraintNegative(MaxAccelLeft,m_ShipProps.GetShipProps().MaxAccelForward * ScaledForce);
 		LocalForceToUse=m_Physics.ComputeRestrainedForce(LocalForce,AccRestraintPositive*Mass,AccRestraintNegative*Mass,dTime_s);
 	}
-	#else
-	LocalForceToUse=LocalForce;
-	#endif
+	else
+		LocalForceToUse=LocalForce;
+
 	UpdateVelocities(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 	m_VehicleDrive->ApplyThrusters(PhysicsToUse,LocalForce,LocalTorque,TorqueRestraint,dTime_s);
 	//We are not going to use these interpolated values in the control (it would corrupt it)... however we can monitor them here, or choose to
