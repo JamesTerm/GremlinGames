@@ -107,7 +107,7 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 				   ) : Entity1D_Properties(EntityName,Mass,Dimension,IsAngular)
 {
 	m_Ship_1D_Props.MAX_SPEED = m_Ship_1D_Props.MaxSpeed_Forward = MAX_SPEED;
-	m_Ship_1D_Props.MaxAccelReverse = -MAX_SPEED;
+	m_Ship_1D_Props.MaxSpeed_Reverse = -MAX_SPEED;
 	m_Ship_1D_Props.ACCEL = ACCEL;
 	m_Ship_1D_Props.BRAKE = BRAKE;
 	m_Ship_1D_Props.MaxAccelForward=MaxAccelForward;
