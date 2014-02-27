@@ -26,15 +26,15 @@ g_wheel_diameter_in=4   --This will determine the correct distance try to make a
 WheelBase_Width_In=26.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=10  --was 9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.50
+LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters * 2.5
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.2;
+	version = 1.3;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -115,7 +115,7 @@ MainRobot = {
 		latency=0.0,
 		heading_latency=0.0,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
-		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
+		left_max_offset=-0.7 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=-1.0,				--May be reversed using -1.0
@@ -329,6 +329,7 @@ MainRobot = {
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
+				left_max_offset=-0.7 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 				inv_max_accel = 0.0  --solved empiracally
 			}
 		}
@@ -398,8 +399,9 @@ MainRobot = {
 			
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--optionally comment out once robot is calibrated (it may be offered from POV
-			Turn_90R = {type="joystick_button", key=3, on_off=false},
-			Turn_90L = {type="joystick_button", key=1, on_off=false},
+			TestWaypoint={type="joystick_button", key=3, keyboard='q', on_off=true},
+			--Turn_90R = {type="joystick_button", key=3, on_off=false},
+			--Turn_90L = {type="joystick_button", key=1, on_off=false},
 			Turn_180 = {type="joystick_button", key=2, on_off=false},
 			--comment out once robot is calibrated
 			Robot_TestWaypoint={type="joystick_button", key=4, on_off=true},
