@@ -201,7 +201,7 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
+			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
