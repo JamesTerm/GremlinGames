@@ -180,8 +180,9 @@ MainRobot = {
 		
 		winch =
 		{
-			is_closed=1,
-			show_pid_dump='n',
+			--is_closed=0,
+			starting_position_deg=0,
+			show_pid_dump='y',
 			ds_display_row=-1,
 			use_pid_up_only='y',
 			pid_up=
@@ -200,7 +201,7 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
@@ -408,7 +409,7 @@ MainRobot = {
 		Joystick_4 =
 		{
 			control = "airflo",
-			Joystick_SetLeft_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Joystick_SetLeft_XAxis = {type="joystick_analog", key=4, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Analog_Turn = {type="joystick_culver", key_x=3, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
