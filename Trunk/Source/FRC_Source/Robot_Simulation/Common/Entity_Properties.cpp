@@ -83,6 +83,7 @@ Ship_1D_Properties::Ship_1D_Properties()
 	m_Ship_1D_Props.MaxAccelReverse=70.0 * Scale;
 	m_Ship_1D_Props.MinRange=m_Ship_1D_Props.MaxRange=0.0;
 	m_Ship_1D_Props.UsingRange=false;
+	m_Ship_1D_Props.DistanceDegradeScalar=1.0;  //only can be changed in script!
 };
 
 Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
@@ -94,7 +95,7 @@ Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,doub
 				   ) : Entity1D_Properties(EntityName,Mass,Dimension,IsAngular)
 {
 	m_Ship_1D_Props.MAX_SPEED = m_Ship_1D_Props.MaxSpeed_Forward = MAX_SPEED;
-	m_Ship_1D_Props.MaxAccelReverse = -MAX_SPEED;
+	m_Ship_1D_Props.MaxSpeed_Reverse = -MAX_SPEED;
 	m_Ship_1D_Props.ACCEL = ACCEL;
 	m_Ship_1D_Props.BRAKE = BRAKE;
 	m_Ship_1D_Props.MaxAccelForward=MaxAccelForward;
@@ -148,7 +149,8 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 			err=script.GetField("max_range", NULL, NULL, &range);
 			if (!err) m_Ship_1D_Props.MaxRange=range;
 		}
-		script.GetField("distance_scale", NULL, NULL, &m_Ship_1D_Props.DistanceDegradeScalar);
+		err=script.GetField("distance_scale", NULL, NULL, &range);
+		if (!err) m_Ship_1D_Props.DistanceDegradeScalar=range;
 
 		std::string sTest;
 		//TODO determine why the bool type fails
