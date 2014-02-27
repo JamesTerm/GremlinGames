@@ -184,9 +184,13 @@ void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
 	//DOUT4("Arm=%f Angle=%f",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio));
 	//#endif
 
-	//const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
-	//const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
-	//SmartDashboard::PutNumber("Catapult_Angle2",RAD_2_DEG(GetPos_m()*c_GearToArmRatio));
+	const FRC_2014_Robot_Properties &RobotProps=m_pParent->GetRobotProps();
+	if (RobotProps.GetWinchProps().GetRotaryProps().LoopState==Rotary_Props::eNone)
+	{
+		const FRC_2014_Robot_Props &props=RobotProps.GetFRC2014RobotProps();
+		const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
+		SmartDashboard::PutNumber("Catapult_Angle",90.0-(RAD_2_DEG(GetPos_m()*c_GearToArmRatio)));
+	}
 }
 
 
