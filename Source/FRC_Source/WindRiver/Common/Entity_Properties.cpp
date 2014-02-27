@@ -96,6 +96,7 @@ Ship_1D_Properties::Ship_1D_Properties()
 	m_Ship_1D_Props.MaxAccelReverse=70.0 * Scale;
 	m_Ship_1D_Props.MinRange=m_Ship_1D_Props.MaxRange=0.0;
 	m_Ship_1D_Props.UsingRange=false;
+	m_Ship_1D_Props.DistanceDegradeScalar=1.0;  //only can be changed in script!
 };
 
 Ship_1D_Properties::Ship_1D_Properties(const char EntityName[], double Mass,double Dimension,
@@ -161,7 +162,8 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script)
 			err=script.GetField("max_range", NULL, NULL, &range);
 			if (!err) m_Ship_1D_Props.MaxRange=range;
 		}
-		script.GetField("distance_scale", NULL, NULL, &m_Ship_1D_Props.DistanceDegradeScalar);
+		err=script.GetField("distance_scale", NULL, NULL, &range);
+		if (!err) m_Ship_1D_Props.DistanceDegradeScalar=range;
 
 		std::string sTest;
 		//TODO determine why the bool type fails
