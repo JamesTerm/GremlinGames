@@ -26,26 +26,26 @@ g_wheel_diameter_in=4   --This will determine the correct distance try to make a
 WheelBase_Width_In=26.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=10  --was 9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.50
+LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters * 2.5
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1;
+	version = 1.3;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
 		victor =
 		{
-			id_1 = { name= "left_drive_1", channel=1, module=1}, 
-			id_2 = { name= "left_drive_2", channel=2}, 
-			id_3 = { name= "left_drive_3", channel=3}, 
-			id_4 = { name="right_drive_1", channel=4},
-			id_5 = { name="right_drive_2", channel=5},
-			id_6 = { name="right_drive_3", channel=6},
+			id_1 = { name= "right_drive_1", channel=1, module=1}, 
+			id_2 = { name= "right_drive_2", channel=2}, 
+			id_3 = { name= "right_drive_3", channel=3}, 
+			id_4 = { name="left_drive_1", channel=4},
+			id_5 = { name="left_drive_2", channel=5},
+			id_6 = { name="left_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
 			id_8 = { name="intake_arm_1",  channel=8},
 			id_9 = { name="intake_arm_2",  channel=9},
@@ -86,7 +86,9 @@ MainRobot = {
 	MaxTorqueYaw =  gMaxTorqueYaw,
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
-	
+	rotation_tolerance=Deg2Rad * 2,
+	rotation_distance_scalar=1.0,
+
 	MAX_SPEED = HighGearSpeed,
 	ACCEL = 10,    -- Thruster Acceleration m/s2 (1g = 9.8)
 	BRAKE = ACCEL,
@@ -116,7 +118,7 @@ MainRobot = {
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-		voltage_multiply=1.0,				--May be reversed using -1.0
+		voltage_multiply=-1.0,				--May be reversed using -1.0
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		force_voltage=
@@ -178,7 +180,8 @@ MainRobot = {
 		
 		winch =
 		{
-			is_closed=1,
+			--is_closed=0,
+			starting_position_deg=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -186,7 +189,7 @@ MainRobot = {
 			{p=100, i=0, d=0},
 			tolerance=0.15,
 			tolerance_count=20,
-			voltage_multiply=1.0,			--May be reversed
+			voltage_multiply=-1.0,			--May be reversed
 			encoder_to_wheel_ratio=Catapult_PotentiometerToMotorRatio,
 			--curve_voltage=
 			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
@@ -323,10 +326,11 @@ MainRobot = {
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=1.0,				--May be reversed using -1.0
+				voltage_multiply=-1.0,				--May be reversed using -1.0
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
+				left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 				inv_max_accel = 0.0  --solved empiracally
 			}
 		}
@@ -334,26 +338,26 @@ MainRobot = {
 
 	controls =
 	{
+		--This first one is official
+		--slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)"},
+		slotlist = {slot_1="controller (xbox 360 for windows)", slot_2="gamepad f310 (controller)", slot_3="logitech dual action"},
+
 		Joystick_1 =
 		{
-			control = "logitech dual action",
-			--Note for the Y right axis... it is 5 on the simulation and 3 for the driver station (i.e. using real robot)
-			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Joystick_SetRightVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			control = "controller (xbox 360 for windows)",
+			Joystick_SetLeft_XAxis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			
-			Robot_SetDriverOverride = {type="joystick_button", key=8, on_off=true},
-			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
-			
+			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Robot_SetLowGearOff = {type="joystick_button", key=2, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=1, on_off=false},
+						
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			--optionally comment out once robot is calibrated (it may be offered from POV
-			Turn_90R = {type="joystick_button", key=3, on_off=false},
-			Turn_90L = {type="joystick_button", key=1, on_off=false},
-			Turn_180 = {type="joystick_button", key=2, on_off=false},
-			--comment out once robot is calibrated
-			Robot_TestWaypoint={type="joystick_button", key=4, on_off=true},
+			Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
+			Turn_180_Hold = {type="joystick_button", key=6, on_off=true},
+			FlipY_Hold = {type="joystick_button", key=6, on_off=true},
+			SlideHold = {type="joystick_button", key=6, on_off=true}
 		},
 		Joystick_2 =
 		{
@@ -380,8 +384,29 @@ MainRobot = {
 			IntakeArm_SetStowed={type="joystick_button", key=4, on_off=false},
 			Robot_CatcherShooter={type="joystick_button", key=5, on_off=true},
 			Robot_CatcherIntake={type="joystick_button", key=6, on_off=true}
-		}
-
+		},
+		Joystick_3 =
+		{
+			control = "logitech dual action",
+			--Note for the Y right axis... it is 5 on the simulation and 3 for the driver station (i.e. using real robot)
+			Joystick_SetLeftVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			Joystick_SetRightVelocity = {type="joystick_analog", key=3, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			
+			Robot_SetDriverOverride = {type="joystick_button", key=8, on_off=true},
+			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
+			
+			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--optionally comment out once robot is calibrated (it may be offered from POV
+			TestWaypoint={type="joystick_button", key=3, keyboard='q', on_off=true},
+			--Turn_90R = {type="joystick_button", key=3, on_off=false},
+			--Turn_90L = {type="joystick_button", key=1, on_off=false},
+			Turn_180 = {type="joystick_button", key=2, on_off=false},
+			--comment out once robot is calibrated
+			Robot_TestWaypoint={type="joystick_button", key=4, on_off=true},
+		},
 	},
 	
 	--This is only used in the AI tester, can be ignored
