@@ -965,7 +965,8 @@ void Tank_Robot_Control::SetSafety(bool UseSafety)
 	{
 		//I'm giving a whole second before the timeout kicks in... I do not want false positives!
 		m_RobotDrive->SetExpiration(1.0);
-		m_RobotDrive->SetSafetyEnabled(true);
+		//m_RobotDrive->SetSafetyEnabled(true);
+		m_RobotDrive->SetSafetyEnabled(false);
 	}
 	else
 		m_RobotDrive->SetSafetyEnabled(false);
