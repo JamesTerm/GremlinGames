@@ -30,7 +30,7 @@ HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.
 LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters * 2.5
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
-gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
+gMaxTorqueYaw = ((2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid) * 0.88
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
@@ -115,7 +115,7 @@ MainRobot = {
 		latency=0.0,
 		heading_latency=0.0,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
-		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
+		left_max_offset=-0.4 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=-1.0,				--May be reversed using -1.0
@@ -330,7 +330,7 @@ MainRobot = {
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
-				left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
+				left_max_offset=-0.7 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 				inv_max_accel = 0.0  --solved empiracally
 			}
 		}
