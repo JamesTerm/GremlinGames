@@ -160,8 +160,8 @@ MainRobot = {
 	},
 	controls =
 	{
-		slotlist = {slot_1="gamepad f310 (controller)"},
-		--slotlist = {slot_1="logitech dual action"},
+		--slotlist = {slot_1="gamepad f310 (controller)"},
+		slotlist = {slot_1="logitech dual action"},
 		--slotlist = {slot_1="airflo"},
 	
 		Joystick_1 =
