@@ -1188,10 +1188,11 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				else
 				{
 					//Note: these are reversed
-					AddSubgoal(Move_Straight(&m_Robot,4.0));
+					AddSubgoal(Move_Straight(&m_Robot,6.0));
 					AddSubgoal(new Reset_Catapult(m_Parent));
+					AddSubgoal(new Goal_Wait(1.0));  //ensure catapult has finished launching ball before moving
 					AddSubgoal(new Fire_Sequence(m_Parent));
-					AddSubgoal(Move_Straight(&m_Robot,2.0));
+					//AddSubgoal(Move_Straight(&m_Robot,2.0));  //For now try to avoid movement before shooting
 					m_Status=eActive;
 				}
 			}
