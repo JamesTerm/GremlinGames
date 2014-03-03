@@ -54,7 +54,7 @@ MainRobot = {
 		double_solenoid =
 		{
 			id_1 = { name="use_low_gear",    forward_channel=1, reverse_channel=2},
-			id_2 = { name="release_clutch",  forward_channel=3, reverse_channel=4},
+			id_2 = { name="release_clutch",  forward_channel=4, reverse_channel=3},
 			id_3 = { name="catcher_shooter", forward_channel=5, reverse_channel=6},
 			id_4 = { name="catcher_intake",	 forward_channel=7, reverse_channel=8}
 		},
