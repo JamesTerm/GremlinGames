@@ -30,11 +30,11 @@ HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.
 LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters * 2.5
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
-gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
+gMaxTorqueYaw = ((2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid) * 0.88
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
-	version = 1.3;
+	version = 1.4;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -54,7 +54,7 @@ MainRobot = {
 		double_solenoid =
 		{
 			id_1 = { name="use_low_gear",    forward_channel=1, reverse_channel=2},
-			id_2 = { name="release_clutch",  forward_channel=3, reverse_channel=4},
+			id_2 = { name="release_clutch",  forward_channel=4, reverse_channel=3},
 			id_3 = { name="catcher_shooter", forward_channel=5, reverse_channel=6},
 			id_4 = { name="catcher_intake",	 forward_channel=7, reverse_channel=8}
 		},
@@ -180,7 +180,8 @@ MainRobot = {
 		
 		winch =
 		{
-			is_closed=1,
+			--is_closed=0,
+			starting_position_deg=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -188,7 +189,7 @@ MainRobot = {
 			{p=100, i=0, d=0},
 			tolerance=0.15,
 			tolerance_count=20,
-			voltage_multiply=1.0,			--May be reversed
+			voltage_multiply=-1.0,			--May be reversed
 			encoder_to_wheel_ratio=Catapult_PotentiometerToMotorRatio,
 			--curve_voltage=
 			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
