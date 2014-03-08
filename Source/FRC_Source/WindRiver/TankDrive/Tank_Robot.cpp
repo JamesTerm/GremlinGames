@@ -978,9 +978,6 @@ Tank_Robot_Control::Tank_Robot_Control(bool UseSafety) : m_RobotDrive(NULL),m_dT
 	#endif
 {
 	//ResetPos();  may need this later
-	const double EncoderPulseRate=(1.0/360.0);
-	Encoder_SetDistancePerPulse(Tank_Robot::eLeftDrive1,EncoderPulseRate),Encoder_SetDistancePerPulse(Tank_Robot::eRightDrive1,EncoderPulseRate);
-	Encoder_Start(Tank_Robot::eLeftDrive1),Encoder_Start(Tank_Robot::eRightDrive1);
 }
 
 Tank_Robot_Control::~Tank_Robot_Control() 
@@ -1009,6 +1006,9 @@ void Tank_Robot_Control::Initialize(const Entity_Properties *props)
 		m_RobotDrive = new RobotDrive(Victor_GetInstance(Tank_Robot::eLeftDrive1),Victor_GetInstance(Tank_Robot::eLeftDrive2),
 			Victor_GetInstance(Tank_Robot::eRightDrive1),Victor_GetInstance(Tank_Robot::eRightDrive2));
 		SetSafety(m_UseSafety);
+		const double EncoderPulseRate=(1.0/360.0);
+		Encoder_SetDistancePerPulse(Tank_Robot::eLeftDrive1,EncoderPulseRate),Encoder_SetDistancePerPulse(Tank_Robot::eRightDrive1,EncoderPulseRate);
+		Encoder_Start(Tank_Robot::eLeftDrive1),Encoder_Start(Tank_Robot::eRightDrive1);
 	}
 	assert(robot_props);
 	m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
