@@ -1141,6 +1141,22 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 		};
 
+		class Intake_Deploy : public AtomicGoal, public SetUpProps
+		{
+		private:
+			bool m_IsOn;
+		public:
+			Intake_Deploy(FRC_2014_Goals_Impl *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_EventMap.EventOnOff_Map["Robot_CatcherShooter"].Fire(m_IsOn);
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
 		class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
@@ -1154,7 +1170,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				else
 				{
 					AddSubgoal(new Fire(m_Parent,false));
-					AddSubgoal(new Goal_Wait(.100));
+					AddSubgoal(new Goal_Wait(.500));
 					AddSubgoal(new Fire(m_Parent,true));
 					m_Status=eActive;
 				}
@@ -1188,11 +1204,15 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				else
 				{
 					//Note: these are reversed
-					AddSubgoal(Move_Straight(&m_Robot,6.0));
-					AddSubgoal(new Reset_Catapult(m_Parent));
-					AddSubgoal(new Goal_Wait(1.0));  //ensure catapult has finished launching ball before moving
+					AddSubgoal(Move_Straight(&m_Robot,4.0));
+					AddSubgoal(new Intake_Deploy(m_Parent,false));
+					//TODO enable once ready
+					//AddSubgoal(new Reset_Catapult(m_Parent));
+					AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
 					AddSubgoal(new Fire_Sequence(m_Parent));
-					//AddSubgoal(Move_Straight(&m_Robot,2.0));  //For now try to avoid movement before shooting
+					AddSubgoal(new Goal_Wait(0.500));
+					AddSubgoal(Move_Straight(&m_Robot,2.0));  //For now try to avoid movement before shooting
+					AddSubgoal(new Intake_Deploy(m_Parent,true));
 					m_Status=eActive;
 				}
 			}
