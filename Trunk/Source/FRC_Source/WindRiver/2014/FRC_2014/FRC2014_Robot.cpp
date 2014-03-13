@@ -1187,6 +1187,40 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 		};
 
+		class WaitForHot : public AtomicGoal, public SetUpProps
+		{
+		public:
+			WaitForHot(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate() 
+			{
+				m_Status=eActive;
+				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
+			}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				double &Timer=m_Parent->m_Timer;
+				ActivateIfInactive();
+				double IsHot=0.0;
+				try
+				{
+					IsHot=SmartDashboard::GetNumber("TargetHot");
+				}
+				catch (...)
+				{
+					//I may need to prime the pump here
+					SmartDashboard::PutNumber("TargetHot",0.0);
+				}
+				if ((IsHot!=0.0)||(Timer>5.5))
+					m_Status=eCompleted;
+				return m_Status;
+			}
+
+			virtual void Terminate() 
+			{
+				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+			}
+		};
+
 		class OneBallAuton : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
@@ -1206,7 +1240,8 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					//AddSubgoal(new Reset_Catapult(m_Parent));
 					AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
 					AddSubgoal(new Fire_Sequence(m_Parent));
-					AddSubgoal(new Goal_Wait(0.500));
+					//AddSubgoal(new Goal_Wait(0.500));
+					AddSubgoal(new WaitForHot(m_Parent));
 					AddSubgoal(Move_Straight(&m_Robot,2.0));  //For now try to avoid movement before shooting
 					AddSubgoal(new Intake_Deploy(m_Parent,true));
 					m_Status=eActive;
@@ -1300,6 +1335,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 Goal *FRC_2014_Goals::Get_FRC2014_Autonomous(FRC_2014_Robot *Robot)
 {
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	SmartDashboard::PutNumber("Sequence",1.0);  //ensure we are on the right sequence
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(new FRC_2014_Goals_Impl(*Robot));
 	//MainGoal->AddSubgoal(goal_waitforturret);
