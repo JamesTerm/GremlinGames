@@ -35,8 +35,8 @@ NetworkTableServer::~NetworkTableServer(){
 
 void NetworkTableServer::Close(){
 	try{
-		//Note: streamProvider must come before the incomingStreamMonitor so the that task can complete first for the thread to close
-		//  [9/1/2013 Terminator]
+		//Note: streamProvider must come before the incomingStreamMonitor so the that task can complete first for the thread to close 
+		//  [9/1/2013 Terminator] 
 		streamProvider.close(); 
 		incomingStreamMonitor.stop();
 		writeManager.stop();

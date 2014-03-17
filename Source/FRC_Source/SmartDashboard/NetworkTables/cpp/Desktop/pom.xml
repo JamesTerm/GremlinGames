@@ -8,7 +8,7 @@
   <parent>
     <groupId>edu.wpi.first.wpilib.networktables.cpp</groupId>
     <artifactId>parent</artifactId>
-    <version>0.1.0.qualifier</version>
+    <version>0.1.0-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
   
@@ -16,7 +16,7 @@
     <dependency>
 	  <groupId>edu.wpi.first.wpilib.networktables.cpp</groupId>
 	  <artifactId>include</artifactId>
-	  <version>0.1.0.qualifier</version>
+	  <version>0.1.0-SNAPSHOT</version>
       <type>inczip</type>
     </dependency>
   </dependencies>

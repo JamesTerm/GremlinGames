@@ -103,7 +103,7 @@ void WriteManager::run() {
 	
 	bool wrote = false;
 	NetworkTableEntry* entry;
-
+	
 	while(!((std::queue<NetworkTableEntry*>*)outgoingAssignmentQueue)->empty()){
 		entry = ((std::queue<NetworkTableEntry*>*)outgoingAssignmentQueue)->front();
 		((std::queue<NetworkTableEntry*>*)outgoingAssignmentQueue)->pop();
@@ -121,7 +121,7 @@ void WriteManager::run() {
 			delete entryCopy;
 		}
 	}
-
+	
 	while(!((std::queue<NetworkTableEntry*>*)outgoingUpdateQueue)->empty()){
 		entry = ((std::queue<NetworkTableEntry*>*)outgoingUpdateQueue)->front();
 		((std::queue<NetworkTableEntry*>*)outgoingUpdateQueue)->pop();
@@ -137,8 +137,10 @@ void WriteManager::run() {
 
 			receiver.offerOutgoingUpdate(entryCopy);
 			delete entryCopy;
-			}
+		}
 	}
+	
+	
 	
 	if(wrote){
 		receiver.flush();

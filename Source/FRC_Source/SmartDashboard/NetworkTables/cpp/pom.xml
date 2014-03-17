@@ -5,17 +5,29 @@
   <groupId>edu.wpi.first.wpilib.networktables</groupId>
   <artifactId>cpp</artifactId>
   <packaging>pom</packaging>
-  <version>0.1.0.qualifier</version>
+  <version>0.1.0-SNAPSHOT</version>
 
   <modules>
     <module>include</module>
   </modules>
   
+  <properties>
+	<!-- local-repository>C:/Users/wpilibj-buildmaster/maven-repository</local-repository-->
+  </properties>
   <profiles>
+	<profile>
+	  <id>jenkins</id>
+	  <distributionManagement>
+		<repository>
+		  <id>myrepository</id>
+		  <url>file:${local-repository}</url>
+		</repository>
+	  </distributionManagement>
+	</profile>
 	<profile>
 	  <id>desktop</id>
       <activation>
-		<activeByDefault>true</activeByDefault>
+		<activeByDefault>false</activeByDefault>
       </activation>
 	  <modules>
 		<module>parent</module>
@@ -34,7 +46,7 @@
 	<profile>
 	  <id>azalea</id>
       <activation>
-		<activeByDefault>true</activeByDefault>
+		<activeByDefault>false</activeByDefault>
       </activation>
 	  <modules>
 		<module>Azalea</module>
