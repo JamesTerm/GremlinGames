@@ -1242,7 +1242,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					AddSubgoal(new Fire_Sequence(m_Parent));
 					//AddSubgoal(new Goal_Wait(0.500));
 					AddSubgoal(new WaitForHot(m_Parent));
-					AddSubgoal(Move_Straight(&m_Robot,2.0));  //For now try to avoid movement before shooting
+					AddSubgoal(Move_Straight(&m_Robot,3.5));  //For now try to avoid movement before shooting
 					AddSubgoal(new Intake_Deploy(m_Parent,true));
 					m_Status=eActive;
 				}
