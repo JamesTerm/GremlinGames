@@ -15,7 +15,7 @@
 #include "NamedSendable.h"
 #include "tables/ITable.h"
 #include "networktables2/type/ComplexData.h"
-#include "ErrorBase.h"
+#include "NTErrorBase.h"
 
 class __declspec(dllexport) SmartDashboard //: public SensorBase
 {
