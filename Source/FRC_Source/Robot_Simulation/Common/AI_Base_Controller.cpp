@@ -521,7 +521,17 @@ void AI_Base_Controller::DriveToLocation(Vec2d TrajectoryPoint,Vec2d PositionPoi
 		else
 		{
 			//evaluate delta offset to see if we want to use the reverse absolute position
-			const double OrientationDelta=lookDir_radians-m_ship.GetAtt_r();
+			double OrientationDelta;
+			{
+				using namespace std;
+				const double current_Att_ABS=fabs(m_ship.GetAtt_r());
+				const double intended_Att_ABS=fabs(lookDir_radians);
+				const double Begin=min(current_Att_ABS,intended_Att_ABS);
+				const double End=max(current_Att_ABS,intended_Att_ABS);
+				const double NormalDelta=End-Begin;  //normal range  -------BxxxxxE-------
+				const double InvertedDelta=End+(Pi-Begin); //inverted range  xxxxE---------Bxxxx
+				OrientationDelta=min(NormalDelta,InvertedDelta);
+			}
 			double orientation_to_use=lookDir_radians;
 			if (fabs(OrientationDelta)>PI_2)
 				orientation_to_use=NormalizeRotation_HalfPi(lookDir_radians);
