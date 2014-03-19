@@ -166,13 +166,15 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 		Ship_2D &m_ship=*m_pParent->m_ship;
 		const double OrientationDelta=lookDir_radians-m_ship.GetAtt_r();
 		double orientation_to_use=lookDir_radians;
-		double NormalizedVelocity=magnitude;
+		double NormalizedVelocity=cos(fabs(OrientationDelta))*magnitude;
 		if (fabs(OrientationDelta)>PI_2)
 		{
 			orientation_to_use=NormalizeRotation_HalfPi(lookDir_radians);
-			NormalizedVelocity=-magnitude;
+			//NormalizedVelocity=-NormalizedVelocity;
 		}
-		m_ship.SetIntendedOrientation(orientation_to_use);
+		SmartDashboard::PutNumber("TestNormalizedVelocity",NormalizedVelocity);
+		if (magnitude>0.4)
+			m_ship.SetIntendedOrientation(orientation_to_use);
 		//m_pParent->m_Ship_UseHeadingSpeed=fabs(OrientationDelta)>DEG_2_RAD(5.0)?false:true;
 		m_pParent->m_Ship_UseHeadingSpeed=false;
 		m_pParent->Joystick_SetCurrentSpeed_2(NormalizedVelocity);
