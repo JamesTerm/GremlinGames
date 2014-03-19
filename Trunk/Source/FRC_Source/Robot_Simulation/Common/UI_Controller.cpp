@@ -174,16 +174,18 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 		}
 		SmartDashboard::PutNumber("TestNormalizedVelocity",NormalizedVelocity);
 		if (magnitude>0.4)
+		{
 			m_ship.SetIntendedOrientation(orientation_to_use);
+			m_pParent->m_Ship_UseHeadingSpeed=false;
+		}
 		//m_pParent->m_Ship_UseHeadingSpeed=fabs(OrientationDelta)>DEG_2_RAD(5.0)?false:true;
-		m_pParent->m_Ship_UseHeadingSpeed=false;
-		m_pParent->Joystick_SetCurrentSpeed_2(NormalizedVelocity);
+		m_pParent->Quadrant_SetCurrentSpeed(NormalizedVelocity);
 	}
 	else
 	{
 		//rotation used... work with Y axis like before
 		m_HeadingLock=m_pParent->m_ship->GetAtt_r();
-		m_pParent->Joystick_SetCurrentSpeed_2(m_PosY);
+		m_pParent->Quadrant_SetCurrentSpeed(m_PosY);
 	}
 }
 void UI_Controller::FieldCentricDrive::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
