@@ -215,4 +215,20 @@ class COMMON_API UI_Controller
 		bool m_Test1,m_Test2; //Testing
 		bool m_IsBeingDestroyed; //Keep track of when destructor is called
 		bool m_POVSetValve;
+
+		class FieldCentricDrive
+		{
+		private:
+			UI_Controller * const m_pParent;
+			double m_PosX,m_PosY;
+			double m_HeadingLock;
+			bool m_FieldCentricDrive_Mode;  //is in this mode if true
+		protected:
+			void UpdatePosY(double Y) {m_PosY=Y;}
+			void UpdatePosX(double X) {m_PosX=X;}
+		public:
+			FieldCentricDrive(UI_Controller *pParent);
+			void TimeChange(double dTime_s);
+			void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
+		} m_FieldCentricDrive;
 };

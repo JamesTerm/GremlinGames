@@ -28,6 +28,7 @@ using namespace GG_Framework::UI;
 using namespace osg;
 bool Robot_Tester::g_UseMouse=false;
 const double Pi=PI;
+const double Pi2=PI * 2.0;
 #else
 using namespace Framework::Base;
 using namespace Framework::UI;
@@ -156,6 +157,90 @@ void Mouse_ShipDriver::DriveShip()
 
 #endif
 
+  /***************************************************************************************************************/
+ /*										UI_Controller::FieldCentricDrive										*/
+/***************************************************************************************************************/
+
+UI_Controller::FieldCentricDrive::FieldCentricDrive(UI_Controller *pParent) : m_pParent(pParent),m_PosX(0.0),m_PosY(0.0),m_HeadingLock(0.0),m_FieldCentricDrive_Mode(false)
+{
+
+}
+
+void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
+{
+	//To enter the field centric mode there has to have been an initial strafe to activate it... once activated it can stay in this mode until the rotation is used
+	//once rotation is used it will stay disabled until the next strafe is on... and so on... this ensures normal mode is maintained until the user explicity wants
+	//to switch modes
+	if (!IsZero(m_pParent->m_Ship_JoyMouse_rotAcc_rad_s))
+		m_FieldCentricDrive_Mode=false;
+	else if (fabs(m_PosX)>0.4)
+		m_FieldCentricDrive_Mode=true;
+
+	if (m_FieldCentricDrive_Mode)
+	{
+		const double YValue=m_PosY;
+		double Value=m_PosX;
+
+		//This version limits to 90 degrees... so any down motion will be treated like up motion
+		//const double theta = atan2(Value,fabs(YValue));
+		const double theta = atan2(Value,YValue);
+		//Find the magnitude
+		const double magnitude = sqrt(((Value * Value) + (YValue * YValue)));
+		SmartDashboard::PutNumber("TestMagnitude",magnitude);
+		const double lookDir_radians=NormalizeRotation2(theta + m_HeadingLock);
+		//evaluate delta offset to see if we want to use the reverse absolute position
+		Ship_2D &m_ship=*m_pParent->m_ship;
+		double OrientationDelta;
+		{
+			using namespace std;
+			const double current_Att_ABS=m_ship.GetAtt_r() + Pi;
+			const double intended_Att_ABS=lookDir_radians + Pi;
+			const double Begin=min(current_Att_ABS,intended_Att_ABS);
+			const double End=max(current_Att_ABS,intended_Att_ABS);
+			const double NormalDelta=End-Begin;			//normal range  -------BxxxxxE-------
+			const double InvertedDelta=Begin+(Pi2-End);	//inverted range  xxxxB---------Exxxx
+			OrientationDelta=min(NormalDelta,InvertedDelta);
+			SmartDashboard::PutNumber("TestOrientationDelta",RAD_2_DEG(OrientationDelta));
+		}
+		double orientation_to_use=lookDir_radians;
+		double NormalizedVelocity=fabs(cos(fabs(OrientationDelta))*magnitude);
+		//Note the condition to flip has a little bit of extra tolerance to avoid a excessive flipping back and forth
+		//We simply multiply the half pi by a scalar
+		if (fabs(OrientationDelta)>(PI_2*1.2))
+		{
+			orientation_to_use=NormalizeRotation2(lookDir_radians + Pi);
+			NormalizedVelocity=-NormalizedVelocity;
+		}
+		SmartDashboard::PutNumber("TestNormalizedVelocity",NormalizedVelocity);
+		if (magnitude>0.4)
+		{
+			SmartDashboard::PutNumber("TestAngle",RAD_2_DEG(orientation_to_use));
+			m_ship.SetIntendedOrientation(orientation_to_use);
+			m_pParent->m_Ship_UseHeadingSpeed=false;
+		}
+		//m_pParent->m_Ship_UseHeadingSpeed=fabs(OrientationDelta)>DEG_2_RAD(5.0)?false:true;
+		m_pParent->Quadrant_SetCurrentSpeed(NormalizedVelocity);
+	}
+	else
+	{
+		//rotation used... work with Y axis like before
+		m_HeadingLock=NormalizeRotation2(m_pParent->m_ship->GetAtt_r());
+		m_pParent->Quadrant_SetCurrentSpeed(m_PosY);
+	}
+}
+void UI_Controller::FieldCentricDrive::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
+{
+	if (Bind)
+	{
+		em->EventValue_Map["Joystick_FieldCentric_XAxis"].Subscribe(ehl,*this, &FieldCentricDrive::UpdatePosX);
+		em->EventValue_Map["Joystick_FieldCentric_YAxis"].Subscribe(ehl,*this, &FieldCentricDrive::UpdatePosY);
+	}
+	else
+	{
+		em->EventValue_Map["Joystick_FieldCentric_XAxis"].Remove(*this, &FieldCentricDrive::UpdatePosX);
+		em->EventValue_Map["Joystick_FieldCentric_YAxis"].Remove(*this, &FieldCentricDrive::UpdatePosY);
+	}
+}
 
   /***************************************************************************************************************/
  /*												UI_Controller													*/
@@ -178,7 +263,7 @@ UI_Controller::UI_Controller(JoyStick_Binder &joy,AI_Base_Controller *base_contr
 	#endif
 	m_isControlled(false),m_ShipKeyVelocity(0.0),m_SlideButtonToggle(false),m_CruiseSpeed(0.0),m_YFlipScalar(1.0),
 	m_autoPilot(true),m_enableAutoLevelWhenPiloting(false),m_Ship_UseHeadingSpeed(true),m_Test1(false),m_Test2(false),m_IsBeingDestroyed(false),
-	m_POVSetValve(false)
+	m_POVSetValve(false),m_FieldCentricDrive(this)
 {
 	ResetPos();
 	Set_AI_Base_Controller(base_controller); //set up ship (even if we don't have one)
@@ -381,6 +466,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		em->EventValue_Map["Joystick_SetCurrentSpeed"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed);
 		em->EventValue_Map["Joystick_SetCurrentSpeed_2"].Remove(*this, &UI_Controller::Joystick_SetCurrentSpeed_2);
 		m_ship->BindAdditionalEventControls(false);
+		m_FieldCentricDrive.BindAdditionalEventControls(false,em,ehl);
 		if (!m_IsBeingDestroyed)
 			m_ship->BindAdditionalUIControls(false,&GetJoyStickBinder(),GetKeyboardBinder());
 		Flush_AI_BaseResources();
@@ -438,6 +524,7 @@ void UI_Controller::Set_AI_Base_Controller(AI_Base_Controller *controller)
 		//m_HUD_UI->m_addnText = m_ship->GetName();
 
 		m_ship->BindAdditionalEventControls(true);
+		m_FieldCentricDrive.BindAdditionalEventControls(true,em,ehl);
 		m_ship->BindAdditionalUIControls(true,&GetJoyStickBinder(),GetKeyboardBinder());
 	}
 }
@@ -785,6 +872,7 @@ void UI_Controller::UpdateController(double dTime_s)
 				m_Ship_JoyMouse_currAccel+=AuxLinearAcceleration;
 				m_Ship_JoyMouse_rotAcc_rad_s+=AuxAngularAcceleration;
 			}
+			m_FieldCentricDrive.TimeChange(dTime_s);
 
 			// Normally we pass the the ship the addition of the keyboard and mouse accel
 			Vec2d shipAccel = m_Ship_Keyboard_currAccel+m_Ship_JoyMouse_currAccel;
