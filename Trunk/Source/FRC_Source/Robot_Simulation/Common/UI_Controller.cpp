@@ -143,14 +143,22 @@ void Mouse_ShipDriver::DriveShip()
  /*										UI_Controller::FieldCentricDrive										*/
 /***************************************************************************************************************/
 
-UI_Controller::FieldCentricDrive::FieldCentricDrive(UI_Controller *pParent) : m_pParent(pParent),m_PosX(0.0),m_PosY(0.0),m_HeadingLock(0.0)
+UI_Controller::FieldCentricDrive::FieldCentricDrive(UI_Controller *pParent) : m_pParent(pParent),m_PosX(0.0),m_PosY(0.0),m_HeadingLock(0.0),m_FieldCentricDrive_Mode(false)
 {
 
 }
 
 void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 {
-	if (IsZero(m_pParent->m_Ship_JoyMouse_rotAcc_rad_s))
+	//To enter the field centric mode there has to have been an initial strafe to activate it... once activated it can stay in this mode until the rotation is used
+	//once rotation is used it will stay disabled until the next strafe is on... and so on... this ensures normal mode is maintained until the user explicity wants
+	//to switch modes
+	if (!IsZero(m_pParent->m_Ship_JoyMouse_rotAcc_rad_s))
+		m_FieldCentricDrive_Mode=false;
+	else if (fabs(m_PosX)>0.4)
+		m_FieldCentricDrive_Mode=true;
+
+	if (m_FieldCentricDrive_Mode)
 	{
 		const double YValue=m_PosY;
 		double Value=m_PosX;

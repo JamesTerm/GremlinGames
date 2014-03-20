@@ -222,6 +222,7 @@ class COMMON_API UI_Controller
 			UI_Controller * const m_pParent;
 			double m_PosX,m_PosY;
 			double m_HeadingLock;
+			bool m_FieldCentricDrive_Mode;  //is in this mode if true
 		protected:
 			void UpdatePosY(double Y) {m_PosY=Y;}
 			void UpdatePosX(double X) {m_PosX=X;}
