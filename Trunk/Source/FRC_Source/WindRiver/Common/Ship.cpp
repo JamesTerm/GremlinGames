@@ -825,6 +825,7 @@ const char * const g_Ship_Controls_Events[] =
 {
 	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","POV_Turn",
 	"Turn_180","Turn_180_Hold","Turn_90R","Turn_90L","FlipY","FlipY_Hold",
+	"Joystick_FieldCentric_XAxis","Joystick_FieldCentric_YAxis",
 	"Joystick_SetLeftVelocity","Joystick_SetRightVelocity","Joystick_SetLeft_XAxis","Joystick_SetRight_XAxis",
 	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None",
 	"TestWaypoint"
