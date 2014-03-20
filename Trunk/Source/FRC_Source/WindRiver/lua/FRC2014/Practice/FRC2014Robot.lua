@@ -30,7 +30,7 @@ HighGearSpeed = (733.14 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.
 LowGearSpeed  = (167.06 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters * 2.5
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
-gMaxTorqueYaw = ((2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid) * 0.88
+gMaxTorqueYaw = ((2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid) * 0.78
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
@@ -201,7 +201,7 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
@@ -364,10 +364,10 @@ MainRobot = {
 			control = "gamepad f310 (controller)",
 			--3 is right x axis
 			--Enable these for targeting assist
-			--Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
-			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
+			Turret_SetCurrentVelocity = {type="joystick_analog", key=0, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
+			PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
 			--Once the arm is tuned this can be commented out for the target assist
-			IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			--IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			
 			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			
