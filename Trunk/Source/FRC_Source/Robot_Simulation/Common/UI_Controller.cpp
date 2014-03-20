@@ -10,6 +10,7 @@ using namespace GG_Framework::UI;
 using namespace osg;
 bool Robot_Tester::g_UseMouse=false;
 const double Pi=PI;
+const double Pi2=PI * 2.0;
 #else
 using namespace Framework::Base;
 using namespace Framework::UI;
@@ -159,7 +160,6 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 		const double theta = atan2(Value,YValue);
 		//Find the magnitude
 		const double magnitude = sqrt(((Value * Value) + (YValue * YValue)));
-		SmartDashboard::PutNumber("TestAngle",RAD_2_DEG(theta));
 		SmartDashboard::PutNumber("TestMagnitude",magnitude);
 		const double lookDir_radians=NormalizeRotation2(theta + m_HeadingLock);
 		//evaluate delta offset to see if we want to use the reverse absolute position
@@ -167,24 +167,28 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 		double OrientationDelta;
 		{
 			using namespace std;
-			const double current_Att_ABS=fabs(m_ship.GetAtt_r());
-			const double intended_Att_ABS=fabs(lookDir_radians);
+			const double current_Att_ABS=m_ship.GetAtt_r() + Pi;
+			const double intended_Att_ABS=lookDir_radians + Pi;
 			const double Begin=min(current_Att_ABS,intended_Att_ABS);
 			const double End=max(current_Att_ABS,intended_Att_ABS);
-			const double NormalDelta=End-Begin;  //normal range  -------BxxxxxE-------
-			const double InvertedDelta=End+(Pi-Begin); //inverted range  xxxxE---------Bxxxx
+			const double NormalDelta=End-Begin;			//normal range  -------BxxxxxE-------
+			const double InvertedDelta=Begin+(Pi2-End);	//inverted range  xxxxB---------Exxxx
 			OrientationDelta=min(NormalDelta,InvertedDelta);
+			SmartDashboard::PutNumber("TestOrientationDelta",RAD_2_DEG(OrientationDelta));
 		}
 		double orientation_to_use=lookDir_radians;
-		double NormalizedVelocity=cos(fabs(OrientationDelta))*magnitude;
-		if (fabs(OrientationDelta)>PI_2)
+		double NormalizedVelocity=fabs(cos(fabs(OrientationDelta))*magnitude);
+		//Note the condition to flip has a little bit of extra tolerance to avoid a excessive flipping back and forth
+		//We simply multiply the half pi by a scalar
+		if (fabs(OrientationDelta)>(PI_2*1.2))
 		{
-			orientation_to_use=NormalizeRotation_HalfPi(lookDir_radians);
-			//NormalizedVelocity=-NormalizedVelocity;
+			orientation_to_use=NormalizeRotation2(lookDir_radians + Pi);
+			NormalizedVelocity=-NormalizedVelocity;
 		}
 		SmartDashboard::PutNumber("TestNormalizedVelocity",NormalizedVelocity);
 		if (magnitude>0.4)
 		{
+			SmartDashboard::PutNumber("TestAngle",RAD_2_DEG(orientation_to_use));
 			m_ship.SetIntendedOrientation(orientation_to_use);
 			m_pParent->m_Ship_UseHeadingSpeed=false;
 		}
@@ -194,7 +198,7 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 	else
 	{
 		//rotation used... work with Y axis like before
-		m_HeadingLock=m_pParent->m_ship->GetAtt_r();
+		m_HeadingLock=NormalizeRotation2(m_pParent->m_ship->GetAtt_r());
 		m_pParent->Quadrant_SetCurrentSpeed(m_PosY);
 	}
 }
