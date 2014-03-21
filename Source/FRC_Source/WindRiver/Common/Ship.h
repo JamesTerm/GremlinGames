@@ -90,7 +90,8 @@ struct Ship_Props
 
 	double MaxAccelLeft,MaxAccelRight,MaxAccelForward,MaxAccelReverse;
 	double MaxAccelForward_High,MaxAccelReverse_High;
-	double MaxTorqueYaw,MaxTorqueYaw_High;
+	//Note the SetPoint property is tuned to have quick best result for a set point operation
+	double MaxTorqueYaw,MaxTorqueYaw_High,MaxTorqueYaw_SetPoint;
 	//These are used to avoid overshoot when trying to rotate to a heading
 	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
 	double Rotation_Tolerance;
@@ -395,7 +396,7 @@ class COMMON_API Ship_2D : public Ship
 		//Stuff needed for physics
 		double Mass;
 		double MaxAccelLeft,MaxAccelRight;//,MaxAccelForward,MaxAccelReverse;
-		double MaxTorqueYaw;
+		double MaxTorqueYaw_SetPoint;
 		double Camera_Restraint;
 		double G_Dampener;
 
