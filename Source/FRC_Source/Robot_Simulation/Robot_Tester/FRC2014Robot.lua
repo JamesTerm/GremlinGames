@@ -87,7 +87,7 @@ MainRobot = {
 	MaxTorqueYaw_High = gMaxTorqueYaw  * 0.78 * 5,
 	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
-	rotation_tolerance=Deg2Rad * 2,
+	rotation_tolerance=Deg2Rad * 3,
 	rotation_distance_scalar=1.0,
 
 	MAX_SPEED = HighGearSpeed,
