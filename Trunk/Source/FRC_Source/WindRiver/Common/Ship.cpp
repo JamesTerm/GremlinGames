@@ -226,7 +226,7 @@ void Ship_2D::UpdateShipProperties(const Ship_Props &props)
 
 	MaxAccelLeft=props.MaxAccelLeft;
 	MaxAccelRight=props.MaxAccelRight;
-	MaxTorqueYaw=props.MaxTorqueYaw * m_Physics.GetMass();
+	MaxTorqueYaw_SetPoint=props.MaxTorqueYaw_SetPoint * m_Physics.GetMass();
 }
 
 
@@ -279,7 +279,7 @@ void Ship_2D::Initialize(Entity2D_Kind::EventMap& em,const Entity_Properties *pr
 		MaxAccelRight=40.0 * Scale;
 		//MaxAccelForward=87.0 * Scale;
 		//MaxAccelReverse=70.0 * Scale;
-		MaxTorqueYaw=2.5;
+		MaxTorqueYaw_SetPoint=2.5;
 		dHeading = DEG_2_RAD(270.0);
 	}
 
@@ -334,7 +334,7 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 	m_IntendedOrientation+=rotVel*YawResistance;
 
 	double TorqueToApply=m_IntendedOrientationPhysics.GetTorqueFromVelocity(rotVelControlled,dTime_s);
-	ApplyTorqueThrusters(m_IntendedOrientationPhysics,TorqueToApply,MaxTorqueYaw,dTime_s);
+	ApplyTorqueThrusters(m_IntendedOrientationPhysics,TorqueToApply,MaxTorqueYaw_SetPoint,dTime_s);
 	{
 		//Run physics update for displacement
 		Vec2d PositionDisplacement;
@@ -617,7 +617,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	//Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
 	const double Ships_TorqueRestraint=m_LockShipHeadingToOrientation?
 		m_ShipProps.GetMaxTorqueYaw(min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass() :
-		MaxTorqueYaw;
+		MaxTorqueYaw_SetPoint;
 
 	if (m_StabilizeRotation)
 	{
@@ -781,7 +781,7 @@ Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
 	props.MaxAccelRight=40.0 * Scale;
 	props.MaxAccelForward=props.MaxAccelForward_High=87.0 * Scale;
 	props.MaxAccelReverse=props.MaxAccelReverse_High=70.0 * Scale;
-	props.MaxTorqueYaw=2.5;
+	props.MaxTorqueYaw_SetPoint=2.5;
 
 	double RAMP_UP_DUR = 1.0;
 	double RAMP_DOWN_DUR = 1.0;
@@ -900,6 +900,10 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		err=script.GetField("MaxTorqueYaw_High", NULL, NULL, &props.MaxTorqueYaw_High);
 		if (err)
 			props.MaxTorqueYaw_High=props.MaxTorqueYaw;
+		err=script.GetField("MaxTorqueYaw_SetPoint", NULL, NULL, &props.MaxTorqueYaw_SetPoint);
+		if (err)
+			props.MaxTorqueYaw_SetPoint=props.MaxTorqueYaw;
+
 		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
 		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
 		if (err)
@@ -924,34 +928,6 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 	// Let the base class finish things up
 	__super::LoadFromScript(script);
 }
-
-//This is depreciated... may need to review game use-case
-#if 0
-void Ship_Properties::Initialize(Ship_2D *NewShip) const
-{
-	const Ship_Props &props=m_ShipProps;
-	NewShip->dHeading=props.dHeading;
-	NewShip->MAX_SPEED=props.MAX_SPEED;
-	NewShip->ENGAGED_MAX_SPEED=props.ENGAGED_MAX_SPEED;
-	NewShip->ACCEL=props.ACCEL;
-	NewShip->BRAKE=props.BRAKE;
-	NewShip->STRAFE=props.STRAFE;
-	NewShip->AFTERBURNER_ACCEL=props.AFTERBURNER_ACCEL;
-	NewShip->AFTERBURNER_BRAKE=props.AFTERBURNER_BRAKE;
-
-	NewShip->EngineRampAfterBurner=props.EngineRampAfterBurner;
-	NewShip->EngineRampForward=props.EngineRampForward;
-	NewShip->EngineRampReverse=props.EngineRampReverse;
-	NewShip->EngineRampStrafe=props.EngineRampStrafe;
-	NewShip->EngineDeceleration=props.EngineDeceleration;
-
-	NewShip->MaxAccelLeft=props.MaxAccelLeft;
-	NewShip->MaxAccelRight=props.MaxAccelRight;
-	//NewShip->MaxAccelForward=props.MaxAccelForward;
-	//NewShip->MaxAccelReverse=props.MaxAccelReverse;
-	NewShip->MaxTorqueYaw=props.MaxTorqueYaw;
-}
-#endif
 
 //This is depreciated... do not change... omit this and use GetShipProps_rw() instead
 void Ship_Properties::UpdateShipProperties(const Ship_Props &props)
