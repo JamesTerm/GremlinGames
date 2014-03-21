@@ -91,7 +91,8 @@ struct Ship_Props
 	double MaxAccelLeft,MaxAccelRight,MaxAccelForward,MaxAccelReverse;
 	double MaxAccelForward_High,MaxAccelReverse_High;
 	//Note the SetPoint property is tuned to have quick best result for a set point operation
-	double MaxTorqueYaw,MaxTorqueYaw_High,MaxTorqueYaw_SetPoint;
+	double MaxTorqueYaw,MaxTorqueYaw_High;
+	double MaxTorqueYaw_SetPoint,MaxTorqueYaw_SetPoint_High;
 	//These are used to avoid overshoot when trying to rotate to a heading
 	double RotateTo_TorqueDegradeScalar,RotateTo_TorqueDegradeScalar_High;
 	double Rotation_Tolerance;
@@ -250,6 +251,7 @@ class COMMON_API Ship_Properties : public Entity_Properties
 		double GetMaxAccelForward(double Velocity) const;
 		double GetMaxAccelReverse(double Velocity) const;
 		double GetMaxTorqueYaw(double Velocity) const;
+		double GetMaxTorqueYaw_SetPoint(double Velocity) const;
 		double GetRotateToScaler(double Distance) const;
 
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}
