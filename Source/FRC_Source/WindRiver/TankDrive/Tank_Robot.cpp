@@ -206,7 +206,13 @@ void Tank_Robot::SetIsAutonomous(bool IsAutonomous)
 bool Tank_Robot::GetUseAgressiveStop() const
 {
 	//Note: always use aggressive stop for autonomous driving!
-	return m_TankRobotProps.UseAggressiveStop || m_IsAutonomous;
+	//Also while it is still in rotation
+	//TODO evaluate this (!GetLockShipHeadingToOrientation() && m_Physics.GetAngularVelocity()>0.0)
+	const double AngularVelocityThreshold=DEG_2_RAD(5);
+	bool ret=m_TankRobotProps.UseAggressiveStop || m_IsAutonomous || 
+		m_Physics.GetAngularVelocity()>AngularVelocityThreshold || m_EncoderAngularVelocity>AngularVelocityThreshold;
+	//SmartDashboard::PutBoolean("UseAggresiveStop",ret);
+	return ret;
 }
 
 void Tank_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,double dTime_s)
@@ -965,8 +971,7 @@ void Tank_Robot_Control::SetSafety(bool UseSafety)
 	{
 		//I'm giving a whole second before the timeout kicks in... I do not want false positives!
 		m_RobotDrive->SetExpiration(1.0);
-		//m_RobotDrive->SetSafetyEnabled(true);
-		m_RobotDrive->SetSafetyEnabled(false);
+		m_RobotDrive->SetSafetyEnabled(true);
 	}
 	else
 		m_RobotDrive->SetSafetyEnabled(false);
