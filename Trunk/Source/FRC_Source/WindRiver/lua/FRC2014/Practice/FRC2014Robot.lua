@@ -30,7 +30,7 @@ HighGearSpeed = (873.53 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RP
 LowGearSpeed  = (403.92 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
-gMaxTorqueYaw = ((2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid) * 0.78
+gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 MainRobot = {
 	--Version helps to identify a positive update to lua
@@ -87,10 +87,11 @@ MainRobot = {
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxAccelForward_High = Drive_MaxAccel * 2, MaxAccelReverse_High = Drive_MaxAccel * 2, 
-	MaxTorqueYaw =  gMaxTorqueYaw,
-	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
+	MaxTorqueYaw =  gMaxTorqueYaw * 0.78,
+	MaxTorqueYaw_High = gMaxTorqueYaw  * 0.78 * 5,
+	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 5,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
-	rotation_tolerance=Deg2Rad * 2,
+	rotation_tolerance=Deg2Rad * 3,
 	rotation_distance_scalar=1.0,
 
 	MAX_SPEED = HighGearSpeed,
