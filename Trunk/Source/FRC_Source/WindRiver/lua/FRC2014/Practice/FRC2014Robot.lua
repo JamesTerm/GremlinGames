@@ -57,7 +57,7 @@ MainRobot = {
 		},
 		double_solenoid =
 		{
-			id_1 = { name="use_low_gear",    forward_channel=1, reverse_channel=2},
+			id_1 = { name="use_low_gear",    forward_channel=2, reverse_channel=1},
 			id_2 = { name="release_clutch",  forward_channel=4, reverse_channel=3},
 			id_3 = { name="catcher_shooter", forward_channel=5, reverse_channel=6},
 			id_4 = { name="catcher_intake",	 forward_channel=7, reverse_channel=8}
@@ -88,10 +88,11 @@ MainRobot = {
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxAccelForward_High = Drive_MaxAccel * 2, MaxAccelReverse_High = Drive_MaxAccel * 2, 
 	MaxTorqueYaw =  gMaxTorqueYaw * 0.78,
-	MaxTorqueYaw_High = gMaxTorqueYaw  * 0.78 * 5,
-	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 5,
+	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
+	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 2,
+	MaxTorqueYaw_SetPoint_High = gMaxTorqueYaw * 10,
 	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
-	rotation_tolerance=Deg2Rad * 3,
+	rotation_tolerance=Deg2Rad * 5,
 	rotation_distance_scalar=1.0,
 
 	MAX_SPEED = HighGearSpeed,
@@ -131,7 +132,7 @@ MainRobot = {
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1/15.0,  --solved empiracally
+		inv_max_accel = 1/30.0,  --solved empiracally
 		forward_deadzone_left  = 0.02,
 		forward_deadzone_right = 0.02,
 		reverse_deadzone_left  = 0.02,
@@ -336,7 +337,8 @@ MainRobot = {
 				reverse_steering='no',
 				 left_encoder_reversed='no',
 				right_encoder_reversed='no',
-				inv_max_accel = 1/15,  --solved empiracally
+				inv_max_accel = 1/30,  --solved empiracally
+				--inv_max_accel = 0,
 				motor_specs =
 				{
 					wheel_mass=1.5,
