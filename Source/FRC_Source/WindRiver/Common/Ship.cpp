@@ -347,6 +347,7 @@ void Ship_2D::UpdateIntendedOrientaton(double dTime_s)
 //////////////////////////////////////////////////////////////////////////
 
 #undef _TestIndendedDirction_properties__
+#undef __DisplaySetPoint_LinePlot__
 
 void Ship_2D::TimeChange(double dTime_s)
 {
@@ -397,8 +398,10 @@ void Ship_2D::TimeChange(double dTime_s)
 		{
 			UpdateIntendedOrientaton(dTime_s);
 			m_rotDisplacement_rad=-m_Physics.ComputeAngularDistance(m_IntendedOrientation);
-			//SmartDashboard::PutNumber("m_IntendedOrientation",RAD_2_DEG(m_IntendedOrientation));
-			//SmartDashboard::PutNumber("Heading from Physics",RAD_2_DEG(NormalizeRotation2(m_Physics.GetHeading())));
+			#ifdef __DisplaySetPoint_LinePlot__
+			SmartDashboard::PutNumber("desired y",RAD_2_DEG(m_IntendedOrientation));
+			SmartDashboard::PutNumber("actual y",RAD_2_DEG(NormalizeRotation2(m_Physics.GetHeading())));
+			#endif
 			const double TargetDistanceScalar=ship_props.Rotation_TargetDistanceScalar;
 			if (TargetDistanceScalar!=1.0)
 			{
@@ -633,8 +636,9 @@ void Ship_2D::TimeChange(double dTime_s)
 			double DistanceToUse=m_rotDisplacement_rad;
 			//The match velocity needs to be in the same direction as the distance (It will not be if the ship is banking)
 			double MatchVel=0.0;
-			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,Ships_TorqueRestraint * m_ShipProps.GetRotateToScaler(DistanceToUse),
-				dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
+			//Note using  * m_ShipProps.GetRotateToScaler(DistanceToUse) is now depreciated, as the set point restraint really needs to be constant
+			//we can have a higher torque restraint to deal with overshoot... but keep the rate steady and lower
+			rotVel=m_Physics.GetVelocityFromDistance_Angular(DistanceToUse,MaxTorqueYaw_SetPoint,dTime_s,MatchVel,!m_LockShipHeadingToOrientation);
 		}
 		else
 			rotVel=m_rotDisplacement_rad;
@@ -790,7 +794,8 @@ Ship_Properties::Ship_Properties() : m_ShipControls(&s_ControlsEvents)
 	props.EngineRampReverse= props.BRAKE/RAMP_UP_DUR;
 	props.EngineRampStrafe= props.STRAFE/RAMP_UP_DUR;
 	props.EngineDeceleration= props.ACCEL/RAMP_DOWN_DUR;
-	props.RotateTo_TorqueDegradeScalar=props.RotateTo_TorqueDegradeScalar_High=1.0;
+	//depreciated
+	//props.RotateTo_TorqueDegradeScalar=props.RotateTo_TorqueDegradeScalar_High=1.0;
 	props.Rotation_Tolerance=0.0;
 	props.Rotation_ToleranceConsecutiveCount=0.0;  //zero is disabled
 	props.Rotation_TargetDistanceScalar=1.0;
@@ -908,10 +913,13 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		if (err)
 			props.MaxTorqueYaw_High=props.MaxTorqueYaw_High;
 
+		//depreciated
+		#if 0
 		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
 		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
 		if (err)
 			props.RotateTo_TorqueDegradeScalar_High=props.RotateTo_TorqueDegradeScalar;
+		#endif
 		script.GetField("rotation_tolerance", NULL, NULL, &props.Rotation_Tolerance);
 		script.GetField("rotation_tolerance_count", NULL, NULL, &props.Rotation_ToleranceConsecutiveCount);
 		script.GetField("rotation_distance_scalar", NULL, NULL, &props.Rotation_TargetDistanceScalar);
@@ -975,6 +983,7 @@ double Ship_Properties::GetMaxAccelReverse(double Velocity) const
 	return (ratio * High) + ((1.0-ratio) * Low);
 }
 
+#if 0
 double Ship_Properties::GetRotateToScaler(double Distance) const
 {
 	const Ship_Props &props=m_ShipProps;
@@ -986,7 +995,7 @@ double Ship_Properties::GetRotateToScaler(double Distance) const
 	const double &High=props.RotateTo_TorqueDegradeScalar_High;
 	return (ratio * High) + ((1.0-ratio) * Low);
 }
-
+#endif
 
   /***********************************************************************************************************************************/
  /*													Ship_Tester																		*/
