@@ -186,7 +186,7 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 		const double theta = atan2(Value,YValue);
 		//Find the magnitude
 		const double magnitude = sqrt(((Value * Value) + (YValue * YValue)));
-		SmartDashboard::PutNumber("TestMagnitude",magnitude);
+		//SmartDashboard::PutNumber("TestMagnitude",magnitude);
 		const double lookDir_radians=NormalizeRotation2(theta + m_HeadingLock);
 		//evaluate delta offset to see if we want to use the reverse absolute position
 		Ship_2D &m_ship=*m_pParent->m_ship;
@@ -200,7 +200,7 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 			const double NormalDelta=End-Begin;			//normal range  -------BxxxxxE-------
 			const double InvertedDelta=Begin+(Pi2-End);	//inverted range  xxxxB---------Exxxx
 			OrientationDelta=min(NormalDelta,InvertedDelta);
-			SmartDashboard::PutNumber("TestOrientationDelta",RAD_2_DEG(OrientationDelta));
+			//SmartDashboard::PutNumber("TestOrientationDelta",RAD_2_DEG(OrientationDelta));
 		}
 		double orientation_to_use=lookDir_radians;
 		double NormalizedVelocity=fabs(cos(fabs(OrientationDelta))*magnitude);
@@ -211,10 +211,10 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 			orientation_to_use=NormalizeRotation2(lookDir_radians + Pi);
 			NormalizedVelocity=-NormalizedVelocity;
 		}
-		SmartDashboard::PutNumber("TestNormalizedVelocity",NormalizedVelocity);
+		//SmartDashboard::PutNumber("TestNormalizedVelocity",NormalizedVelocity);
 		if (magnitude>0.4)
 		{
-			SmartDashboard::PutNumber("TestAngle",RAD_2_DEG(orientation_to_use));
+			//SmartDashboard::PutNumber("TestAngle",RAD_2_DEG(orientation_to_use));
 			m_ship.SetIntendedOrientation(orientation_to_use);
 			m_pParent->m_Ship_UseHeadingSpeed=false;
 		}
