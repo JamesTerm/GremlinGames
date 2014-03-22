@@ -603,7 +603,7 @@ void Ship_2D::TimeChange(double dTime_s)
 	//Note: GetMaxTorqueYaw get it as angular acceleration (we should rename it)... so it needs to be multiplied by mass to become torque
 	const double Ships_TorqueRestraint=m_LockShipHeadingToOrientation?
 		m_ShipProps.GetMaxTorqueYaw(min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass() :
-		MaxTorqueYaw_SetPoint;
+		m_ShipProps.GetMaxTorqueYaw_SetPoint(min(m_Physics.GetAngularVelocity(),dHeading)) * m_Physics.GetMass();
 
 	if (m_StabilizeRotation)
 	{
@@ -890,6 +890,10 @@ void Ship_Properties::LoadFromScript(Scripting::Script& script)
 		if (err)
 			props.MaxTorqueYaw_SetPoint=props.MaxTorqueYaw;
 
+		err=script.GetField("MaxTorqueYaw_SetPoint_High", NULL, NULL, &props.MaxTorqueYaw_SetPoint_High);
+		if (err)
+			props.MaxTorqueYaw_High=props.MaxTorqueYaw_High;
+
 		script.GetField("rotate_to_scale", NULL, NULL, &props.RotateTo_TorqueDegradeScalar);
 		err=script.GetField("rotate_to_scale_high", NULL, NULL, &props.RotateTo_TorqueDegradeScalar_High);
 		if (err)
@@ -927,6 +931,15 @@ double Ship_Properties::GetMaxTorqueYaw(double Velocity) const
 	const double ratio = fabs(Velocity)/props.dHeading;
 	const double  &Low=props.MaxTorqueYaw;
 	const double &High=props.MaxTorqueYaw_High;
+	return (ratio * High) + ((1.0-ratio) * Low);
+}
+
+double Ship_Properties::GetMaxTorqueYaw_SetPoint(double Velocity) const
+{
+	const Ship_Props &props=m_ShipProps;
+	const double ratio = fabs(Velocity)/props.dHeading;
+	const double  &Low=props.MaxTorqueYaw_SetPoint;
+	const double &High=props.MaxTorqueYaw_SetPoint_High;
 	return (ratio * High) + ((1.0-ratio) * Low);
 }
 
