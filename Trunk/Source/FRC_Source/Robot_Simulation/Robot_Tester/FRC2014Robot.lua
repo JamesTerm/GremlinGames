@@ -176,7 +176,9 @@ MainRobot = {
 
 		auton =
 		{
-			ball_target_distance_ft=4,
+			first_move_ft=2,
+			second_move_ft=4,
+			support_hotspot='y'
 		},
 		
 		winch =

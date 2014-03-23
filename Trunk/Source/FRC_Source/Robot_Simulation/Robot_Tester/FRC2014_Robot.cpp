@@ -844,7 +844,8 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		props.BallTargeting_Props.LatencyCounterThreshold=0.200; //A bit slow but confirmed
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
-		auton.BallTargetDistance=Feet2Meters(4.0);
+		auton.FirstMove_ft=2.0;
+		auton.SecondMove_ft=4.0;
 		m_FRC2014RobotProps=props;
 	}
 	{
@@ -1032,9 +1033,12 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			struct FRC_2014_Robot_Props::Autonomous_Properties &auton=m_FRC2014RobotProps.Autonomous_Props;
 			{
-				err = script.GetField("ball_target_distance_ft", NULL, NULL,&fTest);
+				err = script.GetField("first_move_ft", NULL, NULL,&fTest);
 				if (!err)
-					auton.BallTargetDistance=Feet2Meters(fTest);
+					auton.FirstMove_ft=fTest;
+				err = script.GetField("second_move_ft", NULL, NULL,&fTest);
+				if (!err)
+					auton.SecondMove_ft=fTest;
 				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
 			}
 			script.Pop();
@@ -1159,17 +1163,10 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			Fire_Sequence(FRC_2014_Goals_Impl *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
 			virtual void Activate()
 			{
-				//m_Status=eActive; 
-				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				if (SupporingHotSpot)
-					m_Status=eFailed;  //not yet supported
-				else
-				{
-					AddSubgoal(new Fire(m_Parent,false));
-					AddSubgoal(new Goal_Wait(.500));
-					AddSubgoal(new Fire(m_Parent,true));
-					m_Status=eActive;
-				}
+				AddSubgoal(new Fire(m_Parent,false));
+				AddSubgoal(new Goal_Wait(.500));
+				AddSubgoal(new Fire(m_Parent,true));
+				m_Status=eActive;
 			}
 		};
 
@@ -1227,25 +1224,19 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			OneBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
 			{
-				//m_Status=eActive; 
-				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				if (SupporingHotSpot)
-					m_Status=eFailed;  //not yet supported
-				else
-				{
-					//Note: these are reversed
-					AddSubgoal(Move_Straight(&m_Robot,4.0));
-					AddSubgoal(new Intake_Deploy(m_Parent,false));
-					//TODO enable once ready
-					//AddSubgoal(new Reset_Catapult(m_Parent));
-					AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
-					AddSubgoal(new Fire_Sequence(m_Parent));
-					//AddSubgoal(new Goal_Wait(0.500));
-					AddSubgoal(new WaitForHot(m_Parent));
-					AddSubgoal(Move_Straight(&m_Robot,2.0));  //For now try to avoid movement before shooting
-					AddSubgoal(new Intake_Deploy(m_Parent,true));
-					m_Status=eActive;
-				}
+				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				//Note: these are reversed
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.SecondMove_ft));
+				AddSubgoal(new Intake_Deploy(m_Parent,false));
+				//TODO enable once ready
+				//AddSubgoal(new Reset_Catapult(m_Parent));
+				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
+				AddSubgoal(new Fire_Sequence(m_Parent));
+				//We can wait for hot even if it is not supported
+				AddSubgoal(new WaitForHot(m_Parent));
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.FirstMove_ft));  //For now try to avoid movement before shooting
+				AddSubgoal(new Intake_Deploy(m_Parent,true));
+				m_Status=eActive;
 			}
 		};
 

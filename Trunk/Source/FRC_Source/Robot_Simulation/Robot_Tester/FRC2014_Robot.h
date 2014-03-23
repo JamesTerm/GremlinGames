@@ -36,7 +36,8 @@ public:
 	} Intake_Robot_Props;
 	struct Autonomous_Properties
 	{
-		double BallTargetDistance; //used to tweak desired distance away from ball for targeting
+		double FirstMove_ft; //Initial move before shooting (this one will need careful tuning)
+		double SecondMove_ft;  //This one is after the shooting to ensure it has moved far enough
 		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
 	} Autonomous_Props;
 	struct BallTargeting
