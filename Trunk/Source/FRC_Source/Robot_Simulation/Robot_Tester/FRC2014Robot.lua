@@ -38,21 +38,21 @@ MainRobot = {
 		--by default module is 1, so only really need it for 2
 		victor =
 		{
-			id_1 = { name= "left_drive_1", channel=1, module=1}, 
-			id_2 = { name= "left_drive_2", channel=2}, 
-			id_3 = { name="right_drive_1", channel=3},
-			id_4 = { name="right_drive_2", channel=4},
-			id_5 = { name= "left_drive_3", channel=5}, 
-			id_6 = { name="right_drive_3", channel=6},
+			id_1 = { name= "right_drive_1", channel=1, module=1}, 
+			id_2 = { name= "right_drive_2", channel=2}, 
+			id_3 = { name= "right_drive_3", channel=3}, 
+			id_4 = { name="left_drive_1", channel=4},
+			id_5 = { name="left_drive_2", channel=5},
+			id_6 = { name="left_drive_3", channel=6},
 			id_7 = { name="winch",         channel=7}, 
 			id_8 = { name="intake_arm_1",  channel=8},
 			id_9 = { name="intake_arm_2",  channel=9},
-			id_10= { name="rollers",       channel=10},
+			id_10= { name="rollers",       channel=10}
 		},
 		double_solenoid =
 		{
-			id_1 = { name="use_low_gear",    forward_channel=1, reverse_channel=2},
-			id_2 = { name="release_clutch",  forward_channel=3, reverse_channel=4},
+			id_1 = { name="use_low_gear",    forward_channel=2, reverse_channel=1},
+			id_2 = { name="release_clutch",  forward_channel=4, reverse_channel=3},
 			id_3 = { name="catcher_shooter", forward_channel=5, reverse_channel=6},
 			id_4 = { name="catcher_intake",	 forward_channel=7, reverse_channel=8}
 		},
@@ -70,8 +70,8 @@ MainRobot = {
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
 			--These channels must be unique to digital input channels as well
-			id_1 = { name= "left_drive_1",  a_channel=1, b_channel=2},
-			id_2 = { name="right_drive_1",  a_channel=3, b_channel=4},
+			id_1 = { name= "left_drive_1",  a_channel=3, b_channel=4},
+			id_2 = { name="right_drive_1",  a_channel=1, b_channel=2},
 			id_3 = { name="winch",  a_channel=5, b_channel=6}
 		},
 		compressor	=	{ relay=8, limit=14 }
@@ -85,7 +85,7 @@ MainRobot = {
 	MaxAccelForward_High = Drive_MaxAccel * 2, MaxAccelReverse_High = Drive_MaxAccel * 2, 
 	MaxTorqueYaw =  gMaxTorqueYaw * 0.78,
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
-	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 5,
+	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 2,
 	MaxTorqueYaw_SetPoint_High = gMaxTorqueYaw * 10,
 	rotation_tolerance=Deg2Rad * 2,
 	rotation_distance_scalar=1.0,
