@@ -1240,6 +1240,65 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 		};
 
+		class SetRollerSpeed : public AtomicGoal, public SetUpProps
+		{
+		private:
+			double m_Speed;
+		public:
+			SetRollerSpeed(FRC_2014_Goals_Impl *Parent, double Speed)	: SetUpProps(Parent),m_Speed(Speed) {	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_EventMap.EventValue_Map["IntakeRollers_SetCurrentVelocity"].Fire(m_Speed);
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
+		class Roller_Sequence : public Generic_CompositeGoal, public SetUpProps
+		{
+		private:
+			double m_Speed;
+			double m_WaitTime;
+		public:
+			Roller_Sequence(FRC_2014_Goals_Impl *Parent,double Speed,double WaitTime)	: Generic_CompositeGoal(true),SetUpProps(Parent), m_Speed(Speed),m_WaitTime(WaitTime)
+			{	m_Status=eInactive;	}
+			virtual void Activate()
+			{
+				AddSubgoal(new SetRollerSpeed(m_Parent,0.0));
+				AddSubgoal(new Goal_Wait(m_WaitTime));
+				AddSubgoal(new SetRollerSpeed(m_Parent,m_Speed));
+				m_Status=eActive;
+			}
+		};
+
+		class TwoBallAuton : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			TwoBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			virtual void Activate()
+			{
+				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				//Note: these are reversed
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.SecondMove_ft));
+				AddSubgoal(new Intake_Deploy(m_Parent,false));
+				//TODO multi goal these
+				//AddSubgoal(new Reset_Catapult(m_Parent));
+				//AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
+				AddSubgoal(new Fire_Sequence(m_Parent));
+				//roll up the ball
+				AddSubgoal(new Reset_Catapult(m_Parent));
+				AddSubgoal(new Fire_Sequence(m_Parent));
+				//We can wait for hot even if it is not supported
+				AddSubgoal(new WaitForHot(m_Parent));
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.FirstMove_ft));  //For now try to avoid movement before shooting
+				AddSubgoal(new Roller_Sequence(m_Parent,1.0,0.500));
+				AddSubgoal(new Intake_Deploy(m_Parent,true));
+				m_Status=eActive;
+			}
+		};
+
 		enum AutonType
 		{
 			eDoNothing,
@@ -1300,6 +1359,8 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				m_Primer.AddGoal(new OneBallAuton(this));
 				break;
 			case eTwoBall:
+				m_Primer.AddGoal(new TwoBallAuton(this));
+				break;
 			case eThreeBall:
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250
