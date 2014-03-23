@@ -76,8 +76,8 @@ MainRobot = {
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
 			--These channels must be unique to digital input channels as well
-			id_1 = { name= "left_drive_1",  a_channel=1, b_channel=2},
-			id_2 = { name="right_drive_1",  a_channel=3, b_channel=4},
+			id_1 = { name= "left_drive_1",  a_channel=3, b_channel=4},
+			id_2 = { name="right_drive_1",  a_channel=1, b_channel=2},
 			id_3 = { name="winch",  a_channel=5, b_channel=6}
 		},
 		compressor	=	{ relay=8, limit=14 }
@@ -91,8 +91,7 @@ MainRobot = {
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 2,
 	MaxTorqueYaw_SetPoint_High = gMaxTorqueYaw * 10,
-	rotate_to_scale = 1.0, rotate_to_scale_high = 1.0,
-	rotation_tolerance=Deg2Rad * 5,
+	rotation_tolerance=Deg2Rad * 2,
 	rotation_distance_scalar=1.0,
 
 	MAX_SPEED = HighGearSpeed,
@@ -373,14 +372,14 @@ MainRobot = {
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Joystick_FieldCentric_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_FieldCentric_YAxis = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Robot_SetLowGearOff = {type="joystick_button", key=2, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=1, on_off=false},
+			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 						
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
-			Turn_180_Hold = {type="joystick_button", key=6, on_off=true},
-			FlipY_Hold = {type="joystick_button", key=6, on_off=true},
-			SlideHold = {type="joystick_button", key=6, on_off=true}
+			Robot_SetDriverOverride = {type="joystick_button", key=3, on_off=true},
+			Turn_180_Hold = {type="joystick_button", key=4, on_off=true},
+			FlipY_Hold = {type="joystick_button", key=4, on_off=true},
+			SlideHold = {type="joystick_button", key=4, on_off=true}
 		},
 		Joystick_2 =
 		{
