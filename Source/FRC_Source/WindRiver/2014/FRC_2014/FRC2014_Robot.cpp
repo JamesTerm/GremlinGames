@@ -368,6 +368,9 @@ FRC_2014_Robot::Intake_Rollers::Intake_Rollers(FRC_2014_Robot *parent,Rotary_Con
 
 void FRC_2014_Robot::Intake_Rollers::TimeChange(double dTime_s)
 {
+	SetRequestedVelocity_FromNormalized(m_Velocity);
+	m_Velocity=0.0;
+
 	const double Accel=m_Ship_1D_Props.ACCEL;
 	const double Brake=m_Ship_1D_Props.BRAKE;
 
@@ -393,13 +396,13 @@ void FRC_2014_Robot::Intake_Rollers::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Rollers::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Rollers::Intake_Rollers_SetRequestedVelocity);
 		em->EventOnOff_Map["IntakeRollers_Grip"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Rollers::Grip);
 		em->EventOnOff_Map["IntakeRollers_Squirt"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Rollers::Squirt);
 	}
 	else
 	{
-		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Intake_Rollers::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Intake_Rollers::Intake_Rollers_SetRequestedVelocity);
 		em->EventOnOff_Map["IntakeRollers_Grip"]  .Remove(*this, &FRC_2014_Robot::Intake_Rollers::Grip);
 		em->EventOnOff_Map["IntakeRollers_Squirt"]  .Remove(*this, &FRC_2014_Robot::Intake_Rollers::Squirt);
 	}
@@ -844,7 +847,11 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		props.BallTargeting_Props.LatencyCounterThreshold=0.200; //A bit slow but confirmed
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
-		auton.BallTargetDistance=Feet2Meters(4.0);
+		auton.FirstMove_ft=2.0;
+		auton.SecondMove_ft=4.0;
+		auton.SecondBallRollerTime_s=0.500;  //wishful thinking
+		auton.LandOnBallRollerTime_s=0.500;
+		auton.LandOnBallRollerSpeed=1.0;
 		m_FRC2014RobotProps=props;
 	}
 	{
@@ -1032,9 +1039,22 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			struct FRC_2014_Robot_Props::Autonomous_Properties &auton=m_FRC2014RobotProps.Autonomous_Props;
 			{
-				err = script.GetField("ball_target_distance_ft", NULL, NULL,&fTest);
+				err = script.GetField("first_move_ft", NULL, NULL,&fTest);
 				if (!err)
-					auton.BallTargetDistance=Feet2Meters(fTest);
+					auton.FirstMove_ft=fTest;
+				err = script.GetField("second_move_ft", NULL, NULL,&fTest);
+				if (!err)
+					auton.SecondMove_ft=fTest;
+				err = script.GetField("land_on_ball_roller_time", NULL, NULL,&fTest);
+				if (!err)
+					auton.LandOnBallRollerTime_s=fTest;
+				err = script.GetField("land_on_ball_roller_speed", NULL, NULL,&fTest);
+				if (!err)
+					auton.LandOnBallRollerSpeed=fTest;
+
+				err = script.GetField("second_ball_roller_time", NULL, NULL,&fTest);
+				if (!err)
+					auton.SecondBallRollerTime_s=fTest;
 				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
 			}
 			script.Pop();
@@ -1159,30 +1179,45 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			Fire_Sequence(FRC_2014_Goals_Impl *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
 			virtual void Activate()
 			{
-				//m_Status=eActive; 
-				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				if (SupporingHotSpot)
-					m_Status=eFailed;  //not yet supported
-				else
-				{
-					AddSubgoal(new Fire(m_Parent,false));
-					AddSubgoal(new Goal_Wait(.500));
-					AddSubgoal(new Fire(m_Parent,true));
-					m_Status=eActive;
-				}
+				AddSubgoal(new Fire(m_Parent,false));
+				AddSubgoal(new Goal_Wait(.500));
+				AddSubgoal(new Fire(m_Parent,true));
+				m_Status=eActive;
 			}
 		};
 
 		class Reset_Catapult : public AtomicGoal, public SetUpProps
 		{
+		private:
+			bool m_WaitForComplete;
+			Goal_Ship1D_MoveToPosition *m_GoalMoveToPosition; //This is used if wait for complete is true
 		public:
-			Reset_Catapult(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
-			virtual void Activate() {m_Status=eActive;}
+			Reset_Catapult(FRC_2014_Goals_Impl *Parent, bool WaitForComplete=false)	: SetUpProps(Parent),m_WaitForComplete(WaitForComplete),m_GoalMoveToPosition(NULL) 
+			{	m_Status=eInactive;	}
+			virtual void Activate() 
+			{
+				m_Status=eActive;
+				if (m_WaitForComplete)
+				{
+					const FRC_2014_Robot_Props &props=m_Robot.GetRobotProps().GetFRC2014RobotProps();
+					const double IntendedPosition=( props.Catapult_Robot_Props.GoalShotAngle * props.Catapult_Robot_Props.ArmToGearRatio);
+
+					m_GoalMoveToPosition=new Goal_Ship1D_MoveToPosition(m_Robot.GetWinch(),IntendedPosition,m_Robot.GetRobotProps().GetWinchProps().GetRotaryProps().PrecisionTolerance);
+					m_GoalMoveToPosition->Activate(); //now would be good
+				}
+			}
 			virtual Goal_Status Process(double dTime_s)
 			{
 				ActivateIfInactive();
-				m_EventMap.Event_Map["Winch_SetGoalShot"].Fire();
-				m_Status=eCompleted;
+				if (!m_WaitForComplete)
+				{
+					m_EventMap.Event_Map["Winch_SetGoalShot"].Fire();
+					m_Status=eCompleted;
+				}
+				else
+				{
+					m_Status=m_GoalMoveToPosition->Process(dTime_s);  //just pass through let it determine when its done
+				}
 				return m_Status;
 			}
 		};
@@ -1227,25 +1262,73 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			OneBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
 			{
-				//m_Status=eActive; 
-				const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				if (SupporingHotSpot)
-					m_Status=eFailed;  //not yet supported
-				else
+				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				//Note: these are reversed
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.SecondMove_ft));
+				AddSubgoal(new Intake_Deploy(m_Parent,false));
+				//TODO enable once ready
+				//AddSubgoal(new Reset_Catapult(m_Parent));
+				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
+				AddSubgoal(new Fire_Sequence(m_Parent));
+				//We can wait for hot even if it is not supported
+				AddSubgoal(new WaitForHot(m_Parent));
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.FirstMove_ft));  //For now try to avoid movement before shooting
+				AddSubgoal(new Intake_Deploy(m_Parent,true));
+				m_Status=eActive;
+			}
+		};
+
+		class SetRollerSpeed_WithTime : public AtomicGoal, public SetUpProps
+		{
+		private:
+			double m_Speed;
+			double m_WaitTime;
+			double m_TimeAccrued;
+		public:
+			SetRollerSpeed_WithTime(FRC_2014_Goals_Impl *Parent, double Speed,double WaitTime)	: SetUpProps(Parent),m_Speed(Speed),m_WaitTime(WaitTime),m_TimeAccrued(0.0) 
+			{	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_TimeAccrued+=dTime_s;
+
+				m_EventMap.EventValue_Map["IntakeRollers_SetCurrentVelocity"].Fire(m_Speed);
+				//Note: I need not zero speed... it will do that automatically per time change
+				if (m_TimeAccrued>m_WaitTime)
+					m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
+		class TwoBallAuton : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			TwoBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			virtual void Activate()
+			{
+				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
+				//Note: these are reversed
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.SecondMove_ft));
+				AddSubgoal(new Intake_Deploy(m_Parent,false));
+				//multi goal these... we want to wait at least 500ms but still start resetting the catapult
 				{
-					//Note: these are reversed
-					AddSubgoal(Move_Straight(&m_Robot,4.0));
-					AddSubgoal(new Intake_Deploy(m_Parent,false));
-					//TODO enable once ready
-					//AddSubgoal(new Reset_Catapult(m_Parent));
-					AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
-					AddSubgoal(new Fire_Sequence(m_Parent));
-					//AddSubgoal(new Goal_Wait(0.500));
-					AddSubgoal(new WaitForHot(m_Parent));
-					AddSubgoal(Move_Straight(&m_Robot,3.5));  //For now try to avoid movement before shooting
-					AddSubgoal(new Intake_Deploy(m_Parent,true));
-					m_Status=eActive;
+					MultitaskGoal *NewMultiTaskGoal=new MultitaskGoal(false);
+					NewMultiTaskGoal->AddGoal(new Reset_Catapult(m_Parent));
+					NewMultiTaskGoal->AddGoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
+					AddSubgoal(NewMultiTaskGoal);
 				}
+				AddSubgoal(new Fire_Sequence(m_Parent));
+				//roll up the ball second ball
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
+				AddSubgoal(new Reset_Catapult(m_Parent,true));
+				AddSubgoal(new Fire_Sequence(m_Parent));
+				//We can wait for hot even if it is not supported
+				AddSubgoal(new WaitForHot(m_Parent));
+				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.FirstMove_ft));  //For now try to avoid movement before shooting
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
+				AddSubgoal(new Intake_Deploy(m_Parent,true));
+				m_Status=eActive;
 			}
 		};
 
@@ -1309,6 +1392,8 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				m_Primer.AddGoal(new OneBallAuton(this));
 				break;
 			case eTwoBall:
+				m_Primer.AddGoal(new TwoBallAuton(this));
+				break;
 			case eThreeBall:
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250
