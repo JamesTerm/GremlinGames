@@ -957,7 +957,7 @@ void FRC_2014_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 		double * const SmartVariables[]={&FirstMove_ft,&SecondMove_ft,&LandOnBallRollerTime_s,
 			&LandOnBallRollerSpeed,&SecondBallRollerTime_s,&RollerDriveScalar};
 		for (size_t i=0;i<_countof(SmartNames);i++)
-			try
+		try
 		{
 			*(SmartVariables[i])=SmartDashboard::GetNumber(SmartNames[i]);
 		}
@@ -966,6 +966,16 @@ void FRC_2014_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 			//I may need to prime the pump here
 			SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
 		}
+		try
+		{
+			IsSupportingHotSpot=SmartDashboard::GetBoolean("support_hotspot");
+		}
+		catch (...)
+		{
+			//I may need to prime the pump here
+			SmartDashboard::PutBoolean("support_hotspot",IsSupportingHotSpot);
+		}
+
 	}
 }
 
@@ -1336,8 +1346,14 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				//AddSubgoal(new Reset_Catapult(m_Parent));
 				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
 				AddSubgoal(new Fire_Sequence(m_Parent));
-				//We can wait for hot spot detection even if it is not supported
-				AddSubgoal(new WaitForHot(m_Parent));
+				if (m_AutonProps.IsSupportingHotSpot)
+				{
+					//We can wait for hot spot detection even if it is not supported
+					AddSubgoal(new WaitForHot(m_Parent));
+				}
+				else
+					AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
+
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
@@ -1385,12 +1401,20 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					AddSubgoal(NewMultiTaskGoal);
 				}
 				AddSubgoal(new Fire_Sequence(m_Parent));
+				//This one is here in case we decide to disable the supporting hot spot... in which case if the hot spot is on the
+				//last 5 seconds the second ball would ensure and wait until afterwards to shoot.  Other than this case it shouldn't
+				//have to wait at all
+				AddSubgoal(new WaitForHot(m_Parent));
 				//roll up the ball second ball
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
-				//We can wait for hot even if it is not supported
-				AddSubgoal(new WaitForHot(m_Parent));
+				//This may need to be disabled... it all depends on how long it takes to load and shoot
+				if (m_AutonProps.IsSupportingHotSpot)
+					AddSubgoal(new WaitForHot(m_Parent));
+				else
+					AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
+
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
