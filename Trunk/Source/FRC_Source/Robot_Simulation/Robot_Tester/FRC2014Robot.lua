@@ -178,7 +178,10 @@ MainRobot = {
 		{
 			first_move_ft=2,
 			second_move_ft=4,
-			support_hotspot='y'
+			support_hotspot='y',
+			land_on_ball_roller_speed=0.75;
+			land_on_ball_roller_time=0.5,
+			second_ball_roller_time=1
 		},
 		
 		winch =

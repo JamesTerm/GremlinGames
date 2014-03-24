@@ -38,6 +38,9 @@ public:
 	{
 		double FirstMove_ft; //Initial move before shooting (this one will need careful tuning)
 		double SecondMove_ft;  //This one is after the shooting to ensure it has moved far enough
+		double LandOnBallRollerTime_s;
+		double LandOnBallRollerSpeed;
+		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
 		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
 	} Autonomous_Props;
 	struct BallTargeting
@@ -268,6 +271,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 	public: //Autonomous public access (wind river has problems with friend technique)
 		const FRC_2014_Robot_Properties &GetRobotProps() const;
+		Ship_1D &GetWinch() {return m_Winch;}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
