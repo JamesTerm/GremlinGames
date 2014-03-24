@@ -662,7 +662,7 @@ Goal::Goal_Status Goal_Ship_RotateToPosition::Process(double dTime_s)
 			double rotation_delta=m_ship.GetAtt_r()-m_Heading;
 			NormalizeRotation(rotation_delta);
 			//TODO check IsStuck for failed case
-			if (IsZero(rotation_delta))
+			if (fabs(rotation_delta)<m_ship.GetShipProperties().GetShipProps().Rotation_Tolerance)
 				m_Status=eCompleted;
 		}
 		else
@@ -672,13 +672,15 @@ Goal::Goal_Status Goal_Ship_RotateToPosition::Process(double dTime_s)
 }
 
 
+  /***********************************************************************************************************************************/
+ /*												Goal_Ship_RotateToRelativePosition													*/
+/***********************************************************************************************************************************/
 
-//TODO this needs to be somewhat re-factored into states from which it will decide to execute
-//The base version is some kind of auto pilot, which for the tester I don't really care to implement
-//I believe I'll want to AI Controller to override, but call methods from the base as at that level it can decide
-//which state to implement
-
-//I think what I'll do at this level is a simple patrol where it simply only does the fly to next location that should be adequate
+void Goal_Ship_RotateToRelativePosition::Activate()
+{
+	m_Heading+=m_ship.GetAtt_r();
+	__super::Activate();
+}
 
 
   /***********************************************************************************************************************************/
