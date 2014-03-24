@@ -349,6 +349,7 @@ class COMMON_API Ship_2D : public Ship
 		virtual double GetAngularVelocity_ToDisplay() {return GetPhysics().GetAngularVelocity();}
 		//Override if the ship is not able to strafe... used for DriveToLocation()
 		virtual const bool CanStrafe() {return true;}
+		const Ship_Properties &GetShipProperties() {return m_ShipProps;}
 	protected:
 		void SetStabilizeRotation(bool StabilizeRotation) { m_StabilizeRotation=StabilizeRotation;	}
 		///This presents a downward force vector in MPS which simulates the pull of gravity.  This simple test case would be to work with the global
