@@ -1161,6 +1161,9 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 		class MoveStraight_WithRoller : public Goal_Ship_MoveToRelativePosition, public SetUpProps
 		{
 		private:
+			#ifndef Robot_TesterCode
+			typedef Goal_Ship_MoveToRelativePosition __super;
+			#endif
 			double m_RollerScalar;
 		public:
 			MoveStraight_WithRoller(FRC_2014_Goals_Impl *Parent,double RollerScalar,AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true,
