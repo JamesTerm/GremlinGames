@@ -1142,8 +1142,6 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 	private:
 		FRC_2014_Robot &m_Robot;
 		double m_Timer;
-		bool m_IsHot;
-		bool m_HasSecondShotFired;
 
 		class SetUpProps
 		{
@@ -1181,6 +1179,8 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			void Terminate() {	m_Status=eFailed;	}
 		};
 		MultitaskGoal m_Primer;
+		bool m_IsHot;
+		bool m_HasSecondShotFired;
 
 		class MoveStraight_WithRoller : public Goal_Ship_MoveToRelativePosition, public SetUpProps
 		{
@@ -1387,7 +1387,6 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 			virtual Goal_Status Process(double dTime_s)
 			{
-				double &Timer=m_Parent->m_Timer;
 				ActivateIfInactive();
 				m_TimeAccrued+=dTime_s;
 				double IsHot=0.0;
