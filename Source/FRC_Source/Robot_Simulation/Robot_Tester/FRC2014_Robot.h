@@ -36,6 +36,7 @@ public:
 	} Intake_Robot_Props;
 	struct Autonomous_Properties
 	{
+		void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true
 		double FirstMove_ft; //Initial move before shooting (this one will need careful tuning)
 		double SecondMove_ft;  //This one is after the shooting to ensure it has moved far enough
 		double LandOnBallRollerTime_s;
@@ -43,6 +44,7 @@ public:
 		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
 		double RollerDriveScalar;  //Controls speed of controller while robot is driving
 		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
+		bool ShowParameters;   //If true ShowAutonParameters will populate SmartDashboard with autonomous parameters
 	} Autonomous_Props;
 	struct BallTargeting
 	{
@@ -65,6 +67,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2014_Robot_Props &GetFRC2014RobotProps() const {return m_FRC2014RobotProps;}
+		FRC_2014_Robot_Props &GetFRC2014RobotProps_rw() {return m_FRC2014RobotProps;}
 		const LUA_Controls_Properties &Get_RobotControls() const {return m_RobotControls;}
 		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
 	private:
@@ -273,6 +276,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 	public: //Autonomous public access (wind river has problems with friend technique)
 		const FRC_2014_Robot_Properties &GetRobotProps() const;
+		FRC_2014_Robot_Props::Autonomous_Properties &GetAutonProps();
 		Ship_1D &GetWinch() {return m_Winch;}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
