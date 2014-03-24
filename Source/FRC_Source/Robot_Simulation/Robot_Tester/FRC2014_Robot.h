@@ -41,6 +41,7 @@ public:
 		double LandOnBallRollerTime_s;
 		double LandOnBallRollerSpeed;
 		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
+		double RollerDriveScalar;  //Controls speed of controller while robot is driving
 		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
 	} Autonomous_Props;
 	struct BallTargeting
