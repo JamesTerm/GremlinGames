@@ -852,6 +852,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		auton.SecondBallRollerTime_s=0.500;  //wishful thinking
 		auton.LandOnBallRollerTime_s=0.500;
 		auton.LandOnBallRollerSpeed=1.0;
+		auton.RollerDriveScalar=0.5;  //WAG
 		m_FRC2014RobotProps=props;
 	}
 	{
@@ -1055,6 +1056,9 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				err = script.GetField("second_ball_roller_time", NULL, NULL,&fTest);
 				if (!err)
 					auton.SecondBallRollerTime_s=fTest;
+				err = script.GetField("roller_drive_speed", NULL, NULL,&fTest);
+				if (!err)
+					auton.RollerDriveScalar=fTest;
 				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
 			}
 			script.Pop();
@@ -1126,8 +1130,35 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 		};
 		MultitaskGoal m_Primer;
 
-		static Goal * Move_Straight(FRC_2014_Robot *Robot,double length_ft)
+		class MoveStraight_WithRoller : public Goal_Ship_MoveToRelativePosition, public SetUpProps
 		{
+		private:
+			double m_RollerScalar;
+		public:
+			MoveStraight_WithRoller(FRC_2014_Goals_Impl *Parent,double RollerScalar,AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true,
+				bool LockOrientation=false,double safestop_tolerance=0.03) : 
+				Goal_Ship_MoveToRelativePosition(controller,waypoint,UseSafeStop,LockOrientation,safestop_tolerance),
+				SetUpProps(Parent),m_RollerScalar(RollerScalar)
+			{}
+
+			virtual Goal_Status Process(double dTime_s)
+			{
+				m_Status=__super::Process(dTime_s);
+				if (m_Status==eActive)
+				{
+					//Now to grab the current velocity
+					const double Velocity=Feet2Meters(SmartDashboard::GetNumber("Velocity"));
+					const double ratio=Velocity / m_Robot.GetRobotProps().GetEngagedMaxSpeed();
+					m_EventMap.EventValue_Map["IntakeRollers_SetCurrentVelocity"].Fire(ratio * m_AutonProps.RollerDriveScalar);
+				}
+				return m_Status;
+			}
+		};
+
+		/// \param RollerScalar if this is 0.0 then the MoveStraight_WithRoller goal will not be used
+		static Goal * Move_Straight(FRC_2014_Goals_Impl *Parent,double length_ft,double RollerScalar=0.0)
+		{
+			FRC_2014_Robot *Robot=&Parent->m_Robot;
 			//Construct a way point
 			WayPoint wp;
 			const Vec2d Local_GoalTarget(0.0,Feet2Meters(length_ft));
@@ -1136,7 +1167,11 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			//Now to setup the goal
 			const bool LockOrientation=true;
 			const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
-			Goal_Ship_MoveToPosition *goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
+			Goal_Ship_MoveToPosition *goal_drive=NULL;
+			if (RollerScalar==0.0)
+				goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
+			else
+				goal_drive=new MoveStraight_WithRoller(Parent,RollerScalar,Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
 			return goal_drive;
 		}
 
@@ -1264,15 +1299,15 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			{
 				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
 				//Note: these are reversed
-				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.SecondMove_ft));
+				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.SecondMove_ft));
 				AddSubgoal(new Intake_Deploy(m_Parent,false));
 				//TODO enable once ready
 				//AddSubgoal(new Reset_Catapult(m_Parent));
 				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
 				AddSubgoal(new Fire_Sequence(m_Parent));
-				//We can wait for hot even if it is not supported
+				//We can wait for hot spot detection even if it is not supported
 				AddSubgoal(new WaitForHot(m_Parent));
-				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.FirstMove_ft));  //For now try to avoid movement before shooting
+				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
 			}
@@ -1309,7 +1344,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			{
 				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
 				//Note: these are reversed
-				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.SecondMove_ft));
+				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.SecondMove_ft));
 				AddSubgoal(new Intake_Deploy(m_Parent,false));
 				//multi goal these... we want to wait at least 500ms but still start resetting the catapult
 				{
@@ -1325,7 +1360,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//We can wait for hot even if it is not supported
 				AddSubgoal(new WaitForHot(m_Parent));
-				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.FirstMove_ft));  //For now try to avoid movement before shooting
+				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
