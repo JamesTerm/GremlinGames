@@ -86,10 +86,10 @@ class COMMON_API Goal_Ship_RotateToPosition : public AtomicGoal
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate() {m_Terminate=true;}
 	protected:
+		AI_Base_Controller * const m_Controller;
 		double m_Heading;
 		Ship_2D &m_ship;
 	private:
-		AI_Base_Controller * const m_Controller;
 		bool m_Terminate;
 };
 
