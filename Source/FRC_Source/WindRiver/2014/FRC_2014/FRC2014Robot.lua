@@ -181,7 +181,9 @@ MainRobot = {
 			support_hotspot='y',
 			land_on_ball_roller_speed=0.75;
 			land_on_ball_roller_time=0.5,
-			second_ball_roller_time=1
+			second_ball_roller_time=1,
+			roller_drive_speed=0.75,
+			show_auton_variables='y'
 		},
 		
 		winch =
