@@ -43,6 +43,8 @@ public:
 		double LandOnBallRollerSpeed;
 		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
 		double RollerDriveScalar;  //Controls speed of controller while robot is driving
+		double ThreeBallRotation_deg;  //Controls the angle to retrieve 3rd ball
+		double ThreeBallDistance_ft;  //This is slightly more than FirstMove since there is an angle
 		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
 		bool ShowParameters;   //If true ShowAutonParameters will populate SmartDashboard with autonomous parameters
 	} Autonomous_Props;
