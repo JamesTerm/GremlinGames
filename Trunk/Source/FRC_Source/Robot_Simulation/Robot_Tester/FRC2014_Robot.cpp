@@ -605,6 +605,11 @@ const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
 	return m_RobotProps;
 }
 
+FRC_2014_Robot_Props::Autonomous_Properties &FRC_2014_Robot::GetAutonProps()
+{
+	return m_RobotProps.GetFRC2014RobotProps_rw().Autonomous_Props;
+}
+
 void FRC_2014_Robot::SetLowGear(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
@@ -943,6 +948,27 @@ const char *FRC_2014_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(siz
 }
 FRC_2014_Robot_Properties::ControlEvents FRC_2014_Robot_Properties::s_ControlsEvents;
 
+void FRC_2014_Robot_Props::Autonomous_Properties::ShowAutonParameters()
+{
+	if (ShowParameters)
+	{
+		const char * const SmartNames[]={"first_move_ft"	,"second_move_ft"	,"land_on_ball_roller_time",
+			"land_on_ball_roller_speed"	,"second_ball_roller_time"		,"roller_drive_speed"};
+		double * const SmartVariables[]={&FirstMove_ft,&SecondMove_ft,&LandOnBallRollerTime_s,
+			&LandOnBallRollerSpeed,&SecondBallRollerTime_s,&RollerDriveScalar};
+		for (size_t i=0;i<_countof(SmartNames);i++)
+			try
+		{
+			*(SmartVariables[i])=SmartDashboard::GetNumber(SmartNames[i]);
+		}
+		catch (...)
+		{
+			//I may need to prime the pump here
+			SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
+		}
+	}
+}
+
 void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
 	FRC_2014_Robot_Props &props=m_FRC2014RobotProps;
@@ -1060,6 +1086,8 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				if (!err)
 					auton.RollerDriveScalar=fTest;
 				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
+				SCRIPT_TEST_BOOL_YES(auton.ShowParameters,"show_auton_variables");
+				auton.ShowAutonParameters();
 			}
 			script.Pop();
 		}
@@ -1419,6 +1447,9 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				m_RobotPosition=ePosition_Center;
 				SmartDashboard::PutNumber("Auton Position",0.0);
 			}
+
+			FRC_2014_Robot_Props::Autonomous_Properties &auton=m_Robot.GetAutonProps();
+			auton.ShowAutonParameters();  //Grab again now in case user has tweaked values
 
 			printf("ball count=%d position=%d\n",m_AutonType,m_RobotPosition);
 			switch(m_AutonType)
