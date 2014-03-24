@@ -36,7 +36,11 @@ public:
 	} Intake_Robot_Props;
 	struct Autonomous_Properties
 	{
-		double BallTargetDistance; //used to tweak desired distance away from ball for targeting
+		double FirstMove_ft; //Initial move before shooting (this one will need careful tuning)
+		double SecondMove_ft;  //This one is after the shooting to ensure it has moved far enough
+		double LandOnBallRollerTime_s;
+		double LandOnBallRollerSpeed;
+		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
 		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
 	} Autonomous_Props;
 	struct BallTargeting
@@ -255,18 +259,20 @@ class FRC_2014_Robot : public Tank_Robot
 				//Intercept the time change to send out voltage
 				virtual void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
+
+				void Intake_Rollers_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 			private:
 				#ifndef Robot_TesterCode
 				typedef Rotary_Velocity_Control __super;
 				#endif
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				FRC_2014_Robot * const m_pParent;
+				double m_Velocity; //adds all axis velocities then assigns on the time change
 				bool m_Grip,m_Squirt;
 		};
 
 	public: //Autonomous public access (wind river has problems with friend technique)
 		const FRC_2014_Robot_Properties &GetRobotProps() const;
+		Ship_1D &GetWinch() {return m_Winch;}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
