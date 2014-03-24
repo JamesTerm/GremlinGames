@@ -259,13 +259,14 @@ class FRC_2014_Robot : public Tank_Robot
 				//Intercept the time change to send out voltage
 				virtual void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
+
+				void Intake_Rollers_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 			private:
 				#ifndef Robot_TesterCode
 				typedef Rotary_Velocity_Control __super;
 				#endif
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
 				FRC_2014_Robot * const m_pParent;
+				double m_Velocity; //adds all axis velocities then assigns on the time change
 				bool m_Grip,m_Squirt;
 		};
 
