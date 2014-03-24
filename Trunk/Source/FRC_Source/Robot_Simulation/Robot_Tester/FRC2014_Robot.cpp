@@ -368,6 +368,9 @@ FRC_2014_Robot::Intake_Rollers::Intake_Rollers(FRC_2014_Robot *parent,Rotary_Con
 
 void FRC_2014_Robot::Intake_Rollers::TimeChange(double dTime_s)
 {
+	SetRequestedVelocity_FromNormalized(m_Velocity);
+	m_Velocity=0.0;
+
 	const double Accel=m_Ship_1D_Props.ACCEL;
 	const double Brake=m_Ship_1D_Props.BRAKE;
 
@@ -393,13 +396,13 @@ void FRC_2014_Robot::Intake_Rollers::BindAdditionalEventControls(bool Bind)
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Rollers::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2014_Robot::Intake_Rollers::Intake_Rollers_SetRequestedVelocity);
 		em->EventOnOff_Map["IntakeRollers_Grip"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Rollers::Grip);
 		em->EventOnOff_Map["IntakeRollers_Squirt"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Rollers::Squirt);
 	}
 	else
 	{
-		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Intake_Rollers::SetRequestedVelocity_FromNormalized);
+		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Remove(*this, &FRC_2014_Robot::Intake_Rollers::Intake_Rollers_SetRequestedVelocity);
 		em->EventOnOff_Map["IntakeRollers_Grip"]  .Remove(*this, &FRC_2014_Robot::Intake_Rollers::Grip);
 		em->EventOnOff_Map["IntakeRollers_Squirt"]  .Remove(*this, &FRC_2014_Robot::Intake_Rollers::Squirt);
 	}
@@ -1275,36 +1278,26 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			}
 		};
 
-		class SetRollerSpeed : public AtomicGoal, public SetUpProps
-		{
-		private:
-			double m_Speed;
-		public:
-			SetRollerSpeed(FRC_2014_Goals_Impl *Parent, double Speed)	: SetUpProps(Parent),m_Speed(Speed) {	m_Status=eInactive;	}
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				ActivateIfInactive();
-				m_EventMap.EventValue_Map["IntakeRollers_SetCurrentVelocity"].Fire(m_Speed);
-				m_Status=eCompleted;
-				return m_Status;
-			}
-		};
-
-		class Roller_Sequence : public Generic_CompositeGoal, public SetUpProps
+		class SetRollerSpeed_WithTime : public AtomicGoal, public SetUpProps
 		{
 		private:
 			double m_Speed;
 			double m_WaitTime;
+			double m_TimeAccrued;
 		public:
-			Roller_Sequence(FRC_2014_Goals_Impl *Parent,double Speed,double WaitTime)	: Generic_CompositeGoal(true),SetUpProps(Parent), m_Speed(Speed),m_WaitTime(WaitTime)
+			SetRollerSpeed_WithTime(FRC_2014_Goals_Impl *Parent, double Speed,double WaitTime)	: SetUpProps(Parent),m_Speed(Speed),m_WaitTime(WaitTime),m_TimeAccrued(0.0) 
 			{	m_Status=eInactive;	}
-			virtual void Activate()
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
 			{
-				AddSubgoal(new SetRollerSpeed(m_Parent,0.0));
-				AddSubgoal(new Goal_Wait(m_WaitTime));
-				AddSubgoal(new SetRollerSpeed(m_Parent,m_Speed));
-				m_Status=eActive;
+				ActivateIfInactive();
+				m_TimeAccrued+=dTime_s;
+
+				m_EventMap.EventValue_Map["IntakeRollers_SetCurrentVelocity"].Fire(m_Speed);
+				//Note: I need not zero speed... it will do that automatically per time change
+				if (m_TimeAccrued>m_WaitTime)
+					m_Status=eCompleted;
+				return m_Status;
 			}
 		};
 
@@ -1327,13 +1320,13 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				}
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//roll up the ball second ball
-				AddSubgoal(new Roller_Sequence(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//We can wait for hot even if it is not supported
 				AddSubgoal(new WaitForHot(m_Parent));
 				AddSubgoal(Move_Straight(&m_Robot,m_AutonProps.FirstMove_ft));  //For now try to avoid movement before shooting
-				AddSubgoal(new Roller_Sequence(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
 			}
