@@ -85,11 +85,27 @@ class COMMON_API Goal_Ship_RotateToPosition : public AtomicGoal
 		virtual void Activate();
 		virtual Goal_Status Process(double dTime_s);
 		virtual void Terminate() {m_Terminate=true;}
-	private:
-		AI_Base_Controller * const m_Controller;
+	protected:
 		double m_Heading;
 		Ship_2D &m_ship;
+	private:
+		AI_Base_Controller * const m_Controller;
 		bool m_Terminate;
+};
+
+
+//This is like Goal_Ship_RotateToPosition except it will have a relative heading added to its current heading
+class COMMON_API Goal_Ship_RotateToRelativePosition : public Goal_Ship_RotateToPosition
+{
+public:
+	Goal_Ship_RotateToRelativePosition(AI_Base_Controller *controller,double Heading) : 
+	  Goal_Ship_RotateToPosition(controller,Heading) {}
+	//Note: It is important for client code not to activate this... let process activate it... so that it sets the heading at the correct time and current heading
+	virtual void Activate();
+private:
+#ifndef Robot_TesterCode
+	typedef Goal_Ship_RotateToPosition __super;
+#endif
 };
 
 //TODO get these functions re-factored
