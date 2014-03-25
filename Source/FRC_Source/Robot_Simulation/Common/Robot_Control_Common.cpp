@@ -245,15 +245,18 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 
 void RobotControlCommon::TranslateToRelay(size_t index,double Voltage)
 {
-	Relay::Value value=Relay::kOff;  //*NEVER* want both on!
-	const double Threshold=0.08;  //This value is based on dead voltage for arm... feel free to adjust, but keep high enough to avoid noise
+	IF_LUT(m_RelayLUT)
+	{
+		Relay::Value value=Relay::kOff;  //*NEVER* want both on!
+		const double Threshold=0.08;  //This value is based on dead voltage for arm... feel free to adjust, but keep high enough to avoid noise
 
-	if (Voltage>Threshold)
-		value=Relay::kForward;
-	else if (Voltage<-Threshold)
-		value=Relay::kReverse;
+		if (Voltage>Threshold)
+			value=Relay::kForward;
+		else if (Voltage<-Threshold)
+			value=Relay::kReverse;
 
-	m_Relays[m_RelayLUT[index]]->Set(value);
+		m_Relays[m_RelayLUT[index]]->Set(value);
+	}
 }
 
 #ifdef Robot_TesterCode
