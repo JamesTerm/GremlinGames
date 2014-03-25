@@ -91,7 +91,7 @@ class FRC_2014_Robot_Properties : public Tank_Robot_Properties
 
 const char * const csz_FRC_2014_Robot_SpeedControllerDevices_Enum[] =
 {
-	"winch","intake_arm_1","intake_arm_2","left_drive_3","right_drive_3","rollers"
+	"winch","intake_arm_1","intake_arm_2","left_drive_3","right_drive_3","rollers","CameraLED"
 };
 
 const char * const csz_FRC_2014_Robot_SolenoidDevices_Enum[] =
@@ -115,7 +115,8 @@ class FRC_2014_Robot : public Tank_Robot
 			eIntakeArm2,
 			eLeftDrive3,
 			eRightDrive3,
-			eRollers
+			eRollers,
+			eCameraLED  //Full forward is on 0 is off
 		};
 
 		static SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)
@@ -280,6 +281,7 @@ class FRC_2014_Robot : public Tank_Robot
 		const FRC_2014_Robot_Properties &GetRobotProps() const;
 		FRC_2014_Robot_Props::Autonomous_Properties &GetAutonProps();
 		Ship_1D &GetWinch() {return m_Winch;}
+		void SetCameraLED (bool on);
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
