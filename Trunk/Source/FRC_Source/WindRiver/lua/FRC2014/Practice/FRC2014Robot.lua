@@ -55,6 +55,10 @@ MainRobot = {
 			id_9 = { name="intake_arm_2",  channel=9},
 			id_10= { name="rollers",       channel=10}
 		},
+		relay =
+		{
+			id_1 = { name= "CameraLED", channel=1}
+		},
 		double_solenoid =
 		{
 			id_1 = { name="use_low_gear",    forward_channel=2, reverse_channel=1},
