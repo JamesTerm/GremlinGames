@@ -65,6 +65,7 @@ public:
 	void display_bool(bool value);
 	void display_number(double value);
 	bool get_bool() const;
+	double get_number() const;
 protected:
 	std::string m_Name;
 };
@@ -149,9 +150,8 @@ public:
 		m_ModuleNumber(moduleNumber), m_Channel(channel) {}
 	//virtual ~Relay();
 
-	void Set(Value value) {m_CurrentValue=value; display_bool(value==kForward);}
-	Value Get() {return m_CurrentValue=get_bool()?kForward:kReverse;}
-
+	virtual void Set(Value value) {m_CurrentValue=value; display_number((double)value);}
+	virtual Value Get() {return m_CurrentValue=get_number()==0.0?kOff:get_number()>0.0?kForward:kReverse;}
 private:
 	uint8_t m_ModuleNumber;
 	uint32_t m_Channel;
