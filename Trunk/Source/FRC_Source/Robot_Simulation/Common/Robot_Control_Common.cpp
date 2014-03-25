@@ -558,5 +558,10 @@ bool Control_2C_Element_UI::get_bool() const
 {
 	return SmartDashboard::GetBoolean(m_Name);
 }
+
+double Control_2C_Element_UI::get_number() const
+{
+	return SmartDashboard::GetNumber(m_Name);
+}
 #endif
 

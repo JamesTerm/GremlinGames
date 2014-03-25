@@ -610,6 +610,11 @@ FRC_2014_Robot_Props::Autonomous_Properties &FRC_2014_Robot::GetAutonProps()
 	return m_RobotProps.GetFRC2014RobotProps_rw().Autonomous_Props;
 }
 
+void FRC_2014_Robot::SetCameraLED(bool on)
+{
+	m_RobotControl->UpdateVoltage(eCameraLED,on?1.0:0.0);
+}
+
 void FRC_2014_Robot::SetLowGear(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
@@ -1345,6 +1350,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			{
 				m_Status=eActive;
 				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
+				m_Robot.SetCameraLED(true);
 			}
 			virtual Goal_Status Process(double dTime_s)
 			{
@@ -1368,6 +1374,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			virtual void Terminate() 
 			{
 				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+				m_Robot.SetCameraLED(false);
 			}
 		};
 
@@ -1947,6 +1954,11 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	case FRC_2014_Robot::eRollers:
 		Victor_UpdateVoltage(index,Voltage);
 		SmartDashboard::PutNumber("RollerVoltage",Voltage);
+		break;
+	case FRC_2014_Robot::eCameraLED:
+		TranslateToRelay(index,Voltage);
+		//I don't need this since we have another variable that represents it, but enable for diagnostics
+		//SmartDashboard::PutBoolean("CameraLED",Voltage==0.0?false:true);
 		break;
 	}
 }
