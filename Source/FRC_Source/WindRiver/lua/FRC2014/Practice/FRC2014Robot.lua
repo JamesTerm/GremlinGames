@@ -26,8 +26,8 @@ g_wheel_diameter_in=4   --This will determine the correct distance try to make a
 WheelBase_Width_In=26.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=10  --was 9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-HighGearSpeed = (873.53 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (403.92 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+HighGearSpeed = (873.53 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.85 --RPM's from Parker
+LowGearSpeed  = (403.92 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
@@ -38,7 +38,8 @@ MainRobot = {
 	--Version 1.3 was competition bot during Dallas, and merged into practice lua
 	--Version 1.5 is 1.3 merge plus preliminary draft with corrected gear ratios, low gear fixes in torque and gain assist
 	--				as well as added tank strafe axis assignments
-	version = 1.5;
+	--Version 1.6 Drive gear rates and encoders calibrated
+	version = 1.6;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -126,7 +127,7 @@ MainRobot = {
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=-0.7 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=-1.0,				--May be reversed using -1.0
 		--curve_voltage=
 		--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
@@ -345,7 +346,7 @@ MainRobot = {
 				--latency=0.300,
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+				encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 				voltage_multiply=-1.0,				--May be reversed using -1.0
 				reverse_steering='no',
 				 left_encoder_reversed='no',
