@@ -1087,6 +1087,8 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 	RightRate=m_Averager_EncodeRight.GetAverage(RightRate);
 	RightRate=IsZero(RightRate)?0.0:RightRate;
 	
+	//SmartDashboard::PutNumber("Right_RPS",RightRate * m_TankRobotProps.MotorToWheelGearRatio);
+	
 	//Quick test of using GetRate() vs. GetRate2()
 	#if 0
 	if ((LeftRate>0.0)||(RightRate>0.0))
@@ -1131,6 +1133,26 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	#ifdef __DisableTankDrive__
 	m_RobotDrive->SetLeftRightMotorOutputs(0.0,0.0);  //pacify the watchdog
 	return;
+	#endif
+
+	#if 0
+	{
+		double VoltageTest=0.0;
+		try
+		{
+			VoltageTest=SmartDashboard::GetNumber("TestVoltage");
+		}
+		catch(...)
+		{
+			SmartDashboard::PutNumber("TestVoltage",0.0);		
+		}
+		if (true)
+			m_RobotDrive->SetLeftRightMotorOutputs(0.0,VoltageTest);
+		else
+			m_RobotDrive->SetLeftRightMotorOutputs(VoltageTest,0.0);
+			
+		return;
+	}
 	#endif
 	
 	if (!m_TankRobotProps.ReverseSteering)
