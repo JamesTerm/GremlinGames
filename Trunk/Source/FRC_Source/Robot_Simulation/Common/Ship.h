@@ -225,10 +225,29 @@ class COMMON_API LUA_Controls_Properties
 		const Controls_List &Get_Controls() const {return m_Controls;}
 		const DriverStation_Slot_List &GetDriverStation_SlotList() const {return m_DriverStation_SlotList;}
 		//call from within GetFieldTable controls
-		void LoadFromScript(Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 		//Just have the client (from ship) call this
 		void BindAdditionalUIControls(bool Bind,void *joy,void *key) const;
 		LUA_Controls_Properties &operator= (const LUA_Controls_Properties &CopyFrom);
+};
+
+class COMMON_API LUA_ShipControls_Properties : public LUA_Controls_Properties
+{
+	public:
+		LUA_ShipControls_Properties(LUA_Controls_Properties_Interface *parent);
+		//call from within GetFieldTable controls
+		virtual void LoadFromScript(Scripting::Script& script);
+		struct LUA_ShipControls_Props
+		{
+			double TankSteering_Tolerance;						//used to help controls drive straight
+			double FieldCentricDrive_XAxisEnableThreshold;		//X Threshold to enable field centric drive mode
+		};
+		const LUA_ShipControls_Props &GetLUA_ShipControls_Props() const {return m_ShipControlsProps;}
+	private:
+		LUA_ShipControls_Props m_ShipControlsProps;
+		#ifndef Robot_TesterCode
+		typedef LUA_Controls_Properties __super;
+		#endif
 };
 
 class Ship_2D;
@@ -258,7 +277,7 @@ class COMMON_API Ship_Properties : public Entity_Properties
 
 		const Ship_Props &GetShipProps() const {return m_ShipProps;}
 		Ship_Props &GetShipProps_rw() {return m_ShipProps;}
-		const LUA_Controls_Properties &Get_ShipControls() const {return m_ShipControls;}
+		const LUA_ShipControls_Properties &Get_ShipControls() const {return m_ShipControls;}
 	private:
 		#ifndef Robot_TesterCode
 		typedef Entity_Properties __super;
@@ -272,7 +291,7 @@ class COMMON_API Ship_Properties : public Entity_Properties
 				virtual const char *LUA_Controls_GetEvents(size_t index) const; 
 		};
 		static ControlEvents s_ControlsEvents;
-		LUA_Controls_Properties m_ShipControls;
+		LUA_ShipControls_Properties m_ShipControls;
 };
 
 class COMMON_API Ship_2D : public Ship

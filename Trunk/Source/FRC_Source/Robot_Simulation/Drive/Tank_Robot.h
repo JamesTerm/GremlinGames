@@ -30,7 +30,7 @@ struct Tank_Robot_Props
 	double PrecisionTolerance;  //Used to manage voltage override and avoid oscillation
 	double LeftMaxSpeedOffset;	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
 	double RightMaxSpeedOffset;
-	double TankSteering_Tolerance; //used to help controls drive straight
+	//double TankSteering_Tolerance; //used to help controls drive straight
 	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen,HasEncoders;  //This property only applies in teleop

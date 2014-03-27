@@ -51,7 +51,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
 Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
 	Ship_Tester(EntityName), m_RobotControl(robot_control), m_IsAutonomous(IsAutonomous), m_VehicleDrive(NULL),
 	m_UsingEncoders(IsAutonomous), //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
-	m_Heading(0.0), m_HeadingUpdateTimer(0.0)
+	m_Heading(0.0), m_HeadingUpdateTimer(0.0),m_TankSteering(this)
 {
 	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
 	const char * const ModuleName[]=
@@ -90,7 +90,8 @@ void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *p
 		//This will copy all the props
 		m_SwerveRobotProps=RobotProps->GetSwerveRobotProps();
 		m_WheelDimensions=RobotProps->GetWheelDimensions();
-		m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetSwerveRobotProps().TankSteering_Tolerance);
+		//depreciated
+		//m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetSwerveRobotProps().TankSteering_Tolerance);
 		for (size_t i=0;i<4;i++)
 		{
 			DrivingModule::DrivingModule_Props props;
@@ -455,7 +456,8 @@ Swerve_Robot_Properties::Swerve_Robot_Properties() : m_SwivelProps(
 	props.ReverseSteering=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
 	props.SwivelRange=0.0;
-	props.TankSteering_Tolerance=0.05;
+	//depreciated
+	//props.TankSteering_Tolerance=0.05;
 	props.InverseMaxAccel=0.0;
 	m_SwerveRobotProps=props;
 	//Always use aggressive stop for driving
@@ -707,12 +709,13 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		script.Pop(); 
 	}
 
-	err = script.GetFieldTable("controls");
-	if (!err)
-	{
-		script.GetField("tank_steering_tolerance", NULL, NULL,&m_SwerveRobotProps.TankSteering_Tolerance);
-		script.Pop();
-	}
+	//depreciated
+	//err = script.GetFieldTable("controls");
+	//if (!err)
+	//{
+	//	script.GetField("tank_steering_tolerance", NULL, NULL,&m_SwerveRobotProps.TankSteering_Tolerance);
+	//	script.Pop();
+	//}
 
 	__super::LoadFromScript(script);
 	m_DriveProps.SetFromShip_Properties(GetShipProps());
