@@ -226,6 +226,7 @@ class COMMON_API UI_Controller
 		protected:
 			void UpdatePosY(double Y) {m_PosY=Y;}
 			void UpdatePosX(double X) {m_PosX=X;}
+			void FieldCentricDrive_Mode_Enable();
 		public:
 			FieldCentricDrive(UI_Controller *pParent);
 			void TimeChange(double dTime_s);
