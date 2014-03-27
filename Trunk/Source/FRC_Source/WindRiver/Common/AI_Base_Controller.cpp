@@ -344,7 +344,7 @@ void LUA_Controls_Properties::BindAdditionalUIControls(bool Bind,void *joy,void 
  /*															Tank_Steering															*/
 /***********************************************************************************************************************************/
 
-Tank_Steering::Tank_Steering() : m_LeftVelocity(0.0),m_RightVelocity(0.0),m_LeftXAxis(0.0),m_RightXAxis(0.0),
+Tank_Steering::Tank_Steering(Ship_2D *parent) : m_pParent(parent),m_LeftVelocity(0.0),m_RightVelocity(0.0),m_LeftXAxis(0.0),m_RightXAxis(0.0),
 	m_StraightDeadZone_Tolerance(0.05),m_90DegreeTurnValve(false),m_AreControlsDisabled(false)
 {
 }
@@ -433,6 +433,7 @@ void Tank_Steering::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEv
 {
 	if (Bind)
 	{
+		m_StraightDeadZone_Tolerance=m_pParent->GetShipProperties().Get_ShipControls().GetLUA_ShipControls_Props().TankSteering_Tolerance;
 		em->EventValue_Map["Joystick_SetLeftVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetLeftVelocity);
 		em->EventValue_Map["Joystick_SetRightVelocity"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetRightVelocity);
 		em->EventValue_Map["Joystick_SetLeft_XAxis"].Subscribe(ehl,*this, &Tank_Steering::Joystick_SetLeft_XAxis);
