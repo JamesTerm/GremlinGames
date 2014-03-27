@@ -745,6 +745,29 @@ void Ship_2D::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 	m_ShipProps.Get_ShipControls().BindAdditionalUIControls(Bind,joy,key);
 }
 
+  /***********************************************************************************************************************************/
+ /*													LUA_ShipControls_Properties														*/
+/***********************************************************************************************************************************/
+LUA_ShipControls_Properties::LUA_ShipControls_Properties(LUA_Controls_Properties_Interface *parent) : LUA_Controls_Properties(parent)
+{
+	LUA_ShipControls_Props props;
+	props.TankSteering_Tolerance=0.05;
+	props.FieldCentricDrive_XAxisEnableThreshold=0.40;
+	m_ShipControlsProps=props;
+}
+
+void LUA_ShipControls_Properties::LoadFromScript(Scripting::Script& script)
+{
+	__super::LoadFromScript(script);
+	const char* err=NULL;
+	double fTest;
+	err=script.GetField("tank_steering_tolerance", NULL, NULL,&fTest);
+	if (!err)
+		m_ShipControlsProps.TankSteering_Tolerance=fTest;
+	err=script.GetField("field_centric_x_axis_threshold", NULL, NULL,&fTest);
+	if (!err)
+		m_ShipControlsProps.FieldCentricDrive_XAxisEnableThreshold=fTest;
+}
 
   /***********************************************************************************************************************************/
  /*															Ship_Properties															*/
@@ -830,7 +853,7 @@ const char * const g_Ship_Controls_Events[] =
 {
 	"Joystick_SetCurrentSpeed_2","Joystick_SetCurrentSpeed","Analog_Turn","POV_Turn",
 	"Turn_180","Turn_180_Hold","Turn_90R","Turn_90L","FlipY","FlipY_Hold",
-	"Joystick_FieldCentric_XAxis","Joystick_FieldCentric_YAxis",
+	"Joystick_FieldCentric_XAxis","Joystick_FieldCentric_YAxis","FieldCentric_Enable",
 	"Joystick_SetLeftVelocity","Joystick_SetRightVelocity","Joystick_SetLeft_XAxis","Joystick_SetRight_XAxis",
 	"SlideHold","Slide","Stop","Thrust","Brake","Analog_StrafeRight","None",
 	"TestWaypoint"
