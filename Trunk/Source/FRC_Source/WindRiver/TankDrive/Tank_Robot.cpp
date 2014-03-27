@@ -53,7 +53,7 @@ Tank_Robot::Tank_Robot(const char EntityName[],Tank_Drive_Control_Interface *rob
 	m_ErrorOffset_Left(0.0),m_ErrorOffset_Right(0.0),
 	m_UsingEncoders(IsAutonomous),
 	m_Heading(0.0), m_HeadingUpdateTimer(0.0),
-	m_PreviousLeftVelocity(0.0),m_PreviousRightVelocity(0.0)
+	m_PreviousLeftVelocity(0.0),m_PreviousRightVelocity(0.0),m_TankSteering(this)
 {
 	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
 	//m_UsingEncoders=true; //testing
@@ -148,7 +148,8 @@ void Tank_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties
 	m_ErrorOffset_Left=m_ErrorOffset_Right=0.0;
 	//This can be dynamically called so we always call it
 	SetUseEncoders(!m_TankRobotProps.IsOpen);
-	m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetTankRobotProps().TankSteering_Tolerance);
+	//depreciated
+	//m_TankSteering.SetStraightDeadZone_Tolerance(RobotProps->GetTankRobotProps().TankSteering_Tolerance);
 	//It is assumed that this property is constant throughout the whole session
 	if (m_TankRobotProps.PID_Console_Dump)
 		InitNetworkProperties(m_TankRobotProps,m_ShipProps.GetShipProps());
@@ -648,7 +649,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.LeftEncoderReversed=false;
 	props.RightEncoderReversed=false;
 	props.DriveTo_ForceDegradeScalar=Vec2d(1.0,1.0);
-	props.TankSteering_Tolerance=0.05;
+	//props.TankSteering_Tolerance=0.05;
 	props.InverseMaxAccel_Left=props.InverseMaxDecel_Left=0.0;
 	props.InverseMaxAccel_Right=props.InverseMaxDecel_Right=0.0;
 	props.ForwardLinearGainAssist_Scalar=0.0;
@@ -817,12 +818,13 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 
 		script.Pop(); 
 	}
-	err = script.GetFieldTable("controls");
-	if (!err)
-	{
-		script.GetField("tank_steering_tolerance", NULL, NULL,&m_TankRobotProps.TankSteering_Tolerance);
-		script.Pop();
-	}
+	//depreciated
+	//err = script.GetFieldTable("controls");
+	//if (!err)
+	//{
+	//	script.GetField("tank_steering_tolerance", NULL, NULL,&m_TankRobotProps.TankSteering_Tolerance);
+	//	script.Pop();
+	//}
 
 	__super::LoadFromScript(script);
 }
@@ -1087,8 +1089,6 @@ void Tank_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &Right
 	RightRate=m_Averager_EncodeRight.GetAverage(RightRate);
 	RightRate=IsZero(RightRate)?0.0:RightRate;
 	
-	//SmartDashboard::PutNumber("Right_RPS",RightRate * m_TankRobotProps.MotorToWheelGearRatio);
-	
 	//Quick test of using GetRate() vs. GetRate2()
 	#if 0
 	if ((LeftRate>0.0)||(RightRate>0.0))
@@ -1133,26 +1133,6 @@ void Tank_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightV
 	#ifdef __DisableTankDrive__
 	m_RobotDrive->SetLeftRightMotorOutputs(0.0,0.0);  //pacify the watchdog
 	return;
-	#endif
-
-	#if 0
-	{
-		double VoltageTest=0.0;
-		try
-		{
-			VoltageTest=SmartDashboard::GetNumber("TestVoltage");
-		}
-		catch(...)
-		{
-			SmartDashboard::PutNumber("TestVoltage",0.0);		
-		}
-		if (true)
-			m_RobotDrive->SetLeftRightMotorOutputs(0.0,VoltageTest);
-		else
-			m_RobotDrive->SetLeftRightMotorOutputs(VoltageTest,0.0);
-			
-		return;
-	}
 	#endif
 	
 	if (!m_TankRobotProps.ReverseSteering)
