@@ -37,7 +37,7 @@ struct Swerve_Robot_Props
 	double MaxSpeedOffset[4];	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
 	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	double SwivelRange;  //Value in radians of the swivel range 0 is infinite
-	double TankSteering_Tolerance; //used to help controls drive straight
+	//double TankSteering_Tolerance; //used to help controls drive straight
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage

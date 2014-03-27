@@ -143,7 +143,8 @@ void Mouse_ShipDriver::DriveShip()
  /*										UI_Controller::FieldCentricDrive										*/
 /***************************************************************************************************************/
 
-UI_Controller::FieldCentricDrive::FieldCentricDrive(UI_Controller *pParent) : m_pParent(pParent),m_PosX(0.0),m_PosY(0.0),m_HeadingLock(0.0),m_FieldCentricDrive_Mode(false)
+UI_Controller::FieldCentricDrive::FieldCentricDrive(UI_Controller *pParent) : m_pParent(pParent),m_PosX(0.0),m_PosY(0.0),m_HeadingLock(0.0),
+	m_XAxisEnableThreshold(0.4),m_FieldCentricDrive_Mode(false)
 {
 
 }
@@ -156,7 +157,7 @@ void UI_Controller::FieldCentricDrive::TimeChange(double dTime_s)
 	//to switch modes
 	if (!IsZero(m_pParent->m_Ship_JoyMouse_rotAcc_rad_s))
 		m_FieldCentricDrive_Mode=false;
-	else if (fabs(m_PosX)>0.4)
+	else if (fabs(m_PosX)>m_XAxisEnableThreshold)
 		m_FieldCentricDrive_Mode=true;
 
 	SmartDashboard::PutBoolean("FieldCentricDrive_Mode",m_FieldCentricDrive_Mode);
@@ -223,6 +224,7 @@ void UI_Controller::FieldCentricDrive::BindAdditionalEventControls(bool Bind,Bas
 {
 	if (Bind)
 	{
+		m_XAxisEnableThreshold=m_pParent->m_ship->GetShipProperties().Get_ShipControls().GetLUA_ShipControls_Props().FieldCentricDrive_XAxisEnableThreshold;
 		em->EventValue_Map["Joystick_FieldCentric_XAxis"].Subscribe(ehl,*this, &FieldCentricDrive::UpdatePosX);
 		em->EventValue_Map["Joystick_FieldCentric_YAxis"].Subscribe(ehl,*this, &FieldCentricDrive::UpdatePosY);
 		em->Event_Map["FieldCentric_Enable"].Subscribe(ehl,*this, &FieldCentricDrive::FieldCentricDrive_Mode_Enable);

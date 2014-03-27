@@ -4,13 +4,14 @@
 class COMMON_API Tank_Steering
 {
 	private:
+		Ship_2D * const m_pParent;
 		double m_LeftVelocity, m_RightVelocity;  //for tank steering
 		double m_LeftXAxis,m_RightXAxis;
 		double m_StraightDeadZone_Tolerance;  //used to help controls drive straight
 		bool m_90DegreeTurnValve;
 		bool m_AreControlsDisabled;
 	public:
-		Tank_Steering();
+		Tank_Steering(Ship_2D *parent);
 
 		void SetAreControlsDisabled(bool AreControlsDisabled) {m_AreControlsDisabled=AreControlsDisabled;}
 		//This is the ui controllers time change callback update... client code must handle initializing as this will only write to those
@@ -18,8 +19,9 @@ class COMMON_API Tank_Steering
 		void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,const Ship_2D &ship,bool &LockShipHeadingToOrientation,double dTime_s);
 		void BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl);
 
+		//This method is depreciated and called internally within BindAdditionalEventControls
 		//range 0-1 the higher this is the lower turning precision, but easier to drive straight
-		void SetStraightDeadZone_Tolerance(double Tolerance) {m_StraightDeadZone_Tolerance=Tolerance;}
+		//void SetStraightDeadZone_Tolerance(double Tolerance) {m_StraightDeadZone_Tolerance=Tolerance;}
 	protected:
 		void Joystick_SetLeftVelocity(double Velocity);
 		void Joystick_SetRightVelocity(double Velocity);

@@ -368,6 +368,8 @@ MainRobot = {
 
 	controls =
 	{
+		--field_centric_x_axis_threshold=0.40,
+		--tank_steering_tolerance=0.05,
 		Joystick_1 =
 		{
 			control = "airflo",
