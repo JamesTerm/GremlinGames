@@ -221,6 +221,7 @@ class COMMON_API LUA_Controls_Properties
 		LUA_Controls_Properties_Interface * m_pParent;
 	public:
 		LUA_Controls_Properties(LUA_Controls_Properties_Interface *parent);
+		virtual ~LUA_Controls_Properties() {}
 
 		const Controls_List &Get_Controls() const {return m_Controls;}
 		const DriverStation_Slot_List &GetDriverStation_SlotList() const {return m_DriverStation_SlotList;}
