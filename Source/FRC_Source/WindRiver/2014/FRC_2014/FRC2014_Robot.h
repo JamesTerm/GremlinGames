@@ -42,6 +42,7 @@ public:
 		double LandOnBallRollerTime_s;
 		double LandOnBallRollerSpeed;
 		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
+		double RollUpLoadSpeed;  //Speed to load ball usually 1.0 (or -1.0)
 		double RollerDriveScalar;  //Controls speed of controller while robot is driving
 		double ThreeBallRotation_deg;  //Controls the angle to retrieve 3rd ball
 		double ThreeBallDistance_ft;  //This is slightly more than FirstMove since there is an angle
