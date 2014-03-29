@@ -614,6 +614,10 @@ void FRC_2014_Robot::SetCameraLED(bool on)
 {
 	m_RobotControl->UpdateVoltage(eCameraLED,on?1.0:0.0);
 }
+bool FRC_2014_Robot::GetCatapultLimit() const
+{
+	return m_RobotControl->GetBoolSensorState(eCatapultLimit);
+}
 
 void FRC_2014_Robot::SetLowGear(bool on) 
 {
@@ -1315,6 +1319,8 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				else
 				{
 					m_Status=m_GoalMoveToPosition->Process(dTime_s);  //just pass through let it determine when its done
+					if (m_Robot.GetCatapultLimit())
+						m_Status=eCompleted;
 				}
 				return m_Status;
 			}
