@@ -860,6 +860,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		auton.FirstMove_ft=2.0;
 		auton.SecondMove_ft=4.0;
 		auton.SecondBallRollerTime_s=0.500;  //wishful thinking
+		auton.RollUpLoadSpeed=1.0;
 		auton.LandOnBallRollerTime_s=0.500;
 		auton.LandOnBallRollerSpeed=1.0;
 		auton.RollerDriveScalar=0.5;  //WAG
@@ -961,10 +962,10 @@ void FRC_2014_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 	if (ShowParameters)
 	{
 		const char * const SmartNames[]={"first_move_ft",	"second_move_ft",	"land_on_ball_roller_time",
-			"land_on_ball_roller_speed",	"second_ball_roller_time",		"roller_drive_speed",
+			"land_on_ball_roller_speed",	"load_ball_roller_speed",	"second_ball_roller_time",		"roller_drive_speed",
 			"third_ball_angle_deg",			"third_ball_distance_ft"};
 		double * const SmartVariables[]={&FirstMove_ft,&SecondMove_ft,&LandOnBallRollerTime_s,
-			&LandOnBallRollerSpeed,&SecondBallRollerTime_s,&RollerDriveScalar,
+			&LandOnBallRollerSpeed,&RollUpLoadSpeed,&SecondBallRollerTime_s,&RollerDriveScalar,
 			&ThreeBallRotation_deg,&ThreeBallDistance_ft};
 		for (size_t i=0;i<_countof(SmartNames);i++)
 		try
@@ -1098,7 +1099,9 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				err = script.GetField("land_on_ball_roller_speed", NULL, NULL,&fTest);
 				if (!err)
 					auton.LandOnBallRollerSpeed=fTest;
-
+				err = script.GetField("load_ball_roller_speed", NULL, NULL,&fTest);
+				if (!err)
+					auton.RollUpLoadSpeed=fTest;
 				err = script.GetField("second_ball_roller_time", NULL, NULL,&fTest);
 				if (!err)
 					auton.SecondBallRollerTime_s=fTest;
@@ -1495,7 +1498,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				//have to wait at all
 				AddSubgoal(new WaitForHot(m_Parent));
 				//roll up the ball second ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//This may need to be disabled... it all depends on how long it takes to load and shoot
@@ -1531,7 +1534,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				//fire 3rd ball
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//load up third ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				//Fire second ball if not fired
 				if (m_AutonProps.IsSupportingHotSpot)
 					AddSubgoal(new Fire_Conditional(m_Parent,true));
@@ -1556,7 +1559,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				//Quickly get state of the hot (doesn't matter whether or not we support it)
 				AddSubgoal(new ProbeForHot(m_Parent,0.150));  //I shouldn't need to wait long here
 				//roll up the ball second ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
@@ -1593,7 +1596,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ThreeBallDistance_ft,m_AutonProps.RollerDriveScalar));
 
 				//load up third ball (doing it before moving back avoids the need to turn with the ball on the floor)
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				//Note this first turning is while the intake goes down
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
@@ -1612,7 +1615,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				//The ball is loaded and will fire... 
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//roll up the ball second ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,1.0,m_AutonProps.SecondBallRollerTime_s));
+				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
