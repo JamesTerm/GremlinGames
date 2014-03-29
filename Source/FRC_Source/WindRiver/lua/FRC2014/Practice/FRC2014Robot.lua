@@ -15,7 +15,7 @@ Catapult_PotentiometerToArmRatio=1/3
 Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
 --TODO get max speed of bag motor under load
 --Catapult_MaxSpeed=(8000.0/60.0) * Pi2
-Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125
+Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125 * 0.15
 
 Intake_ArmToMotorRatio=1.0
 Intake_MotorToArmRatio=1.0/Intake_ArmToMotorRatio
@@ -39,7 +39,8 @@ MainRobot = {
 	--Version 1.5 is 1.3 merge plus preliminary draft with corrected gear ratios, low gear fixes in torque and gain assist
 	--				as well as added tank strafe axis assignments
 	--Version 1.6 Drive gear rates and encoders calibrated
-	version = 1.6;
+	--Version 1.7 Adjusted for 2 ball auton... and calibrated winch
+	version = 1.7;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -187,11 +188,12 @@ MainRobot = {
 		{
 			first_move_ft=2,
 			second_move_ft=4,
-			support_hotspot='y',
-			land_on_ball_roller_speed=0.75;
-			land_on_ball_roller_time=0.5,
-			second_ball_roller_time=1,
-			roller_drive_speed=0.75,
+			support_hotspot='n',
+			land_on_ball_roller_speed=-1.0;
+			land_on_ball_roller_time=1.0,
+			second_ball_roller_time=1.5,
+			load_ball_roller_speed = -1.0,
+			roller_drive_speed=-1.0,
 			third_ball_angle_deg=45,
 			-- (x / cos(theta)) should be same distance back, use negative to come backwards
 			third_ball_distance_ft=-(2/math.cos(45 * Deg2Rad)),
@@ -221,7 +223,7 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
+			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
@@ -384,7 +386,7 @@ MainRobot = {
 			Joystick_SetLeft_XAxis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Joystick_FieldCentric_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_FieldCentric_YAxis = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
