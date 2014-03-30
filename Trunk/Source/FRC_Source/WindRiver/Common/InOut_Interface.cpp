@@ -40,8 +40,8 @@ using namespace Framework::Base;
 /***********************************************************************************************************************************/
 
 
-Encoder2::Encoder2(UINT32 aChannel, UINT32 bChannel, bool reverseDirection, EncodingType encodingType) : Encoder(aChannel,bChannel,reverseDirection,encodingType),
-		m_LastDistance(0.0)
+Encoder2::Encoder2(UINT8 ModuleNumber,UINT32 aChannel, UINT32 bChannel, bool reverseDirection, EncodingType encodingType) : 
+	Encoder(ModuleNumber,aChannel,ModuleNumber,bChannel,reverseDirection,encodingType),m_LastDistance(0.0)
 {
 }
 
