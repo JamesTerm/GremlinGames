@@ -173,7 +173,7 @@ void Tank_Robot::SetIsAutonomous(bool IsAutonomous)
 	m_IsAutonomous=IsAutonomous;  //this is important (to disable joystick controls etc)
 	//We only explicitly turn them on... not off (that will be configured else where)
 	if (IsAutonomous)
-		SetUseEncoders(true);
+		SetUseEncoders(!m_TankRobotProps.Auton_IsOpen);
 }
 
 bool Tank_Robot::GetUseAgressiveStop() const
@@ -607,6 +607,7 @@ Tank_Robot_Properties::Tank_Robot_Properties()
 	props.VoltageScalar_Left=props.VoltageScalar_Right=1.0;  //May need to be reversed
 	props.Feedback_DiplayRow=(size_t)-1;  //Only assigned to a row during calibration of feedback sensor
 	props.IsOpen=true;  //Always true by default until control is fully functional
+	props.Auton_IsOpen=true;  //Always true by default until control is fully functional
 	props.HasEncoders=true;  //no harm in having passive reading of them
 	props.PID_Console_Dump=false;  //Always false unless you want to analyze PID (only one system at a time!)
 	props.UseAggressiveStop=false;  //This is usually in coast for most cases from many teams
@@ -717,6 +718,25 @@ void Tank_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TankRobotProps.IsOpen=true;
 			m_TankRobotProps.HasEncoders=false;
 		}
+
+		//The way this logic is setup is as follows: 
+		//A. Case where both teleop and auton drive with encoders
+		//B. Case where only auton drives with encoders
+		//C. Case where neither can drive with encoders (e.g. mechanically not possible)
+		//-------------------- there is no case where just teleop drives with encoders!
+		//In case A and C the LUA need not specify auton_is_closed, and then it simply assigns the property to the teleop property
+		//In case B it will be need to be specified
+		err = script.GetField("auton_is_closed",&sTest,NULL,NULL);
+		if (!err)
+		{
+			if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))
+				m_TankRobotProps.Auton_IsOpen=true;
+			else
+				m_TankRobotProps.Auton_IsOpen=false;
+		}
+		else
+			m_TankRobotProps.Auton_IsOpen=m_TankRobotProps.IsOpen;
+
 		err = script.GetField("show_pid_dump",&sTest,NULL,NULL);
 		if (!err)
 		{
