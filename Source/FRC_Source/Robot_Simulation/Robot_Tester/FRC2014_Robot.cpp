@@ -1508,10 +1508,14 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//This may need to be disabled... it all depends on how long it takes to load and shoot
+				#if 0
 				if (m_AutonProps.IsSupportingHotSpot)
 					AddSubgoal(new WaitForHot(m_Parent));
 				else
 					AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
+				#else
+				AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
+				#endif
 
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
