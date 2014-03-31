@@ -220,6 +220,15 @@ void UI_Controller::FieldCentricDrive::FieldCentricDrive_Mode_Enable()
 	m_FieldCentricDrive_Mode=true;
 }
 
+void UI_Controller::FieldCentricDrive::FieldCentricDrive_Mode_Enable(double Value) 
+{
+	if (Value > m_XAxisEnableThreshold)
+	{
+		if (!m_FieldCentricDrive_Mode)
+			FieldCentricDrive_Mode_Enable();
+	}
+}
+
 void UI_Controller::FieldCentricDrive::BindAdditionalEventControls(bool Bind,Base::EventMap *em,IEvent::HandlerList &ehl)
 {
 	if (Bind)
@@ -227,12 +236,14 @@ void UI_Controller::FieldCentricDrive::BindAdditionalEventControls(bool Bind,Bas
 		m_XAxisEnableThreshold=m_pParent->m_ship->GetShipProperties().Get_ShipControls().GetLUA_ShipControls_Props().FieldCentricDrive_XAxisEnableThreshold;
 		em->EventValue_Map["Joystick_FieldCentric_XAxis"].Subscribe(ehl,*this, &FieldCentricDrive::UpdatePosX);
 		em->EventValue_Map["Joystick_FieldCentric_YAxis"].Subscribe(ehl,*this, &FieldCentricDrive::UpdatePosY);
+		em->EventValue_Map["FieldCentric_EnableValue"].Subscribe(ehl,*this, &FieldCentricDrive::FieldCentricDrive_Mode_Enable);
 		em->Event_Map["FieldCentric_Enable"].Subscribe(ehl,*this, &FieldCentricDrive::FieldCentricDrive_Mode_Enable);
 	}
 	else
 	{
 		em->EventValue_Map["Joystick_FieldCentric_XAxis"].Remove(*this, &FieldCentricDrive::UpdatePosX);
 		em->EventValue_Map["Joystick_FieldCentric_YAxis"].Remove(*this, &FieldCentricDrive::UpdatePosY);
+		em->EventValue_Map["FieldCentric_EnableValue"].Remove(*this, &FieldCentricDrive::FieldCentricDrive_Mode_Enable);
 		em->Event_Map["FieldCentric_Enable"].Remove(*this, &FieldCentricDrive::FieldCentricDrive_Mode_Enable);
 	}
 }
