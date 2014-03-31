@@ -15,7 +15,7 @@ Catapult_PotentiometerToArmRatio=1/3
 Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
 --TODO get max speed of bag motor under load
 --Catapult_MaxSpeed=(8000.0/60.0) * Pi2
-Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125
+Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125 * 0.15
 
 Intake_ArmToMotorRatio=1.0
 Intake_MotorToArmRatio=1.0/Intake_ArmToMotorRatio
@@ -331,6 +331,7 @@ MainRobot = {
 			tank_drive =
 			{
 				is_closed=0,
+				--auton_is_closed=1,
 				show_pid_dump='no',
 				ds_display_row=-1,
 				--We must NOT use I or D for low gear, we must keep it very responsive
