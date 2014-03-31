@@ -33,10 +33,6 @@ struct Tank_Robot_Props
 	//double TankSteering_Tolerance; //used to help controls drive straight
 	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
-	bool IsOpen,HasEncoders;  //This property only applies in teleop
-	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
-	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
-	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.
 	//Note: I cannot imagine one side ever needing to be different from another (PID can solve if that is true)
 	//Currently supporting 4 terms in polynomial equation
 	PolynomialEquation_forth_Props Voltage_Terms;  //Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
@@ -49,11 +45,19 @@ struct Tank_Robot_Props
 	//This scalars work with the local force directly to be added to the voltage
 	double ForwardLinearGainAssist_Scalar;
 	//double RightLinearGainAssist_Scalar;  --until we have a take drive that can strafe, this is not needed
+	double Positive_DeadZone_Left,Positive_DeadZone_Right;
+	double Negative_DeadZone_Left,Negative_DeadZone_Right;  //These must be in negative form
+
+	bool IsOpen;  //This property only applies in teleop
+	bool Auton_IsOpen;  //And this property only applies in autonomous
+	bool HasEncoders;  //This is set depending on whether or not is_closed was added... its use-case is currently only used for pid dump flood control
+	bool PID_Console_Dump;  //This will dump the console PID info (Only active if __DebugLUA__ is defined)
+	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
+	bool UseAggressiveStop;  //If true, will use adverse force to assist in stopping.
+
 	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
 	//for instance the hiking viking has both of these false, while the admiral has the right encoder reversed
 	bool LeftEncoderReversed,RightEncoderReversed;
-	double Positive_DeadZone_Left,Positive_DeadZone_Right;
-	double Negative_DeadZone_Left,Negative_DeadZone_Right;  //These must be in negative form
 };
 
 class Tank_Robot_UI;
