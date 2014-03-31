@@ -144,7 +144,9 @@ public:
 		//Now to set up our goal
 		FRC_2014_Robot *Robot=m_Manager.GetRobot();  //we can always cast down
 		Robot->SetIsAutonomous(true);
-		m_Manager.GetRobot()->SetUseEncoders(false);
+		//This was only needed because we couldn't script case where both auton and teleop didn't have encoders
+		//Keep here if for some reason it doesn't work properly
+		//m_Manager.GetRobot()->SetUseEncoders(false);
 
 		//assert(ship);
 		Goal *oldgoal=Robot->ClearGoal();
