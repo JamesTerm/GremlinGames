@@ -459,6 +459,7 @@ MainRobot = {
 			--IntakeRollers_Grip = {type="joystick_button", key=?, on_off=true},
 			--IntakeRollers_Squirt = {type="joystick_button", key=?, on_off=true},
 			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--FieldCentric_EnableValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
