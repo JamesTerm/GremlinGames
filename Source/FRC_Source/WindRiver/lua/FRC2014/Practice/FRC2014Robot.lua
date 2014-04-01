@@ -40,7 +40,9 @@ MainRobot = {
 	--				as well as added tank strafe axis assignments
 	--Version 1.6 Drive gear rates and encoders calibrated
 	--Version 1.7 Adjusted for 2 ball auton... and calibrated winch
-	version = 1.71;
+	--Version 1.71 Adjusted deadzone on rotation, zero'd voltage (matches competition bot), added field centric trigger
+	--Version 1.72 Added scoot back property
+	version = 1.72;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -190,8 +192,9 @@ MainRobot = {
 			first_move_ft=2,
 			second_move_ft=4,
 			support_hotspot='n',
-			land_on_ball_roller_speed=-1.0;
+			land_on_ball_roller_speed=-1.0,
 			land_on_ball_roller_time=1.0,
+			scoot_back_ft=0.75,
 			second_ball_roller_time=1.5,
 			load_ball_roller_speed = -1.0,
 			roller_drive_speed=-1.0,
