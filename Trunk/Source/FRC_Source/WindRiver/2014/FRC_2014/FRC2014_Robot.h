@@ -41,6 +41,7 @@ public:
 		double SecondMove_ft;  //This one is after the shooting to ensure it has moved far enough
 		double LandOnBallRollerTime_s;
 		double LandOnBallRollerSpeed;
+		double ScootBack_ft; //When landing on ball it will need to slightly scoot back before driving forward
 		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
 		double RollUpLoadSpeed;  //Speed to load ball usually 1.0 (or -1.0)
 		double RollerDriveScalar;  //Controls speed of controller while robot is driving
