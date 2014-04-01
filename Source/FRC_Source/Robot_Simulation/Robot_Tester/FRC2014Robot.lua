@@ -185,6 +185,7 @@ MainRobot = {
 			support_hotspot='y',
 			land_on_ball_roller_speed=-0.75;
 			land_on_ball_roller_time=0.5,
+			scoot_back_ft=0.75,
 			second_ball_roller_time=1,
 			load_ball_roller_speed=-1,
 			roller_drive_speed=-0.75,
