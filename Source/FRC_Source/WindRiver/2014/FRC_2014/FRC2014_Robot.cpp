@@ -863,6 +863,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.FirstMove_ft=2.0;
 		auton.SecondMove_ft=4.0;
+		auton.ScootBack_ft=0.5;
 		auton.SecondBallRollerTime_s=0.500;  //wishful thinking
 		auton.RollUpLoadSpeed=1.0;
 		auton.LandOnBallRollerTime_s=0.500;
@@ -966,11 +967,11 @@ void FRC_2014_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 	if (ShowParameters)
 	{
 		const char * const SmartNames[]={"first_move_ft",	"second_move_ft",	"land_on_ball_roller_time",
-			"land_on_ball_roller_speed",	"load_ball_roller_speed",	"second_ball_roller_time",		"roller_drive_speed",
-			"third_ball_angle_deg",			"third_ball_distance_ft"};
+			"land_on_ball_roller_speed",	"load_ball_roller_speed",	"scoot_back_ft",	"second_ball_roller_time",		
+			"roller_drive_speed",			"third_ball_angle_deg",		"third_ball_distance_ft"};
 		double * const SmartVariables[]={&FirstMove_ft,&SecondMove_ft,&LandOnBallRollerTime_s,
-			&LandOnBallRollerSpeed,&RollUpLoadSpeed,&SecondBallRollerTime_s,&RollerDriveScalar,
-			&ThreeBallRotation_deg,&ThreeBallDistance_ft};
+			&LandOnBallRollerSpeed,&RollUpLoadSpeed,&ScootBack_ft,&SecondBallRollerTime_s,
+			&RollerDriveScalar,&ThreeBallRotation_deg,&ThreeBallDistance_ft};
 		for (size_t i=0;i<_countof(SmartNames);i++)
 		try
 		{
@@ -1097,6 +1098,9 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				err = script.GetField("second_move_ft", NULL, NULL,&fTest);
 				if (!err)
 					auton.SecondMove_ft=fTest;
+				err = script.GetField("scoot_back_ft", NULL, NULL,&fTest);
+				if (!err)
+					auton.ScootBack_ft=fTest;
 				err = script.GetField("land_on_ball_roller_time", NULL, NULL,&fTest);
 				if (!err)
 					auton.LandOnBallRollerTime_s=fTest;
@@ -1516,8 +1520,9 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				#else
 				AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
 				#endif
-
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft,m_AutonProps.RollerDriveScalar));
+				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
+				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
+				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
@@ -1573,7 +1578,9 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft,m_AutonProps.RollerDriveScalar));
+				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
+				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
+				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
@@ -1629,7 +1636,9 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft,m_AutonProps.RollerDriveScalar));
+				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
+				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
+				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
