@@ -639,7 +639,7 @@ void UI_Controller::Ship_Turn(double dir,bool UseHeadingSpeed)
 	m_Ship_JoyMouse_rotAcc_rad_s=(UseHeadingSpeed?dir*m_ship->GetHeadingSpeed():dir)*m_ship->GetCameraRestraintScaler();
 }
 
-#define __TWEAK180__
+#undef __TWEAK180__
 void UI_Controller::Ship_Turn(Directions dir)
 {
 	switch (dir)
