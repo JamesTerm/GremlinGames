@@ -429,6 +429,7 @@ FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interfac
 	//ensure the variables are initialized before calling get
 	SmartDashboard::PutNumber("X Position",0.0);
 	SmartDashboard::PutNumber("Y Position",0.0);
+	SmartDashboard::PutBoolean("Main_Is_Targeting",false);
 	//Note: The processing vision is setup to use these same variables for both tracking processes (i.e. front and rear camera) we should only need to be tracking one of them at a time
 	//We may want to add a prefix window to identify which window they are coming from, but this may not be necessary.
 }
@@ -598,6 +599,8 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		#endif
 	}
 
+	bool LED_OnState=SmartDashboard::GetBoolean("Main_Is_Targeting");
+	m_RobotControl->UpdateVoltage(eCameraLED,LED_OnState?1.0:0.0);
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -610,10 +613,6 @@ FRC_2014_Robot_Props::Autonomous_Properties &FRC_2014_Robot::GetAutonProps()
 	return m_RobotProps.GetFRC2014RobotProps_rw().Autonomous_Props;
 }
 
-void FRC_2014_Robot::SetCameraLED(bool on)
-{
-	m_RobotControl->UpdateVoltage(eCameraLED,on?1.0:0.0);
-}
 bool FRC_2014_Robot::GetCatapultLimit() const
 {
 	return m_RobotControl->GetBoolSensorState(eCatapultLimit);
@@ -1363,7 +1362,6 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			{
 				m_Status=eActive;
 				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
-				m_Robot.SetCameraLED(true);
 			}
 			virtual Goal_Status Process(double dTime_s)
 			{
@@ -1387,7 +1385,6 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			virtual void Terminate() 
 			{
 				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
-				m_Robot.SetCameraLED(false);
 			}
 		};
 
