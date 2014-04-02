@@ -15,7 +15,7 @@ Catapult_PotentiometerToArmRatio=1/3
 Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
 --TODO get max speed of bag motor under load
 --Catapult_MaxSpeed=(8000.0/60.0) * Pi2
-Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125
+Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125 * 0.15
 
 Intake_ArmToMotorRatio=1.0
 Intake_MotorToArmRatio=1.0/Intake_ArmToMotorRatio
@@ -26,8 +26,8 @@ g_wheel_diameter_in=4   --This will determine the correct distance try to make a
 WheelBase_Width_In=26.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=10  --was 9.625
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-HighGearSpeed = (873.53 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  --RPM's from Parker
-LowGearSpeed  = (403.92 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters
+HighGearSpeed = (873.53 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.85 --RPM's from Parker
+LowGearSpeed  = (403.92 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9
 Drive_MaxAccel=5
 skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
@@ -122,7 +122,7 @@ MainRobot = {
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		left_max_offset=0.0 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-		encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
@@ -182,13 +182,13 @@ MainRobot = {
 		{
 			first_move_ft=2,
 			second_move_ft=4,
-			support_hotspot='y',
-			land_on_ball_roller_speed=-0.75;
-			land_on_ball_roller_time=0.5,
-			scoot_back_ft=0.75,
-			second_ball_roller_time=1,
-			load_ball_roller_speed=-1,
-			roller_drive_speed=-0.75,
+			support_hotspot='n',
+			land_on_ball_roller_speed=-1.0,
+			land_on_ball_roller_time=1.0,
+			scoot_back_ft=0.0,
+			second_ball_roller_time=1.5,
+			load_ball_roller_speed = -1.0,
+			roller_drive_speed=-1.0,
 			third_ball_angle_deg=45,
 			-- (x / cos(theta)) should be same distance back, use negative to come backwards
 			third_ball_distance_ft=-(2/math.cos(45 * Deg2Rad)),
@@ -217,7 +217,7 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
@@ -342,7 +342,7 @@ MainRobot = {
 				--latency=0.300,
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.4,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+				encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 				voltage_multiply=1.0,				--May be reversed using -1.0
 				curve_voltage=
 				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},

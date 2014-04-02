@@ -429,6 +429,7 @@ FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interfac
 	//ensure the variables are initialized before calling get
 	SmartDashboard::PutNumber("X Position",0.0);
 	SmartDashboard::PutNumber("Y Position",0.0);
+	SmartDashboard::PutBoolean("Main_Is_Targeting",false);
 	//Note: The processing vision is setup to use these same variables for both tracking processes (i.e. front and rear camera) we should only need to be tracking one of them at a time
 	//We may want to add a prefix window to identify which window they are coming from, but this may not be necessary.
 }
@@ -598,6 +599,8 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 		#endif
 	}
 
+	bool LED_OnState=SmartDashboard::GetBoolean("Main_Is_Targeting");
+	m_RobotControl->UpdateVoltage(eCameraLED,LED_OnState?1.0:0.0);
 }
 
 const FRC_2014_Robot_Properties &FRC_2014_Robot::GetRobotProps() const
@@ -610,10 +613,6 @@ FRC_2014_Robot_Props::Autonomous_Properties &FRC_2014_Robot::GetAutonProps()
 	return m_RobotProps.GetFRC2014RobotProps_rw().Autonomous_Props;
 }
 
-void FRC_2014_Robot::SetCameraLED(bool on)
-{
-	m_RobotControl->UpdateVoltage(eCameraLED,on?1.0:0.0);
-}
 bool FRC_2014_Robot::GetCatapultLimit() const
 {
 	return m_RobotControl->GetBoolSensorState(eCatapultLimit);
@@ -1178,7 +1177,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 		private:
 			FRC_2014_Goals_Impl *m_Parent;
 		public:
-			goal_clock(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent) {	m_Status=eActive;	}
+			goal_clock(FRC_2014_Goals_Impl *Parent)	: m_Parent(Parent) {	m_Status=eInactive;	}
 			void Activate()  {	m_Status=eActive;	}
 			Goal_Status Process(double dTime_s)
 			{
@@ -1363,7 +1362,6 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			{
 				m_Status=eActive;
 				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
-				m_Robot.SetCameraLED(true);
 			}
 			virtual Goal_Status Process(double dTime_s)
 			{
@@ -1387,7 +1385,6 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 			virtual void Terminate() 
 			{
 				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
-				m_Robot.SetCameraLED(false);
 			}
 		};
 
@@ -1487,6 +1484,10 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 
 		class TwoBallAuton : public Generic_CompositeGoal, public SetUpProps
 		{
+		protected:
+			virtual bool IsThreeBall() {return false;}
+			//inject third ball goals here
+			virtual void Add_GetThirdBallGoals() {}
 		public:
 			TwoBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
@@ -1495,6 +1496,11 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				//Note: these are reversed
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.SecondMove_ft));
 				AddSubgoal(new Intake_Deploy(m_Parent,false));
+
+				//As it stands... it might be possible that time runs out before the catapult can complete... for safety reasons I am disabling
+				//this goal, but we may be able to enable it if we test that we gained more time via limit switch... there is no harm in
+				//keeping it disabled just to be safe.
+				#if 0
 				//multi goal these... we want to wait at least 500ms but still start resetting the catapult
 				{
 					MultitaskGoal *NewMultiTaskGoal=new MultitaskGoal(false);
@@ -1502,116 +1508,62 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					NewMultiTaskGoal->AddGoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
 					AddSubgoal(NewMultiTaskGoal);
 				}
+				#else
+				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
+				#endif
+				//This is redundant as the default is to do nothing, but makes it more readable
+				if (IsThreeBall())
+					Add_GetThirdBallGoals();
+
 				AddSubgoal(new Fire_Sequence(m_Parent));
-				//This one is here in case we decide to disable the supporting hot spot... in which case if the hot spot is on the
-				//last 5 seconds the second ball would ensure and wait until afterwards to shoot.  Other than this case it shouldn't
-				//have to wait at all
-				AddSubgoal(new WaitForHot(m_Parent));
+				if (!IsThreeBall())
+				{
+					//This one is here in case we decide to disable the supporting hot spot... in which case if the hot spot is on the
+					//last 5 seconds the second ball would ensure and wait until afterwards to shoot.  Other than this case it shouldn't
+					//have to wait at all
+					AddSubgoal(new WaitForHot(m_Parent));
+				}
+				AddSubgoal(new Goal_Wait(0.500)); //give time for ball to settle
 				//roll up the ball second ball
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//This may need to be disabled... it all depends on how long it takes to load and shoot
 				#if 0
-				if (m_AutonProps.IsSupportingHotSpot)
-					AddSubgoal(new WaitForHot(m_Parent));
-				else
-					AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
+				if (!IsThreeBall())
+				{
+					if (m_AutonProps.IsSupportingHotSpot)
+						AddSubgoal(new WaitForHot(m_Parent));
+					else
+						AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
+				}
 				#else
-				AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
+				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
 				#endif
 				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
+				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
 				m_Status=eActive;
 			}
 		};
 
-		class ThreeBallAuton : public Generic_CompositeGoal, public SetUpProps
+		class ThreeBallAuton : public TwoBallAuton
 		{
 		public:
-			ThreeBallAuton(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
-			virtual void Activate()
+			ThreeBallAuton(FRC_2014_Goals_Impl *Parent)	: TwoBallAuton(Parent) {	m_Status=eActive;	}
+		protected:
+			virtual bool IsThreeBall() {return true;}
+			virtual void Add_GetThirdBallGoals()
 			{
-				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				//Note: these are reversed
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.SecondMove_ft));
-				AddSubgoal(new Intake_Deploy(m_Parent,false));
-				//multi goal these... we want to wait at least 500ms but still start resetting the catapult
-				{
-					MultitaskGoal *NewMultiTaskGoal=new MultitaskGoal(false);
-					NewMultiTaskGoal->AddGoal(new Reset_Catapult(m_Parent));
-					NewMultiTaskGoal->AddGoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
-					AddSubgoal(NewMultiTaskGoal);
-				}
-				//fire 3rd ball
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				//load up third ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
-				//Fire second ball if not fired
-				if (m_AutonProps.IsSupportingHotSpot)
-					AddSubgoal(new Fire_Conditional(m_Parent,true));
-
-				//Rotate back
-				AddSubgoal(new Goal_Ship_RotateToRelativePosition(m_Robot.GetController(),DEG_2_RAD(-m_AutonProps.ThreeBallRotation_deg)));
-				//Move back
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ThreeBallDistance_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
-				AddSubgoal(new Intake_Deploy(m_Parent,true));
-				//Move to it
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.ThreeBallDistance_ft));
-				//Rotate to it
-				AddSubgoal(new Goal_Ship_RotateToRelativePosition(m_Robot.GetController(),DEG_2_RAD(m_AutonProps.ThreeBallRotation_deg)));
-				AddSubgoal(new Intake_Deploy(m_Parent,false));
-				//Go back to get third ball-------
-				//The ball is loaded and may fire... or it may remain in the catapult to get third ball
-				if (m_AutonProps.IsSupportingHotSpot)
-					AddSubgoal(new Fire_Conditional(m_Parent));
-				else
-					AddSubgoal(new Fire_Sequence(m_Parent));
-				//Quickly get state of the hot (doesn't matter whether or not we support it)
-				AddSubgoal(new ProbeForHot(m_Parent,0.150));  //I shouldn't need to wait long here
-				//roll up the ball second ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
-				AddSubgoal(new Reset_Catapult(m_Parent,true));
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
-				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
-				AddSubgoal(new Intake_Deploy(m_Parent,true));
-				m_Status=eActive;
-			}
-		};
-
-		//This version is a bit more stable in that it has no hot spot waiting, and will pick up third ball before moving it... in case turning with the ball doesn't work
-		class ThreeBallAuton_V2 : public Generic_CompositeGoal, public SetUpProps
-		{
-		public:
-			ThreeBallAuton_V2(FRC_2014_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
-			virtual void Activate()
-			{
-				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				//Note: these are reversed
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.SecondMove_ft));
-				AddSubgoal(new Intake_Deploy(m_Parent,false));
-				//multi goal these... we want to wait at least 500ms but still start resetting the catapult
-				{
-					MultitaskGoal *NewMultiTaskGoal=new MultitaskGoal(false);
-					NewMultiTaskGoal->AddGoal(new Reset_Catapult(m_Parent));
-					NewMultiTaskGoal->AddGoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
-					AddSubgoal(NewMultiTaskGoal);
-				}
 				//fire 3rd ball
 				AddSubgoal(new Fire_Sequence(m_Parent));
 				//Rotate back
 				AddSubgoal(new Goal_Ship_RotateToRelativePosition(m_Robot.GetController(),DEG_2_RAD(-m_AutonProps.ThreeBallRotation_deg)));
 				//Move back
 				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ThreeBallDistance_ft,m_AutonProps.RollerDriveScalar));
-
+				AddSubgoal(new Goal_Wait(0.500)); //give time for ball to settle
 				//load up third ball (doing it before moving back avoids the need to turn with the ball on the floor)
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				//Note this first turning is while the intake goes down
@@ -1629,20 +1581,6 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(new Goal_Ship_RotateToRelativePosition(m_Robot.GetController(),DEG_2_RAD(m_AutonProps.ThreeBallRotation_deg)));
 				AddSubgoal(new Intake_Deploy(m_Parent,false));
 				//Go back to get third ball-------
-				//The ball is loaded and will fire... 
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				//roll up the ball second ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
-				AddSubgoal(new Reset_Catapult(m_Parent,true));
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
-				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
-				AddSubgoal(new Intake_Deploy(m_Parent,true));
-				AddSubgoal(new Goal_Wait(0.250));  //avoid motion shot
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				m_Status=eActive;
 			}
 		};
 
@@ -1713,7 +1651,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				m_Primer.AddGoal(new TwoBallAuton(this));
 				break;
 			case eThreeBall:
-				m_Primer.AddGoal(new ThreeBallAuton_V2(this));
+				m_Primer.AddGoal(new ThreeBallAuton(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250

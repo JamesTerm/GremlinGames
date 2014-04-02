@@ -283,7 +283,6 @@ class FRC_2014_Robot : public Tank_Robot
 		const FRC_2014_Robot_Properties &GetRobotProps() const;
 		FRC_2014_Robot_Props::Autonomous_Properties &GetAutonProps();
 		Ship_1D &GetWinch() {return m_Winch;}
-		void SetCameraLED (bool on);
 		bool GetCatapultLimit() const;
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
