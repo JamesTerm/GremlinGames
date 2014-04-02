@@ -1638,9 +1638,10 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
 				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
+				AddSubgoal(new Goal_Wait(0.250));  //avoid motion shot
+				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
 				m_Status=eActive;
 			}
 		};
