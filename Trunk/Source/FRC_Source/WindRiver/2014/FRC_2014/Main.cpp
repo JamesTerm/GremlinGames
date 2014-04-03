@@ -123,7 +123,7 @@ class SetUp_Manager
 };
 
 
-//This is the main robot class used for FRC 2011 
+//This is the main robot class used for FRC
 //The SimpleRobot class is the base of a robot application that will automatically call your
  //Autonomous and OperatorControl methods at the right time as controlled by the switches on the driver station or the field controls.
 class Robot_Main : public SimpleRobot
@@ -213,7 +213,7 @@ public:
 				fclose(test);
 			}
 			else
-				printf("failes to open\n");
+				printf("failed to open\n");
 			#endif
 			//Set Autonomous must happen before reset pos... as that will implicitly reload script and there are some checks for auton (like setting gears)
 			m_Manager.GetRobot()->SetIsAutonomous(false);
