@@ -38,6 +38,7 @@ public:
 	{
 		void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true
 		double FirstMove_ft; //Initial move before shooting (this one will need careful tuning)
+		double FirstMoveWait_s;  //Gives ball time to settle after moving
 		double SecondMove_ft;  //This one is after the shooting to ensure it has moved far enough
 		double LandOnBallRollerTime_s;
 		double LandOnBallRollerSpeed;
@@ -45,6 +46,7 @@ public:
 		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
 		double RollUpLoadSpeed;  //Speed to load ball usually 1.0 (or -1.0)
 		double RollerDriveScalar;  //Controls speed of controller while robot is driving
+		double LoadedBallWait_s;  //Gives ball time to settle after being loaded
 		double ThreeBallRotation_deg;  //Controls the angle to retrieve 3rd ball
 		double ThreeBallDistance_ft;  //This is slightly more than FirstMove since there is an angle
 		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)

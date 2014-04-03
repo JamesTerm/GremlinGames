@@ -861,6 +861,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 
 		FRC_2014_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.FirstMove_ft=2.0;
+		auton.FirstMoveWait_s=0.500;
 		auton.SecondMove_ft=4.0;
 		auton.ScootBack_ft=0.5;
 		auton.SecondBallRollerTime_s=0.500;  //wishful thinking
@@ -868,6 +869,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		auton.LandOnBallRollerTime_s=0.500;
 		auton.LandOnBallRollerSpeed=1.0;
 		auton.RollerDriveScalar=0.5;  //WAG
+		auton.LoadedBallWait_s=0.500;
 		auton.ThreeBallRotation_deg=45;
 		//In theory that would put it back to start shifted over
 		auton.ThreeBallDistance_ft=-1 * auton.FirstMove_ft/cos(DEG_2_RAD(auton.ThreeBallRotation_deg));
@@ -965,12 +967,12 @@ void FRC_2014_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 {
 	if (ShowParameters)
 	{
-		const char * const SmartNames[]={"first_move_ft",	"second_move_ft",	"land_on_ball_roller_time",
+		const char * const SmartNames[]={"first_move_ft",	"first_move_wait",	"second_move_ft",	"land_on_ball_roller_time",
 			"land_on_ball_roller_speed",	"load_ball_roller_speed",	"scoot_back_ft",	"second_ball_roller_time",		
-			"roller_drive_speed",			"third_ball_angle_deg",		"third_ball_distance_ft"};
-		double * const SmartVariables[]={&FirstMove_ft,&SecondMove_ft,&LandOnBallRollerTime_s,
+			"roller_drive_speed",	"loaded_ball_wait",		"third_ball_angle_deg",		"third_ball_distance_ft"};
+		double * const SmartVariables[]={&FirstMove_ft,&FirstMoveWait_s,&SecondMove_ft,&LandOnBallRollerTime_s,
 			&LandOnBallRollerSpeed,&RollUpLoadSpeed,&ScootBack_ft,&SecondBallRollerTime_s,
-			&RollerDriveScalar,&ThreeBallRotation_deg,&ThreeBallDistance_ft};
+			&RollerDriveScalar,&LoadedBallWait_s,&ThreeBallRotation_deg,&ThreeBallDistance_ft};
 		for (size_t i=0;i<_countof(SmartNames);i++)
 		try
 		{
@@ -1094,6 +1096,9 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				err = script.GetField("first_move_ft", NULL, NULL,&fTest);
 				if (!err)
 					auton.FirstMove_ft=fTest;
+				err = script.GetField("first_move_wait", NULL, NULL,&fTest);
+				if (!err)
+					auton.FirstMoveWait_s=fTest;
 				err = script.GetField("second_move_ft", NULL, NULL,&fTest);
 				if (!err)
 					auton.SecondMove_ft=fTest;
@@ -1115,6 +1120,9 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				err = script.GetField("roller_drive_speed", NULL, NULL,&fTest);
 				if (!err)
 					auton.RollerDriveScalar=fTest;
+				err = script.GetField("loaded_ball_wait", NULL, NULL,&fTest);
+				if (!err)
+					auton.LoadedBallWait_s=fTest;
 				err = script.GetField("third_ball_angle_deg", NULL, NULL,&fTest);
 				if (!err)
 					auton.ThreeBallRotation_deg=fTest;
@@ -1450,8 +1458,8 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					//We can wait for hot spot detection even if it is not supported
 					AddSubgoal(new WaitForHot(m_Parent));
 				}
-				else
-					AddSubgoal(new Goal_Wait(0.500));  //avoid motion shot
+
+				AddSubgoal(new Goal_Wait(m_AutonProps.FirstMove_ft));  //avoid motion shot
 
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
@@ -1523,7 +1531,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					//have to wait at all
 					AddSubgoal(new WaitForHot(m_Parent));
 				}
-				AddSubgoal(new Goal_Wait(0.500)); //give time for ball to settle
+				AddSubgoal(new Goal_Wait(m_AutonProps.LoadedBallWait_s)); //give time for ball to settle
 				//roll up the ball second ball
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				AddSubgoal(new Reset_Catapult(m_Parent,true));
@@ -1538,7 +1546,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 						AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
 				}
 				#else
-				AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
+				AddSubgoal(new Goal_Wait(m_AutonProps.FirstMoveWait_s));  //avoid motion shot
 				#endif
 				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
@@ -1563,7 +1571,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 				AddSubgoal(new Goal_Ship_RotateToRelativePosition(m_Robot.GetController(),DEG_2_RAD(-m_AutonProps.ThreeBallRotation_deg)));
 				//Move back
 				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ThreeBallDistance_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(new Goal_Wait(0.500)); //give time for ball to settle
+				AddSubgoal(new Goal_Wait(m_AutonProps.LoadedBallWait_s)); //give time for ball to settle
 				//load up third ball (doing it before moving back avoids the need to turn with the ball on the floor)
 				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
 				//Note this first turning is while the intake goes down
