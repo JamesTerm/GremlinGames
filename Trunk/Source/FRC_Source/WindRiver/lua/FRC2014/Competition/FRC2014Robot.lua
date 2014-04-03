@@ -40,7 +40,10 @@ MainRobot = {
 	--				as well as added tank strafe axis assignments
 	--Version 1.6 Drive gear rates and encoders calibrated
 	--Version 1.7 Adjusted for 2 ball auton... and calibrated winch
-	version = 1.7;
+	--Version 1.71 Adjusted deadzone on rotation, zero'd voltage (matches competition bot), added field centric trigger
+	--Version 1.72 Added scoot back property, 1.73 good 2 ball auton settings confirmed on Tuesday practice... disabled limit on winch
+	--Version 1.74 Added auton wait for ball to settle for both the initial move and the loading... first initial merge with competition bot for lonestar
+	version = 1.74;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -126,7 +129,7 @@ MainRobot = {
 		latency=0.0,
 		heading_latency=0.0,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
-		--left_max_offset=-0.4 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
+		--left_max_offset=-0.7 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 		left_max_offset=0.0 , right_max_offset=0.0,
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -188,13 +191,16 @@ MainRobot = {
 		auton =
 		{
 			first_move_ft=2,
+			first_move_wait=0.600,
 			second_move_ft=4,
 			support_hotspot='n',
-			land_on_ball_roller_speed=-1.0;
+			land_on_ball_roller_speed=-1.0,
 			land_on_ball_roller_time=1.0,
+			scoot_back_ft=0.0,
 			second_ball_roller_time=1.5,
 			load_ball_roller_speed = -1.0,
 			roller_drive_speed=-1.0,
+			loaded_ball_wait=0.500,
 			third_ball_angle_deg=45,
 			-- (x / cos(theta)) should be same distance back, use negative to come backwards
 			third_ball_distance_ft=-(2/math.cos(45 * Deg2Rad)),
@@ -224,7 +230,7 @@ MainRobot = {
 			--reach full speed which should be very quick
 			max_accel_forward=Catapult_MaxSpeed * 10,
 			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
 			max_range_deg= 92 * Catapult_ArmToMotorRatio,
@@ -347,6 +353,7 @@ MainRobot = {
 				right_pid=
 				{p=25, i=0, d=5},					--These should always match, but able to be made different
 				--latency=0.300,
+				--left_max_offset=-0.7 , right_max_offset=0.0,   --Ensure both tread top speeds are aligned
 				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -387,15 +394,16 @@ MainRobot = {
 			Joystick_SetLeft_XAxis = {type="joystick_analog", key=5, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Joystick_SetRight_XAxis = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, is_flipped=false, multiplier=1.0, filter=0.1, curve_intensity=1.0},
+			Analog_Turn = {type="joystick_culver", key_x=3, key_y=4, is_flipped=false, multiplier=1.0, filter=0.2, curve_intensity=0.0},
 			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Joystick_FieldCentric_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_FieldCentric_YAxis = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			FieldCentric_EnableValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 						
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			FieldCentric_Enable = {type="joystick_button", key=1, on_off=false},
+			--FieldCentric_Enable = {type="joystick_button", key=1, on_off=false},
 			Robot_SetDriverOverride = {type="joystick_button", key=3, on_off=true},
 			Turn_180_Hold = {type="joystick_button", key=4, on_off=true},
 			FlipY_Hold = {type="joystick_button", key=4, on_off=true},

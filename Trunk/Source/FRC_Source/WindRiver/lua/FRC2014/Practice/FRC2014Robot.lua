@@ -42,7 +42,8 @@ MainRobot = {
 	--Version 1.7 Adjusted for 2 ball auton... and calibrated winch
 	--Version 1.71 Adjusted deadzone on rotation, zero'd voltage (matches competition bot), added field centric trigger
 	--Version 1.72 Added scoot back property, 1.73 good 2 ball auton settings confirmed on Tuesday practice... disabled limit on winch
-	version = 1.73;
+	--Version 1.74 Added auton wait for ball to settle for both the initial move and the loading... first initial merge with competition bot for lonestar
+	version = 1.74;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -190,6 +191,7 @@ MainRobot = {
 		auton =
 		{
 			first_move_ft=2,
+			first_move_wait=0.600,
 			second_move_ft=4,
 			support_hotspot='n',
 			land_on_ball_roller_speed=-1.0,
@@ -198,6 +200,7 @@ MainRobot = {
 			second_ball_roller_time=1.5,
 			load_ball_roller_speed = -1.0,
 			roller_drive_speed=-1.0,
+			loaded_ball_wait=0.500,
 			third_ball_angle_deg=45,
 			-- (x / cos(theta)) should be same distance back, use negative to come backwards
 			third_ball_distance_ft=-(2/math.cos(45 * Deg2Rad)),
