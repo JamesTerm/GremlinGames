@@ -1459,7 +1459,7 @@ class FRC_2014_Goals_Impl : public AtomicGoal
 					AddSubgoal(new WaitForHot(m_Parent));
 				}
 
-				AddSubgoal(new Goal_Wait(m_AutonProps.FirstMove_ft));  //avoid motion shot
+				AddSubgoal(new Goal_Wait(m_AutonProps.FirstMoveWait_s));  //avoid motion shot
 
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft));
 				AddSubgoal(new Intake_Deploy(m_Parent,true));
