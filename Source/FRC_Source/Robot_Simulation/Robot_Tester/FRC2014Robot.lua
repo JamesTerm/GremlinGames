@@ -181,6 +181,7 @@ MainRobot = {
 		auton =
 		{
 			first_move_ft=2,
+			first_move_wait=0.600,
 			second_move_ft=4,
 			support_hotspot='n',
 			land_on_ball_roller_speed=-1.0,
@@ -189,6 +190,7 @@ MainRobot = {
 			second_ball_roller_time=1.5,
 			load_ball_roller_speed = -1.0,
 			roller_drive_speed=-1.0,
+			loaded_ball_wait=0.500,
 			third_ball_angle_deg=45,
 			-- (x / cos(theta)) should be same distance back, use negative to come backwards
 			third_ball_distance_ft=-(2/math.cos(45 * Deg2Rad)),
