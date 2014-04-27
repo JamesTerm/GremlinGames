@@ -5,8 +5,8 @@
 
 #include "FRC2014_Robot.h"
 #include "Common/InOut_Interface.h"
-#include "Drive/Tank_Robot_Control.h"
-#include "Drive/Servo_Robot_Control.h"
+#include "TankDrive/Tank_Robot_Control.h"
+#include "TankDrive/Servo_Robot_Control.h"
 #include "FRC2014_InOut_Interface.h"
 
 const bool c_UseDefaultControls=false;
