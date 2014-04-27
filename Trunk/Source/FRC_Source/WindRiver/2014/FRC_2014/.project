@@ -3,6 +3,9 @@
 	<name>FRC_2014</name>
 	<comment></comment>
 	<projects>
+		<project>Base</project>
+		<project>Common</project>
+		<project>TankDrive</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

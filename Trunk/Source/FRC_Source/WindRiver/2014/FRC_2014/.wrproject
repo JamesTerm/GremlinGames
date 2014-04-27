@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wrxml>
     <properties platform="VxWorks" platform_name="vxworks-6.3" root="1" type="DownloadableKernelModuleProject"/>
+    <subprojects>
+        <subproject project="/Base"/>
+        <subproject project="/Common"/>
+        <subproject project="/TankDrive"/>
+    </subprojects>
     <attributes>
         <mapAttribute>
             <listAttribute key="BLD::Info|GlobalMacros">
@@ -28,11 +33,15 @@
                 <stringAttribute value="-I$(WIND_BASE)/target/h"/>
                 <stringAttribute value="-I$(WIND_BASE)/target/h/WPILib"/>
                 <stringAttribute value="-I$(WIND_BASE)/target/h/wrn/coreip"/>
+                <stringAttribute value="-IC:/WindRiver/workspace"/>
             </listAttribute>
             <listAttribute key="BLD::Info|Libs|PPC32diab">
                 <stringAttribute value="$(WIND_BASE)/target/lib/WPILib.a"/>
             </listAttribute>
             <listAttribute key="BLD::Info|Libs|PPC603gnu">
+                <stringAttribute value="C:/WindRiver/workspace/TankDrive/PPC603gnu/Drive/Debug/Drive.a"/>
+                <stringAttribute value="C:/WindRiver/workspace/Common/PPC603gnu/Common/Debug/Common.a"/>
+                <stringAttribute value="C:/WindRiver/workspace/Base/PPC603gnu/Base/Debug/Base.a"/>
                 <stringAttribute value="$(WIND_BASE)/target/lib/WPILib.a"/>
             </listAttribute>
             <listAttribute key="BLD::Info|Macros">
