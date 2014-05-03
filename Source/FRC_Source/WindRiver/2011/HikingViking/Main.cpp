@@ -5,8 +5,8 @@
 
 #include "HikingViking_Robot.h"
 #include "Common/InOut_Interface.h"
-#include "Drive/Servo_Robot_Control.h"
-#include "Drive/Tank_Robot_Control.h"
+#include "TankDrive/Servo_Robot_Control.h"
+#include "TankDrive/Tank_Robot_Control.h"
 #include "HikingViking_InOut_Interface.h"
 
 const bool c_UseDefaultControls=false;
