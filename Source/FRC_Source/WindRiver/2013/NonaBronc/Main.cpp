@@ -18,17 +18,18 @@
 #include "Common/Ship.h"
 #include "Common/Vehicle_Drive.h"
 #include "Common/PIDController.h"
+#include "Common/Poly.h"
 #include "Common/AI_Base_Controller.h"
 #include "Common/Robot_Control_Interface.h"
 #include "Common/Rotary_System.h"
-#include "Drive/Swerve_Robot.h"
-#include "Drive/Nona_Robot.h"
+#include "SwerveDrive/Swerve_Robot.h"
+#include "SwerveDrive/Nona_Robot.h"
 #include "Base/Joystick.h"
 #include "Base/JoystickBinder.h"
 #include "Common/UI_Controller.h"
 #include "Common/PIDController.h"
 #include "Common/InOut_Interface.h"
-#include "Drive/Tank_Tester.h"
+#include "SwerveDrive/Tank_Tester.h"
 
 const bool c_UseDefaultControls=false;
 
