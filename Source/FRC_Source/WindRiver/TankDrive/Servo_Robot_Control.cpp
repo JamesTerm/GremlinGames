@@ -25,7 +25,6 @@
 #include "../Base/Joystick.h"
 #include "../Base/JoystickBinder.h"
 #include "../Common/InOut_Interface.h"
-#include "Servo_Robot_Control.h"
 #include "../Common/Robot_Control_Interface.h"
 #include "../Common/UI_Controller.h"
 #include "../Common/PIDController.h"
@@ -33,6 +32,7 @@
 #include "../Common/Debug.h"
 #include "../Common/Robot_Control_Common.h"
 #include "Tank_Robot.h"
+#include "Servo_Robot_Control.h"
 
 #ifdef __UsingTestingKit__
 
