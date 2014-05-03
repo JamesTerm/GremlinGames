@@ -17,6 +17,7 @@
 #include "../Common/AI_Base_Controller.h"
 #include "../Common/Vehicle_Drive.h"
 #include "../Common/PIDController.h"
+#include "../Common/Poly.h"
 #include "../Common/Robot_Control_Interface.h"
 #include "../Common/Rotary_System.h"
 #include "Swerve_Robot.h"
@@ -48,7 +49,7 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		const TractionModeProps *PropsToUse=(Mode==eTractionDrive)?&m_TractionModeProps:&m_OmniModeProps;
 		m_pParent->UpdateShipProperties(PropsToUse->ShipProperties.GetShipProps());
 		//init the props (more of a pedantic step to avoid corrupt data)
-		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRoteryProps();
+		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRotaryProps();
 		props.InverseMaxAccel=m_TractionModeProps.InverseMaxAccel;
 		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
 		double *PID=(Mode==eTractionDrive)?m_TractionModeProps.PID : m_OmniModeProps.PID;
@@ -130,9 +131,9 @@ void Butterfly_Robot::DriveModeManager::BindAdditionalEventControls(bool Bind)
 	}
 }
 
-void Butterfly_Robot::DriveModeManager::BindAdditionalUIControls(bool Bind,void *joy)
+void Butterfly_Robot::DriveModeManager::BindAdditionalUIControls(bool Bind,void *joy,void *key)
 {
-	m_ButterflyProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy);
+	m_ButterflyProps.Get_RobotControls().BindAdditionalUIControls(Bind,joy,key);
 }
 
   /***********************************************************************************************************/
@@ -166,8 +167,8 @@ void Butterfly_Robot::BindAdditionalEventControls(bool Bind)
 
 void Butterfly_Robot::BindAdditionalUIControls(bool Bind,void *joy)
 {
-	m_DriveModeManager.BindAdditionalUIControls(Bind,joy);
-	__super::BindAdditionalUIControls(Bind,joy);  //call super for more general control assignments
+	m_DriveModeManager.BindAdditionalUIControls(Bind,joy,NULL);
+	__super::BindAdditionalUIControls(Bind,joy,NULL);  //call super for more general control assignments
 }
 
 void Butterfly_Robot::DriveModeManager_SetMode_Callback(DriveMode Mode) 
@@ -325,7 +326,7 @@ Nona_Robot_Properties::Nona_Robot_Properties() : m_KickerWheelProps(
 	)
 {
 	//Always use aggressive stop for driving
-	m_KickerWheelProps.RoteryProps().UseAggressiveStop=true;
+	m_KickerWheelProps.RotaryProps().UseAggressiveStop=true;
 }
 
 void Nona_Robot_Properties::LoadFromScript(Scripting::Script& script)

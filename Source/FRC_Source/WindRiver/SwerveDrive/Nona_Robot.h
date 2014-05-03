@@ -73,7 +73,7 @@ class Butterfly_Robot : public Swerve_Robot
 
 			void SetMode(DriveMode Mode);
 			void BindAdditionalEventControls(bool Bind);
-			void BindAdditionalUIControls(bool Bind, void *joy);
+			void BindAdditionalUIControls(bool Bind, void *joy,void *key);
 			DriveMode GetMode() const {return m_CurrentMode;}
 		protected:
 			void SetLowGear(bool on);

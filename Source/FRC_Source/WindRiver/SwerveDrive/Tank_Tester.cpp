@@ -18,6 +18,7 @@
 #include "../Common/AI_Base_Controller.h"
 #include "../Common/Vehicle_Drive.h"
 #include "../Common/PIDController.h"
+#include "../Common/Poly.h"
 #include "../Base/Joystick.h"
 #include "../Base/JoystickBinder.h"
 #include "../Common/Robot_Control_Interface.h"
@@ -63,7 +64,7 @@ Tank_Tester_Control::Tank_Tester_Control(bool UseSafety) :
 	m_1(1),m_2(2),m_3(3),m_4(4),
 	m_RobotDrive(&m_1,&m_2,&m_3,&m_4),
 	//m_RobotDrive(1,2,3,4),  //default Jaguar instantiation
-	m_LeftEncoder(3,4),m_RightEncoder(1,2),m_dTime_s(0.0),m_LeftVelocity(0.0),m_RightVelocity(0.0),m_LeftVoltage(0.0)
+	m_LeftEncoder(1,3,4),m_RightEncoder(1,1,2),m_dTime_s(0.0),m_LeftVelocity(0.0),m_RightVelocity(0.0),m_LeftVoltage(0.0)
 {
 	//ResetPos();  may need this later
 	SetSafety(UseSafety);
@@ -275,7 +276,7 @@ void Tank_Nona_Control::Initialize(const Entity_Properties *props)
 	if (robot_props)
 	{
 		m_ButterflyProps=*robot_props;  //cache both drive modes
-		m_Kicker_Props=robot_props->GetKickerWheelProps().GetRoteryProps();
+		m_Kicker_Props=robot_props->GetKickerWheelProps().GetRotaryProps();
 	}
 	__super::Initialize(props);
 }

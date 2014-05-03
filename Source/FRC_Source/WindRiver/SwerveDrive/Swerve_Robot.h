@@ -37,10 +37,11 @@ struct Swerve_Robot_Props
 	double MaxSpeedOffset[4];	//These are used to align max speed to what is reported by encoders (Encoder MaxSpeed - Computed MaxSpeed)
 	Vec2D DriveTo_ForceDegradeScalar;  //Used for way point driving in autonomous in conjunction with max force to get better deceleration precision
 	double SwivelRange;  //Value in radians of the swivel range 0 is infinite
-	double TankSteering_Tolerance; //used to help controls drive straight
+	//double TankSteering_Tolerance; //used to help controls drive straight
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
 	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
+	double InverseMaxDecel;  //used for deceleration case
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
 	bool IsOpen_Wheel,IsOpen_Swivel;  //give ability to open or close loop for wheel or swivel system  
 	//This will dump the console PID info (Only active if __DebugLUA__ is defined)
@@ -56,7 +57,7 @@ class Swerve_Robot_UI;
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
 ///the Robot_Control_Interface
-class Swerve_Robot : public Ship_Tester,
+class  Swerve_Robot : public Ship_Tester,
 					 public Swerve_Drive_Interface
 {
 	public:
