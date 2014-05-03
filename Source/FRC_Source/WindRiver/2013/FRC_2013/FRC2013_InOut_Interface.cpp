@@ -6,8 +6,8 @@
 
 #include "FRC2013_Robot.h"
 #include "Common/InOut_Interface.h"
-#include "Drive/Tank_Robot_Control.h"
-#include "Drive/Servo_Robot_Control.h"
+#include "TankDrive/Tank_Robot_Control.h"
+#include "TankDrive/Servo_Robot_Control.h"
 #include "Common/Debug.h"
 #include "FRC2013_InOut_Interface.h"
 
@@ -111,9 +111,9 @@ FRC_2013_Robot_Control::FRC_2013_Robot_Control(bool UseSafety) :
 	m_EngageDropWinch(eSolenoid_EngageDropWinch_On,eSolenoid_EngageDropWinch_Off),
 	m_EngageFirePiston(eSolenoid_EngageFirePiston_On,eSolenoid_EngageFirePiston_Off),
 	//Sensors----------------------------------
-	m_IntakeDeployment_Encoder(eEncoder_IntakeDeployment_A,eEncoder_IntakeDeployment_B,false,CounterBase::k4X),
-	m_PowerWheel_First_Encoder(eEncoder_PowerWheel_First_A,eEncoder_PowerWheel_First_B),
-	m_PowerWheel_Second_Encoder(eEncoder_PowerWheel_Second_A,eEncoder_PowerWheel_Second_B),
+	m_IntakeDeployment_Encoder(1,eEncoder_IntakeDeployment_A,eEncoder_IntakeDeployment_B,false,CounterBase::k4X),
+	m_PowerWheel_First_Encoder(1,eEncoder_PowerWheel_First_A,eEncoder_PowerWheel_First_B),
+	m_PowerWheel_Second_Encoder(1,eEncoder_PowerWheel_Second_A,eEncoder_PowerWheel_Second_B),
 	m_Intake_DeployedLimit(eSensor_Intake_DeployedLimit),
 	//other----------------------------------
 	//m_PowerWheelAverager(0.5),
