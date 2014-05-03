@@ -1,36 +1,13 @@
 
 #include "WPILib.h"
 
-#include "Base/Base_Includes.h"
-#include <math.h>
-#include <assert.h>
-#include "Base/Vec2d.h"
-#include "Base/Misc.h"
-#include "Base/Event.h"
-#include "Base/EventMap.h"
-#include "Base/Script.h"
-#include "Common/Entity_Properties.h"
-#include "Common/Physics_1D.h"
-#include "Common/Physics_2D.h"
-#include "Common/Entity2D.h"
-#include "Common/Goal.h"
-#include "Common/Ship_1D.h"
-#include "Common/Ship.h"
-#include "Common/Vehicle_Drive.h"
-#include "Common/PIDController.h"
-#include "Common/Poly.h"
-#include "Common/AI_Base_Controller.h"
-#include "Drive/Tank_Robot.h"
-#include "Common/Robot_Control_Interface.h"
-#include "Common/Rotary_System.h"
-#include "Base/Joystick.h"
-#include "Base/JoystickBinder.h"
-#include "Common/UI_Controller.h"
-#include "Common/PIDController.h"
+#include "stdafx.h"
+#include "Robot_Tester.h"
+
 #include "FRC2012_Robot.h"
-#include "FRC2012_Camera.h"
 #include "Common/InOut_Interface.h"
-#include "Drive/Tank_Robot_Control.h"
+#include "TankDrive/Tank_Robot_Control.h"
+#include "TankDrive/Servo_Robot_Control.h"
 #include "Common/Debug.h"
 #include "FRC2012_InOut_Interface.h"
 
@@ -124,8 +101,8 @@ FRC_2012_Robot_Control::FRC_2012_Robot_Control(bool UseSafety) :
 	m_OnRampDeployment(eSolenoid_RampDeployment_On),m_OffRampDeployment(eSolenoid_RampDeployment_Off),
 	m_LowerConveyor_Relay(eRelay_LowerConveyor),m_MiddleConveyor_Relay(eRelay_MiddleConveyor),m_FireConveyor_Relay(eRelay_FireConveyor),
 	//Sensors
-	m_Turret_Encoder(eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
-	m_PowerWheel_Encoder(eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
+	m_Turret_Encoder(1,eEncoder_Turret_A,eEncoder_Turret_B,false,CounterBase::k4X),
+	m_PowerWheel_Encoder(1,eEncoder_PowerWheel_A,eEncoder_PowerWheel_B),
 	m_Intake_Limit(eSensor_IntakeConveyor),m_Middle_Limit(eSensor_MiddleConveyor),m_Fire_Limit(eSensor_FireConveyor),
 	m_UseBreakDrive_A(eDigitalOut_BreakDrive_A),m_UseBreakDrive_B(eDigitalOut_BreakDrive_B),
 	//m_PowerWheelAverager(0.5),
