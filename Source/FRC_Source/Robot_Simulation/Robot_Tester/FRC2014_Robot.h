@@ -197,6 +197,7 @@ class FRC_2014_Robot : public Tank_Robot
 		{
 			public:
 				Winch(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
+				~Winch();
 				IEvent::HandlerList ehl;
 				//given the raw potentiometer converts to the arm angle
 				double PotentiometerRaw_To_Arm_r(double raw) const;
@@ -219,6 +220,7 @@ class FRC_2014_Robot : public Tank_Robot
 				void SetChipShot();
 				void SetGoalShot();
 				FRC_2014_Robot * const m_pParent;
+				Goal *m_WinchFireManager;
 				bool m_Advance;
 		};
 

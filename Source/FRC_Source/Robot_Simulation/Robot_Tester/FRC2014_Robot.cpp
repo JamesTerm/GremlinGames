@@ -155,11 +155,121 @@ void FRC_2014_Robot::PitchRamp::ResetPos()
  /*														FRC_2014_Robot::Winch														*/
 /***********************************************************************************************************************************/
 
-FRC_2014_Robot::Winch::Winch(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("Winch",robot_control,eWinch),m_pParent(parent),m_Advance(false)
+
+class WinchFireManager : public AtomicGoal
 {
+private:
+	FRC_2014_Robot &m_Robot;
+
+	class SetUpProps
+	{
+	protected:
+		WinchFireManager *m_Parent;
+		FRC_2014_Robot &m_Robot;
+		Entity2D_Kind::EventMap &m_EventMap;
+	public:
+		SetUpProps(WinchFireManager *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot),m_EventMap(*m_Robot.GetEventMap())
+		{	
+		}
+	};
+
+	class Fire : public AtomicGoal, public SetUpProps
+	{
+	private:
+		bool m_IsOn;
+	public:
+		Fire(WinchFireManager *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			ActivateIfInactive();
+			m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
+			m_Status=eCompleted;
+			return m_Status;
+		}
+	};
+
+	class Intake_Deploy : public AtomicGoal, public SetUpProps
+	{
+	private:
+		bool m_IsOn;
+	public:
+		Intake_Deploy(WinchFireManager *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			ActivateIfInactive();
+			m_EventMap.EventOnOff_Map["Robot_CatcherShooter"].Fire(m_IsOn);
+			m_Status=eCompleted;
+			return m_Status;
+		}
+	};
+
+	class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
+	{
+	public:
+		Fire_Sequence(WinchFireManager *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
+		virtual void Activate()
+		{
+			AddSubgoal(new Fire(m_Parent,false));
+			AddSubgoal(new Goal_Wait(.500));
+			AddSubgoal(new Fire(m_Parent,true));
+			m_Status=eActive;
+		}
+	} *m_Fire_Sequence;
+public:
+	WinchFireManager(FRC_2014_Robot &robot) : m_Robot(robot)
+	{
+		m_Fire_Sequence=new Fire_Sequence(this);
+		m_Status=eInactive;
+	}
+	~WinchFireManager()
+	{
+		if (m_Fire_Sequence)
+		{
+			delete m_Fire_Sequence;
+			m_Fire_Sequence=NULL;
+		}
+	}
+	void Activate()
+	{
+		//we'll do just simply discard for any state besides inactive
+		if ((m_Status==eInactive)||(m_Status==eFailed))
+		{
+			m_Status=eActive;
+			m_Fire_Sequence->Activate();
+		}
+	}
+	Goal_Status Process(double dTime_s)
+	{
+		if (m_Status==eActive)
+			m_Status=m_Fire_Sequence->Process(dTime_s);
+		return m_Status;
+	}
+
+	void Terminate() 
+	{
+		if (m_Fire_Sequence->GetStatus()!=eInactive)
+			m_Fire_Sequence->Terminate();
+		m_Status=eFailed;
+	}
+};
+
+
+FRC_2014_Robot::Winch::Winch(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
+	Rotary_Position_Control("Winch",robot_control,eWinch),m_pParent(parent),m_WinchFireManager(NULL),m_Advance(false)
+{
+	m_WinchFireManager=new WinchFireManager(*parent);
 }
 
+FRC_2014_Robot::Winch::~Winch()
+{
+	if (m_WinchFireManager)  //check for NULL on other platforms
+	{
+		delete m_WinchFireManager;
+		m_WinchFireManager=NULL;
+	}
+}
 
 void FRC_2014_Robot::Winch::Advance(bool on)
 {
@@ -191,6 +301,7 @@ void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
 		const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
 		SmartDashboard::PutNumber("Catapult_Angle",90.0-(RAD_2_DEG(GetPos_m()*c_GearToArmRatio)));
 	}
+	m_WinchFireManager->Process(dTime_s);
 }
 
 
