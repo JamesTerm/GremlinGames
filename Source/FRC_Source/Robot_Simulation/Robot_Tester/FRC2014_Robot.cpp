@@ -160,6 +160,7 @@ class WinchFireManager : public AtomicGoal
 {
 private:
 	FRC_2014_Robot &m_Robot;
+	bool m_IsFireButtonDown;
 
 	class SetUpProps
 	{
@@ -189,6 +190,19 @@ private:
 		}
 	};
 
+	class WaitWhileButtonDown : public AtomicGoal, public SetUpProps
+	{
+	public:
+		WaitWhileButtonDown(WinchFireManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			m_Status=m_Parent->m_IsFireButtonDown?eActive:eCompleted;
+			return m_Status;
+		}
+	};
+
+
 	class Intake_Deploy : public AtomicGoal, public SetUpProps
 	{
 	private:
@@ -212,13 +226,17 @@ private:
 		virtual void Activate()
 		{
 			AddSubgoal(new Fire(m_Parent,false));
-			AddSubgoal(new Goal_Wait(.500));
+			//AddSubgoal(new Goal_Wait(.500));
+			MultitaskGoal *WaitingForRelease=new MultitaskGoal(true);  //wait for time and release of button
+			WaitingForRelease->AddGoal(new Goal_Wait(.500));
+			WaitingForRelease->AddGoal(new WaitWhileButtonDown(m_Parent));
+			AddSubgoal(WaitingForRelease);
 			AddSubgoal(new Fire(m_Parent,true));
 			m_Status=eActive;
 		}
 	} *m_Fire_Sequence;
 public:
-	WinchFireManager(FRC_2014_Robot &robot) : m_Robot(robot)
+	WinchFireManager(FRC_2014_Robot &robot) : m_Robot(robot),m_IsFireButtonDown(false)
 	{
 		m_Fire_Sequence=new Fire_Sequence(this);
 		m_Status=eInactive;
@@ -234,7 +252,7 @@ public:
 	void Activate()
 	{
 		//we'll do just simply discard for any state besides inactive
-		if ((m_Status==eInactive)||(m_Status==eFailed))
+		if (m_Status!=eActive)
 		{
 			m_Status=eActive;
 			m_Fire_Sequence->Activate();
@@ -242,6 +260,8 @@ public:
 	}
 	Goal_Status Process(double dTime_s)
 	{
+		if (m_IsFireButtonDown)
+			Activate();
 		if (m_Status==eActive)
 			m_Status=m_Fire_Sequence->Process(dTime_s);
 		return m_Status;
@@ -252,6 +272,10 @@ public:
 		if (m_Fire_Sequence->GetStatus()!=eInactive)
 			m_Fire_Sequence->Terminate();
 		m_Status=eFailed;
+	}
+	void SetFireButton(bool ReleaseClutch)
+	{
+		m_IsFireButtonDown=ReleaseClutch;
 	}
 };
 
@@ -334,6 +358,11 @@ void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 		m_pParent->m_RobotControl->Reset_Rotary(eWinch);
 	}
 }
+void FRC_2014_Robot::Winch::Winch_FireManager(bool ReleaseClutch)
+{
+	WinchFireManager *fm=dynamic_cast<WinchFireManager *>(m_WinchFireManager);
+	fm->SetFireButton(ReleaseClutch);
+}
 
 bool FRC_2014_Robot::Winch::DidHitMaxLimit()
 {
@@ -354,6 +383,7 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Winch_Advance"].Subscribe(ehl,*this, &FRC_2014_Robot::Winch::Advance);
 
 		em->EventOnOff_Map["Winch_Fire"].Subscribe(ehl, *this, &FRC_2014_Robot::Winch::Fire_Catapult);
+		em->EventOnOff_Map["Winch_FireManager"].Subscribe(ehl, *this, &FRC_2014_Robot::Winch::Winch_FireManager);
 	}
 	else
 	{
@@ -366,6 +396,7 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Winch_Advance"].Remove(*this, &FRC_2014_Robot::Winch::Advance);
 
 		em->EventOnOff_Map["Winch_Fire"]  .Remove(*this, &FRC_2014_Robot::Winch::Fire_Catapult);
+		em->EventOnOff_Map["Winch_FireManager"]  .Remove(*this, &FRC_2014_Robot::Winch::Winch_FireManager);
 	}
 }
   /***********************************************************************************************************************************/
@@ -1059,7 +1090,7 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 	"Robot_SetDriverOverride",
-	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance",
+	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_FireManager","Winch_Advance",
 	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
 	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
 	"Robot_CatcherShooter","Robot_CatcherShooter_On","Robot_CatcherShooter_Off",

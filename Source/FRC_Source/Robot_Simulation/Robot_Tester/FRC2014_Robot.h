@@ -202,6 +202,7 @@ class FRC_2014_Robot : public Tank_Robot
 				//given the raw potentiometer converts to the arm angle
 				double PotentiometerRaw_To_Arm_r(double raw) const;
 				void Fire_Catapult(bool ReleaseClutch);
+				void Winch_FireManager(bool ReleaseClutch);
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void BindAdditionalEventControls(bool Bind);
