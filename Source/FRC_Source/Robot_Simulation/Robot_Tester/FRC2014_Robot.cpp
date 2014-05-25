@@ -465,8 +465,6 @@ private:
 		virtual void Activate()
 		{
 			AddSubgoal(new Intake_Deploy(m_Parent,false));
-			//AddSubgoal(new Goal_Wait(.500));
-			MultitaskGoal *WaitingForRelease=new MultitaskGoal(true);  //wait for time and release of button
 			AddSubgoal(new WaitWhileButtonDown(m_Parent));
 			AddSubgoal(new Intake_Deploy(m_Parent,true));
 			m_Status=eActive;
