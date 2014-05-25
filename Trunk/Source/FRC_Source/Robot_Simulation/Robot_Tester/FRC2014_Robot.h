@@ -224,7 +224,8 @@ class FRC_2014_Robot : public Tank_Robot
 				Goal *m_WinchFireManager;
 				bool m_Advance;
 		};
-
+		//First attempt at arm... depreciated as we moved to pneumatic
+		#if 0
 		class Intake_Arm : public Rotary_Position_Control
 		{
 			public:
@@ -261,6 +262,23 @@ class FRC_2014_Robot : public Tank_Robot
 				FRC_2014_Robot * const m_pParent;
 				bool m_Advance, m_Retract;
 		};
+		#endif
+
+		class Intake_Arm
+		{
+			public:
+				Intake_Arm(FRC_2014_Robot *parent);
+				~Intake_Arm();
+				IEvent::HandlerList ehl;
+
+				void SetIntakeButton(bool DeployArm);
+				void TimeChange(double dTime_s);
+				void BindAdditionalEventControls(bool Bind);
+			private:
+				FRC_2014_Robot * const m_pParent;
+				Goal *m_IntakeArmManager;
+		};
+
 		class Intake_Rollers : public Rotary_Velocity_Control
 		{
 			public:
