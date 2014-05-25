@@ -2262,7 +2262,7 @@ void FRC_2013_Robot_Control::GetLeftRightVelocity(double &LeftVelocity,double &R
 }
 #endif
 
-bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index)
+bool FRC_2013_Robot_Control::GetBoolSensorState(size_t index) const
 {
 	bool ret;
 	switch (index)

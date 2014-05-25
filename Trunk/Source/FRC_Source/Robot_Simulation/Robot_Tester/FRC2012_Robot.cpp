@@ -1672,7 +1672,7 @@ void FRC_2012_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	#endif
 }
 
-bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index)
+bool FRC_2012_Robot_Control::GetBoolSensorState(size_t index) const
 {
 	bool ret;
 	switch (index)
