@@ -488,7 +488,7 @@ class FRC_2013_Robot_Control : public FRC_2013_Control_Interface
 		const FRC_2013_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
-		virtual bool GetBoolSensorState(size_t index);
+		virtual bool GetBoolSensorState(size_t index) const;
 		virtual void OpenSolenoid(size_t index,bool Open);
 		virtual bool GetIsSolenoidOpen(size_t index) const;
 	protected: //from Tank_Drive_Control_Interface

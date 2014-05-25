@@ -13,7 +13,7 @@ public:
 	virtual bool GetIsSolenoidOpen(size_t index) const {return false;}
 	virtual bool GetIsSolenoidClosed(size_t index) const {return !GetIsSolenoidOpen(index);}
 	/// \ret true if contact is made 
-	virtual bool GetBoolSensorState(size_t index) {return false;}
+	virtual bool GetBoolSensorState(size_t index) const {return false;}
 };
 
 ///TODO this one is still tuned to 2011 needs... I'll need to work out a way to make it more generic
