@@ -25,6 +25,7 @@ public:
 		double PotentiometerToArmRatio;
 		double ChipShotAngle;
 		double GoalShotAngle;
+		bool AutoDeployArm;
 	} Catapult_Robot_Props;
 	struct Intake
 	{

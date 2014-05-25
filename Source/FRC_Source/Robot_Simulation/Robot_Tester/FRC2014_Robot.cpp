@@ -367,7 +367,8 @@ void FRC_2014_Robot::Winch::Winch_FireManager(bool ReleaseClutch)
 
 bool FRC_2014_Robot::Winch::GetAutoDeployIntake() const
 {
-	return true;
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	return props.Catapult_Robot_Props.AutoDeployArm;
 }
 
 bool FRC_2014_Robot::Winch::DidHitMaxLimit() const
@@ -680,7 +681,7 @@ void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
 }
 
 #endif
-/***********************************************************************************************************************************/
+  /***********************************************************************************************************************************/
  /*													FRC_2014_Robot::Intake_Rollers													*/
 /***********************************************************************************************************************************/
 
@@ -1170,6 +1171,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		//This allows gain assist to apply max voltage to its descent
 		props.Catapult_Robot_Props.ChipShotAngle=DEG_2_RAD(45.0);
 		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(90.0);
+		props.Catapult_Robot_Props.AutoDeployArm=false;
 
 		props.Intake_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Intake_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
@@ -1355,6 +1357,7 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			err=script.GetField("goalshot_angle_deg", NULL, NULL, &fTest);
 			if (!err)
 				cat_props.GoalShotAngle=DEG_2_RAD(fTest);
+			SCRIPT_TEST_BOOL_YES(cat_props.AutoDeployArm,"auto_deploy_arm");
 			script.Pop();
 		}
 		err = script.GetFieldTable("intake");
