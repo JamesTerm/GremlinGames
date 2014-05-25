@@ -166,6 +166,7 @@ MainRobot = {
 			--This allows gain assist to apply max voltage to its descent
 			chipshot_angle_deg=45,
 			goalshot_angle_deg=90,
+			auto_deploy_arm='y',
 		},
 		intake=
 		{
