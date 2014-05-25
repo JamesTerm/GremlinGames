@@ -203,6 +203,7 @@ class FRC_2014_Robot : public Tank_Robot
 				double PotentiometerRaw_To_Arm_r(double raw) const;
 				void Fire_Catapult(bool ReleaseClutch);
 				void Winch_FireManager(bool ReleaseClutch);
+				bool GetAutoDeployIntake() const;
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void BindAdditionalEventControls(bool Bind);
@@ -212,7 +213,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
-				virtual bool DidHitMaxLimit();
+				virtual bool DidHitMaxLimit() const;
 
 			private:
 				#ifndef Robot_TesterCode
@@ -250,8 +251,8 @@ class FRC_2014_Robot : public Tank_Robot
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
 
-				virtual bool DidHitMinLimit();
-				virtual bool DidHitMaxLimit();
+				virtual bool DidHitMinLimit() const;
+				virtual bool DidHitMaxLimit() const;
 			private:
 				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
@@ -272,11 +273,16 @@ class FRC_2014_Robot : public Tank_Robot
 				IEvent::HandlerList ehl;
 
 				void SetIntakeButton(bool DeployArm);
+				//When fire sequence is engaged it will update this status (what it does with it is up to the preference of script)
+				void SetWinchFireSequenceActive(bool WinchFireSequenceState);
+
 				void TimeChange(double dTime_s);
 				void BindAdditionalEventControls(bool Bind);
+				bool GetIsArmDown() const; //This returns if arm is down, which takes into consideration time from when deployed
 			private:
 				FRC_2014_Robot * const m_pParent;
 				Goal *m_IntakeArmManager;
+				double m_ArmTimer;  //manages when arm is down
 		};
 
 		class Intake_Rollers : public Rotary_Velocity_Control
@@ -307,6 +313,9 @@ class FRC_2014_Robot : public Tank_Robot
 		FRC_2014_Robot_Props::Autonomous_Properties &GetAutonProps();
 		Ship_1D &GetWinch() {return m_Winch;}
 		bool GetCatapultLimit() const;
+		void SetWinchFireSequenceActive(bool WinchFireSequenceState) {m_Intake_Arm.SetWinchFireSequenceActive(WinchFireSequenceState);}
+		bool GetIsArmDown() const {return m_Intake_Arm.GetIsArmDown();}
+		bool GetAutoDeployIntake() const {return m_Winch.GetAutoDeployIntake();}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);

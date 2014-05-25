@@ -186,6 +186,8 @@ private:
 			ActivateIfInactive();
 			m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
 			m_Status=eCompleted;
+			if (m_IsOn==false)
+				m_Parent->m_Robot.SetWinchFireSequenceActive(false);  //the catapult should be disengaged long enough to auto-close intake
 			return m_Status;
 		}
 	};
@@ -202,21 +204,17 @@ private:
 		}
 	};
 
-
-	class Intake_Deploy : public AtomicGoal, public SetUpProps
+	class EnsureArmDown : public AtomicGoal, public SetUpProps
 	{
-	private:
-		bool m_IsOn;
-	public:
-		Intake_Deploy(WinchFireManager *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
-		virtual void Activate() {m_Status=eActive;}
-		virtual Goal_Status Process(double dTime_s)
-		{
-			ActivateIfInactive();
-			m_EventMap.EventOnOff_Map["Robot_CatcherShooter"].Fire(m_IsOn);
-			m_Status=eCompleted;
-			return m_Status;
-		}
+		public:
+			EnsureArmDown(WinchFireManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_Status=m_Parent->m_Robot.GetIsArmDown()?eCompleted:eActive;
+				return m_Status;
+			}
 	};
 
 	class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
@@ -232,6 +230,8 @@ private:
 			WaitingForRelease->AddGoal(new WaitWhileButtonDown(m_Parent));
 			AddSubgoal(WaitingForRelease);
 			AddSubgoal(new Fire(m_Parent,true));
+			if (m_Parent->m_Robot.GetAutoDeployIntake())
+				AddSubgoal(new EnsureArmDown(m_Parent));
 			m_Status=eActive;
 		}
 	} *m_Fire_Sequence;
@@ -256,6 +256,7 @@ public:
 		{
 			m_Status=eActive;
 			m_Fire_Sequence->Activate();
+			m_Robot.SetWinchFireSequenceActive(true);
 		}
 	}
 	Goal_Status Process(double dTime_s)
@@ -364,7 +365,12 @@ void FRC_2014_Robot::Winch::Winch_FireManager(bool ReleaseClutch)
 	fm->SetFireButton(ReleaseClutch);
 }
 
-bool FRC_2014_Robot::Winch::DidHitMaxLimit()
+bool FRC_2014_Robot::Winch::GetAutoDeployIntake() const
+{
+	return true;
+}
+
+bool FRC_2014_Robot::Winch::DidHitMaxLimit() const
 {
 	return m_pParent->m_RobotControl->GetBoolSensorState(eCatapultLimit);
 }
@@ -513,7 +519,7 @@ public:
 	}
 };
 
-FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent) : m_pParent(parent)
+FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent) : m_pParent(parent),m_ArmTimer(0.0)
 {
 	m_IntakeArmManager=new IntakeArmManager(*parent);
 }
@@ -533,9 +539,33 @@ void FRC_2014_Robot::Intake_Arm::SetIntakeButton(bool DeployArm)
 	iam->SetIntakeButton(DeployArm);
 }
 
+void FRC_2014_Robot::Intake_Arm::SetWinchFireSequenceActive(bool WinchFireSequenceState)
+{
+	if (m_pParent->GetAutoDeployIntake())
+	{
+		IntakeArmManager *iam=dynamic_cast<IntakeArmManager *>(m_IntakeArmManager);
+		iam->SetWinchFireSequenceActive(WinchFireSequenceState);
+	}
+}
+
+const double c_Intake_Arm_DownWait_Threshold=0.250;  //250 ms for arm to deploy (could script this if necessary)
+
+bool FRC_2014_Robot::Intake_Arm::GetIsArmDown() const 
+{
+	return m_ArmTimer>=c_Intake_Arm_DownWait_Threshold;
+}
+
 void FRC_2014_Robot::Intake_Arm::TimeChange(double dTime_s)
 {
-	m_IntakeArmManager->Process(dTime_s);
+	Goal::Goal_Status status=m_IntakeArmManager->Process(dTime_s);
+	if (status==Goal::eActive)
+	{
+		if (m_ArmTimer<c_Intake_Arm_DownWait_Threshold)
+			m_ArmTimer+=dTime_s;
+	}
+	else
+		m_ArmTimer=0.0;
+	//SmartDashboard::PutNumber("TestArmDownTime",m_ArmTimer);
 }
 void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
 {
@@ -610,12 +640,12 @@ void FRC_2014_Robot::Intake_Arm::SetSquirt()
 	SetIntendedPosition(props.Intake_Robot_Props.Squirt_Angle);
 }
 
-bool FRC_2014_Robot::Intake_Arm::DidHitMinLimit()
+bool FRC_2014_Robot::Intake_Arm::DidHitMinLimit() const
 {
 	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMin1);
 }
 
-bool FRC_2014_Robot::Intake_Arm::DidHitMaxLimit()
+bool FRC_2014_Robot::Intake_Arm::DidHitMaxLimit() const
 {
 	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMax1);
 }
@@ -2226,7 +2256,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
-bool FRC_2014_Robot_Control::GetBoolSensorState(size_t index)
+bool FRC_2014_Robot_Control::GetBoolSensorState(size_t index) const
 {
 	bool ret;
 	switch (index)
