@@ -25,6 +25,7 @@ public:
 		double PotentiometerToArmRatio;
 		double ChipShotAngle;
 		double GoalShotAngle;
+		bool AutoDeployArm;
 	} Catapult_Robot_Props;
 	struct Intake
 	{
@@ -197,10 +198,13 @@ class FRC_2014_Robot : public Tank_Robot
 		{
 			public:
 				Winch(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control);
+				~Winch();
 				IEvent::HandlerList ehl;
 				//given the raw potentiometer converts to the arm angle
 				double PotentiometerRaw_To_Arm_r(double raw) const;
 				void Fire_Catapult(bool ReleaseClutch);
+				void Winch_FireManager(bool ReleaseClutch);
+				bool GetAutoDeployIntake() const;
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void BindAdditionalEventControls(bool Bind);
@@ -210,7 +214,7 @@ class FRC_2014_Robot : public Tank_Robot
 
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
-				virtual bool DidHitMaxLimit();
+				virtual bool DidHitMaxLimit() const;
 
 			private:
 				#ifndef Robot_TesterCode
@@ -219,9 +223,11 @@ class FRC_2014_Robot : public Tank_Robot
 				void SetChipShot();
 				void SetGoalShot();
 				FRC_2014_Robot * const m_pParent;
+				Goal *m_WinchFireManager;
 				bool m_Advance;
 		};
-
+		//First attempt at arm... depreciated as we moved to pneumatic
+		#if 0
 		class Intake_Arm : public Rotary_Position_Control
 		{
 			public:
@@ -246,8 +252,8 @@ class FRC_2014_Robot : public Tank_Robot
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
 
-				virtual bool DidHitMinLimit();
-				virtual bool DidHitMaxLimit();
+				virtual bool DidHitMinLimit() const;
+				virtual bool DidHitMaxLimit() const;
 			private:
 				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
@@ -258,6 +264,28 @@ class FRC_2014_Robot : public Tank_Robot
 				FRC_2014_Robot * const m_pParent;
 				bool m_Advance, m_Retract;
 		};
+		#endif
+
+		class Intake_Arm
+		{
+			public:
+				Intake_Arm(FRC_2014_Robot *parent);
+				~Intake_Arm();
+				IEvent::HandlerList ehl;
+
+				void SetIntakeButton(bool DeployArm);
+				//When fire sequence is engaged it will update this status (what it does with it is up to the preference of script)
+				void SetWinchFireSequenceActive(bool WinchFireSequenceState);
+
+				void TimeChange(double dTime_s);
+				void BindAdditionalEventControls(bool Bind);
+				bool GetIsArmDown() const; //This returns if arm is down, which takes into consideration time from when deployed
+			private:
+				FRC_2014_Robot * const m_pParent;
+				Goal *m_IntakeArmManager;
+				double m_ArmTimer;  //manages when arm is down
+		};
+
 		class Intake_Rollers : public Rotary_Velocity_Control
 		{
 			public:
@@ -286,6 +314,9 @@ class FRC_2014_Robot : public Tank_Robot
 		FRC_2014_Robot_Props::Autonomous_Properties &GetAutonProps();
 		Ship_1D &GetWinch() {return m_Winch;}
 		bool GetCatapultLimit() const;
+		void SetWinchFireSequenceActive(bool WinchFireSequenceState) {m_Intake_Arm.SetWinchFireSequenceActive(WinchFireSequenceState);}
+		bool GetIsArmDown() const {return m_Intake_Arm.GetIsArmDown();}
+		bool GetAutoDeployIntake() const {return m_Winch.GetAutoDeployIntake();}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
@@ -414,7 +445,7 @@ class FRC_2014_Robot_Control : public RobotControlCommon, public FRC_2014_Contro
 		const FRC_2014_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
-		virtual bool GetBoolSensorState(size_t index);
+		virtual bool GetBoolSensorState(size_t index) const;
 		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
 		virtual void OpenSolenoid(size_t index,bool Open);
 	protected: //from Tank_Drive_Control_Interface

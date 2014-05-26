@@ -166,6 +166,7 @@ MainRobot = {
 			--This allows gain assist to apply max voltage to its descent
 			chipshot_angle_deg=45,
 			goalshot_angle_deg=90,
+			auto_deploy_arm='y',
 		},
 		intake=
 		{
@@ -404,7 +405,7 @@ MainRobot = {
 			--Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
 			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
 			--Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
+			Winch_FireManager={type="joystick_button", key=1, keyboard='j', on_off=true},
 			Winch_Advance={type="keyboard", key='k', on_off=true},
 			--IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--IntakeArm_SetDeployed={type="keyboard", key='l', on_off=false},
@@ -412,8 +413,9 @@ MainRobot = {
 			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},
 			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false},
 			Winch_Advance={type="keyboard", key='k', on_off=true},
-			Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
-			Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
+			--Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
+			--Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
+			IntakeArm_DeployManager={type="keyboard", key='u', on_off=true},
 			TestAuton={type="keyboard", key='g', on_off=false},
 			--Slide={type="keyboard", key='g', on_off=false},
 		},
