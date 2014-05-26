@@ -155,11 +155,146 @@ void FRC_2014_Robot::PitchRamp::ResetPos()
  /*														FRC_2014_Robot::Winch														*/
 /***********************************************************************************************************************************/
 
-FRC_2014_Robot::Winch::Winch(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("Winch",robot_control,eWinch),m_pParent(parent),m_Advance(false)
+
+class WinchFireManager : public AtomicGoal
 {
+private:
+	FRC_2014_Robot &m_Robot;
+	bool m_IsFireButtonDown;
+
+	class SetUpProps
+	{
+	protected:
+		WinchFireManager *m_Parent;
+		FRC_2014_Robot &m_Robot;
+		Entity2D_Kind::EventMap &m_EventMap;
+	public:
+		SetUpProps(WinchFireManager *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot),m_EventMap(*m_Robot.GetEventMap())
+		{	
+		}
+	};
+
+	class Fire : public AtomicGoal, public SetUpProps
+	{
+	private:
+		bool m_IsOn;
+	public:
+		Fire(WinchFireManager *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			ActivateIfInactive();
+			m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
+			m_Status=eCompleted;
+			if (m_IsOn==false)
+				m_Parent->m_Robot.SetWinchFireSequenceActive(false);  //the catapult should be disengaged long enough to auto-close intake
+			return m_Status;
+		}
+	};
+
+	class WaitWhileButtonDown : public AtomicGoal, public SetUpProps
+	{
+	public:
+		WaitWhileButtonDown(WinchFireManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			m_Status=m_Parent->m_IsFireButtonDown?eActive:eCompleted;
+			return m_Status;
+		}
+	};
+
+	class EnsureArmDown : public AtomicGoal, public SetUpProps
+	{
+		public:
+			EnsureArmDown(WinchFireManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_Status=m_Parent->m_Robot.GetIsArmDown()?eCompleted:eActive;
+				return m_Status;
+			}
+	};
+
+	class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
+	{
+	public:
+		Fire_Sequence(WinchFireManager *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
+		virtual void Activate()
+		{
+			AddSubgoal(new Fire(m_Parent,false));
+			//AddSubgoal(new Goal_Wait(.500));
+			MultitaskGoal *WaitingForRelease=new MultitaskGoal(true);  //wait for time and release of button
+			WaitingForRelease->AddGoal(new Goal_Wait(.500));
+			WaitingForRelease->AddGoal(new WaitWhileButtonDown(m_Parent));
+			AddSubgoal(WaitingForRelease);
+			AddSubgoal(new Fire(m_Parent,true));
+			if (m_Parent->m_Robot.GetAutoDeployIntake())
+				AddSubgoal(new EnsureArmDown(m_Parent));
+			m_Status=eActive;
+		}
+	} *m_Fire_Sequence;
+public:
+	WinchFireManager(FRC_2014_Robot &robot) : m_Robot(robot),m_IsFireButtonDown(false)
+	{
+		m_Fire_Sequence=new Fire_Sequence(this);
+		m_Status=eInactive;
+	}
+	~WinchFireManager()
+	{
+		if (m_Fire_Sequence)
+		{
+			delete m_Fire_Sequence;
+			m_Fire_Sequence=NULL;
+		}
+	}
+	void Activate()
+	{
+		//we'll do just simply discard for any state besides inactive
+		if (m_Status!=eActive)
+		{
+			m_Status=eActive;
+			m_Fire_Sequence->Activate();
+			m_Robot.SetWinchFireSequenceActive(true);
+		}
+	}
+	Goal_Status Process(double dTime_s)
+	{
+		if (m_IsFireButtonDown)
+			Activate();
+		if (m_Status==eActive)
+			m_Status=m_Fire_Sequence->Process(dTime_s);
+		return m_Status;
+	}
+
+	void Terminate() 
+	{
+		if (m_Fire_Sequence->GetStatus()!=eInactive)
+			m_Fire_Sequence->Terminate();
+		m_Status=eFailed;
+	}
+	void SetFireButton(bool ReleaseClutch)
+	{
+		m_IsFireButtonDown=ReleaseClutch;
+	}
+};
+
+
+FRC_2014_Robot::Winch::Winch(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
+	Rotary_Position_Control("Winch",robot_control,eWinch),m_pParent(parent),m_WinchFireManager(NULL),m_Advance(false)
+{
+	m_WinchFireManager=new WinchFireManager(*parent);
 }
 
+FRC_2014_Robot::Winch::~Winch()
+{
+	if (m_WinchFireManager)  //check for NULL on other platforms
+	{
+		delete m_WinchFireManager;
+		m_WinchFireManager=NULL;
+	}
+}
 
 void FRC_2014_Robot::Winch::Advance(bool on)
 {
@@ -191,6 +326,7 @@ void FRC_2014_Robot::Winch::TimeChange(double dTime_s)
 		const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
 		SmartDashboard::PutNumber("Catapult_Angle",90.0-(RAD_2_DEG(GetPos_m()*c_GearToArmRatio)));
 	}
+	m_WinchFireManager->Process(dTime_s);
 }
 
 
@@ -223,8 +359,19 @@ void FRC_2014_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
 		m_pParent->m_RobotControl->Reset_Rotary(eWinch);
 	}
 }
+void FRC_2014_Robot::Winch::Winch_FireManager(bool ReleaseClutch)
+{
+	WinchFireManager *fm=dynamic_cast<WinchFireManager *>(m_WinchFireManager);
+	fm->SetFireButton(ReleaseClutch);
+}
 
-bool FRC_2014_Robot::Winch::DidHitMaxLimit()
+bool FRC_2014_Robot::Winch::GetAutoDeployIntake() const
+{
+	const FRC_2014_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2014RobotProps();
+	return props.Catapult_Robot_Props.AutoDeployArm;
+}
+
+bool FRC_2014_Robot::Winch::DidHitMaxLimit() const
 {
 	return m_pParent->m_RobotControl->GetBoolSensorState(eCatapultLimit);
 }
@@ -243,6 +390,7 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Winch_Advance"].Subscribe(ehl,*this, &FRC_2014_Robot::Winch::Advance);
 
 		em->EventOnOff_Map["Winch_Fire"].Subscribe(ehl, *this, &FRC_2014_Robot::Winch::Fire_Catapult);
+		em->EventOnOff_Map["Winch_FireManager"].Subscribe(ehl, *this, &FRC_2014_Robot::Winch::Winch_FireManager);
 	}
 	else
 	{
@@ -255,12 +403,185 @@ void FRC_2014_Robot::Winch::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Winch_Advance"].Remove(*this, &FRC_2014_Robot::Winch::Advance);
 
 		em->EventOnOff_Map["Winch_Fire"]  .Remove(*this, &FRC_2014_Robot::Winch::Fire_Catapult);
+		em->EventOnOff_Map["Winch_FireManager"]  .Remove(*this, &FRC_2014_Robot::Winch::Winch_FireManager);
 	}
 }
   /***********************************************************************************************************************************/
  /*													FRC_2014_Robot::Intake_Arm														*/
 /***********************************************************************************************************************************/
 
+class IntakeArmManager : public AtomicGoal
+{
+private:
+	FRC_2014_Robot &m_Robot;
+	bool m_IsArmButtonDown;
+	bool m_WinchFireSequenceActive;
+
+	class SetUpProps
+	{
+	protected:
+		IntakeArmManager *m_Parent;
+		FRC_2014_Robot &m_Robot;
+		Entity2D_Kind::EventMap &m_EventMap;
+	public:
+		SetUpProps(IntakeArmManager *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot),m_EventMap(*m_Robot.GetEventMap())
+		{	
+		}
+	};
+
+	class WaitWhileButtonDown : public AtomicGoal, public SetUpProps
+	{
+	public:
+		WaitWhileButtonDown(IntakeArmManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			m_Status=(m_Parent->m_IsArmButtonDown||m_Parent->m_WinchFireSequenceActive)?eActive:eCompleted;
+			return m_Status;
+		}
+	};
+
+
+	class Intake_Deploy : public AtomicGoal, public SetUpProps
+	{
+	private:
+		bool m_IsOn;
+	public:
+		Intake_Deploy(IntakeArmManager *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
+		virtual void Activate() {m_Status=eActive;}
+		virtual Goal_Status Process(double dTime_s)
+		{
+			ActivateIfInactive();
+			m_EventMap.EventOnOff_Map["Robot_CatcherShooter"].Fire(m_IsOn);
+			m_Status=eCompleted;
+			return m_Status;
+		}
+	};
+
+	class Intake_Sequence : public Generic_CompositeGoal, public SetUpProps
+	{
+	public:
+		Intake_Sequence(IntakeArmManager *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
+		virtual void Activate()
+		{
+			AddSubgoal(new Intake_Deploy(m_Parent,false));
+			AddSubgoal(new WaitWhileButtonDown(m_Parent));
+			AddSubgoal(new Intake_Deploy(m_Parent,true));
+			m_Status=eActive;
+		}
+	} *m_Intake_Sequence;
+public:
+	IntakeArmManager(FRC_2014_Robot &robot) : m_Robot(robot),m_IsArmButtonDown(false),m_WinchFireSequenceActive(false)
+	{
+		m_Intake_Sequence=new Intake_Sequence(this);
+		m_Status=eInactive;
+	}
+	~IntakeArmManager()
+	{
+		if (m_Intake_Sequence)
+		{
+			delete m_Intake_Sequence;
+			m_Intake_Sequence=NULL;
+		}
+	}
+	void Activate()
+	{
+		//we'll do just simply discard for any state besides inactive
+		if (m_Status!=eActive)
+		{
+			m_Status=eActive;
+			m_Intake_Sequence->Activate();
+		}
+	}
+	Goal_Status Process(double dTime_s)
+	{
+		if (m_IsArmButtonDown || m_WinchFireSequenceActive)
+			Activate();
+		if (m_Status==eActive)
+			m_Status=m_Intake_Sequence->Process(dTime_s);
+		return m_Status;
+	}
+
+	void Terminate() 
+	{
+		if (m_Intake_Sequence->GetStatus()!=eInactive)
+			m_Intake_Sequence->Terminate();
+		m_Status=eFailed;
+	}
+	void SetIntakeButton(bool DeployArm)
+	{
+		m_IsArmButtonDown=DeployArm;
+	}
+	void SetWinchFireSequenceActive(bool WinchFireSequenceState)
+	{
+		m_WinchFireSequenceActive=WinchFireSequenceState;
+	}
+};
+
+FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent) : m_pParent(parent),m_ArmTimer(0.0)
+{
+	m_IntakeArmManager=new IntakeArmManager(*parent);
+}
+
+FRC_2014_Robot::Intake_Arm::~Intake_Arm()
+{
+	if (m_IntakeArmManager)  //check for NULL on other platforms
+	{
+		delete m_IntakeArmManager;
+		m_IntakeArmManager=NULL;
+	}
+}
+
+void FRC_2014_Robot::Intake_Arm::SetIntakeButton(bool DeployArm)
+{
+	IntakeArmManager *iam=dynamic_cast<IntakeArmManager *>(m_IntakeArmManager);
+	iam->SetIntakeButton(DeployArm);
+}
+
+void FRC_2014_Robot::Intake_Arm::SetWinchFireSequenceActive(bool WinchFireSequenceState)
+{
+	if (m_pParent->GetAutoDeployIntake())
+	{
+		IntakeArmManager *iam=dynamic_cast<IntakeArmManager *>(m_IntakeArmManager);
+		iam->SetWinchFireSequenceActive(WinchFireSequenceState);
+	}
+}
+
+const double c_Intake_Arm_DownWait_Threshold=0.250;  //250 ms for arm to deploy (could script this if necessary)
+
+bool FRC_2014_Robot::Intake_Arm::GetIsArmDown() const 
+{
+	return m_ArmTimer>=c_Intake_Arm_DownWait_Threshold;
+}
+
+void FRC_2014_Robot::Intake_Arm::TimeChange(double dTime_s)
+{
+	Goal::Goal_Status status=m_IntakeArmManager->Process(dTime_s);
+	if (status==Goal::eActive)
+	{
+		if (m_ArmTimer<c_Intake_Arm_DownWait_Threshold)
+			m_ArmTimer+=dTime_s;
+	}
+	else
+		m_ArmTimer=0.0;
+	//SmartDashboard::PutNumber("TestArmDownTime",m_ArmTimer);
+}
+void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
+{
+	Base::EventMap *em=m_pParent->GetEventMap();
+	if (Bind)
+	{
+		em->EventOnOff_Map["IntakeArm_DeployManager"].Subscribe(ehl, *this, &FRC_2014_Robot::Intake_Arm::SetIntakeButton);
+	}
+	else
+	{
+		em->EventOnOff_Map["IntakeArm_DeployManager"]  .Remove(*this, &FRC_2014_Robot::Intake_Arm::SetIntakeButton);
+	}
+
+}
+
+
+#if 0
 FRC_2014_Robot::Intake_Arm::Intake_Arm(FRC_2014_Robot *parent,Rotary_Control_Interface *robot_control) : 
 	Rotary_Position_Control("IntakeArm",robot_control,eIntakeArm1),m_pParent(parent),m_Advance(false),m_Retract(false)
 {
@@ -318,12 +639,12 @@ void FRC_2014_Robot::Intake_Arm::SetSquirt()
 	SetIntendedPosition(props.Intake_Robot_Props.Squirt_Angle);
 }
 
-bool FRC_2014_Robot::Intake_Arm::DidHitMinLimit()
+bool FRC_2014_Robot::Intake_Arm::DidHitMinLimit() const
 {
 	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMin1);
 }
 
-bool FRC_2014_Robot::Intake_Arm::DidHitMaxLimit()
+bool FRC_2014_Robot::Intake_Arm::DidHitMaxLimit() const
 {
 	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMax1);
 }
@@ -357,6 +678,7 @@ void FRC_2014_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
 	}
 }
 
+#endif
   /***********************************************************************************************************************************/
  /*													FRC_2014_Robot::Intake_Rollers													*/
 /***********************************************************************************************************************************/
@@ -419,7 +741,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 FRC_2014_Robot::FRC_2014_Robot(const char EntityName[],FRC_2014_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
-		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),m_Intake_Arm(this,robot_control),
+		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),m_Intake_Arm(this),
 		m_Intake_Rollers(this,robot_control),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_LatencyCounter(0.0),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
 		m_AutonPresetIndex(0),m_YawAngle(0.0),
@@ -445,7 +767,7 @@ void FRC_2014_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 	//set to the default key position
 	//const FRC_2014_Robot_Props &robot2014props=RobotProps->GetFRC2014RobotProps();
 	m_Winch.Initialize(em,RobotProps?&RobotProps->GetWinchProps():NULL);
-	m_Intake_Arm.Initialize(em,RobotProps?&RobotProps->GetIntake_ArmProps():NULL);
+	//m_Intake_Arm.Initialize(em,RobotProps?&RobotProps->GetIntake_ArmProps():NULL);
 	m_Intake_Rollers.Initialize(em,RobotProps?&RobotProps->GetIntakeRollersProps():NULL);
 }
 void FRC_2014_Robot::ResetPos()
@@ -457,7 +779,7 @@ void FRC_2014_Robot::ResetPos()
 	if (!GetBypassPosAtt_Update())
 	{
 		m_Winch.ResetPos();
-		m_Intake_Arm.ResetPos();
+		//m_Intake_Arm.ResetPos();
 		SetLowGear(true);
 	}
 	m_Intake_Rollers.ResetPos();  //ha pedantic
@@ -534,7 +856,7 @@ void FRC_2014_Robot::TimeChange(double dTime_s)
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
 	m_Winch.AsEntity1D().TimeChange(dTime_s);
-	m_Intake_Arm.AsEntity1D().TimeChange(dTime_s);
+	m_Intake_Arm.TimeChange(dTime_s);
 	m_Intake_Rollers.AsEntity1D().TimeChange(dTime_s);
 
 	#ifdef __EnableShapeTrackingSimulation__
@@ -732,7 +1054,7 @@ void FRC_2014_Robot::BindAdditionalEventControls(bool Bind)
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
 	m_Winch.AsShip1D().BindAdditionalEventControls(Bind);
-	m_Intake_Arm.AsShip1D().BindAdditionalEventControls(Bind);
+	m_Intake_Arm.BindAdditionalEventControls(Bind);
 	m_Intake_Rollers.AsShip1D().BindAdditionalEventControls(Bind);
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
@@ -847,6 +1169,7 @@ FRC_2014_Robot_Properties::FRC_2014_Robot_Properties()  : m_TurretProps(
 		//This allows gain assist to apply max voltage to its descent
 		props.Catapult_Robot_Props.ChipShotAngle=DEG_2_RAD(45.0);
 		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(90.0);
+		props.Catapult_Robot_Props.AutoDeployArm=false;
 
 		props.Intake_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Intake_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
@@ -948,8 +1271,9 @@ const char * const g_FRC_2014_Controls_Events[] =
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 	"Robot_SetDriverOverride",
-	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_Advance",
-	"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
+	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_FireManager","Winch_Advance",
+	//"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
+	"IntakeArm_DeployManager",
 	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
 	"Robot_CatcherShooter","Robot_CatcherShooter_On","Robot_CatcherShooter_Off",
 	"Robot_CatcherIntake","Robot_CatcherIntake_On","Robot_CatcherIntake_Off",
@@ -1031,6 +1355,7 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			err=script.GetField("goalshot_angle_deg", NULL, NULL, &fTest);
 			if (!err)
 				cat_props.GoalShotAngle=DEG_2_RAD(fTest);
+			SCRIPT_TEST_BOOL_YES(cat_props.AutoDeployArm,"auto_deploy_arm");
 			script.Pop();
 		}
 		err = script.GetFieldTable("intake");
@@ -1073,12 +1398,12 @@ void FRC_2014_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_WinchProps.LoadFromScript(script);
 			script.Pop();
 		}
-		err = script.GetFieldTable("intake_arm");
-		if (!err)
-		{
-			m_Intake_ArmProps.LoadFromScript(script);
-			script.Pop();
-		}
+		//err = script.GetFieldTable("intake_arm");
+		//if (!err)
+		//{
+		//	m_Intake_ArmProps.LoadFromScript(script);
+		//	script.Pop();
+		//}
 
 		m_LowGearProps=*this;  //copy redundant data first
 		err = script.GetFieldTable("low_gear");
@@ -1932,7 +2257,7 @@ void FRC_2014_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	}
 }
 
-bool FRC_2014_Robot_Control::GetBoolSensorState(size_t index)
+bool FRC_2014_Robot_Control::GetBoolSensorState(size_t index) const
 {
 	bool ret;
 	switch (index)
@@ -2136,3 +2461,4 @@ void FRC_2014_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 }
 
 #endif
+
