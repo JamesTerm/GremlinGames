@@ -142,8 +142,8 @@ class COMMON_API Rotary_Position_Control : public Rotary_System
 		PotUsage GetPotUsage() const {return m_PotentiometerState;}
 		virtual double GetMatchVelocity() const {return m_MatchVelocity;}
 		//Override these methods if the rotary system has some limit switches included in its setup
-		virtual bool DidHitMinLimit() {return false;}
-		virtual bool DidHitMaxLimit() {return false;}
+		virtual bool DidHitMinLimit() const {return false;}
+		virtual bool DidHitMaxLimit() const {return false;}
 };
 
 ///This is the next layer of the linear Ship_1D that converts velocity into voltage, on a system that has sensor feedback
