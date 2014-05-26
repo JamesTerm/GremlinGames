@@ -39,7 +39,8 @@ MainRobot = {
 	--Version 1.5 is 1.3 merge plus preliminary draft with corrected gear ratios, low gear fixes in torque and gain assist
 	--				as well as added tank strafe axis assignments
 	--Version 1.6 Drive gear rates and encoders calibrated
-	version = 1.6;
+	--Version 1.7 Added new Catapult release manager with option to ensure intake is lowered
+	version = 1.7;
 	control_assignments =
 	{
 		--by default module is 1, so only really need it for 2
@@ -167,6 +168,7 @@ MainRobot = {
 			--This allows gain assist to apply max voltage to its descent
 			chipshot_angle_deg=45,
 			goalshot_angle_deg=90,
+			auto_deploy_arm='y',
 		},
 		intake=
 		{
@@ -447,12 +449,14 @@ MainRobot = {
 			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Analog_Turn = {type="joystick_culver", key_x=3, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Robot_SetLowGearOff = {type="joystick_button", key=2, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=1, on_off=false},
+			--Robot_SetLowGearOff = {type="joystick_button", key=2, on_off=false},
+			--Robot_SetLowGearOn = {type="joystick_button", key=1, on_off=false},
 			Winch_SetGoalShot = {type="joystick_button", key=3, on_off=false},
+			Winch_FireManager={type="joystick_button", key=1, keyboard='j', on_off=true},
+			IntakeArm_DeployManager={type="joystick_button", key=2, keyboard='u', on_off=true},
 						
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
+			--Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
 			Turn_180_Hold = {type="joystick_button", key=6, on_off=true},
 			FlipY_Hold = {type="joystick_button", key=6, on_off=true},
 			SlideHold = {type="joystick_button", key=6, on_off=true}
