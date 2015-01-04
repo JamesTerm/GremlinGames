@@ -393,8 +393,8 @@ MainRobot = {
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
 			--Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
-			Robot_SetLowGearOff = {type="joystick_button", key=8, on_off=false},
-			Robot_SetLowGearOn = {type="joystick_button", key=6, on_off=false},
+			Robot_SetLowGearOff = {type="joystick_button", key=8, keyboard=';', on_off=false},
+			Robot_SetLowGearOn = {type="joystick_button", key=6, keyboard='l', on_off=false},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Turn_180 = {type="joystick_button", key=7, on_off=false},
 			Turn_180_Hold = {type="joystick_button", key=7, on_off=true},
@@ -473,7 +473,7 @@ MainRobot = {
 			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
 			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
 			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire={type="joystick_button", key=1, keyboard='j', on_off=true},
+			Winch_Fire={type="joystick_button", key=1, on_off=true},
 		},
 		Joystick_4 =
 		{
