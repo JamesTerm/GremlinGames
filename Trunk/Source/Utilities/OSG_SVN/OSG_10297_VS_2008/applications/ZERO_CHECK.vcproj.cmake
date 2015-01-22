@@ -21,7 +21,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				ExceptionHandling="FALSE"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;"
 				AssemblerListingLocation="Debug"
@@ -31,7 +31,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -62,7 +62,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				ExceptionHandling="FALSE"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;"
 				AssemblerListingLocation="Release"
@@ -72,7 +72,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -99,14 +99,14 @@
 			Name="CMake Rules"
 			Filter="">
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\ZERO_CHECK.vcproj.cmake.rule">
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\ZERO_CHECK.vcproj.cmake.rule">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
 					Description="Checking Build System"
-					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgconv\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgfilecache\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgversion\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgviewer\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
+					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -H$(GG_UTILITIES)/OSG_SVN/OpenSceneGraph -B$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008"
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgconv\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgfilecache\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgversion\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgviewer\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
 					Outputs="ZERO_CHECK.vcproj.cmake"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -114,21 +114,21 @@
 					<Tool
 					Name="VCCustomBuildTool"
 					Description="Checking Build System"
-					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgconv\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgfilecache\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgversion\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgviewer\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
+					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -H$(GG_UTILITIES)/OSG_SVN/OpenSceneGraph -B$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008"
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgconv\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgfilecache\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgversion\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgviewer\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
 					Outputs="ZERO_CHECK.vcproj.cmake"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\CMakeFiles\ZERO_CHECK.rule">
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\CMakeFiles\ZERO_CHECK.rule">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
 					Description=""
 					CommandLine=""
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\CMakeFiles\ZERO_CHECK.rule"
-					Outputs="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\CMakeFiles\ZERO_CHECK"/>
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\CMakeFiles\ZERO_CHECK.rule"
+					Outputs="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\CMakeFiles\ZERO_CHECK"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -136,8 +136,8 @@
 					Name="VCCustomBuildTool"
 					Description=""
 					CommandLine=""
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\CMakeFiles\ZERO_CHECK.rule"
-					Outputs="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\CMakeFiles\ZERO_CHECK"/>
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\CMakeFiles\ZERO_CHECK.rule"
+					Outputs="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\CMakeFiles\ZERO_CHECK"/>
 				</FileConfiguration>
 			</File>
 		</Filter>

@@ -21,7 +21,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				ExceptionHandling="FALSE"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;"
 				AssemblerListingLocation="Debug"
@@ -31,7 +31,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -63,7 +63,7 @@ CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&qu
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				ExceptionHandling="FALSE"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;"
 				AssemblerListingLocation="Release"
@@ -73,7 +73,7 @@ CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&qu
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -98,23 +98,23 @@ CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&qu
 	</Configurations>
 	<Files>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt">
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/applications/osgarchive/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;"
+					Description="Building Custom Rule $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/applications/osgarchive/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -H$(GG_UTILITIES)/OSG_SVN/OpenSceneGraph -B$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008"
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;"
 					Outputs="application_osgarchive.vcproj.cmake"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/applications/osgarchive/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;"
+					Description="Building Custom Rule $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/applications/osgarchive/CMakeLists.txt"
+					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -H$(GG_UTILITIES)/OSG_SVN/OpenSceneGraph -B$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008"
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\osgarchive\CMakeLists.txt;"
 					Outputs="application_osgarchive.vcproj.cmake"/>
 				</FileConfiguration>
 			</File>
@@ -122,15 +122,15 @@ CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&qu
 			Name="CMake Rules"
 			Filter="">
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\osgarchive\CMakeFiles\INSTALL_force.rule">
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\osgarchive\CMakeFiles\INSTALL_force.rule">
 				<FileConfiguration
 					Name="Debug|Win32">
 					<Tool
 					Name="VCCustomBuildTool"
 					Description=" "
 					CommandLine=";"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\osgarchive\CMakeFiles\INSTALL_force.rule"
-					Outputs="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\osgarchive\CMakeFiles\INSTALL_force"/>
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\osgarchive\CMakeFiles\INSTALL_force.rule"
+					Outputs="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\osgarchive\CMakeFiles\INSTALL_force"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
@@ -138,8 +138,8 @@ CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&qu
 					Name="VCCustomBuildTool"
 					Description=" "
 					CommandLine=";"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\osgarchive\CMakeFiles\INSTALL_force.rule"
-					Outputs="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\applications\osgarchive\CMakeFiles\INSTALL_force"/>
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\osgarchive\CMakeFiles\INSTALL_force.rule"
+					Outputs="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\applications\osgarchive\CMakeFiles\INSTALL_force"/>
 				</FileConfiguration>
 			</File>
 		</Filter>

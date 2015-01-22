@@ -54,7 +54,7 @@
 				AdditionalOptions=" /Zm1000"
 				Optimization="0"
 				InlineFunctionExpansion="0"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="WIN32,_WINDOWS,_DEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="1"
@@ -62,7 +62,7 @@
 				RuntimeTypeInfo="true"
 				AssemblerListingLocation="Debug"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/bin/Debug/present3D-osgd.pdb"
+				ProgramDataBaseFileName="$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/bin/Debug/present3D-osgd.pdb"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 				CompileAs="2"
@@ -73,7 +73,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="WIN32,_WINDOWS,_DEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -82,12 +82,12 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /STACK:10000000 /machine:I386 /debug"
 				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib OpenThreadsd.lib osgd.lib osgDBd.lib osgUtild.lib osgGAd.lib osgViewerd.lib osgTextd.lib osgVolumed.lib osgFXd.lib ws2_32.lib osgGAd.lib osgUtild.lib osgDBd.lib osgd.lib OpenThreadsd.lib glu32.lib opengl32.lib "
-				OutputFile="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\bin\Debug\present3D-osgd.exe"
+				OutputFile="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\bin\Debug\present3D-osgd.exe"
 				Version="0.0"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\lib\$(OutDir),..\..\lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/bin/$(OutDir)\present3D-osgd.pdb"
+				ProgramDatabaseFile="$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/bin/$(OutDir)\present3D-osgd.pdb"
 				SubSystem="1"
 			/>
 			<Tool
@@ -151,14 +151,14 @@
 				AdditionalOptions=" /Zm1000"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="WIN32,_WINDOWS,NDEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;"
 				ExceptionHandling="1"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				AssemblerListingLocation="Release"
 				ObjectFile="$(IntDir)\"
-				ProgramDataBaseFileName="C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/bin/Release/present3D-osg.pdb"
+				ProgramDataBaseFileName="$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/bin/Release/present3D-osg.pdb"
 				WarningLevel="3"
 				CompileAs="2"
 			/>
@@ -168,7 +168,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="WIN32,_WINDOWS,NDEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;"
-				AdditionalIncludeDirectories="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\include;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -177,11 +177,11 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /STACK:10000000 /machine:I386"
 				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib OpenThreads.lib osg.lib osgDB.lib osgUtil.lib osgGA.lib osgViewer.lib osgText.lib osgVolume.lib osgFX.lib ws2_32.lib osgGA.lib osgUtil.lib osgDB.lib osg.lib OpenThreads.lib glu32.lib opengl32.lib "
-				OutputFile="C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\bin\Release\present3D-osg.exe"
+				OutputFile="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\bin\Release\present3D-osg.exe"
 				Version="0.0"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\lib\$(OutDir),..\..\lib"
-				ProgramDatabaseFile="C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/bin/$(OutDir)\present3D-osg.pdb"
+				ProgramDatabaseFile="$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/bin/$(OutDir)\present3D-osg.pdb"
 				SubSystem="1"
 			/>
 			<Tool
@@ -214,55 +214,55 @@
 			Name="Source Files"
 			>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\AnimationMaterial.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\AnimationMaterial.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\Cluster.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\Cluster.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CompileSlideCallback.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CompileSlideCallback.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ExportHTML.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ExportHTML.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\PickEventHandler.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\PickEventHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\PointsEventHandler.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\PointsEventHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\present3D.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\present3D.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ReaderWriterP3D.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ReaderWriterP3D.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ReaderWriterPaths.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ReaderWriterPaths.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ReadShowFile.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ReadShowFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ShowEventHandler.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ShowEventHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\SlideEventHandler.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\SlideEventHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\SlideShowConstructor.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\SlideShowConstructor.cpp"
 				>
 			</File>
 		</Filter>
@@ -270,57 +270,57 @@
 			Name="Header Files"
 			>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\AnimationMaterial.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\AnimationMaterial.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\Cluster.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\Cluster.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CompileSlideCallback.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CompileSlideCallback.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ExportHTML.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ExportHTML.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\PickEventHandler.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\PickEventHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\PointsEventHandler.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\PointsEventHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ReadShowFile.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ReadShowFile.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\ShowEventHandler.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\ShowEventHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\SlideEventHandler.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\SlideEventHandler.h"
 				>
 			</File>
 			<File
-				RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\SlideShowConstructor.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\SlideShowConstructor.h"
 				>
 			</File>
 		</Filter>
 		<File
-			RelativePath="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt"
+			RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt"
 			>
 			<FileConfiguration
 				Name="Debug|Win32"
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/applications/present3D/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32&#x0D;&#x0A;"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
+					Description="Building Custom Rule $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/applications/present3D/CMakeLists.txt"
+					
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
 					Outputs="application_present3D-osg.vcproj.cmake"
 				/>
 			</FileConfiguration>
@@ -329,9 +329,9 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					Description="Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/applications/present3D/CMakeLists.txt"
-					CommandLine="&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe&quot; -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32&#x0D;&#x0A;"
-					AdditionalDependencies="C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
+					Description="Building Custom Rule $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/applications/present3D/CMakeLists.txt"
+					
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\applications\present3D\CMakeLists.txt;"
 					Outputs="application_present3D-osg.vcproj.cmake"
 				/>
 			</FileConfiguration>

@@ -1,8 +1,8 @@
-# Install script for directory: C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/applications
+# Install script for directory: $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/applications
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  SET(CMAKE_INSTALL_PREFIX "C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/INSTALL")
+  SET(CMAKE_INSTALL_PREFIX "$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/INSTALL")
 ENDIF(NOT DEFINED CMAKE_INSTALL_PREFIX)
 STRING(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -29,11 +29,11 @@ ENDIF(NOT CMAKE_INSTALL_COMPONENT)
 
 IF(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  INCLUDE("C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/applications/osgviewer/cmake_install.cmake")
-  INCLUDE("C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/applications/osgarchive/cmake_install.cmake")
-  INCLUDE("C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/applications/osgconv/cmake_install.cmake")
-  INCLUDE("C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/applications/osgfilecache/cmake_install.cmake")
-  INCLUDE("C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/applications/osgversion/cmake_install.cmake")
-  INCLUDE("C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/applications/present3D/cmake_install.cmake")
+  INCLUDE("$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/applications/osgviewer/cmake_install.cmake")
+  INCLUDE("$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/applications/osgarchive/cmake_install.cmake")
+  INCLUDE("$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/applications/osgconv/cmake_install.cmake")
+  INCLUDE("$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/applications/osgfilecache/cmake_install.cmake")
+  INCLUDE("$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/applications/osgversion/cmake_install.cmake")
+  INCLUDE("$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/applications/present3D/cmake_install.cmake")
 
 ENDIF(NOT CMAKE_INSTALL_LOCAL_ONLY)
