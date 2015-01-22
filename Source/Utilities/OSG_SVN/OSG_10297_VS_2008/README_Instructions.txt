@@ -17,5 +17,26 @@ To build osg:
 2.  export .\Source\Utilities\OSG_SVN\OpenSceneGraph\include these includes to here: 
 .\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\include
 
-3. Then build ALL_Build... it will auto build all of them. This will take about 10 minutes ( a lot of projects)
-4. Once this is done build INSTALL... you can build from INSTALL instead if you wish.
+3. unload projects of: zero check all build and install projects... these could work but you'd need to tweak the location of cmake, and really the things these do are things VS can do anyway.
+	-Right click on those projects and select unload project... the settings to keep them unloaded are stored locally on your machine
+4.  build solution
+
+----
+
+That is pretty much it... they all should build... now some final steps when building the robot code (or gg)
+If you wish to use VS 2008 win 32 builds  you can keep the environment variables as they are in 
+.\Source\Utilities\SetUpEnvironmentVars\SetEnvironment_OSGSVN_VS9.bat
+
+But if you keep this you'll need to export the include files to here
+.\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\INSTALL\include
+and copy 
+.\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib to here:
+.\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\lib
+
+Altenatively you can modify the SetEnvironment_OSGSVN_VS9.bat file to point the include and lib paths to where they reside without a copy.  If you make a different platform it would be good to checkin the projects like this one and a new SetEnvironment batch file to these paths.
+
+
+
+
+
+
