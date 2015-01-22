@@ -26,13 +26,34 @@ If you wish to use VS 2008 win 32 builds  you can keep the environment variables
 
 But if you keep this you'll need to export the include files to here
 .\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\INSTALL\include
+Also export .\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\include (for the config files)
+
 and copy 
+
 .\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib to here:
 .\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\lib
 
 Altenatively you can modify the SetEnvironment_OSGSVN_VS9.bat file to point the include and lib paths to where they reside without a copy.  If you make a different platform it would be good to checkin the projects like this one and a new SetEnvironment batch file to these paths.
 
+------------------------------------
 
+That's to get it to build... to get it to run... you'll need
+.\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\bin to here:
+.\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\INSTALL\bin
+
+to use the batch files that reside in debug_bin and release_bin... once again you may create new batch files per platform to your paths... these simply copy the dll's over to the actual directory used when launching the executable.
+
+A birds eye view of what is needed in its default environment looks like this:
+
+Visual_Studio_9_2008_Win32
+	Install
+		bin
+		include
+	lib
+
+Where... the robot testing code pull the includes and libs to build... and then where the bins pull the dlls to be in the path of the .exe
+
+Good Luck!
 
 
 
