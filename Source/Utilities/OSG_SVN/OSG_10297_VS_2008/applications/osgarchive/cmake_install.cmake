@@ -1,8 +1,8 @@
-# Install script for directory: C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/applications/osgarchive
+# Install script for directory: $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/applications/osgarchive
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  SET(CMAKE_INSTALL_PREFIX "C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/INSTALL")
+  SET(CMAKE_INSTALL_PREFIX "$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/INSTALL")
 ENDIF(NOT DEFINED CMAKE_INSTALL_PREFIX)
 STRING(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -29,6 +29,6 @@ ENDIF(NOT CMAKE_INSTALL_COMPONENT)
 
 SET(application_osgarchive_BUILD_NAME_Debug "Debug/osgarchived.exe")
 SET(application_osgarchive_BUILD_NAME_Release "Release/osgarchive.exe")
-FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE COMPONENTS "openscenegraph" FILES "C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/bin/${application_osgarchive_BUILD_NAME_${CMAKE_INSTALL_CONFIG_NAME}}")
+FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" TYPE EXECUTABLE COMPONENTS "openscenegraph" FILES "$(GG_UTILITIES)/OSG_SVN/OSG_10297_VS_2008/bin/${application_osgarchive_BUILD_NAME_${CMAKE_INSTALL_CONFIG_NAME}}")
 SET(application_osgarchive_REMAPPED_NAME_Debug "osgarchived.exe")
 SET(application_osgarchive_REMAPPED_NAME_Release "osgarchive.exe")
