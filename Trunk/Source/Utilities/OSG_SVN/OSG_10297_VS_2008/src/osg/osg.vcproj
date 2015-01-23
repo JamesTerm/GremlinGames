@@ -54,7 +54,7 @@
 				AdditionalOptions=" /Zm1000"
 				Optimization="0"
 				InlineFunctionExpansion="0"
-				AdditionalIncludeDirectories="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\include;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="WIN32,_WINDOWS,_DEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,OSG_LIBRARY,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;,osg_EXPORTS"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="1"
@@ -73,7 +73,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="WIN32,_WINDOWS,_DEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,OSG_LIBRARY,&quot;CMAKE_INTDIR=\&quot;Debug\&quot;&quot;,osg_EXPORTS"
-				AdditionalIncludeDirectories="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\include;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -82,13 +82,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /STACK:10000000 /machine:I386 /debug"
 				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib OpenThreadsd.lib glu32.lib opengl32.lib "
-				OutputFile="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib\Debug\osgd.dll"
+				OutputFile="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\lib\Debug\osgd.dll"
 				Version="2.9"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\lib\$(OutDir),..\..\lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib\$(OutDir)\osgd.pdb"
-				ImportLibrary="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib\Debug\osgd.lib"
+				ProgramDatabaseFile="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\lib\$(OutDir)\osgd.pdb"
+				ImportLibrary="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\lib\Debug\osgd.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -151,7 +151,7 @@
 				AdditionalOptions=" /Zm1000"
 				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\include;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 				PreprocessorDefinitions="WIN32,_WINDOWS,NDEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,OSG_LIBRARY,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;,osg_EXPORTS"
 				ExceptionHandling="1"
 				RuntimeLibrary="2"
@@ -168,7 +168,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="WIN32,_WINDOWS,NDEBUG,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_DEPRECATE,&quot;OSG_DEBUG_POSTFIX=d&quot;,OSG_LIBRARY,&quot;CMAKE_INTDIR=\&quot;Release\&quot;&quot;,osg_EXPORTS"
-				AdditionalIncludeDirectories="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\include;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include;"
+				AdditionalIncludeDirectories="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -177,12 +177,12 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=" /STACK:10000000 /machine:I386"
 				AdditionalDependencies="$(NOINHERIT) kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib OpenThreads.lib glu32.lib opengl32.lib "
-				OutputFile="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib\Release\osg.dll"
+				OutputFile="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\lib\Release\osg.dll"
 				Version="2.9"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\lib\$(OutDir),..\..\lib"
-				ProgramDatabaseFile="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib\$(OutDir)\osg.pdb"
-				ImportLibrary="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\lib\Release\osg.lib"
+				ProgramDatabaseFile="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\lib\$(OutDir)\osg.pdb"
+				ImportLibrary="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\lib\Release\osg.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -214,519 +214,519 @@
 			Name="Source Files"
 			>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\AlphaFunc.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\AlphaFunc.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\AnimationPath.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\AnimationPath.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ApplicationUsage.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ApplicationUsage.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ArgumentParser.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ArgumentParser.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Array.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Array.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\AudioStream.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\AudioStream.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\AutoTransform.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\AutoTransform.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Billboard.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Billboard.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\BlendColor.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\BlendColor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\BlendEquation.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\BlendEquation.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\BlendFunc.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\BlendFunc.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\BufferObject.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\BufferObject.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Camera.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Camera.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CameraView.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CameraView.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ClampColor.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ClampColor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ClearNode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ClearNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ClipNode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ClipNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ClipPlane.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ClipPlane.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ClusterCullingCallback.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ClusterCullingCallback.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CollectOccludersVisitor.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CollectOccludersVisitor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ColorMask.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ColorMask.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ColorMatrix.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ColorMatrix.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ComputeBoundsVisitor.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ComputeBoundsVisitor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ConvexPlanarOccluder.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ConvexPlanarOccluder.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ConvexPlanarPolygon.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ConvexPlanarPolygon.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CoordinateSystemNode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CoordinateSystemNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CopyOp.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CopyOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CullFace.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CullFace.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CullingSet.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CullingSet.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CullSettings.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CullSettings.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CullStack.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CullStack.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\DeleteHandler.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\DeleteHandler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Depth.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Depth.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\DisplaySettings.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\DisplaySettings.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Drawable.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Drawable.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\DrawPixels.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\DrawPixels.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\dxtctool.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\dxtctool.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Fog.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Fog.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\FragmentProgram.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\FragmentProgram.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\FrameBufferObject.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\FrameBufferObject.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\FrameStamp.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\FrameStamp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\FrontFace.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\FrontFace.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Geode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Geode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Geometry.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Geometry.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\GL2Extensions.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\GL2Extensions.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\GLExtensions.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\GLExtensions.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\GLObjects.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\GLObjects.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\GraphicsContext.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\GraphicsContext.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\GraphicsThread.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\GraphicsThread.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Group.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Group.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Hint.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Hint.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Image.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Image.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ImageSequence.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ImageSequence.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ImageStream.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ImageStream.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ImageUtils.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ImageUtils.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\KdTree.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\KdTree.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Light.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Light.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\LightModel.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\LightModel.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\LightSource.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\LightSource.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\LineSegment.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\LineSegment.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\LineStipple.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\LineStipple.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\LineWidth.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\LineWidth.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\LOD.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\LOD.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\LogicOp.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\LogicOp.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Material.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Material.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Math.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Math.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Matrixd.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Matrixd.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\MatrixDecomposition.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\MatrixDecomposition.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Matrixf.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Matrixf.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\MatrixTransform.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\MatrixTransform.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Multisample.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Multisample.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Node.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Node.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\NodeCallback.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\NodeCallback.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\NodeTrackerCallback.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\NodeTrackerCallback.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\NodeVisitor.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\NodeVisitor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Notify.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Notify.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Object.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Object.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\OccluderNode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\OccluderNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\OcclusionQueryNode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\OcclusionQueryNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\PlatformSpecifics\Windows\OpenSceneGraphVersionInfo.rc"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\PlatformSpecifics\Windows\OpenSceneGraphVersionInfo.rc"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\OperationThread.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\OperationThread.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\PagedLOD.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\PagedLOD.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Point.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Point.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\PointSprite.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\PointSprite.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\PolygonMode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\PolygonMode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\PolygonOffset.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\PolygonOffset.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\PolygonStipple.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\PolygonStipple.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\PositionAttitudeTransform.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\PositionAttitudeTransform.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\PrimitiveSet.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\PrimitiveSet.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Program.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Program.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Projection.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Projection.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ProxyNode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ProxyNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Quat.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Quat.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Referenced.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Referenced.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Scissor.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Scissor.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Sequence.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Sequence.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ShadeModel.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ShadeModel.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Shader.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Shader.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ShadowVolumeOccluder.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ShadowVolumeOccluder.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Shape.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Shape.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\ShapeDrawable.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\ShapeDrawable.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\State.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\State.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\StateAttribute.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\StateAttribute.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\StateSet.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\StateSet.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Stats.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Stats.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Stencil.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Stencil.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\StencilTwoSided.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\StencilTwoSided.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Switch.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Switch.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TexEnv.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TexEnv.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TexEnvCombine.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TexEnvCombine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TexEnvFilter.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TexEnvFilter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TexGen.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TexGen.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TexGenNode.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TexGenNode.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TexMat.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TexMat.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Texture.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Texture.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Texture1D.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Texture1D.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Texture2D.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Texture2D.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Texture2DArray.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Texture2DArray.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Texture3D.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Texture3D.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TextureCubeMap.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TextureCubeMap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TextureRectangle.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TextureRectangle.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Timer.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Timer.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\TransferFunction.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\TransferFunction.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Transform.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Transform.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Uniform.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Uniform.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Version.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Version.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\VertexProgram.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\VertexProgram.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\View.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\View.cpp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Viewport.cpp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\Viewport.cpp"
 				>
 			</File>
 		</Filter>
@@ -734,668 +734,668 @@
 			Name="Header Files"
 			>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\AlphaFunc"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\AlphaFunc"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\AnimationPath"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\AnimationPath"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ApplicationUsage"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ApplicationUsage"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ArgumentParser"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ArgumentParser"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Array"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Array"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\AudioStream"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\AudioStream"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\AutoTransform"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\AutoTransform"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Billboard"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Billboard"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\BlendColor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\BlendColor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\BlendEquation"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\BlendEquation"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\BlendFunc"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\BlendFunc"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\BoundingBox"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\BoundingBox"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\BoundingSphere"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\BoundingSphere"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\BoundsChecking"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\BoundsChecking"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\buffered_value"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\buffered_value"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\BufferObject"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\BufferObject"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Camera"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Camera"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CameraNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CameraNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CameraView"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CameraView"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ClampColor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ClampColor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ClearNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ClearNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ClipNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ClipNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ClipPlane"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ClipPlane"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ClusterCullingCallback"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ClusterCullingCallback"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CollectOccludersVisitor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CollectOccludersVisitor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ColorMask"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ColorMask"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ColorMatrix"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ColorMatrix"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ComputeBoundsVisitor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ComputeBoundsVisitor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OSG_10297_VS_2008\include\osg\Config"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OSG_10297_VS_2008\include\osg\Config"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ConvexPlanarOccluder"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ConvexPlanarOccluder"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ConvexPlanarPolygon"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ConvexPlanarPolygon"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CoordinateSystemNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CoordinateSystemNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CopyOp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CopyOp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CullFace"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CullFace"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CullingSet"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CullingSet"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CullSettings"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CullSettings"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\CullStack"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\CullStack"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\DeleteHandler"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\DeleteHandler"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Depth"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Depth"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\DisplaySettings"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\DisplaySettings"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Drawable"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Drawable"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\DrawPixels"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\DrawPixels"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\dxtctool.h"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\dxtctool.h"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Endian"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Endian"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Export"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Export"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\fast_back_stack"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\fast_back_stack"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Fog"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Fog"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\FragmentProgram"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\FragmentProgram"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\FrameBufferObject"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\FrameBufferObject"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\FrameStamp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\FrameStamp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\FrontFace"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\FrontFace"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Geode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Geode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Geometry"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Geometry"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\GL"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\GL"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\GL2Extensions"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\GL2Extensions"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\GLExtensions"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\GLExtensions"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\GLObjects"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\GLObjects"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\GLU"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\GLU"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\GraphicsContext"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\GraphicsContext"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\GraphicsThread"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\GraphicsThread"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Group"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Group"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Hint"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Hint"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Image"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Image"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ImageSequence"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ImageSequence"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ImageStream"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ImageStream"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ImageUtils"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ImageUtils"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\io_utils"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\io_utils"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\KdTree"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\KdTree"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Light"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Light"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\LightModel"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\LightModel"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\LightSource"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\LightSource"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\LineSegment"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\LineSegment"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\LineStipple"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\LineStipple"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\LineWidth"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\LineWidth"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\LOD"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\LOD"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\LogicOp"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\LogicOp"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Material"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Material"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Math"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Math"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Matrix"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Matrix"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Matrixd"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Matrixd"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Matrixf"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Matrixf"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\MatrixTransform"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\MatrixTransform"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\MixinVector"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\MixinVector"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Multisample"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Multisample"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Node"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Node"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\NodeCallback"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\NodeCallback"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\NodeTrackerCallback"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\NodeTrackerCallback"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\NodeVisitor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\NodeVisitor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Notify"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Notify"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Object"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Object"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\observer_ptr"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\observer_ptr"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\OccluderNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\OccluderNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\OcclusionQueryNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\OcclusionQueryNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\OperationThread"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\OperationThread"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\PagedLOD"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\PagedLOD"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Plane"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Plane"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Point"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Point"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\PointSprite"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\PointSprite"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\PolygonMode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\PolygonMode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\PolygonOffset"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\PolygonOffset"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\PolygonStipple"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\PolygonStipple"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Polytope"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Polytope"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\PositionAttitudeTransform"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\PositionAttitudeTransform"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\PrimitiveSet"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\PrimitiveSet"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Program"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Program"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Projection"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Projection"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ProxyNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ProxyNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Quat"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Quat"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ref_ptr"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ref_ptr"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Referenced"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Referenced"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\RenderInfo"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\RenderInfo"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Scissor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Scissor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Sequence"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Sequence"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ShadeModel"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ShadeModel"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Shader"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Shader"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ShadowVolumeOccluder"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ShadowVolumeOccluder"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Shape"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Shape"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\ShapeDrawable"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\ShapeDrawable"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\State"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\State"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\StateAttribute"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\StateAttribute"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\StateSet"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\StateSet"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Stats"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Stats"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Stencil"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Stencil"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\StencilTwoSided"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\StencilTwoSided"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Switch"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Switch"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TemplatePrimitiveFunctor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TemplatePrimitiveFunctor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TexEnv"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TexEnv"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TexEnvCombine"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TexEnvCombine"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TexEnvFilter"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TexEnvFilter"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TexGen"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TexGen"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TexGenNode"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TexGenNode"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TexMat"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TexMat"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Texture"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Texture"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Texture1D"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Texture1D"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Texture2D"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Texture2D"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Texture2DArray"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Texture2DArray"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Texture3D"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Texture3D"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TextureCubeMap"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TextureCubeMap"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TextureRectangle"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TextureRectangle"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Timer"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Timer"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TransferFunction"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TransferFunction"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Transform"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Transform"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TriangleFunctor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TriangleFunctor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\TriangleIndexFunctor"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\TriangleIndexFunctor"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Uniform"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Uniform"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec2"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec2"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec2b"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec2b"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec2d"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec2d"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec2f"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec2f"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec2s"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec2s"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec3"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec3"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec3b"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec3b"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec3d"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec3d"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec3f"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec3f"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec3s"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec3s"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec4"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec4"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec4b"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec4b"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec4d"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec4d"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec4f"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec4f"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec4s"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec4s"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Vec4ub"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Vec4ub"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Version"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Version"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\VertexProgram"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\VertexProgram"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\View"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\View"
 				>
 			</File>
 			<File
-				RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\include\osg\Viewport"
+				RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\include\osg\Viewport"
 				>
 			</File>
 		</Filter>
 		<File
-			RelativePath="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt"
+			RelativePath="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt"
 			>
 			<FileConfiguration
 				Name="Debug|Win32"
@@ -1404,7 +1404,7 @@
 					Name="VCCustomBuildTool"
 					Description="Building Custom Rule $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/src/osg/CMakeLists.txt"
 					
-					AdditionalDependencies="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\ModuleInstall.cmake;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;"
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\CMakeModules\ModuleInstall.cmake;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;"
 					Outputs="osg.vcproj.cmake"
 				/>
 			</FileConfiguration>
@@ -1415,7 +1415,7 @@
 					Name="VCCustomBuildTool"
 					Description="Building Custom Rule $(GG_UTILITIES)/OSG_SVN/OpenSceneGraph/src/osg/CMakeLists.txt"
 					
-					AdditionalDependencies="D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\ModuleInstall.cmake;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;D:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;"
+					AdditionalDependencies="$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\CMakeModules\ModuleInstall.cmake;&quot;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake&quot;;$(GG_UTILITIES)\OSG_SVN\OpenSceneGraph\src\osg\CMakeLists.txt;"
 					Outputs="osg.vcproj.cmake"
 				/>
 			</FileConfiguration>
