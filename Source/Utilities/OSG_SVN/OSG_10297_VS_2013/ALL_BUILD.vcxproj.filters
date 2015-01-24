@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{648eff22-23d2-4b17-9278-7d89f529af54}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\..\..\..\..\..\..\..\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\ALL_BUILD.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\..\..\..\..\..\..\..\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt" />
+  </ItemGroup>
+</Project>

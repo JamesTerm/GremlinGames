@@ -1,0 +1,117 @@
+The system is: Windows - 6.0 - x86
+Determining if the C compiler works passed with the following output:
+
+Microsoft (R) Visual Studio Version 9.0.21022.8.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec, Configuration: Debug Win32 ------
+1>Compiling...
+1>Microsoft (R) 32-bit C/C++ Optimizing Compiler Version 15.00.21022.08 for 80x86
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>cl /Od /D "WIN32" /D "_WINDOWS" /D "_DEBUG" /D "CMAKE_INTDIR=\"Debug\"" /D "_MBCS" /FD /EHsc /RTCs /MDd /Fo"cmTryCompileExec.dir\Debug\\" /Fd"C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec.pdb" /W3 /c /Zi /TC   /Zm1000
+1>   .\testCCompiler.c
+1>testCCompiler.c
+1>Compiling manifest to resources...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Linking...
+1>Embedding manifest...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Build log was saved at "file://c:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeTmp\cmTryCompileExec.dir\Debug\BuildLog.htm"
+1>cmTryCompileExec - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 1 up-to-date, 0 skipped ==========
+
+
+Determining size of void* passed with the following output:
+
+Microsoft (R) Visual Studio Version 9.0.21022.8.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec, Configuration: Debug Win32 ------
+1>Compiling...
+1>Microsoft (R) 32-bit C/C++ Optimizing Compiler Version 15.00.21022.08 for 80x86
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>cl /Od /D "WIN32" /D "_WINDOWS" /D "_DEBUG" /D "CMAKE_INTDIR=\"Debug\"" /D "_MBCS" /FD /EHsc /RTCs /MDd /Fo"cmTryCompileExec.dir\Debug\\" /Fd"C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec.pdb" /W3 /c /Zi /TC   /Zm1000
+1>   .\CheckTypeSize.c
+1>CheckTypeSize.c
+1>Compiling manifest to resources...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Linking...
+1>Embedding manifest...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Build log was saved at "file://c:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeTmp\cmTryCompileExec.dir\Debug\BuildLog.htm"
+1>cmTryCompileExec - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 1 up-to-date, 0 skipped ==========
+
+
+Determining if the CXX compiler works passed with the following output:
+
+Microsoft (R) Visual Studio Version 9.0.21022.8.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec, Configuration: Debug Win32 ------
+1>Compiling...
+1>Microsoft (R) 32-bit C/C++ Optimizing Compiler Version 15.00.21022.08 for 80x86
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>cl /Od /D "WIN32" /D "_WINDOWS" /D "_DEBUG" /D "CMAKE_INTDIR=\"Debug\"" /D "_MBCS" /FD /EHsc /RTCs /MDd /Fo"cmTryCompileExec.dir\Debug\\" /Fd"C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec.pdb" /W3 /c /Zi /TP   /Zm1000
+1>   .\testCXXCompiler.cxx
+1>testCXXCompiler.cxx
+1>Compiling manifest to resources...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Linking...
+1>Embedding manifest...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Build log was saved at "file://c:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeTmp\cmTryCompileExec.dir\Debug\BuildLog.htm"
+1>cmTryCompileExec - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 1 up-to-date, 0 skipped ==========
+
+
+Performing C++ SOURCE FILE Test _OPENTHREADS_ATOMIC_USE_WIN32_INTERLOCKED succeded with the following output:
+
+Microsoft (R) Visual Studio Version 9.0.21022.8.
+Copyright (C) Microsoft Corp. All rights reserved.
+1>------ Build started: Project: cmTryCompileExec, Configuration: Debug Win32 ------
+1>Compiling...
+1>Microsoft (R) 32-bit C/C++ Optimizing Compiler Version 15.00.21022.08 for 80x86
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>cl /Od /D "WIN32" /D "_WINDOWS" /D "_OPENTHREADS_ATOMIC_USE_WIN32_INTERLOCKED" /D "_DEBUG" /D "CMAKE_INTDIR=\"Debug\"" /D "_MBCS" /FD /EHsc /RTCs /MDd /Fo"cmTryCompileExec.dir\Debug\\" /Fd"C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec.pdb" /W3 /c /Zi /TP   /Zm1000
+1>   .\src.cxx
+1>src.cxx
+1>Compiling manifest to resources...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Linking...
+1>Embedding manifest...
+1>Microsoft (R) Windows (R) Resource Compiler Version 6.0.5724.0
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Build log was saved at "file://c:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeTmp\cmTryCompileExec.dir\Debug\BuildLog.htm"
+1>cmTryCompileExec - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 1 up-to-date, 0 skipped ==========
+
+Return value: 1
+Source file was:
+
+#include <windows.h>
+#include <cstdlib>
+
+int main(int, const char**)
+{
+   volatile long value = 0;
+   long data = 0;
+   long* volatile ptr = &data;
+
+   InterlockedIncrement(&value);
+   MemoryBarrier();
+   InterlockedDecrement(&value);
+
+   if (0 != InterlockedCompareExchange(&value, 1, 0))
+      return EXIT_FAILURE;
+
+   if (ptr != InterlockedCompareExchangePointer((PVOID volatile*)&ptr, (PVOID)ptr, (PVOID)ptr))
+      return EXIT_FAILURE;
+
+   return EXIT_SUCCESS;
+}
+
