@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D77002AF-7E75-43E0-B81F-A2AA2845D508}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>Debug\</OutDir>
+    <IntDir>wrappers.dir\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>Release\</OutDir>
+    <IntDir>wrappers.dir\Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;OSG_DEBUG_POSTFIX=d;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;OSG_DEBUG_POSTFIX=d;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\..\..\..\..\..\..\..\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\wrappers.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">genwrapper -c C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/src/osgWrappers/genwrapper.conf -t C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/src/osgWrappers/Doxyfile.template -d C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph | doxygen -
+genwrapper -c C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/src/osgWrappers/genwrapper.conf -l C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\wrappers.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\wrappers;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">genwrapper -c C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/src/osgWrappers/genwrapper.conf -t C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/src/osgWrappers/Doxyfile.template -d C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph | doxygen -
+genwrapper -c C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/src/osgWrappers/genwrapper.conf -l C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\wrappers.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\wrappers;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\..\..\..\..\..\..\..\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe" -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeSystem.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCCompiler.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\gcc.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeRCCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenGL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Config.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\PlatformSpecifics\Windows\OpenSceneGraphVersionInfo.rc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\Find3rdPartyDependencies.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFreeType.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindInventor.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindJasper.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenEXR.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindCOLLADA.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXine.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenVRML.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindPerformer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGDAL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindCURL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindITK.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindLibVNCServer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOurDCMTK.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenAL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXUL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFFmpeg.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindSDL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGIFLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindJPEG.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPNG.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindTIFF.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindQuickTime.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\OsgMacroUtils.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Documentation.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osg.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgDB.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgFX.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgGA.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgParticle.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgSim.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgText.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgUtil.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgTerrain.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgManipulator.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgViewer.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgWidget.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgShadow.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgAnimation.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgVolume.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgIntrospection.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\cmake_uninstall.cmake.in;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">wrappers.vcproj.cmake;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe" -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeSystem.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCCompiler.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\gcc.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeRCCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenGL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Config.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\PlatformSpecifics\Windows\OpenSceneGraphVersionInfo.rc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\Find3rdPartyDependencies.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFreeType.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindInventor.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindJasper.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenEXR.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindCOLLADA.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXine.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenVRML.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindPerformer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGDAL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindCURL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindITK.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindLibVNCServer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOurDCMTK.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenAL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXUL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFFmpeg.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindSDL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGIFLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindJPEG.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPNG.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindTIFF.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindQuickTime.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\OsgMacroUtils.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Documentation.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osg.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgDB.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgFX.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgGA.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgParticle.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgSim.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgText.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgUtil.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgTerrain.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgManipulator.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgViewer.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgWidget.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgShadow.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgAnimation.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgVolume.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgIntrospection.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\cmake_uninstall.cmake.in;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">wrappers.vcproj.cmake;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ZERO_CHECK.vcxproj">
+      <Project>{40bee315-df12-443d-b1c8-ef9a2a76503a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

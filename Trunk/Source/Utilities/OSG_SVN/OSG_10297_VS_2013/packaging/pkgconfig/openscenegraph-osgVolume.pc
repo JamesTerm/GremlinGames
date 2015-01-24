@@ -1,0 +1,14 @@
+# pkg-config source file
+
+prefix=C:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32/INSTALL
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: openscenegraph-osgVolume
+Description: Volume library for Openscenegraph
+Version: 2.9.5
+Requires: openscenegraph-osgUtil openscenegraph-osgDB openscenegraph-osgGA openscenegraph-osg openthreads
+Conflicts:
+Libs: -L${libdir} -losgVolume
+Cflags: -I${includedir}

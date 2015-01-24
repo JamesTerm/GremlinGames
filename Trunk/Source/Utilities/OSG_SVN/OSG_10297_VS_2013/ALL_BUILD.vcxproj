@@ -1,0 +1,450 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A5A6C818-99CE-4FC8-B666-36D77FEB759A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>Debug\</OutDir>
+    <IntDir>ALL_BUILD.dir\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>Release\</OutDir>
+    <IntDir>ALL_BUILD.dir\Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;OSG_DEBUG_POSTFIX=d;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;OSG_DEBUG_POSTFIX=d;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateStublessProxies>true</GenerateStublessProxies>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <OutputDirectory>$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <DllDataFileName />
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\..\..\..\..\..\..\..\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\ALL_BUILD.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">echo "Build all projects"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\ALL_BUILD.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\ALL_BUILD;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">echo "Build all projects"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\ALL_BUILD.rule;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\ALL_BUILD;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\..\..\..\..\..\..\..\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe" -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeSystem.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCCompiler.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\gcc.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeRCCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenGL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Config.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\PlatformSpecifics\Windows\OpenSceneGraphVersionInfo.rc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\Find3rdPartyDependencies.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFreeType.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindInventor.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindJasper.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenEXR.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindCOLLADA.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXine.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenVRML.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindPerformer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGDAL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindCURL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindITK.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindLibVNCServer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOurDCMTK.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenAL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXUL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFFmpeg.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindSDL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGIFLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindJPEG.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPNG.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindTIFF.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindQuickTime.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\OsgMacroUtils.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Documentation.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osg.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgDB.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgFX.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgGA.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgParticle.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgSim.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgText.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgUtil.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgTerrain.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgManipulator.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgViewer.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgWidget.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgShadow.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgAnimation.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgVolume.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgIntrospection.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\cmake_uninstall.cmake.in;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">wrappers.vcproj.cmake;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule C:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"C:\Program Files (x86)\cmake-2.4.8-win32-x86\bin\cmake.exe" -HC:/Stuff/gg/Source/Utilities/OSG_SVN/OpenSceneGraph -BC:/Stuff/gg/Source/Utilities/OSG_SVN/Visual_Studio_9_2008_Win32
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeSystem.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCCompiler.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeGenericSystem.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\gcc.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\WindowsPaths.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeRCCompiler.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeRCInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCXXInformation.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Platform\Windows-cl.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCPlatform.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\Visual_Studio_9_2008_Win32\CMakeFiles\CMakeCXXPlatform.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenGL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\src\osg\Config.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\PlatformSpecifics\Windows\OpenSceneGraphVersionInfo.rc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\Find3rdPartyDependencies.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFreeType.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindInventor.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindJasper.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenEXR.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindCOLLADA.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXine.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOpenVRML.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindPerformer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGDAL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindCURL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindITK.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindLibVNCServer.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindOurDCMTK.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindOpenAL.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindXUL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindFFmpeg.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindSDL.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindThreads.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFile.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckIncludeFiles.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\CheckLibraryExists.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPkgConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindGIFLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindJPEG.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindPNG.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindZLIB.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\FindTIFF.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\FindQuickTime.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\OsgMacroUtils.cmake;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Modules\Documentation.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osg.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgDB.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgFX.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgGA.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgParticle.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgSim.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgText.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgUtil.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgTerrain.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgManipulator.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgViewer.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgWidget.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgShadow.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgAnimation.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgVolume.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\packaging\pkgconfig\openscenegraph-osgIntrospection.pc.in;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeModules\cmake_uninstall.cmake.in;C:\Program Files (x86)\cmake-2.4.8-win32-x86\share\cmake-2.4\Templates\CMakeWindowsSystemConfig.cmake;C:\Stuff\gg\Source\Utilities\OSG_SVN\OpenSceneGraph\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">wrappers.vcproj.cmake;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="applications\osgarchive\application_osgarchive.vcxproj">
+      <Project>{98b2d958-6603-48fa-9ad2-cde155c51f13}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="applications\osgconv\application_osgconv.vcxproj">
+      <Project>{5bf997e3-04f0-45c1-b420-98a12e7f6b20}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="applications\osgfilecache\application_osgfilecache.vcxproj">
+      <Project>{362a1137-1a3b-4feb-afd6-64222db25b89}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="applications\osgversion\application_osgversion.vcxproj">
+      <Project>{d42e65cc-7e2b-426b-bcda-109bd4aa341e}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="applications\osgviewer\application_osgviewer.vcxproj">
+      <Project>{4c8eb5a5-a086-4aa9-89fc-6853c3636e69}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="applications\present3D\application_present3D-osg.vcxproj">
+      <Project>{33d7d128-76b3-49a9-adc4-56e0db45a37f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\OpenThreads\win32\OpenThreads.vcxproj">
+      <Project>{4df01b18-e3c6-47fc-92b6-765659b11e06}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgAnimation\osgAnimation.vcxproj">
+      <Project>{17b5ea66-f469-4391-b411-66e06e5cee25}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgDB\osgDB.vcxproj">
+      <Project>{1eeea1ee-9592-4860-bfe8-a0915eec2bc0}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgFX\osgFX.vcxproj">
+      <Project>{1f1f9e2b-4689-40da-8a18-d2423f7a1868}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgGA\osgGA.vcxproj">
+      <Project>{10db9791-239c-4b73-86d3-6fa7130a1413}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgManipulator\osgManipulator.vcxproj">
+      <Project>{86711d2f-0dd5-4146-8ba8-9814ddeb3e9d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgParticle\osgParticle.vcxproj">
+      <Project>{3a1e6013-f561-41b9-a79c-604588832f80}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\3dc\osgdb_3dc.vcxproj">
+      <Project>{ce882ad6-3646-49d5-910f-dd0d8782d46f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\3ds\osgdb_3ds.vcxproj">
+      <Project>{48f261ce-04cb-4d9e-851f-e2f14f70a673}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\ac\osgdb_ac.vcxproj">
+      <Project>{b5e5cac7-ae8b-41e6-b504-b3aa446f8aa6}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\bmp\osgdb_bmp.vcxproj">
+      <Project>{c6e7a220-69fd-4a6d-b031-5157b122b079}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\bsp\osgdb_bsp.vcxproj">
+      <Project>{85158547-f084-410e-b4da-2fdb6b5e8f23}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\bvh\osgdb_bvh.vcxproj">
+      <Project>{a30d1025-0cd9-4346-9507-f951b209d75a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\cfg\osgdb_cfg.vcxproj">
+      <Project>{b4c62d8f-9f10-4e33-97c0-d1b205ab07c1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\curl\osgdb_curl.vcxproj">
+      <Project>{9f7b6d0a-77bc-45f1-bcee-4af18d83f59f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\dds\osgdb_dds.vcxproj">
+      <Project>{4f387ff9-0052-4392-ae92-be66f21ffefb}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\dot\osgdb_dot.vcxproj">
+      <Project>{9705e381-ccf9-4e0e-9e78-ac95e71084f1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\dw\osgdb_dw.vcxproj">
+      <Project>{a43dc8ce-5a50-482b-b15b-eb61911a7dc0}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\dxf\osgdb_dxf.vcxproj">
+      <Project>{756bba22-419f-4025-a50d-55544488aaac}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\freetype\osgdb_freetype.vcxproj">
+      <Project>{6da4f907-65ad-4bb5-853b-eef2486dd6f7}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\geo\osgdb_geo.vcxproj">
+      <Project>{402587b7-1738-4467-af2d-4f34df8a1b3e}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\gif\osgdb_gif.vcxproj">
+      <Project>{556603cd-8cc4-4c71-a9b3-7e4d2b88a199}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\glsl\osgdb_glsl.vcxproj">
+      <Project>{aa7ddfb8-2ac7-498e-8255-d116894dd706}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\gz\osgdb_gz.vcxproj">
+      <Project>{09956e79-cb2e-433a-88d2-4098df142db5}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\hdr\osgdb_hdr.vcxproj">
+      <Project>{f144caa4-a510-472c-9ea6-3723f6424686}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\ive\osgdb_ive.vcxproj">
+      <Project>{e4099858-b2f4-4ce9-ab9c-6fd15717ad3a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\jpeg\osgdb_jpeg.vcxproj">
+      <Project>{903a9fd6-89fc-49f0-90d9-196f6adcd16a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\logo\osgdb_logo.vcxproj">
+      <Project>{7c848357-e5cb-4b6a-a4a5-37eed8430c35}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\lwo\osgdb_lwo.vcxproj">
+      <Project>{f9b90dbf-6ce9-4b25-9f0f-b767c8d41694}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\lws\osgdb_lws.vcxproj">
+      <Project>{b3aae86f-c412-406d-829a-c6b4f483ff2f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\md2\osgdb_md2.vcxproj">
+      <Project>{47f9975e-1e4b-46e9-865a-1ba710cb7933}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\mdl\osgdb_mdl.vcxproj">
+      <Project>{fa9efbfc-d994-4bbe-8f1e-99cef5b2c2f1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\normals\osgdb_normals.vcxproj">
+      <Project>{7a42fcba-2ccf-49e6-b600-ec02c55cd857}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\obj\osgdb_obj.vcxproj">
+      <Project>{b72fefe0-9a15-4cd4-91b0-00c1f4a63f1b}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\OpenFlight\osgdb_openflight.vcxproj">
+      <Project>{36e9021e-98db-4578-afca-0e14798524ff}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgAnimation\osgdb_osganimation.vcxproj">
+      <Project>{b0f5b4c0-854e-40d6-b2ab-750d3a254eec}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osga\osgdb_osga.vcxproj">
+      <Project>{f26031c4-7e3a-4114-8cbb-54a38b5118e6}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgFX\osgdb_osgfx.vcxproj">
+      <Project>{61e7c43e-ae7e-4d4b-96f5-25d919e3a0fe}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgParticle\osgdb_osgparticle.vcxproj">
+      <Project>{9d45ebf3-6ada-41d0-8b9c-8c79aeea3007}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgShadow\osgdb_osgshadow.vcxproj">
+      <Project>{c75ee570-82e5-454f-938f-41c6d998905e}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgSim\osgdb_osgsim.vcxproj">
+      <Project>{a9672add-6b0e-47b1-8b55-6d67fd045b48}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgTerrain\osgdb_osgterrain.vcxproj">
+      <Project>{6b45fd10-b27b-4837-91e1-426c0e4aa24c}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgText\osgdb_osgtext.vcxproj">
+      <Project>{12f78f3f-1f01-4ea1-932e-9f92b4f160a1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgtgz\osgdb_osgtgz.vcxproj">
+      <Project>{3369b389-ad6a-498a-a48a-9f62b6873511}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgViewer\osgdb_osgviewer.vcxproj">
+      <Project>{8c2b9343-2b7d-4de0-ba00-9a5a0193aa2b}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgVolume\osgdb_osgvolume.vcxproj">
+      <Project>{c224c7d3-3b4a-4efd-820a-4fe3dd2775c7}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osgWidget\osgdb_osgwidget.vcxproj">
+      <Project>{d8afb9d7-3f62-4644-9471-a1d2cf630e66}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\osg\osgdb_osg.vcxproj">
+      <Project>{4937ee1c-3fa5-4602-a47f-bba47accd779}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\p3d\osgdb_p3d.vcxproj">
+      <Project>{66c461b4-5538-4f18-8ad5-69d07a8645e4}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\pic\osgdb_pic.vcxproj">
+      <Project>{6b5ea3d4-9dc0-4d20-a969-1fd24d051776}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\ply\osgdb_ply.vcxproj">
+      <Project>{6b341b23-8d87-4ea8-86a8-b874d32404e3}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\png\osgdb_png.vcxproj">
+      <Project>{79a42957-0abd-4914-873c-746c7fe7ddb7}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\pnm\osgdb_pnm.vcxproj">
+      <Project>{9bd937f3-1eca-4651-8874-773104feb0fb}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\revisions\osgdb_revisions.vcxproj">
+      <Project>{89d2b1b2-4946-4cb8-9df2-9597d5189c02}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\rgb\osgdb_rgb.vcxproj">
+      <Project>{2e627028-aaaf-4c6e-a1b4-65e9cc94430a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\rot\osgdb_rot.vcxproj">
+      <Project>{faf3fdf3-ef72-47c1-9944-cd2c6468ce65}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\scale\osgdb_scale.vcxproj">
+      <Project>{6285287b-1927-4b48-ab5f-3d4d39243502}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\shp\osgdb_shp.vcxproj">
+      <Project>{42e9e175-4256-42aa-b28f-03988c5fdd4d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\stl\osgdb_stl.vcxproj">
+      <Project>{6e5fca5a-9e48-4134-9a19-10840bba4ef0}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\tga\osgdb_tga.vcxproj">
+      <Project>{8ec351eb-b1c4-4d50-a151-bf058b7e33c3}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\tgz\osgdb_tgz.vcxproj">
+      <Project>{4155d5f5-754c-47f9-a328-697a0173fddc}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\tiff\osgdb_tiff.vcxproj">
+      <Project>{0b5b709a-37b0-4e9e-8015-4aa0809cfe4d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\trans\osgdb_trans.vcxproj">
+      <Project>{1780563c-b999-4349-9612-4f73ca601733}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\txf\osgdb_txf.vcxproj">
+      <Project>{d5bd591c-fd62-4cbd-98bb-2569a2806d80}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\txp\osgdb_txp.vcxproj">
+      <Project>{f65a11d9-b54d-407d-86f9-513aea9a5ad8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\vtf\osgdb_vtf.vcxproj">
+      <Project>{7e6c0ea4-b6a4-4ef5-8f7f-c8558a5bc071}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\x\osgdb_x.vcxproj">
+      <Project>{4e0926d0-9975-4394-aa23-7685a7190b2d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgPlugins\zip\osgdb_zip.vcxproj">
+      <Project>{86b50bd9-dcb6-4cb9-a461-de917d1a4a4a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgShadow\osgShadow.vcxproj">
+      <Project>{f5f097dd-4168-4f4f-99de-ad98ccbd2f80}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgSim\osgSim.vcxproj">
+      <Project>{efcd6aa6-9cb2-4ace-ac48-5e2213aab782}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgTerrain\osgTerrain.vcxproj">
+      <Project>{5f5ef9f5-166a-4c11-a7b2-f0fc2a4efaed}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgText\osgText.vcxproj">
+      <Project>{8756d008-796e-48fc-913e-65004b0c41c2}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgUtil\osgUtil.vcxproj">
+      <Project>{f42f04d6-d30c-4e21-8914-bdee41c588ff}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgViewer\osgViewer.vcxproj">
+      <Project>{664c6b80-6639-476e-9c73-377a7f8e3037}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgVolume\osgVolume.vcxproj">
+      <Project>{83bea144-a57d-4311-9f17-113e5fe2a44b}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osgWidget\osgWidget.vcxproj">
+      <Project>{9ef3b00f-6159-461b-9cc8-36a464751597}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="src\osg\osg.vcxproj">
+      <Project>{6f1acfce-4988-4802-9471-774c1b0d3c43}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="ZERO_CHECK.vcxproj">
+      <Project>{40bee315-df12-443d-b1c8-ef9a2a76503a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
