@@ -516,43 +516,9 @@ FRC_2015_Robot_Properties::FRC_2015_Robot_Properties()  : m_TurretProps(
 		const double c_PotentiometerToArmRatio=36.0/54.0;
 
 		FRC_2015_Robot_Props props;
-		//const double KeyDistance=Inches2Meters(144);
-		//const double KeyWidth=Inches2Meters(101);
-		//const double KeyDepth=Inches2Meters(48);   //not used (yet)
-		//const double DefaultY=c_HalfCourtLength-KeyDistance;
-		//const double HalfKeyWidth=KeyWidth/2.0;
-
-		props.Catapult_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
-		props.Catapult_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
-		props.Catapult_Robot_Props.ChipShotAngle=DEG_2_RAD(45.0);
-		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(90.0);
-		props.Catapult_Robot_Props.AutoDeployArm=false;
-
-		props.Intake_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
-		props.Intake_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
-		//The intake uses a starting point of 90 to force numbers down from 90 - 0 where zero is pointing straight out
-		//This allows the gain assist to apply max force when it goes from deployed to stowed
-		props.Intake_Robot_Props.Stowed_Angle=DEG_2_RAD(90.0);
-		props.Intake_Robot_Props.Deployed_Angle=DEG_2_RAD(61.0);
-		props.Intake_Robot_Props.Squirt_Angle=DEG_2_RAD(90.0);
-
-		props.BallTargeting_Props.CameraOffsetScalar=0.20;
-		props.BallTargeting_Props.LatencyCounterThreshold=0.200; //A bit slow but confirmed
 
 		FRC_2015_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
 		auton.FirstMove_ft=2.0;
-		auton.FirstMoveWait_s=0.500;
-		auton.SecondMove_ft=4.0;
-		auton.ScootBack_ft=0.5;
-		auton.SecondBallRollerTime_s=0.500;  //wishful thinking
-		auton.RollUpLoadSpeed=1.0;
-		auton.LandOnBallRollerTime_s=0.500;
-		auton.LandOnBallRollerSpeed=1.0;
-		auton.RollerDriveScalar=0.5;  //WAG
-		auton.LoadedBallWait_s=0.500;
-		auton.ThreeBallRotation_deg=45;
-		//In theory that would put it back to start shifted over
-		auton.ThreeBallDistance_ft=-1 * auton.FirstMove_ft/cos(DEG_2_RAD(auton.ThreeBallRotation_deg));
 		m_FRC2015RobotProps=props;
 	}
 	{
@@ -643,12 +609,8 @@ void FRC_2015_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 {
 	if (ShowParameters)
 	{
-		const char * const SmartNames[]={"first_move_ft",	"first_move_wait",	"second_move_ft",	"land_on_ball_roller_time",
-			"land_on_ball_roller_speed",	"load_ball_roller_speed",	"scoot_back_ft",	"second_ball_roller_time",		
-			"roller_drive_speed",	"loaded_ball_wait",		"third_ball_angle_deg",		"third_ball_distance_ft"};
-		double * const SmartVariables[]={&FirstMove_ft,&FirstMoveWait_s,&SecondMove_ft,&LandOnBallRollerTime_s,
-			&LandOnBallRollerSpeed,&RollUpLoadSpeed,&ScootBack_ft,&SecondBallRollerTime_s,
-			&RollerDriveScalar,&LoadedBallWait_s,&ThreeBallRotation_deg,&ThreeBallDistance_ft};
+		const char * const SmartNames[]={"first_move_ft"};
+		double * const SmartVariables[]={&FirstMove_ft};
 		for (size_t i=0;i<_countof(SmartNames);i++)
 		try
 		{
@@ -691,47 +653,6 @@ void FRC_2015_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	std::string sTest;
 	if (!err) 
 	{
-		err = script.GetFieldTable("catapult");
-		if (!err)
-		{
-			FRC_2015_Robot_Props::Catapult &cat_props=props.Catapult_Robot_Props;
-			err=script.GetField("arm_to_motor", NULL, NULL, &fTest);
-			if (!err)
-				cat_props.ArmToGearRatio=fTest;
-			err=script.GetField("pot_to_arm", NULL, NULL, &fTest);
-			if (!err)
-				cat_props.PotentiometerToArmRatio=fTest;
-			err=script.GetField("chipshot_angle_deg", NULL, NULL, &fTest);
-			if (!err)
-				cat_props.ChipShotAngle=DEG_2_RAD(fTest);
-			err=script.GetField("goalshot_angle_deg", NULL, NULL, &fTest);
-			if (!err)
-				cat_props.GoalShotAngle=DEG_2_RAD(fTest);
-			SCRIPT_TEST_BOOL_YES(cat_props.AutoDeployArm,"auto_deploy_arm");
-			script.Pop();
-		}
-		err = script.GetFieldTable("intake");
-		if (!err)
-		{
-			FRC_2015_Robot_Props::Intake &intake_props=props.Intake_Robot_Props;
-			err=script.GetField("arm_to_motor", NULL, NULL, &fTest);
-			if (!err)
-				intake_props.ArmToGearRatio=fTest;
-			err=script.GetField("pot_to_arm", NULL, NULL, &fTest);
-			if (!err)
-				intake_props.PotentiometerToArmRatio=fTest;
-			err=script.GetField("stowed_angle_deg", NULL, NULL, &fTest);
-			if (!err)
-				intake_props.Stowed_Angle=DEG_2_RAD(fTest);
-			err=script.GetField("deployed_angle", NULL, NULL, &fTest);
-			if (!err)
-				intake_props.Deployed_Angle=DEG_2_RAD(fTest);
-			err=script.GetField("squirt_angle", NULL, NULL, &fTest);
-			if (!err)
-				intake_props.Squirt_Angle=DEG_2_RAD(fTest);
-			script.Pop();
-		}
-
 		err = script.GetFieldTable("turret");
 		if (!err)
 		{
@@ -761,39 +682,6 @@ void FRC_2015_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				err = script.GetField("first_move_ft", NULL, NULL,&fTest);
 				if (!err)
 					auton.FirstMove_ft=fTest;
-				err = script.GetField("first_move_wait", NULL, NULL,&fTest);
-				if (!err)
-					auton.FirstMoveWait_s=fTest;
-				err = script.GetField("second_move_ft", NULL, NULL,&fTest);
-				if (!err)
-					auton.SecondMove_ft=fTest;
-				err = script.GetField("scoot_back_ft", NULL, NULL,&fTest);
-				if (!err)
-					auton.ScootBack_ft=fTest;
-				err = script.GetField("land_on_ball_roller_time", NULL, NULL,&fTest);
-				if (!err)
-					auton.LandOnBallRollerTime_s=fTest;
-				err = script.GetField("land_on_ball_roller_speed", NULL, NULL,&fTest);
-				if (!err)
-					auton.LandOnBallRollerSpeed=fTest;
-				err = script.GetField("load_ball_roller_speed", NULL, NULL,&fTest);
-				if (!err)
-					auton.RollUpLoadSpeed=fTest;
-				err = script.GetField("second_ball_roller_time", NULL, NULL,&fTest);
-				if (!err)
-					auton.SecondBallRollerTime_s=fTest;
-				err = script.GetField("roller_drive_speed", NULL, NULL,&fTest);
-				if (!err)
-					auton.RollerDriveScalar=fTest;
-				err = script.GetField("loaded_ball_wait", NULL, NULL,&fTest);
-				if (!err)
-					auton.LoadedBallWait_s=fTest;
-				err = script.GetField("third_ball_angle_deg", NULL, NULL,&fTest);
-				if (!err)
-					auton.ThreeBallRotation_deg=fTest;
-				err = script.GetField("third_ball_distance_ft", NULL, NULL,&fTest);
-				if (!err)
-					auton.ThreeBallDistance_ft=fTest;
 
 				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
 				SCRIPT_TEST_BOOL_YES(auton.ShowParameters,"show_auton_variables");
@@ -801,13 +689,6 @@ void FRC_2015_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			}
 			script.Pop();
 		}
-
-		err=script.GetField("ball_camera_scalar", NULL, NULL, &fTest);
-		if (!err)
-			props.BallTargeting_Props.CameraOffsetScalar=fTest;
-		err=script.GetField("ball_latency_count", NULL, NULL, &fTest);
-		if (!err)
-			props.BallTargeting_Props.LatencyCounterThreshold=fTest;
 
 		//This is the main robot settings pop
 		script.Pop();
@@ -1088,6 +969,7 @@ void FRC_2015_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 
 void FRC_2015_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
 {
+	#ifdef __USING_6CIMS__
 	const Tank_Robot_Props &TankRobotProps=m_RobotProps.GetTankRobotProps();
 	if (!TankRobotProps.ReverseSteering)
 	{
@@ -1099,6 +981,7 @@ void FRC_2015_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Ri
 		Victor_UpdateVoltage(FRC_2015_Robot::eLeftDrive3,(float)RightVoltage * TankRobotProps.VoltageScalar_Right);
 		Victor_UpdateVoltage(FRC_2015_Robot::eRightDrive3,-(float)LeftVoltage * TankRobotProps.VoltageScalar_Left);
 	}
+	#endif
 	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
 

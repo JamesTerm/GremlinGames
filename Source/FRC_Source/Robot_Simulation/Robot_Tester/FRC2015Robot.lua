@@ -40,11 +40,12 @@ MainRobot = {
 		{
 			id_1 = { name= "right_drive_1", channel=1, module=1}, 
 			id_2 = { name= "right_drive_2", channel=2}, 
-			id_3 = { name= "right_drive_3", channel=3}, 
 			id_4 = { name="left_drive_1", channel=4},
 			id_5 = { name="left_drive_2", channel=5},
-			id_6 = { name="left_drive_3", channel=6},
 			id_10= { name="rollers",       channel=10}
+			--If we decide we need more power we can assign these
+			--id_3 = { name= "right_drive_3", channel=3}, 
+			--id_6 = { name="left_drive_3", channel=6},
 		},
 		relay =
 		{
@@ -148,44 +149,11 @@ MainRobot = {
 	robot_settings =
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
-		ball_camera_scalar=0.20,
-		ball_latency_count=0.100,
-		
-		catapult=
-		{
-			arm_to_motor=Catapult_ArmToMotorRatio,
-			pot_to_arm=Catapult_PotentiometerToArmRatio,
-			chipshot_angle_deg=45,
-			goalshot_angle_deg=90,
-			auto_deploy_arm='y',
-		},
-		intake=
-		{
-			arm_to_motor=Intake_ArmToMotorRatio,
-			pot_to_arm=Intake_PotentiometerToArmRatio,
-			--The intake uses a starting point of 90 to force numbers down from 90 - 0 where zero is pointing straight out
-			--This allows the gain assist to apply max force when it goes from deployed to stowed
-			stowed_angle=90,
-			deployed_angle=61,
-			squirt_angle=90
-		},
 
 		auton =
 		{
 			first_move_ft=2,
-			first_move_wait=0.600,
-			second_move_ft=4,
 			support_hotspot='n',
-			land_on_ball_roller_speed=-1.0,
-			land_on_ball_roller_time=1.0,
-			scoot_back_ft=0.0,
-			second_ball_roller_time=1.5,
-			load_ball_roller_speed = -1.0,
-			roller_drive_speed=-1.0,
-			loaded_ball_wait=0.500,
-			third_ball_angle_deg=45,
-			-- (x / cos(theta)) should be same distance back, use negative to come backwards
-			third_ball_distance_ft=-(2/math.cos(45 * Deg2Rad)),
 			show_auton_variables='y'
 		},
 

@@ -19,45 +19,13 @@ public:
 struct FRC_2015_Robot_Props
 {
 public:
-	struct Catapult
-	{
-		double ArmToGearRatio;
-		double PotentiometerToArmRatio;
-		double ChipShotAngle;
-		double GoalShotAngle;
-		bool AutoDeployArm;
-	} Catapult_Robot_Props;
-	struct Intake
-	{
-		double ArmToGearRatio;
-		double PotentiometerToArmRatio;
-		double Stowed_Angle;
-		double Deployed_Angle;
-		double Squirt_Angle;
-	} Intake_Robot_Props;
 	struct Autonomous_Properties
 	{
 		void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true
-		double FirstMove_ft; //Initial move before shooting (this one will need careful tuning)
-		double FirstMoveWait_s;  //Gives ball time to settle after moving
-		double SecondMove_ft;  //This one is after the shooting to ensure it has moved far enough
-		double LandOnBallRollerTime_s;
-		double LandOnBallRollerSpeed;
-		double ScootBack_ft; //When landing on ball it will need to slightly scoot back before driving forward
-		double SecondBallRollerTime_s;  //Time roller needs to spin to load second ball
-		double RollUpLoadSpeed;  //Speed to load ball usually 1.0 (or -1.0)
-		double RollerDriveScalar;  //Controls speed of controller while robot is driving
-		double LoadedBallWait_s;  //Gives ball time to settle after being loaded
-		double ThreeBallRotation_deg;  //Controls the angle to retrieve 3rd ball
-		double ThreeBallDistance_ft;  //This is slightly more than FirstMove since there is an angle
-		bool IsSupportingHotSpot;  //Are we supporting hot spot targeting (this will provide hint of orientation)
+		double FirstMove_ft; //TODO this is just a place holder to be replaced by this years game
+		bool IsSupportingHotSpot;  //TODO this is just a place holder to be replaced by this years game
 		bool ShowParameters;   //If true ShowAutonParameters will populate SmartDashboard with autonomous parameters
 	} Autonomous_Props;
-	struct BallTargeting
-	{
-		double CameraOffsetScalar;  //used to tweak the reduced deltas
-		double LatencyCounterThreshold;  //Used to control interval of camera samples
-	} BallTargeting_Props;
 };
 
 class FRC_2015_Robot_Properties : public Tank_Robot_Properties
@@ -92,9 +60,14 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 		LUA_Controls_Properties m_RobotControls;
 };
 
+//#define __USING_6CIMS__
+
 const char * const csz_FRC_2015_Robot_SpeedControllerDevices_Enum[] =
 {
-	"left_drive_3","right_drive_3","rollers","CameraLED"
+	#ifdef __USING_6CIMS__
+	"left_drive_3","right_drive_3",
+	#endif
+	"rollers","CameraLED"
 };
 
 const char * const csz_FRC_2015_Robot_SolenoidDevices_Enum[] =
@@ -113,8 +86,10 @@ class FRC_2015_Robot : public Tank_Robot
 	public:
 		enum SpeedControllerDevices
 		{
+			#ifdef __USING_6CIMS__
 			eLeftDrive3,
 			eRightDrive3,
+			#endif
 			eRollers,
 			eCameraLED  //Full forward is on 0 is off
 		};
