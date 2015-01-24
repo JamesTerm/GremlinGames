@@ -99,12 +99,12 @@ const char * const csz_FRC_2015_Robot_SpeedControllerDevices_Enum[] =
 
 const char * const csz_FRC_2015_Robot_SolenoidDevices_Enum[] =
 {
-	"use_low_gear","release_clutch","catcher_shooter","catcher_intake"
+	"use_low_gear"
 };
 
 const char * const csz_FRC_2015_Robot_BoolSensorDevices_Enum[] =
 {
-	"intake_min_1","intake_max_1","intake_min_2","intake_max_2","catapult_limit"
+	"catapult_limit"
 };
 
 
@@ -113,8 +113,6 @@ class FRC_2015_Robot : public Tank_Robot
 	public:
 		enum SpeedControllerDevices
 		{
-			eIntakeArm1,
-			eIntakeArm2,
 			eLeftDrive3,
 			eRightDrive3,
 			eRollers,
@@ -128,9 +126,6 @@ class FRC_2015_Robot : public Tank_Robot
 		enum SolenoidDevices
 		{
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
-			eReleaseClutch,     //If true it is released if false it is engaged
-			eCatcherShooter,
-			eCatcherIntake
 		};
 
 		static SolenoidDevices GetSolenoidDevices_Enum (const char *value)
@@ -139,10 +134,6 @@ class FRC_2015_Robot : public Tank_Robot
 
 		enum BoolSensorDevices
 		{
-			eIntakeMin1,
-			eIntakeMax1,
-			eIntakeMin2,
-			eIntakeMax2,
 			eCatapultLimit
 		};
 
@@ -252,23 +243,6 @@ class FRC_2015_Robot : public Tank_Robot
 
 		bool  m_SetDriverOverride;
 		void SetDriverOverride(bool on);
-
-		bool m_IsBallTargeting;
-		bool IsBallTargeting() const {return m_IsBallTargeting;}
-		void SetBallTargeting(bool on) {m_IsBallTargeting=on;}
-		void SetBallTargeting_Off(bool off) {SetBallTargeting(!off);}
-		void SetBallTargetingOn() {SetBallTargeting(true);}
-		void SetBallTargetingOff() {SetBallTargeting(false);}
-
-		bool m_CatcherShooter;
-		void SetCatcherShooter(bool on);
-		void SetCatcherShooterOn() {SetCatcherShooter(true);}
-		void SetCatcherShooterOff() {SetCatcherShooter(false);}
-
-		bool m_CatcherIntake;
-		void SetCatcherIntake(bool on);
-		void SetCatcherIntakeOn() {SetCatcherIntake(true);}
-		void SetCatcherIntakeOff() {SetCatcherIntake(false);}
 
 		#ifdef Robot_TesterCode
 		void TestAutonomous();

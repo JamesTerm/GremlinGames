@@ -181,11 +181,10 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 FRC_2015_Robot::FRC_2015_Robot(const char EntityName[],FRC_2015_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_Intake_Rollers(this,robot_control),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_LatencyCounter(0.0),
+		m_Intake_Rollers(this,robot_control),m_LatencyCounter(0.0),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
 		m_AutonPresetIndex(0),
-		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false),
-		m_IsBallTargeting(false)
+		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false)
 {
 	//ensure the variables are initialized before calling get
 	SmartDashboard::PutNumber("X Position",0.0);
@@ -316,36 +315,6 @@ void FRC_2015_Robot::TimeChange(double dTime_s)
 	
 	using namespace VisionConversion;
 
-	SmartDashboard::PutBoolean("IsBallTargeting",IsBallTargeting());
-	if (IsBallTargeting())
-	{
-		const FRC_2015_Robot_Props::BallTargeting &ball_props=m_RobotProps.GetFRC2015RobotProps().BallTargeting_Props;
-		const double CurrentYaw=GetAtt_r();
-		//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
-		#ifndef __UseFileTargetTracking__
-		const double SmoothingYaw=ball_props.CameraOffsetScalar;
-		//const double NewYaw=CurrentYaw+atan(yaw/distance);
-		const double NewYaw=CurrentYaw+(atan(XOffset * c_AspectRatio_recip * c_ez_x)*SmoothingYaw);
-		#else
-		//Enable this for playback of file since it cannot really cannot control the pitch
-		//const double NewYaw=atan(yaw/distance)-GetAtt_r();
-		const double NewYaw=atan(XOffset * c_AspectRatio_recip * c_ez_x)-GetAtt_r();
-		#endif
-
-		//Use precision tolerance asset to determine whether to make the change
-		const double PrecisionTolerance=DEG_2_RAD(0.5); //TODO put in properties try to keep as low as possible if we need to drive straight
-		const double YawAngle=NormalizeRotation2((fabs(NewYaw-CurrentYaw)>PrecisionTolerance)?NewYaw:CurrentYaw);
-		//Note: limits will be solved at ship level
-		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(YawAngle-CurrentYaw));
-		{
-			m_LatencyCounter+=dTime_s;
-			if ((double)m_LatencyCounter>(ball_props.LatencyCounterThreshold))
-			{
-				m_LatencyCounter=0.0;
-			}
-		}
-	}
-
 	bool LED_OnState=SmartDashboard::GetBoolean("Main_Is_Targeting");
 	m_RobotControl->UpdateVoltage(eCameraLED,LED_OnState?1.0:0.0);
 }
@@ -404,19 +373,6 @@ void FRC_2015_Robot::SetLowGearValue(double Value)
 	}
 }
 
-void FRC_2015_Robot::SetCatcherShooter(bool on)
-{
-	m_CatcherShooter=on;
-	m_RobotControl->OpenSolenoid(eCatcherShooter,on);
-}
-
-void FRC_2015_Robot::SetCatcherIntake(bool on)
-{
-	m_CatcherIntake=on;
-	m_RobotControl->OpenSolenoid(eCatcherIntake,on);
-}
-
-
 void FRC_2015_Robot::SetDriverOverride(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
@@ -436,17 +392,7 @@ void FRC_2015_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &FRC_2015_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &FRC_2015_Robot::SetLowGearValue);
 		em->EventOnOff_Map["Robot_SetDriverOverride"].Subscribe(ehl, *this, &FRC_2015_Robot::SetDriverOverride);
-		em->EventOnOff_Map["Robot_BallTargeting"].Subscribe(ehl, *this, &FRC_2015_Robot::SetBallTargeting);
-		em->Event_Map["Robot_BallTargeting_On"].Subscribe(ehl, *this, &FRC_2015_Robot::SetBallTargetingOn);
-		em->Event_Map["Robot_BallTargeting_Off"].Subscribe(ehl, *this, &FRC_2015_Robot::SetBallTargetingOff);
 
-		em->EventOnOff_Map["Robot_CatcherShooter"].Subscribe(ehl, *this, &FRC_2015_Robot::SetCatcherShooter);
-		em->Event_Map["Robot_CatcherShooter_On"].Subscribe(ehl, *this, &FRC_2015_Robot::SetCatcherShooterOn);
-		em->Event_Map["Robot_CatcherShooter_Off"].Subscribe(ehl, *this, &FRC_2015_Robot::SetCatcherShooterOff);
-
-		em->EventOnOff_Map["Robot_CatcherIntake"].Subscribe(ehl, *this, &FRC_2015_Robot::SetCatcherIntake);
-		em->Event_Map["Robot_CatcherIntake_On"].Subscribe(ehl, *this, &FRC_2015_Robot::SetCatcherIntakeOn);
-		em->Event_Map["Robot_CatcherIntake_Off"].Subscribe(ehl, *this, &FRC_2015_Robot::SetCatcherIntakeOff);
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &FRC_2015_Robot::TestAutonomous);
 		em->Event_Map["Complete"].Subscribe(ehl,*this,&FRC_2015_Robot::GoalComplete);
@@ -459,17 +405,7 @@ void FRC_2015_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &FRC_2015_Robot::SetLowGearOff);
 		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &FRC_2015_Robot::SetLowGearValue);
 		em->EventOnOff_Map["Robot_SetDriverOverride"]  .Remove(*this, &FRC_2015_Robot::SetDriverOverride);
-		em->EventOnOff_Map["Robot_BallTargeting"]  .Remove(*this, &FRC_2015_Robot::SetBallTargeting);
-		em->Event_Map["Robot_BallTargeting_On"]  .Remove(*this, &FRC_2015_Robot::SetBallTargetingOn);
-		em->Event_Map["Robot_BallTargeting_Off"]  .Remove(*this, &FRC_2015_Robot::SetBallTargetingOff);
 
-		em->EventOnOff_Map["Robot_CatcherShooter"]  .Remove(*this, &FRC_2015_Robot::SetCatcherShooter);
-		em->Event_Map["Robot_CatcherShooter_On"]  .Remove(*this, &FRC_2015_Robot::SetCatcherShooterOn);
-		em->Event_Map["Robot_CatcherShooter_Off"]  .Remove(*this, &FRC_2015_Robot::SetCatcherShooterOff);
-
-		em->EventOnOff_Map["Robot_CatcherIntake"]  .Remove(*this, &FRC_2015_Robot::SetCatcherIntake);
-		em->Event_Map["Robot_CatcherIntake_On"]  .Remove(*this, &FRC_2015_Robot::SetCatcherIntakeOn);
-		em->Event_Map["Robot_CatcherIntake_Off"]  .Remove(*this, &FRC_2015_Robot::SetCatcherIntakeOff);
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"]  .Remove(*this, &FRC_2015_Robot::TestAutonomous);
 		em->Event_Map["Complete"]  .Remove(*this, &FRC_2015_Robot::GoalComplete);
@@ -693,9 +629,6 @@ const char * const g_FRC_2015_Controls_Events[] =
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 	"Robot_SetDriverOverride",
 	"IntakeArm_DeployManager",
-	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
-	"Robot_CatcherShooter","Robot_CatcherShooter_On","Robot_CatcherShooter_Off",
-	"Robot_CatcherIntake","Robot_CatcherIntake_On","Robot_CatcherIntake_Off",
 	"IntakeRollers_Grip","IntakeRollers_Squirt","IntakeRollers_SetCurrentVelocity",
 	"TestAuton"
 };
@@ -1062,9 +995,6 @@ void FRC_2015_Robot_Control::ResetPos()
 	}
 	//Set the solenoids to their default positions
 	OpenSolenoid(FRC_2015_Robot::eUseLowGear,true);
-	CloseSolenoid(FRC_2015_Robot::eReleaseClutch,true);
-	CloseSolenoid(FRC_2015_Robot::eCatcherShooter,true);
-	CloseSolenoid(FRC_2015_Robot::eCatcherIntake,true);
 }
 
 void FRC_2015_Robot_Control::UpdateVoltage(size_t index,double Voltage)
@@ -1088,12 +1018,6 @@ bool FRC_2015_Robot_Control::GetBoolSensorState(size_t index) const
 	bool ret;
 	switch (index)
 	{
-	case FRC_2015_Robot::eIntakeMin1:
-		ret=(m_Limit_IntakeMin1||m_Limit_IntakeMin2);
-		break;
-	case FRC_2015_Robot::eIntakeMax1:
-		ret=(m_Limit_IntakeMax1||m_Limit_IntakeMax2);
-		break;
 	case FRC_2015_Robot::eCatapultLimit:
 		ret=m_Limit_Catapult;
 		break;
@@ -1158,15 +1082,7 @@ void FRC_2015_Robot_Control::Initialize(const Entity_Properties *props)
 
 void FRC_2015_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
-	m_Limit_IntakeMin1=BoolSensor_GetState(FRC_2015_Robot::eIntakeMin1);
-	m_Limit_IntakeMin2=BoolSensor_GetState(FRC_2015_Robot::eIntakeMin2);
-	m_Limit_IntakeMax1=BoolSensor_GetState(FRC_2015_Robot::eIntakeMax1);
-	m_Limit_IntakeMax2=BoolSensor_GetState(FRC_2015_Robot::eIntakeMax2);
 	m_Limit_Catapult=BoolSensor_GetState(FRC_2015_Robot::eCatapultLimit);
-	SmartDashboard::PutBoolean("LimitIntakeMin1",m_Limit_IntakeMin1);
-	SmartDashboard::PutBoolean("LimitIntakeMax1",m_Limit_IntakeMax1);
-	SmartDashboard::PutBoolean("LimitIntakeMin2",m_Limit_IntakeMin2);
-	SmartDashboard::PutBoolean("LimitIntakeMax2",m_Limit_IntakeMax2);
 	SmartDashboard::PutBoolean("LimitCatapult",m_Limit_Catapult);
 }
 
@@ -1191,13 +1107,13 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	double result=0.0;
 	const FRC_2015_Robot_Props &props=m_RobotProps.GetFRC2015RobotProps();
 
-	switch (index)
-	{
-	case FRC_2015_Robot::eIntakeArm1:
-	case FRC_2015_Robot::eIntakeArm2:
-		assert(false);  //no potentiometer 
-		break;
-	}
+	//switch (index)
+	//{
+	//case FRC_2015_Robot::eIntakeArm1:
+	//case FRC_2015_Robot::eIntakeArm2:
+	//	assert(false);  //no potentiometer 
+	//	break;
+	//}
 
 	return result;
 }
@@ -1208,18 +1124,6 @@ void FRC_2015_Robot_Control::OpenSolenoid(size_t index,bool Open)
 	{
 	case FRC_2015_Robot::eUseLowGear:
 		SmartDashboard::PutBoolean("UseHighGear",!Open);
-		Solenoid_Open(index,Open);
-		break;
-	case FRC_2015_Robot::eReleaseClutch:
-		SmartDashboard::PutBoolean("ClutchEngaged",!Open);
-		Solenoid_Open(index,Open);
-		break;
-	case FRC_2015_Robot::eCatcherShooter:
-		SmartDashboard::PutBoolean("CatcherShooter",Open);
-		Solenoid_Open(index,Open);
-		break;
-	case  FRC_2015_Robot::eCatcherIntake:
-		SmartDashboard::PutBoolean("CatcherIntake",Open);
 		Solenoid_Open(index,Open);
 		break;
 	}
