@@ -53,9 +53,6 @@ MainRobot = {
 		double_solenoid =
 		{
 			id_1 = { name="use_low_gear",    forward_channel=2, reverse_channel=1},
-			id_2 = { name="release_clutch",  forward_channel=4, reverse_channel=3},
-			id_3 = { name="catcher_shooter", forward_channel=5, reverse_channel=6},
-			id_4 = { name="catcher_intake",	 forward_channel=7, reverse_channel=8}
 		},
 		digital_input =
 		{
@@ -280,9 +277,6 @@ MainRobot = {
 			
 			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},
 			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false},
-			--Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
-			--Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
-			IntakeArm_DeployManager={type="keyboard", key='u', on_off=true},
 			TestAuton={type="keyboard", key='g', on_off=false},
 			--Slide={type="keyboard", key='g', on_off=false},
 		},
@@ -323,8 +317,6 @@ MainRobot = {
 			--Turret_SetCurrentVelocity = {type="joystick_analog", key=3, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
 			
-			--IntakeRollers_Grip = {type="joystick_button", key=?, on_off=true},
-			--IntakeRollers_Squirt = {type="joystick_button", key=?, on_off=true},
 			IntakeRollers_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.3, curve_intensity=1.0},
 			--FieldCentric_EnableValue = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 
