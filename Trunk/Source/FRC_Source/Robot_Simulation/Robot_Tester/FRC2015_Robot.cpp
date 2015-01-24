@@ -119,274 +119,6 @@ void FRC_2015_Robot::PitchRamp::ResetPos()
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2015_Robot::Intake_Arm														*/
-/***********************************************************************************************************************************/
-
-class IntakeArmManager : public AtomicGoal
-{
-private:
-	FRC_2015_Robot &m_Robot;
-	bool m_IsArmButtonDown;
-	bool m_WinchFireSequenceActive;
-
-	class SetUpProps
-	{
-	protected:
-		IntakeArmManager *m_Parent;
-		FRC_2015_Robot &m_Robot;
-		Entity2D_Kind::EventMap &m_EventMap;
-	public:
-		SetUpProps(IntakeArmManager *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot),m_EventMap(*m_Robot.GetEventMap())
-		{	
-		}
-	};
-
-	class WaitWhileButtonDown : public AtomicGoal, public SetUpProps
-	{
-	public:
-		WaitWhileButtonDown(IntakeArmManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
-		virtual void Activate() {m_Status=eActive;}
-		virtual Goal_Status Process(double dTime_s)
-		{
-			m_Status=(m_Parent->m_IsArmButtonDown||m_Parent->m_WinchFireSequenceActive)?eActive:eCompleted;
-			return m_Status;
-		}
-	};
-
-
-	class Intake_Deploy : public AtomicGoal, public SetUpProps
-	{
-	private:
-		bool m_IsOn;
-	public:
-		Intake_Deploy(IntakeArmManager *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
-		virtual void Activate() {m_Status=eActive;}
-		virtual Goal_Status Process(double dTime_s)
-		{
-			ActivateIfInactive();
-			m_EventMap.EventOnOff_Map["Robot_CatcherShooter"].Fire(m_IsOn);
-			m_Status=eCompleted;
-			return m_Status;
-		}
-	};
-
-	class Intake_Sequence : public Generic_CompositeGoal, public SetUpProps
-	{
-	public:
-		Intake_Sequence(IntakeArmManager *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
-		virtual void Activate()
-		{
-			AddSubgoal(new Intake_Deploy(m_Parent,false));
-			AddSubgoal(new WaitWhileButtonDown(m_Parent));
-			AddSubgoal(new Intake_Deploy(m_Parent,true));
-			m_Status=eActive;
-		}
-	} *m_Intake_Sequence;
-public:
-	IntakeArmManager(FRC_2015_Robot &robot) : m_Robot(robot),m_IsArmButtonDown(false),m_WinchFireSequenceActive(false)
-	{
-		m_Intake_Sequence=new Intake_Sequence(this);
-		m_Status=eInactive;
-	}
-	~IntakeArmManager()
-	{
-		if (m_Intake_Sequence)
-		{
-			delete m_Intake_Sequence;
-			m_Intake_Sequence=NULL;
-		}
-	}
-	void Activate()
-	{
-		//we'll do just simply discard for any state besides inactive
-		if (m_Status!=eActive)
-		{
-			m_Status=eActive;
-			m_Intake_Sequence->Activate();
-		}
-	}
-	Goal_Status Process(double dTime_s)
-	{
-		if (m_IsArmButtonDown || m_WinchFireSequenceActive)
-			Activate();
-		if (m_Status==eActive)
-			m_Status=m_Intake_Sequence->Process(dTime_s);
-		return m_Status;
-	}
-
-	void Terminate() 
-	{
-		if (m_Intake_Sequence->GetStatus()!=eInactive)
-			m_Intake_Sequence->Terminate();
-		m_Status=eFailed;
-	}
-	void SetIntakeButton(bool DeployArm)
-	{
-		m_IsArmButtonDown=DeployArm;
-	}
-	void SetWinchFireSequenceActive(bool WinchFireSequenceState)
-	{
-		m_WinchFireSequenceActive=WinchFireSequenceState;
-	}
-};
-
-FRC_2015_Robot::Intake_Arm::Intake_Arm(FRC_2015_Robot *parent) : m_pParent(parent),m_ArmTimer(0.0)
-{
-	m_IntakeArmManager=new IntakeArmManager(*parent);
-}
-
-FRC_2015_Robot::Intake_Arm::~Intake_Arm()
-{
-	if (m_IntakeArmManager)  //check for NULL on other platforms
-	{
-		delete m_IntakeArmManager;
-		m_IntakeArmManager=NULL;
-	}
-}
-
-void FRC_2015_Robot::Intake_Arm::SetIntakeButton(bool DeployArm)
-{
-	IntakeArmManager *iam=dynamic_cast<IntakeArmManager *>(m_IntakeArmManager);
-	iam->SetIntakeButton(DeployArm);
-}
-
-void FRC_2015_Robot::Intake_Arm::SetWinchFireSequenceActive(bool WinchFireSequenceState)
-{
-}
-
-const double c_Intake_Arm_DownWait_Threshold=0.250;  //250 ms for arm to deploy (could script this if necessary)
-
-bool FRC_2015_Robot::Intake_Arm::GetIsArmDown() const 
-{
-	return m_ArmTimer>=c_Intake_Arm_DownWait_Threshold;
-}
-
-void FRC_2015_Robot::Intake_Arm::TimeChange(double dTime_s)
-{
-	Goal::Goal_Status status=m_IntakeArmManager->Process(dTime_s);
-	if (status==Goal::eActive)
-	{
-		if (m_ArmTimer<c_Intake_Arm_DownWait_Threshold)
-			m_ArmTimer+=dTime_s;
-	}
-	else
-		m_ArmTimer=0.0;
-	//SmartDashboard::PutNumber("TestArmDownTime",m_ArmTimer);
-}
-void FRC_2015_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=m_pParent->GetEventMap();
-	if (Bind)
-	{
-		em->EventOnOff_Map["IntakeArm_DeployManager"].Subscribe(ehl, *this, &FRC_2015_Robot::Intake_Arm::SetIntakeButton);
-	}
-	else
-	{
-		em->EventOnOff_Map["IntakeArm_DeployManager"]  .Remove(*this, &FRC_2015_Robot::Intake_Arm::SetIntakeButton);
-	}
-
-}
-
-
-#if 0
-FRC_2015_Robot::Intake_Arm::Intake_Arm(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("IntakeArm",robot_control,eIntakeArm1),m_pParent(parent),m_Advance(false),m_Retract(false)
-{
-}
-
-
-void FRC_2015_Robot::Intake_Arm::Advance(bool on)
-{
-	m_Advance=on;
-}
-void FRC_2015_Robot::Intake_Arm::Retract(bool on)
-{
-	m_Retract=on;
-}
-
-void FRC_2015_Robot::Intake_Arm::TimeChange(double dTime_s)
-{
-	const double Accel=m_Ship_1D_Props.ACCEL;
-	const double Brake=m_Ship_1D_Props.BRAKE;
-
-	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
-	if (m_Advance ^ m_Retract)
-		SetCurrentLinearAcceleration(m_Advance?Accel:-Brake);
-
-	__super::TimeChange(dTime_s);
-	//Since we have no potentiometer we can feedback where we think the arm angle is from the entity
-	SmartDashboard::PutNumber("IntakeArm_Angle",RAD_2_DEG(GetPos_m()));
-}
-
-
-double FRC_2015_Robot::Intake_Arm::PotentiometerRaw_To_Arm_r(double raw) const
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	const int RawRangeHalf=512;
-	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-	ret*=props.Intake_Robot_Props.PotentiometerToArmRatio;  //convert to arm's gear ratio
-	return ret;
-}
-
-void FRC_2015_Robot::Intake_Arm::SetStowed()
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	SetIntendedPosition(props.Intake_Robot_Props.Stowed_Angle);
-}
-
-void FRC_2015_Robot::Intake_Arm::SetDeployed()
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	SetIntendedPosition(props.Intake_Robot_Props.Deployed_Angle);
-}
-
-void FRC_2015_Robot::Intake_Arm::SetSquirt()
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	SetIntendedPosition(props.Intake_Robot_Props.Squirt_Angle);
-}
-
-bool FRC_2015_Robot::Intake_Arm::DidHitMinLimit() const
-{
-	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMin1);
-}
-
-bool FRC_2015_Robot::Intake_Arm::DidHitMaxLimit() const
-{
-	return m_pParent->m_RobotControl->GetBoolSensorState(eIntakeMax1);
-}
-
-void FRC_2015_Robot::Intake_Arm::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
-	if (Bind)
-	{
-		em->EventValue_Map["IntakeArm_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2015_Robot::Intake_Arm::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["IntakeArm_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2015_Robot::Intake_Arm::SetPotentiometerSafety);
-		
-		em->Event_Map["IntakeArm_SetStowed"].Subscribe(ehl, *this, &FRC_2015_Robot::Intake_Arm::SetStowed);
-		em->Event_Map["IntakeArm_SetDeployed"].Subscribe(ehl, *this, &FRC_2015_Robot::Intake_Arm::SetDeployed);
-		em->Event_Map["IntakeArm_SetSquirt"].Subscribe(ehl, *this, &FRC_2015_Robot::Intake_Arm::SetSquirt);
-
-		em->EventOnOff_Map["IntakeArm_Advance"].Subscribe(ehl,*this, &FRC_2015_Robot::Intake_Arm::Advance);
-		em->EventOnOff_Map["IntakeArm_Retract"].Subscribe(ehl,*this, &FRC_2015_Robot::Intake_Arm::Retract);
-	}
-	else
-	{
-		em->EventValue_Map["IntakeArm_SetCurrentVelocity"].Remove(*this, &FRC_2015_Robot::Intake_Arm::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["IntakeArm_SetPotentiometerSafety"].Remove(*this, &FRC_2015_Robot::Intake_Arm::SetPotentiometerSafety);
-
-		em->Event_Map["IntakeArm_SetStowed"].Remove(*this, &FRC_2015_Robot::Intake_Arm::SetStowed);
-		em->Event_Map["IntakeArm_SetDeployed"].Remove(*this, &FRC_2015_Robot::Intake_Arm::SetDeployed);
-		em->Event_Map["IntakeArm_SetSquirt"].Remove(*this, &FRC_2015_Robot::Intake_Arm::SetSquirt);
-
-		em->EventOnOff_Map["IntakeArm_Advance"].Remove(*this, &FRC_2015_Robot::Intake_Arm::Advance);
-		em->EventOnOff_Map["IntakeArm_Retract"].Remove(*this, &FRC_2015_Robot::Intake_Arm::Retract);
-	}
-}
-
-#endif
-  /***********************************************************************************************************************************/
  /*													FRC_2015_Robot::Intake_Rollers													*/
 /***********************************************************************************************************************************/
 
@@ -448,7 +180,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 FRC_2015_Robot::FRC_2015_Robot(const char EntityName[],FRC_2015_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
-		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Intake_Arm(this),
+		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
 		m_Intake_Rollers(this,robot_control),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_LatencyCounter(0.0),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
 		m_AutonPresetIndex(0),
@@ -473,7 +205,6 @@ void FRC_2015_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 
 	//set to the default key position
 	//const FRC_2015_Robot_Props &robot2015props=RobotProps->GetFRC2015RobotProps();
-	//m_Intake_Arm.Initialize(em,RobotProps?&RobotProps->GetIntake_ArmProps():NULL);
 	m_Intake_Rollers.Initialize(em,RobotProps?&RobotProps->GetIntakeRollersProps():NULL);
 }
 void FRC_2015_Robot::ResetPos()
@@ -560,7 +291,6 @@ void FRC_2015_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
-	m_Intake_Arm.TimeChange(dTime_s);
 	m_Intake_Rollers.AsEntity1D().TimeChange(dTime_s);
 
 	#ifdef __EnableShapeTrackingSimulation__
@@ -748,7 +478,6 @@ void FRC_2015_Robot::BindAdditionalEventControls(bool Bind)
 
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
-	m_Intake_Arm.BindAdditionalEventControls(Bind);
 	m_Intake_Rollers.AsShip1D().BindAdditionalEventControls(Bind);
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
@@ -859,8 +588,6 @@ FRC_2015_Robot_Properties::FRC_2015_Robot_Properties()  : m_TurretProps(
 
 		props.Catapult_Robot_Props.ArmToGearRatio=c_ArmToGearRatio;
 		props.Catapult_Robot_Props.PotentiometerToArmRatio=c_PotentiometerToArmRatio;
-		//The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
-		//This allows gain assist to apply max voltage to its descent
 		props.Catapult_Robot_Props.ChipShotAngle=DEG_2_RAD(45.0);
 		props.Catapult_Robot_Props.GoalShotAngle=DEG_2_RAD(90.0);
 		props.Catapult_Robot_Props.AutoDeployArm=false;
@@ -965,8 +692,6 @@ const char * const g_FRC_2015_Controls_Events[] =
 	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 	"Robot_SetDriverOverride",
-	"Winch_SetChipShot","Winch_SetGoalShot","Winch_SetCurrentVelocity","Winch_Fire","Winch_FireManager","Winch_Advance",
-	//"IntakeArm_SetCurrentVelocity","IntakeArm_SetStowed","IntakeArm_SetDeployed","IntakeArm_SetSquirt","IntakeArm_Advance","IntakeArm_Retract",
 	"IntakeArm_DeployManager",
 	"Robot_BallTargeting","Robot_BallTargeting_On","Robot_BallTargeting_Off",
 	"Robot_CatcherShooter","Robot_CatcherShooter_On","Robot_CatcherShooter_Off",
@@ -1086,12 +811,6 @@ void FRC_2015_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_PitchRampProps.LoadFromScript(script);
 			script.Pop();
 		}
-		//err = script.GetFieldTable("intake_arm");
-		//if (!err)
-		//{
-		//	m_Intake_ArmProps.LoadFromScript(script);
-		//	script.Pop();
-		//}
 
 		m_LowGearProps=*this;  //copy redundant data first
 		err = script.GetFieldTable("low_gear");
@@ -1352,14 +1071,6 @@ void FRC_2015_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
-	case FRC_2015_Robot::eIntakeArm1:
-		{
-			Voltage=Voltage * m_RobotProps.GetIntake_ArmProps().GetRotaryProps().VoltageScalar;
-			Victor_UpdateVoltage(FRC_2015_Robot::eIntakeArm1,Voltage);
-			Victor_UpdateVoltage(FRC_2015_Robot::eIntakeArm2,Voltage);
-			SmartDashboard::PutNumber("IntakeArmVoltage",Voltage);
-		}
-		break;
 	case FRC_2015_Robot::eRollers:
 		Victor_UpdateVoltage(index,Voltage);
 		SmartDashboard::PutNumber("RollerVoltage",Voltage);
@@ -1399,7 +1110,7 @@ FRC_2015_Robot_Control::FRC_2015_Robot_Control(bool UseSafety) : m_TankRobotCont
 
 FRC_2015_Robot_Control::~FRC_2015_Robot_Control()
 {
-	Encoder_Stop(FRC_2015_Robot::eWinch);
+	//Encoder_Stop(FRC_2015_Robot::eWinch);
 	DestroyCompressor(m_Compressor);
 	m_Compressor=NULL;
 }
@@ -1438,8 +1149,8 @@ void FRC_2015_Robot_Control::Initialize(const Entity_Properties *props)
 		m_Compressor=CreateCompressor();
 		//Note: RobotControlCommon_Initialize() must occur before calling any encoder startup code
 		const double EncoderPulseRate=(1.0/360.0);
-		Encoder_SetDistancePerPulse(FRC_2015_Robot::eWinch,EncoderPulseRate);
-		Encoder_Start(FRC_2015_Robot::eWinch);
+		//Encoder_SetDistancePerPulse(FRC_2015_Robot::eWinch,EncoderPulseRate);
+		//Encoder_Start(FRC_2015_Robot::eWinch);
 		ResetPos(); //must be called after compressor is created
 	}
 
