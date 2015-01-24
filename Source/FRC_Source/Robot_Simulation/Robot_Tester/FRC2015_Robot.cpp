@@ -80,39 +80,6 @@ void FRC_2015_Robot::Turret::BindAdditionalEventControls(bool Bind)
 void FRC_2015_Robot::Turret::TimeChange(double dTime_s)
 {
 	m_Velocity=0.0;
-
-	//Note: GetRequestedVelocity tests for manual override, giving the tolerance a bit more grace for joystick dead-zone
-	const bool IsTargeting=m_pParent->IsBallTargeting();
-	//const bool IsTargeting=false;
-	if (IsTargeting)
-	{
-			//if (m_AutoDriveState==eAutoDrive_YawOnly)		
-			{
-				//the POV turning call relative offsets adjustments here... the yaw is the opposite side so we apply the negative sign
-				//if (fabs(m_YawAngle)>m_RobotProps.GetFRC2015RobotProps().YawTolerance)
-				if (fabs(m_pParent->m_YawAngle)>DEG_2_RAD(1))
-					m_pParent->m_controller->GetUIController_RW()->Turn_RelativeOffset(m_pParent->m_YawAngle,false);
-				m_pParent->m_YawAngle=0;
-			}
-			//else if (m_AutoDriveState==eAutoDrive_FullAuto)
-			//{
-			//	bool HitWayPoint;
-			//	{
-			//		const double tolerance=GetRobotProps().GetTankRobotProps().PrecisionTolerance;
-			//		const Vec2d &currPos = GetPos_m();
-			//		double position_delta=(m_TargetOffset-currPos).length();
-			//		HitWayPoint=position_delta<tolerance;
-			//	}
-			//	if (!HitWayPoint)
-			//	{
-			//		Vec2d Temp(0,0);
-			//		GetController()->DriveToLocation(m_TargetOffset, m_TargetOffset, 1.0, dTime_s,&Temp);
-			//	}
-			//	else
-			//		GetController()->SetShipVelocity(0.0);
-			//}
-
-	}
 }
 
 void FRC_2015_Robot::Turret::ResetPos()
@@ -151,261 +118,6 @@ void FRC_2015_Robot::PitchRamp::ResetPos()
 	m_Velocity=0.0;
 }
 
-  /***********************************************************************************************************************************/
- /*														FRC_2015_Robot::Winch														*/
-/***********************************************************************************************************************************/
-
-
-class WinchFireManager : public AtomicGoal
-{
-private:
-	FRC_2015_Robot &m_Robot;
-	bool m_IsFireButtonDown;
-
-	class SetUpProps
-	{
-	protected:
-		WinchFireManager *m_Parent;
-		FRC_2015_Robot &m_Robot;
-		Entity2D_Kind::EventMap &m_EventMap;
-	public:
-		SetUpProps(WinchFireManager *Parent)	: m_Parent(Parent),m_Robot(Parent->m_Robot),m_EventMap(*m_Robot.GetEventMap())
-		{	
-		}
-	};
-
-	class Fire : public AtomicGoal, public SetUpProps
-	{
-	private:
-		bool m_IsOn;
-	public:
-		Fire(WinchFireManager *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
-		virtual void Activate() {m_Status=eActive;}
-		virtual Goal_Status Process(double dTime_s)
-		{
-			ActivateIfInactive();
-			m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
-			m_Status=eCompleted;
-			if (m_IsOn==false)
-				m_Parent->m_Robot.SetWinchFireSequenceActive(false);  //the catapult should be disengaged long enough to auto-close intake
-			return m_Status;
-		}
-	};
-
-	class WaitWhileButtonDown : public AtomicGoal, public SetUpProps
-	{
-	public:
-		WaitWhileButtonDown(WinchFireManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
-		virtual void Activate() {m_Status=eActive;}
-		virtual Goal_Status Process(double dTime_s)
-		{
-			m_Status=m_Parent->m_IsFireButtonDown?eActive:eCompleted;
-			return m_Status;
-		}
-	};
-
-	class EnsureArmDown : public AtomicGoal, public SetUpProps
-	{
-		public:
-			EnsureArmDown(WinchFireManager *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				ActivateIfInactive();
-				m_Status=m_Parent->m_Robot.GetIsArmDown()?eCompleted:eActive;
-				return m_Status;
-			}
-	};
-
-	class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
-	{
-	public:
-		Fire_Sequence(WinchFireManager *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
-		virtual void Activate()
-		{
-			AddSubgoal(new Fire(m_Parent,false));
-			//AddSubgoal(new Goal_Wait(.500));
-			MultitaskGoal *WaitingForRelease=new MultitaskGoal(true);  //wait for time and release of button
-			WaitingForRelease->AddGoal(new Goal_Wait(.500));
-			WaitingForRelease->AddGoal(new WaitWhileButtonDown(m_Parent));
-			AddSubgoal(WaitingForRelease);
-			AddSubgoal(new Fire(m_Parent,true));
-			if (m_Parent->m_Robot.GetAutoDeployIntake())
-				AddSubgoal(new EnsureArmDown(m_Parent));
-			m_Status=eActive;
-		}
-	} *m_Fire_Sequence;
-public:
-	WinchFireManager(FRC_2015_Robot &robot) : m_Robot(robot),m_IsFireButtonDown(false)
-	{
-		m_Fire_Sequence=new Fire_Sequence(this);
-		m_Status=eInactive;
-	}
-	~WinchFireManager()
-	{
-		if (m_Fire_Sequence)
-		{
-			delete m_Fire_Sequence;
-			m_Fire_Sequence=NULL;
-		}
-	}
-	void Activate()
-	{
-		//we'll do just simply discard for any state besides inactive
-		if (m_Status!=eActive)
-		{
-			m_Status=eActive;
-			m_Fire_Sequence->Activate();
-			m_Robot.SetWinchFireSequenceActive(true);
-		}
-	}
-	Goal_Status Process(double dTime_s)
-	{
-		if (m_IsFireButtonDown)
-			Activate();
-		if (m_Status==eActive)
-			m_Status=m_Fire_Sequence->Process(dTime_s);
-		return m_Status;
-	}
-
-	void Terminate() 
-	{
-		if (m_Fire_Sequence->GetStatus()!=eInactive)
-			m_Fire_Sequence->Terminate();
-		m_Status=eFailed;
-	}
-	void SetFireButton(bool ReleaseClutch)
-	{
-		m_IsFireButtonDown=ReleaseClutch;
-	}
-};
-
-
-FRC_2015_Robot::Winch::Winch(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control) : 
-	Rotary_Position_Control("Winch",robot_control,eWinch),m_pParent(parent),m_WinchFireManager(NULL),m_Advance(false)
-{
-	m_WinchFireManager=new WinchFireManager(*parent);
-}
-
-FRC_2015_Robot::Winch::~Winch()
-{
-	if (m_WinchFireManager)  //check for NULL on other platforms
-	{
-		delete m_WinchFireManager;
-		m_WinchFireManager=NULL;
-	}
-}
-
-void FRC_2015_Robot::Winch::Advance(bool on)
-{
-	m_Advance=on;
-}
-
-void FRC_2015_Robot::Winch::TimeChange(double dTime_s)
-{
-	const double Accel=m_Ship_1D_Props.ACCEL;
-	//const double Brake=m_Ship_1D_Props.BRAKE;
-
-	//Get in my button value
-	if (m_Advance)
-		SetCurrentLinearAcceleration(Accel);
-
-	__super::TimeChange(dTime_s);
-	//Trying to get away from debug outs... however keeping this around for reference to how the gear ratios are used
-	//#ifdef Robot_TesterCode
-	//const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	//const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
-	//double Pos_m=GetPos_m();
-	//DOUT4("Arm=%f Angle=%f",m_Physics.GetVelocity(),RAD_2_DEG(Pos_m*c_GearToArmRatio));
-	//#endif
-
-	const FRC_2015_Robot_Properties &RobotProps=m_pParent->GetRobotProps();
-	if (RobotProps.GetWinchProps().GetRotaryProps().LoopState==Rotary_Props::eNone)
-	{
-		const FRC_2015_Robot_Props &props=RobotProps.GetFRC2015RobotProps();
-		const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
-		SmartDashboard::PutNumber("Catapult_Angle",90.0-(RAD_2_DEG(GetPos_m()*c_GearToArmRatio)));
-	}
-	m_WinchFireManager->Process(dTime_s);
-}
-
-
-double FRC_2015_Robot::Winch::PotentiometerRaw_To_Arm_r(double raw) const
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	const int RawRangeHalf=512;
-	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-	ret*=props.Catapult_Robot_Props.PotentiometerToArmRatio;  //convert to arm's gear ratio
-	return ret;
-}
-
-void FRC_2015_Robot::Winch::SetChipShot()
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	SetIntendedPosition(props.Catapult_Robot_Props.ChipShotAngle * props.Catapult_Robot_Props.ArmToGearRatio);
-}
-void FRC_2015_Robot::Winch::SetGoalShot()
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	SetIntendedPosition( props.Catapult_Robot_Props.GoalShotAngle * props.Catapult_Robot_Props.ArmToGearRatio);
-}
-void FRC_2015_Robot::Winch::Fire_Catapult(bool ReleaseClutch)
-{
-	m_pParent->m_RobotControl->OpenSolenoid(eReleaseClutch,ReleaseClutch);
-	//once released the encoder and position will be zero
-	if (ReleaseClutch)
-	{
-		ResetPos();
-		m_pParent->m_RobotControl->Reset_Rotary(eWinch);
-	}
-}
-void FRC_2015_Robot::Winch::Winch_FireManager(bool ReleaseClutch)
-{
-	WinchFireManager *fm=dynamic_cast<WinchFireManager *>(m_WinchFireManager);
-	fm->SetFireButton(ReleaseClutch);
-}
-
-bool FRC_2015_Robot::Winch::GetAutoDeployIntake() const
-{
-	const FRC_2015_Robot_Props &props=m_pParent->GetRobotProps().GetFRC2015RobotProps();
-	return props.Catapult_Robot_Props.AutoDeployArm;
-}
-
-bool FRC_2015_Robot::Winch::DidHitMaxLimit() const
-{
-	return m_pParent->m_RobotControl->GetBoolSensorState(eCatapultLimit);
-}
-
-void FRC_2015_Robot::Winch::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=m_pParent->GetEventMap();
-	if (Bind)
-	{
-		em->EventValue_Map["Winch_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2015_Robot::Winch::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Winch_SetPotentiometerSafety"].Subscribe(ehl,*this, &FRC_2015_Robot::Winch::SetPotentiometerSafety);
-		
-		em->Event_Map["Winch_SetChipShot"].Subscribe(ehl, *this, &FRC_2015_Robot::Winch::SetChipShot);
-		em->Event_Map["Winch_SetGoalShot"].Subscribe(ehl, *this, &FRC_2015_Robot::Winch::SetGoalShot);
-
-		em->EventOnOff_Map["Winch_Advance"].Subscribe(ehl,*this, &FRC_2015_Robot::Winch::Advance);
-
-		em->EventOnOff_Map["Winch_Fire"].Subscribe(ehl, *this, &FRC_2015_Robot::Winch::Fire_Catapult);
-		em->EventOnOff_Map["Winch_FireManager"].Subscribe(ehl, *this, &FRC_2015_Robot::Winch::Winch_FireManager);
-	}
-	else
-	{
-		em->EventValue_Map["Winch_SetCurrentVelocity"].Remove(*this, &FRC_2015_Robot::Winch::SetRequestedVelocity_FromNormalized);
-		em->EventOnOff_Map["Winch_SetPotentiometerSafety"].Remove(*this, &FRC_2015_Robot::Winch::SetPotentiometerSafety);
-
-		em->Event_Map["Winch_SetChipShot"].Remove(*this, &FRC_2015_Robot::Winch::SetChipShot);
-		em->Event_Map["Winch_SetGoalShot"].Remove(*this, &FRC_2015_Robot::Winch::SetGoalShot);
-
-		em->EventOnOff_Map["Winch_Advance"].Remove(*this, &FRC_2015_Robot::Winch::Advance);
-
-		em->EventOnOff_Map["Winch_Fire"]  .Remove(*this, &FRC_2015_Robot::Winch::Fire_Catapult);
-		em->EventOnOff_Map["Winch_FireManager"]  .Remove(*this, &FRC_2015_Robot::Winch::Winch_FireManager);
-	}
-}
   /***********************************************************************************************************************************/
  /*													FRC_2015_Robot::Intake_Arm														*/
 /***********************************************************************************************************************************/
@@ -540,11 +252,6 @@ void FRC_2015_Robot::Intake_Arm::SetIntakeButton(bool DeployArm)
 
 void FRC_2015_Robot::Intake_Arm::SetWinchFireSequenceActive(bool WinchFireSequenceState)
 {
-	if (m_pParent->GetAutoDeployIntake())
-	{
-		IntakeArmManager *iam=dynamic_cast<IntakeArmManager *>(m_IntakeArmManager);
-		iam->SetWinchFireSequenceActive(WinchFireSequenceState);
-	}
 }
 
 const double c_Intake_Arm_DownWait_Threshold=0.250;  //250 ms for arm to deploy (could script this if necessary)
@@ -741,10 +448,10 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 FRC_2015_Robot::FRC_2015_Robot(const char EntityName[],FRC_2015_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
-		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Winch(this,robot_control),m_Intake_Arm(this),
+		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),m_Intake_Arm(this),
 		m_Intake_Rollers(this,robot_control),m_DefensiveKeyPosition(Vec2D(0.0,0.0)),m_LatencyCounter(0.0),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
-		m_AutonPresetIndex(0),m_YawAngle(0.0),
+		m_AutonPresetIndex(0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false),
 		m_IsBallTargeting(false)
 {
@@ -766,7 +473,6 @@ void FRC_2015_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 
 	//set to the default key position
 	//const FRC_2015_Robot_Props &robot2015props=RobotProps->GetFRC2015RobotProps();
-	m_Winch.Initialize(em,RobotProps?&RobotProps->GetWinchProps():NULL);
 	//m_Intake_Arm.Initialize(em,RobotProps?&RobotProps->GetIntake_ArmProps():NULL);
 	m_Intake_Rollers.Initialize(em,RobotProps?&RobotProps->GetIntakeRollersProps():NULL);
 }
@@ -778,7 +484,6 @@ void FRC_2015_Robot::ResetPos()
 	//TODO this is tacky... will have better low gear method soon
 	if (!GetBypassPosAtt_Update())
 	{
-		m_Winch.ResetPos();
 		//m_Intake_Arm.ResetPos();
 		SetLowGear(true);
 	}
@@ -855,7 +560,6 @@ void FRC_2015_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
-	m_Winch.AsEntity1D().TimeChange(dTime_s);
 	m_Intake_Arm.TimeChange(dTime_s);
 	m_Intake_Rollers.AsEntity1D().TimeChange(dTime_s);
 
@@ -899,26 +603,17 @@ void FRC_2015_Robot::TimeChange(double dTime_s)
 		#endif
 
 		//Use precision tolerance asset to determine whether to make the change
-		//m_YawAngle=(fabs(NewYaw-CurrentYaw)>m_RobotProps.GetTurretProps().GetRotaryProps().PrecisionTolerance)?NewYaw:CurrentYaw;
 		const double PrecisionTolerance=DEG_2_RAD(0.5); //TODO put in properties try to keep as low as possible if we need to drive straight
 		const double YawAngle=NormalizeRotation2((fabs(NewYaw-CurrentYaw)>PrecisionTolerance)?NewYaw:CurrentYaw);
 		//Note: limits will be solved at ship level
 		SmartDashboard::PutNumber("Ball Tracking Yaw Angle",RAD_2_DEG(YawAngle-CurrentYaw));
-		#if 1
-		//if (IsBallTargeting())
 		{
 			m_LatencyCounter+=dTime_s;
 			if ((double)m_LatencyCounter>(ball_props.LatencyCounterThreshold))
 			{
-				m_YawAngle=YawAngle-CurrentYaw;
 				m_LatencyCounter=0.0;
 			}
-			else
-				m_YawAngle=0.0;
 		}
-		#else
-		m_YawAngle=YawAngle;
-		#endif
 	}
 
 	bool LED_OnState=SmartDashboard::GetBoolean("Main_Is_Targeting");
@@ -1053,7 +748,6 @@ void FRC_2015_Robot::BindAdditionalEventControls(bool Bind)
 
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
-	m_Winch.AsShip1D().BindAdditionalEventControls(Bind);
 	m_Intake_Arm.BindAdditionalEventControls(Bind);
 	m_Intake_Rollers.AsShip1D().BindAdditionalEventControls(Bind);
 	#ifdef Robot_TesterCode
@@ -1392,12 +1086,6 @@ void FRC_2015_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_PitchRampProps.LoadFromScript(script);
 			script.Pop();
 		}
-		err = script.GetFieldTable("winch");
-		if (!err)
-		{
-			m_WinchProps.LoadFromScript(script);
-			script.Pop();
-		}
 		//err = script.GetFieldTable("intake_arm");
 		//if (!err)
 		//{
@@ -1530,390 +1218,14 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 		bool m_IsHot;
 		bool m_HasSecondShotFired;
 
-		class MoveStraight_WithRoller : public Goal_Ship_MoveToRelativePosition, public SetUpProps
-		{
-		private:
-			#ifndef Robot_TesterCode
-			typedef Goal_Ship_MoveToRelativePosition __super;
-			#endif
-			double m_RollerScalar;
-		public:
-			MoveStraight_WithRoller(FRC_2015_Goals_Impl *Parent,double RollerScalar,AI_Base_Controller *controller,const WayPoint &waypoint,bool UseSafeStop=true,
-				bool LockOrientation=false,double safestop_tolerance=0.03) : 
-				Goal_Ship_MoveToRelativePosition(controller,waypoint,UseSafeStop,LockOrientation,safestop_tolerance),
-				SetUpProps(Parent),m_RollerScalar(RollerScalar)
-			{}
-
-			virtual Goal_Status Process(double dTime_s)
-			{
-				m_Status=__super::Process(dTime_s);
-				if (m_Status==eActive)
-				{
-					//Now to grab the current velocity
-					const double Velocity=Feet2Meters(SmartDashboard::GetNumber("Velocity"));
-					const double ratio=Velocity / m_Robot.GetRobotProps().GetEngagedMaxSpeed();
-					m_EventMap.EventValue_Map["IntakeRollers_SetCurrentVelocity"].Fire(ratio * m_AutonProps.RollerDriveScalar);
-				}
-				return m_Status;
-			}
-		};
-
-		/// \param RollerScalar if this is 0.0 then the MoveStraight_WithRoller goal will not be used
-		static Goal * Move_Straight(FRC_2015_Goals_Impl *Parent,double length_ft,double RollerScalar=0.0)
-		{
-			FRC_2015_Robot *Robot=&Parent->m_Robot;
-			//Construct a way point
-			WayPoint wp;
-			const Vec2d Local_GoalTarget(0.0,Feet2Meters(length_ft));
-			wp.Position=Local_GoalTarget;
-			wp.Power=1.0;
-			//Now to setup the goal
-			const bool LockOrientation=true;
-			const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
-			Goal_Ship_MoveToPosition *goal_drive=NULL;
-			if (RollerScalar==0.0)
-				goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
-			else
-				goal_drive=new MoveStraight_WithRoller(Parent,RollerScalar,Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
-			return goal_drive;
-		}
-
-
-		class Fire : public AtomicGoal, public SetUpProps
-		{
-		private:
-			bool m_IsOn;
-		public:
-			Fire(FRC_2015_Goals_Impl *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				ActivateIfInactive();
-				m_EventMap.EventOnOff_Map["Winch_Fire"].Fire(m_IsOn);
-				m_Status=eCompleted;
-				return m_Status;
-			}
-		};
-
-		class Intake_Deploy : public AtomicGoal, public SetUpProps
-		{
-		private:
-			bool m_IsOn;
-		public:
-			Intake_Deploy(FRC_2015_Goals_Impl *Parent, bool On)	: SetUpProps(Parent),m_IsOn(On) {	m_Status=eInactive;	}
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				ActivateIfInactive();
-				m_EventMap.EventOnOff_Map["Robot_CatcherShooter"].Fire(m_IsOn);
-				m_Status=eCompleted;
-				return m_Status;
-			}
-		};
-
-		class Fire_Sequence : public Generic_CompositeGoal, public SetUpProps
-		{
-		public:
-			Fire_Sequence(FRC_2015_Goals_Impl *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
-			virtual void Activate()
-			{
-				AddSubgoal(new Fire(m_Parent,false));
-				AddSubgoal(new Goal_Wait(.500));
-				AddSubgoal(new Fire(m_Parent,true));
-				m_Status=eActive;
-			}
-		};
-
-		class Reset_Catapult : public AtomicGoal, public SetUpProps
-		{
-		private:
-			bool m_WaitForComplete;
-			Goal_Ship1D_MoveToPosition *m_GoalMoveToPosition; //This is used if wait for complete is true
-		public:
-			Reset_Catapult(FRC_2015_Goals_Impl *Parent, bool WaitForComplete=false)	: SetUpProps(Parent),m_WaitForComplete(WaitForComplete),m_GoalMoveToPosition(NULL) 
-			{	m_Status=eInactive;	}
-			virtual void Activate() 
-			{
-				m_Status=eActive;
-				if (m_WaitForComplete)
-				{
-					const FRC_2015_Robot_Props &props=m_Robot.GetRobotProps().GetFRC2015RobotProps();
-					const double IntendedPosition=( props.Catapult_Robot_Props.GoalShotAngle * props.Catapult_Robot_Props.ArmToGearRatio);
-
-					m_GoalMoveToPosition=new Goal_Ship1D_MoveToPosition(m_Robot.GetWinch(),IntendedPosition,m_Robot.GetRobotProps().GetWinchProps().GetRotaryProps().PrecisionTolerance);
-					m_GoalMoveToPosition->Activate(); //now would be good
-				}
-			}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				ActivateIfInactive();
-				if (!m_WaitForComplete)
-				{
-					m_EventMap.Event_Map["Winch_SetGoalShot"].Fire();
-					m_Status=eCompleted;
-				}
-				else
-				{
-					m_Status=m_GoalMoveToPosition->Process(dTime_s);  //just pass through let it determine when its done
-					if (m_Robot.GetCatapultLimit())
-						m_Status=eCompleted;
-				}
-				return m_Status;
-			}
-		};
-
-		class Fire_Conditional : public Generic_CompositeGoal, public SetUpProps
-		{
-		private:
-			bool m_FireIfNotFiredYet;
-		public:
-			Fire_Conditional(FRC_2015_Goals_Impl *Parent,bool FireIfNotFiredYet=false)	: Generic_CompositeGoal(true),SetUpProps(Parent),
-				m_FireIfNotFiredYet(FireIfNotFiredYet)
-			{	m_Status=eInactive;	}
-			virtual void Activate()
-			{
-				if ((m_Parent->m_IsHot) || ((m_FireIfNotFiredYet)&&(!m_Parent->m_HasSecondShotFired)))
-				{
-					//always reset for this one
-					AddSubgoal(new Reset_Catapult(m_Parent,true));
-					AddSubgoal(new Fire(m_Parent,false));
-					AddSubgoal(new Goal_Wait(.500));
-					AddSubgoal(new Fire(m_Parent,true));
-					m_Parent->m_HasSecondShotFired=true;
-				}
-				else
-					AddSubgoal(new Goal_Wait(.100));
-				m_Status=eActive;
-			}
-		};
-
-		class WaitForHot : public AtomicGoal, public SetUpProps
-		{
-		public:
-			WaitForHot(FRC_2015_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eInactive;	}
-			virtual void Activate() 
-			{
-				m_Status=eActive;
-				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
-			}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				double &Timer=m_Parent->m_Timer;
-				ActivateIfInactive();
-				double IsHot=0.0;
-				try
-				{
-					IsHot=SmartDashboard::GetNumber("TargetHot");
-				}
-				catch (...)
-				{
-					//I may need to prime the pump here
-					SmartDashboard::PutNumber("TargetHot",0.0);
-				}
-				if ((IsHot!=0.0)||(Timer>5.2))
-					m_Status=eCompleted;
-				return m_Status;
-			}
-
-			virtual void Terminate() 
-			{
-				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
-			}
-		};
-
-		//Like WaitForHot but only waits for a specified time for hot or if hot and will return value to parent
-		class ProbeForHot : public AtomicGoal, public SetUpProps
-		{
-		private:
-			double m_WaitTime;
-			double m_TimeAccrued;
-		public:
-			ProbeForHot(FRC_2015_Goals_Impl *Parent,double WaitTime)	: SetUpProps(Parent),m_WaitTime(WaitTime),m_TimeAccrued(0.0)
-			{	m_Status=eInactive;	}
-			virtual void Activate() 
-			{
-				m_Status=eActive;
-				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
-			}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				ActivateIfInactive();
-				m_TimeAccrued+=dTime_s;
-				double IsHot=0.0;
-				try
-				{
-					IsHot=SmartDashboard::GetNumber("TargetHot");
-				}
-				catch (...)
-				{
-					//I may need to prime the pump here
-					SmartDashboard::PutNumber("TargetHot",0.0);
-				}
-				if ((IsHot!=0.0)||(m_TimeAccrued>m_WaitTime))
-				{
-					m_Parent->m_IsHot=(IsHot!=0.0);
-					m_Status=eCompleted;
-				}
-
-				return m_Status;
-			}
-
-			virtual void Terminate() 
-			{
-				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
-			}
-		};
-
 		class OneBallAuton : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
 			OneBallAuton(FRC_2015_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
 			{
-				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				//Note: these are reversed
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.SecondMove_ft));
-				AddSubgoal(new Intake_Deploy(m_Parent,false));
-				//TODO enable once ready
-				//AddSubgoal(new Reset_Catapult(m_Parent));
 				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				if (m_AutonProps.IsSupportingHotSpot)
-				{
-					//We can wait for hot spot detection even if it is not supported
-					AddSubgoal(new WaitForHot(m_Parent));
-				}
-
-				AddSubgoal(new Goal_Wait(m_AutonProps.FirstMoveWait_s));  //avoid motion shot
-
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft));
-				AddSubgoal(new Intake_Deploy(m_Parent,true));
 				m_Status=eActive;
-			}
-		};
-
-		class SetRollerSpeed_WithTime : public AtomicGoal, public SetUpProps
-		{
-		private:
-			double m_Speed;
-			double m_WaitTime;
-			double m_TimeAccrued;
-		public:
-			SetRollerSpeed_WithTime(FRC_2015_Goals_Impl *Parent, double Speed,double WaitTime)	: SetUpProps(Parent),m_Speed(Speed),m_WaitTime(WaitTime),m_TimeAccrued(0.0) 
-			{	m_Status=eInactive;	}
-			virtual void Activate() {m_Status=eActive;}
-			virtual Goal_Status Process(double dTime_s)
-			{
-				ActivateIfInactive();
-				m_TimeAccrued+=dTime_s;
-
-				m_EventMap.EventValue_Map["IntakeRollers_SetCurrentVelocity"].Fire(m_Speed);
-				//Note: I need not zero speed... it will do that automatically per time change
-				if (m_TimeAccrued>m_WaitTime)
-					m_Status=eCompleted;
-				return m_Status;
-			}
-		};
-
-		class TwoBallAuton : public Generic_CompositeGoal, public SetUpProps
-		{
-		protected:
-			virtual bool IsThreeBall() {return false;}
-			//inject third ball goals here
-			virtual void Add_GetThirdBallGoals() {}
-		public:
-			TwoBallAuton(FRC_2015_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
-			virtual void Activate()
-			{
-				//const bool SupporingHotSpot=m_AutonProps.IsSupportingHotSpot;
-				//Note: these are reversed
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.SecondMove_ft));
-				AddSubgoal(new Intake_Deploy(m_Parent,false));
-
-				//As it stands... it might be possible that time runs out before the catapult can complete... for safety reasons I am disabling
-				//this goal, but we may be able to enable it if we test that we gained more time via limit switch... there is no harm in
-				//keeping it disabled just to be safe.
-				#if 0
-				//multi goal these... we want to wait at least 500ms but still start resetting the catapult
-				{
-					MultitaskGoal *NewMultiTaskGoal=new MultitaskGoal(false);
-					NewMultiTaskGoal->AddGoal(new Reset_Catapult(m_Parent));
-					NewMultiTaskGoal->AddGoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
-					AddSubgoal(NewMultiTaskGoal);
-				}
-				#else
-				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
-				#endif
-				//This is redundant as the default is to do nothing, but makes it more readable
-				if (IsThreeBall())
-					Add_GetThirdBallGoals();
-
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				if (!IsThreeBall())
-				{
-					//This one is here in case we decide to disable the supporting hot spot... in which case if the hot spot is on the
-					//last 5 seconds the second ball would ensure and wait until afterwards to shoot.  Other than this case it shouldn't
-					//have to wait at all
-					AddSubgoal(new WaitForHot(m_Parent));
-				}
-				AddSubgoal(new Goal_Wait(m_AutonProps.LoadedBallWait_s)); //give time for ball to settle
-				//roll up the ball second ball
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
-				AddSubgoal(new Reset_Catapult(m_Parent,true));
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				//This may need to be disabled... it all depends on how long it takes to load and shoot
-				#if 0
-				if (!IsThreeBall())
-				{
-					if (m_AutonProps.IsSupportingHotSpot)
-						AddSubgoal(new WaitForHot(m_Parent));
-					else
-						AddSubgoal(new Goal_Wait(0.400));  //avoid motion shot
-				}
-				#else
-				AddSubgoal(new Goal_Wait(m_AutonProps.FirstMoveWait_s));  //avoid motion shot
-				#endif
-				//Note we add the scoot back distance to overall distance of first move... so it in theory is back where it started
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft+m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
-				AddSubgoal(new Intake_Deploy(m_Parent,true));
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ScootBack_ft,m_AutonProps.RollerDriveScalar));
-				m_Status=eActive;
-			}
-		};
-
-		class ThreeBallAuton : public TwoBallAuton
-		{
-		public:
-			ThreeBallAuton(FRC_2015_Goals_Impl *Parent)	: TwoBallAuton(Parent) {	m_Status=eActive;	}
-		protected:
-			virtual bool IsThreeBall() {return true;}
-			virtual void Add_GetThirdBallGoals()
-			{
-				//fire 3rd ball
-				AddSubgoal(new Fire_Sequence(m_Parent));
-				//Rotate back
-				AddSubgoal(new Goal_Ship_RotateToRelativePosition(m_Robot.GetController(),DEG_2_RAD(-m_AutonProps.ThreeBallRotation_deg)));
-				//Move back
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.ThreeBallDistance_ft,m_AutonProps.RollerDriveScalar));
-				AddSubgoal(new Goal_Wait(m_AutonProps.LoadedBallWait_s)); //give time for ball to settle
-				//load up third ball (doing it before moving back avoids the need to turn with the ball on the floor)
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.RollUpLoadSpeed,m_AutonProps.SecondBallRollerTime_s));
-				//Note this first turning is while the intake goes down
-				AddSubgoal(new SetRollerSpeed_WithTime(m_Parent,m_AutonProps.LandOnBallRollerSpeed,m_AutonProps.LandOnBallRollerTime_s));
-				AddSubgoal(new Intake_Deploy(m_Parent,true));
-				//Move to it
-				//multi goal these... we want to wait at least 500ms but still start resetting the catapult
-				{
-					MultitaskGoal *NewMultiTaskGoal=new MultitaskGoal(true);
-					NewMultiTaskGoal->AddGoal(new Reset_Catapult(m_Parent));
-					AddSubgoal(Move_Straight(m_Parent,m_AutonProps.ThreeBallDistance_ft));
-					AddSubgoal(NewMultiTaskGoal);
-				}
-				//Rotate to it
-				AddSubgoal(new Goal_Ship_RotateToRelativePosition(m_Robot.GetController(),DEG_2_RAD(m_AutonProps.ThreeBallRotation_deg)));
-				AddSubgoal(new Intake_Deploy(m_Parent,false));
-				//Go back to get third ball-------
 			}
 		};
 
@@ -1921,8 +1233,6 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 		{
 			eDoNothing,
 			eOneBall,
-			eTwoBall,
-			eThreeBall,
 			eNoAutonTypes
 		} m_AutonType;
 		enum Robot_Position
@@ -1979,12 +1289,6 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 			{
 			case eOneBall:
 				m_Primer.AddGoal(new OneBallAuton(this));
-				break;
-			case eTwoBall:
-				m_Primer.AddGoal(new TwoBallAuton(this));
-				break;
-			case eThreeBall:
-				m_Primer.AddGoal(new ThreeBallAuton(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250
@@ -2048,14 +1352,6 @@ void FRC_2015_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
-	case FRC_2015_Robot::eWinch:
-		{
-			double VoltageToUse=(Voltage>0.0)?Voltage:0.0;
-			m_WinchVoltage=VoltageToUse=VoltageToUse * m_RobotProps.GetWinchProps().GetRotaryProps().VoltageScalar;
-			Victor_UpdateVoltage(index,VoltageToUse);
-			SmartDashboard::PutNumber("WinchVoltage",VoltageToUse);
-		}
-		break;
 	case FRC_2015_Robot::eIntakeArm1:
 		{
 			Voltage=Voltage * m_RobotProps.GetIntake_ArmProps().GetRotaryProps().VoltageScalar;
@@ -2097,7 +1393,7 @@ bool FRC_2015_Robot_Control::GetBoolSensorState(size_t index) const
 }
 
 FRC_2015_Robot_Control::FRC_2015_Robot_Control(bool UseSafety) : m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
-		m_Compressor(NULL),m_WinchVoltage(0.0)
+		m_Compressor(NULL)
 {
 }
 
@@ -2151,16 +1447,6 @@ void FRC_2015_Robot_Control::Initialize(const Entity_Properties *props)
 
 void FRC_2015_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
-	#ifdef Robot_TesterCode
-	const Rotary_Props &rotary=m_RobotProps.GetWinchProps().GetRotaryProps();
-	const double adjustment= m_WinchVoltage*m_RobotProps.GetWinchProps().GetMaxSpeed() * dTime_s * (1.0/rotary.EncoderToRS_Ratio);
-	Encoder_TimeChange(FRC_2015_Robot::eWinch,dTime_s,adjustment);
-	#else
-		#ifdef __ShowLCD__
-			DriverStationLCD * lcd = DriverStationLCD::GetInstance();
-			lcd->UpdateLCD();
-		#endif
-	#endif
 	m_Limit_IntakeMin1=BoolSensor_GetState(FRC_2015_Robot::eIntakeMin1);
 	m_Limit_IntakeMin2=BoolSensor_GetState(FRC_2015_Robot::eIntakeMin2);
 	m_Limit_IntakeMax1=BoolSensor_GetState(FRC_2015_Robot::eIntakeMax1);
@@ -2196,17 +1482,6 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 	switch (index)
 	{
-	case FRC_2015_Robot::eWinch:
-		{
-			const double c_GearToArmRatio=1.0/props.Catapult_Robot_Props.ArmToGearRatio;
-			const double distance=Encoder_GetDistance(index);
-			result=(distance * m_RobotProps.GetWinchProps().GetRotaryProps().EncoderToRS_Ratio) + 0.0;
-
-			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
-			SmartDashboard::PutNumber("Catapult_Angle",90-RAD_2_DEG(result*c_GearToArmRatio));
-			//SmartDashboard::PutNumber("Catapult_Angle",RAD_2_DEG(result));
-		}
-		break;
 	case FRC_2015_Robot::eIntakeArm1:
 	case FRC_2015_Robot::eIntakeArm2:
 		assert(false);  //no potentiometer 

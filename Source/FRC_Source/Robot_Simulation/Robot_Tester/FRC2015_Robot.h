@@ -68,7 +68,6 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 
 		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Rotary_Properties &GetWinchProps() const {return m_WinchProps;}
 		const Rotary_Properties &GetIntake_ArmProps() const {return m_Intake_ArmProps;}
 		const Rotary_Properties &GetIntakeRollersProps() const {return m_IntakeRollersProps;}
 
@@ -81,7 +80,7 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_WinchProps,m_Intake_ArmProps,m_IntakeRollersProps;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_Intake_ArmProps,m_IntakeRollersProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2015_Robot_Props m_FRC2015RobotProps;
 
@@ -194,77 +193,7 @@ class FRC_2015_Robot : public Tank_Robot
 				void Pitch_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 		};
 
-		class Winch : public Rotary_Position_Control
-		{
-			public:
-				Winch(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control);
-				~Winch();
-				IEvent::HandlerList ehl;
-				//given the raw potentiometer converts to the arm angle
-				double PotentiometerRaw_To_Arm_r(double raw) const;
-				void Fire_Catapult(bool ReleaseClutch);
-				void Winch_FireManager(bool ReleaseClutch);
-				bool GetAutoDeployIntake() const;
-			protected:
-				//Intercept the time change to obtain current height as well as sending out the desired velocity
-				virtual void BindAdditionalEventControls(bool Bind);
-				void Advance(bool on);
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
-				virtual void TimeChange(double dTime_s);
-				virtual bool DidHitMaxLimit() const;
-
-			private:
-				#ifndef Robot_TesterCode
-				typedef Rotary_Position_Control __super;
-				#endif
-				void SetChipShot();
-				void SetGoalShot();
-				FRC_2015_Robot * const m_pParent;
-				Goal *m_WinchFireManager;
-				bool m_Advance;
-		};
 		//First attempt at arm... depreciated as we moved to pneumatic
-		#if 0
-		class Intake_Arm : public Rotary_Position_Control
-		{
-			public:
-				Intake_Arm(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control);
-				IEvent::HandlerList ehl;
-				//The parent needs to call initialize
-				double HeightToAngle_r(double Height_m) const;
-				double Arm_AngleToHeight_m(double Angle_r) const;
-				double AngleToHeight_m(double Angle_r) const;
-				double GetPosRest();
-				//given the raw potentiometer converts to the arm angle
-				double PotentiometerRaw_To_Arm_r(double raw) const;
-				void CloseRist(bool Close);
-			protected:
-				//Intercept the time change to obtain current height as well as sending out the desired velocity
-				virtual void BindAdditionalEventControls(bool Bind);
-				void Advance(bool on);
-				void Retract(bool on);
-				//events are a bit picky on what to subscribe so we'll just wrap from here
-				void SetRequestedVelocity_FromNormalized(double Velocity) {__super::SetRequestedVelocity_FromNormalized(Velocity);}
-
-				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
-				virtual void TimeChange(double dTime_s);
-
-				virtual bool DidHitMinLimit() const;
-				virtual bool DidHitMaxLimit() const;
-			private:
-				#ifndef Robot_TesterCode
-				typedef Rotary_Position_Control __super;
-				#endif
-				void SetStowed();
-				void SetDeployed();
-				void SetSquirt();  //optional if we need to go back further to eject balls
-				FRC_2015_Robot * const m_pParent;
-				bool m_Advance, m_Retract;
-		};
-		#endif
 
 		class Intake_Arm
 		{
@@ -312,11 +241,9 @@ class FRC_2015_Robot : public Tank_Robot
 	public: //Autonomous public access (wind river has problems with friend technique)
 		const FRC_2015_Robot_Properties &GetRobotProps() const;
 		FRC_2015_Robot_Props::Autonomous_Properties &GetAutonProps();
-		Ship_1D &GetWinch() {return m_Winch;}
 		bool GetCatapultLimit() const;
 		void SetWinchFireSequenceActive(bool WinchFireSequenceState) {m_Intake_Arm.SetWinchFireSequenceActive(WinchFireSequenceState);}
 		bool GetIsArmDown() const {return m_Intake_Arm.GetIsArmDown();}
-		bool GetAutoDeployIntake() const {return m_Winch.GetAutoDeployIntake();}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
@@ -329,7 +256,6 @@ class FRC_2015_Robot : public Tank_Robot
 		FRC_2015_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
-		Winch m_Winch;
 		Intake_Arm m_Intake_Arm;
 		Intake_Rollers m_Intake_Rollers;
 		FRC_2015_Robot_Properties m_RobotProps;  //saves a copy of all the properties
@@ -341,8 +267,6 @@ class FRC_2015_Robot : public Tank_Robot
 		double m_DefensiveKeyNormalizedDistance;
 		size_t m_DefaultPresetIndex;
 		size_t m_AutonPresetIndex;  //used only because encoder tracking is disabled
-		//cached during robot time change and applied to other systems when targeting is true
-		double m_YawAngle;
 
 		bool m_DisableTurretTargetingValue;
 		bool m_POVSetValve;
@@ -436,7 +360,6 @@ class FRC_2015_Robot_Control : public RobotControlCommon, public FRC_2015_Contro
 		Tank_Robot_Control m_TankRobotControl;
 		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
 		Compressor *m_Compressor;
-		double m_WinchVoltage;  //used in simulation but no harm in leaving enabled for wind-river
 		//All digital input reads are done on time change and cached to avoid multiple reads to the FPGA
 		bool m_Limit_IntakeMin1,m_Limit_IntakeMin2,m_Limit_IntakeMax1,m_Limit_IntakeMax2;
 		bool m_Limit_Catapult;
