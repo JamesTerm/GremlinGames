@@ -290,6 +290,8 @@ private:
 	Robot2013Map Robot2013_Database;
 	typedef map<string ,FRC_2014_Robot_Properties,greater<string>> Robot2014Map;
 	Robot2014Map Robot2014_Database;
+	typedef map<string ,FRC_2015_Robot_Properties,greater<string>> Robot2015Map;
+	Robot2015Map Robot2015_Database;
 	typedef map<string ,HikingViking_Robot_Properties,greater<string>> RobotHikingVikingMap;
 	RobotHikingVikingMap RobotHikingViking_Database;
 
@@ -349,6 +351,7 @@ public:
 		e2012,
 		e2013,
 		e2014,
+		e2015,
 		eHikingViking
 	};
 	void LoadRobot(const char *FileName,const char *RobotName,RobotType type)
@@ -444,6 +447,17 @@ public:
 					}
 				}
 				break;
+			case e2015:
+				{
+					Robot2015Map::iterator iter=Robot2015_Database.find(RobotName);
+					if (iter==Robot2015_Database.end())
+					{
+						//New entry
+						Robot2015_Database[RobotName]=FRC_2015_Robot_Properties();
+						new_entry=&Robot2015_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
 			case eHikingViking:
 				{
 					RobotHikingVikingMap::iterator iter=RobotHikingViking_Database.find(RobotName);
@@ -521,6 +535,12 @@ public:
 		{
 			Robot2014Map::iterator iter=Robot2014_Database.find(str_2);
 			if (iter!=Robot2014_Database.end())
+				props=&((*iter).second);
+		}
+		if (props==NULL)
+		{
+			Robot2015Map::iterator iter=Robot2015_Database.find(str_2);
+			if (iter!=Robot2015_Database.end())
 				props=&((*iter).second);
 		}
 		if (props==NULL)
@@ -650,6 +670,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eTestGoals_2013,
 		eRobot2014,
 		eTestGoals_2014,
+		eRobot2015,
+		eTestGoals_2015,
 		eTestTankFollowGod,
 		eTestFollowGod,
 		eTestLUAShip,
@@ -672,6 +694,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"Goals2013",
 		"Robot2014",
 		"Goals2014",
+		"Robot2015",
+		"Goals2015",
 		"TankFollowGod",
 		"FollowGod",
 		"GodShip",
@@ -890,7 +914,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 		break;
 	case eRobot2014:
-	case eCurrent:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
@@ -925,6 +948,42 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				printf("Robot not found\n");
 			break;
 		}
+	case eRobot2015:
+	case eCurrent:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			_command.LoadRobot("FRC2015Robot.lua","FRC2015Robot",Commands::e2015);
+			Entity2D *TestEntity=_command.AddRobot("Robot2015","FRC2015Robot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity,false);
+		}
+		break;
+	case eTestGoals_2015:
+		{
+			FRC_2015_Robot *Robot=dynamic_cast<FRC_2015_Robot *>(game.GetEntity("Robot2015"));
+			if (Robot)
+			{
+				const int AutonomousValue=str_2[0]?atoi(str_2):2;
+				const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
+				Goal *oldgoal=Robot->ClearGoal();
+				if (oldgoal)
+					delete oldgoal;
+
+				if (DoAutonomous)
+				{
+					Goal *goal=NULL;
+					goal=FRC_2015_Goals::Get_FRC2015_Autonomous(Robot);
+					if (goal)
+						goal->Activate(); //now with the goal(s) loaded activate it
+					Robot->SetGoal(goal);
+				}
+			}
+			else
+				printf("Robot not found\n");
+			break;
+		}
 	case eTestTankFollowGod:
 		{
 			#ifdef _DEBUG
@@ -932,13 +991,13 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			#endif
 			g_WorldScaleFactor=100.0;
 
-			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("Robot2014"));
+			Ship_Tester *ship=dynamic_cast<Ship_Tester *>(game.GetEntity("Robot2015"));
 
 			Ship_Tester *Followship=dynamic_cast<Ship_Tester *>(game.GetEntity("GodShip"));
 			if (!ship)
 			{
-				_command.LoadRobot("FRC2014Robot.lua","FRC2014Robot",Commands::e2014);
-				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("Robot2014","FRC2014Robot",str_3,str_4,str_5));
+				_command.LoadRobot("FRC2015Robot.lua","FRC2015Robot",Commands::e2015);
+				ship=dynamic_cast<Ship_Tester *>(_command.AddRobot("Robot2015","FRC2015Robot",str_3,str_4,str_5));
 			}
 
 			if (!Followship)
