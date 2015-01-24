@@ -44,9 +44,6 @@ MainRobot = {
 			id_4 = { name="left_drive_1", channel=4},
 			id_5 = { name="left_drive_2", channel=5},
 			id_6 = { name="left_drive_3", channel=6},
-			id_7 = { name="winch",         channel=7}, 
-			id_8 = { name="intake_arm_1",  channel=8},
-			id_9 = { name="intake_arm_2",  channel=9},
 			id_10= { name="rollers",       channel=10}
 		},
 		relay =
@@ -76,7 +73,6 @@ MainRobot = {
 			--These channels must be unique to digital input channels as well
 			id_1 = { name= "left_drive_1",  a_channel=3, b_channel=4},
 			id_2 = { name="right_drive_1",  a_channel=1, b_channel=2},
-			id_3 = { name="winch",  a_channel=5, b_channel=6}
 		},
 		compressor	=	{ relay=8, limit=14 }
 	},
@@ -162,8 +158,6 @@ MainRobot = {
 		{
 			arm_to_motor=Catapult_ArmToMotorRatio,
 			pot_to_arm=Catapult_PotentiometerToArmRatio,
-			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
-			--This allows gain assist to apply max voltage to its descent
 			chipshot_angle_deg=45,
 			goalshot_angle_deg=90,
 			auto_deploy_arm='y',
@@ -196,124 +190,6 @@ MainRobot = {
 			-- (x / cos(theta)) should be same distance back, use negative to come backwards
 			third_ball_distance_ft=-(2/math.cos(45 * Deg2Rad)),
 			show_auton_variables='y'
-		},
-		
-		winch =
-		{
-			is_closed=1,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up=
-			{p=100, i=0, d=0},
-			tolerance=0.15,
-			tolerance_count=20,
-			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=Catapult_PotentiometerToMotorRatio,
-			--curve_voltage=
-			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-			
-			max_speed=Catapult_MaxSpeed,
-			accel=100.0,						--We may indeed have a two button solution (match with max accel)
-			brake=100.0,
-			--This will be about a second and then some for entire retraction should be fast... the second scalar is 1/x of a second to
-			--reach full speed which should be very quick
-			max_accel_forward=Catapult_MaxSpeed * 10,
-			max_accel_reverse=Catapult_MaxSpeed * 10,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
-			--These are arm converted to gear ratio
-			--The winch is set up to force the numbers to go up from 0 - 90 where 0 is pointing up
-			max_range_deg= 92 * Catapult_ArmToMotorRatio,
-			max_limit_deg=88 * Catapult_ArmToMotorRatio,  --The angle the limit switch is placed (this is offset from maxrange to determine final velocity when hit)
-			min_range_deg=(-10) * Catapult_ArmToMotorRatio,
-			use_aggressive_stop = 'no',
-			inv_max_accel_up = 0.05,
-			inv_max_decel_up = 0.0,
-			inv_max_accel_down = 0.05,
-			inv_max_decel_down = 0.01,
-			--slow_velocity_voltage = 4.0,
-			--slow_velocity = 2.0,
-			--predict_up=.400,
-			--predict_down=.400,
-			--pulse_burst_time=0.06,
-			--pulse_burst_range=0.5,
-			--reverse_deadzone=0.10,
-			slow_angle_scalar = Catapult_MotorToArmRatio,
-			--distance_scale = 0.5,
-			motor_specs =
-			{
-				wheel_mass=Pounds2Kilograms * 16.27,
-				cof_efficiency=0.2,
-				gear_reduction=1.0,
-				torque_on_wheel_radius=Inches2Meters * 1.0,
-				drive_wheel_radius=Inches2Meters * 2.0,
-				number_of_motors=2,
-				
-				free_speed_rpm=233.0,
-				stall_torque=0.4,
-				stall_current_amp=41,
-				free_current_amp=1.8
-			}
-		},
-		
-		intake_arm =
-		{
-			starting_position_deg=90,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='n',
-			pid_up=
-			{p=100, i=0, d=0},
-			pid_down=
-			{p=100, i=0, d=0},
-			tolerance=0.15,
-			tolerance_count=1,
-			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=1.0,
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-			
-			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
-			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
-			accel=0.5,						--We may indeed have a two button solution (match with max accel)
-			brake=0.5,
-			max_accel_forward=1,			--These are in radians, just go with what feels right
-			max_accel_reverse=1,
-			using_range=1,					--Warning Only use range if we have a potentiometer! or limit switch
-			--These are arm converted to gear ratio
-			--The intake uses a starting point of 90 to force numbers down from 90 - 0 where zero is pointing straight out
-			max_range_deg= (95) * Intake_ArmToMotorRatio,
-			max_limit_deg=90 * Intake_ArmToMotorRatio,  --The angle the limit switch is placed when intake is stowed
-			min_range_deg= 45 * Intake_ArmToMotorRatio,
-			min_limit_deg=60 * Intake_ArmToMotorRatio,  --The angle the limit switch is placed when intake is deployed
-			use_aggressive_stop = 'yes',
-			inv_max_accel_up = 0.05,
-			inv_max_decel_up = 0.0,
-			inv_max_accel_down = 0.05,
-			inv_max_decel_down = 0.01,
-			slow_velocity_voltage = 4.0,
-			slow_velocity = 2.0,
-			predict_up=.400,
-			predict_down=.400,
-			--pulse_burst_time=0.06,
-			--pulse_burst_range=0.5,
-			reverse_deadzone=0.10,
-			slow_angle_scalar = Intake_GearToArmRatio,
-			distance_scale = 0.5,
-			motor_specs =
-			{
-				wheel_mass=Pounds2Kilograms * 16.27,
-				cof_efficiency=0.2,
-				gear_reduction=1.0,
-				torque_on_wheel_radius=Inches2Meters * 1.0,
-				drive_wheel_radius=Inches2Meters * 2.0,
-				number_of_motors=2,
-				
-				free_speed_rpm=84.0,
-				stall_torque=10.6,
-				stall_current_amp=18.6,
-				free_current_amp=1.8
-			}
 		},
 
 		
@@ -402,17 +278,8 @@ MainRobot = {
 			SlideHold = {type="joystick_button", key=7, on_off=true},
 			TestWaypoint={type="joystick_button", key=3, keyboard='q', on_off=true},
 			
-			--Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
-			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
-			--Winch_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_FireManager={type="joystick_button", key=1, keyboard='j', on_off=true},
-			Winch_Advance={type="keyboard", key='k', on_off=true},
-			--IntakeArm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			--IntakeArm_SetDeployed={type="keyboard", key='l', on_off=false},
-			--IntakeArm_SetStowed={type="keyboard", key=';', on_off=false},
 			Robot_BallTargeting_On={type="keyboard", key='t', on_off=false},
 			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false},
-			Winch_Advance={type="keyboard", key='k', on_off=true},
 			--Robot_CatcherShooter={type="keyboard", key='u', on_off=true},
 			--Robot_CatcherIntake={type="keyboard", key='i', on_off=true},
 			IntakeArm_DeployManager={type="keyboard", key='u', on_off=true},
@@ -435,11 +302,6 @@ MainRobot = {
 			--Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.5, filter=0.1, curve_intensity=0.0},
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
-			
-			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
-			Winch_SetGoalShot = {type="joystick_button", key=3, on_off=false},
-			Winch_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire = {type="joystick_button", key=2, on_off=true},
 			
 			--Ball_Squirt = {type="joystick_button", key=1, on_off=true},
 			--PowerWheels_IsRunning = {type="joystick_button", key=7, on_off=true},
@@ -469,11 +331,6 @@ MainRobot = {
 			Robot_SetLowGearOff = {type="joystick_button", key=6, on_off=false},
 			Robot_SetLowGearOn = {type="joystick_button", key=5, on_off=false},
 			TestWaypoint={type="joystick_button", key=3, on_off=true},
-			
-			Winch_SetChipShot = {type="joystick_button", key=4, on_off=false},
-			Winch_SetGoalShot = {type="joystick_button", key=2, on_off=false},
-			Winch_SetCurrentVelocity = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			Winch_Fire={type="joystick_button", key=1, on_off=true},
 		},
 		Joystick_4 =
 		{

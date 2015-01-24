@@ -68,7 +68,6 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 
 		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Rotary_Properties &GetIntake_ArmProps() const {return m_Intake_ArmProps;}
 		const Rotary_Properties &GetIntakeRollersProps() const {return m_IntakeRollersProps;}
 
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
@@ -80,7 +79,7 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_Intake_ArmProps,m_IntakeRollersProps;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_IntakeRollersProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2015_Robot_Props m_FRC2015RobotProps;
 
@@ -95,7 +94,7 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 
 const char * const csz_FRC_2015_Robot_SpeedControllerDevices_Enum[] =
 {
-	"winch","intake_arm_1","intake_arm_2","left_drive_3","right_drive_3","rollers","CameraLED"
+	"left_drive_3","right_drive_3","rollers","CameraLED"
 };
 
 const char * const csz_FRC_2015_Robot_SolenoidDevices_Enum[] =
@@ -114,7 +113,6 @@ class FRC_2015_Robot : public Tank_Robot
 	public:
 		enum SpeedControllerDevices
 		{
-			eWinch,
 			eIntakeArm1,
 			eIntakeArm2,
 			eLeftDrive3,
@@ -193,28 +191,6 @@ class FRC_2015_Robot : public Tank_Robot
 				void Pitch_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 		};
 
-		//First attempt at arm... depreciated as we moved to pneumatic
-
-		class Intake_Arm
-		{
-			public:
-				Intake_Arm(FRC_2015_Robot *parent);
-				~Intake_Arm();
-				IEvent::HandlerList ehl;
-
-				void SetIntakeButton(bool DeployArm);
-				//When fire sequence is engaged it will update this status (what it does with it is up to the preference of script)
-				void SetWinchFireSequenceActive(bool WinchFireSequenceState);
-
-				void TimeChange(double dTime_s);
-				void BindAdditionalEventControls(bool Bind);
-				bool GetIsArmDown() const; //This returns if arm is down, which takes into consideration time from when deployed
-			private:
-				FRC_2015_Robot * const m_pParent;
-				Goal *m_IntakeArmManager;
-				double m_ArmTimer;  //manages when arm is down
-		};
-
 		class Intake_Rollers : public Rotary_Velocity_Control
 		{
 			public:
@@ -242,8 +218,6 @@ class FRC_2015_Robot : public Tank_Robot
 		const FRC_2015_Robot_Properties &GetRobotProps() const;
 		FRC_2015_Robot_Props::Autonomous_Properties &GetAutonProps();
 		bool GetCatapultLimit() const;
-		void SetWinchFireSequenceActive(bool WinchFireSequenceState) {m_Intake_Arm.SetWinchFireSequenceActive(WinchFireSequenceState);}
-		bool GetIsArmDown() const {return m_Intake_Arm.GetIsArmDown();}
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);
 		virtual void BindAdditionalUIControls(bool Bind, void *joy, void *key);
@@ -256,7 +230,6 @@ class FRC_2015_Robot : public Tank_Robot
 		FRC_2015_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
-		Intake_Arm m_Intake_Arm;
 		Intake_Rollers m_Intake_Rollers;
 		FRC_2015_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Vec2D m_DefensiveKeyPosition;
