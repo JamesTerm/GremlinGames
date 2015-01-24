@@ -384,50 +384,6 @@ namespace FRC_2015_Goals
 	Goal *Get_FRC2015_Autonomous(FRC_2015_Robot *Robot);
 };
 
-#undef __TestControlAssignments__
-#if defined Robot_TesterCode && !defined __TestControlAssignments__
-
-class FRC_2015_Robot_Control : public FRC_2015_Control_Interface
-{
-	public:
-		FRC_2015_Robot_Control();
-
-		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
-		void ResetPos();
-		FRC_2015_Control_Interface &AsControlInterface() {return *this;}
-
-		const FRC_2015_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
-	protected: //from Robot_Control_Interface
-		virtual void UpdateVoltage(size_t index,double Voltage);
-		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
-		virtual void OpenSolenoid(size_t index,bool Open);
-	protected: //from Tank_Drive_Control_Interface
-		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
-		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) {m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);}
-		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
-	protected: //from Rotary Interface
-		virtual void Reset_Rotary(size_t index=0); 
-		virtual double GetRotaryCurrentPorV(size_t index=0);
-		virtual void UpdateRotaryVoltage(size_t index,double Voltage) {UpdateVoltage(index,Voltage);}
-	protected: //from FRC_2015_Control_Interface
-		//Will reset various members as needed (e.g. Kalman filters)
-		virtual void Robot_Control_TimeChange(double dTime_s);
-		virtual void Initialize(const Entity_Properties *props);
-		//Note: This is only for Robot Tester
-		virtual void BindAdditionalEventControls(bool Bind,GG_Framework::Base::EventMap *em,IEvent::HandlerList &ehl);
-
-	protected:
-		FRC_2015_Robot_Properties m_RobotProps;  //saves a copy of all the properties
-		Tank_Robot_Control m_TankRobotControl;
-		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
-		Potentiometer_Tester2 m_Winch_Pot, m_IntakeArm_Pot;
-		KalmanFilter m_KalFilter_Arm;
-		//cache voltage values for display
-		double m_WinchVoltage,m_IntakeArmVoltage;
-};
-#else
-
 class FRC_2015_Robot_Control : public RobotControlCommon, public FRC_2015_Control_Interface
 {
 	public:
@@ -485,8 +441,6 @@ class FRC_2015_Robot_Control : public RobotControlCommon, public FRC_2015_Contro
 		bool m_Limit_IntakeMin1,m_Limit_IntakeMin2,m_Limit_IntakeMax1,m_Limit_IntakeMax2;
 		bool m_Limit_Catapult;
 };
-
-#endif //Robot_TesterCode
 
 #ifdef Robot_TesterCode
 ///This is only for the simulation where we need not have client code instantiate a Robot_Control

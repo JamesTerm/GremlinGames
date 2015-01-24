@@ -476,8 +476,11 @@ void RobotDrive::StopMotor()
 	if (m_rearRightMotor != NULL) m_rearRightMotor->Disable();
 }
 
+//Ideally we have only one robot control for both the tester and the main app... we can use this macro in tester to control if we want to see that the calls
+//are correctly working.  Typically we shouldn't need to enable this unless there is a problem, or alternatively to verify the actual controls are being sent out
+//#define __SHOW_SMARTDASHBOARD__
 
-
+#ifdef __SHOW_SMARTDASHBOARD__
   /***********************************************************************************************************************************/
  /*														Control_1C_Element_UI														*/
 /***********************************************************************************************************************************/
@@ -566,5 +569,86 @@ double Control_2C_Element_UI::get_number() const
 {
 	return SmartDashboard::GetNumber(m_Name);
 }
-#endif
 
+
+#else  //__SHOW_SMARTDASHBOARD__
+
+  /***********************************************************************************************************************************/
+ /*														Control_1C_Element_UI														*/
+/***********************************************************************************************************************************/
+
+Control_1C_Element_UI::Control_1C_Element_UI(uint8_t moduleNumber, uint32_t channel,const char *name,double DefaultNumber) : m_DefaultNumber(DefaultNumber),
+	m_PutNumber_Used(false),m_PutBoolUsed(false)
+{
+	m_Name=name;
+	char Buffer[4];
+	m_Name+="_";
+	itoa(channel,Buffer,10);
+	m_Name+=Buffer;
+	m_Name+="_";
+	itoa(moduleNumber,Buffer,10);
+	m_Name+=Buffer;
+}
+
+void Control_1C_Element_UI::display_number(double value)
+{
+}
+
+void Control_1C_Element_UI::display_bool(bool value)
+{
+}
+
+//Note: For the get implementation, I restrict use of the bool used members to these functions as a first run
+//It's just makes there use-case more restricted
+
+bool Control_1C_Element_UI::get_bool() const
+{
+	return false;
+}
+
+double Control_1C_Element_UI::get_number() const
+{
+	return 0.0;
+}
+
+  /***********************************************************************************************************************************/
+ /*														Control_2C_Element_UI														*/
+/***********************************************************************************************************************************/
+
+Control_2C_Element_UI::Control_2C_Element_UI(uint8_t moduleNumber, uint32_t forward_channel, uint32_t reverse_channel,const char *name)
+{
+	m_Name=name;
+	char Buffer[4];
+	m_Name+="_";
+	itoa(forward_channel,Buffer,10);
+	m_Name+=Buffer;
+	m_Name+="_";
+	itoa(reverse_channel,Buffer,10);
+	m_Name+=Buffer;
+	m_Name+="_";
+	itoa(moduleNumber,Buffer,10);
+	m_Name+=Buffer;
+}
+
+void Control_2C_Element_UI::display_bool(bool value)
+{
+}
+
+void Control_2C_Element_UI::display_number(double value)
+{
+}
+
+bool Control_2C_Element_UI::get_bool() const
+{
+	return false;
+}
+
+double Control_2C_Element_UI::get_number() const
+{
+	return 0.0;
+}
+
+#endif  //__SHOW_SMARTDASHBOARD__
+
+
+#endif  //Robot_TesterCode
