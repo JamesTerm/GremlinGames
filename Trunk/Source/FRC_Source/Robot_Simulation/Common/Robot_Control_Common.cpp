@@ -38,12 +38,24 @@ static void LoadControlElement_1C_Internal(Scripting::Script& script,Control_Ass
 				double fTest;
 				err = script.GetField("channel",NULL,NULL,&fTest);
 				assert(!err);
+
+				#ifdef __USE_LEGACY_WPI_LIBRARIES__
 				newElement.Channel=(size_t)fTest;
+				#else
+				newElement.Channel=(size_t)fTest-1;  //make ordinal
+				#endif
+
 				err = script.GetField("name",&newElement.name,NULL,NULL);
 				assert(!err);
 				err = script.GetField("module",NULL,NULL,&fTest);
+
+				#ifdef __USE_LEGACY_WPI_LIBRARIES__
 				newElement.Module=(err)?1:(size_t)fTest;
 				assert(newElement.Module!=0);  //sanity check... this is cardinal
+				#else
+				newElement.Module=(err)?0:(size_t)fTest;
+				//assert(newElement.Module!=0);  //note: All module parameters are all ordinal for roboRIO
+				#endif
 			}
 			Output.push_back(newElement);
 			script.Pop();
@@ -73,17 +85,34 @@ static void LoadControlElement_2C_Internal(Scripting::Script& script,Control_Ass
 				if (err)
 					err=script.GetField("a_channel",NULL,NULL,&fTest);
 				assert(!err);
+
+				#ifdef __USE_LEGACY_WPI_LIBRARIES__
 				newElement.ForwardChannel=(size_t)fTest;
+				#else
+				newElement.ForwardChannel=(size_t)fTest-1;  //make ordinal
+				#endif
+
 				err = script.GetField("reverse_channel",NULL,NULL,&fTest);
 				if (err)
 					err=script.GetField("b_channel",NULL,NULL,&fTest);
 				assert(!err);
+
+				#ifdef __USE_LEGACY_WPI_LIBRARIES__
 				newElement.ReverseChannel=(size_t)fTest;
+				#else
+				newElement.ReverseChannel=(size_t)fTest-1;  //make ordinal
+				#endif
 				err = script.GetField("name",&newElement.name,NULL,NULL);
 				assert(!err);
 				err = script.GetField("module",NULL,NULL,&fTest);
+
+				#ifdef __USE_LEGACY_WPI_LIBRARIES__
 				newElement.Module=(err)?1:(size_t)fTest;
 				assert(newElement.Module!=0);  //sanity check... this is cardinal
+				#else
+				newElement.Module=(err)?0:(size_t)fTest;
+				//assert(newElement.Module!=0);  //note: All module parameters are all ordinal for roboRIO
+				#endif
 			}
 			Output.push_back(newElement);
 			script.Pop();
@@ -175,7 +204,11 @@ __inline void Initialize_1C_LUT(const Control_Assignment_Properties::Controls_1C
 		#ifdef Robot_TesterCode
 		T *NewElement=new T(element.Module,element.Channel,element.name.c_str());  //adding name for UI
 		#else
+		#ifdef __USE_LEGACY_WPI_LIBRARIES__
 		T *NewElement=new T(element.Module,element.Channel);
+		#else
+		T *NewElement=new T(element.Channel);
+		#endif
 		#endif
 		const size_t LUT_index=constrols.size(); //get size before we add it in
 		//const size_t PopulationIndex=constrols.size();  //get the ordinal value before we add it
