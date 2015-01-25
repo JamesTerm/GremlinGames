@@ -67,7 +67,7 @@ const char * const csz_FRC_2015_Robot_SpeedControllerDevices_Enum[] =
 	#ifdef __USING_6CIMS__
 	"left_drive_3","right_drive_3",
 	#endif
-	"rollers","CameraLED"
+	"kicker_wheel","CameraLED"
 };
 
 const char * const csz_FRC_2015_Robot_SolenoidDevices_Enum[] =

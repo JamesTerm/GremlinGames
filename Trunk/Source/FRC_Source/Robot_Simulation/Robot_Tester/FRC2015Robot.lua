@@ -40,9 +40,9 @@ MainRobot = {
 		{
 			id_1 = { name= "right_drive_1", channel=1, module=1}, 
 			id_2 = { name= "right_drive_2", channel=2}, 
-			id_4 = { name="left_drive_1", channel=4},
-			id_5 = { name="left_drive_2", channel=5},
-			id_10= { name="rollers",       channel=10}
+			id_3 = { name="left_drive_1", channel=3},
+			id_4 = { name="left_drive_2", channel=4},
+			id_5= { name="kicker_wheel", channel=5}
 			--If we decide we need more power we can assign these
 			--id_3 = { name= "right_drive_3", channel=3}, 
 			--id_6 = { name="left_drive_3", channel=6},
