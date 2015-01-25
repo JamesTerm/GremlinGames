@@ -9,27 +9,16 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
-Catapult_ArmToMotorRatio=5 * 8.3
-Catapult_MotorToArmRatio=1.0/Catapult_ArmToMotorRatio
-Catapult_PotentiometerToArmRatio=1/3
-Catapult_PotentiometerToMotorRatio=Catapult_PotentiometerToArmRatio * Catapult_ArmToMotorRatio
---TODO get max speed of bag motor under load
---Catapult_MaxSpeed=(8000.0/60.0) * Pi2
-Catapult_MaxSpeed=(8000.0/60.0) * Pi2 * 0.125 * 0.15
-
-Intake_ArmToMotorRatio=1.0
-Intake_MotorToArmRatio=1.0/Intake_ArmToMotorRatio
-Intake_PotentiometerToArmRatio=1.0
-Intake_PotentiometerToMotorRatio=Intake_PotentiometerToArmRatio * Intake_ArmToMotorRatio
-
-g_wheel_diameter_in=4   --This will determine the correct distance try to make accurate too
-WheelBase_Width_In=26.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
-WheelBase_Length_In=10  --was 9.625
+g_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
+WheelBase_Width_In=24.52198975	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelBase_Length_In=28.7422  
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-HighGearSpeed = (873.53 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.85 --RPM's from Parker
-LowGearSpeed  = (403.92 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9
+HighGearSpeed = (749.3472 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9  --RPMs from BHS2015 Chassis.SLDASM
+LowGearSpeed  = (346.6368 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9
 Drive_MaxAccel=5
-skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+--Omni wheels means no skid
+--skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+skid=1
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 MainRobot = {
@@ -81,7 +70,7 @@ MainRobot = {
 	MaxAccelLeft = 20, MaxAccelRight = 20, 
 	MaxAccelForward = Drive_MaxAccel, MaxAccelReverse = Drive_MaxAccel, 
 	MaxAccelForward_High = Drive_MaxAccel * 2, MaxAccelReverse_High = Drive_MaxAccel * 2, 
-	MaxTorqueYaw =  gMaxTorqueYaw * 0.78,
+	MaxTorqueYaw =  gMaxTorqueYaw,  --Note Bradley had 0.78 reduction to get the feel
 	MaxTorqueYaw_High = gMaxTorqueYaw * 5,
 	MaxTorqueYaw_SetPoint = gMaxTorqueYaw * 2,
 	MaxTorqueYaw_SetPoint_High = gMaxTorqueYaw * 10,
@@ -101,6 +90,8 @@ MainRobot = {
 	{
 		is_closed=1,
 		show_pid_dump='no',
+		--we should turn this off in bench mark testing
+		use_aggressive_stop=1,  --we are in small area want to have responsive stop
 		ds_display_row=-1,
 		wheel_base_dimensions =
 		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},
@@ -118,6 +109,7 @@ MainRobot = {
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 		voltage_multiply=1.0,				--May be reversed using -1.0
+		--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
 		curve_voltage=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		force_voltage=
@@ -134,15 +126,15 @@ MainRobot = {
 		{
 			wheel_mass=1.5,
 			cof_efficiency=1.0,
-			gear_reduction=5310.0/873.53,
+			gear_reduction=5310.0/749.3472,
 			torque_on_wheel_radius=Inches2Meters * 1,
 			drive_wheel_radius=Inches2Meters * 2,
-			number_of_motors=1,
+			number_of_motors=2,
 			
 			free_speed_rpm=5310.0,
-			stall_torque=6.561,
-			stall_current_amp=399,
-			free_current_amp=8.1
+			stall_torque=2.43,
+			stall_current_amp=133,
+			free_current_amp=2.7
 		}
 	},
 	
@@ -162,9 +154,10 @@ MainRobot = {
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
 			--cause slipping if driver "high sticks" to start or stop quickly.
-			MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
-			MaxTorqueYaw = 25 * 2,
-			MaxTorqueYaw_High = 25 * 2,
+			--for this year... there is no high gear... so we'll inherit these from high gear
+			--MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
+			--MaxTorqueYaw = 25 * 2,
+			--MaxTorqueYaw_High = 25 * 2,
 
 			MAX_SPEED = LowGearSpeed,
 			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
@@ -175,7 +168,7 @@ MainRobot = {
 			tank_drive =
 			{
 				is_closed=1,
-				show_pid_dump='no',
+				show_pid_dump='n',
 				ds_display_row=-1,
 				--We must NOT use I or D for low gear, we must keep it very responsive
 				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
@@ -188,6 +181,7 @@ MainRobot = {
 				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 				encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
 				voltage_multiply=1.0,				--May be reversed using -1.0
+				--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
 				curve_voltage=
 				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 				reverse_steering='no',
@@ -198,15 +192,15 @@ MainRobot = {
 				{
 					wheel_mass=1.5,
 					cof_efficiency=1.0,
-					gear_reduction=5310.0/403.92,
+					gear_reduction=5310.0/346.6368,
 					torque_on_wheel_radius=Inches2Meters * 1,
 					drive_wheel_radius=Inches2Meters * 2,
-					number_of_motors=1,
+					number_of_motors=2,
 					
 					free_speed_rpm=5310.0,
-					stall_torque=6.561,
-					stall_current_amp=399,
-					free_current_amp=8.1
+					stall_torque=2.43,
+					stall_current_amp=133,
+					free_current_amp=2.7
 				}
 			}
 		}
