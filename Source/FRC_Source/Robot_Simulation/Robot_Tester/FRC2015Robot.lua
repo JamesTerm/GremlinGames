@@ -167,7 +167,7 @@ MainRobot = {
 			
 			tank_drive =
 			{
-				is_closed=1,
+				is_closed=0,
 				show_pid_dump='n',
 				ds_display_row=-1,
 				--We must NOT use I or D for low gear, we must keep it very responsive
