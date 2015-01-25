@@ -119,53 +119,31 @@ void FRC_2015_Robot::PitchRamp::ResetPos()
 }
 
   /***********************************************************************************************************************************/
- /*													FRC_2015_Robot::Intake_Rollers													*/
+ /*													FRC_2015_Robot::Kicker_Wheel													*/
 /***********************************************************************************************************************************/
 
-FRC_2015_Robot::Intake_Rollers::Intake_Rollers(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control) :
-	Rotary_Velocity_Control("IntakeRollers",robot_control,eRollers),m_pParent(parent),m_Grip(false),m_Squirt(false)
+FRC_2015_Robot::Kicker_Wheel::Kicker_Wheel(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control) :
+	Rotary_Velocity_Control("KickerWheel",robot_control,eKickerWheel),m_pParent(parent)
 {
 }
 
-void FRC_2015_Robot::Intake_Rollers::TimeChange(double dTime_s)
+void FRC_2015_Robot::Kicker_Wheel::TimeChange(double dTime_s)
 {
 	SetRequestedVelocity_FromNormalized(m_Velocity);
 	m_Velocity=0.0;
-
-	const double Accel=m_Ship_1D_Props.ACCEL;
-	const double Brake=m_Ship_1D_Props.BRAKE;
-
-	//Get in my button values now use xor to only set if one or the other is true (not setting automatically zero's out)
-	if (m_Grip ^ m_Squirt)
-		SetCurrentLinearAcceleration(m_Grip?Accel:-Brake);
-
 	__super::TimeChange(dTime_s);
 }
 
-void FRC_2015_Robot::Intake_Rollers::Grip(bool on)
-{
-	m_Grip=on;
-}
-
-void FRC_2015_Robot::Intake_Rollers::Squirt(bool on)
-{
-	m_Squirt=on;
-}
-
-void FRC_2015_Robot::Intake_Rollers::BindAdditionalEventControls(bool Bind)
+void FRC_2015_Robot::Kicker_Wheel::BindAdditionalEventControls(bool Bind)
 {
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
 	if (Bind)
 	{
-		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2015_Robot::Intake_Rollers::Intake_Rollers_SetRequestedVelocity);
-		em->EventOnOff_Map["IntakeRollers_Grip"].Subscribe(ehl, *this, &FRC_2015_Robot::Intake_Rollers::Grip);
-		em->EventOnOff_Map["IntakeRollers_Squirt"].Subscribe(ehl, *this, &FRC_2015_Robot::Intake_Rollers::Squirt);
+		em->EventValue_Map["KickerWheel_SetCurrentVelocity"].Subscribe(ehl,*this, &FRC_2015_Robot::Kicker_Wheel::Kicker_Wheel_SetRequestedVelocity);
 	}
 	else
 	{
-		em->EventValue_Map["IntakeRollers_SetCurrentVelocity"].Remove(*this, &FRC_2015_Robot::Intake_Rollers::Intake_Rollers_SetRequestedVelocity);
-		em->EventOnOff_Map["IntakeRollers_Grip"]  .Remove(*this, &FRC_2015_Robot::Intake_Rollers::Grip);
-		em->EventOnOff_Map["IntakeRollers_Squirt"]  .Remove(*this, &FRC_2015_Robot::Intake_Rollers::Squirt);
+		em->EventValue_Map["KickerWheel_SetCurrentVelocity"].Remove(*this, &FRC_2015_Robot::Kicker_Wheel::Kicker_Wheel_SetRequestedVelocity);
 	}
 }
 
@@ -181,7 +159,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 FRC_2015_Robot::FRC_2015_Robot(const char EntityName[],FRC_2015_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_Intake_Rollers(this,robot_control),m_LatencyCounter(0.0),
+		m_Kicker_Wheel(this,robot_control),m_LatencyCounter(0.0),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
 		m_AutonPresetIndex(0),
 		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false)
@@ -204,7 +182,7 @@ void FRC_2015_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Proper
 
 	//set to the default key position
 	//const FRC_2015_Robot_Props &robot2015props=RobotProps->GetFRC2015RobotProps();
-	m_Intake_Rollers.Initialize(em,RobotProps?&RobotProps->GetIntakeRollersProps():NULL);
+	m_Kicker_Wheel.Initialize(em,RobotProps?&RobotProps->GetKickerWheelProps():NULL);
 }
 void FRC_2015_Robot::ResetPos()
 {
@@ -217,7 +195,7 @@ void FRC_2015_Robot::ResetPos()
 		//m_Intake_Arm.ResetPos();
 		SetLowGear(true);
 	}
-	m_Intake_Rollers.ResetPos();  //ha pedantic
+	m_Kicker_Wheel.ResetPos();  //ha pedantic
 }
 
 namespace VisionConversion
@@ -290,7 +268,7 @@ void FRC_2015_Robot::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_Turret.TimeChange(dTime_s);
 	m_PitchRamp.TimeChange(dTime_s);
-	m_Intake_Rollers.AsEntity1D().TimeChange(dTime_s);
+	m_Kicker_Wheel.AsEntity1D().TimeChange(dTime_s);
 
 	#ifdef __EnableShapeTrackingSimulation__
 	{
@@ -414,7 +392,7 @@ void FRC_2015_Robot::BindAdditionalEventControls(bool Bind)
 
 	m_Turret.BindAdditionalEventControls(Bind);
 	m_PitchRamp.BindAdditionalEventControls(Bind);
-	m_Intake_Rollers.AsShip1D().BindAdditionalEventControls(Bind);
+	m_Kicker_Wheel.AsShip1D().BindAdditionalEventControls(Bind);
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
@@ -497,7 +475,7 @@ FRC_2015_Robot_Properties::FRC_2015_Robot_Properties()  : m_TurretProps(
 	true,	//Using the range
 	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
 	),
-	m_IntakeRollersProps(
+	m_KickerWheelProps(
 	"Rollers",
 	2.0,    //Mass
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
@@ -595,7 +573,7 @@ const char * const g_FRC_2015_Controls_Events[] =
 	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
 	"Robot_SetDriverOverride",
 	"IntakeArm_DeployManager",
-	"IntakeRollers_Grip","IntakeRollers_Squirt","IntakeRollers_SetCurrentVelocity",
+	"KickerWheel_SetCurrentVelocity",
 	"TestAuton"
 };
 
@@ -882,8 +860,10 @@ void FRC_2015_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
-	case FRC_2015_Robot::eRollers:
+	case FRC_2015_Robot::eKickerWheel:
 		Victor_UpdateVoltage(index,Voltage);
+		//TODO change to KickerWheel once I have a 2015 layout in SmartDashboard
+		//  [1/24/2015 JamesK]
 		SmartDashboard::PutNumber("RollerVoltage",Voltage);
 		break;
 	case FRC_2015_Robot::eCameraLED:
