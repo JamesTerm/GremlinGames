@@ -289,7 +289,7 @@ void FRC_2015_Robot::TimeChange(double dTime_s)
 	#endif
 
 	//const double  YOffset=-SmartDashboard::GetNumber("Y Position");
-	const double XOffset=SmartDashboard::GetNumber("X Position");
+	//const double XOffset=SmartDashboard::GetNumber("X Position");
 	
 	using namespace VisionConversion;
 
@@ -490,8 +490,8 @@ FRC_2015_Robot_Properties::FRC_2015_Robot_Properties()  : m_TurretProps(
 	m_RobotControls(&s_ControlsEvents)
 {
 	{
-		const double c_ArmToGearRatio=72.0/28.0;
-		const double c_PotentiometerToArmRatio=36.0/54.0;
+		//const double c_ArmToGearRatio=72.0/28.0;
+		//const double c_PotentiometerToArmRatio=36.0/54.0;
 
 		FRC_2015_Robot_Props props;
 
@@ -614,7 +614,7 @@ void FRC_2015_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 
 void FRC_2015_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
-	FRC_2015_Robot_Props &props=m_FRC2015RobotProps;
+	//FRC_2015_Robot_Props &props=m_FRC2015RobotProps;
 
 	const char* err=NULL;
 	{
@@ -825,7 +825,7 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 
 Goal *FRC_2015_Goals::Get_FRC2015_Autonomous(FRC_2015_Robot *Robot)
 {
-	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),"Complete");
+	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),(char *)"Complete");
 	SmartDashboard::PutNumber("Sequence",1.0);  //ensure we are on the right sequence
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(new FRC_2015_Goals_Impl(*Robot));
@@ -846,7 +846,7 @@ void FRC_2015_Robot_Control::ResetPos()
 	printf("RobotControl::ResetPos Compressor->Stop()\n");
 	#ifndef Robot_TesterCode
 	//Allow driver station to control if they want to run the compressor
-	if (DriverStation::GetInstance()->GetDigitalIn(8))
+	//if (DriverStation::GetInstance()->GetDigitalIn(8))
 	#endif
 	{
 		printf("RobotControl::ResetPos Compressor->Start()\n");
@@ -933,7 +933,7 @@ void FRC_2015_Robot_Control::Initialize(const Entity_Properties *props)
 		RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());		
 		m_Compressor=CreateCompressor();
 		//Note: RobotControlCommon_Initialize() must occur before calling any encoder startup code
-		const double EncoderPulseRate=(1.0/360.0);
+		//const double EncoderPulseRate=(1.0/360.0);
 		//Encoder_SetDistancePerPulse(FRC_2015_Robot::eWinch,EncoderPulseRate);
 		//Encoder_Start(FRC_2015_Robot::eWinch);
 		ResetPos(); //must be called after compressor is created
@@ -968,7 +968,7 @@ void FRC_2015_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double Ri
 double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 {
 	double result=0.0;
-	const FRC_2015_Robot_Props &props=m_RobotProps.GetFRC2015RobotProps();
+	//const FRC_2015_Robot_Props &props=m_RobotProps.GetFRC2015RobotProps();
 
 	//switch (index)
 	//{
