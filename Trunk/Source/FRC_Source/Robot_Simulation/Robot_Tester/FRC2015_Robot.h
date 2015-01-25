@@ -36,7 +36,7 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 
 		const Rotary_Properties &GetTurretProps() const {return m_TurretProps;}
 		const Rotary_Properties &GetPitchRampProps() const {return m_PitchRampProps;}
-		const Rotary_Properties &GetIntakeRollersProps() const {return m_IntakeRollersProps;}
+		const Rotary_Properties &GetKickerWheelProps() const {return m_KickerWheelProps;}
 
 		const Tank_Robot_Properties &GetLowGearProps() const {return m_LowGearProps;}
 		const FRC_2015_Robot_Props &GetFRC2015RobotProps() const {return m_FRC2015RobotProps;}
@@ -47,7 +47,7 @@ class FRC_2015_Robot_Properties : public Tank_Robot_Properties
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
-		Rotary_Properties m_TurretProps,m_PitchRampProps,m_IntakeRollersProps;
+		Rotary_Properties m_TurretProps,m_PitchRampProps,m_KickerWheelProps;
 		Tank_Robot_Properties m_LowGearProps;
 		FRC_2015_Robot_Props m_FRC2015RobotProps;
 
@@ -90,7 +90,7 @@ class FRC_2015_Robot : public Tank_Robot
 			eLeftDrive3,
 			eRightDrive3,
 			#endif
-			eRollers,
+			eKickerWheel,
 			eCameraLED  //Full forward is on 0 is off
 		};
 
@@ -157,27 +157,23 @@ class FRC_2015_Robot : public Tank_Robot
 				void Pitch_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 		};
 
-		class Intake_Rollers : public Rotary_Velocity_Control
+		class Kicker_Wheel : public Rotary_Velocity_Control
 		{
 			public:
-				Intake_Rollers(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control);
+				Kicker_Wheel(FRC_2015_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
-				//Using meaningful terms to assert the correct direction at this level
-				void Grip(bool on);
-				void Squirt(bool on);
 			protected:
 				//Intercept the time change to send out voltage
 				virtual void TimeChange(double dTime_s);
 				virtual void BindAdditionalEventControls(bool Bind);
 
-				void Intake_Rollers_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
+				void Kicker_Wheel_SetRequestedVelocity(double Velocity) {m_Velocity+=Velocity;}
 			private:
 				#ifndef Robot_TesterCode
 				typedef Rotary_Velocity_Control __super;
 				#endif
 				FRC_2015_Robot * const m_pParent;
 				double m_Velocity; //adds all axis velocities then assigns on the time change
-				bool m_Grip,m_Squirt;
 		};
 
 	public: //Autonomous public access (wind river has problems with friend technique)
@@ -196,7 +192,7 @@ class FRC_2015_Robot : public Tank_Robot
 		FRC_2015_Control_Interface * const m_RobotControl;
 		Turret m_Turret;
 		PitchRamp m_PitchRamp;
-		Intake_Rollers m_Intake_Rollers;
+		Kicker_Wheel m_Kicker_Wheel;
 		FRC_2015_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		Vec2D m_DefensiveKeyPosition;
 		double m_LatencyCounter;
