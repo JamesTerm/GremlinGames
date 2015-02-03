@@ -9,6 +9,16 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
+ArmLength_m=1.8288  --6 feet
+ArmToGearRatio=72.0/28.0
+GearToArmRatio=1.0/ArmToGearRatio
+PotentiometerToArmRatio=36.0/54.0
+PotentiometerToGearRatio=PotentiometerToArmRatio * ArmToGearRatio
+PotentiometerMaxRotation_r=270.0 * Deg2Rad
+GearHeightOffset_m=55 * Inches2Meters
+MotorToWheelGearRatio=12.0/36.0
+
+
 g_wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=24.52198975	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_In=28.7422  
@@ -149,7 +159,63 @@ MainRobot = {
 			show_auton_variables='y'
 		},
 
-		
+		arm =
+		{
+			is_closed=0,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='n',
+			pid_up=
+			{p=100, i=0, d=0},
+			pid_down=
+			{p=100, i=0, d=0},
+			tolerance=0.15,
+			tolerance_count=20,
+			voltage_multiply=1.0,			--May be reversed
+			encoder_to_wheel_ratio=1.0,
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			
+			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
+			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
+			accel=0.5,						--We may indeed have a two button solution (match with max accel)
+			brake=0.5,
+			max_accel_forward=1,			--These are in radians, just go with what feels right
+			max_accel_reverse=1,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			--These are arm converted to gear ratio
+			max_range_deg= 70 * ArmToGearRatio,
+			min_range_deg=(-50) * ArmToGearRatio,
+			use_aggressive_stop = 'yes',
+			inv_max_accel_up = 0.05,
+			inv_max_decel_up = 0.0,
+			inv_max_accel_down = 0.05,
+			inv_max_decel_down = 0.01,
+			slow_velocity_voltage = 4.0,
+			slow_velocity = 2.0,
+			predict_up=.400,
+			predict_down=.400,
+			--pulse_burst_time=0.06,
+			--pulse_burst_range=0.5,
+			--reverse_deadzone=0.10,
+			slow_angle_scalar = GearToArmRatio,
+			distance_scale = 0.5,
+			motor_specs =
+			{
+				wheel_mass=Pounds2Kilograms * 16.27,
+				cof_efficiency=0.2,
+				gear_reduction=1.0,
+				torque_on_wheel_radius=Inches2Meters * 1.0,
+				drive_wheel_radius=Inches2Meters * 2.0,
+				number_of_motors=2,
+				
+				free_speed_rpm=84.0,
+				stall_torque=10.6,
+				stall_current_amp=18.6,
+				free_current_amp=1.8
+			}
+		},
+
 		low_gear = 
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
@@ -241,6 +307,18 @@ MainRobot = {
 			Robot_BallTargeting_Off={type="keyboard", key='y', on_off=false},
 			TestAuton={type="keyboard", key='g', on_off=false},
 			--Slide={type="keyboard", key='g', on_off=false},
+			
+			Arm_SetPos0feet = {type="joystick_button", key=1, keyboard='y', on_off=false},
+			Arm_SetPos3feet = {type="joystick_button", key=3, keyboard='u', on_off=false},
+			Arm_SetPos6feet = {type="joystick_button", key=2, keyboard='l', on_off=false},
+			Arm_SetPos9feet = {type="joystick_button", key=4, keyboard=';', on_off=false},
+			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.6, filter=0.1, curve_intensity=3.0},
+			Arm_Rist={type="joystick_button", key=5, keyboard='r', on_off=true},
+			Arm_Advance={type="keyboard", key='k', on_off=true},
+			Arm_Retract={type="keyboard", key='j', on_off=true},
+			
+			--Claw_SetCurrentVelocity  --not used
+			Claw_Close =	 {type="joystick_button", key=6, keyboard='c', on_off=true},
 		},
 		
 		Joystick_2 =
