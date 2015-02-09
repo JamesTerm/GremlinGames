@@ -88,7 +88,13 @@ public:
 		memset(&buffer,0,256);
 		struct sockaddr_in fromAddr; 
 		int fromSize = sizeof(fromAddr);
+		#if 0
+		//roboRIO version
+		int n=recvfrom(m_sockfd, buffer, 255, 0, (struct sockaddr *) &fromAddr,(socklen_t *) &fromSize);
+		#else
+		//cRIO win32
 		int n=recvfrom(m_sockfd, buffer, 255, 0, (struct sockaddr *) &fromAddr, &fromSize);
+		#endif
 
 		if (n>0)
 		{
