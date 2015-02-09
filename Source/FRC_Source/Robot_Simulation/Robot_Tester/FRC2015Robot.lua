@@ -64,6 +64,10 @@ MainRobot = {
 			id_4 = { name="intake_max_2",  channel=10}, 
 			id_5 = { name="catapult_limit",channel=11} 
 		},
+		analog_input =
+		{
+			id_1 = { name="arm_potentiometer",  channel=2},
+		},
 		digital_input_encoder =
 		{	
 			--encoder names must be the same name list from the victor (or other speed controls)
