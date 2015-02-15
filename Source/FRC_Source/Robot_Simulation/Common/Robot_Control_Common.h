@@ -261,6 +261,10 @@ private:
 #define LUT_VALID(x) ((index<x.size()) && (x[index]!=(size_t)-1))
 #define IF_LUT(x) if ((index<x.size()) && (x[index]!=(size_t)-1))
 
+#ifdef __USE_LEGACY_WPI_LIBRARIES__
+typedef AnalogChannel AnalogInput;
+#endif
+
 class COMMON_API RobotControlCommon
 {
 	public:
@@ -337,7 +341,7 @@ class COMMON_API RobotControlCommon
 		std::vector<Victor *> m_Victors;
 		std::vector<Relay *> m_Relays;
 		std::vector<DigitalInput *> m_DigitalInputs;
-		std::vector<AnalogChannel *> m_AnalogInputs;
+		std::vector<AnalogInput *> m_AnalogInputs;
 		std::vector<DoubleSolenoid *> m_DoubleSolenoids;
 		std::vector<Encoder2 *> m_Encoders;
 
