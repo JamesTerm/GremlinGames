@@ -145,12 +145,14 @@ void Control_Assignment_Properties::LoadFromScript(Scripting::Script& script)
 			LoadControlElement_1C_Internal(script,m_Digital_Inputs);
 			script.Pop();
 		}
+
 		err = script.GetFieldTable("analog_input");
 		if (!err)
 		{
 			LoadControlElement_1C_Internal(script,m_Analog_Inputs);
 			script.Pop();
 		}
+
 		err = script.GetFieldTable("double_solenoid");
 		if (!err)
 		{
@@ -278,7 +280,7 @@ void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_
 	//digital inputs
 	Initialize_1C_LUT<DigitalInput>(props.GetDigitalInputs(),m_DigitalInputs,m_DigitalInputLUT,this,&RobotControlCommon::RobotControlCommon_Get_DigitalInput_EnumValue);
 	//analog inputs
-	Initialize_1C_LUT<AnalogChannel>(props.GetAnalogInputs(),m_AnalogInputs,m_AnalogInputLUT,this,&RobotControlCommon::RobotControlCommon_Get_AnalogInput_EnumValue);
+	Initialize_1C_LUT<AnalogInput>(props.GetAnalogInputs(),m_AnalogInputs,m_AnalogInputLUT,this,&RobotControlCommon::RobotControlCommon_Get_AnalogInput_EnumValue);
 	//encoders
 	Initialize_2C_LUT<Encoder2>(props.GetEncoders(),m_Encoders,m_EncoderLUT,this,&RobotControlCommon::RobotControlCommon_Get_Victor_EnumValue);
 }
