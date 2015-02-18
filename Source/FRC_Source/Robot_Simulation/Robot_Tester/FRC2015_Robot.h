@@ -357,6 +357,9 @@ class FRC_2015_Robot_Control : public RobotControlCommon, public FRC_2015_Contro
 	private:
 		KalmanFilter m_KalFilter_Arm;
 		Averager<double,5> m_ArmAverager;
+		#ifdef Robot_TesterCode
+		Potentiometer_Tester2 m_Potentiometer; //simulate a real potentiometer for calibration testing
+		#endif
 };
 
 #ifdef Robot_TesterCode

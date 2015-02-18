@@ -167,7 +167,7 @@ MainRobot = {
 
 		arm =
 		{
-			is_closed=0,
+			is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -179,8 +179,6 @@ MainRobot = {
 			tolerance_count=20,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
-			--curve_voltage=
-			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			
 			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
 			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
@@ -190,8 +188,8 @@ MainRobot = {
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
-			max_range_deg= 70 * ArmToGearRatio,
-			min_range_deg=(-50) * ArmToGearRatio,
+			max_range_deg= 52.36 * ArmToGearRatio,
+			min_range_deg=(-43.33) * ArmToGearRatio,
 			use_aggressive_stop = 'yes',
 			--inv_max_accel_up = 0.05,
 			--inv_max_decel_up = 0.0,
