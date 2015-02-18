@@ -1063,6 +1063,10 @@ void FRC_2015_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		Voltage=Voltage * m_RobotProps.GetArmProps().GetRotaryProps().VoltageScalar;
 		Victor_UpdateVoltage(index,Voltage);
 		SmartDashboard::PutNumber("ArmVoltage",Voltage);
+		#ifdef Robot_TesterCode
+		m_Potentiometer.UpdatePotentiometerVoltage(Voltage);
+		m_Potentiometer.TimeChange();  //have this velocity immediately take effect
+		#endif
 		break;
 	case FRC_2015_Robot::eCameraLED:
 		TranslateToRelay(index,Voltage);
@@ -1101,6 +1105,16 @@ FRC_2015_Robot_Control::~FRC_2015_Robot_Control()
 void FRC_2015_Robot_Control::Reset_Rotary(size_t index)
 {
 	Encoder_Reset(index);  //This will check for encoder existence implicitly
+
+	switch (index)
+	{
+	case FRC_2015_Robot::eArm:
+		m_KalFilter_Arm.Reset();
+		#ifdef Robot_TesterCode
+		m_Potentiometer.ResetPos();
+		#endif
+		break;
+	}
 }
 
 #ifdef Robot_TesterCode
@@ -1121,7 +1135,15 @@ void FRC_2015_Robot_Control::Initialize(const Entity_Properties *props)
 		m_RobotProps=*robot_props;  //save a copy
 
 		Rotary_Properties turret_props=robot_props->GetTurretProps();
-		turret_props.SetUsingRange(false); //TODO why is this here?		
+		turret_props.SetUsingRange(false); //TODO why is this here?	
+
+		#ifdef Robot_TesterCode
+		Rotary_Properties writeable_arm_props=robot_props->GetArmProps();
+		//m_ArmMaxSpeed=writeable_arm_props.GetMaxSpeed();
+		//This is not perfect but will work for our simulation purposes
+		writeable_arm_props.RotaryProps().EncoderToRS_Ratio=robot_props->GetFRC2015RobotProps().ArmToGearRatio;
+		m_Potentiometer.Initialize(&writeable_arm_props);
+		#endif
 	}
 	
 	//Note: Initialize may be called multiple times so we'll only set this stuff up on first run
@@ -1143,6 +1165,10 @@ void FRC_2015_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	m_Limit_Catapult=BoolSensor_GetState(FRC_2015_Robot::eCatapultLimit);
 	SmartDashboard::PutBoolean("LimitCatapult",m_Limit_Catapult);
+
+	#ifdef Robot_TesterCode
+	m_Potentiometer.SetTimeDelta(dTime_s);
+	#endif
 }
 
 void FRC_2015_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
@@ -1172,6 +1198,7 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	{
 		case FRC_2015_Robot::eArmPotentiometer:
 		{
+			#ifndef Robot_TesterCode
 			//double raw_value = (double)m_Potentiometer.GetAverageValue();
 			double raw_value=(double)Analog_GetAverageValue(FRC_2015_Robot::eArmPotentiometer);
 			raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
@@ -1184,6 +1211,10 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				PotentiometerRaw_To_Arm*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
 			}
 			result=(-PotentiometerRaw_To_Arm) + m_RobotProps.GetArmProps().GetRotaryProps().PotentiometerOffset;
+			#else
+			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) + 0.0;
+			#endif
+
 			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
 			const double height= (sin(result)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
