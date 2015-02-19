@@ -9,13 +9,13 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
-ArmLength_m=1.8288  --6 feet
+ArmLength_m=48 * Inches2Meters  --4 feet
 ArmToGearRatio=72.0/28.0
 GearToArmRatio=1.0/ArmToGearRatio
 PotentiometerToArmRatio=36.0/54.0
 PotentiometerToGearRatio=PotentiometerToArmRatio * ArmToGearRatio
 PotentiometerMaxRotation_r=270.0 * Deg2Rad
-GearHeightOffset_m=55 * Inches2Meters
+GearHeightOffset_m=38.43 * Inches2Meters
 MotorToWheelGearRatio=12.0/36.0
 
 
@@ -172,9 +172,9 @@ MainRobot = {
 			ds_display_row=-1,
 			use_pid_up_only='y',
 			pid_up=
-			{p=100, i=0, d=0},
+			{p=100, i=0, d=25},
 			pid_down=
-			{p=100, i=0, d=0},
+			{p=100, i=0, d=25},
 			tolerance=0.15,
 			tolerance_count=20,
 			voltage_multiply=1.0,			--May be reversed
@@ -189,7 +189,8 @@ MainRobot = {
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These are arm converted to gear ratio
 			max_range_deg= 52.36 * ArmToGearRatio,
-			min_range_deg=(-43.33) * ArmToGearRatio,
+			--Note the sketch used -43.33, but tests on actual assembly show -46.12
+			min_range_deg=(-46.12) * ArmToGearRatio,
 			use_aggressive_stop = 'yes',
 			--inv_max_accel_up = 0.05,
 			--inv_max_decel_up = 0.0,

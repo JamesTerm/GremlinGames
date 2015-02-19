@@ -644,7 +644,7 @@ FRC_2015_Robot_Properties::FRC_2015_Robot_Properties()  : m_TurretProps(
 		{	//arm potentiometer and arm ratios
 			const double c_OptimalAngleUp_r=DEG_2_RAD(70.0);
 			const double c_OptimalAngleDn_r=DEG_2_RAD(50.0);
-			const double c_ArmLength_m=1.8288;  //6 feet
+			const double c_ArmLength_m=Inches2Meters(48);
 			const double c_ArmToGearRatio=72.0/28.0;
 			//const double c_GearToArmRatio=1.0/c_ArmToGearRatio;
 			//const double c_PotentiometerToGearRatio=60.0/32.0;
@@ -652,7 +652,7 @@ FRC_2015_Robot_Properties::FRC_2015_Robot_Properties()  : m_TurretProps(
 			const double c_PotentiometerToArmRatio=36.0/54.0;
 			//const double c_PotentiometerToGearRatio=c_PotentiometerToArmRatio * c_ArmToGearRatio;
 			const double c_PotentiometerMaxRotation=DEG_2_RAD(270.0);
-			const double c_GearHeightOffset=1.397;  //55 inches
+			const double c_GearHeightOffset=Inches2Meters(38.43);
 			const double c_WheelDiameter=0.1524;  //6 inches
 			const double c_MotorToWheelGearRatio=12.0/36.0;
 
