@@ -221,6 +221,26 @@ MainRobot = {
 			}
 		},
 
+		kicker =
+		{
+			is_closed=0,
+			show_pid_dump='no',
+			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
+			pid=
+			{p=100, i=0, d=50 },
+			latency=0.0,
+			voltage_multiply=1.0,
+
+			length_in=4,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
+			max_speed=42,					--with 13.2 gear reduction in radians (default is 42)					
+			accel=10.0,						--These are only needed if we bind keys for power in meters per second
+			brake=10.0,
+			--These are low because of traction
+			max_accel_forward=75,
+			max_accel_reverse=75,
+			--inv_max_accel = 1/23,  --solved empiracally
+		},
+
 		low_gear = 
 		{
 			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could

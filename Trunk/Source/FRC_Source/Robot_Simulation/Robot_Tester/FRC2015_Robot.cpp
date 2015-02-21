@@ -622,13 +622,11 @@ FRC_2015_Robot_Properties::FRC_2015_Robot_Properties()  : m_TurretProps(
 	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
 	),
 	m_KickerWheelProps(
-	"Rollers",
-	2.0,    //Mass
+	"Kicker",
+	50,    //Mass (about 110 pounds)
 	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	//RS-550 motor with 64:1 BaneBots transmission, so this is spec at 19300 rpm free, and 17250 peak efficiency
-	//17250 / 64 = 287.5 = rps of motor / 64 reduction = 4.492 rps * 2pi = 28.22524
-	28,   //Max Speed (rounded as we need not have precision)
-	112.0,112.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
+	42,   //with 13.2 gear reduction in radians
+	10.0,10.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
 	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
 	Ship_1D_Props::eSimpleMotor,
 	false	//No limit ever!
@@ -834,6 +832,12 @@ void FRC_2015_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_ArmProps.LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("kicker");
+		if (!err)
+		{
+			m_KickerWheelProps.LoadFromScript(script);
 			script.Pop();
 		}
 
