@@ -55,6 +55,8 @@ MainRobot = {
 		double_solenoid =
 		{
 			id_1 = { name="use_low_gear",    forward_channel=2, reverse_channel=1},
+			id_2 = { name="fork_left",    forward_channel=3, reverse_channel=4},
+			id_3 = { name="fork_right",    forward_channel=5, reverse_channel=6},
 		},
 		digital_input =
 		{
@@ -334,10 +336,10 @@ MainRobot = {
 			TestAuton={type="keyboard", key='g', on_off=false},
 			--Slide={type="keyboard", key='g', on_off=false},
 			
-			Arm_SetPos0feet = {type="joystick_button", key=1, keyboard='y', on_off=false},
-			Arm_SetPos3feet = {type="joystick_button", key=3, keyboard='u', on_off=false},
-			Arm_SetPos6feet = {type="joystick_button", key=2, keyboard='l', on_off=false},
-			Arm_SetPos9feet = {type="joystick_button", key=4, keyboard=';', on_off=false},
+			Arm_ForkBoth = {type="joystick_button", key=4, keyboard='y', on_off=true},
+			Arm_ForkRight = {type="joystick_button", key=2, keyboard='u', on_off=true},
+			Arm_ForkLeft = {type="joystick_button", key=3, keyboard='l', on_off=true},
+			--Arm_ForkRight = {type="joystick_button", key=4, keyboard=';', on_off=true},
 			Arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.6, filter=0.1, curve_intensity=3.0},
 			Arm_Rist={type="joystick_button", key=5, keyboard='r', on_off=true},
 			Arm_Advance={type="keyboard", key='k', on_off=true},

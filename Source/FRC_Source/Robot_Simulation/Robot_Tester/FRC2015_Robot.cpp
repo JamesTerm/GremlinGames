@@ -244,9 +244,19 @@ void FRC_2015_Robot::Robot_Arm::SetPos9feet()
 {
 	SetIntendedPosition( HeightToAngle_r(2.7432) );
 }
-void FRC_2015_Robot::Robot_Arm::CloseRist(bool Close)
+void FRC_2015_Robot::Robot_Arm::CloseForkRight(bool Close)
 {
-	m_pParent->m_RobotControl->CloseSolenoid(eRist,Close);
+	m_pParent->m_RobotControl->CloseSolenoid(eForkRight,Close);
+}
+void FRC_2015_Robot::Robot_Arm::CloseForkLeft(bool Close)
+{
+	m_pParent->m_RobotControl->CloseSolenoid(eForkLeft,Close);
+}
+
+void FRC_2015_Robot::Robot_Arm::CloseForkBoth(bool Close)
+{
+	CloseForkLeft(Close);
+	CloseForkRight(Close);
 }
 
 void FRC_2015_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -266,7 +276,9 @@ void FRC_2015_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Arm_Advance"].Subscribe(ehl,*this, &FRC_2015_Robot::Robot_Arm::Advance);
 		em->EventOnOff_Map["Arm_Retract"].Subscribe(ehl,*this, &FRC_2015_Robot::Robot_Arm::Retract);
 
-		em->EventOnOff_Map["Arm_Rist"].Subscribe(ehl, *this, &FRC_2015_Robot::Robot_Arm::CloseRist);
+		em->EventOnOff_Map["Arm_ForkRight"].Subscribe(ehl, *this, &FRC_2015_Robot::Robot_Arm::CloseForkRight);
+		em->EventOnOff_Map["Arm_ForkLeft"].Subscribe(ehl, *this, &FRC_2015_Robot::Robot_Arm::CloseForkLeft);
+		em->EventOnOff_Map["Arm_ForkBoth"].Subscribe(ehl, *this, &FRC_2015_Robot::Robot_Arm::CloseForkBoth);
 	}
 	else
 	{
@@ -282,7 +294,9 @@ void FRC_2015_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["Arm_Advance"].Remove(*this, &FRC_2015_Robot::Robot_Arm::Advance);
 		em->EventOnOff_Map["Arm_Retract"].Remove(*this, &FRC_2015_Robot::Robot_Arm::Retract);
 
-		em->EventOnOff_Map["Arm_Rist"]  .Remove(*this, &FRC_2015_Robot::Robot_Arm::CloseRist);
+		em->EventOnOff_Map["Arm_ForkRight"]  .Remove(*this, &FRC_2015_Robot::Robot_Arm::CloseForkRight);
+		em->EventOnOff_Map["Arm_ForkLeft"]  .Remove(*this, &FRC_2015_Robot::Robot_Arm::CloseForkLeft);
+		em->EventOnOff_Map["Arm_ForkBoth"]  .Remove(*this, &FRC_2015_Robot::Robot_Arm::CloseForkBoth);
 	}
 }
 
@@ -746,7 +760,7 @@ const char * const g_FRC_2015_Controls_Events[] =
 	"KickerWheel_SetCurrentVelocity",
 	"Arm_SetCurrentVelocity","Arm_SetPotentiometerSafety","Arm_SetPosRest",
 	"Arm_SetPos0feet","Arm_SetPos3feet","Arm_SetPos6feet","Arm_SetPos9feet",
-	"Arm_Rist","Arm_Advance","Arm_Retract",
+	"Arm_ForkRight","Arm_ForkLeft","Arm_ForkBoth","Arm_Advance","Arm_Retract",
 	"TestAuton"
 };
 
@@ -1269,12 +1283,12 @@ void FRC_2015_Robot_Control::OpenSolenoid(size_t index,bool Open)
 		SmartDashboard::PutBoolean("UseHighGear",!Open);
 		Solenoid_Open(index,Open);
 		break;
-	case FRC_2015_Robot::eClaw:
-		SmartDashboard::PutBoolean("Claw",!Open);
+	case FRC_2015_Robot::eForkLeft:
+		SmartDashboard::PutBoolean("ForkLeft",!Open);
 		Solenoid_Open(index,Open);
 		break;
-	case FRC_2015_Robot::eRist:
-		SmartDashboard::PutBoolean("Wrist",!Open);
+	case FRC_2015_Robot::eForkRight:
+		SmartDashboard::PutBoolean("ForkRight",!Open);
 		Solenoid_Open(index,Open);
 		break;
 	}

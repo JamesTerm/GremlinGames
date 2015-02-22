@@ -84,7 +84,7 @@ const char * const csz_FRC_2015_Robot_SpeedControllerDevices_Enum[] =
 
 const char * const csz_FRC_2015_Robot_SolenoidDevices_Enum[] =
 {
-	"use_low_gear"
+	"use_low_gear","fork_left","fork_right"
 };
 
 const char * const csz_FRC_2015_Robot_BoolSensorDevices_Enum[] =
@@ -120,8 +120,8 @@ class FRC_2015_Robot : public Tank_Robot
 		enum SolenoidDevices
 		{
 			eUseLowGear,		//If the OpenSolenoid() is called with true then it should be in low gear; otherwise high gear
-			eClaw,
-			eRist
+			eForkLeft,
+			eForkRight
 		};
 
 		static SolenoidDevices GetSolenoidDevices_Enum (const char *value)
@@ -218,7 +218,9 @@ class FRC_2015_Robot : public Tank_Robot
 				double GetPosRest();
 				//given the raw potentiometer converts to the arm angle
 				double PotentiometerRaw_To_Arm_r(double raw) const;
-				void CloseRist(bool Close);
+				void CloseForkRight(bool Close);
+				void CloseForkLeft(bool Close);
+				void CloseForkBoth(bool Close);
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void BindAdditionalEventControls(bool Bind);
