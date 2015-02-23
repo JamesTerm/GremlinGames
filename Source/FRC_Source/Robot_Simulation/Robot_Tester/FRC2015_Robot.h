@@ -30,6 +30,8 @@ public:
 	double GearHeightOffset;
 	double MotorToWheelGearRatio;
 
+	double ToteRestHeight,Tote2Height,Tote3Height,Tote4Height,Tote5Height,Tote6Height;
+
 	struct Autonomous_Properties
 	{
 		void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true
@@ -215,7 +217,7 @@ class FRC_2015_Robot : public Tank_Robot
 				double HeightToAngle_r(double Height_m) const;
 				double Arm_AngleToHeight_m(double Angle_r) const;
 				double AngleToHeight_m(double Angle_r) const;
-				double GetPosRest();
+
 				//given the raw potentiometer converts to the arm angle
 				double PotentiometerRaw_To_Arm_r(double raw) const;
 				void CloseForkRight(bool Close);
@@ -237,10 +239,12 @@ class FRC_2015_Robot : public Tank_Robot
 				typedef Rotary_Position_Control __super;
 				#endif
 				void SetPosRest();
-				void SetPos0feet();
-				void SetPos3feet();
-				void SetPos6feet();
-				void SetPos9feet();
+				void SetTote2Height();
+				void SetTote3Height();
+				void SetTote4Height();
+				void SetTote5Height();
+				void SetTote6Height();
+
 				FRC_2015_Robot * const m_pParent;
 				bool m_Advance, m_Retract;
 		};
