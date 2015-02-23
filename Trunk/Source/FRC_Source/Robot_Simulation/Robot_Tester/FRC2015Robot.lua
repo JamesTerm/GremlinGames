@@ -160,6 +160,9 @@ MainRobot = {
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
 
+		height_presets =
+		--Heights are in inches
+		{rest=0.0, tote_3=11.75*2 + 2 },
 		auton =
 		{
 			first_move_ft=2,
@@ -189,10 +192,11 @@ MainRobot = {
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
-			--These are arm converted to gear ratio
+			--These min/max are arm converted to gear ratio (TODO reseach this more)
 			max_range_deg= 52.36 * ArmToGearRatio,
 			--Note the sketch used -43.33, but tests on actual assembly show -46.12
 			min_range_deg=(-46.12) * ArmToGearRatio,
+			starting_position_deg=-46.12,
 			use_aggressive_stop = 'yes',
 			--inv_max_accel_up = 0.05,
 			--inv_max_decel_up = 0.0,
@@ -345,6 +349,13 @@ MainRobot = {
 			Arm_Advance={type="keyboard", key='k', on_off=true},
 			Arm_Retract={type="keyboard", key='j', on_off=true},
 			
+			Arm_SetPosRest     = {type="keyboard", key='1', on_off=false},
+			Arm_SetTote2Height = {type="keyboard", key='2', on_off=false},
+			Arm_SetTote3Height = {type="keyboard", key='3', on_off=false},
+			Arm_SetTote4Height = {type="keyboard", key='4', on_off=false},
+			Arm_SetTote5Height = {type="keyboard", key='5', on_off=false},
+			Arm_SetTote6Height = {type="keyboard", key='6', on_off=false},
+			
 			--Claw_SetCurrentVelocity  --not used
 			Claw_Close =	 {type="joystick_button", key=7, keyboard='c', on_off=true},
 		},
@@ -411,7 +422,24 @@ MainRobot = {
 			Turn_180_Hold = {type="joystick_button", key=6, on_off=true},
 			FlipY_Hold = {type="joystick_button", key=6, on_off=true},
 			SlideHold = {type="joystick_button", key=6, on_off=true}
-		}
+		},
+		Joystick_5 =
+		{	
+			control = "ch throttle quadrant",
+			PitchRamp_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+			Robot_SetTargetingValue = {type="joystick_analog", key=0, is_flipped=true, multiplier=1.142000, filter=0.0, curve_intensity=0.0},
+			PowerWheels_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0000, filter=0.0, curve_intensity=0.0},
+			Turret_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=true, multiplier=0.5, filter=0.1, curve_intensity=1.0},
+			Robot_SetDefensiveKeyValue = {type="joystick_analog", key=5, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+
+			Arm_SetPosRest     = {type="joystick_button", key=2, on_off=false},
+			Arm_SetTote2Height = {type="joystick_button", key=4, on_off=false},
+			Arm_SetTote3Height = {type="joystick_button", key=6, on_off=false},
+			Arm_SetTote4Height = {type="joystick_button", key=8, on_off=false},
+			Arm_SetTote5Height = {type="joystick_button", key=10, on_off=false},
+			Arm_SetTote6Height = {type="joystick_button", key=12, on_off=false}
+		},
+
 	},
 	
 	--This is only used in the AI tester, can be ignored
