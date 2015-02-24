@@ -987,7 +987,7 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 		bool m_IsHot;
 		bool m_HasSecondShotFired;
 
-		static Goal * Move_Straight(FRC_2015_Goals_Impl *Parent,double length_ft,double RollerScalar=0.0)
+		static Goal * Move_Straight(FRC_2015_Goals_Impl *Parent,double length_ft)
 		{
 			FRC_2015_Robot *Robot=&Parent->m_Robot;
 			//Construct a way point
@@ -1001,6 +1001,17 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 			Goal_Ship_MoveToPosition *goal_drive=NULL;
 			goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
 			return goal_drive;
+		}
+
+		static Goal * Move_ArmPosition(FRC_2015_Goals_Impl *Parent,double height_in)
+		{
+			FRC_2015_Robot *Robot=&Parent->m_Robot;
+			FRC_2015_Robot::Robot_Arm &Arm=Robot->GetArm();
+			//const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			const double position=FRC_2015_Robot::Robot_Arm::HeightToAngle_r(&Arm,Inches2Meters(height_in));
+			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+			return goal_arm;
 		}
 
 		class MoveForward : public Generic_CompositeGoal, public SetUpProps
@@ -1021,9 +1032,12 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 			SimpleOneTote(FRC_2015_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
 			{
+				const FRC_2015_Robot_Props &props=m_Robot.GetRobotProps().GetFRC2015RobotProps();
 				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.FirstMove_ft));
+				AddSubgoal(Move_ArmPosition(m_Parent,props.Tote2Height));
 				AddSubgoal(new Goal_Wait(0.500));  //may not be needed
 				AddSubgoal(Move_Straight(m_Parent,2.0)); //TODO make property
+				AddSubgoal(Move_ArmPosition(m_Parent,props.ToteRestHeight));
 				m_Status=eActive;
 			}
 		};
