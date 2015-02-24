@@ -166,6 +166,16 @@ void FRC_2015_Robot::Robot_Arm::Retract(bool on)
 	m_Retract=on;
 }
 
+bool FRC_2015_Robot::Robot_Arm::DidHitMinLimit() const
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eDartLower);
+}
+
+bool FRC_2015_Robot::Robot_Arm::DidHitMaxLimit() const
+{
+	return m_pParent->m_RobotControl->GetBoolSensorState(eDartUpper);
+}
+
 void FRC_2015_Robot::Robot_Arm::TimeChange(double dTime_s)
 {
 	const double Accel=m_Ship_1D_Props.ACCEL;

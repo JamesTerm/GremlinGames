@@ -234,6 +234,9 @@ class FRC_2015_Robot : public Tank_Robot
 				void SetPotentiometerSafety(bool DisableFeedback) {__super::SetPotentiometerSafety(DisableFeedback);}
 				virtual void TimeChange(double dTime_s);
 
+				//override from rotary system... will implicitly manage limit switch support
+				virtual bool DidHitMinLimit() const;
+				virtual bool DidHitMaxLimit() const;
 			private:
 				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
