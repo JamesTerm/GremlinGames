@@ -1009,8 +1009,21 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 			MoveForward(FRC_2015_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
 			{
-				AddSubgoal(new Goal_Wait(0.500));  //ensure catapult has finished launching ball before moving
+				AddSubgoal(new Goal_Wait(0.500));  //Testing
 				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft));
+				m_Status=eActive;
+			}
+		};
+
+		class SimpleOneTote : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			SimpleOneTote(FRC_2015_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			virtual void Activate()
+			{
+				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.FirstMove_ft));
+				AddSubgoal(new Goal_Wait(0.500));  //may not be needed
+				AddSubgoal(Move_Straight(m_Parent,2.0)); //TODO make property
 				m_Status=eActive;
 			}
 		};
@@ -1019,6 +1032,7 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 		{
 			eDoNothing,
 			eJustMoveForward,
+			eSimpleOneTote,
 			eNoAutonTypes
 		} m_AutonType;
 		enum Robot_Position
@@ -1075,6 +1089,9 @@ class FRC_2015_Goals_Impl : public AtomicGoal
 			{
 			case eJustMoveForward:
 				m_Primer.AddGoal(new MoveForward(this));
+				break;
+			case  eSimpleOneTote:
+				m_Primer.AddGoal(new SimpleOneTote(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250
