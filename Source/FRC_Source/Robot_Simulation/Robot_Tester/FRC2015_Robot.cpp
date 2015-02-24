@@ -473,11 +473,6 @@ FRC_2015_Robot_Props::Autonomous_Properties &FRC_2015_Robot::GetAutonProps()
 	return m_RobotProps.GetFRC2015RobotProps_rw().Autonomous_Props;
 }
 
-bool FRC_2015_Robot::GetCatapultLimit() const
-{
-	return m_RobotControl->GetBoolSensorState(eCatapultLimit);
-}
-
 void FRC_2015_Robot::SetLowGear(bool on) 
 {
 	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
@@ -1158,8 +1153,11 @@ bool FRC_2015_Robot_Control::GetBoolSensorState(size_t index) const
 	bool ret;
 	switch (index)
 	{
-	case FRC_2015_Robot::eCatapultLimit:
-		ret=m_Limit_Catapult;
+	case FRC_2015_Robot::eDartUpper:
+		ret=m_Limit_DartUpper;
+		break;
+	case FRC_2015_Robot::eDartLower:
+		ret=m_Limit_DartLower;
 		break;
 	default:
 		assert (false);
@@ -1240,8 +1238,10 @@ void FRC_2015_Robot_Control::Initialize(const Entity_Properties *props)
 
 void FRC_2015_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
-	m_Limit_Catapult=BoolSensor_GetState(FRC_2015_Robot::eCatapultLimit);
-	SmartDashboard::PutBoolean("LimitCatapult",m_Limit_Catapult);
+	m_Limit_DartUpper=BoolSensor_GetState(FRC_2015_Robot::eDartUpper);
+	SmartDashboard::PutBoolean("LimitDartUpper",m_Limit_DartUpper);
+	m_Limit_DartLower=BoolSensor_GetState(FRC_2015_Robot::eDartLower);
+	SmartDashboard::PutBoolean("LimitDartLower",m_Limit_DartLower);
 
 	#ifdef Robot_TesterCode
 	m_Potentiometer.SetTimeDelta(dTime_s);
