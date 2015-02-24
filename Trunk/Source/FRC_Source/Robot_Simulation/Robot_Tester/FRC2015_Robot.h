@@ -35,7 +35,7 @@ public:
 	struct Autonomous_Properties
 	{
 		void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true
-		double FirstMove_ft; //TODO this is just a place holder to be replaced by this years game
+		double FirstMove_ft; //For first auton... just moving forward
 		bool IsSupportingHotSpot;  //TODO this is just a place holder to be replaced by this years game
 		bool ShowParameters;   //If true ShowAutonParameters will populate SmartDashboard with autonomous parameters
 	} Autonomous_Props;
