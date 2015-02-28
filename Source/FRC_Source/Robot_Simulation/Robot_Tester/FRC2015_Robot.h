@@ -36,6 +36,7 @@ public:
 	{
 		void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true
 		double FirstMove_ft; //For first auton... just moving forward
+		double ArmMove_in;  //In inches height how far up to move.
 		bool IsSupportingHotSpot;  //TODO this is just a place holder to be replaced by this years game
 		bool ShowParameters;   //If true ShowAutonParameters will populate SmartDashboard with autonomous parameters
 	} Autonomous_Props;

@@ -163,13 +163,14 @@ MainRobot = {
 		auton =
 		{
 			first_move_ft=2,
+			arm_height_in=12,
 			support_hotspot='n',
 			show_auton_variables='y'
 		},
 
 		arm =
 		{
-			is_closed=1,
+			is_closed=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
