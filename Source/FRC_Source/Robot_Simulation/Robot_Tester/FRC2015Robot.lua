@@ -163,6 +163,7 @@ MainRobot = {
 		auton =
 		{
 			first_move_ft=2,
+			side_move_rad=10,
 			arm_height_in=12,
 			support_hotspot='n',
 			show_auton_variables='y'
@@ -227,7 +228,8 @@ MainRobot = {
 
 		kicker =
 		{
-			is_closed=0,
+			--Note: we don't want this to be open (e.g. passive) otherwise position never gets updated
+			--is_closed=0,
 			show_pid_dump='no',
 			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
 			pid=
