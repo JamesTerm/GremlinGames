@@ -619,7 +619,10 @@ void Rotary_Velocity_Control::Initialize(Base::EventMap& em,const Entity1D_Prope
 	}
 	//It is assumed that this property is constant throughout the whole session
 	if (m_Rotary_Props.PID_Console_Dump)
+	{
+		Ship_1D::InitNetworkProperties(Props->GetShip_1D_Props());
 		InitNetworkProperties(m_Rotary_Props);
+	}
 }
 
 void Rotary_Velocity_Control::UpdateRotaryProps(const Rotary_Props &RotaryProps)
