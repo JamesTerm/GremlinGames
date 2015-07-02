@@ -324,7 +324,7 @@ inline double JoyStick_Binder::AnalogConversionNormal(double InValue,const Analo
 
 	//Now to restore the sign
 	const double OutValue=(InValue<0.0)?-ValueABS:ValueABS;
-	return OutValue;
+	return key.IsFlipped?-OutValue:OutValue;
 }
 
 void JoyStick_Binder::UpdateJoyStick(double dTick_s)
@@ -418,7 +418,8 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 									{
 										const double Joy2Value=GetJoystickValue(joyinfo,key.ExtraData.split_axis.Which2Axis);
 										double Value2=AnalogConversionNormal(Joy2Value,key);
-										double Value1=AnalogConversionNormal(Value,key);
+										//invert the side of the negative where by default this will put the highest value at the end
+										double Value1=-AnalogConversionNormal(Value,key);
 										//normalize to a 0..1 range
 										Value2=(Value2+1.0)/2.0;
 										Value1=(Value1+1.0)/2.0;
@@ -435,7 +436,7 @@ void JoyStick_Binder::UpdateJoyStick(double dTick_s)
 	
 								std::vector<std::string>::iterator pos;
 								for (pos = AnalogEvents->begin(); pos != AnalogEvents->end(); ++pos)
-									m_controlledEventMap->EventValue_Map[*pos].Fire(key.IsFlipped?-Value:Value);
+									m_controlledEventMap->EventValue_Map[*pos].Fire(Value);
 							}
 						}
 					}
