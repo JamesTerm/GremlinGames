@@ -168,12 +168,20 @@ void FRC_2015_Robot::Robot_Arm::Retract(bool on)
 
 bool FRC_2015_Robot::Robot_Arm::DidHitMinLimit() const
 {
+	#ifndef Robot_TesterCode
 	return m_pParent->m_RobotControl->GetBoolSensorState(eDartLower);
+	#else
+	return false;  //TODO make better simulated sensors
+	#endif
 }
 
 bool FRC_2015_Robot::Robot_Arm::DidHitMaxLimit() const
 {
+	#ifndef Robot_TesterCode
 	return m_pParent->m_RobotControl->GetBoolSensorState(eDartUpper);
+	#else
+	return false;    //TODO make better simulated sensors
+	#endif
 }
 
 void FRC_2015_Robot::Robot_Arm::TimeChange(double dTime_s)
@@ -1332,6 +1340,8 @@ void FRC_2015_Robot_Control::Initialize(const Entity_Properties *props)
 		//Encoder_SetDistancePerPulse(FRC_2015_Robot::eWinch,EncoderPulseRate);
 		//Encoder_Start(FRC_2015_Robot::eWinch);
 		ResetPos(); //must be called after compressor is created
+		SmartDashboard::PutNumber("Arm_Raw_high",4013.0);
+		SmartDashboard::PutNumber("Arm_Raw_Range",24.0);
 	}
 
 }
@@ -1390,14 +1400,46 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			double raw_value=(double)Analog_GetAverageValue(FRC_2015_Robot::eArmPotentiometer);
 			raw_value = m_KalFilter_Arm(raw_value);  //apply the Kalman filter
 			raw_value=m_ArmAverager.GetAverage(raw_value); //and Ricks x element averager
-			//Note the value is inverted with the negative operator
+			//Note: we keep the raw value in its native form... just averaging at most for less noise
+
 			double PotentiometerRaw_To_Arm;
-			{
-				const int RawRangeHalf=512;
-				PotentiometerRaw_To_Arm=((raw_value / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-				PotentiometerRaw_To_Arm*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
-			}
-			result=(-PotentiometerRaw_To_Arm) + m_RobotProps.GetArmProps().GetRotaryProps().PotentiometerOffset;
+
+			//TODO may wish to script this
+			#if 0
+			const double lowRange=155;
+			const double HiRange=1125;
+			#else
+			const double HiRange=SmartDashboard::GetNumber("Arm_Raw_high");
+			const double LowRange=HiRange-SmartDashboard::GetNumber("Arm_Raw_Range",24.0);
+			//If this is true, the value is inverted with the negative operator
+			const bool FlipRange=true;
+			#endif
+
+			PotentiometerRaw_To_Arm = raw_value-LowRange;//zeros the potentiometer
+			PotentiometerRaw_To_Arm = PotentiometerRaw_To_Arm/(HiRange-LowRange);//scales values from 0 to 1 with +- .001
+
+			//Clip Range
+			//I imagine .001 corrections will not be harmful for when in use.
+			if (PotentiometerRaw_To_Arm < 0) PotentiometerRaw_To_Arm = 0;//corrects .001 or less causing a negative value
+			if (PotentiometerRaw_To_Arm > 1 || PotentiometerRaw_To_Arm > .999) PotentiometerRaw_To_Arm = 1;//corrects .001 or lass causing value greater than 1
+
+			//TODO fix in lua
+			//PotentiometerRaw_To_Arm*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
+			if (FlipRange)
+				PotentiometerRaw_To_Arm=1.0-PotentiometerRaw_To_Arm;
+
+			SmartDashboard::PutNumber("Arm_Raw",raw_value);
+			SmartDashboard::PutNumber("Arm_PotRaw",PotentiometerRaw_To_Arm);
+
+			//Now to compute the result... we start with the normalized value and give it the apprioriate offset and scale
+			//the offset is delegated in script in the final scale units, and the scale is the total range in radians
+			result=PotentiometerRaw_To_Arm;
+			//get scale
+			const Ship_1D_Props &shipprops=m_RobotProps.GetArmProps().GetShip_1D_Props();
+			//SmartDashboard::PutNumber("Arm_ScaleTest",shipprops.MaxRange-shipprops.MinRange);
+			result*=shipprops.MaxRange-shipprops.MinRange;  //compute the total distance in radians
+			//get offset... Note: scale comes first since the offset is of that scale
+			result+=m_RobotProps.GetArmProps().GetRotaryProps().PotentiometerOffset;
 			#else
 			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) + 0.0;
 			#endif
@@ -1405,6 +1447,8 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
 			const double height= (sin(result)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
+			//I'm keeping this disabled unless we decide to use vision with the target reticle
+			#if 0
 			{
 				//Now to have some camera hud aligning updates in vision
 				//Note: I usually work with radians and meters... but in this small example I've
@@ -1437,6 +1481,7 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				SmartDashboard::PutBoolean("tote_5_enabled",height_in>Tote_stack_Height*4);
 				SmartDashboard::PutBoolean("tote_6_enabled",height_in>Tote_stack_Height*5);
 			}
+			#endif
 			//Now to convert to the motor gear ratio as this is what we work in
 			result*=props.ArmToGearRatio;
 		}
