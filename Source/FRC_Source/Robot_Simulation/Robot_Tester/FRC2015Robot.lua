@@ -190,7 +190,7 @@ MainRobot = {
 			brake=1.0,
 			max_accel_forward=10,			--These are in radians, just go with what feels right
 			max_accel_reverse=10,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are arm converted to gear ratio (TODO reseach this more)
 			max_range_deg= 52.36 * ArmToGearRatio,
 			--Note the sketch used -43.33, but tests on actual assembly show -46.12
