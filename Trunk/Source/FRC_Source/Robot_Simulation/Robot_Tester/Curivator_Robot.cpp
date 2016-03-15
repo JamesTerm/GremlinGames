@@ -26,8 +26,6 @@ using namespace std;
 #endif
 
 #define __DisableEncoderTracking__
-//Enable this to send remote coordinate to network variables to manipulate a shape for tracking
-#undef __EnableShapeTrackingSimulation__
 #if 0
 #define UnitMeasure2UI Meters2Feet
 #define UI2UnitMeasure Feet2Meters
@@ -87,65 +85,6 @@ void Curivator_Robot::Turret::ResetPos()
 	m_Velocity=0.0;
 }
 
-  /***********************************************************************************************************************************/
- /*													Curivator_Robot::PitchRamp														*/
-/***********************************************************************************************************************************/
-Curivator_Robot::PitchRamp::PitchRamp(Curivator_Robot *pParent,Rotary_Control_Interface *robot_control) : m_pParent(pParent),m_Velocity(0.0)
-{
-}
-
-
-void Curivator_Robot::PitchRamp::TimeChange(double dTime_s)
-{
-	m_Velocity=0.0;
-}
-
-void Curivator_Robot::PitchRamp::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=m_pParent->GetEventMap(); //grrr had to explicitly specify which EventMap
-	if (Bind)
-	{
-		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Subscribe(ehl,*this, &Curivator_Robot::PitchRamp::Pitch_SetRequestedVelocity);
-	}
-	else
-	{
-		em->EventValue_Map["PitchRamp_SetCurrentVelocity"].Remove(*this, &Curivator_Robot::PitchRamp::Pitch_SetRequestedVelocity);
-	}
-}
-
-void Curivator_Robot::PitchRamp::ResetPos()
-{
-	m_Velocity=0.0;
-}
-
-  /***********************************************************************************************************************************/
- /*													Curivator_Robot::Kicker_Wheel													*/
-/***********************************************************************************************************************************/
-
-Curivator_Robot::Kicker_Wheel::Kicker_Wheel(Curivator_Robot *parent,Rotary_Control_Interface *robot_control) :
-	Rotary_Velocity_Control("KickerWheel",robot_control,eKickerWheel),m_pParent(parent)
-{
-}
-
-void Curivator_Robot::Kicker_Wheel::TimeChange(double dTime_s)
-{
-	SetRequestedVelocity_FromNormalized(m_Velocity);
-	m_Velocity=0.0;
-	__super::TimeChange(dTime_s);
-}
-
-void Curivator_Robot::Kicker_Wheel::BindAdditionalEventControls(bool Bind)
-{
-	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
-	if (Bind)
-	{
-		em->EventValue_Map["KickerWheel_SetCurrentVelocity"].Subscribe(ehl,*this, &Curivator_Robot::Kicker_Wheel::Kicker_Wheel_SetRequestedVelocity);
-	}
-	else
-	{
-		em->EventValue_Map["KickerWheel_SetCurrentVelocity"].Remove(*this, &Curivator_Robot::Kicker_Wheel::Kicker_Wheel_SetRequestedVelocity);
-	}
-}
 
   /***********************************************************************************************************************************/
  /*													Curivator_Robot::Robot_Arm														*/
@@ -237,52 +176,6 @@ double Curivator_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw) const
 	return ret;
 }
 
-void Curivator_Robot::Robot_Arm::SetPosRest()
-{
-	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-	SetIntendedPosition(HeightToAngle_r(Inches2Meters(props.ToteRestHeight))  );
-}
-void Curivator_Robot::Robot_Arm::SetTote2Height()
-{
-	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-	SetIntendedPosition( HeightToAngle_r(Inches2Meters(props.Tote2Height)) );
-}
-void Curivator_Robot::Robot_Arm::SetTote3Height()
-{
-	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-	SetIntendedPosition(HeightToAngle_r(Inches2Meters(props.Tote3Height)));
-}
-void Curivator_Robot::Robot_Arm::SetTote4Height()
-{
-	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-	SetIntendedPosition( HeightToAngle_r(Inches2Meters(props.Tote4Height)) );
-}
-void Curivator_Robot::Robot_Arm::SetTote5Height()
-{
-	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-	SetIntendedPosition( HeightToAngle_r(Inches2Meters(props.Tote5Height)) );
-}
-void Curivator_Robot::Robot_Arm::SetTote6Height()
-{
-	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-	SetIntendedPosition( HeightToAngle_r(Inches2Meters(props.Tote6Height)) );
-}
-
-void Curivator_Robot::Robot_Arm::CloseForkRight(bool Close)
-{
-	m_pParent->m_RobotControl->CloseSolenoid(eForkRight,Close);
-}
-void Curivator_Robot::Robot_Arm::CloseForkLeft(bool Close)
-{
-	m_pParent->m_RobotControl->CloseSolenoid(eForkLeft,Close);
-}
-
-void Curivator_Robot::Robot_Arm::CloseForkBoth(bool Close)
-{
-	CloseForkLeft(Close);
-	CloseForkRight(Close);
-}
-
 void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
 	Base::EventMap *em=GetEventMap(); //grrr had to explicitly specify which EventMap
@@ -291,38 +184,16 @@ void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Subscribe(ehl,*this, &Curivator_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Arm_SetPotentiometerSafety"].Subscribe(ehl,*this, &Curivator_Robot::Robot_Arm::SetPotentiometerSafety);
 
-		em->Event_Map["Arm_SetPosRest"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::SetPosRest);
-		em->Event_Map["Arm_SetTote2Height"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::SetTote2Height);
-		em->Event_Map["Arm_SetTote3Height"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::SetTote3Height);
-		em->Event_Map["Arm_SetTote4Height"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::SetTote4Height);
-		em->Event_Map["Arm_SetTote5Height"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::SetTote5Height);
-		em->Event_Map["Arm_SetTote6Height"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::SetTote6Height);
-
 		em->EventOnOff_Map["Arm_Advance"].Subscribe(ehl,*this, &Curivator_Robot::Robot_Arm::Advance);
 		em->EventOnOff_Map["Arm_Retract"].Subscribe(ehl,*this, &Curivator_Robot::Robot_Arm::Retract);
-
-		em->EventOnOff_Map["Arm_ForkRight"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::CloseForkRight);
-		em->EventOnOff_Map["Arm_ForkLeft"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::CloseForkLeft);
-		em->EventOnOff_Map["Arm_ForkBoth"].Subscribe(ehl, *this, &Curivator_Robot::Robot_Arm::CloseForkBoth);
 	}
 	else
 	{
 		em->EventValue_Map["Arm_SetCurrentVelocity"].Remove(*this, &Curivator_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
 		em->EventOnOff_Map["Arm_SetPotentiometerSafety"].Remove(*this, &Curivator_Robot::Robot_Arm::SetPotentiometerSafety);
 
-		em->Event_Map["Arm_SetPosRest"].Remove(*this, &Curivator_Robot::Robot_Arm::SetPosRest);
-		em->Event_Map["Arm_SetTote2Height"].Remove(*this, &Curivator_Robot::Robot_Arm::SetTote2Height);
-		em->Event_Map["Arm_SetTote3Height"].Remove(*this, &Curivator_Robot::Robot_Arm::SetTote3Height);
-		em->Event_Map["Arm_SetTote4Height"].Remove(*this, &Curivator_Robot::Robot_Arm::SetTote4Height);
-		em->Event_Map["Arm_SetTote5Height"].Remove(*this, &Curivator_Robot::Robot_Arm::SetTote5Height);
-		em->Event_Map["Arm_SetTote6Height"].Remove(*this, &Curivator_Robot::Robot_Arm::SetTote6Height);
-
 		em->EventOnOff_Map["Arm_Advance"].Remove(*this, &Curivator_Robot::Robot_Arm::Advance);
 		em->EventOnOff_Map["Arm_Retract"].Remove(*this, &Curivator_Robot::Robot_Arm::Retract);
-
-		em->EventOnOff_Map["Arm_ForkRight"]  .Remove(*this, &Curivator_Robot::Robot_Arm::CloseForkRight);
-		em->EventOnOff_Map["Arm_ForkLeft"]  .Remove(*this, &Curivator_Robot::Robot_Arm::CloseForkLeft);
-		em->EventOnOff_Map["Arm_ForkBoth"]  .Remove(*this, &Curivator_Robot::Robot_Arm::CloseForkBoth);
 	}
 }
 
@@ -339,11 +210,8 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
-		m_Turret(this,robot_control),m_PitchRamp(this,robot_control),
-		m_Kicker_Wheel(this,robot_control),m_Arm(this,robot_control),m_LatencyCounter(0.0),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_DefensiveKeyNormalizedDistance(0.0),m_DefaultPresetIndex(0),
-		m_AutonPresetIndex(0),
-		m_DisableTurretTargetingValue(false),m_POVSetValve(false),m_SetLowGear(false),m_SetDriverOverride(false)
+		m_Turret(this,robot_control),m_Arm(this,robot_control),m_LatencyCounter(0.0),
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0)
 {
 	//ensure the variables are initialized before calling get
 	SmartDashboard::PutNumber("X Position",0.0);
@@ -363,22 +231,13 @@ void Curivator_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Prope
 
 	//set to the default key position
 	//const Curivator_Robot_Props &robot2015props=RobotProps->GetCurivatorRobotProps();
-	m_Kicker_Wheel.Initialize(em,RobotProps?&RobotProps->GetKickerWheelProps():NULL);
 	m_Arm.Initialize(em,RobotProps?&RobotProps->GetArmProps():NULL);
 }
 void Curivator_Robot::ResetPos()
 {
 	__super::ResetPos();
 	m_Turret.ResetPos();
-	m_PitchRamp.ResetPos();
 	m_Arm.ResetPos();
-	//TODO this is tacky... will have better low gear method soon
-	if (!GetBypassPosAtt_Update())
-	{
-		//m_Intake_Arm.ResetPos();
-		SetLowGear(true);
-	}
-	m_Kicker_Wheel.ResetPos();  //ha pedantic
 }
 
 namespace VisionConversion
@@ -450,35 +309,10 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 	m_Turret.TimeChange(dTime_s);
-	m_PitchRamp.TimeChange(dTime_s);
-	m_Kicker_Wheel.AsEntity1D().TimeChange(dTime_s);
 	m_Arm.AsEntity1D().TimeChange(dTime_s);
-
-	#ifdef __EnableShapeTrackingSimulation__
-	{
-		const char * const csz_remote_name="land_reticle";
-		Vec2D TargetPos(0.0,0.0);
-		Vec2D GlobalPos=TargetPos-GetPos_m();
-		Vec2D LocalPos=GlobalToLocal(GetAtt_r(),GlobalPos);
-		std::string sBuild=csz_remote_name;
-		sBuild+="_x";
-		SmartDashboard::PutNumber(sBuild,UnitMeasure2UI(LocalPos[0]));
-		sBuild=csz_remote_name;
-		sBuild+="_z";
-		SmartDashboard::PutNumber(sBuild,UnitMeasure2UI(LocalPos[1]));
-		sBuild=csz_remote_name;
-		sBuild+="_y";
-		SmartDashboard::PutNumber(sBuild,UnitMeasure2UI(0.3048));  //always 1 foot high from center point
-	}
-	#endif
 
 	//const double  YOffset=-SmartDashboard::GetNumber("Y Position");
 	//const double XOffset=SmartDashboard::GetNumber("X Position");
-	
-	using namespace VisionConversion;
-
-	bool LED_OnState=SmartDashboard::GetBoolean("Main_Is_Targeting");
-	m_RobotControl->UpdateVoltage(eCameraLED,LED_OnState?1.0:0.0);
 }
 
 const Curivator_Robot_Properties &Curivator_Robot::GetRobotProps() const
@@ -491,65 +325,12 @@ Curivator_Robot_Props::Autonomous_Properties &Curivator_Robot::GetAutonProps()
 	return m_RobotProps.GetCurivatorRobotProps_rw().Autonomous_Props;
 }
 
-void Curivator_Robot::SetLowGear(bool on) 
-{
-	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	m_SetLowGear=on;
-	SetBypassPosAtt_Update(true);
-	//m_Turret.SetBypassPos_Update(true);
-	//m_PitchRamp.SetBypassPos_Update(true);
-
-	//Now for some real magic with the properties!
-	__super::Initialize(*GetEventMap(),m_SetLowGear?&m_RobotProps.GetLowGearProps():&m_RobotProps);
-	SetBypassPosAtt_Update(false);
-	//m_Turret.SetBypassPos_Update(false);
-	//m_PitchRamp.SetBypassPos_Update(false);
-
-	m_RobotControl->OpenSolenoid(eUseLowGear,on);
-}
-
-void Curivator_Robot::SetLowGearValue(double Value)
-{
-	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	//printf("\r%f       ",Value);
-	if (Value > 0.0)
-	{
-		if (m_SetLowGear)
-		{
-			SetLowGear(false);
-			printf("Now in HighGear\n");
-		}
-	}
-	else
-	{
-		if (!m_SetLowGear)
-		{
-			SetLowGear(true);
-			printf("Now in LowGear\n");
-		}
-	}
-}
-
-void Curivator_Robot::SetDriverOverride(bool on) 
-{
-	if (m_IsAutonomous) return;  //We don't want to read joystick settings during autonomous
-	//I am not yet certain if this if statement is necessary... I'll have to check what all is involved in setting a variable that is already equal
-	if (m_SetDriverOverride!=on)
-		SmartDashboard::PutBoolean("DriverOverride",on);
-	m_SetDriverOverride=on;
-}
 
 void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 {
 	Entity2D_Kind::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
-		em->EventOnOff_Map["Robot_SetLowGear"].Subscribe(ehl, *this, &Curivator_Robot::SetLowGear);
-		em->Event_Map["Robot_SetLowGearOn"].Subscribe(ehl, *this, &Curivator_Robot::SetLowGearOn);
-		em->Event_Map["Robot_SetLowGearOff"].Subscribe(ehl, *this, &Curivator_Robot::SetLowGearOff);
-		em->EventValue_Map["Robot_SetLowGearValue"].Subscribe(ehl,*this, &Curivator_Robot::SetLowGearValue);
-		em->EventOnOff_Map["Robot_SetDriverOverride"].Subscribe(ehl, *this, &Curivator_Robot::SetDriverOverride);
-
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"].Subscribe(ehl,*this,&Curivator_Robot::GoalComplete);
@@ -557,12 +338,6 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 	}
 	else
 	{
-		em->EventOnOff_Map["Robot_SetLowGear"]  .Remove(*this, &Curivator_Robot::SetLowGear);
-		em->Event_Map["Robot_SetLowGearOn"]  .Remove(*this, &Curivator_Robot::SetLowGearOn);
-		em->Event_Map["Robot_SetLowGearOff"]  .Remove(*this, &Curivator_Robot::SetLowGearOff);
-		em->EventValue_Map["Robot_SetLowGearValue"].Remove(*this, &Curivator_Robot::SetLowGearValue);
-		em->EventOnOff_Map["Robot_SetDriverOverride"]  .Remove(*this, &Curivator_Robot::SetDriverOverride);
-
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"]  .Remove(*this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"]  .Remove(*this, &Curivator_Robot::GoalComplete);
@@ -570,8 +345,6 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 	}
 
 	m_Turret.BindAdditionalEventControls(Bind);
-	m_PitchRamp.BindAdditionalEventControls(Bind);
-	m_Kicker_Wheel.AsShip1D().BindAdditionalEventControls(Bind);
 	m_Arm.AsShip1D().BindAdditionalEventControls(Bind);
 
 	#ifdef Robot_TesterCode
@@ -590,16 +363,6 @@ void Curivator_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAccelera
 {
 	//Call predecessor (e.g. tank steering) to get some preliminary values
 	__super::UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,LockShipHeadingToOrientation,dTime_s);
-	if (!m_SetDriverOverride)
-	{
-		//Note: for now we'll just add the values in... we may wish to consider analyzing the existing direction and use the max, but this would require the joystick
-		//values from UI, for now I don't wish to add that complexity as I feel a simple add will suffice
-		//Now to add turret and pitch settings
-		const double TurretAcceleration=m_Turret.GetCurrentVelocity()*GetHeadingSpeed();
-		AngularAcceleration+=TurretAcceleration;
-		const double PitchVelocity=m_PitchRamp.GetCurrentVelocity()*GetEngaged_Max_Speed();
-		AuxVelocity+=PitchVelocity;
-	}
 }
 
 #ifdef Robot_TesterCode
@@ -645,27 +408,6 @@ Curivator_Robot_Properties::Curivator_Robot_Properties()  : m_TurretProps(
 	true,	//Using the range
 	-Pi,Pi
 	),
-	m_PitchRampProps(
-	"Pitch",
-	2.0,    //Mass
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	10.0,   //Max Speed
-	1.0,1.0, //ACCEL, BRAKE  (These can be ignored)
-	10.0,10.0, //Max Acceleration Forward/Reverse 
-	Ship_1D_Props::eRobotArm,
-	true,	//Using the range
-	DEG_2_RAD(45-3),DEG_2_RAD(70+3) //add padding for quick response time (as close to limits will slow it down)
-	),
-	m_KickerWheelProps(
-	"Kicker",
-	50,    //Mass (about 110 pounds)
-	0.0,   //Dimension  (this really does not matter for this, there is currently no functionality for this property, although it could impact limits)
-	42,   //with 13.2 gear reduction in radians
-	10.0,10.0, //ACCEL, BRAKE  (These work with the buttons, give max acceleration)
-	112.0,112.0, //Max Acceleration Forward/Reverse  these can be real fast about a quarter of a second
-	Ship_1D_Props::eSimpleMotor,
-	false	//No limit ever!
-	),
 	m_RobotControls(&s_ControlsEvents)
 {
 	{
@@ -698,22 +440,10 @@ Curivator_Robot_Properties::Curivator_Robot_Properties()  : m_TurretProps(
 			props.GearHeightOffset=c_GearHeightOffset;
 			props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
 
-			//Get some good defaults
-			const double Tote_stack_Height=11.75;
-			const double Clearance=2;
-			props.ToteRestHeight=0.0;
-			props.Tote2Height=Tote_stack_Height*1+Clearance;
-			props.Tote3Height=Tote_stack_Height*2+Clearance;
-			props.Tote4Height=Tote_stack_Height*3+Clearance;
-			props.Tote5Height=Tote_stack_Height*4+Clearance;
-			props.Tote6Height=Tote_stack_Height*5+Clearance;
 			m_CurivatorRobotProps=props;
 		}
 
 		Curivator_Robot_Props::Autonomous_Properties &auton=props.Autonomous_Props;
-		auton.FirstMove_ft=5.0;
-		auton.SideMove_rad=20.0;
-		auton.ArmMove_in=0.0;  //safe default
 		m_CurivatorRobotProps=props;
 	}
 	{
@@ -733,12 +463,6 @@ Curivator_Robot_Properties::Curivator_Robot_Properties()  : m_TurretProps(
 		props.PID[0]=1.0;
 		props.PrecisionTolerance=0.001; //we need high precision
 		m_TurretProps.RotaryProps()=props;
-	}
-	{
-		Rotary_Props props=m_PitchRampProps.RotaryProps(); //start with super class settings
-		props.PID[0]=1.0;
-		props.PrecisionTolerance=0.001; //we need high precision
-		m_PitchRampProps.RotaryProps()=props;
 	}
 }
 
@@ -786,14 +510,8 @@ const char *ProcessVec2D(Curivator_Robot_Props &m_CurivatorRobotProps,Scripting:
 const char * const g_Curivator_Controls_Events[] = 
 {
 	"Turret_SetCurrentVelocity","Turret_SetIntendedPosition","Turret_SetPotentiometerSafety",
-	"PitchRamp_SetCurrentVelocity","PitchRamp_SetIntendedPosition","PitchRamp_SetPotentiometerSafety",
-	"Robot_SetLowGear","Robot_SetLowGearOn","Robot_SetLowGearOff","Robot_SetLowGearValue",
-	"Robot_SetDriverOverride",
 	"IntakeArm_DeployManager",
-	"KickerWheel_SetCurrentVelocity",
 	"Arm_SetCurrentVelocity","Arm_SetPotentiometerSafety","Arm_SetPosRest",
-	"Arm_SetTote2Height","Arm_SetTote3Height","Arm_SetTote4Height","Arm_SetTote5Height","Arm_SetTote6Height",
-	"Arm_ForkRight","Arm_ForkLeft","Arm_ForkBoth","Arm_Advance","Arm_Retract",
 	"TestAuton"
 };
 
@@ -803,6 +521,8 @@ const char *Curivator_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(si
 }
 Curivator_Robot_Properties::ControlEvents Curivator_Robot_Properties::s_ControlsEvents;
 
+//enable when we are ready to use auton parameters
+#if 0
 void Curivator_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 {
 	if (ShowParameters)
@@ -843,6 +563,7 @@ void Curivator_Robot_Props::Autonomous_Properties::ShowAutonParameters()
 		#endif
 	}
 }
+#endif
 
 void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 {
@@ -859,7 +580,7 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 	m_ControlAssignmentProps.LoadFromScript(script);
 	__super::LoadFromScript(script);
 	err = script.GetFieldTable("robot_settings");
-	double fTest;
+	//double fTest;
 	std::string sTest;
 	if (!err) 
 	{
@@ -869,54 +590,10 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_TurretProps.LoadFromScript(script);
 			script.Pop();
 		}
-		err = script.GetFieldTable("pitch");
-		if (!err)
-		{
-			m_PitchRampProps.LoadFromScript(script);
-			script.Pop();
-		}
 		err = script.GetFieldTable("arm");
 		if (!err)
 		{
 			m_ArmProps.LoadFromScript(script);
-			script.Pop();
-		}
-		err = script.GetFieldTable("kicker");
-		if (!err)
-		{
-			m_KickerWheelProps.LoadFromScript(script);
-			script.Pop();
-		}
-
-		m_LowGearProps=*this;  //copy redundant data first
-		err = script.GetFieldTable("low_gear");
-		if (!err)
-		{
-			m_LowGearProps.LoadFromScript(script);
-			script.Pop();
-		}
-		err = script.GetFieldTable("height_presets");
-		if (!err)
-		{
-			double fTest;
-			err=script.GetField("rest", NULL, NULL, &fTest);
-			if (!err)
-				props.ToteRestHeight=fTest;
-			err=script.GetField("tote_2", NULL, NULL, &fTest);
-			if (!err)
-				props.Tote2Height=fTest;
-			err=script.GetField("tote_3", NULL, NULL, &fTest);
-			if (!err)
-				props.Tote3Height=fTest;
-			err=script.GetField("tote_4", NULL, NULL, &fTest);
-			if (!err)
-				props.Tote4Height=fTest;
-			err=script.GetField("tote_5", NULL, NULL, &fTest);
-			if (!err)
-				props.Tote5Height=fTest;
-			err=script.GetField("tote_6", NULL, NULL, &fTest);
-			if (!err)
-				props.Tote6Height=fTest;
 			script.Pop();
 		}
 
@@ -925,21 +602,21 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			struct Curivator_Robot_Props::Autonomous_Properties &auton=m_CurivatorRobotProps.Autonomous_Props;
 			{
-				err = script.GetField("first_move_ft", NULL, NULL,&fTest);
-				if (!err)
-					auton.FirstMove_ft=fTest;
+				//err = script.GetField("first_move_ft", NULL, NULL,&fTest);
+				//if (!err)
+				//	auton.FirstMove_ft=fTest;
 
-				err = script.GetField("side_move_rad", NULL, NULL,&fTest);
-				if (!err)
-					auton.SideMove_rad=fTest;
+				//err = script.GetField("side_move_rad", NULL, NULL,&fTest);
+				//if (!err)
+				//	auton.SideMove_rad=fTest;
 
-				err = script.GetField("arm_height_in", NULL, NULL,&fTest);
-				if (!err)
-					auton.ArmMove_in=fTest;
+				//err = script.GetField("arm_height_in", NULL, NULL,&fTest);
+				//if (!err)
+				//	auton.ArmMove_in=fTest;
 
-				SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
-				SCRIPT_TEST_BOOL_YES(auton.ShowParameters,"show_auton_variables");
-				auton.ShowAutonParameters();
+				//SCRIPT_TEST_BOOL_YES(auton.IsSupportingHotSpot,"support_hotspot");
+				//SCRIPT_TEST_BOOL_YES(auton.ShowParameters,"show_auton_variables");
+				//auton.ShowAutonParameters();
 			}
 			script.Pop();
 		}
@@ -1021,16 +698,6 @@ class Curivator_Goals_Impl : public AtomicGoal
 			return goal_drive;
 		}
 
-		static Goal * Move_Sideways(Curivator_Goals_Impl *Parent,double length_ft)
-		{
-			Curivator_Robot *Robot=&Parent->m_Robot;
-			Curivator_Robot::Kicker_Wheel &KickerWheel=Robot->GetKickerWheel();
-			//const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
-			Goal_Ship1D_MoveToPosition *goal_kicker=NULL;
-			goal_kicker=new Goal_Ship1D_MoveToRelativePosition(KickerWheel,length_ft);
-			return goal_kicker;
-		}
-
 		static Goal * Move_ArmPosition(Curivator_Goals_Impl *Parent,double height_in)
 		{
 			Curivator_Robot *Robot=&Parent->m_Robot;
@@ -1049,49 +716,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 			virtual void Activate()
 			{
 				AddSubgoal(new Goal_Wait(0.500));  //Testing
-				AddSubgoal(Move_Straight(m_Parent,m_AutonProps.FirstMove_ft));
-				m_Status=eActive;
-			}
-		};
-
-		class MoveSideways : public Generic_CompositeGoal, public SetUpProps
-		{
-		public:
-			MoveSideways(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
-			virtual void Activate()
-			{
-				AddSubgoal(new Goal_Wait(0.500));  //Testing
-				AddSubgoal(Move_Sideways(m_Parent,m_AutonProps.SideMove_rad));
-				m_Status=eActive;
-			}
-		};
-
-		class CanSteal : public Generic_CompositeGoal, public SetUpProps
-		{
-		public:
-			CanSteal(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
-			virtual void Activate()
-			{
-				const Curivator_Robot_Props &props=m_Robot.GetRobotProps().GetCurivatorRobotProps();
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.FirstMove_ft));
-				AddSubgoal(new Goal_Wait(0.500));  //may not be needed
-				AddSubgoal(Move_ArmPosition(m_Parent,m_AutonProps.ArmMove_in));
-				m_Status=eActive;
-			}
-		};
-
-		class SimpleOneTote : public Generic_CompositeGoal, public SetUpProps
-		{
-		public:
-			SimpleOneTote(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
-			virtual void Activate()
-			{
-				const Curivator_Robot_Props &props=m_Robot.GetRobotProps().GetCurivatorRobotProps();
-				AddSubgoal(Move_Straight(m_Parent,-m_AutonProps.FirstMove_ft));
-				AddSubgoal(Move_ArmPosition(m_Parent,props.Tote2Height));
-				AddSubgoal(new Goal_Wait(0.500));  //may not be needed
-				AddSubgoal(Move_Straight(m_Parent,2.0)); //TODO make property
-				AddSubgoal(Move_ArmPosition(m_Parent,props.ToteRestHeight));
+				AddSubgoal(Move_Straight(m_Parent,1.0));
 				m_Status=eActive;
 			}
 		};
@@ -1099,22 +724,12 @@ class Curivator_Goals_Impl : public AtomicGoal
 		enum AutonType
 		{
 			eDoNothing,
-			eJustMoveSideways,
 			eJustMoveForward,
-			eCanSteal,
-			eSimpleOneTote,
 			eNoAutonTypes
 		} m_AutonType;
-		enum Robot_Position
-		{
-			ePosition_Center,
-			ePosition_Left,
-			ePosition_Right
-		} m_RobotPosition;
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
-			m_Primer(false),  //who ever is done first on this will complete the goals (i.e. if time runs out)
-			m_IsHot(false),m_HasSecondShotFired(false)
+			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
 		{
 			m_Status=eInactive;
 		}
@@ -1123,51 +738,15 @@ class Curivator_Goals_Impl : public AtomicGoal
 			m_Primer.AsGoal().Terminate();  //sanity check clear previous session
 
 			//pull parameters from SmartDashboard
-			try
-			{
-				const double fGoalSelection=SmartDashboard::GetNumber("Auton GoalSelection");
-				int GoalSelection=(size_t)fGoalSelection;
-				if ((GoalSelection<0)||(GoalSelection>eNoAutonTypes))
-					GoalSelection=eDoNothing;
-				m_AutonType=(AutonType)GoalSelection;
-			}
-			catch (...)
-			{
-				m_AutonType=eDoNothing;
-				SmartDashboard::PutNumber("Auton GoalSelection",0.0);
-			}
-
-			try
-			{
-				const double fPosition=SmartDashboard::GetNumber("Auton Position");
-				int Position=(size_t)fPosition;
-				if ((Position<0)||(Position>eNoAutonTypes))
-					Position=eDoNothing;
-				m_RobotPosition=(Robot_Position)Position;
-			}
-			catch (...)
-			{
-				m_RobotPosition=ePosition_Center;
-				SmartDashboard::PutNumber("Auton Position",0.0);
-			}
-
 			Curivator_Robot_Props::Autonomous_Properties &auton=m_Robot.GetAutonProps();
-			auton.ShowAutonParameters();  //Grab again now in case user has tweaked values
+			//auton.ShowAutonParameters();  //Grab again now in case user has tweaked values
 
-			printf("ball count=%d position=%d\n",m_AutonType,m_RobotPosition);
+			m_AutonType = eDoNothing;  //TODO ... do something.  :)
+			printf("ball count=%d \n",m_AutonType);
 			switch(m_AutonType)
 			{
-			case eJustMoveSideways:
-				m_Primer.AddGoal(new MoveSideways(this));
-				break;
 			case eJustMoveForward:
 				m_Primer.AddGoal(new MoveForward(this));
-				break;
-			case eCanSteal:
-				m_Primer.AddGoal(new CanSteal(this));
-				break;
-			case  eSimpleOneTote:
-				m_Primer.AddGoal(new SimpleOneTote(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250
@@ -1220,20 +799,12 @@ void Curivator_Robot_Control::ResetPos()
 		printf("RobotControl::ResetPos Compressor->Start()\n");
 		m_Compressor->Start();
 	}
-	//Set the solenoids to their default positions
-	OpenSolenoid(Curivator_Robot::eUseLowGear,true);
 }
 
 void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
 	switch (index)
 	{
-	case Curivator_Robot::eKickerWheel:
-		Victor_UpdateVoltage(index,Voltage);
-		//TODO change to KickerWheel once I have a 2015 layout in SmartDashboard
-		//  [1/24/2015 JamesK]
-		SmartDashboard::PutNumber("RollerVoltage",Voltage);
-		break;
 	case Curivator_Robot::eArm:
 		Voltage=Voltage * m_RobotProps.GetArmProps().GetRotaryProps().VoltageScalar;
 		Victor_UpdateVoltage(index,Voltage);
@@ -1242,11 +813,6 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		m_Potentiometer.UpdatePotentiometerVoltage(Voltage);
 		m_Potentiometer.TimeChange();  //have this velocity immediately take effect
 		#endif
-		break;
-	case Curivator_Robot::eCameraLED:
-		TranslateToRelay(index,Voltage);
-		//I don't need this since we have another variable that represents it, but enable for diagnostics
-		//SmartDashboard::PutBoolean("CameraLED",Voltage==0.0?false:true);
 		break;
 	}
 }
@@ -1491,21 +1057,7 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 void Curivator_Robot_Control::OpenSolenoid(size_t index,bool Open)
 {
-	switch (index)
-	{
-	case Curivator_Robot::eUseLowGear:
-		SmartDashboard::PutBoolean("UseHighGear",!Open);
-		Solenoid_Open(index,Open);
-		break;
-	case Curivator_Robot::eForkLeft:
-		SmartDashboard::PutBoolean("ForkLeft",!Open);
-		Solenoid_Open(index,Open);
-		break;
-	case Curivator_Robot::eForkRight:
-		SmartDashboard::PutBoolean("ForkRight",!Open);
-		Solenoid_Open(index,Open);
-		break;
-	}
+	//no solenoids
 }
 
 
