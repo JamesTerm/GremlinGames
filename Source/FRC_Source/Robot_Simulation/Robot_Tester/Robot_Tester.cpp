@@ -292,6 +292,8 @@ private:
 	Robot2014Map Robot2014_Database;
 	typedef map<string ,FRC_2015_Robot_Properties,greater<string>> Robot2015Map;
 	Robot2015Map Robot2015_Database;
+	typedef map<string ,Curivator_Robot_Properties,greater<string>> CurivatorMap;
+	CurivatorMap Curivator_Database;
 	typedef map<string ,HikingViking_Robot_Properties,greater<string>> RobotHikingVikingMap;
 	RobotHikingVikingMap RobotHikingViking_Database;
 
@@ -352,7 +354,8 @@ public:
 		e2013,
 		e2014,
 		e2015,
-		eHikingViking
+		eHikingViking,
+		eCurivator
 	};
 	void LoadRobot(const char *FileName,const char *RobotName,RobotType type)
 	{
@@ -469,6 +472,17 @@ public:
 					}
 				}
 				break;
+			case eCurivator:
+				{
+					CurivatorMap::iterator iter=Curivator_Database.find(RobotName);
+					if (iter==Curivator_Database.end())
+					{
+						//New entry
+						Curivator_Database[RobotName]=Curivator_Robot_Properties();
+						new_entry=&Curivator_Database[RobotName];  //reference to avoid copy
+					}
+				}
+				break;
 		}
 		if (new_entry)
 		{
@@ -549,7 +563,12 @@ public:
 			if (iter!=RobotHikingViking_Database.end())
 				props=&((*iter).second);
 		}
-
+		if (props==NULL)
+		{
+			CurivatorMap::iterator iter=Curivator_Database.find(str_2);
+			if (iter!=Curivator_Database.end())
+				props=&((*iter).second);
+		}
 
 		if (props)
 		{
@@ -661,6 +680,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eSwerveRobot,
 		eButterflyRobot,
 		eNonaRobot,
+		eCurivator,
+		eTestGoals_Curivator,
 		eRobot2011,
 		eTestGoals_2011,
 		eRobotHikingViking,
@@ -685,6 +706,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"SwerveRobot",
 		"ButterflyRobot",
 		"NonaRobot",
+		"Curivator",
+		"GoalsCurivator",
 		"Robot2011",
 		"Goals2011",
 		"HikingViking",
@@ -949,7 +972,6 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			break;
 		}
 	case eRobot2015:
-	case eCurrent:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
@@ -975,6 +997,42 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 				{
 					Goal *goal=NULL;
 					goal=FRC_2015_Goals::Get_FRC2015_Autonomous(Robot);
+					if (goal)
+						goal->Activate(); //now with the goal(s) loaded activate it
+					Robot->SetGoal(goal);
+				}
+			}
+			else
+				printf("Robot not found\n");
+			break;
+		}
+	case eCurivator:
+	case eCurrent:
+		{
+			#ifdef _DEBUG
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			#endif
+			g_WorldScaleFactor=100.0;
+			_command.LoadRobot("CurivatorRobot.lua","CurivatorRobot",Commands::eCurivator);
+			Entity2D *TestEntity=_command.AddRobot("Curivator","CurivatorRobot",str_3,str_4,str_5);
+			game.SetControlledEntity(TestEntity,false);
+		}
+		break;
+	case eTestGoals_Curivator:
+		{
+			Curivator_Robot *Robot=dynamic_cast<Curivator_Robot *>(game.GetEntity("Curivator"));
+			if (Robot)
+			{
+				const int AutonomousValue=str_2[0]?atoi(str_2):2;
+				const bool DoAutonomous=AutonomousValue!=0;  //set to false as safety override
+				Goal *oldgoal=Robot->ClearGoal();
+				if (oldgoal)
+					delete oldgoal;
+
+				if (DoAutonomous)
+				{
+					Goal *goal=NULL;
+					goal=Curivator_Goals::Get_Curivator_Autonomous(Robot);
 					if (goal)
 						goal->Activate(); //now with the goal(s) loaded activate it
 					Robot->SetGoal(goal);
