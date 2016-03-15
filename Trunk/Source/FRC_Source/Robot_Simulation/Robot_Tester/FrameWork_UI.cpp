@@ -237,6 +237,9 @@ Entity2D *GameClient::CreateEntity(const char EntityName[],const Entity_Properti
 			case Ship_Props::eFRC2015_Robot:
 				NewShip=new FRC_2015_Robot_UI(EntityName);
 				break;
+			case Ship_Props::eCurivator_Robot:
+				NewShip=new Curivator_Robot_UI(EntityName);
+				break;
 			case Ship_Props::eHikingViking_Robot:
 				NewShip=new HikingViking_Robot_UI(EntityName);
 				break;

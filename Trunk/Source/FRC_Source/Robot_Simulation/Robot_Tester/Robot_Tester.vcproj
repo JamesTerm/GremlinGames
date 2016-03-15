@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Curivator_Robot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\FrameWork_UI.cpp"
 				>
 			</File>
@@ -263,6 +267,10 @@
 			>
 			<File
 				RelativePath=".\CommonUI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Curivator_Robot.h"
 				>
 			</File>
 			<File
