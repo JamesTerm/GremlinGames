@@ -52,12 +52,6 @@ MainRobot = {
 		{
 			id_1 = { name= "CameraLED", channel=1}
 		},
-		double_solenoid =
-		{
-			id_1 = { name="use_low_gear",    forward_channel=2, reverse_channel=1},
-			id_2 = { name="fork_left",    forward_channel=3, reverse_channel=4},
-			id_3 = { name="fork_right",    forward_channel=5, reverse_channel=6},
-		},
 		digital_input =
 		{
 			--These channels must be unique to digital input encoder channels as well
@@ -225,82 +219,6 @@ MainRobot = {
 				free_current_amp=1.8
 			}
 		},
-
-		kicker =
-		{
-			--Note: we don't want this to be open (e.g. passive) otherwise position never gets updated
-			--is_closed=0,
-			show_pid_dump='no',
-			ds_display_row=-1,				--Use this display to determine max speed (try to get a good match)
-			pid=
-			{p=100, i=0, d=50 },
-			latency=0.0,
-			voltage_multiply=1.0,
-
-			length_in=4,					--6 inch diameter (we shouldn't worry about tweaking this just measure it and be done)
-			max_speed=42,					--with 13.2 gear reduction in radians (default is 42)					
-			accel=10.0,						--These are only needed if we bind keys for power in meters per second
-			brake=10.0,
-			--These are low because of traction
-			max_accel_forward=75,
-			max_accel_reverse=75,
-			--inv_max_accel = 1/23,  --solved empiracally
-		},
-
-		low_gear = 
-		{
-			--While it is true we have more torque for low gear, we have to be careful that we do not make this too powerful as it could
-			--cause slipping if driver "high sticks" to start or stop quickly.
-			--for this year... there is no high gear... so we'll inherit these from high gear
-			--MaxAccelLeft = 10, MaxAccelRight = 10, MaxAccelForward = 10 * 2, MaxAccelReverse = 10 * 2, 
-			--MaxTorqueYaw = 25 * 2,
-			--MaxTorqueYaw_High = 25 * 2,
-
-			MAX_SPEED = LowGearSpeed,
-			ACCEL = 10*2,    -- Thruster Acceleration m/s2 (1g = 9.8)
-			BRAKE = ACCEL, 
-			-- Turn Rates (deg/sec) This is always correct do not change
-			heading_rad = (2 * LowGearSpeed * Meters2Inches / WheelTurningDiameter_In) * skid,
-			
-			tank_drive =
-			{
-				is_closed=0,
-				show_pid_dump='n',
-				ds_display_row=-1,
-				--We must NOT use I or D for low gear, we must keep it very responsive
-				--We are always going to use the encoders in low gear to help assist to fight quickly changing gravity shifts
-				left_pid=
-				{p=25, i=0, d=5},
-				right_pid=
-				{p=25, i=0, d=5},					--These should always match, but able to be made different
-				--latency=0.300,
-				--I'm explicitly keeping this here to show that we have the same ratio (it is conceivable that this would not always be true)
-				--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
-				encoder_to_wheel_ratio=0.5,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
-				voltage_multiply=1.0,				--May be reversed using -1.0
-				--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
-				curve_voltage=
-				{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
-				reverse_steering='no',
-				 left_encoder_reversed='no',
-				right_encoder_reversed='no',
-				inv_max_accel = 1/15,  --solved empiracally
-				motor_specs =
-				{
-					wheel_mass=1.5,
-					cof_efficiency=1.0,
-					gear_reduction=5310.0/346.6368,
-					torque_on_wheel_radius=Inches2Meters * 1,
-					drive_wheel_radius=Inches2Meters * 2,
-					number_of_motors=2,
-					
-					free_speed_rpm=5310.0,
-					stall_torque=2.43,
-					stall_current_amp=133,
-					free_current_amp=2.7
-				}
-			}
-		}
 	},
 
 	controls =
