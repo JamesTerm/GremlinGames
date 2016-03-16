@@ -68,7 +68,7 @@ class Curivator_Robot_Properties : public Tank_Robot_Properties
 
 const char * const csz_Curivator_Robot_SpeedControllerDevices_Enum[] =
 {
-	"arm","left_drive_3","right_drive_3"
+	"turret","arm","boom","bucket","clasp","rocker_left","rocker_right","bogie_left","bogie_right","left_drive_3","right_drive_3"
 };
 
 //const char * const csz_Curivator_Robot_BoolSensorDevices_Enum[] =
@@ -79,7 +79,7 @@ const char * const csz_Curivator_Robot_SpeedControllerDevices_Enum[] =
 //Note: rotary systems share the same index as their speed controller counterpart
 const char * const csz_Curivator_Robot_AnalogInputs_Enum[] =
 {
-	"arm_potentiometer"
+	"turret_pot","arm_pot","boom_pot","bucket_pot","clasp_pot","rocker_left_pot","rocker_right_pot","bogie_left_pot","bogie_right_pot"
 };
 
 
@@ -88,7 +88,7 @@ class Curivator_Robot : public Tank_Robot
 	public:
 		enum SpeedControllerDevices
 		{
-			eArm,
+			eTurret,eArm,eBoom,eBucket,eClasp,eRockerLeft,eRockerRight,eBogieLeft,eBogieRight,
 			eLeftDrive3,
 			eRightDrive3,
 		};
@@ -113,7 +113,7 @@ class Curivator_Robot : public Tank_Robot
 
 		enum AnalogInputs
 		{
-			eArmPotentiometer
+			eTurretPot,eArmPot,eBoomPot,eBucketPot,eClaspPot,eRockerLeftPot,eRockerRightPot,eBogieLeftPot,eBogieRightPot,
 		};
 
 		static AnalogInputs GetAnalogInputs_Enum (const char *value)
@@ -176,12 +176,6 @@ class Curivator_Robot : public Tank_Robot
 				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
 				#endif
-				void SetPosRest();
-				void SetTote2Height();
-				void SetTote3Height();
-				void SetTote4Height();
-				void SetTote5Height();
-				void SetTote6Height();
 
 				Curivator_Robot * const m_pParent;
 				bool m_Advance, m_Retract;
