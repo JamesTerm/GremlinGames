@@ -187,23 +187,9 @@ MainRobot = {
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are arm converted to gear ratio (TODO reseach this more)
 			max_range_deg= 52.36 * ArmToGearRatio,
-			--Note the sketch used -43.33, but tests on actual assembly show -46.12
 			min_range_deg=(-46.12) * ArmToGearRatio,
 			starting_position_deg=-46.12,
 			use_aggressive_stop = 'yes',
-			--inv_max_accel_up = 0.05,
-			--inv_max_decel_up = 0.0,
-			--inv_max_accel_down = 0.05,
-			--inv_max_decel_down = 0.01,
-			--slow_velocity_voltage = 4.0,
-			--slow_velocity = 2.0,
-			--predict_up=.400,
-			--predict_down=.400,
-			--pulse_burst_time=0.06,
-			--pulse_burst_range=0.5,
-			--reverse_deadzone=0.10,
-			--slow_angle_scalar = GearToArmRatio,
-			--distance_scale = 0.5,
 			motor_specs =
 			{
 				wheel_mass=Pounds2Kilograms * 16.27,

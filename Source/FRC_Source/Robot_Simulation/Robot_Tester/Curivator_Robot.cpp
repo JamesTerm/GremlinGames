@@ -107,20 +107,12 @@ void Curivator_Robot::Robot_Arm::Retract(bool on)
 
 bool Curivator_Robot::Robot_Arm::DidHitMinLimit() const
 {
-	#ifndef Robot_TesterCode
-	return m_pParent->m_RobotControl->GetBoolSensorState(eDartLower);
-	#else
-	return false;  //TODO make better simulated sensors
-	#endif
+	return false;  //no limit switches used
 }
 
 bool Curivator_Robot::Robot_Arm::DidHitMaxLimit() const
 {
-	#ifndef Robot_TesterCode
-	return m_pParent->m_RobotControl->GetBoolSensorState(eDartUpper);
-	#else
-	return false;    //TODO make better simulated sensors
-	#endif
+	return false;    //no limit switches used
 }
 
 void Curivator_Robot::Robot_Arm::TimeChange(double dTime_s)
@@ -959,7 +951,7 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 	switch (index)
 	{
-		case Curivator_Robot::eArmPotentiometer:
+		case Curivator_Robot::eArmPot:
 		{
 			#ifndef Robot_TesterCode
 			//double raw_value = (double)m_Potentiometer.GetAverageValue();
@@ -1013,41 +1005,6 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result));
 			const double height= (sin(result)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
-			//I'm keeping this disabled unless we decide to use vision with the target reticle
-			#if 0
-			{
-				//Now to have some camera hud aligning updates in vision
-				//Note: I usually work with radians and meters... but in this small example I've
-				//chosen to work in degrees and inches for easier readability
-
-				const double StandAdjustedAngle=-7.2;  //in degrees
-				const double pivot_radius_in=7.3;  //distance from pivot point to camera lens
-				const double pivot_offset=-18.80; //This takes into account the offset of the camera mounted position
-				const double Camera_Z_offset=-32.45; //distance from lens to front of robot
-				const double Camera_Y_offset=49.77 - pivot_radius_in;
-
-				const double Arm_Length_in=17.0;
-				//pitch is the sensed angle use this to determine other geometry (it's the ArmAngle)
-				const double pitch=RAD_2_DEG(result);
-				const double Tote_stack_Height=11.75;
-
-				const double stand_angle=pitch+StandAdjustedAngle;  //determine angle of stand  
-				const double height_in=Meters2Inches(height);
-				SmartDashboard::PutNumber("Camera_rot_y",stand_angle);
-				SmartDashboard::PutNumber("Camera_y",cos(DEG_2_RAD(pitch+pivot_offset))*pivot_radius_in+Camera_Y_offset);
-				SmartDashboard::PutNumber("Camera_z",sin(DEG_2_RAD(-(pitch+pivot_offset)))*pivot_radius_in+Camera_Z_offset);
-				SmartDashboard::PutNumber("height_indicator_y",height_in);
-				SmartDashboard::PutNumber("fork_right_y",height_in);
-				SmartDashboard::PutNumber("fork_left_y",height_in);
-				SmartDashboard::PutNumber("inner_fork_right_y",height_in);
-				SmartDashboard::PutNumber("inner_fork_left_y",height_in);
-				SmartDashboard::PutBoolean("tote_2_enabled",height_in>Tote_stack_Height);
-				SmartDashboard::PutBoolean("tote_3_enabled",height_in>Tote_stack_Height*2);
-				SmartDashboard::PutBoolean("tote_4_enabled",height_in>Tote_stack_Height*3);
-				SmartDashboard::PutBoolean("tote_5_enabled",height_in>Tote_stack_Height*4);
-				SmartDashboard::PutBoolean("tote_6_enabled",height_in>Tote_stack_Height*5);
-			}
-			#endif
 			//Now to convert to the motor gear ratio as this is what we work in
 			result*=props.ArmToGearRatio;
 		}
