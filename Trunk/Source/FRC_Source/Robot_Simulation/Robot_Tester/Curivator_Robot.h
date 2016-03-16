@@ -148,16 +148,16 @@ class Curivator_Robot : public Tank_Robot
 		class Robot_Arm : public Rotary_Position_Control
 		{
 			public:
-				Robot_Arm(Curivator_Robot *parent,Rotary_Control_Interface *robot_control);
+				Robot_Arm(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
 				//The parent needs to call initialize
-				double HeightToAngle_r(double Height_m) const;
-				static double HeightToAngle_r(Robot_Arm *instance,double Height_m)  {return instance->HeightToAngle_r(Height_m);}
-				double Arm_AngleToHeight_m(double Angle_r) const;
-				double AngleToHeight_m(double Angle_r) const;
+				//double HeightToAngle_r(double Height_m) const;
+				//static double HeightToAngle_r(Robot_Arm *instance,double Height_m)  {return instance->HeightToAngle_r(Height_m);}
+				//double Arm_AngleToHeight_m(double Angle_r) const;
+				//double AngleToHeight_m(double Angle_r) const;
 
-				//given the raw potentiometer converts to the arm angle
-				double PotentiometerRaw_To_Arm_r(double raw) const;
+				////given the raw potentiometer converts to the arm angle
+				//double PotentiometerRaw_To_Arm_r(double raw) const;
 			protected:
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void BindAdditionalEventControls(bool Bind);
@@ -176,6 +176,7 @@ class Curivator_Robot : public Tank_Robot
 				#ifndef Robot_TesterCode
 				typedef Rotary_Position_Control __super;
 				#endif
+				const size_t m_Index;
 
 				Curivator_Robot * const m_pParent;
 				bool m_Advance, m_Retract;
@@ -195,7 +196,7 @@ class Curivator_Robot : public Tank_Robot
 		typedef  Tank_Robot __super;
 		#endif
 		Curivator_Control_Interface * const m_RobotControl;
-		Turret m_Turret;
+		Robot_Arm m_Turret;
 		Robot_Arm m_Arm;
 		Curivator_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		double m_LatencyCounter;
