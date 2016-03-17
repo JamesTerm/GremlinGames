@@ -1010,7 +1010,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	case eCurrent:
 		{
 			#ifdef _DEBUG
-			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
 			#endif
 			g_WorldScaleFactor=100.0;
 			_command.LoadRobot("CurivatorRobot.lua","CurivatorRobot",Commands::eCurivator);
