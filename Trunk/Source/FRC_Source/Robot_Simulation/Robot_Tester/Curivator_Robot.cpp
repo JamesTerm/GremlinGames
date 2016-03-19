@@ -199,8 +199,6 @@ void Curivator_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Prope
 	const Curivator_Robot_Properties *RobotProps=dynamic_cast<const Curivator_Robot_Properties *>(props);
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 
-	//set to the default key position
-	//const Curivator_Robot_Props &robot2015props=RobotProps->GetCurivatorRobotProps();
 	m_Arm.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eArm):NULL);
 	m_Turret.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eTurret):NULL);
 }
