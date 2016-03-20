@@ -1067,3 +1067,18 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script)
 	}
 	__super::LoadFromScript(script);
 }
+
+
+void Rotary_Pot_Properties::LoadFromScript(Scripting::Script& script)
+{
+	const char* err=NULL;
+	double fValue;
+	err=script.GetField("pot_min_limit", NULL, NULL, &fValue);
+	if (!err) m_RotaryPotProps.PotMinValue=fValue;
+	err=script.GetField("pot_max_limit", NULL, NULL, &fValue);
+	if (!err) m_RotaryPotProps.PotMaxValue=fValue;
+	std::string sTest;
+	SCRIPT_TEST_BOOL_YES(m_RotaryPotProps.IsFlipped,"pot_range_flipped");
+
+	__super::LoadFromScript(script);
+}
