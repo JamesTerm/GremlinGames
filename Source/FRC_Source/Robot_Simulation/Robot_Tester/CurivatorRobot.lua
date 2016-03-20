@@ -61,7 +61,8 @@ MainRobot = {
 		},
 		analog_input =
 		{
-			id_1 = { name="arm_pot",  channel=2},
+			id_1 = { name="turret_pot",  channel=3},
+			id_2 = { name="arm_pot",  channel=2}
 		},
 		digital_input_encoder =
 		{	
@@ -222,6 +223,9 @@ MainRobot = {
 			tolerance_count=20,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
+			pot_min_limit=155,
+			pot_max_limit=1125,
+			pot_range_flipped='y',
 			
 			--max_speed=(19300/64/60) * Pi2,	--This is about 5 rps (a little slower than hiking viking drive)
 			max_speed=8.8,	--loaded max speed (see sheet) which is 2.69 rps
