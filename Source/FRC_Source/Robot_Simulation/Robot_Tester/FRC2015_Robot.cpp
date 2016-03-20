@@ -1439,7 +1439,7 @@ double FRC_2015_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//SmartDashboard::PutNumber("Arm_ScaleTest",shipprops.MaxRange-shipprops.MinRange);
 			result*=shipprops.MaxRange-shipprops.MinRange;  //compute the total distance in radians
 			//get offset... Note: scale comes first since the offset is of that scale
-			result+=m_RobotProps.GetArmProps().GetRotaryProps().PotentiometerOffset;
+			result+=m_RobotProps.GetArmProps().GetRotary_Pot_Properties().PotentiometerOffset;
 			#else
 			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) + 0.0;
 			#endif
