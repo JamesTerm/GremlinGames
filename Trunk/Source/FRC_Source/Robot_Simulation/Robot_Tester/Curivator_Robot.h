@@ -233,7 +233,7 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 		const Curivator_Robot_Properties &GetRobotProps() const {return m_RobotProps;}
 	protected: //from Robot_Control_Interface
 		virtual void UpdateVoltage(size_t index,double Voltage);
-		virtual bool GetBoolSensorState(size_t index) const;
+		//virtual bool GetBoolSensorState(size_t index) const;
 		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
 		virtual void OpenSolenoid(size_t index,bool Open);
 	protected: //from Tank_Drive_Control_Interface
@@ -275,14 +275,13 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 		Accelerometer *m_RoboRIO_Accelerometer;
 		//All digital input reads are done on time change and cached to avoid multiple reads to the FPGA
 		bool m_Limit_IntakeMin1,m_Limit_IntakeMin2,m_Limit_IntakeMax1,m_Limit_IntakeMax2;
-		bool m_Limit_DartUpper,m_Limit_DartLower;
 	private:
 		__inline double Pot_GetRawValue(size_t index);
 
 		KalmanFilter m_KalFilter[2];
 		Averager<double,5> m_Averager[2];
 		#ifdef Robot_TesterCode
-		Potentiometer_Tester2 m_Potentiometer; //simulate a real potentiometer for calibration testing
+		Potentiometer_Tester2 m_Potentiometer[10]; //simulate a real potentiometer for calibration testing
 		#endif
 };
 
