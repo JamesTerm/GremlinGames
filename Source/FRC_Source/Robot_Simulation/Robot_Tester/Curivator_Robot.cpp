@@ -767,9 +767,10 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	switch (index)
 	{
 	case Curivator_Robot::eArm:
+	case Curivator_Robot::eTurret:
 		#ifdef Robot_TesterCode
-		m_Potentiometer.UpdatePotentiometerVoltage(Voltage);
-		m_Potentiometer.TimeChange();  //have this velocity immediately take effect
+		m_Potentiometer[index].UpdatePotentiometerVoltage(Voltage);
+		m_Potentiometer[index].TimeChange();  //have this velocity immediately take effect
 		#endif
 		break;
 	}
@@ -782,22 +783,20 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	Victor_UpdateVoltage(index,Voltage);
 }
 
-bool Curivator_Robot_Control::GetBoolSensorState(size_t index) const
-{
-	bool ret;
-	switch (index)
-	{
-	case Curivator_Robot::eDartUpper:
-		ret=m_Limit_DartUpper;
-		break;
-	case Curivator_Robot::eDartLower:
-		ret=m_Limit_DartLower;
-		break;
-	default:
-		assert (false);
-	}
-	return ret;
-}
+//bool Curivator_Robot_Control::GetBoolSensorState(size_t index) const
+//{
+//	bool ret;
+//	switch (index)
+//	{
+//	case Curivator_Robot::eDartUpper:
+//		break;
+//	case Curivator_Robot::eDartLower:
+//		break;
+//	default:
+//		assert (false);
+//	}
+//	return ret;
+//}
 
 Curivator_Robot_Control::Curivator_Robot_Control(bool UseSafety) : m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
 		m_Compressor(NULL),m_RoboRIO_Accelerometer(NULL)
@@ -826,8 +825,12 @@ void Curivator_Robot_Control::Reset_Rotary(size_t index)
 	}
 
 	#ifdef Robot_TesterCode
-	if (index==Curivator_Robot::eArm)
-		m_Potentiometer.ResetPos();
+	switch (index)
+	{
+	case Curivator_Robot::eTurret:
+	case Curivator_Robot::eArm:
+		m_Potentiometer[index].ResetPos();
+	}
 	#endif
 }
 
@@ -843,21 +846,16 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 	tank_interface->Initialize(props);
 
 	const Curivator_Robot_Properties *robot_props=dynamic_cast<const Curivator_Robot_Properties *>(props);
-	//TODO this is to be changed to an assert once we handle low gear properly
 	if (robot_props)
 	{
 		m_RobotProps=*robot_props;  //save a copy
 
-		//TODO why is this here?	
-		//Rotary_Properties turret_props=robot_props->GetRotaryProps(Curivator_Robot::eTurret);
-		//turret_props.SetUsingRange(false); 
-
 		#ifdef Robot_TesterCode
-		Rotary_Properties writeable_arm_props=robot_props->GetRotaryProps(Curivator_Robot::eArm);
-		//m_ArmMaxSpeed=writeable_arm_props.GetMaxSpeed();
-		//This is not perfect but will work for our simulation purposes
-		writeable_arm_props.RotaryProps().EncoderToRS_Ratio=robot_props->GetCurivatorRobotProps().ArmToGearRatio;
-		m_Potentiometer.Initialize(&writeable_arm_props);
+		for (size_t index=0;index<2;index++)
+		{
+			Rotary_Properties writeable_arm_props=robot_props->GetRotaryProps(index);
+			m_Potentiometer[index].Initialize(&writeable_arm_props);
+		}
 		#endif
 	}
 	
@@ -895,13 +893,9 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 
 void Curivator_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
-	m_Limit_DartUpper=BoolSensor_GetState(Curivator_Robot::eDartUpper);
-	SmartDashboard::PutBoolean("LimitDartUpper",m_Limit_DartUpper);
-	m_Limit_DartLower=BoolSensor_GetState(Curivator_Robot::eDartLower);
-	SmartDashboard::PutBoolean("LimitDartLower",m_Limit_DartLower);
-
 	#ifdef Robot_TesterCode
-	m_Potentiometer.SetTimeDelta(dTime_s);
+	for (size_t index=0;index<2;index++)
+		m_Potentiometer[index].SetTimeDelta(dTime_s);
 	#endif
 
 	//Testing the accelerometer
@@ -994,7 +988,16 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//get offset... Note: scale comes first since the offset is of that scale
 			result+=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotentiometerOffset;
 			#else
-			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) + 0.0;
+			result=(m_Potentiometer[index].GetPotentiometerCurrentPosition()) + 0.0;
+			//Now to normalize it
+			const Ship_1D_Props &shipprops=m_RobotProps.GetRotaryProps(index).GetShip_1D_Props();
+			const double NormalizedResult= (result - shipprops.MinRange)  / (shipprops.MaxRange - shipprops.MinRange);
+			const char * const Prefix=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
+			string ContructedName;
+			ContructedName=Prefix,ContructedName+="_Raw";
+			SmartDashboard::PutNumber(ContructedName.c_str(),result);  //this one is a bit different as it is the selected units we use
+			ContructedName=Prefix,ContructedName+="Pot_Raw";
+			SmartDashboard::PutNumber(ContructedName.c_str(),NormalizedResult);
 			#endif
 
 			//TODO see if this is necessary
