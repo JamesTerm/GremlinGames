@@ -54,7 +54,7 @@ class Curivator_Robot_Properties : public Tank_Robot_Properties
 		#ifndef Robot_TesterCode
 		typedef Tank_Robot_Properties __super;
 		#endif
-		Rotary_Pot_Properties m_RotaryProps[2];
+		Rotary_Pot_Properties m_RotaryProps[5];
 		Curivator_Robot_Props m_CurivatorRobotProps;
 
 		class ControlEvents : public LUA_Controls_Properties_Interface
@@ -196,8 +196,13 @@ class Curivator_Robot : public Tank_Robot
 		typedef  Tank_Robot __super;
 		#endif
 		Curivator_Control_Interface * const m_RobotControl;
+		//TODO derive kinds here
 		Robot_Arm m_Turret;
 		Robot_Arm m_Arm;
+		Robot_Arm m_Boom;
+		Robot_Arm m_Bucket;
+		Robot_Arm m_Clasp;
+		Robot_Arm *mp_Arm[5];  //A handy work-around to treat these as an array, by pointing to them
 		Curivator_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		double m_LatencyCounter;
 
@@ -278,8 +283,8 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 	private:
 		__inline double Pot_GetRawValue(size_t index);
 
-		KalmanFilter m_KalFilter[2];
-		Averager<double,5> m_Averager[2];
+		KalmanFilter m_KalFilter[10];
+		Averager<double,5> m_Averager[10];
 		#ifdef Robot_TesterCode
 		Potentiometer_Tester2 m_Potentiometer[10]; //simulate a real potentiometer for calibration testing
 		#endif

@@ -225,6 +225,96 @@ MainRobot = {
 			starting_position=6,
 			use_aggressive_stop = 'yes',
 		},
+		boom =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up=
+			{p=100, i=0, d=25},
+			pid_down=
+			{p=100, i=0, d=25},
+			tolerance=0.15,
+			tolerance_count=20,
+			voltage_multiply=1.0,			--May be reversed
+			encoder_to_wheel_ratio=1.0,
+			pot_min_limit=155,
+			pot_max_limit=1125,
+			pot_range_flipped='y',
+			
+			max_speed=13.3,	
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=50,			--just go with what feels right
+			max_accel_reverse=50,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			--These min/max are in inch units
+			max_range= 12,
+			min_range=0,
+			starting_position=6,
+			use_aggressive_stop = 'yes',
+		},
+		bucket =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up=
+			{p=100, i=0, d=25},
+			pid_down=
+			{p=100, i=0, d=25},
+			tolerance=0.15,
+			tolerance_count=20,
+			voltage_multiply=1.0,			--May be reversed
+			encoder_to_wheel_ratio=1.0,
+			pot_min_limit=155,
+			pot_max_limit=1125,
+			pot_range_flipped='y',
+			
+			max_speed=13.3,	
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=50,			--just go with what feels right
+			max_accel_reverse=50,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			--These min/max are in inch units
+			max_range= 12,
+			min_range=0,
+			starting_position=6,
+			use_aggressive_stop = 'yes',
+		},
+		clasp =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up=
+			{p=100, i=0, d=25},
+			pid_down=
+			{p=100, i=0, d=25},
+			tolerance=0.15,
+			tolerance_count=20,
+			voltage_multiply=1.0,			--May be reversed
+			encoder_to_wheel_ratio=1.0,
+			pot_min_limit=155,
+			pot_max_limit=1125,
+			pot_range_flipped='y',
+			
+			max_speed=13.3,	
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=50,			--just go with what feels right
+			max_accel_reverse=50,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
+			--These min/max are in inch units
+			max_range= 7,
+			min_range=0,
+			starting_position=3.5,
+			use_aggressive_stop = 'yes',
+		},
 	},
 
 	controls =
@@ -260,8 +350,10 @@ MainRobot = {
 			
 			turret_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
-			turret_Advance={type="keyboard", key='k', on_off=true},
-			turret_Retract={type="keyboard", key='j', on_off=true},
+			boom_Advance={type="keyboard", key='k', on_off=true},
+			boom_Retract={type="keyboard", key='j', on_off=true},
+			bucket_Advance={type="keyboard", key='l', on_off=true},
+			bucket_Retract={type="keyboard", key=';', on_off=true},
 	
 		},
 		

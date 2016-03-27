@@ -181,8 +181,14 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(eTurret,this,robot_control),m_Arm(eArm,this,robot_control),m_LatencyCounter(0.0),
+		m_Boom(eBoom,this,robot_control),m_Bucket(eBucket,this,robot_control),m_Clasp(eClasp,this,robot_control),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0)
 {
+	mp_Arm[eTurret]=&m_Turret;
+	mp_Arm[eArm]=&m_Arm;
+	mp_Arm[eBoom]=&m_Boom;
+	mp_Arm[eBucket]=&m_Bucket;
+	mp_Arm[eClasp]=&m_Clasp;
 	//ensure the variables are initialized before calling get
 	SmartDashboard::PutNumber("X Position",0.0);
 	SmartDashboard::PutNumber("Y Position",0.0);
@@ -199,14 +205,14 @@ void Curivator_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Prope
 	const Curivator_Robot_Properties *RobotProps=dynamic_cast<const Curivator_Robot_Properties *>(props);
 	m_RobotProps=*RobotProps;  //Copy all the properties (we'll need them for high and low gearing)
 
-	m_Arm.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eArm):NULL);
-	m_Turret.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eTurret):NULL);
+	for (size_t i=0;i<5;i++)
+		mp_Arm[i]->Initialize(em,RobotProps?&RobotProps->GetRotaryProps(i):NULL);
 }
 void Curivator_Robot::ResetPos()
 {
 	__super::ResetPos();
-	m_Turret.ResetPos();
-	m_Arm.ResetPos();
+	for (size_t i=0;i<5;i++)
+		mp_Arm[i]->ResetPos();
 }
 
 namespace VisionConversion
@@ -277,8 +283,9 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
-	m_Turret.AsEntity1D().TimeChange(dTime_s);
-	m_Arm.AsEntity1D().TimeChange(dTime_s);
+
+	for (size_t i=0;i<5;i++)
+		mp_Arm[i]->AsEntity1D().TimeChange(dTime_s);
 
 	//const double  YOffset=-SmartDashboard::GetNumber("Y Position");
 	//const double XOffset=SmartDashboard::GetNumber("X Position");
@@ -313,8 +320,8 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		#endif
 	}
 
-	m_Turret.AsShip1D().BindAdditionalEventControls(Bind);
-	m_Arm.AsShip1D().BindAdditionalEventControls(Bind);
+	for (size_t i=0;i<5;i++)
+		mp_Arm[i]->AsShip1D().BindAdditionalEventControls(Bind);
 
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
@@ -470,6 +477,9 @@ const char * const g_Curivator_Controls_Events[] =
 	"turret_SetCurrentVelocity","turret_SetIntendedPosition","turret_SetPotentiometerSafety","turret_Advance","turret_Retract",
 	"IntakeArm_DeployManager",
 	"arm_SetCurrentVelocity","arm_SetPotentiometerSafety","arm_Advance","arm_Retract",
+	"boom_SetCurrentVelocity","boom_SetPotentiometerSafety","boom_Advance","boom_Retract",
+	"bucket_SetCurrentVelocity","bucket_SetPotentiometerSafety","bucket_Advance","bucket_Retract",
+	"clasp_SetCurrentVelocity","clasp_SetPotentiometerSafety","clasp_Advance","clasp_Retract",
 	"TestAuton"
 };
 
@@ -552,6 +562,24 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		if (!err)
 		{
 			m_RotaryProps[Curivator_Robot::eArm].LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("boom");
+		if (!err)
+		{
+			m_RotaryProps[Curivator_Robot::eBoom].LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("bucket");
+		if (!err)
+		{
+			m_RotaryProps[Curivator_Robot::eBucket].LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("clasp");
+		if (!err)
+		{
+			m_RotaryProps[Curivator_Robot::eClasp].LoadFromScript(script);
 			script.Pop();
 		}
 
@@ -768,6 +796,9 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	{
 	case Curivator_Robot::eArm:
 	case Curivator_Robot::eTurret:
+	case Curivator_Robot::eBoom:
+	case Curivator_Robot::eBucket:
+	case Curivator_Robot::eClasp:
 		#ifdef Robot_TesterCode
 		m_Potentiometer[index].UpdatePotentiometerVoltage(Voltage);
 		m_Potentiometer[index].TimeChange();  //have this velocity immediately take effect
@@ -820,6 +851,9 @@ void Curivator_Robot_Control::Reset_Rotary(size_t index)
 	{
 	case Curivator_Robot::eTurret:
 	case Curivator_Robot::eArm:
+	case Curivator_Robot::eBoom:
+	case Curivator_Robot::eBucket:
+	case Curivator_Robot::eClasp:
 		m_KalFilter[index].Reset();
 		break;
 	}
@@ -829,6 +863,9 @@ void Curivator_Robot_Control::Reset_Rotary(size_t index)
 	{
 	case Curivator_Robot::eTurret:
 	case Curivator_Robot::eArm:
+	case Curivator_Robot::eBoom:
+	case Curivator_Robot::eBucket:
+	case Curivator_Robot::eClasp:
 		m_Potentiometer[index].ResetPos();
 	}
 	#endif
@@ -851,7 +888,7 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 		m_RobotProps=*robot_props;  //save a copy
 
 		#ifdef Robot_TesterCode
-		for (size_t index=0;index<2;index++)
+		for (size_t index=0;index<5;index++)
 		{
 			Rotary_Properties writeable_arm_props=robot_props->GetRotaryProps(index);
 			m_Potentiometer[index].Initialize(&writeable_arm_props);
@@ -894,7 +931,7 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 void Curivator_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 {
 	#ifdef Robot_TesterCode
-	for (size_t index=0;index<2;index++)
+	for (size_t index=0;index<5;index++)
 		m_Potentiometer[index].SetTimeDelta(dTime_s);
 	#endif
 
@@ -946,6 +983,9 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	{
 		case Curivator_Robot::eTurret:
 		case Curivator_Robot::eArmPot:
+		case Curivator_Robot::eBoom:
+		case Curivator_Robot::eBucket:
+		case Curivator_Robot::eClasp:
 		{
 			#ifndef Robot_TesterCode
 			//double raw_value = (double)m_Potentiometer.GetAverageValue();
@@ -999,10 +1039,6 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			ContructedName=Prefix,ContructedName+="Pot_Raw";
 			SmartDashboard::PutNumber(ContructedName.c_str(),NormalizedResult);
 			#endif
-
-			//TODO see if this is necessary
-			//Now to convert to the motor gear ratio as this is what we work in
-			//result*=props.ArmToGearRatio;
 		}
 		break;
 	}
