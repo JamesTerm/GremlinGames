@@ -350,10 +350,12 @@ MainRobot = {
 			
 			turret_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			arm_Advance={type="keyboard", key='i', on_off=true},
+			arm_Retract={type="keyboard", key='u', on_off=true},
 			boom_Advance={type="keyboard", key='k', on_off=true},
 			boom_Retract={type="keyboard", key='j', on_off=true},
-			bucket_Advance={type="keyboard", key='l', on_off=true},
-			bucket_Retract={type="keyboard", key=';', on_off=true},
+			bucket_Advance={type="keyboard", key=';', on_off=true},
+			bucket_Retract={type="keyboard", key='l', on_off=true},
 	
 		},
 		
