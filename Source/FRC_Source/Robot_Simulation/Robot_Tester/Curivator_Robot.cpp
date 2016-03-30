@@ -167,7 +167,16 @@ void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 	}
 }
 
-
+  /***********************************************************************************************************************************/
+ /*														Curivator_Robot::BigArm														*/
+/***********************************************************************************************************************************/
+Curivator_Robot::BigArm::BigArm(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control) : Robot_Arm(index,parent,robot_control)
+{
+}
+void Curivator_Robot::BigArm::TimeChange(double dTime_s)
+{
+	__super::TimeChange(dTime_s);
+}
 
   /***********************************************************************************************************************************/
  /*															Curivator_Robot															*/

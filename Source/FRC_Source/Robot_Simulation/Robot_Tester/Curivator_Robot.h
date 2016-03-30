@@ -182,6 +182,18 @@ class Curivator_Robot : public Tank_Robot
 				bool m_Advance, m_Retract;
 		};
 
+		class BigArm : public Robot_Arm
+		{
+			public:
+				BigArm(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control);
+			protected:
+				virtual void TimeChange(double dTime_s);
+			private:
+				#ifndef Robot_TesterCode
+				typedef Robot_Arm __super;
+				#endif
+		};
+
 		const Curivator_Robot_Properties &GetRobotProps() const;
 		Curivator_Robot_Props::Autonomous_Properties &GetAutonProps();
 		//Accessors needed for setting goals
@@ -198,7 +210,7 @@ class Curivator_Robot : public Tank_Robot
 		Curivator_Control_Interface * const m_RobotControl;
 		//TODO derive kinds here
 		Robot_Arm m_Turret;
-		Robot_Arm m_Arm;
+		BigArm m_Arm;
 		Robot_Arm m_Boom;
 		Robot_Arm m_Bucket;
 		Robot_Arm m_Clasp;
