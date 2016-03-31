@@ -170,12 +170,53 @@ void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
   /***********************************************************************************************************************************/
  /*														Curivator_Robot::BigArm														*/
 /***********************************************************************************************************************************/
+//Note: all of these constants are in inches (as they are in the CAD)
+const double BigArm_BigArmRadius=39.77287247;
+const double BigArm_DartLengthAt90=29.72864858;
+const double BigArm_DartToArmDistance=9.0;
+const double BigArm_DistanceFromTipDartToClevis=2.0915;
+const double BigArm_DistanceDartPivotToTip=17.225;
+const double BigArm_ConnectionOffset=5.39557923;
+const double BigArm_DistanceBigArmPivottoDartPivot=26.01076402;
+//or use this
+const double BigArm_AngleToDartPivotInterface=DEG_2_RAD(11.7190273);
+const double BigArm_AngleToDartPivotInterface_Length=26.56448983;
+const double BigArm_DartPerpendicularAngle= 61.03779676;
+
+
 Curivator_Robot::BigArm::BigArm(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control) : Robot_Arm(index,parent,robot_control)
 {
 }
 void Curivator_Robot::BigArm::TimeChange(double dTime_s)
 {
 	__super::TimeChange(dTime_s);
+	//Now to compute where we are based from our length of extension
+	//first start with the extension:
+	const double ShaftExtension_in=GetPos_m();  //expecting a value from 0-12 in inches
+	const double FullActuatorLength=ShaftExtension_in+BigArm_DistanceDartPivotToTip+BigArm_DistanceFromTipDartToClevis;  //from center point to center point
+	//Now that we know all three lengths to the triangle use law of cosines to solve the angle of the linear actuator
+	//http://mathcentral.uregina.ca/QQ/database/QQ.09.07/h/lucy1.html
+	//c2 = a2 + b2 - 2ab cos(C)
+	//c is FullActuatorLength
+	//b is dart distance to arm
+	//a is the AngleToDartPivotInterface_Length
+	//rearranged to solve for cos(C)
+	//x = -1 * ( (c*c - b*b - a*a) / (2*a*b)    )
+	const double cos_FullActuatorLength=-1.0 *
+		(((FullActuatorLength*FullActuatorLength)-
+		(BigArm_DartToArmDistance*BigArm_DartToArmDistance)-
+		(BigArm_AngleToDartPivotInterface_Length*BigArm_AngleToDartPivotInterface_Length))  / 
+		(2 * BigArm_AngleToDartPivotInterface_Length * BigArm_DartToArmDistance));
+	const double BigAngleDartInterface=acos(cos_FullActuatorLength);
+	//SmartDashboard::PutNumber("BigAngleDartInterface",RAD_2_DEG(BigAngleDartInterface));
+	const double BigArmAngle=BigAngleDartInterface-BigArm_AngleToDartPivotInterface;
+	//SmartDashboard::PutNumber("BigAngleAngle",RAD_2_DEG(BigArmAngle));
+	//With this angle we can pull sin and cos for height and outward length using the big arm's radius constant
+	const double BigArmHeight=sin(BigArmAngle) * BigArm_BigArmRadius;
+	//SmartDashboard::PutNumber("BigArmHeight",BigArmHeight);
+	const double BigArmLength=cos(BigArmAngle) * BigArm_BigArmRadius;
+	//SmartDashboard::PutNumber("BigArmLength",BigArmLength);
+	//TODO cache these (once we determine which one's we'll need)
 }
 
   /***********************************************************************************************************************************/
