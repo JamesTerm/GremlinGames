@@ -186,9 +186,30 @@ class Curivator_Robot : public Tank_Robot
 		{
 			public:
 				BigArm(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control);
+				double GetBigArmLength() const;
+				double GetBigArmHeight() const;
+				double GetBigArmAngle() const {return m_BigArmAngle;}
 			protected:
 				virtual void TimeChange(double dTime_s);
 			private:
+				double m_BigArmAngle;
+				#ifndef Robot_TesterCode
+				typedef Robot_Arm __super;
+				#endif
+		};
+
+		class Boom : public Robot_Arm
+		{
+			public:
+				Boom(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, BigArm &bigarm);
+				double GetBoomLength() const;
+				double GetBoomHeight() const;
+				double GetBoomAngle() const {return m_BoomAngle;}
+			protected:
+				virtual void TimeChange(double dTime_s);
+			private:
+				BigArm &m_BigArm;
+				double m_BoomAngle;
 				#ifndef Robot_TesterCode
 				typedef Robot_Arm __super;
 				#endif
@@ -211,7 +232,7 @@ class Curivator_Robot : public Tank_Robot
 		//TODO derive kinds here
 		Robot_Arm m_Turret;
 		BigArm m_Arm;
-		Robot_Arm m_Boom;
+		Boom m_Boom;
 		Robot_Arm m_Bucket;
 		Robot_Arm m_Clasp;
 		Robot_Arm *mp_Arm[5];  //A handy work-around to treat these as an array, by pointing to them

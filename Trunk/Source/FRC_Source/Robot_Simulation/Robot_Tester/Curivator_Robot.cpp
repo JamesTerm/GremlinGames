@@ -209,15 +209,92 @@ void Curivator_Robot::BigArm::TimeChange(double dTime_s)
 		(2 * BigArm_AngleToDartPivotInterface_Length * BigArm_DartToArmDistance));
 	const double BigAngleDartInterface=acos(cos_FullActuatorLength);
 	//SmartDashboard::PutNumber("BigAngleDartInterface",RAD_2_DEG(BigAngleDartInterface));
-	const double BigArmAngle=BigAngleDartInterface-BigArm_AngleToDartPivotInterface;
-	//SmartDashboard::PutNumber("BigAngleAngle",RAD_2_DEG(BigArmAngle));
+	m_BigArmAngle=BigAngleDartInterface-BigArm_AngleToDartPivotInterface;
+	//SmartDashboard::PutNumber("BigAngleAngle",RAD_2_DEG(m_BigArmAngle));
 	//With this angle we can pull sin and cos for height and outward length using the big arm's radius constant
-	const double BigArmHeight=sin(BigArmAngle) * BigArm_BigArmRadius;
-	//SmartDashboard::PutNumber("BigArmHeight",BigArmHeight);
-	const double BigArmLength=cos(BigArmAngle) * BigArm_BigArmRadius;
-	//SmartDashboard::PutNumber("BigArmLength",BigArmLength);
-	//TODO cache these (once we determine which one's we'll need)
 }
+
+double Curivator_Robot::BigArm::GetBigArmLength() const
+{
+	const double BigArmLength=cos(m_BigArmAngle) * BigArm_BigArmRadius;
+	//SmartDashboard::PutNumber("BigArmLength",BigArmLength);
+	return BigArmLength;
+}
+double Curivator_Robot::BigArm::GetBigArmHeight() const
+{
+	const double BigArmHeight=sin(m_BigArmAngle) * BigArm_BigArmRadius;
+	//SmartDashboard::PutNumber("BigArmHeight",BigArmHeight);
+	return BigArmHeight;
+}
+
+
+  /***********************************************************************************************************************************/
+ /*														Curivator_Robot::Boom														*/
+/***********************************************************************************************************************************/
+//Note: all of these constants are in inches (as they are in the CAD)
+const double Boom_BoomRadius=26.03003069;
+const double Boom_DartToArmDistance=18.51956156;
+const double Boom_DistanceFromTipDartToClevis=2.0915;  //Note: these may be different depending on how many turns it took to orient properly
+const double Boom_DistanceDartPivotToTip=11.5;
+//const double Boom_ConnectionOffset=5.39557923;
+//const double Boom_DistanceBoomPivottoDartPivot=26.01076402;
+//or use this
+const double Boom_AngleToDartPivotInterface=DEG_2_RAD(4.83505068);
+const double Boom_AngleToDartPivotInterface_Length=6.87954395;
+const double Boom_AngleBigArmToDartPivot= DEG_2_RAD(36.18122057);
+
+
+Curivator_Robot::Boom::Boom(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, BigArm &bigarm) : Robot_Arm(index,parent,robot_control),
+	m_BigArm(bigarm)
+{
+}
+void Curivator_Robot::Boom::TimeChange(double dTime_s)
+{
+	__super::TimeChange(dTime_s);
+	//Now to compute where we are based from our length of extension
+	//first start with the extension:
+	const double ShaftExtension_in=GetPos_m();  //expecting a value from 0-12 in inches
+	const double FullActuatorLength=ShaftExtension_in+Boom_DistanceDartPivotToTip+Boom_DistanceFromTipDartToClevis;  //from center point to center point
+	//Now that we know all three lengths to the triangle use law of cosines to solve the angle of the linear actuator
+	//http://mathcentral.uregina.ca/QQ/database/QQ.09.07/h/lucy1.html
+	//c2 = a2 + b2 - 2ab cos(C)
+	//c is FullActuatorLength
+	//b is dart distance to arm
+	//a is the AngleToDartPivotInterface_Length
+	//rearranged to solve for cos(C)
+	//x = -1 * ( (c*c - b*b - a*a) / (2*a*b)    )
+	const double cos_FullActuatorLength=-1.0 *
+		(((FullActuatorLength*FullActuatorLength)-
+		(Boom_DartToArmDistance*Boom_DartToArmDistance)-
+		(Boom_AngleToDartPivotInterface_Length*Boom_AngleToDartPivotInterface_Length))  / 
+		(2 * Boom_AngleToDartPivotInterface_Length * Boom_DartToArmDistance));
+	const double BigAngleDartInterface=acos(cos_FullActuatorLength);
+	//SmartDashboard::PutNumber("BoomDartInterface",RAD_2_DEG(BigAngleDartInterface));
+	const double local_BoomAngle=M_PI-BigAngleDartInterface+Boom_AngleToDartPivotInterface;
+	//To convert to global we subtract the sum of both the boom dart to bigarm constant angle and the angle of the big arm... this angle is global from 
+	//a vertical line that aligns with the big arm's pivot point for the boom
+	m_BoomAngle=local_BoomAngle-((PI_2-m_BigArm.GetBigArmAngle())+Boom_AngleBigArmToDartPivot);
+	SmartDashboard::PutNumber("BoomAngle",RAD_2_DEG(m_BoomAngle));
+	//With this angle we can pull sin and cos for height and outward length using the big arm's radius constant
+	GetBoomLength();
+	GetBoomHeight();
+}
+
+double Curivator_Robot::Boom::GetBoomLength() const
+{
+	const double LocalBoomLength=sin(m_BoomAngle) * Boom_BoomRadius;
+	const double BoomLength=LocalBoomLength+m_BigArm.GetBigArmLength();
+	SmartDashboard::PutNumber("BoomLength",BoomLength);
+	return BoomLength;
+}
+double Curivator_Robot::Boom::GetBoomHeight() const
+{
+	const double LocalBoomHeight=cos(m_BoomAngle) * Boom_BoomRadius;
+	const double BoomHeight=m_BigArm.GetBigArmHeight()-LocalBoomHeight;
+	SmartDashboard::PutNumber("BoomHeight",BoomHeight);
+	return BoomHeight;
+}
+
 
   /***********************************************************************************************************************************/
  /*															Curivator_Robot															*/
@@ -231,7 +308,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(eTurret,this,robot_control),m_Arm(eArm,this,robot_control),m_LatencyCounter(0.0),
-		m_Boom(eBoom,this,robot_control),m_Bucket(eBucket,this,robot_control),m_Clasp(eClasp,this,robot_control),
+		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control),m_Clasp(eClasp,this,robot_control),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0)
 {
 	mp_Arm[eTurret]=&m_Turret;
