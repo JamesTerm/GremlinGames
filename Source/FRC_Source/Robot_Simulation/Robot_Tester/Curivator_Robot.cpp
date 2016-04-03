@@ -315,7 +315,8 @@ const double Bucket_CoMtoTip_Angle=DEG_2_RAD(32.1449117);
 const double Bucket_BP_to_BucketTip=13.12746417;
 const double Bucket_BPTip_to_BucketInterface_Angle=DEG_2_RAD(12.4082803);
 const double Bucket_CoM_Radius=5.0;
-Curivator_Robot::Bucket::Bucket(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control) : Robot_Arm(index,parent,robot_control)
+Curivator_Robot::Bucket::Bucket(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Boom &boom) : 
+	Robot_Arm(index,parent,robot_control),m_Boom(boom)
 {
 }
 
@@ -344,12 +345,44 @@ void Curivator_Robot::Bucket::TimeChange(double dTime_s)
 	const double BucketPivotAngle=BucketPivotUpperAngle+BucketPivotLowerAngle;
 	const double BucketCoMPivotAngleHorz=BucketPivotAngle+Bucket_BucketRPtoBucketCoM_Angle-DEG_2_RAD(90) - (DEG_2_RAD(90) - Bucket_HorizontaltoBRP_BP_Angle);
 	//Now to compute the local height... distance from boom origin downward 
-	//start with the constant of the 
-	const double LocalCoMHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz)*Bucket_BP_To_BucketCoM);
-	const double LocalTipHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
-	const double LocalBucketAngle=DEG_2_RAD(180)- (BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle) - Bucket_BPTip_to_BucketInterface_Angle;
-	const double LocalHeight=max(LocalTipHeight,LocalCoMHeight+Bucket_CoM_Radius);
-	const double LocalDistance=Bucket_localConstantBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
+	//start with the constant of the
+	const double Bucket_globalConstantBRP_BP_height=(sin(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP);
+	//Note this first equation omits the boom angle as a reference in a local setting
+	//const double LocalCoMHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz)*Bucket_BP_To_BucketCoM);
+	m_GlobalCoMHeight=Bucket_globalConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz-m_Boom.GetBoomAngle())*Bucket_BP_To_BucketCoM);
+	//Note this first equation omits the boom angle as a reference in a local setting
+	//const double LocalTipHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
+	const double LocalTipHeight=Bucket_globalConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
+	m_GlobalTipHeight=m_Boom.GetBoomHeight()-LocalTipHeight;
+	m_LocalBucketAngle=DEG_2_RAD(180)- (BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle) - Bucket_BPTip_to_BucketInterface_Angle;
+	//const double LocalHeight=max(LocalTipHeight,LocalCoMHeight+Bucket_CoM_Radius);
+	//LocalDistance=Bucket_localConstantBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
+	const double Bucket_globalConstantBRP_BP_distance=cos(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP;
+	m_GlobalDistance=Bucket_globalConstantBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
+	const double globalBucketDistance=GetBucketLength();
+	const double globalTipHeight=GetBucketTipHeight();
+	const double globalRoundEndHeight=GetBucketRoundEndHeight();
+	const double globalBucketAngle_deg=RAD_2_DEG(GetBucketAngle());
+	SmartDashboard::PutNumber("BucketDistance",globalBucketDistance);
+	SmartDashboard::PutNumber("BucketTipHeight",globalTipHeight);
+	SmartDashboard::PutNumber("BucketRoundEndHeight",globalRoundEndHeight);
+	SmartDashboard::PutNumber("BucketAngle",globalBucketAngle_deg);
+}
+
+double Curivator_Robot::Bucket::GetBucketLength() const
+{
+ const double globalBucketDistance=m_GlobalDistance + m_Boom.GetBoomLength();
+ return globalBucketDistance;
+}
+double Curivator_Robot::Bucket::GetBucketRoundEndHeight() const
+{
+	const double globalRoundEndHeight=m_Boom.GetBoomHeight()-(m_GlobalCoMHeight+Bucket_CoM_Radius);
+	return globalRoundEndHeight;
+}
+double Curivator_Robot::Bucket::GetBucketAngle() const
+{
+	const double globalBucketAngle=m_LocalBucketAngle+m_Boom.GetBoomAngle();
+	return globalBucketAngle;
 }
 
   /***********************************************************************************************************************************/
@@ -364,7 +397,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(eTurret,this,robot_control),m_Arm(eArm,this,robot_control),m_LatencyCounter(0.0),
-		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control),m_Clasp(eClasp,this,robot_control),
+		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0)
 {
 	mp_Arm[eTurret]=&m_Turret;
