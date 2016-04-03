@@ -218,10 +218,20 @@ class Curivator_Robot : public Tank_Robot
 		class Bucket : public Robot_Arm
 		{
 			public:
-				Bucket(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control);
+				Bucket(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Boom &boom);
+				double GetBucketLength() const;
+				double GetBucketTipHeight() const {return m_GlobalTipHeight;}
+				double GetBucketRoundEndHeight() const;
+				double GetBucketAngle() const;
 			protected:
 				virtual void TimeChange(double dTime_s);
 			private:
+				Boom &m_Boom;
+				double m_GlobalCoMHeight;
+				double m_GlobalTipHeight;
+				double m_LocalBucketAngle;
+				double m_GlobalDistance;
+
 				#ifndef Robot_TesterCode
 				typedef Robot_Arm __super;
 				#endif
