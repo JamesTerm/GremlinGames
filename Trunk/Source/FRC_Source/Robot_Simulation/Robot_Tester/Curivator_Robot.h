@@ -215,6 +215,18 @@ class Curivator_Robot : public Tank_Robot
 				#endif
 		};
 
+		class Bucket : public Robot_Arm
+		{
+			public:
+				Bucket(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control);
+			protected:
+				virtual void TimeChange(double dTime_s);
+			private:
+				#ifndef Robot_TesterCode
+				typedef Robot_Arm __super;
+				#endif
+		};
+
 		const Curivator_Robot_Properties &GetRobotProps() const;
 		Curivator_Robot_Props::Autonomous_Properties &GetAutonProps();
 		//Accessors needed for setting goals
@@ -233,7 +245,7 @@ class Curivator_Robot : public Tank_Robot
 		Robot_Arm m_Turret;
 		BigArm m_Arm;
 		Boom m_Boom;
-		Robot_Arm m_Bucket;
+		Bucket m_Bucket;
 		Robot_Arm m_Clasp;
 		Robot_Arm *mp_Arm[5];  //A handy work-around to treat these as an array, by pointing to them
 		Curivator_Robot_Properties m_RobotProps;  //saves a copy of all the properties
