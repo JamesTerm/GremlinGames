@@ -640,9 +640,34 @@ void Curivator_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAccelera
 	__super::UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,LockShipHeadingToOrientation,dTime_s);
 }
 
+void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistance,double BucketAngle_deg,double ClaspOpeningAngle,
+										 double &BigArm_ShaftLength,double &Boom_ShaftLength,double &BucketShaftLength,double &ClaspShaftLength)
+{
+	const double BucketAngle=DEG_2_RAD(BucketAngle_deg);
+	//Working in reverse starting with a global environment
+	//First find the bucket pivot point (global coordinates)
+	const double BucketPivotPoint_y=sin(BucketAngle+Bucket_BPTip_to_BucketInterface_Angle)*Bucket_BP_to_BucketTip+GlobalHeight;
+	const double BucketPivotPoint_x=cos(BucketAngle+Bucket_BPTip_to_BucketInterface_Angle)*Bucket_BP_to_BucketTip+GlobalDistance;
+	//with the bucket pivot point we must solve the boom and bigarm where together they are able to provide the pivot point to this location
+	//We can first solve the boom angle... like before this angle is based off of verticle (i.e. 0 is vertical positive outward extended)
+	//since the big arm pivot is the point of origin between this and the bucket pivot point we can compute length of a triangle, where:
+	//point a is origin, point b is bucket pivot point, and c is unknown---
+	//We know the lengths of the bigarm and boom, and with this we can use law of cosines to angle in point c... once this angle is known it is
+	//possible to know the global point of the boom pivot as well as the angle of the big arm. which sets up for solving their linear actuator lengths.
+	int test=0;
+}
+
 #ifdef Robot_TesterCode
 void Curivator_Robot::TestAutonomous()
 {
+	double BigArm_ShaftLength;
+	double Boom_ShaftLength;
+	double BucketShaftLength;
+	double ClaspShaftLength;
+	//In this test... these constants should return half lengths of each actuator
+	ComputeArmPosition(-0.97606122071131374,32.801521314123598,78.070524788111342,13.19097419,
+		BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength);
+	return;
 	Goal *oldgoal=ClearGoal();
 	if (oldgoal)
 		delete oldgoal;
@@ -664,6 +689,7 @@ void Curivator_Robot::GoalComplete()
 	m_controller->GetUIController_RW()->SetAutoPilot(false);
 }
 #endif
+
 
   /***********************************************************************************************************************************/
  /*													Curivator_Robot_Properties														*/
