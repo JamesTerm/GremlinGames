@@ -226,6 +226,7 @@ class Curivator_Robot : public Tank_Robot
 				//Get the global height of the bucket rocker to bucket pivot point (3 inch separate holes rotated globally)
 				double GetBucket_globalBRP_BP_height() const {return m_Bucket_globalBRP_BP_height;}
 				double GetBucket_globalBRP_BP_distance() const {return m_Bucket_globalBRP_BP_distance;}
+				Boom &GetBoom() {return m_Boom;}  //avoid need of clasp having to aggregate a boom member variable
 			protected:
 				virtual void TimeChange(double dTime_s);
 			private:
@@ -247,10 +248,20 @@ class Curivator_Robot : public Tank_Robot
 		{
 			public:
 				Clasp(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Bucket &bucket);
+				double GetClaspLength() const {return m_GlobalMidlineDistance;}
+				double GetClaspMidlineHeight() const {return m_GlobalMidlineHeight;}
+				double GetMinHeight() const;
+				double GetClaspAngle() const {return m_GlobalClaspAngle;}
+				double GetInnerTipHieght() const;  //tip closest to bucket
+				double GetOuterTipHieght() const;  //tip furthest from bucket
 			protected:
 				virtual void TimeChange(double dTime_s);
 			private:
 				Bucket &m_Bucket;
+				double m_GlobalMidlineHeight;
+				double m_GlobalMidlineDistance;
+				double m_GlobalClaspAngle;
+				double m_Clasp_MidlineToEdge_Angle_Horizontal;
 		};
 
 		const Curivator_Robot_Properties &GetRobotProps() const;

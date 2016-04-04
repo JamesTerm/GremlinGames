@@ -344,21 +344,21 @@ void Curivator_Robot::Bucket::TimeChange(double dTime_s)
 	const double BucketPivotLowerAngle=LawOfCosines(Bucket_BP_To_BucketRP,QuadBisectLength,Bucket_RockerBucketLength);
 	const double BucketPivotAngle=BucketPivotUpperAngle+BucketPivotLowerAngle;
 	const double BucketCoMPivotAngleHorz=BucketPivotAngle+Bucket_BucketRPtoBucketCoM_Angle-DEG_2_RAD(90) - (DEG_2_RAD(90) - Bucket_HorizontaltoBRP_BP_Angle);
+	const double BoomAngle=m_Boom.GetBoomAngle();
 	//Now to compute the local height... distance from boom origin downward 
-	//start with the constant of the
-	m_Bucket_globalBRP_BP_height=(sin(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP);
+	m_Bucket_globalBRP_BP_height=(sin(Bucket_HorizontaltoBRP_BP_Angle-BoomAngle) * Bucket_BRP_To_BP);
 	//Note this first equation omits the boom angle as a reference in a local setting
 	//const double LocalCoMHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz)*Bucket_BP_To_BucketCoM);
-	m_GlobalCoMHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz-m_Boom.GetBoomAngle())*Bucket_BP_To_BucketCoM);
+	m_GlobalCoMHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz-BoomAngle)*Bucket_BP_To_BucketCoM);
 	//Note this first equation omits the boom angle as a reference in a local setting
 	//const double LocalTipHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
-	const double LocalTipHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
+	const double LocalTipHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-BoomAngle)*Bucket_BP_to_BucketTip);
 	m_GlobalTipHeight=m_Boom.GetBoomHeight()-LocalTipHeight;
 	m_LocalBucketAngle=DEG_2_RAD(180)- (BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle) - Bucket_BPTip_to_BucketInterface_Angle;
 	//const double LocalHeight=max(LocalTipHeight,LocalCoMHeight+Bucket_CoM_Radius);
 	//LocalDistance=Bucket_localConstantBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
-	m_Bucket_globalBRP_BP_distance=cos(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP;
-	m_GlobalDistance=m_Bucket_globalBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
+	m_Bucket_globalBRP_BP_distance=cos(Bucket_HorizontaltoBRP_BP_Angle-BoomAngle) * Bucket_BRP_To_BP;
+	m_GlobalDistance=m_Bucket_globalBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-BoomAngle)*Bucket_BP_to_BucketTip);
 	const double globalBucketDistance=GetBucketLength();
 	const double globalTipHeight=GetBucketTipHeight();
 	const double globalRoundEndHeight=GetBucketRoundEndHeight();
@@ -399,7 +399,8 @@ const double Clasp_MidlineSegment=10.31720455;
 const double Clasp_LA_Interface_to_Midline_Angle=DEG_2_RAD(125.84975925);
 const double Clasp_MidlineToEdge_Angle=DEG_2_RAD(101.61480361);
 const double Clasp_BottomToSideAngle=DEG_2_RAD(98.23909595);
-
+const double Clasp_BottomEdgeLength=1.507182;  //used to find lowest point
+const double Clasp_BottomEdgeLength_Half=Clasp_BottomEdgeLength/2.0;  //spare this computation
 Curivator_Robot::Clasp::Clasp(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Bucket &bucket) : 
 Robot_Arm(index,parent,robot_control),m_Bucket(bucket)
 {
@@ -420,25 +421,53 @@ void Curivator_Robot::Clasp::TimeChange(double dTime_s)
 	const double ClaspLA_Interface_Angle=LawOfCosines(Clasp_BRP_To_LAC,Clasp_CP_To_LAC,FullActuatorLength);
 	const double ClaspLA_Interface_Angle_Horizontal=(DEG_2_RAD(90)-(ClaspLA_Interface_Angle+Clasp_BoomAngleToLAC_Angle));
 	const double Clasp_MidlineSegment_Angle=Clasp_LA_Interface_to_Midline_Angle+ClaspLA_Interface_Angle_Horizontal; //angle from horizontal
+	//----------------
+	const Boom &boom=m_Bucket.GetBoom();
+	const double BoomAngle=boom.GetBoomAngle();
+	//const double BoomAngle=0.0; local testing
 	//Next to find the height and length... start with Clasp pivot... then add the clasp interface with midline segment
 	//use for local testing
 	//const double ClaspPivotHeight=Bucket_localConstantBRP_BP_height;
-	const double ClaspPivotHeight=Bucket_localConstantBRP_BP_height;
-	const double Clasp_CP_To_LAC_Height=sin(ClaspLA_Interface_Angle_Horizontal)*Clasp_CP_To_LAC;
-	const double Clasp_MidlineSegment_Height=sin(Clasp_MidlineSegment_Angle)*Clasp_MidlineSegment;
-	const double localClasp_MidlineHeight=ClaspPivotHeight+Clasp_CP_To_LAC_Height+Clasp_MidlineSegment_Height;
+	const double ClaspPivotHeight=m_Bucket.GetBucket_globalBRP_BP_height();
+	const double Clasp_CP_To_LAC_Height=sin(ClaspLA_Interface_Angle_Horizontal-BoomAngle)*Clasp_CP_To_LAC;
+	const double Clasp_MidlineSegment_Height=sin(Clasp_MidlineSegment_Angle-BoomAngle)*Clasp_MidlineSegment;
+	const double localClasp_MidlineHeight=ClaspPivotHeight-Clasp_CP_To_LAC_Height+Clasp_MidlineSegment_Height;
+	m_GlobalMidlineHeight=boom.GetBoomHeight()-localClasp_MidlineHeight;
 	//for length (aka horizontal distance) use the similar technique as with height
-	const double ClaspPivotDistance=Bucket_localConstantBRP_BP_distance;
-	const double Clasp_CP_To_LAC_Distance=cos(ClaspLA_Interface_Angle_Horizontal)*Clasp_CP_To_LAC;
-	const double Clasp_MidlineSegment_Distance=cos(Clasp_MidlineSegment_Angle)*Clasp_MidlineSegment;
+	//use for local testing
+	//const double ClaspPivotDistance=Bucket_localConstantBRP_BP_distance;
+	const double ClaspPivotDistance=m_Bucket.GetBucket_globalBRP_BP_distance();
+	const double Clasp_CP_To_LAC_Distance=cos(ClaspLA_Interface_Angle_Horizontal-BoomAngle)*Clasp_CP_To_LAC;
+	const double Clasp_MidlineSegment_Distance=cos(Clasp_MidlineSegment_Angle-BoomAngle)*Clasp_MidlineSegment;
 	const double localClasp_MidlineDistance=ClaspPivotDistance-Clasp_CP_To_LAC_Distance+Clasp_MidlineSegment_Distance;
+	m_GlobalMidlineDistance=boom.GetBoomLength()+localClasp_MidlineDistance;
 	//Now to solve the angle of the side
-	const double Clasp_MidlineToEdge_Angle_Horizontal=Clasp_MidlineSegment_Angle-(DEG_2_RAD(180)-Clasp_MidlineToEdge_Angle);
-	const double localSideFromHorizontal_Angle=DEG_2_RAD(180)-(Clasp_MidlineToEdge_Angle_Horizontal+Clasp_BottomToSideAngle);
-	const int x=8;
-
+	m_Clasp_MidlineToEdge_Angle_Horizontal=Clasp_MidlineSegment_Angle-(DEG_2_RAD(180)-Clasp_MidlineToEdge_Angle);
+	const double localSideFromHorizontal_Angle=DEG_2_RAD(180)-(m_Clasp_MidlineToEdge_Angle_Horizontal+Clasp_BottomToSideAngle);
+	m_GlobalClaspAngle=localSideFromHorizontal_Angle+boom.GetBoomAngle();
+	GetMinHeight();
 }
 
+double Curivator_Robot::Clasp::GetInnerTipHieght() const
+{
+	const Boom &boom=m_Bucket.GetBoom();
+	const double BoomAngle=boom.GetBoomAngle();
+	const double InnerTipHieght=(m_GlobalMidlineHeight-(sin(m_Clasp_MidlineToEdge_Angle_Horizontal-BoomAngle)*Clasp_BottomEdgeLength_Half));
+	return InnerTipHieght;
+}
+double Curivator_Robot::Clasp::GetOuterTipHieght() const
+{
+	const Boom &boom=m_Bucket.GetBoom();
+	const double BoomAngle=boom.GetBoomAngle();
+	const double OuterTipHieght=sin(m_Clasp_MidlineToEdge_Angle_Horizontal-BoomAngle)*Clasp_BottomEdgeLength_Half+m_GlobalMidlineHeight;
+	return OuterTipHieght;
+}
+
+double Curivator_Robot::Clasp::GetMinHeight() const
+{
+	const double minHeight=std::min(GetInnerTipHieght(),GetOuterTipHieght());
+	return minHeight;
+}
   /***********************************************************************************************************************************/
  /*															Curivator_Robot															*/
 /***********************************************************************************************************************************/
