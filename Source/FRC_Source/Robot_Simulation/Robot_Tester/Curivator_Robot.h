@@ -223,6 +223,9 @@ class Curivator_Robot : public Tank_Robot
 				double GetBucketTipHeight() const {return m_GlobalTipHeight;}
 				double GetBucketRoundEndHeight() const;
 				double GetBucketAngle() const;
+				//Get the global height of the bucket rocker to bucket pivot point (3 inch separate holes rotated globally)
+				double GetBucket_globalBRP_BP_height() const {return m_Bucket_globalBRP_BP_height;}
+				double GetBucket_globalBRP_BP_distance() const {return m_Bucket_globalBRP_BP_distance;}
 			protected:
 				virtual void TimeChange(double dTime_s);
 			private:
@@ -232,9 +235,22 @@ class Curivator_Robot : public Tank_Robot
 				double m_LocalBucketAngle;
 				double m_GlobalDistance;
 
+				//clasp uses these as well
+				double m_Bucket_globalBRP_BP_height;
+				double m_Bucket_globalBRP_BP_distance;
 				#ifndef Robot_TesterCode
 				typedef Robot_Arm __super;
 				#endif
+		};
+
+		class Clasp : public Robot_Arm
+		{
+			public:
+				Clasp(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Bucket &bucket);
+			protected:
+				virtual void TimeChange(double dTime_s);
+			private:
+				Bucket &m_Bucket;
 		};
 
 		const Curivator_Robot_Properties &GetRobotProps() const;
@@ -256,7 +272,7 @@ class Curivator_Robot : public Tank_Robot
 		BigArm m_Arm;
 		Boom m_Boom;
 		Bucket m_Bucket;
-		Robot_Arm m_Clasp;
+		Clasp m_Clasp;
 		Robot_Arm *mp_Arm[5];  //A handy work-around to treat these as an array, by pointing to them
 		Curivator_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		double m_LatencyCounter;

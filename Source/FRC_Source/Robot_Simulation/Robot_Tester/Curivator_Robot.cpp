@@ -346,19 +346,19 @@ void Curivator_Robot::Bucket::TimeChange(double dTime_s)
 	const double BucketCoMPivotAngleHorz=BucketPivotAngle+Bucket_BucketRPtoBucketCoM_Angle-DEG_2_RAD(90) - (DEG_2_RAD(90) - Bucket_HorizontaltoBRP_BP_Angle);
 	//Now to compute the local height... distance from boom origin downward 
 	//start with the constant of the
-	const double Bucket_globalConstantBRP_BP_height=(sin(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP);
+	m_Bucket_globalBRP_BP_height=(sin(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP);
 	//Note this first equation omits the boom angle as a reference in a local setting
 	//const double LocalCoMHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz)*Bucket_BP_To_BucketCoM);
-	m_GlobalCoMHeight=Bucket_globalConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz-m_Boom.GetBoomAngle())*Bucket_BP_To_BucketCoM);
+	m_GlobalCoMHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz-m_Boom.GetBoomAngle())*Bucket_BP_To_BucketCoM);
 	//Note this first equation omits the boom angle as a reference in a local setting
 	//const double LocalTipHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
-	const double LocalTipHeight=Bucket_globalConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
+	const double LocalTipHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
 	m_GlobalTipHeight=m_Boom.GetBoomHeight()-LocalTipHeight;
 	m_LocalBucketAngle=DEG_2_RAD(180)- (BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle) - Bucket_BPTip_to_BucketInterface_Angle;
 	//const double LocalHeight=max(LocalTipHeight,LocalCoMHeight+Bucket_CoM_Radius);
 	//LocalDistance=Bucket_localConstantBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
-	const double Bucket_globalConstantBRP_BP_distance=cos(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP;
-	m_GlobalDistance=Bucket_globalConstantBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
+	m_Bucket_globalBRP_BP_distance=cos(Bucket_HorizontaltoBRP_BP_Angle-m_Boom.GetBoomAngle()) * Bucket_BRP_To_BP;
+	m_GlobalDistance=m_Bucket_globalBRP_BP_distance+(cos(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-m_Boom.GetBoomAngle())*Bucket_BP_to_BucketTip);
 	const double globalBucketDistance=GetBucketLength();
 	const double globalTipHeight=GetBucketTipHeight();
 	const double globalRoundEndHeight=GetBucketRoundEndHeight();
@@ -386,6 +386,60 @@ double Curivator_Robot::Bucket::GetBucketAngle() const
 }
 
   /***********************************************************************************************************************************/
+ /*														Curivator_Robot::Clasp														*/
+/***********************************************************************************************************************************/
+// BRP=boom rocker pivot  (this is our point of origin)
+// LAC=linear actuator for clasp
+// CP=Clasp Pivot  (same hole used for bucket pivot)
+const double Clasp_BRP_To_LAC=10.97993151;
+const double Clasp_LAC_houseingLength=7.4;
+const double Clasp_CP_To_LAC=3.11799058;
+const double Clasp_BoomAngleToLAC_Angle=DEG_2_RAD(9.58288198);
+const double Clasp_MidlineSegment=10.31720455;
+const double Clasp_LA_Interface_to_Midline_Angle=DEG_2_RAD(125.84975925);
+const double Clasp_MidlineToEdge_Angle=DEG_2_RAD(101.61480361);
+const double Clasp_BottomToSideAngle=DEG_2_RAD(98.23909595);
+
+Curivator_Robot::Clasp::Clasp(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Bucket &bucket) : 
+Robot_Arm(index,parent,robot_control),m_Bucket(bucket)
+{
+}
+
+void Curivator_Robot::Clasp::TimeChange(double dTime_s)
+{
+	__super::TimeChange(dTime_s);
+	//Now to compute where we are based from our length of extension
+	//first start with the extension:
+	const double ShaftExtension_in=GetPos_m();  //expecting a value from 0-12 in inches
+	//Note: unlike the dart... we just include the clevis as part of the shaft extension
+	const double FullActuatorLength=ShaftExtension_in+Clasp_LAC_houseingLength;  //from center point to center point
+	//Now that we know all three lengths to the triangle use law of cosines to solve the angle of the linear actuator
+	//c is FullActuatorLength
+	//b is rocker boom length
+	//a is boom rocker pivot to linear actuator mount length
+	const double ClaspLA_Interface_Angle=LawOfCosines(Clasp_BRP_To_LAC,Clasp_CP_To_LAC,FullActuatorLength);
+	const double ClaspLA_Interface_Angle_Horizontal=(DEG_2_RAD(90)-(ClaspLA_Interface_Angle+Clasp_BoomAngleToLAC_Angle));
+	const double Clasp_MidlineSegment_Angle=Clasp_LA_Interface_to_Midline_Angle+ClaspLA_Interface_Angle_Horizontal; //angle from horizontal
+	//Next to find the height and length... start with Clasp pivot... then add the clasp interface with midline segment
+	//use for local testing
+	//const double ClaspPivotHeight=Bucket_localConstantBRP_BP_height;
+	const double ClaspPivotHeight=Bucket_localConstantBRP_BP_height;
+	const double Clasp_CP_To_LAC_Height=sin(ClaspLA_Interface_Angle_Horizontal)*Clasp_CP_To_LAC;
+	const double Clasp_MidlineSegment_Height=sin(Clasp_MidlineSegment_Angle)*Clasp_MidlineSegment;
+	const double localClasp_MidlineHeight=ClaspPivotHeight+Clasp_CP_To_LAC_Height+Clasp_MidlineSegment_Height;
+	//for length (aka horizontal distance) use the similar technique as with height
+	const double ClaspPivotDistance=Bucket_localConstantBRP_BP_distance;
+	const double Clasp_CP_To_LAC_Distance=cos(ClaspLA_Interface_Angle_Horizontal)*Clasp_CP_To_LAC;
+	const double Clasp_MidlineSegment_Distance=cos(Clasp_MidlineSegment_Angle)*Clasp_MidlineSegment;
+	const double localClasp_MidlineDistance=ClaspPivotDistance-Clasp_CP_To_LAC_Distance+Clasp_MidlineSegment_Distance;
+	//Now to solve the angle of the side
+	const double Clasp_MidlineToEdge_Angle_Horizontal=Clasp_MidlineSegment_Angle-(DEG_2_RAD(180)-Clasp_MidlineToEdge_Angle);
+	const double localSideFromHorizontal_Angle=DEG_2_RAD(180)-(Clasp_MidlineToEdge_Angle_Horizontal+Clasp_BottomToSideAngle);
+	const int x=8;
+
+}
+
+  /***********************************************************************************************************************************/
  /*															Curivator_Robot															*/
 /***********************************************************************************************************************************/
 
@@ -397,7 +451,7 @@ const double c_HalfCourtWidth=c_CourtWidth/2.0;
 Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Interface *robot_control,bool IsAutonomous) : 
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 		m_Turret(eTurret,this,robot_control),m_Arm(eArm,this,robot_control),m_LatencyCounter(0.0),
-		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control),
+		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control,m_Bucket),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0)
 {
 	mp_Arm[eTurret]=&m_Turret;
