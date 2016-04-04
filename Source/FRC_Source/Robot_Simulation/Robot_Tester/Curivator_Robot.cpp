@@ -239,7 +239,7 @@ double Curivator_Robot::BigArm::GetBigArmHeight() const
  /*														Curivator_Robot::Boom														*/
 /***********************************************************************************************************************************/
 //Note: all of these constants are in inches (as they are in the CAD)
-const double Boom_BoomRadius=26.03003069;
+const double Boom_BoomRadius=23.03394231;  //Note to the boom rocker hole (not the bucket pivot hole as there was some design conflict)
 const double Boom_DartToArmDistance=18.51956156;
 const double Boom_DistanceFromTipDartToClevis=2.0915;  //Note: these may be different depending on how many turns it took to orient properly
 const double Boom_DistanceDartPivotToTip=11.5;
@@ -301,7 +301,7 @@ double Curivator_Robot::Boom::GetBoomHeight() const
 const double Bucket_BRP_To_LAB=17.2528303;
 const double Bucket_LAB_houseingLength=12.4;
 const double Bucket_RockerBoomLength=6.49874999;
-const double Bucket_BRP_LABtoBRP_BP_Angle=DEG_2_RAD(166.82191288);
+const double Bucket_BRP_LABtoBRP_BP_Angle=DEG_2_RAD(175.01);
 const double Bucket_BRP_To_BP=3.0;
 const double Bucket_BP_To_BucketRP=7.79685753;
 const double Bucket_RockerBucketLength=7.3799994;
