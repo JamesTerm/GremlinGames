@@ -274,7 +274,7 @@ class Curivator_Robot : public Tank_Robot
 		/// \param GlobalDistance from origin to tip of bucket (always positive)
 		/// \param BucketAngle  From buckets edge of intake to horizontal plane (e.g. floor)
 		/// \param ClaspOpenAngle angle between bucket edge and clasp edge... 0 is not quite shut so using negative (e.g. -7 degrees) 
-		void ComputeArmPosition(double GlobalHeight,double GlobalDistance,double BucketAngle_deg,double ClaspOpeningAngle,
+		void ComputeArmPosition(double GlobalHeight,double GlobalDistance,double BucketAngle_deg,double ClaspOpeningAngle_deg,
 			double &BigArm_ShaftLength,double &Boom_ShaftLength,double &BucketShaftLength,double &ClaspShaftLength);
 	protected:
 		virtual void BindAdditionalEventControls(bool Bind);

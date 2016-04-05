@@ -395,6 +395,7 @@ double Curivator_Robot::Bucket::GetBucketAngle() const
 // BRP=boom rocker pivot  (this is our point of origin)
 // LAC=linear actuator for clasp
 // CP=Clasp Pivot  (same hole used for bucket pivot)
+// CPMT= segment from clasp pivot to midline tip
 const double Clasp_BRP_To_LAC=10.97993151;
 const double Clasp_LAC_houseingLength=7.4;
 const double Clasp_CP_To_LAC=3.11799058;
@@ -405,6 +406,9 @@ const double Clasp_MidlineToEdge_Angle=DEG_2_RAD(101.61480361);
 const double Clasp_BottomToSideAngle=DEG_2_RAD(98.23909595);
 const double Clasp_BottomEdgeLength=1.507182;  //used to find lowest point
 const double Clasp_BottomEdgeLength_Half=Clasp_BottomEdgeLength/2.0;  //spare this computation
+const double Clasp_CP_To_MidlineTip=12.40350045; //used in ComputeArmPosition for length
+const double Clasp_CPMT_ToSide_Angle=DEG_2_RAD(8.09713426);
+const double Clasp_MidLineToEdge_Angle=Clasp_MidlineToEdge_Angle+Clasp_BottomToSideAngle-DEG_2_RAD(180);  //about 19.85
 Curivator_Robot::Clasp::Clasp(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Bucket &bucket) : 
 Robot_Arm(index,parent,robot_control),m_Bucket(bucket)
 {
@@ -652,7 +656,7 @@ __inline double GetDistance(double x1,double y1, double x2, double y2)
 	return hypotenuse;
 }
 
-void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistance,double BucketAngle_deg,double ClaspOpeningAngle,
+void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistance,double BucketAngle_deg,double ClaspOpeningAngle_deg,
 										 double &BigArm_ShaftLength,double &Boom_ShaftLength,double &BucketShaftLength,double &ClaspShaftLength)
 {
 	const double BucketAngle=DEG_2_RAD(BucketAngle_deg);
@@ -728,10 +732,28 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	const double BoomLAMount_y=cos(VerticleToLAB_Angle)*Bucket_BRP_To_LAB+RockerBoomPivotPoint_y;
 	const double BoomLAMount_x=RockerBoomPivotPoint_x-(sin(VerticleToLAB_Angle)*Bucket_BRP_To_LAB);
 	//use distance formula between the LA mount and the Rocker pivot
-	const double LA_Length=GetDistance(BoomLAMount_x,BoomLAMount_y,RockerPivotLAInterface_x,RockerPivotLAInterface_y);
+	const double Bucket_LA_Length=GetDistance(BoomLAMount_x,BoomLAMount_y,RockerPivotLAInterface_x,RockerPivotLAInterface_y);
 	//Yay got the bucket actuators length...
-	BucketShaftLength=LA_Length-Bucket_LAB_houseingLength;
-	int test=0;
+	BucketShaftLength=Bucket_LA_Length-Bucket_LAB_houseingLength;
+	//Now onto the clasp
+	//Find the midline tip point global location by use of the CPMT segment
+	double ClaspOpeningAngle=DEG_2_RAD(ClaspOpeningAngle_deg);
+	const double CPMT_ToHorizontal=BucketAngle-(ClaspOpeningAngle-Clasp_CPMT_ToSide_Angle);
+	const double MidlineTip_y=BucketPivotPoint_y-sin(CPMT_ToHorizontal)*Clasp_CP_To_MidlineTip;
+	const double MidlineTip_x=BucketPivotPoint_x-cos(CPMT_ToHorizontal)*Clasp_CP_To_MidlineTip;
+	//Compute the midline angle to horizontal
+	const double MidlineToHorizontal=Clasp_MidLineToEdge_Angle+BucketAngle-ClaspOpeningAngle;
+	//with the mid line tip offset and the midline angle we can find LA interface point
+	const double ClaspLAInterface_y=sin(MidlineToHorizontal)*Clasp_MidlineSegment+MidlineTip_y;
+	const double ClaspLAInterface_x=cos(MidlineToHorizontal)*Clasp_MidlineSegment+MidlineTip_x;
+	//Now to find the LA clasp mount point
+	const double LAMountVertical_Angle=BoomAngle+Clasp_BoomAngleToLAC_Angle;
+	const double LAClaspMount_y=cos(LAMountVertical_Angle)*Clasp_BRP_To_LAC+BucketPivotPoint_y;
+	const double LAClaspMount_x=BucketPivotPoint_x-sin(LAMountVertical_Angle)*Clasp_BRP_To_LAC;
+	//with out 2 point find the distance
+	const double Clasp_LA_Length=GetDistance(LAClaspMount_x,LAClaspMount_y,ClaspLAInterface_x,ClaspLAInterface_y);
+	//Yay got the clasp actuators length...
+	ClaspShaftLength=Clasp_LA_Length-Clasp_LAC_houseingLength;
 }
 
 #ifdef Robot_TesterCode
