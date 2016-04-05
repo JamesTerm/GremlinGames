@@ -240,6 +240,9 @@ double Curivator_Robot::BigArm::GetBigArmHeight() const
 /***********************************************************************************************************************************/
 //Note: all of these constants are in inches (as they are in the CAD)
 const double Boom_BoomRadius=23.03394231;  //Note to the boom rocker hole (not the bucket pivot hole as there was some design conflict)
+const double Boom_BoomRadius_BP=26.03003642;  //The length to the bucket pivot point, almost 3 inches more... but a slight angle change to make it less
+const double Boom_BP_To_RBP_RadiusAngle=DEG_2_RAD(0.35809296);  //The slight angle change... where the BP segment is the more acute angle to the big arm
+const double Boom_BP_To_Lever_angle=DEG_2_RAD(175.16494932);
 const double Boom_DartToArmDistance=18.51956156;
 const double Boom_DistanceFromTipDartToClevis=2.0915;  //Note: these may be different depending on how many turns it took to orient properly
 const double Boom_DistanceDartPivotToTip=11.5;
@@ -654,6 +657,45 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	//point a is origin, point b is bucket pivot point, and c is unknown---
 	//We know the lengths of the bigarm and boom, and with this we can use law of cosines to angle in point c... once this angle is known it is
 	//possible to know the global point of the boom pivot as well as the angle of the big arm. which sets up for solving their linear actuator lengths.
+	//--------------------------------
+	//Compute ab segment
+	const double OriginToBP=sqrt((BucketPivotPoint_x*BucketPivotPoint_x)+(BucketPivotPoint_y*BucketPivotPoint_y));
+	//Now to define where the boom bigarm point exists... by simply first finding the bigarm angle first start with another law of cosines
+	const double BigArmUpper_Angle=LawOfCosines(BigArm_BigArmRadius,OriginToBP,Boom_BoomRadius_BP);
+	const double BigArmLower_Angle=atan2(BucketPivotPoint_y,BucketPivotPoint_x);
+	const double BigArmAngle=BigArmUpper_Angle+BigArmLower_Angle;
+	const double BigArmBoomPivot_height=sin(BigArmAngle)*BigArm_BigArmRadius;
+	const double BigArmBoomPivot_length=cos(BigArmAngle)*BigArm_BigArmRadius;
+	//Now that we know this point... we can find the boom angle from verticle using law of cosines from the big arm angle
+	const double BigArmBoomBP_Angle=LawOfCosines(Boom_BoomRadius_BP,BigArm_BigArmRadius,OriginToBP);
+	const double BoomAngle=BigArmBoomBP_Angle-(DEG_2_RAD(90)-BigArmAngle)+Boom_BP_To_RBP_RadiusAngle;
+	//At this point... I'll work my way from bigarm to bucket
+	//For the bigarm we have an angle... first determine where the linear actuators interface point is located
+	const double BigArmLAInteface_height=sin(BigArmAngle+BigArm_AngleToDartPivotInterface)*BigArm_AngleToDartPivotInterface_Length;
+	const double BigArmLAInteface_length=cos(BigArmAngle+BigArm_AngleToDartPivotInterface)*BigArm_AngleToDartPivotInterface_Length;
+	const double BigArm_LA_Length_xLeg=fabs(BigArmLAInteface_length-BigArm_DartToArmDistance);
+	const double BigArm_LA_Length=sqrt((BigArm_LA_Length_xLeg*BigArm_LA_Length_xLeg)+(BigArmLAInteface_height*BigArmLAInteface_height));
+	//Yay got the big arm actuators length...
+	BigArm_ShaftLength=BigArm_LA_Length-BigArm_DistanceDartPivotToTip-Boom_DistanceFromTipDartToClevis;
+	//next time to get the boom actuator length
+	//First find point where boom interface is located
+	const double BoomLeverAngle=BoomAngle+Boom_BP_To_Lever_angle-DEG_2_RAD(180);
+	const double BoomLAInteface_height=cos(BoomLeverAngle)*Boom_AngleToDartPivotInterface_Length;
+	const double BoomLAInteface_length=sin(BoomLeverAngle)*Boom_AngleToDartPivotInterface_Length;
+	//unlike with the big arm... we'll have to find the lower point and use a full-blown distance formula
+	//next find the big arm's mounting point for the end of the boom dart's actuator
+	const double BoomLA_Mount_Angle=(DEG_2_RAD(90)-BigArmAngle)+Boom_AngleBigArmToDartPivot;
+	const double BoomLA_Mount_height=cos(BoomLA_Mount_Angle)*Boom_DartToArmDistance;
+	const double BoomLA_Mount_length=sin(BoomLA_Mount_Angle)*Boom_DartToArmDistance;
+	const double Boom_LA_Length_xLeg=fabs(BoomLAInteface_length-BoomLA_Mount_length);
+	const double Boom_LA_Length_yLeg=fabs(BoomLAInteface_height+BoomLA_Mount_height);  //added because they are going in different directions
+	const double Boom_LA_Length=sqrt((Boom_LA_Length_xLeg*Boom_LA_Length_xLeg)+(Boom_LA_Length_yLeg*Boom_LA_Length_yLeg));
+	//Yay got the boom actuators length...
+	Boom_ShaftLength=Boom_LA_Length-Boom_DistanceDartPivotToTip-Boom_DistanceFromTipDartToClevis;
+	//now onto the bucket... first locate rocker boom's point
+	const double BucketRBP_Angle=(DEG_2_RAD(180)-Bucket_BRP_LABtoBRP_BP_Angle)+(BoomAngle-Bucket_BoomAngleToLAB_Angle);
+	const double RockerBoomPivotPoint_y=cos(BucketRBP_Angle)*Bucket_BRP_To_BP+BucketPivotPoint_y;
+	const double RockerBoomPivotPoint_x=BucketPivotPoint_x-sin(BucketRBP_Angle)*Bucket_BRP_To_BP;
 	int test=0;
 }
 
