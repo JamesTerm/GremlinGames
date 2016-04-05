@@ -662,7 +662,12 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	const double BucketAngle=DEG_2_RAD(BucketAngle_deg);
 	//Working in reverse starting with a global environment
 	//First find the bucket pivot point (global coordinates)
-	const double BucketPivotPoint_y=sin(BucketAngle+Bucket_BPTip_to_BucketInterface_Angle)*Bucket_BP_to_BucketTip+GlobalHeight;
+	const double BucketPivotUsingTip_y=sin(BucketAngle+Bucket_BPTip_to_BucketInterface_Angle)*Bucket_BP_to_BucketTip+GlobalHeight;
+
+	const double BucketCOMtoVerticle_Angle=(BucketAngle+Bucket_BPTip_to_BucketInterface_Angle-DEG_2_RAD(90)) + Bucket_CoMtoTip_Angle;
+	const double BucketPivotUsingCOM_y=cos(BucketCOMtoVerticle_Angle)*Bucket_BP_To_BucketCoM+GlobalHeight+Bucket_CoM_Radius;
+	//Which ever is higher will be the one to use to ensure lowest point meets height requirements
+	const double BucketPivotPoint_y=max(BucketPivotUsingTip_y,BucketPivotUsingCOM_y);
 	const double BucketPivotPoint_x=cos(BucketAngle+Bucket_BPTip_to_BucketInterface_Angle)*Bucket_BP_to_BucketTip+GlobalDistance;
 	//with the bucket pivot point we must solve the boom and bigarm where together they are able to provide the pivot point to this location
 	//We can first solve the boom angle... like before this angle is based off of verticle (i.e. 0 is vertical positive outward extended)

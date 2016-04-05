@@ -271,6 +271,8 @@ class Curivator_Robot : public Tank_Robot
 		///Probably one of the most important computations... given a desired position and angle of the bucket, will provide the computations
 		///for each linear actuator.  Note the following is based from the point of origin which is where the big arm pivots.
 		/// \param GlobalHeight height positive number is above origin... negative is below (down)
+		/// \note The height is based from the lowest point of bucket... whether it is the tip or the round end... if necessary
+		/// we can have more control over which to use.
 		/// \param GlobalDistance from origin to tip of bucket (always positive)
 		/// \param BucketAngle  From buckets edge of intake to horizontal plane (e.g. floor)
 		/// \param ClaspOpenAngle angle between bucket edge and clasp edge... 0 is not quite shut so using negative (e.g. -7 degrees) 
