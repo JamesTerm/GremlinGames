@@ -315,6 +315,7 @@ const double Bucket_BucketRPtoBucketCoM_Angle=DEG_2_RAD(46.01897815);
 const double Bucket_localConstantBRP_BP_height=sin(Bucket_HorizontaltoBRP_BP_Angle) * Bucket_BRP_To_BP;
 const double Bucket_localConstantBRP_BP_distance=cos(Bucket_HorizontaltoBRP_BP_Angle) * Bucket_BRP_To_BP;
 const double Bucket_CoMtoTip_Angle=DEG_2_RAD(32.1449117);
+const double Bucket_BPBT_ToBucketRP_Angle=Bucket_CoMtoTip_Angle+Bucket_BucketRPtoBucketCoM_Angle;  //save an add
 const double Bucket_BP_to_BucketTip=13.12746417;
 const double Bucket_BPTip_to_BucketInterface_Angle=DEG_2_RAD(12.4082803);
 const double Bucket_CoM_Radius=5.0;
@@ -643,6 +644,14 @@ void Curivator_Robot::UpdateController(double &AuxVelocity,Vec2D &LinearAccelera
 	__super::UpdateController(AuxVelocity,LinearAcceleration,AngularAcceleration,LockShipHeadingToOrientation,dTime_s);
 }
 
+__inline double GetDistance(double x1,double y1, double x2, double y2)
+{
+	const double x=fabs(x2-x1);
+	const double y=fabs(y2-y1);
+	const double hypotenuse=sqrt((x*x)+(y*y));
+	return hypotenuse;
+}
+
 void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistance,double BucketAngle_deg,double ClaspOpeningAngle,
 										 double &BigArm_ShaftLength,double &Boom_ShaftLength,double &BucketShaftLength,double &ClaspShaftLength)
 {
@@ -696,6 +705,32 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	const double BucketRBP_Angle=(DEG_2_RAD(180)-Bucket_BRP_LABtoBRP_BP_Angle)+(BoomAngle-Bucket_BoomAngleToLAB_Angle);
 	const double RockerBoomPivotPoint_y=cos(BucketRBP_Angle)*Bucket_BRP_To_BP+BucketPivotPoint_y;
 	const double RockerBoomPivotPoint_x=BucketPivotPoint_x-sin(BucketRBP_Angle)*Bucket_BRP_To_BP;
+	//Next we pursue the difficult boom rocker pivot end that interfaces with the linear actuator... to find we must bisect the quadrilateral using
+	//a new segment from the boom rocker pivot to the bucket rocker pivot.  Once this is created we can determine that angle and subtract it from
+	//verticle via BucketRBP_Angle.
+	//------------
+	//First find the bucket rocker pivot point.
+	//We'll just keep it all global to keep things easier to read and verify
+	const double Veritcal_ToBucketRP_Angle=Bucket_BPBT_ToBucketRP_Angle - (DEG_2_RAD(90)-(BucketAngle+Bucket_BPTip_to_BucketInterface_Angle));
+	const double RockerBucketPivotPoint_y=BucketPivotPoint_y-cos(Veritcal_ToBucketRP_Angle)*Bucket_BP_To_BucketRP;
+	const double RockerBucketPivotPoint_x=sin(Veritcal_ToBucketRP_Angle)*Bucket_BP_To_BucketRP+BucketPivotPoint_x;
+	const double brp_bucketrp_segment_length=GetDistance(RockerBoomPivotPoint_x,RockerBoomPivotPoint_y,RockerBucketPivotPoint_x,RockerBucketPivotPoint_y);
+	//With this new segment... there are 2 angles to extract from the quadrelateral... the upper and lower:
+	const double RockerBoomUpperAngle=LawOfCosines(Bucket_RockerBoomLength,brp_bucketrp_segment_length,Bucket_RockerBucketLength);
+	const double RockerBoomLowerAngle=LawOfCosines(Bucket_BRP_To_BP,brp_bucketrp_segment_length,Bucket_BP_To_BucketRP);
+	//With this we can now find the angle from vertical
+	const double RockerBoomFromVertical_Angle=BucketRBP_Angle+RockerBoomUpperAngle+RockerBoomLowerAngle;
+	//This angle allows use to fine the rocker pivot LA interface as the next point in the triangle
+	const double RockerPivotLAInterface_y=RockerBoomPivotPoint_y-cos(RockerBoomFromVertical_Angle)*Bucket_RockerBoomLength;
+	const double RockerPivotLAInterface_x=sin(RockerBoomFromVertical_Angle)*Bucket_RockerBoomLength+RockerBoomPivotPoint_x;
+	//Now onto the last point the boom LA mount
+	const double VerticleToLAB_Angle=BoomAngle-Bucket_BoomAngleToLAB_Angle;
+	const double BoomLAMount_y=cos(VerticleToLAB_Angle)*Bucket_BRP_To_LAB+RockerBoomPivotPoint_y;
+	const double BoomLAMount_x=RockerBoomPivotPoint_x-(sin(VerticleToLAB_Angle)*Bucket_BRP_To_LAB);
+	//use distance formula between the LA mount and the Rocker pivot
+	const double LA_Length=GetDistance(BoomLAMount_x,BoomLAMount_y,RockerPivotLAInterface_x,RockerPivotLAInterface_y);
+	//Yay got the bucket actuators length...
+	BucketShaftLength=LA_Length-Bucket_LAB_houseingLength;
 	int test=0;
 }
 
