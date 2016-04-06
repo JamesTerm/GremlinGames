@@ -1513,9 +1513,30 @@ void Curivator_Robot_UI::Text_SizeToUse(double SizeToUse)
 {
 	m_TankUI.Text_SizeToUse(SizeToUse);
 }
+
+#include <osg/Geometry>
+#include <osg/PositionAttitudeTransform>
+
 void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
 {
 	m_TankUI.UpdateScene(geode,AddOrRemove);
+	//if (AddOrRemove)
+	//{
+	//	m_TankUI.UpdateScene(geode,AddOrRemove);
+	//	osg::Geometry* linesGeom = new osg::Geometry();// is my geometry 
+	//	osg::DrawArrays* drawArrayLines = new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP); 
+	//	linesGeom->addPrimitiveSet(drawArrayLines); 
+	//	osg::Vec3Array* vertexData = new osg::Vec3Array; 
+	//	linesGeom->setVertexArray(vertexData); 
+
+	//	geode->addDrawable(linesGeom);
+
+	//	vertexData->push_back(osg::Vec3(0,0,0)); 
+	//	vertexData->push_back(osg::Vec3(500,200,0)); 
+
+	//	drawArrayLines->setFirst(0); 
+	//	drawArrayLines->setCount(vertexData->size());
+	//}
 }
 
 #endif
