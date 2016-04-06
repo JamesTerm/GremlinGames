@@ -280,8 +280,8 @@ MainRobot = {
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
-			max_range= 8,
-			min_range=0.8,
+			max_range= 12,
+			min_range=0.0,
 			starting_position=6,
 			use_aggressive_stop = 'yes',
 		},
@@ -310,8 +310,8 @@ MainRobot = {
 			max_accel_reverse=10,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
-			max_range= 5.17,
-			min_range=0.8,
+			max_range= 7,
+			min_range=0,
 			starting_position=3.5,
 			use_aggressive_stop = 'yes',
 		},
@@ -334,10 +334,10 @@ MainRobot = {
 			pot_range_flipped='n',
 			
 			max_speed=6.0,	--inches per second
-			accel=5.0,
-			brake=5.0,
-			max_accel_forward=25,			--just go with what feels right
-			max_accel_reverse=25,
+			accel=10.0,
+			brake=10.0,
+			max_accel_forward=100,			--just go with what feels right
+			max_accel_reverse=100,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 55.29,
@@ -364,10 +364,10 @@ MainRobot = {
 			pot_range_flipped='n',
 			
 			max_speed=6.0,	--inches per second
-			accel=5.0,
-			brake=5.0,
-			max_accel_forward=25,			--just go with what feels right
-			max_accel_reverse=25,
+			accel=10.0,
+			brake=10.0,
+			max_accel_forward=100,			--just go with what feels right
+			max_accel_reverse=100,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 40.0,
