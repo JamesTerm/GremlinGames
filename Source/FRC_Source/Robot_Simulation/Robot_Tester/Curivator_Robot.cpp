@@ -605,6 +605,7 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	//const double XOffset=SmartDashboard::GetNumber("X Position");
 
 	//Apply the position and rotation of bucket to their children
+	//if (false)
 	{
 		const double xpos=m_ArmXpos.GetPos_m();
 		const double ypos=m_ArmYpos.GetPos_m();
@@ -616,6 +617,10 @@ void Curivator_Robot::TimeChange(double dTime_s)
 		SmartDashboard::PutNumber("clasp_angle",clasp_angle);
 		double BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength;
 		ComputeArmPosition(ypos,xpos,bucket_angle,clasp_angle,BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength);
+		SmartDashboard::PutNumber("BigArm_ShaftLength",BigArm_ShaftLength);
+		SmartDashboard::PutNumber("Boom_ShaftLength",Boom_ShaftLength);
+		SmartDashboard::PutNumber("BucketShaftLength",BucketShaftLength);
+		SmartDashboard::PutNumber("ClaspShaftLength",ClaspShaftLength);
 		//apply these values to their children
 		m_Arm.SetIntendedPosition(BigArm_ShaftLength);
 		m_Boom.SetIntendedPosition(Boom_ShaftLength);
@@ -752,7 +757,13 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	const double brp_bucketrp_segment_length=GetDistance(RockerBoomPivotPoint_x,RockerBoomPivotPoint_y,RockerBucketPivotPoint_x,RockerBucketPivotPoint_y);
 	//With this new segment... there are 2 angles to extract from the quadrelateral... the upper and lower:
 	const double RockerBoomUpperAngle=LawOfCosines(Bucket_RockerBoomLength,brp_bucketrp_segment_length,Bucket_RockerBucketLength);
-	const double RockerBoomLowerAngle=LawOfCosines(Bucket_BRP_To_BP,brp_bucketrp_segment_length,Bucket_BP_To_BucketRP);
+	double RockerBoomLowerAngle=LawOfCosines(Bucket_BRP_To_BP,brp_bucketrp_segment_length,Bucket_BP_To_BucketRP);
+	//The lower angle is a bit tricky, because we can have a quaterlaterial where the bucket pivot point is inside the bisected line at which case
+	//the rocker boom lower angle is negative... to determine this 
+	//and use atan2 (with origin at RockerBoomPivotPoint) to find the angle and compare against BucketRBP_Angle
+	const double SegmentAngleFromVerticle=DEG_2_RAD(90)+atan2(RockerBucketPivotPoint_y-RockerBoomPivotPoint_y,RockerBucketPivotPoint_x-RockerBoomPivotPoint_x);
+	if (SegmentAngleFromVerticle<BucketRBP_Angle)
+		RockerBoomLowerAngle=RockerBoomLowerAngle*-1.0;  //Note: the proper thing here may be to transform and use atan2 instead
 	//With this we can now find the angle from vertical
 	const double RockerBoomFromVertical_Angle=BucketRBP_Angle+RockerBoomUpperAngle+RockerBoomLowerAngle;
 	//This angle allows use to fine the rocker pivot LA interface as the next point in the triangle
