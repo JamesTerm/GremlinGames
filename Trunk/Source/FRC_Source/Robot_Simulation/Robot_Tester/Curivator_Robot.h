@@ -150,15 +150,8 @@ class Curivator_Robot : public Tank_Robot
 			public:
 				Robot_Arm(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control);
 				IEvent::HandlerList ehl;
-				//The parent needs to call initialize
-				//double HeightToAngle_r(double Height_m) const;
-				//static double HeightToAngle_r(Robot_Arm *instance,double Height_m)  {return instance->HeightToAngle_r(Height_m);}
-				//double Arm_AngleToHeight_m(double Angle_r) const;
-				//double AngleToHeight_m(double Angle_r) const;
-
-				////given the raw potentiometer converts to the arm angle
-				//double PotentiometerRaw_To_Arm_r(double raw) const;
 			protected:
+				void SetIntendedPosition_Plus(double Position);
 				//Intercept the time change to obtain current height as well as sending out the desired velocity
 				virtual void BindAdditionalEventControls(bool Bind);
 				void Advance(bool on);
@@ -177,8 +170,8 @@ class Curivator_Robot : public Tank_Robot
 				typedef Rotary_Position_Control __super;
 				#endif
 				const size_t m_Index;
-
 				Curivator_Robot * const m_pParent;
+				double m_LastIntendedPosition;
 				bool m_Advance, m_Retract;
 		};
 
