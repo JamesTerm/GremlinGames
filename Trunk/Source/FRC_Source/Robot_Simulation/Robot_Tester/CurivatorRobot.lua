@@ -151,7 +151,7 @@ MainRobot = {
 	robot_settings =
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
-
+		enable_arm_auto_position='y',
 		height_presets =
 		--Heights are in inches
 		{rest=0.0, tote_3=11.75*2 + 2 },
@@ -371,7 +371,7 @@ MainRobot = {
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 40.0,
-			min_range=20.0,
+			min_range=-20.0,
 			starting_position=-0.97606122071131374,  --mathematically ideal for middle of LA... good to test code, but not necessarily for actual use
 			use_aggressive_stop = 'n',
 		},

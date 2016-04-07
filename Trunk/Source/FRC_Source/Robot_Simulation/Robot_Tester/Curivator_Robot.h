@@ -29,7 +29,7 @@ public:
 	double PotentiometerMaxRotation;
 	double GearHeightOffset;
 	double MotorToWheelGearRatio;
-
+	bool EnableArmAutoPosition;
 	struct Autonomous_Properties
 	{
 		//void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true

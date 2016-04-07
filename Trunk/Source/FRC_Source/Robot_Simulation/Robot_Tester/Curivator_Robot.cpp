@@ -128,11 +128,11 @@ void Curivator_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 void Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus(double Position)
 {
-	return;
+	//return;
 	//if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
 	{
-		if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
-			return;
+		//if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
+		//	return;
 		{
 			m_LastIntendedPosition=Position; //grab it before all the conversions
 			Position=-Position; 
@@ -609,7 +609,7 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	//const double XOffset=SmartDashboard::GetNumber("X Position");
 
 	//Apply the position and rotation of bucket to their children
-	//if (false)
+	if (m_RobotProps.GetCurivatorRobotProps().EnableArmAutoPosition)
 	{
 		const double xpos=m_ArmXpos.GetPos_m();
 		const double ypos=m_ArmYpos.GetPos_m();
@@ -883,6 +883,7 @@ Curivator_Robot_Properties::Curivator_Robot_Properties()  : m_RobotControls(&s_C
 			props.PotentiometerMaxRotation=c_PotentiometerMaxRotation;
 			props.GearHeightOffset=c_GearHeightOffset;
 			props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
+			props.EnableArmAutoPosition=false;
 
 			m_CurivatorRobotProps=props;
 		}
@@ -1089,6 +1090,8 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_RotaryProps[Curivator_Robot::eClasp_Angle].LoadFromScript(script);
 			script.Pop();
 		}
+
+		SCRIPT_TEST_BOOL_YES(props.EnableArmAutoPosition,"enable_arm_auto_position");
 
 		err = script.GetFieldTable("auton");
 		if (!err)
