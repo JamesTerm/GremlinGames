@@ -625,7 +625,7 @@ void Curivator_Robot::TimeChange(double dTime_s)
 		m_Arm.SetIntendedPosition(BigArm_ShaftLength);
 		m_Boom.SetIntendedPosition(Boom_ShaftLength);
 		m_Bucket.SetIntendedPosition(BucketShaftLength);
-		m_ClaspAngle.SetIntendedPosition(ClaspShaftLength);
+		m_Clasp.SetIntendedPosition(ClaspShaftLength);
 	}
 }
 
@@ -687,6 +687,15 @@ __inline double GetDistance(double x1,double y1, double x2, double y2)
 	return hypotenuse;
 }
 
+__inline double EnforceShaftLimits(double InputValue,double minRange=0.75,double maxRange=11.0)
+{
+	double ret=std::max(std::min(InputValue,maxRange),minRange);
+	//check for nan
+	if (!(InputValue<0.0||InputValue>0.0))
+		ret=((maxRange-minRange)/2.0)+minRange;   //pick center as a fallback
+	return ret;
+}
+
 void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistance,double BucketAngle_deg,double ClaspOpeningAngle_deg,
 										 double &BigArm_ShaftLength,double &Boom_ShaftLength,double &BucketShaftLength,double &ClaspShaftLength)
 {
@@ -725,7 +734,7 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	const double BigArm_LA_Length_xLeg=fabs(BigArmLAInteface_length-BigArm_DartToArmDistance);
 	const double BigArm_LA_Length=sqrt((BigArm_LA_Length_xLeg*BigArm_LA_Length_xLeg)+(BigArmLAInteface_height*BigArmLAInteface_height));
 	//Yay got the big arm actuators length...
-	BigArm_ShaftLength=BigArm_LA_Length-BigArm_DistanceDartPivotToTip-Boom_DistanceFromTipDartToClevis;
+	BigArm_ShaftLength=EnforceShaftLimits(BigArm_LA_Length-BigArm_DistanceDartPivotToTip-Boom_DistanceFromTipDartToClevis);
 	//next time to get the boom actuator length
 	//First find point where boom interface is located
 	const double BoomLeverAngle=BoomAngle+Boom_BP_To_Lever_angle-DEG_2_RAD(180);
@@ -740,7 +749,7 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	const double Boom_LA_Length_yLeg=fabs(BoomLAInteface_height+BoomLA_Mount_height);  //added because they are going in different directions
 	const double Boom_LA_Length=sqrt((Boom_LA_Length_xLeg*Boom_LA_Length_xLeg)+(Boom_LA_Length_yLeg*Boom_LA_Length_yLeg));
 	//Yay got the boom actuators length...
-	Boom_ShaftLength=Boom_LA_Length-Boom_DistanceDartPivotToTip-Boom_DistanceFromTipDartToClevis;
+	Boom_ShaftLength=EnforceShaftLimits(Boom_LA_Length-Boom_DistanceDartPivotToTip-Boom_DistanceFromTipDartToClevis);
 	//now onto the bucket... first locate rocker boom's point
 	const double BucketRBP_Angle=(DEG_2_RAD(180)-Bucket_BRP_LABtoBRP_BP_Angle)+(BoomAngle-Bucket_BoomAngleToLAB_Angle);
 	const double RockerBoomPivotPoint_y=cos(BucketRBP_Angle)*Bucket_BRP_To_BP+BucketPivotPoint_y;
@@ -776,7 +785,7 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	//use distance formula between the LA mount and the Rocker pivot
 	const double Bucket_LA_Length=GetDistance(BoomLAMount_x,BoomLAMount_y,RockerPivotLAInterface_x,RockerPivotLAInterface_y);
 	//Yay got the bucket actuators length...
-	BucketShaftLength=Bucket_LA_Length-Bucket_LAB_houseingLength;
+	BucketShaftLength=EnforceShaftLimits(Bucket_LA_Length-Bucket_LAB_houseingLength);
 	//Now onto the clasp
 	//Find the midline tip point global location by use of the CPMT segment
 	double ClaspOpeningAngle=DEG_2_RAD(ClaspOpeningAngle_deg);
@@ -795,7 +804,7 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	//with out 2 point find the distance
 	const double Clasp_LA_Length=GetDistance(LAClaspMount_x,LAClaspMount_y,ClaspLAInterface_x,ClaspLAInterface_y);
 	//Yay got the clasp actuators length...
-	ClaspShaftLength=Clasp_LA_Length-Clasp_LAC_houseingLength;
+	ClaspShaftLength=EnforceShaftLimits(Clasp_LA_Length-Clasp_LAC_houseingLength,0.75,6.0);
 }
 
 #ifdef Robot_TesterCode
@@ -1055,25 +1064,25 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		err = script.GetFieldTable("arm_xpos");
 		if (!err)
 		{
-			m_RotaryProps[Curivator_Robot::eClasp].LoadFromScript(script);
+			m_RotaryProps[Curivator_Robot::eArm_Xpos].LoadFromScript(script);
 			script.Pop();
 		}
 		err = script.GetFieldTable("arm_ypos");
 		if (!err)
 		{
-			m_RotaryProps[Curivator_Robot::eClasp].LoadFromScript(script);
+			m_RotaryProps[Curivator_Robot::eArm_Ypos].LoadFromScript(script);
 			script.Pop();
 		}
 		err = script.GetFieldTable("bucket_angle");
 		if (!err)
 		{
-			m_RotaryProps[Curivator_Robot::eClasp].LoadFromScript(script);
+			m_RotaryProps[Curivator_Robot::eBucket_Angle].LoadFromScript(script);
 			script.Pop();
 		}
 		err = script.GetFieldTable("clasp_angle");
 		if (!err)
 		{
-			m_RotaryProps[Curivator_Robot::eClasp].LoadFromScript(script);
+			m_RotaryProps[Curivator_Robot::eClasp_Angle].LoadFromScript(script);
 			script.Pop();
 		}
 
