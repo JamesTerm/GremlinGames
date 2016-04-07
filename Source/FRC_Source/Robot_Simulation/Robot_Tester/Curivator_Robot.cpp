@@ -74,7 +74,8 @@ __inline double LawOfCosines(double a,double b,double c)
 /***********************************************************************************************************************************/
 
 Curivator_Robot::Robot_Arm::Robot_Arm(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control) : 
-Rotary_Position_Control(csz_Curivator_Robot_SpeedControllerDevices_Enum[index],robot_control,index),m_Index(index),m_pParent(parent),m_Advance(false),m_Retract(false)
+Rotary_Position_Control(csz_Curivator_Robot_SpeedControllerDevices_Enum[index],robot_control,index),m_Index(index),m_pParent(parent),m_LastIntendedPosition(0.0),
+	m_Advance(false),m_Retract(false)
 {
 }
 
@@ -124,33 +125,32 @@ void Curivator_Robot::Robot_Arm::TimeChange(double dTime_s)
 }
 
 
-//double Curivator_Robot::Robot_Arm::AngleToHeight_m(double Angle_r) const
-//{
-//	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-//	const double c_GearToArmRatio=1.0/props.ArmToGearRatio;
-//
-//	return (sin(Angle_r*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
-//}
-//double Curivator_Robot::Robot_Arm::Arm_AngleToHeight_m(double Angle_r) const
-//{
-//	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-//	return (sin(Angle_r)*props.ArmLength)+props.GearHeightOffset;
-//}
-//
-//double Curivator_Robot::Robot_Arm::HeightToAngle_r(double Height_m) const
-//{
-//	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-//	return asin((Height_m-props.GearHeightOffset)/props.ArmLength) * props.ArmToGearRatio;
-//}
-//
-//double Curivator_Robot::Robot_Arm::PotentiometerRaw_To_Arm_r(double raw) const
-//{
-//	const Curivator_Robot_Props &props=m_pParent->GetRobotProps().GetCurivatorRobotProps();
-//	const int RawRangeHalf=512;
-//	double ret=((raw / RawRangeHalf)-1.0) * DEG_2_RAD(270.0/2.0);  //normalize and use a 270 degree scalar (in radians)
-//	ret*=props.PotentiometerToArmRatio;  //convert to arm's gear ratio
-//	return ret;
-//}
+
+void Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus(double Position)
+{
+	return;
+	//if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
+	{
+		if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
+			return;
+		{
+			m_LastIntendedPosition=Position; //grab it before all the conversions
+			Position=-Position; 
+			//By default this goes from -1 to 1.0 
+			//first get the range from 0 - 1
+			double positive_range = (Position * 0.5) + 0.5;
+			//positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=GetMinRange();
+			const double maxRange=GetMaxRange();
+			const double Scale=(maxRange-minRange);
+			Position=(positive_range * Scale) + minRange;
+			//DOUT5("Test=%f",RAD_2_DEG(Position));
+			SetIntendedPosition(Position);
+		}
+	}
+	//else
+	//	SetRequestedVelocity_FromNormalized(Position);   //allow manual use of same control
+}
 
 void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 {
@@ -159,6 +159,8 @@ void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 	string ContructedName;
 	if (Bind)
 	{
+		ContructedName=Prefix,ContructedName+="_SetIntendedPosition";
+		em->EventValue_Map[ContructedName.c_str()].Subscribe(ehl,*this, &Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus);
 		ContructedName=Prefix,ContructedName+="_SetCurrentVelocity";
 		em->EventValue_Map[ContructedName.c_str()].Subscribe(ehl,*this, &Curivator_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
 		ContructedName=Prefix,ContructedName+="_SetPotentiometerSafety";
@@ -171,6 +173,8 @@ void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
 	}
 	else
 	{
+		ContructedName=Prefix,ContructedName+="_SetIntendedPosition";
+		em->EventValue_Map[ContructedName.c_str()].Remove(*this, &Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus);
 		ContructedName=Prefix,ContructedName+="_SetCurrentVelocity";
 		em->EventValue_Map[ContructedName.c_str()].Remove(*this, &Curivator_Robot::Robot_Arm::SetRequestedVelocity_FromNormalized);
 		ContructedName=Prefix,ContructedName+="_SetPotentiometerSafety";
@@ -951,14 +955,14 @@ const char * const g_Curivator_Controls_Events[] =
 {
 	"turret_SetCurrentVelocity","turret_SetIntendedPosition","turret_SetPotentiometerSafety","turret_Advance","turret_Retract",
 	"IntakeArm_DeployManager",
-	"arm_SetCurrentVelocity","arm_SetPotentiometerSafety","arm_Advance","arm_Retract",
-	"boom_SetCurrentVelocity","boom_SetPotentiometerSafety","boom_Advance","boom_Retract",
-	"bucket_SetCurrentVelocity","bucket_SetPotentiometerSafety","bucket_Advance","bucket_Retract",
-	"clasp_SetCurrentVelocity","clasp_SetPotentiometerSafety","clasp_Advance","clasp_Retract",
-	"arm_xpos_SetCurrentVelocity","arm_xpos_SetPotentiometerSafety","arm_xpos_Advance","arm_xpos_Retract",
-	"arm_ypos_SetCurrentVelocity","arm_ypos_SetPotentiometerSafety","arm_ypos_Advance","arm_ypos_Retract",
-	"bucket_angle_SetCurrentVelocity","bucket_angle_SetPotentiometerSafety","bucket_angle_Advance","bucket_angle_Retract",
-	"clasp_angle_SetCurrentVelocity","clasp_angle_SetPotentiometerSafety","clasp_angle_Advance","clasp_angle_Retract",
+	"arm_SetCurrentVelocity","arm_SetIntendedPosition","arm_SetPotentiometerSafety","arm_Advance","arm_Retract",
+	"boom_SetCurrentVelocity","boom_SetIntendedPosition","boom_SetPotentiometerSafety","boom_Advance","boom_Retract",
+	"bucket_SetCurrentVelocity","bucket_SetIntendedPosition","bucket_SetPotentiometerSafety","bucket_Advance","bucket_Retract",
+	"clasp_SetCurrentVelocity","clasp_SetIntendedPosition","clasp_SetPotentiometerSafety","clasp_Advance","clasp_Retract",
+	"arm_xpos_SetCurrentVelocity","arm_xpos_SetIntendedPosition","arm_xpos_SetPotentiometerSafety","arm_xpos_Advance","arm_xpos_Retract",
+	"arm_ypos_SetCurrentVelocity","arm_ypos_SetIntendedPosition","arm_ypos_SetPotentiometerSafety","arm_ypos_Advance","arm_ypos_Retract",
+	"bucket_angle_SetCurrentVelocity","bucket_angle_SetIntendedPosition","bucket_angle_SetPotentiometerSafety","bucket_angle_Advance","bucket_angle_Retract",
+	"clasp_angle_SetCurrentVelocity","clasp_angle_SetIntendedPosition","clasp_angle_SetPotentiometerSafety","clasp_angle_Advance","clasp_angle_Retract",
 	"TestAuton"
 };
 
