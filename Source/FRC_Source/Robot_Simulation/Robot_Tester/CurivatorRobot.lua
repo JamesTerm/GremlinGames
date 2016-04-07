@@ -272,12 +272,12 @@ MainRobot = {
 			pot_min_limit=290,
 			pot_max_limit=888,
 			pot_range_flipped='y',
-			
-			max_speed=0.64,	
+			--will need to compute proper was 0.64 but seems too slow
+			max_speed=3,	
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
-			max_accel_forward=10,			--just go with what feels right
-			max_accel_reverse=10,
+			max_accel_forward=100,			--just go with what feels right
+			max_accel_reverse=100,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 12,
@@ -303,11 +303,11 @@ MainRobot = {
 			pot_max_limit=760,
 			pot_range_flipped='y',
 			
-			max_speed=0.64,	
+			max_speed=3,	
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
-			max_accel_forward=10,			--just go with what feels right
-			max_accel_reverse=10,
+			max_accel_forward=100,			--just go with what feels right
+			max_accel_reverse=100,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 7,
@@ -317,7 +317,7 @@ MainRobot = {
 		},
 		arm_xpos =
 		{
-			is_closed=0,
+			--is_closed=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -347,7 +347,7 @@ MainRobot = {
 		},
 		arm_ypos =
 		{
-			is_closed=0,
+			--is_closed=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -377,7 +377,7 @@ MainRobot = {
 		},
 		bucket_angle =
 		{
-			is_closed=0,
+			--is_closed=0,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -395,10 +395,10 @@ MainRobot = {
 			pot_range_flipped='n',
 			
 			max_speed=36.66,	--degrees per second  (matches 0.64 in radians)
-			accel=25.0,
-			brake=25.0,
-			max_accel_forward=75,			--just go with what feels right
-			max_accel_reverse=75,
+			accel=50.0,
+			brake=50.0,
+			max_accel_forward=500,			--just go with what feels right
+			max_accel_reverse=500,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 180.0,
@@ -408,7 +408,7 @@ MainRobot = {
 		},
 		clasp_angle =
 		{
-			is_closed=1,
+			--is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
@@ -426,10 +426,10 @@ MainRobot = {
 			pot_range_flipped='n',
 			
 			max_speed=36.66,	--degrees per second  (matches 0.64 in radians)
-			accel=25.0,
-			brake=25.0,
-			max_accel_forward=75,			--just go with what feels right
-			max_accel_reverse=75,
+			accel=5.0,
+			brake=5.0,
+			max_accel_forward=500,			--just go with what feels right
+			max_accel_reverse=500,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 100.0,
