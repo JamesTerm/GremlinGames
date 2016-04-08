@@ -1577,10 +1577,17 @@ void Curivator_Robot_Control::OpenSolenoid(size_t index,bool Open)
   /***************************************************************************************************************/
  /*												Curivator_Robot_UI												*/
 /***************************************************************************************************************/
-
+const double Curivator_Robot_UI_LinesVerticalOffset=100.0;
 Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robot(EntityName,this),Curivator_Robot_Control(),
 		m_TankUI(this)
 {
+	m_VertexData = new osg::Vec3Array;  //this will auto terminate
+	m_VertexData->push_back(osg::Vec3(0,Curivator_Robot_UI_LinesVerticalOffset,0)); 
+	m_VertexData->push_back(osg::Vec3(0,0,0)); 
+	m_VertexData->push_back(osg::Vec3(0,0,0)); 
+	m_VertexData->push_back(osg::Vec3(0,0,0));
+	m_VertexData->push_back(osg::Vec3(0,0,0));
+	m_VertexData->push_back(osg::Vec3(0,0,0));
 }
 
 void Curivator_Robot_UI::TimeChange(double dTime_s) 
@@ -1588,6 +1595,7 @@ void Curivator_Robot_UI::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	m_TankUI.TimeChange(dTime_s);
 }
+
 void Curivator_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
@@ -1610,26 +1618,51 @@ void Curivator_Robot_UI::Text_SizeToUse(double SizeToUse)
 #include <osg/Geometry>
 #include <osg/PositionAttitudeTransform>
 
+//defined in RobotTester for quick variable manipulation
+//double SineInfluence(double &rho,double freq_hz=0.1,double SampleRate=30.0,double amplitude=1.0);
+
+void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable *draw)
+{
+
+	//static double rho=0.0;
+	//double testSample=((SineInfluence(rho)/2.0)+0.5) * 500.0;
+	//(*m_pParent->m_VertexData)[1].set(testSample, testSample, 0.0);
+	Curivator_Robot::BigArm &bigArm=m_pParent->m_Arm;
+	Curivator_Robot::Boom &boom=m_pParent->m_Boom;
+	Curivator_Robot::Bucket &bucket=m_pParent->m_Bucket;
+	Curivator_Robot::Clasp &clasp=m_pParent->m_Clasp;
+	const double yoffset=Curivator_Robot_UI_LinesVerticalOffset;
+	(*m_pParent->m_VertexData)[1].set(bigArm.GetBigArmLength() * 10.0,bigArm.GetBigArmHeight() * 10.0 + yoffset,  0.0);
+	(*m_pParent->m_VertexData)[2].set( boom.GetBoomLength() * 10.0,boom.GetBoomHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[3].set( bucket.GetBucketLength() * 10.0,min(bucket.GetBucketTipHeight(),bucket.GetBucketRoundEndHeight()) * 10.0 + yoffset, 0.0);
+	//retrace to boom point for clasp
+	(*m_pParent->m_VertexData)[4].set( boom.GetBoomLength() * 10.0,boom.GetBoomHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[5].set( clasp.GetClaspLength() * 10.0,clasp.GetClaspMidlineHeight() * 10.0 + yoffset, 0.0);
+	draw->dirtyDisplayList();
+	draw->dirtyBound();
+}
+
 void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
 {
 	m_TankUI.UpdateScene(geode,AddOrRemove);
-	//if (AddOrRemove)
-	//{
-	//	m_TankUI.UpdateScene(geode,AddOrRemove);
-	//	osg::Geometry* linesGeom = new osg::Geometry();// is my geometry 
-	//	osg::DrawArrays* drawArrayLines = new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP); 
-	//	linesGeom->addPrimitiveSet(drawArrayLines); 
-	//	osg::Vec3Array* vertexData = new osg::Vec3Array; 
-	//	linesGeom->setVertexArray(vertexData); 
+	if (AddOrRemove)
+	{
+		m_TankUI.UpdateScene(geode,AddOrRemove);
+		osg::Geometry* linesGeom = new osg::Geometry();// is my geometry 
+		osg::DrawArrays* drawArrayLines = new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP); 
+		linesGeom->addPrimitiveSet(drawArrayLines); 
+		//osg::Vec3Array* vertexData = new osg::Vec3Array; 
+		linesGeom->setVertexArray(m_VertexData); 
 
-	//	geode->addDrawable(linesGeom);
+		geode->addDrawable(linesGeom);
 
-	//	vertexData->push_back(osg::Vec3(0,0,0)); 
-	//	vertexData->push_back(osg::Vec3(500,200,0)); 
-
-	//	drawArrayLines->setFirst(0); 
-	//	drawArrayLines->setCount(vertexData->size());
-	//}
+		//vertexData->push_back(osg::Vec3(0,0,0)); 
+		//vertexData->push_back(osg::Vec3(500,200,0)); 
+		m_LinesUpdate=new LinesUpdate(this);
+		linesGeom->setUpdateCallback(m_LinesUpdate);
+		drawArrayLines->setFirst(0); 
+		drawArrayLines->setCount(m_VertexData->size());
+	}
 }
 
 #endif
