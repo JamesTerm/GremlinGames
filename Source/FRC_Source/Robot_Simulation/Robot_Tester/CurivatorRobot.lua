@@ -478,7 +478,9 @@ MainRobot = {
 			arm_xpos_Retract={type="keyboard", key='j', on_off=true},
 			arm_ypos_Advance={type="keyboard", key=';', on_off=true},
 			arm_ypos_Retract={type="keyboard", key='l', on_off=true},
-	
+			clasp_angle_Advance={type="keyboard", key='o', on_off=true},
+			clasp_angle_Retract={type="keyboard", key='p', on_off=true},
+			Robot_FreezeArm={type="keyboard", key='x', on_off=true},
 		},
 		
 		Joystick_2 =

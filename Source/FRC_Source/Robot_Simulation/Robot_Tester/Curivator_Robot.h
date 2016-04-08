@@ -125,6 +125,7 @@ class Curivator_Robot : public Tank_Robot
 		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
+		void FreezeArm(bool isOn) {m_FreezeArm=isOn;}
 
 	protected:
 		class Turret
@@ -297,6 +298,7 @@ class Curivator_Robot : public Tank_Robot
 		double m_YawErrorCorrection,m_PowerErrorCorrection;
 		size_t m_DefaultPresetIndex;
 		size_t m_AutonPresetIndex;  //used only because encoder tracking is disabled
+		bool m_FreezeArm;  //used mostly during calibration to have ability to stop movement
 
 		#ifdef Robot_TesterCode
 		void TestAutonomous();
