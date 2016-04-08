@@ -496,7 +496,7 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control,m_Bucket),
 		m_ArmXpos(eArm_Xpos,this,robot_control),m_ArmYpos(eArm_Ypos,this,robot_control),m_BucketAngle(eBucket_Angle,this,robot_control),
 		m_ClaspAngle(eClasp_Angle,this,robot_control),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0)
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0),m_FreezeArm(false)
 {
 	mp_Arm[eTurret]=&m_Turret;
 	mp_Arm[eArm]=&m_Arm;
@@ -626,10 +626,20 @@ void Curivator_Robot::TimeChange(double dTime_s)
 		SmartDashboard::PutNumber("BucketShaftLength",BucketShaftLength);
 		SmartDashboard::PutNumber("ClaspShaftLength",ClaspShaftLength);
 		//apply these values to their children
-		m_Arm.SetIntendedPosition(BigArm_ShaftLength);
-		m_Boom.SetIntendedPosition(Boom_ShaftLength);
-		m_Bucket.SetIntendedPosition(BucketShaftLength);
-		m_Clasp.SetIntendedPosition(ClaspShaftLength);
+		if (!m_FreezeArm)
+		{
+			m_Arm.SetIntendedPosition(BigArm_ShaftLength);
+			m_Boom.SetIntendedPosition(Boom_ShaftLength);
+			m_Bucket.SetIntendedPosition(BucketShaftLength);
+			m_Clasp.SetIntendedPosition(ClaspShaftLength);
+		}
+		else
+		{
+			m_Arm.SetRequestedVelocity(0.0);
+			m_Boom.SetRequestedVelocity(0.0);
+			m_Bucket.SetRequestedVelocity(0.0);
+			m_Clasp.SetRequestedVelocity(0.0);
+		}
 	}
 }
 
@@ -653,6 +663,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"].Subscribe(ehl,*this,&Curivator_Robot::GoalComplete);
 		#endif
+		em->EventOnOff_Map["Robot_FreezeArm"].Subscribe(ehl,*this, &Curivator_Robot::FreezeArm);
 	}
 	else
 	{
@@ -660,6 +671,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["TestAuton"]  .Remove(*this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"]  .Remove(*this, &Curivator_Robot::GoalComplete);
 		#endif
+		em->EventOnOff_Map["Robot_FreezeArm"].Remove(*this, &Curivator_Robot::FreezeArm);
 	}
 
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
@@ -964,7 +976,7 @@ const char * const g_Curivator_Controls_Events[] =
 	"arm_ypos_SetCurrentVelocity","arm_ypos_SetIntendedPosition","arm_ypos_SetPotentiometerSafety","arm_ypos_Advance","arm_ypos_Retract",
 	"bucket_angle_SetCurrentVelocity","bucket_angle_SetIntendedPosition","bucket_angle_SetPotentiometerSafety","bucket_angle_Advance","bucket_angle_Retract",
 	"clasp_angle_SetCurrentVelocity","clasp_angle_SetIntendedPosition","clasp_angle_SetPotentiometerSafety","clasp_angle_Advance","clasp_angle_Retract",
-	"TestAuton"
+	"TestAuton","Robot_FreezeArm"
 };
 
 const char *Curivator_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
