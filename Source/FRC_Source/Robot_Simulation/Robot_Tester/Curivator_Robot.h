@@ -256,6 +256,9 @@ class Curivator_Robot : public Tank_Robot
 				double m_GlobalMidlineDistance;
 				double m_GlobalClaspAngle;
 				double m_Clasp_MidlineToEdge_Angle_Horizontal;
+				#ifndef Robot_TesterCode
+				typedef Robot_Arm __super;
+				#endif
 		};
 
 		const Curivator_Robot_Properties &GetRobotProps() const;
