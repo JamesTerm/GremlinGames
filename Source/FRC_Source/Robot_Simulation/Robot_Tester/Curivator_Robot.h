@@ -286,10 +286,12 @@ class Curivator_Robot : public Tank_Robot
 		#endif
 		Curivator_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Turret;
+	protected:
 		BigArm m_Arm;
 		Boom m_Boom;
 		Bucket m_Bucket;
 		Clasp m_Clasp;
+	private:
 		Robot_Arm m_ArmXpos;
 		Robot_Arm m_ArmYpos;
 		Robot_Arm m_BucketAngle;
@@ -400,6 +402,16 @@ class Curivator_Robot_UI : public Curivator_Robot, public Curivator_Robot_Contro
 		virtual void UpdateScene (osg::Geode *geode, bool AddOrRemove);
 
 	private:
+		class LinesUpdate : public osg::Drawable::UpdateCallback
+		{
+		public:
+			LinesUpdate(Curivator_Robot_UI *parent) : m_pParent(parent) {}
+		protected:
+			virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw);
+		private:
+			Curivator_Robot_UI *m_pParent;
+		} *m_LinesUpdate;
 		Tank_Robot_UI m_TankUI;
+		osg::ref_ptr<osg::Vec3Array> m_VertexData;
 };
 #endif //Robot_TesterCode
