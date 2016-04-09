@@ -265,8 +265,8 @@ MainRobot = {
 			{p=100, i=0, d=25},
 			pid_down=
 			{p=100, i=0, d=25},
-			tolerance=0.15,
-			tolerance_count=20,
+			tolerance=0.0125,
+			tolerance_count=1,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
 			pot_min_limit=290,
@@ -276,8 +276,8 @@ MainRobot = {
 			max_speed=3,	
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
-			max_accel_forward=100,			--just go with what feels right
-			max_accel_reverse=100,
+			max_accel_forward=500,			--just go with what feels right
+			max_accel_reverse=500,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 12,
@@ -295,8 +295,8 @@ MainRobot = {
 			{p=100, i=0, d=25},
 			pid_down=
 			{p=100, i=0, d=25},
-			tolerance=0.15,
-			tolerance_count=20,
+			tolerance=0.0125,
+			tolerance_count=1,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
 			pot_min_limit=440,
@@ -306,8 +306,8 @@ MainRobot = {
 			max_speed=3,	
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
-			max_accel_forward=100,			--just go with what feels right
-			max_accel_reverse=100,
+			max_accel_forward=500,			--just go with what feels right
+			max_accel_reverse=500,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 7,
@@ -336,8 +336,8 @@ MainRobot = {
 			max_speed=6.0,	--inches per second
 			accel=10.0,
 			brake=10.0,
-			max_accel_forward=100,			--just go with what feels right
-			max_accel_reverse=100,
+			max_accel_forward=10000,			--just go with what feels right
+			max_accel_reverse=10000,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 55.29,
@@ -352,9 +352,9 @@ MainRobot = {
 			ds_display_row=-1,
 			use_pid_up_only='y',
 			pid_up=
-			{p=100, i=0, d=25},
+			{p=0, i=0, d=0},
 			pid_down=
-			{p=100, i=0, d=25},
+			{p=0, i=0, d=0},
 			tolerance=0.15,
 			tolerance_count=20,
 			voltage_multiply=1.0,
@@ -366,14 +366,14 @@ MainRobot = {
 			max_speed=6.0,	--inches per second
 			accel=10.0,
 			brake=10.0,
-			max_accel_forward=100,			--just go with what feels right
-			max_accel_reverse=100,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
+			max_accel_forward=10000,			--god mode
+			max_accel_reverse=10000,
+			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 40.0,
 			min_range=-20.0,
 			starting_position=-0.97606122071131374,  --mathematically ideal for middle of LA... good to test code, but not necessarily for actual use
-			use_aggressive_stop = 'n',
+			use_aggressive_stop = 'y',
 		},
 		bucket_angle =
 		{
@@ -397,8 +397,8 @@ MainRobot = {
 			max_speed=36.66,	--degrees per second  (matches 0.64 in radians)
 			accel=50.0,
 			brake=50.0,
-			max_accel_forward=500,			--just go with what feels right
-			max_accel_reverse=500,
+			max_accel_forward=10000,			--just go with what feels right
+			max_accel_reverse=10000,
 			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 180.0,
@@ -428,8 +428,8 @@ MainRobot = {
 			max_speed=36.66,	--degrees per second  (matches 0.64 in radians)
 			accel=5.0,
 			brake=5.0,
-			max_accel_forward=500,			--just go with what feels right
-			max_accel_reverse=500,
+			max_accel_forward=10000,			--just go with what feels right
+			max_accel_reverse=10000,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 100.0,

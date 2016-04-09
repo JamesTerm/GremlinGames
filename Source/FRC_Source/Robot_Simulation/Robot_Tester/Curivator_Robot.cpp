@@ -128,28 +128,35 @@ void Curivator_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 void Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus(double Position)
 {
-	//return;
-	//if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
+	 //TODO this may not be nessecary but no harm leaving it in for now
+	if ((fabs(m_LastIntendedPosition-Position)>0.01)) 
 	{
-		//if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
-		//	return;
-		{
-			m_LastIntendedPosition=Position; //grab it before all the conversions
-			Position=-Position; 
-			//By default this goes from -1 to 1.0 
-			//first get the range from 0 - 1
-			double positive_range = (Position * 0.5) + 0.5;
-			//positive_range=positive_range>0.01?positive_range:0.0;
-			const double minRange=GetMinRange();
-			const double maxRange=GetMaxRange();
-			const double Scale=(maxRange-minRange);
-			Position=(positive_range * Scale) + minRange;
-			//DOUT5("Test=%f",RAD_2_DEG(Position));
-			SetIntendedPosition(Position);
-		}
+		m_LastIntendedPosition=Position; //grab it before all the conversions
+		Position=-Position; 
+		//By default this goes from -1 to 1.0 
+		//first get the range from 0 - 1
+		double positive_range = (Position * 0.5) + 0.5;
+		//positive_range=positive_range>0.01?positive_range:0.0;
+		const double minRange=GetMinRange();
+		const double maxRange=GetMaxRange();
+		const double Scale=(maxRange-minRange);
+		Position=(positive_range * Scale) + minRange;
+		SetIntendedPosition(Position);
 	}
-	//else
-	//	SetRequestedVelocity_FromNormalized(Position);   //allow manual use of same control
+	else
+	{
+		double _Position=-m_LastIntendedPosition; 
+		//By default this goes from -1 to 1.0 
+		//first get the range from 0 - 1
+		double positive_range = (_Position * 0.5) + 0.5;
+		//positive_range=positive_range>0.01?positive_range:0.0;
+		const double minRange=GetMinRange();
+		const double maxRange=GetMaxRange();
+		const double Scale=(maxRange-minRange);
+		_Position=(positive_range * Scale) + minRange;
+
+		SetIntendedPosition(_Position);  //we have to send persistent updates for position
+	}
 }
 
 void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -358,6 +365,8 @@ void Curivator_Robot::Bucket::TimeChange(double dTime_s)
 	//Note this first equation omits the boom angle as a reference in a local setting
 	//const double LocalCoMHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz)*Bucket_BP_To_BucketCoM);
 	m_GlobalCoMHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz-BoomAngle)*Bucket_BP_To_BucketCoM);
+	//This equation is optional... used for simulation geometry
+	m_GlobalCoMDistance=m_Bucket_globalBRP_BP_distance+(cos(BucketCoMPivotAngleHorz-BoomAngle)*Bucket_BP_To_BucketCoM);
 	//Note this first equation omits the boom angle as a reference in a local setting
 	//const double LocalTipHeight=Bucket_localConstantBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle)*Bucket_BP_to_BucketTip);
 	const double LocalTipHeight=m_Bucket_globalBRP_BP_height+(sin(BucketCoMPivotAngleHorz + Bucket_CoMtoTip_Angle-BoomAngle)*Bucket_BP_to_BucketTip);
@@ -388,6 +397,17 @@ double Curivator_Robot::Bucket::GetBucketRoundEndHeight() const
 	const double globalRoundEndHeight=m_Boom.GetBoomHeight()-(m_GlobalCoMHeight+Bucket_CoM_Radius);
 	return globalRoundEndHeight;
 }
+double Curivator_Robot::Bucket::GetCoMHeight() const 
+{
+	const double globalCoMHeight=m_Boom.GetBoomHeight()-m_GlobalCoMHeight;
+	return globalCoMHeight;
+}
+double Curivator_Robot::Bucket::GetCoMDistance() const 
+{
+	const double globalCoMDistance=m_GlobalCoMDistance + m_Boom.GetBoomLength();
+	return globalCoMDistance;
+}
+
 double Curivator_Robot::Bucket::GetBucketAngle() const
 {
 	const double globalBucketAngle=m_LocalBucketAngle+m_Boom.GetBoomAngle();
@@ -639,6 +659,10 @@ void Curivator_Robot::TimeChange(double dTime_s)
 			m_Boom.SetRequestedVelocity(0.0);
 			m_Bucket.SetRequestedVelocity(0.0);
 			m_Clasp.SetRequestedVelocity(0.0);
+			m_ArmXpos.SetRequestedVelocity(0.0);
+			m_ArmYpos.SetRequestedVelocity(0.0);
+			m_BucketAngle.SetRequestedVelocity(0.0);
+			m_ClaspAngle.SetRequestedVelocity(0.0);
 		}
 	}
 }
@@ -1588,6 +1612,10 @@ Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robo
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
+	m_VertexData->push_back(osg::Vec3(0,0,0));
+	m_VertexData->push_back(osg::Vec3(0,0,0));
+	m_VertexData->push_back(osg::Vec3(0,0,0));
+	m_VertexData->push_back(osg::Vec3(0,0,0));
 }
 
 void Curivator_Robot_UI::TimeChange(double dTime_s) 
@@ -1634,10 +1662,22 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 	const double yoffset=Curivator_Robot_UI_LinesVerticalOffset;
 	(*m_pParent->m_VertexData)[1].set(bigArm.GetBigArmLength() * 10.0,bigArm.GetBigArmHeight() * 10.0 + yoffset,  0.0);
 	(*m_pParent->m_VertexData)[2].set( boom.GetBoomLength() * 10.0,boom.GetBoomHeight() * 10.0 + yoffset, 0.0);
-	(*m_pParent->m_VertexData)[3].set( bucket.GetBucketLength() * 10.0,min(bucket.GetBucketTipHeight(),bucket.GetBucketRoundEndHeight()) * 10.0 + yoffset, 0.0);
+	//note: the boom length is really the rocker pivot point... cache the actual bucket pivot point here
+	const double BucketPivotPoint_y=boom.GetBoomHeight()-bucket.GetBucket_globalBRP_BP_height();
+	const double BucketPivotPoint_x=boom.GetBoomLength()+bucket.GetBucket_globalBRP_BP_distance();
+	(*m_pParent->m_VertexData)[3].set( BucketPivotPoint_x * 10.0,BucketPivotPoint_y * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[4].set( clasp.GetClaspLength() * 10.0,clasp.GetClaspMidlineHeight() * 10.0 + yoffset, 0.0);
 	//retrace to boom point for clasp
-	(*m_pParent->m_VertexData)[4].set( boom.GetBoomLength() * 10.0,boom.GetBoomHeight() * 10.0 + yoffset, 0.0);
-	(*m_pParent->m_VertexData)[5].set( clasp.GetClaspLength() * 10.0,clasp.GetClaspMidlineHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[5].set( BucketPivotPoint_x * 10.0,BucketPivotPoint_y * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[6].set( bucket.GetCoMDistance() * 10.0,bucket.GetCoMHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[7].set( bucket.GetCoMDistance() * 10.0,bucket.GetBucketRoundEndHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[8].set( bucket.GetBucketLength() * 10.0,bucket.GetBucketTipHeight() * 10.0 + yoffset, 0.0);
+	//finally we'll just compute the bucket angle here
+	const double GlobalBucketAngle=bucket.GetBucketAngle();
+	const double OpeningLength=10.0;  //it really is 10 inches in the original sketch of the bucket
+	const double OpeningUpperPoint_y=bucket.GetBucketTipHeight()+(sin(GlobalBucketAngle)*OpeningLength);
+	const double OpeningUpperPoint_x=bucket.GetBucketLength()+(cos(GlobalBucketAngle)*OpeningLength);
+	(*m_pParent->m_VertexData)[9].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0 + yoffset, 0.0);
 	draw->dirtyDisplayList();
 	draw->dirtyBound();
 }
