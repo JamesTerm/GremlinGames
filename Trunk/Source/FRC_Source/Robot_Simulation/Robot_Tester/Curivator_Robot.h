@@ -215,6 +215,8 @@ class Curivator_Robot : public Tank_Robot
 				Bucket(size_t index,Curivator_Robot *parent,Rotary_Control_Interface *robot_control, Boom &boom);
 				double GetBucketLength() const;
 				double GetBucketTipHeight() const {return m_GlobalTipHeight;}
+				double GetCoMHeight() const;
+				double GetCoMDistance() const;
 				double GetBucketRoundEndHeight() const;
 				double GetBucketAngle() const;
 				//Get the global height of the bucket rocker to bucket pivot point (3 inch separate holes rotated globally)
@@ -225,7 +227,7 @@ class Curivator_Robot : public Tank_Robot
 				virtual void TimeChange(double dTime_s);
 			private:
 				Boom &m_Boom;
-				double m_GlobalCoMHeight;
+				double m_GlobalCoMHeight,m_GlobalCoMDistance;
 				double m_GlobalTipHeight;
 				double m_LocalBucketAngle;
 				double m_GlobalDistance;
