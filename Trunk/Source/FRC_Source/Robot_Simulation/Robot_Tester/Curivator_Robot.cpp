@@ -1613,7 +1613,7 @@ Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robo
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
-	m_VertexData->push_back(osg::Vec3(0,0,0));
+	//m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 
@@ -1625,8 +1625,8 @@ Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robo
 	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //clasp start (bucket pivot)
 	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //clasp end
 	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //back to bucket pivot
-	m_ColorData->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f) ); // CoM
-	m_ColorData->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f) ); // CoM to Bottom
+	m_ColorData->push_back(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f) ); // CoM
+	//m_ColorData->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f) ); // CoM to Bottom
 	m_ColorData->push_back(osg::Vec4(0.49f, 0.62f, 0.75f, 1.0f) ); // bucket tip
 	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //bucket angle
 }
@@ -1684,19 +1684,23 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 	//retrace to boom point for clasp
 	(*m_pParent->m_VertexData)[5].set( BucketPivotPoint_x * 10.0,BucketPivotPoint_y * 10.0 + yoffset, 0.0);
 	(*m_pParent->m_VertexData)[6].set( bucket.GetCoMDistance() * 10.0,bucket.GetCoMHeight() * 10.0 + yoffset, 0.0);
-	(*m_pParent->m_VertexData)[7].set( bucket.GetCoMDistance() * 10.0,bucket.GetBucketRoundEndHeight() * 10.0 + yoffset, 0.0);
-	(*m_pParent->m_VertexData)[8].set( bucket.GetBucketLength() * 10.0,bucket.GetBucketTipHeight() * 10.0 + yoffset, 0.0);
+	//(*m_pParent->m_VertexData)[7].set( bucket.GetCoMDistance() * 10.0,bucket.GetBucketRoundEndHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[7].set( bucket.GetBucketLength() * 10.0,bucket.GetBucketTipHeight() * 10.0 + yoffset, 0.0);
 	//finally we'll just compute the bucket angle here
 	const double GlobalBucketAngle=bucket.GetBucketAngle();
 	const double OpeningLength=10.0;  //it really is 10 inches in the original sketch of the bucket
 	const double OpeningUpperPoint_y=bucket.GetBucketTipHeight()+(sin(GlobalBucketAngle)*OpeningLength);
 	const double OpeningUpperPoint_x=bucket.GetBucketLength()+(cos(GlobalBucketAngle)*OpeningLength);
-	(*m_pParent->m_VertexData)[9].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[8].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0 + yoffset, 0.0);
 	draw->dirtyDisplayList();
 	draw->dirtyBound();
 
 	//update circle too (we'll just borrow this callback)
 	m_pParent->m_CircleTransform->setPosition( osg::Vec3( bucket.GetCoMDistance() * 10.0,bucket.GetCoMHeight() * 10.0 + yoffset, 0.0) ); 
+	m_pParent->m_CircleTransform->setAttitude(osg::Quat(
+		0.0	, osg::Vec3d(1,0,0),
+		0.0	, osg::Vec3d(0,1,0),
+		GlobalBucketAngle + DEG_2_RAD(30.58112256) - PI_2, osg::Vec3d(0,0,1)));
 }
 
 /* Create circle in XY plane. */
@@ -1742,10 +1746,12 @@ osg::ref_ptr<osg::Geometry> bucket_round_end()
 		v->push_back(osg::Vec3(px, py, 0));
 	}
 	//Make a straight line up as the next point
-	const double InterfaceTipfromHorizontal_deg=14.18776649+90.0;
-	const double InterfaceTipLength=3.72263603;
-	v->push_back(osg::Vec3(cos(InterfaceTipfromHorizontal_deg)*InterfaceTipLength, sin(InterfaceTipfromHorizontal_deg)*InterfaceTipLength, 0));
-	v->push_back(osg::Vec3(0 ,0 , 0));
+	const double InterfaceTipfromHorizontal=DEG_2_RAD(14.18776649+90.0);
+	const double InterfaceTipLength=3.72263603 * 10.0;
+	v->push_back(osg::Vec3(cos(InterfaceTipfromHorizontal)*InterfaceTipLength,sin(InterfaceTipfromHorizontal)*InterfaceTipLength, 0));
+	const double BucketTipfromHorizontal=DEG_2_RAD(219.80557109);
+	const double BucketTipLength=7.81024968 * 10.0;
+	v->push_back(osg::Vec3(cos(BucketTipfromHorizontal)*BucketTipLength,sin(BucketTipfromHorizontal)*BucketTipLength, 0));
 
 	const int StartCount=((270.0/360.0)*POLYGON_SIZE);  //e.g. 192
 	for(int i = StartCount; i <= POLYGON_SIZE; i++) {
@@ -1808,7 +1814,6 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 
 		// Declare and initialize a Vec3 instance to change the
 		// position of the tank model in the scene
-		;
 		m_CircleTransform->setPosition( osg::Vec3(50,50,0) ); 
 	}
 }
