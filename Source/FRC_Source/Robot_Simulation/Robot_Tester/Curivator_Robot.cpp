@@ -1701,6 +1701,7 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 
 /* Create circle in XY plane. */
 #define POLYGON_SIZE 256
+//Keep for future reference
 osg::ref_ptr<osg::Geometry> create_circle(float centerx, float centery, float rad)
 {
 	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
@@ -1720,6 +1721,47 @@ osg::ref_ptr<osg::Geometry> create_circle(float centerx, float centery, float ra
 
 	return geom.get();
 }
+
+osg::ref_ptr<osg::Geometry> bucket_round_end()
+{
+	const float centerx=0;
+	const float centery=0;
+	const float rad=5*10.0;
+	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+	osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
+	double theta, px, py;
+	const double TopOfCircle_deg=30.18846043;  //to vertical
+	//convert to ratio
+	const double TopOfCircle_ratio=TopOfCircle_deg/360.0;
+	const int TopOfCircleVertexCount= (int)(TopOfCircle_ratio*POLYGON_SIZE);
+	for(int i = 1; i <= TopOfCircleVertexCount; i++) {
+
+		theta = 2.0 * M_PI/POLYGON_SIZE * i;
+		px = centerx + rad * cos(theta);
+		py = centery + rad * sin(theta);
+		v->push_back(osg::Vec3(px, py, 0));
+	}
+	//Make a straight line up as the next point
+	const double InterfaceTipfromHorizontal_deg=14.18776649+90.0;
+	const double InterfaceTipLength=3.72263603;
+	v->push_back(osg::Vec3(cos(InterfaceTipfromHorizontal_deg)*InterfaceTipLength, sin(InterfaceTipfromHorizontal_deg)*InterfaceTipLength, 0));
+	v->push_back(osg::Vec3(0 ,0 , 0));
+
+	const int StartCount=((270.0/360.0)*POLYGON_SIZE);  //e.g. 192
+	for(int i = StartCount; i <= POLYGON_SIZE; i++) {
+
+		theta = 2.0 * M_PI/POLYGON_SIZE * i;
+		px = centerx + rad * cos(theta);
+		py = centery + rad * sin(theta);
+		v->push_back(osg::Vec3(px, py, 0));
+	}
+
+	geom->setVertexArray( v.get() );
+	geom->addPrimitiveSet(new osg::DrawArrays( osg::PrimitiveSet::LINE_STRIP, 0, v->size()) );
+
+	return geom.get();
+}
+
 
 void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
 {
@@ -1745,7 +1787,8 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		drawArrayLines->setCount(m_VertexData->size());
 
 		//add a circle
-		m_Circle=create_circle(0,0,5*10.0);
+		//m_Circle=create_circle(0,0,5*10.0);
+		m_Circle=bucket_round_end();
 		osg::Vec4Array* colors = new osg::Vec4Array;
 		colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f) );
 		m_Circle->setColorArray(colors);
