@@ -25,12 +25,12 @@ class Actor
 		//osg::Node &m_Node;
 };
 
-
+class UI_GameClient;
 class Actor_Text : public Actor, public osg::Drawable::UpdateCallback
 {
 	public:
 		~Actor_Text();
-		Actor_Text(const char TextImage[]="X");
+		Actor_Text(UI_GameClient *parent,const char TextImage[]="X");
 		//call this if you want intended orientation graphics (after setting up the character dimensions)
 		void Init_IntendedOrientation();
 		osg::ref_ptr<osgText::Text> GetText() {return m_Text;}
@@ -41,9 +41,11 @@ class Actor_Text : public Actor, public osg::Drawable::UpdateCallback
 		double GetFontSize() const {return m_FontSize;}
 		virtual void SetEntityProperties_Interface(EntityPropertiesInterface *entity);
 		virtual void UpdateScene_Additional (osg::Geode *geode, bool AddOrRemove);
+		UI_GameClient *GetParent() {return m_pParent;}
 	protected:
 		virtual void update(osg::NodeVisitor *nv, osg::Drawable *draw);
 	private:
+		UI_GameClient *m_pParent;
 		std::string m_TextImage;
 		std::string m_TeamName; //cache team name to avoid flooding
 		osg::ref_ptr<osgText::Text> m_Text;
@@ -92,6 +94,7 @@ class UI_GameClient : public GameClient
 		Entity2D *AddEntity(const char EntityName[],const Entity_Properties &props);
 		void RemoveEntity(Entity2D *Entity); 
 		void RemoveEntity(const char EntityName[]); 
+		osg::ref_ptr<osg::Group> GetRootNode() {return m_RootNode;}
 	protected:
 		//This only manages adding and removing nodes not their positions
 		virtual void UpdateScene(osg::Group *rootNode,osg::Geode *geode);
@@ -101,6 +104,7 @@ class UI_GameClient : public GameClient
 		//The new and old actor lists are 
 		std::vector<osg::ref_ptr<Actor_Text>> m_Actors,m_NewActors,m_OldActors;
 		typedef std::vector<osg::ref_ptr<Actor_Text>>::iterator ActorIterator;
+		osg::ref_ptr<osg::Group> m_RootNode; //may need to share this
 };
 
 class UI_Controller_GameClient : public UI_GameClient

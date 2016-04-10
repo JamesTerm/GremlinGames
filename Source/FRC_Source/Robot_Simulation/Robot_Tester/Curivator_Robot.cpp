@@ -1616,6 +1616,19 @@ Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robo
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
 	m_VertexData->push_back(osg::Vec3(0,0,0));
+
+	m_ColorData = new osg::Vec4Array;
+	//Note... colors blend from point to point
+	m_ColorData->push_back(osg::Vec4(0.49f, 0.62f, 0.75f, 1.0f) );
+	m_ColorData->push_back(osg::Vec4(0.49f, 0.62f, 0.75f, 1.0f) );  //big arm end... boom start
+	m_ColorData->push_back(osg::Vec4(0.49f, 0.62f, 0.75f, 1.0f) );  //rocker boom pivot
+	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //clasp start (bucket pivot)
+	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //clasp end
+	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //back to bucket pivot
+	m_ColorData->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f) ); // CoM
+	m_ColorData->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f) ); // CoM to Bottom
+	m_ColorData->push_back(osg::Vec4(0.49f, 0.62f, 0.75f, 1.0f) ); // bucket tip
+	m_ColorData->push_back(osg::Vec4(0.98f, 0.78f, 0.64f, 1.0f) ); //bucket angle
 }
 
 void Curivator_Robot_UI::TimeChange(double dTime_s) 
@@ -1632,6 +1645,7 @@ void Curivator_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Propert
 
 void Curivator_Robot_UI::UI_Init(Actor_Text *parent) 
 {
+	m_UI_Parent=parent;
 	m_TankUI.UI_Init(parent);
 }
 void Curivator_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
@@ -1680,6 +1694,31 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 	(*m_pParent->m_VertexData)[9].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0 + yoffset, 0.0);
 	draw->dirtyDisplayList();
 	draw->dirtyBound();
+
+	//update circle too (we'll just borrow this callback)
+	m_pParent->m_CircleTransform->setPosition( osg::Vec3( bucket.GetCoMDistance() * 10.0,bucket.GetCoMHeight() * 10.0 + yoffset, 0.0) ); 
+}
+
+/* Create circle in XY plane. */
+#define POLYGON_SIZE 256
+osg::ref_ptr<osg::Geometry> create_circle(float centerx, float centery, float rad)
+{
+	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+	osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
+	double theta, px, py;
+
+	for(int i = 1; i <= POLYGON_SIZE; i++) {
+
+		theta = 2.0 * M_PI/POLYGON_SIZE * i;
+		px = centerx + rad * cos(theta);
+		py = centery + rad * sin(theta);
+		v->push_back(osg::Vec3(px, py, 0));
+	}
+
+	geom->setVertexArray( v.get() );
+	geom->addPrimitiveSet(new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, POLYGON_SIZE) );
+
+	return geom.get();
 }
 
 void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
@@ -1693,6 +1732,8 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		linesGeom->addPrimitiveSet(drawArrayLines); 
 		//osg::Vec3Array* vertexData = new osg::Vec3Array; 
 		linesGeom->setVertexArray(m_VertexData); 
+		linesGeom->setColorArray(m_ColorData);
+		linesGeom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
 
 		geode->addDrawable(linesGeom);
 
@@ -1702,6 +1743,30 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		linesGeom->setUpdateCallback(m_LinesUpdate);
 		drawArrayLines->setFirst(0); 
 		drawArrayLines->setCount(m_VertexData->size());
+
+		//add a circle
+		m_Circle=create_circle(0,0,5*10.0);
+		osg::Vec4Array* colors = new osg::Vec4Array;
+		colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f) );
+		m_Circle->setColorArray(colors);
+		m_Circle->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+
+		osg::Geode* CircleGeode = new osg::Geode;
+		CircleGeode->addDrawable(m_Circle);
+		// Declare and initialize a transform node.
+		m_CircleTransform = new osg::PositionAttitudeTransform();
+
+		//Node *Test=CircleTransform;
+		// Use the 'addChild' method of the osg::Group class to
+		// add the transform as a child of the root node and the
+		// pyramid node as a child of the transform.
+		m_UI_Parent->GetParent()->GetRootNode()->addChild(m_CircleTransform);
+		m_CircleTransform->addChild(CircleGeode);
+
+		// Declare and initialize a Vec3 instance to change the
+		// position of the tank model in the scene
+		;
+		m_CircleTransform->setPosition( osg::Vec3(50,50,0) ); 
 	}
 }
 

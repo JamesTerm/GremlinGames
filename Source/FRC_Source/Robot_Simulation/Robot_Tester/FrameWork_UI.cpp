@@ -58,7 +58,7 @@ Actor_Text::~Actor_Text()
 	//Keeping destructor for debugging purposes (make sure stuff is getting deleted)
 }
 
-Actor_Text::Actor_Text(const char TextImage[]) : Actor(),m_TextImage(TextImage)  
+Actor_Text::Actor_Text(UI_GameClient *parent,const char TextImage[]) : Actor(),m_pParent(parent),m_TextImage(TextImage)  
 {
 	m_Text = new osgText::Text;
 	m_FontSize = 20.0;
@@ -318,7 +318,7 @@ Entity2D *UI_GameClient::AddEntity(const char EntityName[],const Entity_Properti
 	ui_ship->Initialize(&TextImage,Dimension);
 
 	assert(TextImage);
-	osg::ref_ptr<Actor_Text> NewActor=new Actor_Text(TextImage);
+	osg::ref_ptr<Actor_Text> NewActor=new Actor_Text(this,TextImage);
 	NewActor->GetCharacterDimensions()=Dimension;
 
 	//This can be removed if we do not want to see this image
@@ -366,6 +366,7 @@ void UI_GameClient::RemoveEntity(const char EntityName[])
 //This only manages adding and removing nodes not their positions
 void UI_GameClient::UpdateScene(osg::Group *rootNode,osg::Geode *geode)
 {
+	m_RootNode=rootNode;
 	OpenThreads::ScopedLock<OpenThreads::Mutex> lock(m_BlockActorLists);
 	//first lets remove nodes
 	if (m_OldActors.size())

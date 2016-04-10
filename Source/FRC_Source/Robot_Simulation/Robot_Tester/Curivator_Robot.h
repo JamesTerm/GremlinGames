@@ -413,7 +413,11 @@ class Curivator_Robot_UI : public Curivator_Robot, public Curivator_Robot_Contro
 		private:
 			Curivator_Robot_UI *m_pParent;
 		} *m_LinesUpdate;
+		Actor_Text *m_UI_Parent;
 		Tank_Robot_UI m_TankUI;
 		osg::ref_ptr<osg::Vec3Array> m_VertexData;
+		osg::ref_ptr<osg::Vec4Array> m_ColorData;
+		osg::ref_ptr<osg::Geometry> m_Circle;
+		osg::ref_ptr<osg::PositionAttitudeTransform> m_CircleTransform;
 };
 #endif //Robot_TesterCode
