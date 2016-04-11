@@ -126,6 +126,7 @@ class Curivator_Robot : public Tank_Robot
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 		void FreezeArm(bool isOn) {m_FreezeArm=isOn;}
+		bool TestBucketAngleContinuity();
 
 	protected:
 		class Turret
