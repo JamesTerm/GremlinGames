@@ -880,6 +880,12 @@ void Curivator_Robot::GoalComplete()
 }
 #endif
 
+bool Curivator_Robot::TestBucketAngleContinuity()
+{
+	double testLimits_deg=fabs(m_BucketAngle.AsEntity1D().GetPos_m()-RAD_2_DEG( m_Bucket.GetBucketAngle()));
+	return (testLimits_deg>1.0);
+}
+
 
   /***********************************************************************************************************************************/
  /*													Curivator_Robot_Properties														*/
@@ -1692,6 +1698,19 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 	const double OpeningUpperPoint_y=bucket.GetBucketTipHeight()+(sin(GlobalBucketAngle)*OpeningLength);
 	const double OpeningUpperPoint_x=bucket.GetBucketLength()+(cos(GlobalBucketAngle)*OpeningLength);
 	(*m_pParent->m_VertexData)[8].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0 + yoffset, 0.0);
+
+	//test limits
+	if (m_pParent->TestBucketAngleContinuity())
+	{
+		(*m_pParent->m_ColorData)[7].set(1.0f, 0.0f, 0.0f, 1.0f ); // bucket tip
+		(*m_pParent->m_ColorData)[8].set(1.0f, 0.0f, 0.0f, 1.0f ); //bucket angle
+	}
+	else
+	{
+		(*m_pParent->m_ColorData)[7].set(0.49f, 0.62f, 0.75f, 1.0f ); // bucket tip
+		(*m_pParent->m_ColorData)[8].set(0.98f, 0.78f, 0.64f, 1.0f ); //bucket angle
+	}
+
 	draw->dirtyDisplayList();
 	draw->dirtyBound();
 
