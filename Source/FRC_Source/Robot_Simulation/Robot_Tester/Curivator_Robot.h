@@ -32,6 +32,13 @@ public:
 	bool EnableArmAutoPosition;
 	struct Autonomous_Properties
 	{
+		enum AutonType
+		{
+			eDoNothing,
+			eJustMoveForward,
+			eNoAutonTypes
+		} AutonTest;
+
 		//void ShowAutonParameters(); //This will show SmartDashboard variables if ShowParameters is true
 		bool ShowParameters;   //If true ShowAutonParameters will populate SmartDashboard with autonomous parameters
 	} Autonomous_Props;
@@ -126,7 +133,8 @@ class Curivator_Robot : public Tank_Robot
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 		void FreezeArm(bool isOn) {m_FreezeArm=isOn;}
-		bool TestBucketAngleContinuity();
+		//simple computation between the target angle against the actual angle measured
+		double GetBucketAngleContinuity();
 
 	protected:
 		class Turret

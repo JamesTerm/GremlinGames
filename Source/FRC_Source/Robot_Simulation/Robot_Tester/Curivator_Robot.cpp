@@ -850,6 +850,8 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 #ifdef Robot_TesterCode
 void Curivator_Robot::TestAutonomous()
 {
+	//keep around to test geometry
+	#if 0
 	double BigArm_ShaftLength;
 	double Boom_ShaftLength;
 	double BucketShaftLength;
@@ -858,6 +860,8 @@ void Curivator_Robot::TestAutonomous()
 	ComputeArmPosition(-0.97606122071131374,32.801521314123598,78.070524788111342,13.19097419,
 		BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength);
 	return;
+	#endif
+
 	Goal *oldgoal=ClearGoal();
 	if (oldgoal)
 		delete oldgoal;
@@ -880,10 +884,10 @@ void Curivator_Robot::GoalComplete()
 }
 #endif
 
-bool Curivator_Robot::TestBucketAngleContinuity()
+double Curivator_Robot::GetBucketAngleContinuity()
 {
 	double testLimits_deg=fabs(m_BucketAngle.AsEntity1D().GetPos_m()-RAD_2_DEG( m_Bucket.GetBucketAngle()));
-	return (testLimits_deg>1.0);
+	return testLimits_deg;
 }
 
 
@@ -1140,9 +1144,10 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 		{
 			struct Curivator_Robot_Props::Autonomous_Properties &auton=m_CurivatorRobotProps.Autonomous_Props;
 			{
-				//err = script.GetField("first_move_ft", NULL, NULL,&fTest);
-				//if (!err)
-				//	auton.FirstMove_ft=fTest;
+				double fTest;
+				err = script.GetField("auton_test", NULL, NULL,&fTest);
+				if (!err)
+					auton.AutonTest=(Curivator_Robot_Props::Autonomous_Properties::AutonType)((int)fTest);
 
 				//err = script.GetField("side_move_rad", NULL, NULL,&fTest);
 				//if (!err)
@@ -1203,7 +1208,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 			void Activate()  {	m_Status=eActive;	}
 			Goal_Status Process(double dTime_s)
 			{
-				const double AutonomousTimeLimit=15.0;
+				const double AutonomousTimeLimit=30.0*60.0; //level 1 30 minutes
 				double &Timer=m_Parent->m_Timer;
 				if (m_Status==eActive)
 				{
@@ -1260,12 +1265,6 @@ class Curivator_Goals_Impl : public AtomicGoal
 			}
 		};
 
-		enum AutonType
-		{
-			eDoNothing,
-			eJustMoveForward,
-			eNoAutonTypes
-		} m_AutonType;
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -1275,20 +1274,20 @@ class Curivator_Goals_Impl : public AtomicGoal
 		void Activate() 
 		{
 			m_Primer.AsGoal().Terminate();  //sanity check clear previous session
-
+			typedef Curivator_Robot_Props::Autonomous_Properties Autonomous_Properties;
 			//pull parameters from SmartDashboard
-			Curivator_Robot_Props::Autonomous_Properties &auton=m_Robot.GetAutonProps();
+			Autonomous_Properties &auton=m_Robot.GetAutonProps();
 			//auton.ShowAutonParameters();  //Grab again now in case user has tweaked values
 
-			m_AutonType = eDoNothing;  //TODO ... do something.  :)
-			printf("ball count=%d \n",m_AutonType);
-			switch(m_AutonType)
+			Autonomous_Properties::AutonType AutonTest = auton.AutonTest;  //TODO ... do something.  :)
+			printf("Testing=%d \n",AutonTest);
+			switch(AutonTest)
 			{
-			case eJustMoveForward:
+			case Autonomous_Properties::eJustMoveForward:
 				m_Primer.AddGoal(new MoveForward(this));
 				break;
-			case eDoNothing:
-			case eNoAutonTypes: //grrr windriver and warning 1250
+			case Autonomous_Properties::eDoNothing:
+			case Autonomous_Properties::eNoAutonTypes: //grrr windriver and warning 1250
 				break;
 			}
 			m_Primer.AddGoal(new goal_clock(this));
@@ -1312,7 +1311,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 Goal *Curivator_Goals::Get_Curivator_Autonomous(Curivator_Robot *Robot)
 {
 	Goal_NotifyWhenComplete *MainGoal=new Goal_NotifyWhenComplete(*Robot->GetEventMap(),(char *)"Complete");
-	SmartDashboard::PutNumber("Sequence",1.0);  //ensure we are on the right sequence
+	//SmartDashboard::PutNumber("Sequence",1.0);  //ensure we are on the right sequence
 	//Inserted in reverse since this is LIFO stack list
 	MainGoal->AddSubgoal(new Curivator_Goals_Impl(*Robot));
 	//MainGoal->AddSubgoal(goal_waitforturret);
@@ -1699,16 +1698,17 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 	const double OpeningUpperPoint_x=bucket.GetBucketLength()+(cos(GlobalBucketAngle)*OpeningLength);
 	(*m_pParent->m_VertexData)[8].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0 + yoffset, 0.0);
 
-	//test limits
-	if (m_pParent->TestBucketAngleContinuity())
+	//perform blend as this will give us an intuitive idea of how far off the angle is
 	{
-		(*m_pParent->m_ColorData)[7].set(1.0f, 0.0f, 0.0f, 1.0f ); // bucket tip
-		(*m_pParent->m_ColorData)[8].set(1.0f, 0.0f, 0.0f, 1.0f ); //bucket angle
-	}
-	else
-	{
-		(*m_pParent->m_ColorData)[7].set(0.49f, 0.62f, 0.75f, 1.0f ); // bucket tip
-		(*m_pParent->m_ColorData)[8].set(0.98f, 0.78f, 0.64f, 1.0f ); //bucket angle
+		const double toleranceScale=3.0;  //we'll have to guage this on the actual bot
+		const double errorRatio=std::min(m_pParent->GetBucketAngleContinuity()/toleranceScale,1.0);  //set to clip at 1.0 so its normalized
+		const Vec3 errorColor(1,0,0);
+		const Vec3 bucketTipColor(0.49,0.62,0.75);
+		const Vec3 bucketAngleColor(0.98,0.78,0.64);
+		const Vec3 BlendTipColor=errorColor*errorRatio + bucketTipColor*(1.0-errorRatio);
+		const Vec3 BlendAngleColor=errorColor*errorRatio + bucketAngleColor*(1.0-errorRatio);
+		(*m_pParent->m_ColorData)[7].set(BlendTipColor[0],BlendTipColor[1],BlendTipColor[2], 1.0f ); // bucket tip
+		(*m_pParent->m_ColorData)[8].set(BlendAngleColor[0],BlendAngleColor[1],BlendAngleColor[2], 1.0f ); //bucket angle
 	}
 
 	draw->dirtyDisplayList();
