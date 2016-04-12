@@ -1607,11 +1607,12 @@ void Curivator_Robot_Control::OpenSolenoid(size_t index,bool Open)
  /*												Curivator_Robot_UI												*/
 /***************************************************************************************************************/
 const double Curivator_Robot_UI_LinesVerticalOffset=100.0;
+const double Curivator_Robot_UI_LinesHorizontalOffset=100.0;
 Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robot(EntityName,this),Curivator_Robot_Control(),
 		m_TankUI(this)
 {
 	m_VertexData = new osg::Vec3Array;  //this will auto terminate
-	m_VertexData->push_back(osg::Vec3(0,Curivator_Robot_UI_LinesVerticalOffset,0)); 
+	m_VertexData->push_back(osg::Vec3(0,0,0)); 
 	m_VertexData->push_back(osg::Vec3(0,0,0)); 
 	m_VertexData->push_back(osg::Vec3(0,0,0)); 
 	m_VertexData->push_back(osg::Vec3(0,0,0));
@@ -1678,25 +1679,24 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 	Curivator_Robot::Boom &boom=m_pParent->m_Boom;
 	Curivator_Robot::Bucket &bucket=m_pParent->m_Bucket;
 	Curivator_Robot::Clasp &clasp=m_pParent->m_Clasp;
-	const double yoffset=Curivator_Robot_UI_LinesVerticalOffset;
-	(*m_pParent->m_VertexData)[1].set(bigArm.GetBigArmLength() * 10.0,bigArm.GetBigArmHeight() * 10.0 + yoffset,  0.0);
-	(*m_pParent->m_VertexData)[2].set( boom.GetBoomLength() * 10.0,boom.GetBoomHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[1].set(bigArm.GetBigArmLength() * 10.0,bigArm.GetBigArmHeight() * 10.0,  0.0);
+	(*m_pParent->m_VertexData)[2].set( boom.GetBoomLength() * 10.0,boom.GetBoomHeight() * 10.0, 0.0);
 	//note: the boom length is really the rocker pivot point... cache the actual bucket pivot point here
 	const double BucketPivotPoint_y=boom.GetBoomHeight()-bucket.GetBucket_globalBRP_BP_height();
 	const double BucketPivotPoint_x=boom.GetBoomLength()+bucket.GetBucket_globalBRP_BP_distance();
-	(*m_pParent->m_VertexData)[3].set( BucketPivotPoint_x * 10.0,BucketPivotPoint_y * 10.0 + yoffset, 0.0);
-	(*m_pParent->m_VertexData)[4].set( clasp.GetClaspLength() * 10.0,clasp.GetClaspMidlineHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[3].set( BucketPivotPoint_x * 10.0,BucketPivotPoint_y * 10.0, 0.0);
+	(*m_pParent->m_VertexData)[4].set( clasp.GetClaspLength() * 10.0,clasp.GetClaspMidlineHeight() * 10.0, 0.0);
 	//retrace to boom point for clasp
-	(*m_pParent->m_VertexData)[5].set( BucketPivotPoint_x * 10.0,BucketPivotPoint_y * 10.0 + yoffset, 0.0);
-	(*m_pParent->m_VertexData)[6].set( bucket.GetCoMDistance() * 10.0,bucket.GetCoMHeight() * 10.0 + yoffset, 0.0);
-	//(*m_pParent->m_VertexData)[7].set( bucket.GetCoMDistance() * 10.0,bucket.GetBucketRoundEndHeight() * 10.0 + yoffset, 0.0);
-	(*m_pParent->m_VertexData)[7].set( bucket.GetBucketLength() * 10.0,bucket.GetBucketTipHeight() * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[5].set( BucketPivotPoint_x * 10.0,BucketPivotPoint_y * 10.0, 0.0);
+	(*m_pParent->m_VertexData)[6].set( bucket.GetCoMDistance() * 10.0,bucket.GetCoMHeight() * 10.0, 0.0);
+	//(*m_pParent->m_VertexData)[7].set( bucket.GetCoMDistance() * 10.0,bucket.GetBucketRoundEndHeight() * 10.0, 0.0);
+	(*m_pParent->m_VertexData)[7].set( bucket.GetBucketLength() * 10.0,bucket.GetBucketTipHeight() * 10.0, 0.0);
 	//finally we'll just compute the bucket angle here
 	const double GlobalBucketAngle=bucket.GetBucketAngle();
 	const double OpeningLength=10.0;  //it really is 10 inches in the original sketch of the bucket
 	const double OpeningUpperPoint_y=bucket.GetBucketTipHeight()+(sin(GlobalBucketAngle)*OpeningLength);
 	const double OpeningUpperPoint_x=bucket.GetBucketLength()+(cos(GlobalBucketAngle)*OpeningLength);
-	(*m_pParent->m_VertexData)[8].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0 + yoffset, 0.0);
+	(*m_pParent->m_VertexData)[8].set( OpeningUpperPoint_x * 10.0,OpeningUpperPoint_y * 10.0, 0.0);
 
 	//perform blend as this will give us an intuitive idea of how far off the angle is
 	{
@@ -1711,11 +1711,17 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 		(*m_pParent->m_ColorData)[8].set(BlendAngleColor[0],BlendAngleColor[1],BlendAngleColor[2], 1.0f ); //bucket angle
 	}
 
+	
+	
+
 	draw->dirtyDisplayList();
 	draw->dirtyBound();
 
+	m_pParent->m_ArmTransform->setPosition( osg::Vec3(Curivator_Robot_UI_LinesHorizontalOffset,Curivator_Robot_UI_LinesVerticalOffset, 0.0) ); 
+
 	//update circle too (we'll just borrow this callback)
-	m_pParent->m_CircleTransform->setPosition( osg::Vec3( bucket.GetCoMDistance() * 10.0,bucket.GetCoMHeight() * 10.0 + yoffset, 0.0) ); 
+	m_pParent->m_CircleTransform->setPosition( osg::Vec3( ((bucket.GetCoMDistance() * 10.0)+Curivator_Robot_UI_LinesHorizontalOffset),
+		(bucket.GetCoMHeight() * 10.0)+Curivator_Robot_UI_LinesVerticalOffset, 0.0) ); 
 	m_pParent->m_CircleTransform->setAttitude(osg::Quat(
 		0.0	, osg::Vec3d(1,0,0),
 		0.0	, osg::Vec3d(0,1,0),
@@ -1802,7 +1808,9 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		linesGeom->setColorArray(m_ColorData);
 		linesGeom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
 
-		geode->addDrawable(linesGeom);
+		osg::Geode* ArmGeode = new osg::Geode;
+		ArmGeode->addDrawable(linesGeom);
+		//geode->addDrawable(linesGeom);
 
 		//vertexData->push_back(osg::Vec3(0,0,0)); 
 		//vertexData->push_back(osg::Vec3(500,200,0)); 
@@ -1810,6 +1818,11 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		linesGeom->setUpdateCallback(m_LinesUpdate);
 		drawArrayLines->setFirst(0); 
 		drawArrayLines->setCount(m_VertexData->size());
+		//now for the transform
+		osg::ref_ptr<osg::Group> rootnode=m_UI_Parent->GetParent()->GetRootNode();
+		m_ArmTransform=new osg::PositionAttitudeTransform();
+		rootnode->addChild(m_ArmTransform);
+		m_ArmTransform->addChild(ArmGeode);
 
 		//add a circle
 		//m_Circle=create_circle(0,0,5*10.0);
@@ -1828,7 +1841,7 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		// Use the 'addChild' method of the osg::Group class to
 		// add the transform as a child of the root node and the
 		// pyramid node as a child of the transform.
-		m_UI_Parent->GetParent()->GetRootNode()->addChild(m_CircleTransform);
+		rootnode->addChild(m_CircleTransform);
 		m_CircleTransform->addChild(CircleGeode);
 
 		// Declare and initialize a Vec3 instance to change the

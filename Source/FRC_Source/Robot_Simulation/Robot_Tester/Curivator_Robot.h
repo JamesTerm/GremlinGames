@@ -427,6 +427,6 @@ class Curivator_Robot_UI : public Curivator_Robot, public Curivator_Robot_Contro
 		osg::ref_ptr<osg::Vec3Array> m_VertexData;
 		osg::ref_ptr<osg::Vec4Array> m_ColorData;
 		osg::ref_ptr<osg::Geometry> m_Circle;
-		osg::ref_ptr<osg::PositionAttitudeTransform> m_CircleTransform;
+		osg::ref_ptr<osg::PositionAttitudeTransform> m_CircleTransform,m_ArmTransform;
 };
 #endif //Robot_TesterCode
