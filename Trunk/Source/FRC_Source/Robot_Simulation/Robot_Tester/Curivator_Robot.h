@@ -278,6 +278,8 @@ class Curivator_Robot : public Tank_Robot
 		//Accessors needed for setting goals
 		Robot_Arm &GetArmXpos() {return m_ArmXpos;}
 		Robot_Arm &GetArmYpos() {return m_ArmYpos;}
+		Robot_Arm &GetBucketAngle() {return m_BucketAngle;}
+		Robot_Arm &GetClaspAngle() {return m_ClaspAngle;}
 		///Probably one of the most important computations... given a desired position and angle of the bucket, will provide the computations
 		///for each linear actuator.  Note the following is based from the point of origin which is where the big arm pivots.
 		/// \param GlobalHeight height positive number is above origin... negative is below (down)

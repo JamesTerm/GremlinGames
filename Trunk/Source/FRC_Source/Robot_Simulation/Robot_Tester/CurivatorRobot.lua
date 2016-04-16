@@ -392,7 +392,7 @@ MainRobot = {
 			{p=100, i=0, d=25},
 			pid_down=
 			{p=100, i=0, d=25},
-			tolerance=0.15,
+			tolerance=0.6,
 			tolerance_count=20,
 			voltage_multiply=1.0,
 			encoder_to_wheel_ratio=1.0,
@@ -423,7 +423,7 @@ MainRobot = {
 			{p=100, i=0, d=25},
 			pid_down=
 			{p=100, i=0, d=25},
-			tolerance=0.15,
+			tolerance=0.6,
 			tolerance_count=20,
 			voltage_multiply=1.0,
 			encoder_to_wheel_ratio=1.0,
@@ -557,8 +557,8 @@ MainRobot = {
 			control = "ch throttle quadrant",
 			--arm_xpos_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--arm_ypos_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			bucket_angle_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			clasp_angle_SetIntendedPosition = {type="joystick_analog", key=3, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--bucket_angle_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--clasp_angle_SetIntendedPosition = {type="joystick_analog", key=3, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Robot_SetDefensiveKeyValue = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 
 			Arm_SetPosRest     = {type="joystick_button", key=2, on_off=false},
