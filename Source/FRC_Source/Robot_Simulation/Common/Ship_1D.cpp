@@ -376,7 +376,10 @@ Goal::Goal_Status Goal_Ship1D_MoveToPosition::Process(double dTime_s)
 			}
 		}
 		else
+		{
+			printf("Goal_Ship1D_MoveToPosition failed\n");
 			m_Status=eFailed;  //Some thing else took control of the ship
+		}
 	}
 	return m_Status;
 }
