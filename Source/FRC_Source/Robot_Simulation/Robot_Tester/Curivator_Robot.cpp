@@ -1241,16 +1241,33 @@ class Curivator_Goals_Impl : public AtomicGoal
 			return goal_drive;
 		}
 
-		static Goal * Move_ArmPosition(Curivator_Goals_Impl *Parent,double height_in)
+		static Goal * Move_ArmXPosition(Curivator_Goals_Impl *Parent,double length_in)
 		{
 			Curivator_Robot *Robot=&Parent->m_Robot;
-			Curivator_Robot::Robot_Arm &Arm=Robot->GetArm();
-			//const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+			Curivator_Robot::Robot_Arm &Arm=Robot->GetArmXpos();
+			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eArm_Ypos).GetRotaryProps().PrecisionTolerance;
 			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
-			//const double position=Curivator_Robot::Robot_Arm::HeightToAngle_r(&Arm,Inches2Meters(height_in));
-			const double position=0;
-			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position);
+			const double position=length_in;
+			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance);
 			return goal_arm;
+		}
+		static Goal * Move_ArmYPosition(Curivator_Goals_Impl *Parent,double height_in)
+		{
+			Curivator_Robot *Robot=&Parent->m_Robot;
+			Curivator_Robot::Robot_Arm &Arm=Robot->GetArmYpos();
+			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eArm_Xpos).GetRotaryProps().PrecisionTolerance;
+			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			const double position=height_in;
+			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance);
+			return goal_arm;
+		}
+
+		static Goal * Move_ArmXYPosition(Curivator_Goals_Impl *Parent,double length_in,double height_in)
+		{
+			MultitaskGoal *goal=new MultitaskGoal;
+			goal->AddGoal(Move_ArmXPosition(Parent,length_in));
+			goal->AddGoal(Move_ArmYPosition(Parent,height_in));
+			return goal;
 		}
 
 		class MoveForward : public Generic_CompositeGoal, public SetUpProps
@@ -1265,6 +1282,42 @@ class Curivator_Goals_Impl : public AtomicGoal
 			}
 		};
 
+		class TestArmMove : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			TestArmMove(Curivator_Goals_Impl *Parent) : SetUpProps(Parent) {m_Status=eActive;}
+			virtual void Activate()
+			{
+				double length_in=30.0;
+				double height_in=0.0;
+				const char * const SmartNames[]={"testarm_length","testarm_height"};
+				double * const SmartVariables[]={&length_in,&height_in};
+
+				//Remember can't do this on cRIO since Thunder RIO has issue with using catch(...)
+				#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+				for (size_t i=0;i<2;i++)
+				{
+					try
+					{
+						*(SmartVariables[i])=SmartDashboard::GetNumber(SmartNames[i]);
+					}
+					catch (...)
+					{
+						//I may need to prime the pump here
+						SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
+					}
+				}
+				#else
+				for (size_t i=0;i<_countof(SmartNames);i++)
+				{
+					//I may need to prime the pump here
+					SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
+				}
+				#endif
+				AddSubgoal(Move_ArmXYPosition(m_Parent,length_in,height_in));
+				m_Status=eActive;
+			}
+		};
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -1279,12 +1332,15 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Autonomous_Properties &auton=m_Robot.GetAutonProps();
 			//auton.ShowAutonParameters();  //Grab again now in case user has tweaked values
 
-			Autonomous_Properties::AutonType AutonTest = auton.AutonTest;  //TODO ... do something.  :)
+			Autonomous_Properties::AutonType AutonTest = auton.AutonTest;
 			printf("Testing=%d \n",AutonTest);
 			switch(AutonTest)
 			{
 			case Autonomous_Properties::eJustMoveForward:
 				m_Primer.AddGoal(new MoveForward(this));
+				break;
+			case Autonomous_Properties::eTestArm:
+				m_Primer.AddGoal(new TestArmMove(this));
 				break;
 			case Autonomous_Properties::eDoNothing:
 			case Autonomous_Properties::eNoAutonTypes: //grrr windriver and warning 1250

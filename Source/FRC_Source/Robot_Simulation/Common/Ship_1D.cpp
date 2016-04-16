@@ -372,6 +372,7 @@ Goal::Goal_Status Goal_Ship1D_MoveToPosition::Process(double dTime_s)
 			{
 				//printf("completed %f\n",position_delta);
 				m_Status=eCompleted;
+				m_ship.SetRequestedVelocity(0.0);  //stop it
 			}
 		}
 		else

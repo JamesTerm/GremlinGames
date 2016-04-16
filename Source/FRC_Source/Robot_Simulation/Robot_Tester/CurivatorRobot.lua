@@ -31,6 +31,11 @@ Drive_MaxAccel=5
 skid=1
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
+-- Here are some auton tests
+AutonTest_DoNothing=0
+AutonTest_JustMoveForward=1
+AutonTest_TestArm=2
+
 MainRobot = {
 	version = 1.0;
 	control_assignments =
@@ -151,6 +156,7 @@ MainRobot = {
 	robot_settings =
 	{
 		ds_display_row=-1,					--This will display the coordinates and heading (may want to leave on)
+
 		enable_arm_auto_position='y',
 		height_presets =
 		--Heights are in inches
@@ -161,6 +167,7 @@ MainRobot = {
 			side_move_rad=10,
 			arm_height_in=12,
 			support_hotspot='n',
+			auton_test=AutonTest_TestArm,
 			show_auton_variables='y'
 		},
 
@@ -325,7 +332,7 @@ MainRobot = {
 			{p=100, i=0, d=25},
 			pid_down=
 			{p=100, i=0, d=25},
-			tolerance=0.15,
+			tolerance=0.6,
 			tolerance_count=20,
 			voltage_multiply=1.0,
 			encoder_to_wheel_ratio=1.0,
@@ -355,7 +362,7 @@ MainRobot = {
 			{p=0, i=0, d=0},
 			pid_down=
 			{p=0, i=0, d=0},
-			tolerance=0.15,
+			tolerance=0.6,
 			tolerance_count=20,
 			voltage_multiply=1.0,
 			encoder_to_wheel_ratio=1.0,
@@ -548,8 +555,8 @@ MainRobot = {
 		Joystick_5 =
 		{	
 			control = "ch throttle quadrant",
-			arm_xpos_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			arm_ypos_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--arm_xpos_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--arm_ypos_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			bucket_angle_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			clasp_angle_SetIntendedPosition = {type="joystick_analog", key=3, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Robot_SetDefensiveKeyValue = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
