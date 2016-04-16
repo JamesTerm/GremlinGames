@@ -1262,11 +1262,52 @@ class Curivator_Goals_Impl : public AtomicGoal
 			return goal_arm;
 		}
 
+		static Goal * Move_BucketAngle(Curivator_Goals_Impl *Parent,double Angle_Deg)
+		{
+			Curivator_Robot *Robot=&Parent->m_Robot;
+			Curivator_Robot::Robot_Arm &Arm=Robot->GetBucketAngle();
+			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eBucket_Angle).GetRotaryProps().PrecisionTolerance;
+			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			const double position=Angle_Deg;
+			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance);
+			return goal_arm;
+		}
+
+		static Goal * Move_ClaspAngle(Curivator_Goals_Impl *Parent,double Angle_Deg)
+		{
+			Curivator_Robot *Robot=&Parent->m_Robot;
+			Curivator_Robot::Robot_Arm &Arm=Robot->GetClaspAngle();
+			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eClasp_Angle).GetRotaryProps().PrecisionTolerance;
+			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			const double position=Angle_Deg;
+			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance);
+			return goal_arm;
+		}
+
 		static Goal * Move_ArmXYPosition(Curivator_Goals_Impl *Parent,double length_in,double height_in)
 		{
-			MultitaskGoal *goal=new MultitaskGoal;
+			MultitaskGoal *goal=new MultitaskGoal(true);
 			goal->AddGoal(Move_ArmXPosition(Parent,length_in));
 			goal->AddGoal(Move_ArmYPosition(Parent,height_in));
+			return goal;
+		}
+
+		static Goal * Move_BucketClaspAngle(Curivator_Goals_Impl *Parent,double Bucket_Angle_Deg,double Clasp_Angle_Deg)
+		{
+			MultitaskGoal *goal=new MultitaskGoal(true);
+			goal->AddGoal(Move_BucketAngle(Parent,Bucket_Angle_Deg));
+			goal->AddGoal(Move_ClaspAngle(Parent,Clasp_Angle_Deg));
+			return goal;
+		}
+
+		static Goal * Move_ArmAndBucket(Curivator_Goals_Impl *Parent,double length_in,double height_in,double Bucket_Angle_Deg,double Clasp_Angle_Deg)
+		{
+			MultitaskGoal *goal=new MultitaskGoal(true);
+			//I could have added both multi task goals here, but its easier to debug keeping it more flat lined
+			goal->AddGoal(Move_ArmXPosition(Parent,length_in));
+			goal->AddGoal(Move_ArmYPosition(Parent,height_in));
+			goal->AddGoal(Move_BucketAngle(Parent,Bucket_Angle_Deg));
+			goal->AddGoal(Move_ClaspAngle(Parent,Clasp_Angle_Deg));
 			return goal;
 		}
 
@@ -1290,12 +1331,14 @@ class Curivator_Goals_Impl : public AtomicGoal
 			{
 				double length_in=30.0;
 				double height_in=0.0;
-				const char * const SmartNames[]={"testarm_length","testarm_height"};
-				double * const SmartVariables[]={&length_in,&height_in};
+				double bucket_Angle_deg=78.0;
+				double clasp_Angle_deg=13.0;
+				const char * const SmartNames[]={"testarm_length","testarm_height","testarm_bucket","testarm_clasp"};
+				double * const SmartVariables[]={&length_in,&height_in,&bucket_Angle_deg,&clasp_Angle_deg};
 
 				//Remember can't do this on cRIO since Thunder RIO has issue with using catch(...)
 				#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
-				for (size_t i=0;i<2;i++)
+				for (size_t i=0;i<4;i++)
 				{
 					try
 					{
@@ -1314,7 +1357,13 @@ class Curivator_Goals_Impl : public AtomicGoal
 					SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
 				}
 				#endif
+				#if 1
+				//Note: order is reversed
 				AddSubgoal(Move_ArmXYPosition(m_Parent,length_in,height_in));
+				AddSubgoal(Move_BucketClaspAngle(m_Parent,bucket_Angle_deg,clasp_Angle_deg));
+				#else
+				AddSubgoal(Move_ArmAndBucket(m_Parent,length_in,height_in,bucket_Angle_deg,clasp_Angle_deg));
+				#endif
 				m_Status=eActive;
 			}
 		};
