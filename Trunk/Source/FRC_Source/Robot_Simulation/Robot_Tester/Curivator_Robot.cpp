@@ -1831,6 +1831,15 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 		0.0	, osg::Vec3d(1,0,0),
 		0.0	, osg::Vec3d(0,1,0),
 		GlobalBucketAngle + DEG_2_RAD(30.58112256) - PI_2, osg::Vec3d(0,0,1)));
+
+	//and goal
+	//Note: I kept the  + 0.0... for testing purposes to easily add an additional offset
+	m_pParent->m_GoalTransform->setPosition( osg::Vec3( (((m_pParent->m_ArmXpos.GetPos_m() + 0.0) * 10.0)+Curivator_Robot_UI_LinesHorizontalOffset),
+		(m_pParent->m_ArmYpos.GetPos_m() * 10.0)+Curivator_Robot_UI_LinesVerticalOffset, 0.0) ); 
+	m_pParent->m_GoalTransform->setAttitude(osg::Quat(
+		0.0	, osg::Vec3d(1,0,0),
+		0.0	, osg::Vec3d(0,1,0),
+		DEG_2_RAD(m_pParent->m_BucketAngle.GetPos_m()) , osg::Vec3d(0,0,1)));
 }
 
 /* Create circle in XY plane. */
@@ -1952,6 +1961,28 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		// Declare and initialize a Vec3 instance to change the
 		// position of the tank model in the scene
 		m_CircleTransform->setPosition( osg::Vec3(50,50,0) ); 
+
+		//setup the goal
+		osg::Geode *GoalGeode = new osg::Geode;
+		osg::Geometry *goalGeom = new osg::Geometry();
+		osg::DrawArrays *goal_line = new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP); 
+		goalGeom->addPrimitiveSet(goal_line);
+		osg::Vec3Array *goalVertexData = new osg::Vec3Array; 
+		goalVertexData->push_back(osg::Vec3(0,0,0)); 
+		const double goalLineLength=9.95569848;
+		goalVertexData->push_back(osg::Vec3(goalLineLength * 10.0,0,0)); 
+		goalGeom->setVertexArray(goalVertexData);
+		goal_line->setFirst(0); 
+		goal_line->setCount(goalVertexData->size());
+		osg::Vec4Array* Goalcolor = new osg::Vec4Array;
+		Goalcolor->push_back(osg::Vec4(0.0f, 1.0f, 0.0f, 1.0f) );
+		goalGeom->setColorArray(Goalcolor);
+		goalGeom->setColorBinding(osg::Geometry::BIND_OVERALL);
+		GoalGeode->addDrawable(goalGeom);
+		m_GoalTransform=new osg::PositionAttitudeTransform();
+		rootnode->addChild(m_GoalTransform);
+		m_GoalTransform->addChild(GoalGeode);
+		m_GoalTransform->setPosition( osg::Vec3(50,50,0) );
 	}
 }
 
