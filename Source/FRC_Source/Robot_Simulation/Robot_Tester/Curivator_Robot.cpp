@@ -693,6 +693,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"].Subscribe(ehl,*this,&Curivator_Robot::GoalComplete);
 		#endif
+		em->EventOnOff_Map["StopAuton"].Subscribe(ehl,*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Subscribe(ehl,*this, &Curivator_Robot::FreezeArm);
 		em->EventOnOff_Map["Robot_LockPosition"].Subscribe(ehl,*this, &Curivator_Robot::LockPosition);
 	}
@@ -702,6 +703,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["TestAuton"]  .Remove(*this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"]  .Remove(*this, &Curivator_Robot::GoalComplete);
 		#endif
+		em->EventOnOff_Map["StopAuton"].Remove(*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Remove(*this, &Curivator_Robot::FreezeArm);
 		em->EventOnOff_Map["Robot_LockPosition"].Remove(*this, &Curivator_Robot::LockPosition);
 	}
@@ -898,6 +900,12 @@ double Curivator_Robot::GetBucketAngleContinuity()
 	return testLimits_deg;
 }
 
+void Curivator_Robot::StopAuton(bool isOn)
+{
+	FreezeArm(isOn);
+	m_controller->GetUIController_RW()->SetAutoPilot(false);
+	LockPosition(false);
+}
 
   /***********************************************************************************************************************************/
  /*													Curivator_Robot_Properties														*/
@@ -1018,7 +1026,7 @@ const char * const g_Curivator_Controls_Events[] =
 	"arm_ypos_SetCurrentVelocity","arm_ypos_SetIntendedPosition","arm_ypos_SetPotentiometerSafety","arm_ypos_Advance","arm_ypos_Retract",
 	"bucket_angle_SetCurrentVelocity","bucket_angle_SetIntendedPosition","bucket_angle_SetPotentiometerSafety","bucket_angle_Advance","bucket_angle_Retract",
 	"clasp_angle_SetCurrentVelocity","clasp_angle_SetIntendedPosition","clasp_angle_SetPotentiometerSafety","clasp_angle_Advance","clasp_angle_Retract",
-	"TestAuton","Robot_FreezeArm","Robot_LockPosition"
+	"TestAuton","Robot_FreezeArm","Robot_LockPosition","StopAuton"
 };
 
 const char *Curivator_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
@@ -1186,7 +1194,9 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
   /***********************************************************************************************************************************/
  /*															Curivator_Goals															*/
 /***********************************************************************************************************************************/
-
+const double CurivatorGoal_StartingPosition[4]={13.0,4.0,60.0,5.0};
+const double CurivatorGoal_HoverPosition[4]={38.0,0.0,103.0,45.0};
+const double CurivatorGoal_PickupPosition[4]={38.0,-10.0,103.0,45.0};
 
 class Curivator_Goals_Impl : public AtomicGoal
 {
@@ -1346,9 +1356,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 			{
 				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_LockPosition",false));
 				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_FreezeArm",false));
-				AddSubgoal(new Goal_Wait(0.5));
+				AddSubgoal(new Goal_Wait(0.2));
 				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_FreezeArm",true));
-				AddSubgoal(new Goal_Wait(0.5));
+				AddSubgoal(new Goal_Wait(0.4));
 				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_LockPosition",true));
 				m_Status=eActive;
 			}
@@ -1366,40 +1376,16 @@ class Curivator_Goals_Impl : public AtomicGoal
 			}
 		};
 
-		class TestArmMove : public Generic_CompositeGoal, public SetUpProps
+		class SetArmWaypoint : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
-			TestArmMove(Curivator_Goals_Impl *Parent) : SetUpProps(Parent) {m_Status=eActive;}
+			SetArmWaypoint(Curivator_Goals_Impl *Parent,double length_in,double height_in,double bucket_Angle_deg,double clasp_Angle_deg) : 
+			  SetUpProps(Parent),m_length_in(length_in),m_height_in(height_in),m_bucket_Angle_deg(bucket_Angle_deg),m_clasp_Angle_deg(clasp_Angle_deg)
+			  {		Activate();  //we can set it up ahead of time
+			  }
 			virtual void Activate()
 			{
-				double length_in=30.0;
-				double height_in=0.0;
-				double bucket_Angle_deg=78.0;
-				double clasp_Angle_deg=13.0;
-				const char * const SmartNames[]={"testarm_length","testarm_height","testarm_bucket","testarm_clasp"};
-				double * const SmartVariables[]={&length_in,&height_in,&bucket_Angle_deg,&clasp_Angle_deg};
-
-				//Remember can't do this on cRIO since Thunder RIO has issue with using catch(...)
-				#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
-				for (size_t i=0;i<4;i++)
-				{
-					try
-					{
-						*(SmartVariables[i])=SmartDashboard::GetNumber(SmartNames[i]);
-					}
-					catch (...)
-					{
-						//I may need to prime the pump here
-						SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
-					}
-				}
-				#else
-				for (size_t i=0;i<_countof(SmartNames);i++)
-				{
-					//I may need to prime the pump here
-					SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
-				}
-				#endif
+				if (m_Status==eActive) return;  //allow for multiple calls
 				#if 0
 				//Note: order is reversed
 				AddSubgoal(new RobotArmHoldStill(m_Parent));
@@ -1407,11 +1393,105 @@ class Curivator_Goals_Impl : public AtomicGoal
 				AddSubgoal(Move_BucketClaspAngle(m_Parent,bucket_Angle_deg,clasp_Angle_deg));
 				#else
 				AddSubgoal(new RobotArmHoldStill(m_Parent));
-				AddSubgoal(Move_ArmAndBucket(m_Parent,length_in,height_in,bucket_Angle_deg,clasp_Angle_deg));
+				AddSubgoal(Move_ArmAndBucket(m_Parent,m_length_in,m_height_in,m_bucket_Angle_deg,m_clasp_Angle_deg));
 				#endif
 				m_Status=eActive;
 			}
+		private:
+			const double m_length_in;
+			const double m_height_in;
+			const double m_bucket_Angle_deg;
+			const double m_clasp_Angle_deg;
 		};
+
+		static Goal * TestArmMove(Curivator_Goals_Impl *Parent)
+		{
+			double length_in=30.0;
+			double height_in=0.0;
+			double bucket_Angle_deg=78.0;
+			double clasp_Angle_deg=13.0;
+			const char * const SmartNames[]={"testarm_length","testarm_height","testarm_bucket","testarm_clasp"};
+			double * const SmartVariables[]={&length_in,&height_in,&bucket_Angle_deg,&clasp_Angle_deg};
+
+			//Remember can't do this on cRIO since Thunder RIO has issue with using catch(...)
+			#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+			for (size_t i=0;i<4;i++)
+			{
+				try
+				{
+					*(SmartVariables[i])=SmartDashboard::GetNumber(SmartNames[i]);
+				}
+				catch (...)
+				{
+					//I may need to prime the pump here
+					SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
+				}
+			}
+			#else
+			for (size_t i=0;i<_countof(SmartNames);i++)
+			{
+				//I may need to prime the pump here
+				SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
+			}
+			#endif
+			return new SetArmWaypoint(Parent,length_in,height_in,bucket_Angle_deg,clasp_Angle_deg);
+		}
+
+		class ArmGrabSequence : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			ArmGrabSequence(Curivator_Goals_Impl *Parent,double length_in,double height_in) : 
+			  SetUpProps(Parent),m_length_in(length_in),m_height_in(height_in)
+			  {		Activate();  //we can set it up ahead of time
+			  }
+			virtual void Activate()
+			{
+				if (m_Status==eActive) return;  //allow for multiple calls
+				AddSubgoal(new SetArmWaypoint(m_Parent,CurivatorGoal_StartingPosition[0],CurivatorGoal_StartingPosition[1],50.0,-7.0));
+				for (double angle=40;angle<=90;angle+=10)
+					AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,m_height_in,angle,-7.0)); //rotate bucket (slowly)
+				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,m_height_in,CurivatorGoal_PickupPosition[2],-7.0)); //close clasp
+				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,m_height_in,CurivatorGoal_PickupPosition[2],CurivatorGoal_PickupPosition[3]));  //pickup position
+				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,CurivatorGoal_HoverPosition[1],CurivatorGoal_HoverPosition[2],CurivatorGoal_HoverPosition[3]));
+				//TODO move this to another goal once we start working with the turret
+				AddSubgoal(new SetArmWaypoint(m_Parent,CurivatorGoal_StartingPosition[0],CurivatorGoal_StartingPosition[1],CurivatorGoal_StartingPosition[2],CurivatorGoal_StartingPosition[3]));
+				m_Status=eActive;
+			}
+		private:
+			const double m_length_in;
+			const double m_height_in;
+		};
+
+		static Goal * TestArmMove2(Curivator_Goals_Impl *Parent)
+		{
+			double length_in=38.0;
+			double height_in=-10.0;
+			const char * const SmartNames[]={"testarm_length","testarm_height"};
+			double * const SmartVariables[]={&length_in,&height_in};
+
+			//Remember can't do this on cRIO since Thunder RIO has issue with using catch(...)
+			#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+			for (size_t i=0;i<2;i++)
+			{
+				try
+				{
+					*(SmartVariables[i])=SmartDashboard::GetNumber(SmartNames[i]);
+				}
+				catch (...)
+				{
+					//I may need to prime the pump here
+					SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
+				}
+			}
+			#else
+			for (size_t i=0;i<_countof(SmartNames);i++)
+			{
+				//I may need to prime the pump here
+				SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
+			}
+			#endif
+			return new ArmGrabSequence(Parent,length_in,height_in);
+		}
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -1436,7 +1516,10 @@ class Curivator_Goals_Impl : public AtomicGoal
 				m_Primer.AddGoal(new MoveForward(this));
 				break;
 			case Autonomous_Properties::eTestArm:
-				m_Primer.AddGoal(new TestArmMove(this));
+				m_Primer.AddGoal(TestArmMove(this));
+				break;
+			case Autonomous_Properties::eArmGrabSequence:
+				m_Primer.AddGoal(TestArmMove2(this));
 				break;
 			case Autonomous_Properties::eDoNothing:
 			case Autonomous_Properties::eNoAutonTypes: //grrr windriver and warning 1250
@@ -1758,6 +1841,8 @@ void Curivator_Robot_Control::OpenSolenoid(size_t index,bool Open)
   /***************************************************************************************************************/
  /*												Curivator_Robot_UI												*/
 /***************************************************************************************************************/
+
+//#define __ShowUIGoal__
 const double Curivator_Robot_UI_LinesVerticalOffset=100.0;
 const double Curivator_Robot_UI_LinesHorizontalOffset=100.0;
 Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robot(EntityName,this),Curivator_Robot_Control(),
@@ -1879,6 +1964,7 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 		0.0	, osg::Vec3d(0,1,0),
 		GlobalBucketAngle + DEG_2_RAD(30.58112256) - PI_2, osg::Vec3d(0,0,1)));
 
+	#ifdef __ShowUIGoal__
 	//and goal
 	//Note: I kept the  + 0.0... for testing purposes to easily add an additional offset
 	m_pParent->m_GoalTransform->setPosition( osg::Vec3( (((m_pParent->m_ArmXpos.GetPos_m() + 0.0) * 10.0)+Curivator_Robot_UI_LinesHorizontalOffset),
@@ -1887,6 +1973,7 @@ void Curivator_Robot_UI::LinesUpdate::update(osg::NodeVisitor *nv, osg::Drawable
 		0.0	, osg::Vec3d(1,0,0),
 		0.0	, osg::Vec3d(0,1,0),
 		DEG_2_RAD(m_pParent->m_BucketAngle.GetPos_m()) , osg::Vec3d(0,0,1)));
+	#endif
 }
 
 /* Create circle in XY plane. */
@@ -2009,6 +2096,7 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		// position of the tank model in the scene
 		m_CircleTransform->setPosition( osg::Vec3(50,50,0) ); 
 
+		#ifdef __ShowUIGoal__
 		//setup the goal
 		osg::Geode *GoalGeode = new osg::Geode;
 		osg::Geometry *goalGeom = new osg::Geometry();
@@ -2030,6 +2118,7 @@ void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove)
 		rootnode->addChild(m_GoalTransform);
 		m_GoalTransform->addChild(GoalGeode);
 		m_GoalTransform->setPosition( osg::Vec3(50,50,0) );
+		#endif
 	}
 }
 
