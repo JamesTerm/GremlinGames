@@ -37,6 +37,7 @@ public:
 			eDoNothing,
 			eJustMoveForward,
 			eTestArm,
+			eArmGrabSequence,
 			eNoAutonTypes
 		} AutonTest;
 
@@ -135,6 +136,7 @@ class Curivator_Robot : public Tank_Robot
 		virtual void TimeChange(double dTime_s);
 		void FreezeArm(bool isOn) {m_FreezeArm=isOn;}
 		void LockPosition(bool isOn) {m_LockPosition=isOn;}
+		void StopAuton(bool isOn);  //just like freeze arm but puts things back in teleop
 		//simple computation between the target angle against the actual angle measured
 		double GetBucketAngleContinuity();
 

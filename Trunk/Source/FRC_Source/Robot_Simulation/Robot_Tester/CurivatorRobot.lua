@@ -35,6 +35,7 @@ gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) *
 AutonTest_DoNothing=0
 AutonTest_JustMoveForward=1
 AutonTest_TestArm=2
+AutonTest_GrabSequence=3
 
 MainRobot = {
 	version = 1.0;
@@ -167,7 +168,7 @@ MainRobot = {
 			side_move_rad=10,
 			arm_height_in=12,
 			support_hotspot='n',
-			auton_test=AutonTest_TestArm,
+			auton_test=AutonTest_GrabSequence,
 			show_auton_variables='y'
 		},
 
@@ -487,7 +488,7 @@ MainRobot = {
 			arm_ypos_Retract={type="keyboard", key='l', on_off=true},
 			clasp_angle_Advance={type="keyboard", key='o', on_off=true},
 			clasp_angle_Retract={type="keyboard", key='p', on_off=true},
-			Robot_FreezeArm={type="keyboard", key='x', on_off=true},
+			StopAuton={type="keyboard", key='x', on_off=true},
 		},
 		
 		Joystick_2 =
