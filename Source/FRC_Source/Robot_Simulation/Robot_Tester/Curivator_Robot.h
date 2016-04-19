@@ -306,10 +306,10 @@ class Curivator_Robot : public Tank_Robot
 		Boom m_Boom;
 		Bucket m_Bucket;
 		Clasp m_Clasp;
-	private:
 		Robot_Arm m_ArmXpos;
 		Robot_Arm m_ArmYpos;
 		Robot_Arm m_BucketAngle;
+	private:
 		Robot_Arm m_ClaspAngle;
 		Robot_Arm *mp_Arm[Curivator_Robot_NoRobotArm];  //A handy work-around to treat these as an array, by pointing to them
 		Curivator_Robot_Properties m_RobotProps;  //saves a copy of all the properties
@@ -430,7 +430,7 @@ class Curivator_Robot_UI : public Curivator_Robot, public Curivator_Robot_Contro
 		Tank_Robot_UI m_TankUI;
 		osg::ref_ptr<osg::Vec3Array> m_VertexData;
 		osg::ref_ptr<osg::Vec4Array> m_ColorData;
-		osg::ref_ptr<osg::Geometry> m_Circle;
-		osg::ref_ptr<osg::PositionAttitudeTransform> m_CircleTransform,m_ArmTransform;
+		osg::ref_ptr<osg::Geometry> m_Circle,m_Goal;
+		osg::ref_ptr<osg::PositionAttitudeTransform> m_CircleTransform,m_ArmTransform,m_GoalTransform;
 };
 #endif //Robot_TesterCode
