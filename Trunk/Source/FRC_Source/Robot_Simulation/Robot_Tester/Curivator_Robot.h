@@ -134,6 +134,7 @@ class Curivator_Robot : public Tank_Robot
 		virtual void ResetPos();
 		virtual void TimeChange(double dTime_s);
 		void FreezeArm(bool isOn) {m_FreezeArm=isOn;}
+		void LockPosition(bool isOn) {m_LockPosition=isOn;}
 		//simple computation between the target angle against the actual angle measured
 		double GetBucketAngleContinuity();
 
@@ -315,10 +316,16 @@ class Curivator_Robot : public Tank_Robot
 		Curivator_Robot_Properties m_RobotProps;  //saves a copy of all the properties
 		double m_LatencyCounter;
 
+		double m_Last_xpos;
+		double m_Last_ypos;
+		double m_Last_bucket_angle;
+		double m_Last_clasp_angle;
+
 		double m_YawErrorCorrection,m_PowerErrorCorrection;
 		size_t m_DefaultPresetIndex;
 		size_t m_AutonPresetIndex;  //used only because encoder tracking is disabled
-		bool m_FreezeArm;  //used mostly during calibration to have ability to stop movement
+		bool m_FreezeArm;  //used mostly during calibration to have ability to stop movement, also to freeze to a way point in auton
+		bool m_LockPosition; //used to allow a position to remain locked to allow arm to catch up and stabilize
 
 		#ifdef Robot_TesterCode
 		void TestAutonomous();
