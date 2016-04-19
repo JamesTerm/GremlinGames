@@ -516,7 +516,7 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control,m_Bucket),
 		m_ArmXpos(eArm_Xpos,this,robot_control),m_ArmYpos(eArm_Ypos,this,robot_control),m_BucketAngle(eBucket_Angle,this,robot_control),
 		m_ClaspAngle(eClasp_Angle,this,robot_control),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0),m_FreezeArm(false)
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0),m_FreezeArm(false),m_LockPosition(false)
 {
 	mp_Arm[eTurret]=&m_Turret;
 	mp_Arm[eArm]=&m_Arm;
@@ -631,10 +631,16 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	//Apply the position and rotation of bucket to their children
 	if (m_RobotProps.GetCurivatorRobotProps().EnableArmAutoPosition)
 	{
-		const double xpos=m_ArmXpos.GetPos_m();
-		const double ypos=m_ArmYpos.GetPos_m();
-		const double bucket_angle=m_BucketAngle.GetPos_m();
-		const double clasp_angle=m_ClaspAngle.GetPos_m();
+		const double xpos=!m_LockPosition?m_ArmXpos.GetPos_m():m_Last_xpos;
+		const double ypos=!m_LockPosition?m_ArmYpos.GetPos_m():m_Last_ypos;
+		const double bucket_angle=!m_LockPosition?m_BucketAngle.GetPos_m():m_Last_bucket_angle;
+		const double clasp_angle=!m_LockPosition?m_ClaspAngle.GetPos_m():m_Last_clasp_angle;
+		//no harm in always assigning these... for sake of avoiding a branch
+		m_Last_xpos=xpos;
+		m_Last_ypos=ypos;
+		m_Last_bucket_angle=bucket_angle;
+		m_Last_clasp_angle=clasp_angle;
+
 		SmartDashboard::PutNumber("arm_xpos",xpos);
 		SmartDashboard::PutNumber("arm_ypos",ypos);
 		SmartDashboard::PutNumber("bucket_angle",bucket_angle);
@@ -688,6 +694,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Complete"].Subscribe(ehl,*this,&Curivator_Robot::GoalComplete);
 		#endif
 		em->EventOnOff_Map["Robot_FreezeArm"].Subscribe(ehl,*this, &Curivator_Robot::FreezeArm);
+		em->EventOnOff_Map["Robot_LockPosition"].Subscribe(ehl,*this, &Curivator_Robot::LockPosition);
 	}
 	else
 	{
@@ -696,6 +703,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->Event_Map["Complete"]  .Remove(*this, &Curivator_Robot::GoalComplete);
 		#endif
 		em->EventOnOff_Map["Robot_FreezeArm"].Remove(*this, &Curivator_Robot::FreezeArm);
+		em->EventOnOff_Map["Robot_LockPosition"].Remove(*this, &Curivator_Robot::LockPosition);
 	}
 
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
@@ -1010,7 +1018,7 @@ const char * const g_Curivator_Controls_Events[] =
 	"arm_ypos_SetCurrentVelocity","arm_ypos_SetIntendedPosition","arm_ypos_SetPotentiometerSafety","arm_ypos_Advance","arm_ypos_Retract",
 	"bucket_angle_SetCurrentVelocity","bucket_angle_SetIntendedPosition","bucket_angle_SetPotentiometerSafety","bucket_angle_Advance","bucket_angle_Retract",
 	"clasp_angle_SetCurrentVelocity","clasp_angle_SetIntendedPosition","clasp_angle_SetPotentiometerSafety","clasp_angle_Advance","clasp_angle_Retract",
-	"TestAuton","Robot_FreezeArm"
+	"TestAuton","Robot_FreezeArm","Robot_LockPosition"
 };
 
 const char *Curivator_Robot_Properties::ControlEvents::LUA_Controls_GetEvents(size_t index) const
@@ -1311,6 +1319,41 @@ class Curivator_Goals_Impl : public AtomicGoal
 			return goal;
 		}
 
+		class RobotQuickNotify : public AtomicGoal, public SetUpProps
+		{
+		private:
+			std::string m_EventName;
+			bool m_IsOn;
+		public:
+			RobotQuickNotify(Curivator_Goals_Impl *Parent,char *EventName, bool On)	: SetUpProps(Parent),m_EventName(EventName),m_IsOn(On) 
+				{	m_Status=eInactive;	
+				}
+			virtual void Activate() {m_Status=eActive;}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				m_EventMap.EventOnOff_Map[m_EventName.c_str()].Fire(m_IsOn);
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
+		class RobotArmHoldStill : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			RobotArmHoldStill(Curivator_Goals_Impl *Parent)	: Generic_CompositeGoal(true),SetUpProps(Parent) {	m_Status=eInactive;	}
+			virtual void Activate()
+			{
+				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_LockPosition",false));
+				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_FreezeArm",false));
+				AddSubgoal(new Goal_Wait(0.5));
+				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_FreezeArm",true));
+				AddSubgoal(new Goal_Wait(0.5));
+				AddSubgoal(new RobotQuickNotify(m_Parent,"Robot_LockPosition",true));
+				m_Status=eActive;
+			}
+		};
+
 		class MoveForward : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
@@ -1357,11 +1400,13 @@ class Curivator_Goals_Impl : public AtomicGoal
 					SmartDashboard::PutNumber(SmartNames[i],*(SmartVariables[i]));
 				}
 				#endif
-				#if 1
+				#if 0
 				//Note: order is reversed
+				AddSubgoal(new RobotArmHoldStill(m_Parent));
 				AddSubgoal(Move_ArmXYPosition(m_Parent,length_in,height_in));
 				AddSubgoal(Move_BucketClaspAngle(m_Parent,bucket_Angle_deg,clasp_Angle_deg));
 				#else
+				AddSubgoal(new RobotArmHoldStill(m_Parent));
 				AddSubgoal(Move_ArmAndBucket(m_Parent,length_in,height_in,bucket_Angle_deg,clasp_Angle_deg));
 				#endif
 				m_Status=eActive;
@@ -1375,6 +1420,8 @@ class Curivator_Goals_Impl : public AtomicGoal
 		}
 		void Activate() 
 		{
+			//ensure arm is unfrozen... as we are about to move it
+			m_Robot.GetEventMap()->EventOnOff_Map["Robot_FreezeArm"].Fire(false);
 			m_Primer.AsGoal().Terminate();  //sanity check clear previous session
 			typedef Curivator_Robot_Props::Autonomous_Properties Autonomous_Properties;
 			//pull parameters from SmartDashboard
