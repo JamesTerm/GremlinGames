@@ -1195,8 +1195,8 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
  /*															Curivator_Goals															*/
 /***********************************************************************************************************************************/
 const double CurivatorGoal_StartingPosition[4]={13.0,4.0,60.0,5.0};
-const double CurivatorGoal_HoverPosition[4]={38.0,0.0,103.0,45.0};
-const double CurivatorGoal_PickupPosition[4]={38.0,-10.0,103.0,45.0};
+const double CurivatorGoal_HoverPosition[4]={39.0,0.0,90.0,45.0};
+const double CurivatorGoal_PickupPosition[4]={39.0,-20.0,90.0,45.0};
 
 class Curivator_Goals_Impl : public AtomicGoal
 {
@@ -1843,8 +1843,8 @@ void Curivator_Robot_Control::OpenSolenoid(size_t index,bool Open)
 /***************************************************************************************************************/
 
 //#define __ShowUIGoal__
-const double Curivator_Robot_UI_LinesVerticalOffset=100.0;
-const double Curivator_Robot_UI_LinesHorizontalOffset=100.0;
+const double Curivator_Robot_UI_LinesVerticalOffset=200.0;
+const double Curivator_Robot_UI_LinesHorizontalOffset=148.0;
 Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robot(EntityName,this),Curivator_Robot_Control(),
 		m_TankUI(this)
 {
