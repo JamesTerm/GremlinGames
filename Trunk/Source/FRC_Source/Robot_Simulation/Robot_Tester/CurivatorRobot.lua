@@ -169,6 +169,7 @@ MainRobot = {
 			arm_height_in=12,
 			support_hotspot='n',
 			auton_test=AutonTest_GrabSequence,
+			--auton_test=AutonTest_TestArm,
 			show_auton_variables='y'
 		},
 
