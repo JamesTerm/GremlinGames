@@ -725,7 +725,7 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
  /*														Swerve_Robot_Control														*/
 /***********************************************************************************************************************************/
 
-Swerve_Robot_Control::Swerve_Robot_Control() : m_DisplayVoltage(true)
+Swerve_Robot_Control::Swerve_Robot_Control(bool UseSafety) : m_DisplayVoltage(true)
 {
 	for (size_t i=0;i<4;i++)
 	{
