@@ -1,9 +1,16 @@
 #pragma once
+//#ifndef __UsingTankDrive__
+//#define __UsingTankDrive__
+//#endif
 
-
-class Curivator_Control_Interface :	public Tank_Drive_Control_Interface,
+class Curivator_Control_Interface :	
+									#ifdef __UsingTankDrive__
+									public Tank_Drive_Control_Interface,
 									public Robot_Control_Interface,
 									public Rotary_Control_Interface
+									#else
+									public Swerve_Drive_Control_Interface
+									#endif
 {
 public:
 	//This is primarily used for updates to dashboard and driver station during a test build
@@ -46,7 +53,11 @@ public:
 	} Autonomous_Props;
 };
 
+#ifdef __UsingTankDrive__
 class Curivator_Robot_Properties : public Tank_Robot_Properties
+#else
+class Curivator_Robot_Properties : public Swerve_Robot_Properties
+#endif
 {
 	public:
 		Curivator_Robot_Properties();
@@ -61,7 +72,11 @@ class Curivator_Robot_Properties : public Tank_Robot_Properties
 		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
 	private:
 		#ifndef Robot_TesterCode
+		#ifdef __UsingTankDrive__
 		typedef Tank_Robot_Properties __super;
+		#else
+		typedef Swerve_Robot_Properties __super;
+		#endif
 		#endif
 		Rotary_Pot_Properties m_RotaryProps[9];
 		Curivator_Robot_Props m_CurivatorRobotProps;
@@ -93,7 +108,11 @@ const char * const csz_Curivator_Robot_AnalogInputs_Enum[] =
 
 const size_t Curivator_Robot_NoRobotArm=9;  //This reflects Robot_Arm count, which does not include the drive speed controller devices
 
+#ifdef __UsingTankDrive__
 class Curivator_Robot : public Tank_Robot
+#else
+class Curivator_Robot : public Swerve_Robot
+#endif
 {
 	public:
 		enum SpeedControllerDevices
@@ -349,7 +368,7 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
 		void ResetPos();
 		#ifndef Robot_TesterCode
-		void SetSafety(bool UseSafety) {m_TankRobotControl.SetSafety(UseSafety);}
+		void SetSafety(bool UseSafety) {m_DriveRobotControl.SetSafety(UseSafety);}
 		#endif
 
 		Curivator_Control_Interface &AsControlInterface() {return *this;}
@@ -360,11 +379,17 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 		//virtual bool GetBoolSensorState(size_t index) const;
 		virtual void CloseSolenoid(size_t index,bool Close) {OpenSolenoid(index,!Close);}
 		virtual void OpenSolenoid(size_t index,bool Open);
+	#ifdef __UsingTankDrive__
 	protected: //from Tank_Drive_Control_Interface
-		virtual void Reset_Encoders() {m_pTankRobotControl->Reset_Encoders();}
-		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pTankRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
+		virtual void Reset_Encoders() {m_pDriveRobotControl->Reset_Encoders();}
+		virtual void GetLeftRightVelocity(double &LeftVelocity,double &RightVelocity) {m_pDriveRobotControl->GetLeftRightVelocity(LeftVelocity,RightVelocity);}
 		virtual void UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage);
-		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pTankRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
+		virtual void Tank_Drive_Control_TimeChange(double dTime_s) {m_pDriveRobotControl->Tank_Drive_Control_TimeChange(dTime_s);}
+	#else
+	protected: //from Swerve_Drive_Control_Interface
+		virtual void Swerve_Drive_Control_TimeChange(double dTime_s) {m_pDriveRobotControl->Swerve_Drive_Control_TimeChange(dTime_s);}
+		virtual void Reset_Encoders() {m_pDriveRobotControl->Reset_Encoders();}
+	#endif
 	protected: //from Rotary Interface
 		virtual void Reset_Rotary(size_t index=0); 
 		virtual double GetRotaryCurrentPorV(size_t index=0);
@@ -393,8 +418,13 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 
 	protected:
 		Curivator_Robot_Properties m_RobotProps;  //saves a copy of all the properties
-		Tank_Robot_Control m_TankRobotControl;
-		Tank_Drive_Control_Interface * const m_pTankRobotControl;  //This allows access to protected members
+		#ifdef __UsingTankDrive__
+		Tank_Robot_Control m_DriveRobotControl;
+		Tank_Drive_Control_Interface * const m_pDriveRobotControl;  //This allows access to protected members
+		#else
+		Swerve_Robot_Control m_DriveRobotControl;
+		Swerve_Drive_Control_Interface * const m_pDriveRobotControl;  //This allows access to protected members
+		#endif
 		Compressor *m_Compressor;
 		Accelerometer *m_RoboRIO_Accelerometer;
 		//All digital input reads are done on time change and cached to avoid multiple reads to the FPGA
@@ -436,7 +466,11 @@ class Curivator_Robot_UI : public Curivator_Robot, public Curivator_Robot_Contro
 			Curivator_Robot_UI *m_pParent;
 		} *m_LinesUpdate;
 		Actor_Text *m_UI_Parent;
-		Tank_Robot_UI m_TankUI;
+		#ifdef __UsingTankDrive__
+		Tank_Robot_UI m_DriveUI;
+		#else
+		Swerve_Robot_UI m_DriveUI;
+		#endif
 		osg::ref_ptr<osg::Vec3Array> m_VertexData;
 		osg::ref_ptr<osg::Vec4Array> m_ColorData;
 		osg::ref_ptr<osg::Geometry> m_Circle,m_Goal;

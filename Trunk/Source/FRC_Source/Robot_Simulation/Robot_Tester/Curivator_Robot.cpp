@@ -1,11 +1,16 @@
 #include "stdafx.h"
 #include "Robot_Tester.h"
+//#define __UsingTankDrive__
 
 #ifdef Robot_TesterCode
 namespace Robot_Tester
 {
-	#include "Tank_Robot_UI.h"
 	#include "CommonUI.h"
+	#ifdef __UsingTankDrive__
+	#include "Tank_Robot_UI.h"
+	#else
+	#include "Swerve_Robot_UI.h"
+	#endif
 	#include "Curivator_Robot.h"
 }
 
@@ -511,7 +516,11 @@ const double c_HalfCourtLength=c_CourtLength/2.0;
 const double c_HalfCourtWidth=c_CourtWidth/2.0;
 
 Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Interface *robot_control,bool IsAutonomous) : 
+#ifdef __UsingTankDrive__
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
+#else
+	Swerve_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
+#endif
 		m_Turret(eTurret,this,robot_control),m_Arm(eArm,this,robot_control),m_LatencyCounter(0.0),
 		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control,m_Bucket),
 		m_ArmXpos(eArm_Xpos,this,robot_control),m_ArmYpos(eArm_Ypos,this,robot_control),m_BucketAngle(eBucket_Angle,this,robot_control),
@@ -954,6 +963,7 @@ Curivator_Robot_Properties::Curivator_Robot_Properties()  : m_RobotControls(&s_C
 		m_CurivatorRobotProps=props;
 	}
 	{
+		#ifdef __UsingTankDrive__
 		Tank_Robot_Props props=m_TankRobotProps; //start with super class settings
 
 		//Late assign this to override the initial default
@@ -964,6 +974,7 @@ Curivator_Robot_Properties::Curivator_Robot_Properties()  : m_RobotControls(&s_C
 		props.LeftPID[1]=props.RightPID[1]=1.0; //set the I's to one... so it should be 1,1,0
 		props.MotorToWheelGearRatio=c_MotorToWheelGearRatio;
 		m_TankRobotProps=props;
+		#endif 
 	}
 	{
 		Rotary_Props props=m_RotaryProps[Curivator_Robot::eTurret].RotaryProps(); //start with super class settings
@@ -1253,7 +1264,11 @@ class Curivator_Goals_Impl : public AtomicGoal
 			wp.Power=1.0;
 			//Now to setup the goal
 			const bool LockOrientation=true;
+			#ifdef __UsingTankDrive__
 			const double PrecisionTolerance=Robot->GetRobotProps().GetTankRobotProps().PrecisionTolerance;
+			#else
+			const double PrecisionTolerance=Robot->GetRobotProps().GetSwerveRobotProps().PrecisionTolerance;
+			#endif
 			Goal_Ship_MoveToPosition *goal_drive=NULL;
 			goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
 			return goal_drive;
@@ -1465,7 +1480,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 		static Goal * TestArmMove2(Curivator_Goals_Impl *Parent)
 		{
 			double length_in=38.0;
-			double height_in=-10.0;
+			double height_in=-20.0;
 			const char * const SmartNames[]={"testarm_length","testarm_height"};
 			double * const SmartVariables[]={&length_in,&height_in};
 
@@ -1615,7 +1630,7 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 //	return ret;
 //}
 
-Curivator_Robot_Control::Curivator_Robot_Control(bool UseSafety) : m_TankRobotControl(UseSafety),m_pTankRobotControl(&m_TankRobotControl),
+Curivator_Robot_Control::Curivator_Robot_Control(bool UseSafety) : m_DriveRobotControl(UseSafety),m_pDriveRobotControl(&m_DriveRobotControl),
 		m_Compressor(NULL),m_RoboRIO_Accelerometer(NULL)
 {
 }
@@ -1665,8 +1680,13 @@ void Curivator_Robot_Control::BindAdditionalEventControls(bool Bind,Base::EventM
 
 void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 {
-	Tank_Drive_Control_Interface *tank_interface=m_pTankRobotControl;
+	#ifdef __UsingTankDrive__
+	Tank_Drive_Control_Interface *tank_interface=m_pDriveRobotControl;
 	tank_interface->Initialize(props);
+	#else
+	Swerve_Drive_Control_Interface *drive_interface=m_pDriveRobotControl;
+	drive_interface->Initialize(props);
+	#endif
 
 	const Curivator_Robot_Properties *robot_props=dynamic_cast<const Curivator_Robot_Properties *>(props);
 	if (robot_props)
@@ -1732,6 +1752,7 @@ void Curivator_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#endif
 }
 
+#ifdef __UsingTankDrive__
 void Curivator_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
 {
 	#ifdef __USING_6CIMS__
@@ -1747,8 +1768,9 @@ void Curivator_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double R
 		Victor_UpdateVoltage(Curivator_Robot::eRightDrive3,-(float)LeftVoltage * TankRobotProps.VoltageScalar_Left);
 	}
 	#endif
-	m_pTankRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
+	m_pDriveRobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
+#endif
 
 __inline double Curivator_Robot_Control::Pot_GetRawValue(size_t index)
 {
@@ -1846,7 +1868,7 @@ void Curivator_Robot_Control::OpenSolenoid(size_t index,bool Open)
 const double Curivator_Robot_UI_LinesVerticalOffset=200.0;
 const double Curivator_Robot_UI_LinesHorizontalOffset=148.0;
 Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robot(EntityName,this),Curivator_Robot_Control(),
-		m_TankUI(this)
+		m_DriveUI(this)
 {
 	m_VertexData = new osg::Vec3Array;  //this will auto terminate
 	m_VertexData->push_back(osg::Vec3(0,0,0)); 
@@ -1877,27 +1899,27 @@ Curivator_Robot_UI::Curivator_Robot_UI(const char EntityName[]) : Curivator_Robo
 void Curivator_Robot_UI::TimeChange(double dTime_s) 
 {
 	__super::TimeChange(dTime_s);
-	m_TankUI.TimeChange(dTime_s);
+	m_DriveUI.TimeChange(dTime_s);
 }
 
 void Curivator_Robot_UI::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
-	m_TankUI.Initialize(em,props);
+	m_DriveUI.Initialize(em,props);
 }
 
 void Curivator_Robot_UI::UI_Init(Actor_Text *parent) 
 {
 	m_UI_Parent=parent;
-	m_TankUI.UI_Init(parent);
+	m_DriveUI.UI_Init(parent);
 }
 void Curivator_Robot_UI::custom_update(osg::NodeVisitor *nv, osg::Drawable *draw,const osg::Vec3 &parent_pos) 
 {
-	m_TankUI.custom_update(nv,draw,parent_pos);
+	m_DriveUI.custom_update(nv,draw,parent_pos);
 }
 void Curivator_Robot_UI::Text_SizeToUse(double SizeToUse) 
 {
-	m_TankUI.Text_SizeToUse(SizeToUse);
+	m_DriveUI.Text_SizeToUse(SizeToUse);
 }
 
 #include <osg/Geometry>
@@ -2044,10 +2066,10 @@ osg::ref_ptr<osg::Geometry> bucket_round_end()
 
 void Curivator_Robot_UI::UpdateScene (osg::Geode *geode, bool AddOrRemove) 
 {
-	m_TankUI.UpdateScene(geode,AddOrRemove);
+	m_DriveUI.UpdateScene(geode,AddOrRemove);
 	if (AddOrRemove)
 	{
-		m_TankUI.UpdateScene(geode,AddOrRemove);
+		m_DriveUI.UpdateScene(geode,AddOrRemove);
 		osg::Geometry* linesGeom = new osg::Geometry();// is my geometry 
 		osg::DrawArrays* drawArrayLines = new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP); 
 		linesGeom->addPrimitiveSet(drawArrayLines); 

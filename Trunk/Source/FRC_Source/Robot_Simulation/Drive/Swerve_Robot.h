@@ -202,12 +202,16 @@ class DRIVE_API Swerve_Robot_Properties : public UI_Ship_Properties
 		#ifdef Robot_TesterCode
 		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
 		#endif
+		//note derived class will populate these properties because of where it is in the script 
+		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
+	protected:
+		Control_Assignment_Properties m_ControlAssignmentProps;
+		Swerve_Robot_Props m_SwerveRobotProps;
 	private:
 		//typedef Ship_Properties __super;
 		
 		//Note the drive properties is a measurement of linear movement (not angular velocity)
 		Rotary_Properties m_SwivelProps,m_DriveProps;
-		Swerve_Robot_Props m_SwerveRobotProps;
 		#ifdef Robot_TesterCode
 		EncoderSimulation_Properties m_EncoderSimulation;
 		#endif
@@ -218,7 +222,7 @@ class DRIVE_API Swerve_Robot_Properties : public UI_Ship_Properties
 class DRIVE_API Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 {
 	public:
-		Swerve_Robot_Control();
+		Swerve_Robot_Control(bool UseSafety=true);
 		void SetDisplayVoltage(bool display) {m_DisplayVoltage=display;}
 
 		//This is only needed for simulation
