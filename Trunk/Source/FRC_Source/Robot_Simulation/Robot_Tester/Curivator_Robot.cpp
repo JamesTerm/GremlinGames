@@ -519,7 +519,7 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 #ifdef __UsingTankDrive__
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 #else
-	Swerve_Robot(EntityName,robot_control,eRockerLeft,IsAutonomous), m_RobotControl(robot_control), 
+	Swerve_Robot(EntityName,robot_control,eDriveOffset,IsAutonomous), m_RobotControl(robot_control), 
 #endif
 		m_Turret(eTurret,this,robot_control),m_Arm(eArm,this,robot_control),m_LatencyCounter(0.0),
 		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control,m_Bucket),
@@ -1606,13 +1606,23 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		#endif
 		break;
 	}
-	VoltageScalar=m_RobotProps.GetRotaryProps(index).GetRotaryProps().VoltageScalar;
-	Voltage*=VoltageScalar;
-	std::string SmartLabel=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
-	SmartLabel[0]-=32; //Make first letter uppercase
-	SmartLabel+="Voltage";
-	SmartDashboard::PutNumber(SmartLabel.c_str(),Voltage);
-	Victor_UpdateVoltage(index,Voltage);
+	if (index<Curivator_Robot::eDriveOffset)
+	{
+		VoltageScalar=m_RobotProps.GetRotaryProps(index).GetRotaryProps().VoltageScalar;
+		Voltage*=VoltageScalar;
+		std::string SmartLabel=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
+		SmartLabel[0]-=32; //Make first letter uppercase
+		SmartLabel+="Voltage";
+		SmartDashboard::PutNumber(SmartLabel.c_str(),Voltage);
+		Victor_UpdateVoltage(index,Voltage);
+	}
+	#ifndef __UsingTankDrive__
+	else
+	{
+		assert(index>=Curivator_Robot::eDriveOffset);
+		m_pDriveRobotControl->UpdateRotaryVoltage(index-Curivator_Robot::eDriveOffset,Voltage);
+	}
+	#endif
 }
 
 //bool Curivator_Robot_Control::GetBoolSensorState(size_t index) const
@@ -1752,6 +1762,7 @@ void Curivator_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#endif
 }
 
+//Note: Swerve drive voltage does not need to update victors through this
 #ifdef __UsingTankDrive__
 void Curivator_Robot_Control::UpdateLeftRightVoltage(double LeftVoltage,double RightVoltage) 
 {
@@ -1849,6 +1860,13 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#endif
 		}
 		break;
+		default:
+			assert (index > Curivator_Robot::eClasp);
+			//Note: the arm position indexes remain open so no work to be done here for them
+			#ifndef __UsingTankDrive__
+			if (index>=Curivator_Robot::eDriveOffset)
+				result=m_pDriveRobotControl->GetRotaryCurrentPorV(index-Curivator_Robot::eDriveOffset);
+			#endif
 	}
 	return result;
 }
