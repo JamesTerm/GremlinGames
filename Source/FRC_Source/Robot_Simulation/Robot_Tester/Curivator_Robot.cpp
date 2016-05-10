@@ -519,7 +519,7 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 #ifdef __UsingTankDrive__
 	Tank_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
 #else
-	Swerve_Robot(EntityName,robot_control,IsAutonomous), m_RobotControl(robot_control), 
+	Swerve_Robot(EntityName,robot_control,eRockerLeft,IsAutonomous), m_RobotControl(robot_control), 
 #endif
 		m_Turret(eTurret,this,robot_control),m_Arm(eArm,this,robot_control),m_LatencyCounter(0.0),
 		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control,m_Bucket),

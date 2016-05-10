@@ -77,7 +77,7 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
-		Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous=false);
+		Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t EnumOffset=0,bool IsAutonomous=false);
 		~Swerve_Robot();
 		IEvent::HandlerList ehl;
 		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
