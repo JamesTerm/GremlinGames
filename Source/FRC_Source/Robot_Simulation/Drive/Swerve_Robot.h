@@ -53,6 +53,19 @@ struct Swerve_Robot_Props
 	bool EncoderReversed_Swivel[4];
 };
 
+
+const char * const csz_Swerve_Robot_SpeedControllerDevices_Enum[] =
+{
+	"wheel_fl","wheel_fr","wheel_rl","wheel_rr",
+	"swivel_fl","swivel_fr","swivel_rl","swivel_rr"
+};
+
+const char * const csz_Swerve_Robot_Inputs_Enum[] =
+{
+	"wheel_fl_enc","wheel_fr_enc","wheel_rl_enc","wheel_rr_enc",
+	"swivel_fl_pot","swivel_fr_pot","swivel_rl_pot","swivel_rr_pot"
+};
+
 class Swerve_Robot_UI;
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -180,6 +193,7 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 		double m_Heading;  //We take over the heading from physics
 		double m_HeadingUpdateTimer;
 		Tank_Steering m_TankSteering;  //adding controls for tank steering
+		size_t m_RotaryEnumOffset;  //cached from the constructor to shift where the rotary index enum begins
 	public:
 		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_VehicleDrive->GetSwerveVelocitiesFromIndex(index);}
 };

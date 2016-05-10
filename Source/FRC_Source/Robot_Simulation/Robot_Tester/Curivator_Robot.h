@@ -90,9 +90,12 @@ class Curivator_Robot_Properties : public Swerve_Robot_Properties
 		LUA_Controls_Properties m_RobotControls;
 };
 
+//Note: names and assignments after clasp are in the order as they are in Swerve_Robot.h Swerve_Robot_SpeedControllerDevices
+//They shouldn't be used in Curivator_Robot, but are added for completeness and error checking
 const char * const csz_Curivator_Robot_SpeedControllerDevices_Enum[] =
 {
-	"turret","arm","boom","bucket","clasp","arm_xpos","arm_ypos","bucket_angle","clasp_angle","rocker_left","rocker_right","bogie_left","bogie_right","left_drive_3","right_drive_3"
+	"turret","arm","boom","bucket","clasp","arm_xpos","arm_ypos","bucket_angle","clasp_angle",
+	"wheel_fl","wheel_fr","wheel_rl","wheel_rr","rocker_left","rocker_right","bogie_left","bogie_right",
 };
 
 //const char * const csz_Curivator_Robot_BoolSensorDevices_Enum[] =
@@ -101,9 +104,12 @@ const char * const csz_Curivator_Robot_SpeedControllerDevices_Enum[] =
 //};
 
 //Note: rotary systems share the same index as their speed controller counterpart
+//Note: names and assignments after clasp are in the order as they are in Swerve_Robot.h Swerve_Robot_SpeedControllerDevices
+//They shouldn't be used in Curivator_Robot, but are added for completeness and error checking
 const char * const csz_Curivator_Robot_AnalogInputs_Enum[] =
 {
-	"turret_pot","arm_pot","boom_pot","bucket_pot","clasp_pot","arm_xpos_pot","arm_ypos_pot","bucket_angle_pot","clasp_angle_pot","rocker_left_pot","rocker_right_pot","bogie_left_pot","bogie_right_pot"
+	"turret_pot","arm_pot","boom_pot","bucket_pot","clasp_pot","arm_xpos_pot","arm_ypos_pot","bucket_angle_pot","clasp_angle_pot",
+	"rocker_left_enc","rocker_right_enc","bogie_left_enc","bogie_right_enc","rocker_left_pot","rocker_right_pot","bogie_left_pot","bogie_right_pot"
 };
 
 const size_t Curivator_Robot_NoRobotArm=9;  //This reflects Robot_Arm count, which does not include the drive speed controller devices
@@ -117,8 +123,7 @@ class Curivator_Robot : public Swerve_Robot
 	public:
 		enum SpeedControllerDevices
 		{
-			eTurret,eArm,eBoom,eBucket,eClasp,eArm_Xpos,eArm_Ypos,eBucket_Angle,eClasp_Angle,eRockerLeft,eRockerRight,eBogieLeft,eBogieRight,
-			//eLeftDrive3,eRightDrive3,
+			eTurret,eArm,eBoom,eBucket,eClasp,eArm_Xpos,eArm_Ypos,eBucket_Angle,eClasp_Angle,eDriveOffset
 		};
 
 		static SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)

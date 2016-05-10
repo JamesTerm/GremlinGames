@@ -51,7 +51,8 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
 Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t EnumOffset,bool IsAutonomous) : 
 	Ship_Tester(EntityName), m_RobotControl(robot_control), m_IsAutonomous(IsAutonomous), m_VehicleDrive(NULL),
 	m_UsingEncoders(IsAutonomous), //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
-	m_Heading(0.0), m_HeadingUpdateTimer(0.0),m_TankSteering(this)
+	m_Heading(0.0), m_HeadingUpdateTimer(0.0),m_TankSteering(this),
+	m_RotaryEnumOffset(EnumOffset)
 {
 	m_Physics.SetHeadingToUse(&m_Heading);  //We manage the heading
 	const char * const ModuleName[]=
@@ -188,10 +189,10 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	}
 	else
 	{
-		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(eWheel_FL);
-		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(eWheel_FR);
-		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(eWheel_RL);
-		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(eWheel_RR);
+		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(eWheel_FL+m_RotaryEnumOffset);
+		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(eWheel_FR+m_RotaryEnumOffset);
+		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(eWheel_RL+m_RotaryEnumOffset);
+		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(eWheel_RR+m_RotaryEnumOffset);
 	}
 
 	if (m_SwerveRobotProps.IsOpen_Swivel)
@@ -203,10 +204,10 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	}
 	else
 	{
-		encoders.Velocity.Named.aFL=m_RobotControl->GetRotaryCurrentPorV(eSwivel_FL);
-		encoders.Velocity.Named.aFR=m_RobotControl->GetRotaryCurrentPorV(eSwivel_FR);
-		encoders.Velocity.Named.aRL=m_RobotControl->GetRotaryCurrentPorV(eSwivel_RL);
-		encoders.Velocity.Named.aRR=m_RobotControl->GetRotaryCurrentPorV(eSwivel_RR);
+		encoders.Velocity.Named.aFL=m_RobotControl->GetRotaryCurrentPorV(eSwivel_FL+m_RotaryEnumOffset);
+		encoders.Velocity.Named.aFR=m_RobotControl->GetRotaryCurrentPorV(eSwivel_FR+m_RotaryEnumOffset);
+		encoders.Velocity.Named.aRL=m_RobotControl->GetRotaryCurrentPorV(eSwivel_RL+m_RotaryEnumOffset);
+		encoders.Velocity.Named.aRR=m_RobotControl->GetRotaryCurrentPorV(eSwivel_RR+m_RotaryEnumOffset);
 	}
 
 	//Now the new UpdateVelocities was just called... work with these intended velocities
@@ -826,6 +827,20 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			result=NormalizeRotation2(m_Potentiometers[index-4].GetPotentiometerCurrentPosition());
 			break;
 	}
+
+	#ifdef Robot_TesterCode
+	#if 0
+	//Now to normalize it
+	//const Ship_1D_Props &shipprops=m_RobotProps.GetRotaryProps(index).GetShip_1D_Props();
+	//const double NormalizedResult= (result - shipprops.MinRange)  / (shipprops.MaxRange - shipprops.MinRange);
+	const char * const Prefix=csz_Swerve_Robot_Inputs_Enum[index];
+	string ContructedName;
+	ContructedName=Prefix,ContructedName+="_Raw";
+	SmartDashboard::PutNumber(ContructedName.c_str(),result);  //this one is a bit different as it is the selected units we use
+	//ContructedName=Prefix,ContructedName+="Pot_Raw";
+	//SmartDashboard::PutNumber(ContructedName.c_str(),NormalizedResult);
+	#endif
+	#endif
 	return result;
 }
 
@@ -855,6 +870,14 @@ void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 		}
 		break;
 	}
+	#if 0
+	//VoltageScalar=m_RobotProps.GetRotaryProps(index).GetRotaryProps().VoltageScalar;
+	//Voltage*=VoltageScalar;
+	std::string SmartLabel=csz_Swerve_Robot_SpeedControllerDevices_Enum[index];
+	SmartLabel[0]-=32; //Make first letter uppercase
+	SmartLabel+="_Voltage";
+	SmartDashboard::PutNumber(SmartLabel.c_str(),Voltage);
+	#endif
 }
 
 double Swerve_Robot_Control::RPS_To_LinearVelocity(double RPS)
