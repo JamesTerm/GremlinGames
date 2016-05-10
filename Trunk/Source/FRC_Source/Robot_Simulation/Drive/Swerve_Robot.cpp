@@ -48,7 +48,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
   /***********************************************************************************************************************************/
  /*															Swerve_Robot															*/
 /***********************************************************************************************************************************/
-Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,bool IsAutonomous) : 
+Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t EnumOffset,bool IsAutonomous) : 
 	Ship_Tester(EntityName), m_RobotControl(robot_control), m_IsAutonomous(IsAutonomous), m_VehicleDrive(NULL),
 	m_UsingEncoders(IsAutonomous), //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
 	m_Heading(0.0), m_HeadingUpdateTimer(0.0),m_TankSteering(this)
@@ -59,7 +59,7 @@ Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interfac
 		"ModuleLF","ModuleRF","ModuleLR","ModuleRR"
 	};
 	for (size_t i=0;i<4;i++)
-		m_DrivingModule[i]=new DrivingModule(ModuleName[i],m_RobotControl,i);
+		m_DrivingModule[i]=new DrivingModule(ModuleName[i],m_RobotControl,i+EnumOffset);
 }
 
 void Swerve_Robot::DestroyDrive() 
