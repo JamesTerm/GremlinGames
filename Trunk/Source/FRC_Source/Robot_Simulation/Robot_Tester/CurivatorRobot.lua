@@ -9,19 +9,25 @@ OunceInchToNewton=0.00706155183333
 Pounds2Kilograms=0.453592
 Deg2Rad=(1/180) * Pi
 
+wheel_diameter_Curivator_in=7.95
+wheel_diameter_Rabbit_in=6
+g_wheel_diameter_in=wheel_diameter_Rabbit_in   --This will determine the correct distance try to make accurate too
+WheelBase_Width_Rabbit_In=24.52198975	  --The wheel base will determine the turn rate, must be as accurate as possible!
+WheelBase_Length_Rabbit_In=28.7422  
+WheelBase_Width_Curivator_In=42.26
+WheelBase_Length_Curivator_In=38.46
+WheelBase_Length_In=WheelBase_Length_Rabbit_In
+WheelBase_Width_In=WheelBase_Width_Rabbit_In
 
-g_wheel_diameter_in=7.95   --This will determine the correct distance try to make accurate too
---WheelBase_Width_In=24.52198975	  --The wheel base will determine the turn rate, must be as accurate as possible!
---WheelBase_Length_In=28.7422  
-WheelBase_Width_In=42.26
-WheelBase_Length_In=38.46
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
-DriveGearSpeed = (255.15 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9 
-
+DriveGearSpeed_Curivator = (255.15 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9
+LowGearSpeed_Rabbit  = (346.6368 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9 
+DriveGearSpeed = LowGearSpeed_Rabbit
 Drive_MaxAccel=5
 --Swerve wheels means no skid
---skid=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
-skid=1
+skid_rabbit=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
+skid_curivator=1
+skid=skid_rabbit
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 -- Here are some auton tests

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Robot_Tester.h"
-//#define __UsingTankDrive__
+#define __UsingTankDrive__
 
 #ifdef Robot_TesterCode
 namespace Robot_Tester
