@@ -7,6 +7,9 @@ using namespace GG_Framework::Base;
 #undef __DisableShipSpeedBoost__
 #undef __DisableSpeedControl__  //This one is great for test purposes
 
+const double Pi2=M_PI*2.0;
+const double Pi=M_PI;
+
 
   /***************************************************************************************************************/
  /*													Ship_1D														*/
@@ -166,6 +169,8 @@ void Ship_1D::TimeChange(double dTime_s)
 		UpdateIntendedPosition(dTime_s);
 		//Determine the angular distance from the intended orientation
 		posDisplacement_m=m_IntendedPosition-GetPos_m();
+		//apply shortest angle equation to handle end cases properly
+		posDisplacement_m -= Pi2*floor(posDisplacement_m/Pi2+0.5);
 		PosDisplacementCallback(posDisplacement_m);  //call the callback with this value
 	}
 
