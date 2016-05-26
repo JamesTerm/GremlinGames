@@ -244,24 +244,30 @@ MainRobot = {
 			{p=100, i=0, d=25},
 			pid_down=
 			{p=100, i=0, d=25},
-			tolerance=0.15,
-			tolerance_count=20,
+			tolerance=0.3,
+			tolerance_count=1,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
-			pot_min_limit=155,
-			pot_max_limit=1125,
-			pot_range_flipped='y',
+			pot_min_limit=232,
+			pot_max_limit=890,
+			pot_range_flipped='n',
 			
-			max_speed=13.3,	
+			--max_speed=13.3,	
+			max_speed=6.0,
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
-			max_accel_forward=50,			--just go with what feels right
-			max_accel_reverse=50,
+			max_accel_forward=5,			--just go with what feels right
+			max_accel_reverse=5,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
+			predict_up=.200,
+			predict_down=.200,
 			--These min/max are in inch units
-			max_range= 12,
-			min_range=0,
+			max_range= 10,
+			min_range=1,
+			pot_offset=1,
 			starting_position=6,
+			forward_deadzone=0.23,
+			reverse_deadzone=0.23,
 			use_aggressive_stop = 'yes',
 		},
 		boom =
@@ -275,23 +281,34 @@ MainRobot = {
 			pid_down=
 			{p=100, i=0, d=25},
 			tolerance=0.15,
-			tolerance_count=20,
+			tolerance_count=1,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
-			pot_min_limit=155,
-			pot_max_limit=1125,
-			pot_range_flipped='y',
+			pot_min_limit=200,
+			pot_max_limit=834,
+			pot_range_flipped='n',
 			
-			max_speed=13.3,	
+			--max_speed=13.3,	
+			max_speed=6.0,
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
-			max_accel_forward=50,			--just go with what feels right
-			max_accel_reverse=50,
+			max_accel_forward=25,			--just go with what feels right
+			max_accel_reverse=25,
+			inv_max_accel_up = 0.0,
+			inv_max_decel_up = 0.0,
+			inv_max_accel_down = 0.0,
+			inv_max_decel_down = 0.0,
+
 			using_range=1,					--Warning Only use range if we have a potentiometer!
+			predict_up=.200,
+			predict_down=.200,
 			--These min/max are in inch units
-			max_range= 12,
-			min_range=0,
+			max_range= 10,
+			min_range=1,
+			pot_offset=1,
 			starting_position=6,
+			forward_deadzone=0.37,
+			reverse_deadzone=0.37,
 			use_aggressive_stop = 'yes',
 		},
 		bucket =
@@ -593,12 +610,13 @@ MainRobot = {
 			--clasp_angle_SetIntendedPosition = {type="joystick_analog", key=3, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Robot_SetDefensiveKeyValue = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 
-			Arm_SetPosRest     = {type="joystick_button", key=2, on_off=false},
-			Arm_SetTote2Height = {type="joystick_button", key=4, on_off=false},
-			Arm_SetTote3Height = {type="joystick_button", key=6, on_off=false},
-			Arm_SetTote4Height = {type="joystick_button", key=8, on_off=false},
-			Arm_SetTote5Height = {type="joystick_button", key=10, on_off=false},
-			Arm_SetTote6Height = {type="joystick_button", key=12, on_off=false}
+			--intermediate closed loop test point of each position control
+			--turret_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--arm_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--boom_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--bucket_SetIntendedPosition = {type="joystick_analog", key=3, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--clasp_SetIntendedPosition = {type="joystick_analog", key=4, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+
 		},
 
 	},

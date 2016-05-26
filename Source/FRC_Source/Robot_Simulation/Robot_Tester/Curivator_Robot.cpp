@@ -82,6 +82,7 @@ Curivator_Robot::Robot_Arm::Robot_Arm(size_t index,Curivator_Robot *parent,Rotar
 Rotary_Position_Control(csz_Curivator_Robot_SpeedControllerDevices_Enum[index],robot_control,index),m_Index(index),m_pParent(parent),m_LastIntendedPosition(0.0),
 	m_Advance(false),m_Retract(false)
 {
+	SmartDashboard::PutBoolean("Disable_Setpoints",false);
 }
 
 
@@ -133,7 +134,10 @@ void Curivator_Robot::Robot_Arm::TimeChange(double dTime_s)
 
 void Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus(double Position)
 {
-	 //TODO this may not be nessecary but no harm leaving it in for now
+	const bool Disable_Setpoints=SmartDashboard::GetBoolean("Disable_Setpoints");
+	if (Disable_Setpoints)
+		return;
+	 //TODO this may not be necessary but no harm leaving it in for now
 	if ((fabs(m_LastIntendedPosition-Position)>0.01)) 
 	{
 		m_LastIntendedPosition=Position; //grab it before all the conversions
@@ -224,7 +228,8 @@ void Curivator_Robot::BigArm::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	//Now to compute where we are based from our length of extension
 	//first start with the extension:
-	const double ShaftExtension_in=GetPos_m();  //expecting a value from 0-12 in inches
+	//Note: the position is inverted due to the nature of the darts... we subtract the range from position to aquire inverted value
+	const double ShaftExtension_in=m_Ship_1D_Props.MaxRange-m_Ship_1D_Props.MinRange-GetPos_m();  //expecting a value from 0-12 in inches
 	const double FullActuatorLength=ShaftExtension_in+BigArm_DistanceDartPivotToTip+BigArm_DistanceFromTipDartToClevis;  //from center point to center point
 	//Now that we know all three lengths to the triangle use law of cosines to solve the angle of the linear actuator
 	//c is FullActuatorLength
@@ -279,7 +284,8 @@ void Curivator_Robot::Boom::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	//Now to compute where we are based from our length of extension
 	//first start with the extension:
-	const double ShaftExtension_in=GetPos_m();  //expecting a value from 0-12 in inches
+	//Note: the position is inverted due to the nature of the darts... we subtract the range from position to aquire inverted value
+	const double ShaftExtension_in=m_Ship_1D_Props.MaxRange-m_Ship_1D_Props.MinRange-GetPos_m();  //expecting a value from 0-12 in inches
 	const double FullActuatorLength=ShaftExtension_in+Boom_DistanceDartPivotToTip+Boom_DistanceFromTipDartToClevis;  //from center point to center point
 	//Now that we know all three lengths to the triangle use law of cosines to solve the angle of the linear actuator
 	//c is FullActuatorLength
@@ -656,6 +662,9 @@ void Curivator_Robot::TimeChange(double dTime_s)
 		SmartDashboard::PutNumber("clasp_angle",clasp_angle);
 		double BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength;
 		ComputeArmPosition(ypos,xpos,bucket_angle,clasp_angle,BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength);
+		//invert the boom and big arm lengths due to how the darts are wired
+		Boom_ShaftLength=m_Boom.GetMaxRange()-m_Boom.GetMinRange()-Boom_ShaftLength;
+		BigArm_ShaftLength=m_Arm.GetMaxRange()-m_Arm.GetMinRange()-BigArm_ShaftLength;
 		SmartDashboard::PutNumber("BigArm_ShaftLength",BigArm_ShaftLength);
 		SmartDashboard::PutNumber("Boom_ShaftLength",Boom_ShaftLength);
 		SmartDashboard::PutNumber("BucketShaftLength",BucketShaftLength);
@@ -1591,6 +1600,7 @@ void Curivator_Robot_Control::ResetPos()
 
 void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
+	const bool SafetyLock=SmartDashboard::GetBoolean("SafetyLock");
 	double VoltageScalar=1.0;
 
 	switch (index)
@@ -1601,6 +1611,8 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	case Curivator_Robot::eBucket:
 	case Curivator_Robot::eClasp:
 		#ifdef Robot_TesterCode
+		if (SafetyLock)
+			Voltage=0.0;
 		m_Potentiometer[index].UpdatePotentiometerVoltage(Voltage);
 		m_Potentiometer[index].TimeChange();  //have this velocity immediately take effect
 		#endif
@@ -1614,6 +1626,8 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		SmartLabel[0]-=32; //Make first letter uppercase
 		SmartLabel+="Voltage";
 		SmartDashboard::PutNumber(SmartLabel.c_str(),Voltage);
+		if (SafetyLock)
+			Voltage=0.0;
 		Victor_UpdateVoltage(index,Voltage);
 	}
 	#ifndef __UsingTankDrive__
@@ -1716,6 +1730,11 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 	//For now... we'll use m_Compressor as the variable to determine first run, but perhaps this should be its own boolean here
 	if (!m_Compressor)
 	{
+		#ifdef Robot_TesterCode
+		SmartDashboard::PutBoolean("SafetyLock",false);
+		#else
+		SmartDashboard::PutBoolean("SafetyLock",true);
+		#endif
 		//This one one must also be called for the lists that are specific to the robot
 		RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
 		//This may return NULL for systems that do not support it
