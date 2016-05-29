@@ -1574,7 +1574,7 @@ void Curivator_Robot_Control::ResetPos()
 
 void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 {
-	const bool SafetyLock=SmartDashboard::GetBoolean("SafetyLock");
+	bool SafetyLock=SmartDashboard::GetBoolean("SafetyLock");
 	double VoltageScalar=1.0;
 
 	switch (index)
@@ -1591,12 +1591,10 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		std::string VoltageArmSafety=SmartLabel+"Disable";
 		const bool bVoltageArmDisable=SmartDashboard::GetBoolean(VoltageArmSafety.c_str());
 		if (bVoltageArmDisable)
-			Voltage=0.0;
+			SafetyLock=true;
 		#endif
 		#ifdef Robot_TesterCode
-		if (SafetyLock)   //seems redundant but needs to occur before I update the potentiometer
-			Voltage=0.0;
-		m_Potentiometer[index].UpdatePotentiometerVoltage(Voltage);
+		m_Potentiometer[index].UpdatePotentiometerVoltage(SafetyLock?0.0:Voltage);
 		m_Potentiometer[index].TimeChange();  //have this velocity immediately take effect
 		#endif
 		break;
