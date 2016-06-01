@@ -111,35 +111,27 @@ void Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus(double Position)
 	const bool Disable_Setpoints=SmartDashboard::GetBoolean("Disable_Setpoints");
 	if (Disable_Setpoints)
 		return;
-	 //TODO this may not be necessary but no harm leaving it in for now
-	if ((fabs(m_LastIntendedPosition-Position)>0.01)) 
+	//if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
 	{
-		m_LastIntendedPosition=Position; //grab it before all the conversions
-		Position=-Position; 
-		//By default this goes from -1 to 1.0 
-		//first get the range from 0 - 1
-		double positive_range = (Position * 0.5) + 0.5;
-		//positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=GetMinRange();
-		const double maxRange=GetMaxRange();
-		const double Scale=(maxRange-minRange);
-		Position=(positive_range * Scale) + minRange;
-		SetIntendedPosition(Position);
+		//if (((fabs(m_LastIntendedPosition-Position)<0.01)) || (!(IsZero(GetRequestedVelocity()))) )
+		//	return;
+		{
+			m_LastIntendedPosition=Position; //grab it before all the conversions
+			Position=-Position; 
+			//By default this goes from -1 to 1.0 
+			//first get the range from 0 - 1
+			double positive_range = (Position * 0.5) + 0.5;
+			//positive_range=positive_range>0.01?positive_range:0.0;
+			const double minRange=GetMinRange();
+			const double maxRange=GetMaxRange();
+			const double Scale=(maxRange-minRange);
+			Position=(positive_range * Scale) + minRange;
+			//DOUT5("Test=%f",RAD_2_DEG(Position));
+			SetIntendedPosition(Position);
+		}
 	}
-	else
-	{
-		double _Position=-m_LastIntendedPosition; 
-		//By default this goes from -1 to 1.0 
-		//first get the range from 0 - 1
-		double positive_range = (_Position * 0.5) + 0.5;
-		//positive_range=positive_range>0.01?positive_range:0.0;
-		const double minRange=GetMinRange();
-		const double maxRange=GetMaxRange();
-		const double Scale=(maxRange-minRange);
-		_Position=(positive_range * Scale) + minRange;
-
-		SetIntendedPosition(_Position);  //we have to send persistent updates for position
-	}
+	//else
+	//	SetRequestedVelocity_FromNormalized(Position);   //allow manual use of same control
 }
 
 void Curivator_Robot::Robot_Arm::BindAdditionalEventControls(bool Bind)
@@ -202,8 +194,8 @@ void Curivator_Robot::BigArm::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	//Now to compute where we are based from our length of extension
 	//first start with the extension:
-	//Note: the position is inverted due to the nature of the darts... we subtract the range from position to aquire inverted value
-	const double ShaftExtension_in=m_Ship_1D_Props.MaxRange-m_Ship_1D_Props.MinRange-GetPos_m();  //expecting a value from 0-12 in inches
+	//Note: the position is inverted due to the nature of the darts... we subtract the range from position to acquire inverted value
+	const double ShaftExtension_in=m_Ship_1D_Props.MaxRange-GetPos_m()+m_Ship_1D_Props.MinRange;  //expecting a value from 0-12 in inches
 	const double FullActuatorLength=ShaftExtension_in+BigArm_DistanceDartPivotToTip+BigArm_DistanceFromTipDartToClevis;  //from center point to center point
 	//Now that we know all three lengths to the triangle use law of cosines to solve the angle of the linear actuator
 	//c is FullActuatorLength
@@ -258,8 +250,8 @@ void Curivator_Robot::Boom::TimeChange(double dTime_s)
 	__super::TimeChange(dTime_s);
 	//Now to compute where we are based from our length of extension
 	//first start with the extension:
-	//Note: the position is inverted due to the nature of the darts... we subtract the range from position to aquire inverted value
-	const double ShaftExtension_in=m_Ship_1D_Props.MaxRange-m_Ship_1D_Props.MinRange-GetPos_m();  //expecting a value from 0-12 in inches
+	//Note: the position is inverted due to the nature of the darts... we subtract the range from position to acquire inverted value
+	const double ShaftExtension_in=m_Ship_1D_Props.MaxRange-GetPos_m()+m_Ship_1D_Props.MinRange;  //expecting a value from 0-12 in inches
 	const double FullActuatorLength=ShaftExtension_in+Boom_DistanceDartPivotToTip+Boom_DistanceFromTipDartToClevis;  //from center point to center point
 	//Now that we know all three lengths to the triangle use law of cosines to solve the angle of the linear actuator
 	//c is FullActuatorLength
@@ -637,8 +629,8 @@ void Curivator_Robot::TimeChange(double dTime_s)
 		double BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength;
 		ComputeArmPosition(ypos,xpos,bucket_angle,clasp_angle,BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength);
 		//invert the boom and big arm lengths due to how the darts are wired
-		Boom_ShaftLength=m_Boom.GetMaxRange()-m_Boom.GetMinRange()-Boom_ShaftLength;
-		BigArm_ShaftLength=m_Arm.GetMaxRange()-m_Arm.GetMinRange()-BigArm_ShaftLength;
+		Boom_ShaftLength=m_Boom.GetMaxRange()-Boom_ShaftLength+m_Boom.GetMinRange();
+		BigArm_ShaftLength=m_Arm.GetMaxRange()-BigArm_ShaftLength+m_Arm.GetMinRange();
 		SmartDashboard::PutNumber("BigArm_ShaftLength",BigArm_ShaftLength);
 		SmartDashboard::PutNumber("Boom_ShaftLength",Boom_ShaftLength);
 		SmartDashboard::PutNumber("BucketShaftLength",BucketShaftLength);
