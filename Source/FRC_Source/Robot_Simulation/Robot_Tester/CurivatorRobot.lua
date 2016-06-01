@@ -359,7 +359,9 @@ MainRobot = {
 			pot_max_limit=760,
 			pot_range_flipped='y',
 			
-			max_speed=3,	
+			max_speed=3,
+			max_speed_forward=1.5,
+			max_speed_reverse=-1.5,	
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
 			max_accel_forward=500,			--just go with what feels right
