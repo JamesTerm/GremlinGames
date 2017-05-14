@@ -258,6 +258,6 @@ class DRIVE_API Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 		Encoder_Simulator2 m_Encoders[4];
 		//cache voltage values for display
 		double m_EncoderVoltage[4],m_PotentiometerVoltage[4];
-		Swerve_Robot_Props m_SwerveRobotProps; //cached in the Initialize from specific robot
+		Swerve_Robot_Properties m_SwerveRobotProps; //cached in the Initialize from specific robot
 		bool m_DisplayVoltage;
 };

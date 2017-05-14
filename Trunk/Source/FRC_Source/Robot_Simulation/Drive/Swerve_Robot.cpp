@@ -190,13 +190,9 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	else
 	{
 		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(eWheel_FL+m_RotaryEnumOffset);
-		SmartDashboard::PutNumber("Wheel_FL_Encoder",encoders.Velocity.Named.sFL);
 		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(eWheel_FR+m_RotaryEnumOffset);
-		SmartDashboard::PutNumber("Wheel_FR_Encoder",encoders.Velocity.Named.sFR);
 		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(eWheel_RL+m_RotaryEnumOffset);
-		SmartDashboard::PutNumber("Wheel_RL_Encoder",encoders.Velocity.Named.sRL);
 		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(eWheel_RR+m_RotaryEnumOffset);
-		SmartDashboard::PutNumber("Wheel_RR_Encoder",encoders.Velocity.Named.sRR);
 	}
 
 	if (m_SwerveRobotProps.IsOpen_Swivel)
@@ -758,14 +754,14 @@ void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
 		m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
 
 		//This will copy all the props
-		m_SwerveRobotProps=robot_props->GetSwerveRobotProps();
+		m_SwerveRobotProps=*robot_props;
 		//We'll try to construct the props to match our properties
 		//Note: for max accel it needs to be powerful enough to handle curve equations
 		//Ship_1D_Properties props("SwerveEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
 		for (size_t i=0;i<4;i++)
 		{
 			m_Encoders[i].Initialize(&robot_props->GetDriveProps());
-			m_Encoders[i].SetReverseDirection(m_SwerveRobotProps.EncoderReversed_Wheel[i]);
+			m_Encoders[i].SetReverseDirection(robot_props->GetSwerveRobotProps().EncoderReversed_Wheel[i]);
 			m_Potentiometers[i].Initialize(&robot_props->GetSwivelProps());
 			//TODO add reverse direction support for potentiometers
 			//m_Potentiometers[i].SetReverseDirection(m_SwerveRobotProps.EncoderReversed_Swivel[i]);
@@ -833,36 +829,41 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case Swerve_Robot::eWheel_RL:
 		case Swerve_Robot::eWheel_RR:
 			result=m_Encoders[index].GetEncoderVelocity();
+			{
+				const char * const Prefix=csz_Swerve_Robot_SpeedControllerDevices_Enum[index];
+				string ContructedName;
+				ContructedName=Prefix,ContructedName+="_Encoder";
+				SmartDashboard::PutNumber(ContructedName.c_str(),result);
+			}
 			break;
 		case Swerve_Robot::eSwivel_FL:
 		case Swerve_Robot::eSwivel_FR:
 		case Swerve_Robot::eSwivel_RL:
 		case Swerve_Robot::eSwivel_RR:
 			result=NormalizeRotation2(m_Potentiometers[index-4].GetPotentiometerCurrentPosition());
+			{
+				//TODO we'll need to index the swivel props as these will need to be tuned individually
+				#ifdef Robot_TesterCode
+				//Now to normalize it
+				const Ship_1D_Props &shipprops=m_SwerveRobotProps.GetSwivelProps().GetShip_1D_Props();
+				const double NormalizedResult= (result - shipprops.MinRange)  / (shipprops.MaxRange - shipprops.MinRange);
+				const char * const Prefix=csz_Swerve_Robot_SpeedControllerDevices_Enum[index];
+				string ContructedName;
+				ContructedName=Prefix,ContructedName+="_Raw";
+				SmartDashboard::PutNumber(ContructedName.c_str(),result);  //this one is a bit different as it is the selected units we use
+				ContructedName=Prefix,ContructedName+="_Pot_Raw";
+				SmartDashboard::PutNumber(ContructedName.c_str(),NormalizedResult);
+				#endif
+			}
 			break;
 	}
 
-	#ifdef Robot_TesterCode
-	#if 0
-	//Now to normalize it
-	//const Ship_1D_Props &shipprops=m_RobotProps.GetRotaryProps(index).GetShip_1D_Props();
-	//const double NormalizedResult= (result - shipprops.MinRange)  / (shipprops.MaxRange - shipprops.MinRange);
-	const char * const Prefix=csz_Swerve_Robot_Inputs_Enum[index];
-	string ContructedName;
-	ContructedName=Prefix,ContructedName+="_Raw";
-	SmartDashboard::PutNumber(ContructedName.c_str(),result);  //this one is a bit different as it is the selected units we use
-	//ContructedName=Prefix,ContructedName+="Pot_Raw";
-	//SmartDashboard::PutNumber(ContructedName.c_str(),NormalizedResult);
-	#endif
-	#endif
 	return result;
 }
 
 void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 {
-	const char * const VoltagePrefix[8]={"Wheel_FL","Wheel_FR","Wheel_RL","Wheel_RR",
-										"Swivel_FL","Swivel_FR","Swivel_RL","Swivel_RR"};
-	std::string VoltageName=(index<8)?VoltagePrefix[index]:"OutOfRange";
+	std::string VoltageName=(index<8)?csz_Swerve_Robot_SpeedControllerDevices_Enum[index]:"OutOfRange";
 	VoltageName+="_Voltage";
 	switch (index)
 	{
@@ -901,5 +902,6 @@ void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 
 double Swerve_Robot_Control::RPS_To_LinearVelocity(double RPS)
 {
-	return RPS * m_SwerveRobotProps.MotorToWheelGearRatio * M_PI * m_SwerveRobotProps.WheelDiameter; 
+	const Swerve_Robot_Props &SwerveRobotProps=m_SwerveRobotProps.GetSwerveRobotProps();
+	return RPS * SwerveRobotProps.MotorToWheelGearRatio * M_PI * SwerveRobotProps.WheelDiameter; 
 }

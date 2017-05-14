@@ -11,13 +11,13 @@ Deg2Rad=(1/180) * Pi
 
 wheel_diameter_Curivator_in=7.95
 wheel_diameter_Rabbit_in=6
-g_wheel_diameter_in=wheel_diameter_Rabbit_in   --This will determine the correct distance try to make accurate too
+g_wheel_diameter_in=wheel_diameter_Curivator_in   --This will determine the correct distance try to make accurate too
 WheelBase_Width_Rabbit_In=24.52198975	  --The wheel base will determine the turn rate, must be as accurate as possible!
 WheelBase_Length_Rabbit_In=28.7422  
 WheelBase_Width_Curivator_In=42.26
 WheelBase_Length_Curivator_In=38.46
-WheelBase_Length_In=WheelBase_Length_Rabbit_In
-WheelBase_Width_In=WheelBase_Width_Rabbit_In
+WheelBase_Length_In=WheelBase_Length_Curivator_In
+WheelBase_Width_In=WheelBase_Width_Curivator_In
 
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 DriveGearSpeed_Curivator = (255.15 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9
@@ -27,7 +27,7 @@ Drive_MaxAccel=5
 --Swerve wheels means no skid
 skid_rabbit=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 skid_curivator=1
-skid=skid_rabbit
+skid=skid_curivator
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
 
 -- Here are some auton tests
@@ -156,7 +156,7 @@ MainRobot = {
 	swerve_drive =
 	{
 		is_closed=1,
-		--is_closed_swivel=1,
+		is_closed_swivel=1,
 		
 		--show_pid_dump_wheel={fl=0, fr=0, rl=0, rr=0},
 		--show_pid_dump_swivel={fl=0, fr=0, rl=0, rr=0},
@@ -181,7 +181,7 @@ MainRobot = {
 		curve_voltage_swivel=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
-		inv_max_accel = 1/15.0  --solved empiracally
+		inv_max_accel = 1/15.0  --solved empirically
 	},
 
 	robot_settings =
