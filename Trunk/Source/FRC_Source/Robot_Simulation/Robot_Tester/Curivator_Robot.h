@@ -1,7 +1,7 @@
 #pragma once
-#ifndef __UsingTankDrive__
-#define __UsingTankDrive__
-#endif
+//#ifndef __UsingTankDrive__
+//#define __UsingTankDrive__
+//#endif
 
 class Curivator_Control_Interface :	
 									#ifdef __UsingTankDrive__
