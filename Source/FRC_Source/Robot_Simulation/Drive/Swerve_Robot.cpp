@@ -190,9 +190,13 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 	else
 	{
 		encoders.Velocity.Named.sFL=m_RobotControl->GetRotaryCurrentPorV(eWheel_FL+m_RotaryEnumOffset);
+		SmartDashboard::PutNumber("Wheel_FL_Encoder",encoders.Velocity.Named.sFL);
 		encoders.Velocity.Named.sFR=m_RobotControl->GetRotaryCurrentPorV(eWheel_FR+m_RotaryEnumOffset);
+		SmartDashboard::PutNumber("Wheel_FR_Encoder",encoders.Velocity.Named.sFR);
 		encoders.Velocity.Named.sRL=m_RobotControl->GetRotaryCurrentPorV(eWheel_RL+m_RotaryEnumOffset);
+		SmartDashboard::PutNumber("Wheel_RL_Encoder",encoders.Velocity.Named.sRL);
 		encoders.Velocity.Named.sRR=m_RobotControl->GetRotaryCurrentPorV(eWheel_RR+m_RotaryEnumOffset);
+		SmartDashboard::PutNumber("Wheel_RR_Encoder",encoders.Velocity.Named.sRR);
 	}
 
 	if (m_SwerveRobotProps.IsOpen_Swivel)
@@ -306,6 +310,16 @@ void Swerve_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Swerve_Drive_Control_TimeChange(dTime_s);
 
 	__super::TimeChange(dTime_s);
+	#if 1
+	//TODO find method for this with closed loop
+	//For open loop we'll use the internal methods to account for velocities
+	//if (m_SwerveRobotProps.IsOpen_Wheel)
+	{
+		Vec2d Velocity=GetLinearVelocity_ToDisplay();
+		SmartDashboard::PutNumber("Velocity",Meters2Feet(Velocity[1]));
+		SmartDashboard::PutNumber("Rotation Velocity",GetAngularVelocity_ToDisplay());
+	}
+	#endif
 }
 
 bool Swerve_Robot::InjectDisplacement(double DeltaTime_s,Vec2d &PositionDisplacement,double &RotationDisplacement)
@@ -846,6 +860,10 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 {
+	const char * const VoltagePrefix[8]={"Wheel_FL","Wheel_FR","Wheel_RL","Wheel_RR",
+										"Swivel_FL","Swivel_FR","Swivel_RL","Swivel_RR"};
+	std::string VoltageName=(index<8)?VoltagePrefix[index]:"OutOfRange";
+	VoltageName+="_Voltage";
 	switch (index)
 	{
 	case Swerve_Robot::eWheel_FL:
@@ -854,9 +872,9 @@ void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 	case Swerve_Robot::eWheel_RR:
 		//if (m_SlowWheel) Voltage=0.0;
 		m_EncoderVoltage[index]=Voltage;
+		SmartDashboard::PutNumber(VoltageName.c_str(),Voltage);
 		m_Encoders[index].UpdateEncoderVoltage(Voltage);
 		m_Encoders[index].TimeChange();
-
 		break;
 	case Swerve_Robot::eSwivel_FL:
 	case Swerve_Robot::eSwivel_FR:
@@ -867,6 +885,7 @@ void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 			m_PotentiometerVoltage[i]=Voltage;
 			m_Potentiometers[i].UpdatePotentiometerVoltage(Voltage);
 			m_Potentiometers[i].TimeChange();  //have this velocity immediately take effect
+			SmartDashboard::PutNumber(VoltageName.c_str(),Voltage);
 		}
 		break;
 	}

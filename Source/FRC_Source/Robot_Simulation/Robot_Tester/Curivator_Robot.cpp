@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Robot_Tester.h"
-#define __UsingTankDrive__
+//#define __UsingTankDrive__
 #define __EnableRobotArmDisable__
 #ifdef Robot_TesterCode
 namespace Robot_Tester
@@ -628,11 +628,12 @@ void Curivator_Robot::TimeChange(double dTime_s)
 		SmartDashboard::PutNumber("clasp_angle",clasp_angle);
 		double BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength;
 		ComputeArmPosition(ypos,xpos,bucket_angle,clasp_angle,BigArm_ShaftLength,Boom_ShaftLength,BucketShaftLength,ClaspShaftLength);
+		//Output them before they are inverted to be more readable
+		SmartDashboard::PutNumber("BigArm_ShaftLength",BigArm_ShaftLength);
+		SmartDashboard::PutNumber("Boom_ShaftLength",Boom_ShaftLength);
 		//invert the boom and big arm lengths due to how the darts are wired
 		Boom_ShaftLength=m_Boom.GetMaxRange()-Boom_ShaftLength+m_Boom.GetMinRange();
 		BigArm_ShaftLength=m_Arm.GetMaxRange()-BigArm_ShaftLength+m_Arm.GetMinRange();
-		SmartDashboard::PutNumber("BigArm_ShaftLength",BigArm_ShaftLength);
-		SmartDashboard::PutNumber("Boom_ShaftLength",Boom_ShaftLength);
 		SmartDashboard::PutNumber("BucketShaftLength",BucketShaftLength);
 		SmartDashboard::PutNumber("ClaspShaftLength",ClaspShaftLength);
 		//apply these values to their children
