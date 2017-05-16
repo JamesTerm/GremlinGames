@@ -132,7 +132,7 @@ MainRobot = {
 		reverse_steering='no',
 		 left_encoder_reversed='no',
 		right_encoder_reversed='no',
-		inv_max_accel = 1/15.0,  --solved empiracally
+		inv_max_accel = 1/15.0,  --solved empirically
 		forward_deadzone_left  = 0.02,
 		forward_deadzone_right = 0.02,
 		reverse_deadzone_left  = 0.02,
@@ -197,12 +197,13 @@ MainRobot = {
 			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
 			encoder_to_wheel_ratio=1.0,
 			--Arm_SetPotentiometerSafety=true,	
-			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			max_speed=8.91*Feet2Meters,	
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
 			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
 			max_accel_reverse=Drive_MaxAccel,
 			using_range=0,	--Warning Only use range if we have a potentiometer!
+			inv_max_accel = 1/15.0,  --solved empirically
 			use_aggressive_stop = 'yes'
 		},
 		wheel_fr =
@@ -220,12 +221,13 @@ MainRobot = {
 			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
 			encoder_to_wheel_ratio=1.0,
 			--Arm_SetPotentiometerSafety=true,	
-			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			max_speed=8.91*Feet2Meters,	--100 rpm... with a 12:36 reduction in radians
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
 			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
 			max_accel_reverse=Drive_MaxAccel,
 			using_range=0,	--Warning Only use range if we have a potentiometer!
+			inv_max_accel = 1/15.0,  --solved empirically
 			use_aggressive_stop = 'yes'
 		},
 		wheel_rl =
@@ -243,12 +245,13 @@ MainRobot = {
 			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
 			encoder_to_wheel_ratio=1.0,
 			--Arm_SetPotentiometerSafety=true,	
-			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			max_speed=8.91*Feet2Meters,	--100 rpm... with a 12:36 reduction in radians
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
 			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
 			max_accel_reverse=Drive_MaxAccel,
 			using_range=0,	--Warning Only use range if we have a potentiometer!
+			inv_max_accel = 1/15.0,  --solved empirically
 			use_aggressive_stop = 'yes'
 		},
 		wheel_rr =
@@ -266,12 +269,13 @@ MainRobot = {
 			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
 			encoder_to_wheel_ratio=1.0,
 			--Arm_SetPotentiometerSafety=true,	
-			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			max_speed=8.91*Feet2Meters,	--100 rpm... with a 12:36 reduction in radians
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
 			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
 			max_accel_reverse=Drive_MaxAccel,
 			using_range=0,	--Warning Only use range if we have a potentiometer!
+			inv_max_accel = 1/15.0,  --solved empirically
 			use_aggressive_stop = 'yes'
 		},
 
