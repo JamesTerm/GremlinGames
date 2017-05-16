@@ -28,7 +28,7 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		const TractionModeProps *PropsToUse=(Mode==eTractionDrive)?&m_TractionModeProps:&m_OmniModeProps;
 		m_pParent->UpdateShipProperties(PropsToUse->ShipProperties.GetShipProps());
 		//init the props (more of a pedantic step to avoid corrupt data)
-		Rotary_Props props=m_ButterflyProps.GetDriveProps().GetRotaryProps();
+		Rotary_Props props=m_ButterflyProps.GetRotaryProps(0).GetRotaryProps();
 		props.InverseMaxAccel=m_TractionModeProps.InverseMaxAccel;
 		props.InverseMaxDecel=m_TractionModeProps.InverseMaxDecel;
 		props.LoopState=(m_TractionModeProps.IsOpen)?Rotary_Props::eOpen : Rotary_Props::eClosed;
@@ -36,13 +36,13 @@ void Butterfly_Robot::DriveModeManager::SetMode(DriveMode Mode)
 		props.PID[0]=PID[0];
 		props.PID[1]=PID[1];
 		props.PID[2]=PID[2];
-		Ship_1D_Props ship_props=m_ButterflyProps.GetDriveProps().GetShip_1D_Props();
+		Ship_1D_Props ship_props=m_ButterflyProps.GetRotaryProps(0).GetShip_1D_Props();
 		ship_props.SetFromShip_Properties(PropsToUse->ShipProperties.GetShipProps());
 
 		//Now for the hand-picked swerve properties
 		for (size_t i=0;i<4;i++)
 		{
-			props.PID_Console_Dump=m_ButterflyProps.GetSwerveRobotProps().PID_Console_Dump_Wheel[i];
+			props.PID_Console_Dump=m_ButterflyProps.GetRotaryProps(i).GetRotaryProps().PID_Console_Dump;
 			m_pParent->UpdateDriveProps(props,ship_props,i);
 		}
 
@@ -65,8 +65,8 @@ void Butterfly_Robot::DriveModeManager::Initialize(const Butterfly_Robot_Propert
 	m_TractionModeProps=props.GetTractionModeProps();
 	m_OmniModeProps.ShipProperties=m_pParent->m_ShipProps;
 	m_OmniModeProps.IsOpen=m_pParent->GetSwerveRobotProps().IsOpen_Wheel;
-	m_OmniModeProps.InverseMaxAccel=m_pParent->GetSwerveRobotProps().InverseMaxAccel;
-	m_OmniModeProps.InverseMaxDecel=m_pParent->GetSwerveRobotProps().InverseMaxDecel;
+	m_OmniModeProps.InverseMaxAccel=m_pParent->GetSwerveRobotProperties().GetRotaryProps(0).GetRotaryProps().InverseMaxAccel;
+	m_OmniModeProps.InverseMaxDecel=m_pParent->GetSwerveRobotProperties().GetRotaryProps(0).GetRotaryProps().InverseMaxDecel;
 	m_OmniModeProps.PID[0]=m_pParent->GetSwerveRobotProps().Wheel_PID[0];
 	m_OmniModeProps.PID[1]=m_pParent->GetSwerveRobotProps().Wheel_PID[1];
 	m_OmniModeProps.PID[2]=m_pParent->GetSwerveRobotProps().Wheel_PID[2];
@@ -262,7 +262,7 @@ void Butterfly_Robot_Control::Initialize(const Entity_Properties *props)
 void Butterfly_Robot_Control::CloseSolenoid(size_t index,bool Close)
 {
 	//printf("CloseSolenoid[%d] = %d \n",index,Close);
-	Rotary_Properties props=m_ButterflyProps.GetDriveProps();
+	Rotary_Properties props=m_ButterflyProps.GetRotaryProps(0);
 	const TractionModeProps &traction_props=m_ButterflyProps.GetTractionModeProps();
 	props.SetFromShip_Properties(Close?traction_props.ShipProperties.GetShipProps():m_ButterflyProps.GetShipProps());
 	//double GearRatio=Close? 5310.0/184.81 : 5310.0/492.83;
