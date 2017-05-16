@@ -40,17 +40,41 @@ struct Swerve_Robot_Props
 	//double TankSteering_Tolerance; //used to help controls drive straight
 	//This may be computed from stall torque and then torque at wheel (does not factor in traction) to linear in reciprocal form to avoid division
 	//or alternatively solved empirically.  Using zero disables this feature
-	double InverseMaxAccel;  //This is used to solve voltage at the acceleration level where the acceleration / max acceleration gets scaled down to voltage
-	double InverseMaxDecel;  //used for deceleration case
 	size_t Feedback_DiplayRow;  //Choose a row for display -1 for none (Only active if __DebugLUA__ is defined)
-	bool IsOpen_Wheel,IsOpen_Swivel;  //give ability to open or close loop for wheel or swivel system  
-	//This will dump the console PID info (Only active if __DebugLUA__ is defined)
-	bool PID_Console_Dump_Wheel[4];  
-	bool PID_Console_Dump_Swivel[4];
-	bool ReverseSteering;  //This will fix if the wiring on voltage has been reversed (e.g. voltage to right turns left side)
-	//Different robots may have the encoders flipped or not which must represent the same direction of both treads
+	bool IsOpen_Wheel,IsOpen_Swivel;  //give ability to open or close loop for wheel or swivel system
 	bool EncoderReversed_Wheel[4];
-	bool EncoderReversed_Swivel[4];
+};
+
+class DRIVE_API Swerve_Robot_Properties : public UI_Ship_Properties
+{
+	public:
+		//typedef Framework::Base::Vec2d Vec2D;
+		typedef osg::Vec2d Vec2D;
+
+		Swerve_Robot_Properties();
+		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+
+		//where the index matches the enumeration of each rotary system
+		const Rotary_Pot_Properties &GetRotaryProps(size_t index) const {return m_RotaryProps[index];}
+
+		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
+		//the width is a measurement of the the center of the wheel width to the other wheel
+		const Vec2D &GetWheelDimensions() const {return m_SwerveRobotProps.WheelDimensions;}
+		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
+		#ifdef Robot_TesterCode
+		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
+		#endif
+		//note derived class will populate these properties because of where it is in the script 
+		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
+	protected:
+		Control_Assignment_Properties m_ControlAssignmentProps;
+		Swerve_Robot_Props m_SwerveRobotProps;
+	private:
+		//typedef Ship_Properties __super;
+		Rotary_Pot_Properties m_RotaryProps[8];  //see Swerve_Robot_SpeedControllerDevices for assignments
+		#ifdef Robot_TesterCode
+		EncoderSimulation_Properties m_EncoderSimulation;
+		#endif
 };
 
 
@@ -101,6 +125,7 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 		virtual void TimeChange(double dTime_s);
 
 		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
+		const Swerve_Robot_Properties &GetSwerveRobotProperties() const {return m_SwerveProperties;}
 		const Swerve_Drive_Control_Interface &GetRobotControl() const {return *m_RobotControl;}
 		//Give ability to change properties
 		void UpdateDriveProps(const Rotary_Props &DriveProps,const Ship_1D_Props &ShipProps,size_t index);
@@ -188,6 +213,7 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 		Vec2D m_EncoderGlobalVelocity;
 		double m_EncoderAngularVelocity;
 		Swerve_Robot_Props m_SwerveRobotProps; //cached in the Initialize from specific robot
+		Swerve_Robot_Properties m_SwerveProperties;
 
 		//These help to manage the latency, where the heading will only reflect injection changes on the latency intervals
 		double m_Heading;  //We take over the heading from physics
@@ -198,38 +224,6 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 		double GetSwerveVelocitiesFromIndex(size_t index) const {return m_VehicleDrive->GetSwerveVelocitiesFromIndex(index);}
 };
 
-class DRIVE_API Swerve_Robot_Properties : public UI_Ship_Properties
-{
-	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
-		Swerve_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
-
-		const Rotary_Properties &GetSwivelProps() const {return m_SwivelProps;}
-		const Rotary_Properties &GetDriveProps() const {return m_DriveProps;}
-		//This is a measurement of the width x length of the wheel base, where the length is measured from the center axis of the wheels, and
-		//the width is a measurement of the the center of the wheel width to the other wheel
-		const Vec2D &GetWheelDimensions() const {return m_SwerveRobotProps.WheelDimensions;}
-		const Swerve_Robot_Props &GetSwerveRobotProps() const {return m_SwerveRobotProps;}
-		#ifdef Robot_TesterCode
-		const EncoderSimulation_Props &GetEncoderSimulationProps() const {return m_EncoderSimulation.GetEncoderSimulationProps();}
-		#endif
-		//note derived class will populate these properties because of where it is in the script 
-		const Control_Assignment_Properties &Get_ControlAssignmentProps() const {return m_ControlAssignmentProps;}
-	protected:
-		Control_Assignment_Properties m_ControlAssignmentProps;
-		Swerve_Robot_Props m_SwerveRobotProps;
-	private:
-		//typedef Ship_Properties __super;
-		
-		//Note the drive properties is a measurement of linear movement (not angular velocity)
-		Rotary_Properties m_SwivelProps,m_DriveProps;
-		#ifdef Robot_TesterCode
-		EncoderSimulation_Properties m_EncoderSimulation;
-		#endif
-};
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
 ///are correct

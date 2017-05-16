@@ -181,7 +181,232 @@ MainRobot = {
 		curve_voltage_swivel=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		reverse_steering='no',
-		inv_max_accel = 1/15.0  --solved empirically
+		inv_max_accel = 1/15.0,  --solved empirically
+		wheel_fl =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=200, i=0, d=25},
+			pid_down={p=200, i=0, d=25},
+			voltage_multiply=1.0,			--May be reversed
+			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
+			max_accel_reverse=Drive_MaxAccel,
+			using_range=0,	--Warning Only use range if we have a potentiometer!
+			use_aggressive_stop = 'yes'
+		},
+		wheel_fr =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=200, i=0, d=25},
+			pid_down={p=200, i=0, d=25},
+			voltage_multiply=1.0,			--May be reversed
+			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
+			max_accel_reverse=Drive_MaxAccel,
+			using_range=0,	--Warning Only use range if we have a potentiometer!
+			use_aggressive_stop = 'yes'
+		},
+		wheel_rl =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=200, i=0, d=25},
+			pid_down={p=200, i=0, d=25},
+			voltage_multiply=1.0,			--May be reversed
+			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
+			max_accel_reverse=Drive_MaxAccel,
+			using_range=0,	--Warning Only use range if we have a potentiometer!
+			use_aggressive_stop = 'yes'
+		},
+		wheel_rr =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=200, i=0, d=25},
+			pid_down={p=200, i=0, d=25},
+			voltage_multiply=1.0,			--May be reversed
+			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
+			max_accel_reverse=Drive_MaxAccel,
+			using_range=0,	--Warning Only use range if we have a potentiometer!
+			use_aggressive_stop = 'yes'
+		},
+
+		swivel_fl =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=100, i=0, d=25},
+			pid_down={p=100, i=0, d=25},
+			tolerance=0.03,
+			tolerance_count=1,
+			voltage_multiply=1.0,			--May be reversed
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--center around 450
+			pot_min_limit=200,  --45 forward   0
+			pot_max_limit=762,  -- 45 counter clockwise  962
+			pot_range_flipped='y',
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=4,			--These are in radians, just go with what feels right
+			max_accel_reverse=4,
+			using_range=1,	--Warning Only use range if we have a potentiometer!
+			predict_up=.400,
+			predict_down=.400,
+
+			max_range_deg= 45,
+			min_range_deg=-45,
+			starting_position=0,
+			pot_offset=-45.0 * Deg2Rad,
+			use_aggressive_stop = 'yes',
+		},
+		swivel_fr =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=100, i=0, d=25},
+			pid_down={p=100, i=0, d=25},
+			tolerance=0.03,
+			tolerance_count=1,
+			voltage_multiply=1.0,			--May be reversed
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--center around 450
+			pot_min_limit=200,  --45 forward   0
+			pot_max_limit=762,  -- 45 counter clockwise  962
+			pot_range_flipped='y',
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=4,			--These are in radians, just go with what feels right
+			max_accel_reverse=4,
+			using_range=1,	--Warning Only use range if we have a potentiometer!
+			predict_up=.400,
+			predict_down=.400,
+
+			max_range_deg= 45,
+			min_range_deg=-45,
+			starting_position=0,
+			pot_offset=-45.0 * Deg2Rad,
+			use_aggressive_stop = 'yes',
+		},
+		swivel_rl =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=100, i=0, d=25},
+			pid_down={p=100, i=0, d=25},
+			tolerance=0.03,
+			tolerance_count=1,
+			voltage_multiply=1.0,			--May be reversed
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--center around 450
+			pot_min_limit=200,  --45 forward   0
+			pot_max_limit=762,  -- 45 counter clockwise  962
+			pot_range_flipped='y',
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=4,			--These are in radians, just go with what feels right
+			max_accel_reverse=4,
+			using_range=1,	--Warning Only use range if we have a potentiometer!
+			predict_up=.400,
+			predict_down=.400,
+
+			max_range_deg= 45,
+			min_range_deg=-45,
+			starting_position=0,
+			pot_offset=-45.0 * Deg2Rad,
+			use_aggressive_stop = 'yes',
+		},
+		swivel_rr =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=100, i=0, d=25},
+			pid_down={p=100, i=0, d=25},
+			tolerance=0.03,
+			tolerance_count=1,
+			voltage_multiply=1.0,			--May be reversed
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--center around 450
+			pot_min_limit=200,  --45 forward   0
+			pot_max_limit=762,  -- 45 counter clockwise  962
+			pot_range_flipped='y',
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=2.0,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=4,			--These are in radians, just go with what feels right
+			max_accel_reverse=4,
+			using_range=1,	--Warning Only use range if we have a potentiometer!
+			predict_up=.400,
+			predict_down=.400,
+
+			max_range_deg= 45,
+			min_range_deg=-45,
+			starting_position=0,
+			pot_offset=-45.0 * Deg2Rad,
+			use_aggressive_stop = 'yes',
+		}
 	},
 
 	robot_settings =
