@@ -171,7 +171,7 @@ MainRobot = {
 		swivel_pid={p=100, i=0, d=50},
 		latency=0.0,
 		heading_latency=0.0,
-		--drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
+		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
 		--strafe_to_scale=4/20,  --In autonomous we need the max to match the max forward and reverse
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=1.0,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
@@ -180,8 +180,24 @@ MainRobot = {
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 		curve_voltage_swivel=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+		force_voltage=
+		{t4=0, t3=0, t2=0, t1=0, c=1},
 		reverse_steering='no',
 		inv_max_accel = 1/15.0,  --solved empirically
+		motor_specs =
+		{
+			wheel_mass=1.5,
+			cof_efficiency=1.0,
+			gear_reduction=6300.0/255.15,
+			torque_on_wheel_radius=Inches2Meters * 1,
+			drive_wheel_radius=Inches2Meters * 4,
+			number_of_motors=6,
+			
+			free_speed_rpm=6300.0,
+			stall_torque=1.39,
+			stall_current_amp=11.5,
+			free_current_amp=0.4
+		},
 		wheel_fl =
 		{
 			is_closed=1,

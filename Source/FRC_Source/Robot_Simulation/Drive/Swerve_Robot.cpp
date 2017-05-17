@@ -606,10 +606,14 @@ void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
 		//Ship_1D_Properties props("SwerveEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
 		for (size_t i=0;i<4;i++)
 		{
-			m_Encoders[i].Initialize(&robot_props->GetRotaryProps(i));
+			Rotary_Properties drive=robot_props->GetRotaryProps(i);
+			#ifdef Robot_TesterCode
+			drive.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
+			m_Encoders[i].Initialize(&drive);
 			m_Encoders[i].SetReverseDirection(robot_props->GetSwerveRobotProps().EncoderReversed_Wheel[i]);
 			m_Potentiometers[i].Initialize(&robot_props->GetRotaryProps(i));
 			//potentiometers have this solved within their class
+			#endif
 		}
 	}
 }
