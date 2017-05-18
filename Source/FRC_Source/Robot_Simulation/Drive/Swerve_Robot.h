@@ -112,6 +112,10 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 			eNoSwerveRobotSpeedControllerDevices
 		};
 
+		static Swerve_Robot_SpeedControllerDevices GetSpeedControllerDevices_Enum (const char *value)
+		{	return Enum_GetValue<Swerve_Robot_SpeedControllerDevices> (value,csz_Swerve_Robot_SpeedControllerDevices_Enum,_countof(csz_Swerve_Robot_SpeedControllerDevices_Enum));
+		}
+
 		//typedef Framework::Base::Vec2d Vec2D;
 		typedef osg::Vec2d Vec2D;
 		Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t EnumOffset=0,bool IsAutonomous=false);
@@ -227,11 +231,19 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 
 ///This class is a dummy class to use for simulation only.  It does however go through the conversion process, so it is useful to monitor the values
 ///are correct
-class DRIVE_API Swerve_Robot_Control : public Swerve_Drive_Control_Interface
+class DRIVE_API Swerve_Robot_Control : public RobotControlCommon, public Swerve_Drive_Control_Interface
 {
 	public:
 		Swerve_Robot_Control(bool UseSafety=true);
+		~Swerve_Robot_Control();
 		void SetDisplayVoltage(bool display) {m_DisplayVoltage=display;}
+	protected: //from RobotControlCommon
+		virtual size_t RobotControlCommon_Get_Victor_EnumValue(const char *name) const
+		{	return Swerve_Robot::GetSpeedControllerDevices_Enum(name);
+		}
+		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  	{	return (size_t)-1;	}
+		virtual size_t RobotControlCommon_Get_AnalogInput_EnumValue(const char *name) const  	{	return (size_t)-1;	}
+		virtual size_t RobotControlCommon_Get_DoubleSolenoid_EnumValue(const char *name) const 	{	return (size_t)-1;	}
 
 		//This is only needed for simulation
 	protected: //from Rotary_Control_Interface
@@ -245,13 +257,19 @@ class DRIVE_API Swerve_Robot_Control : public Swerve_Drive_Control_Interface
 		virtual void Reset_Encoders();
 
 		double RPS_To_LinearVelocity(double RPS);
-		virtual void DisplayVoltage();  //allow to override
+		//virtual void DisplayVoltage();  //allow to override
 	protected:
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
+		#ifdef Robot_TesterCode
 		Potentiometer_Tester2 m_Potentiometers[4]; //simulate a real potentiometer for calibration testing
 		Encoder_Simulator2 m_Encoders[4];
 		//cache voltage values for display
 		double m_EncoderVoltage[4],m_PotentiometerVoltage[4];
+		#endif
 		Swerve_Robot_Properties m_SwerveRobotProps; //cached in the Initialize from specific robot
 		bool m_DisplayVoltage;
+private:
+	KalmanFilter m_KalFilter_Encoder[4];
+	Averager<double,4> m_Averager_Encoder[4];
+
 };
