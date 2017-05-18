@@ -616,6 +616,30 @@ void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
 			#endif
 		}
 	}
+	static bool RunOnce=false;
+	if (!RunOnce)
+	{
+		RunOnce=true;
+		#ifdef Robot_TesterCode
+		SmartDashboard::PutBoolean("SafetyLock_Drive",false);
+		#else
+		SmartDashboard::PutBoolean("SafetyLock_Drive",true);
+		#endif
+		for (size_t i=Swerve_Robot::eSwivel_FL;i<Swerve_Robot::eNoSwerveRobotSpeedControllerDevices;i++)
+		{
+			const char * const Prefix=csz_Swerve_Robot_SpeedControllerDevices_Enum[i];
+			string ContructedName;
+			ContructedName=Prefix;
+			ContructedName[0]-=32; //Make first letter uppercase
+			ContructedName+="Disable";
+			#ifdef Robot_TesterCode
+			const bool DisableDefault=false;
+			#else
+			const bool DisableDefault=true;
+			#endif
+			SmartDashboard::PutBoolean(ContructedName.c_str(),DisableDefault);
+		}
+	}
 }
 
 void Swerve_Robot_Control::Reset_Encoders()
@@ -709,43 +733,61 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 	return result;
 }
 
+
+__inline void CheckDisableSafety(size_t index,bool &SafetyLock)
+{
+	//return;
+	std::string SmartLabel=csz_Swerve_Robot_SpeedControllerDevices_Enum[index];
+	SmartLabel[0]-=32; //Make first letter uppercase
+	//This section is extra control of each system while 3D positioning is operational... enable for diagnostics
+	std::string VoltageArmSafety=SmartLabel+"Disable";
+	const bool bVoltageArmDisable=SmartDashboard::GetBoolean(VoltageArmSafety.c_str());
+	if (bVoltageArmDisable)
+		SafetyLock=true;
+}
+
 void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 {
-	std::string VoltageName=(index<8)?csz_Swerve_Robot_SpeedControllerDevices_Enum[index]:"OutOfRange";
-	VoltageName+="_Voltage";
+	bool SafetyLock=SmartDashboard::GetBoolean("SafetyLock_Drive");
+	double VoltageScalar=1.0;
+
 	switch (index)
 	{
 	case Swerve_Robot::eWheel_FL:
 	case Swerve_Robot::eWheel_FR:
 	case Swerve_Robot::eWheel_RL:
 	case Swerve_Robot::eWheel_RR:
+		#ifdef Robot_TesterCode
 		//if (m_SlowWheel) Voltage=0.0;
 		m_EncoderVoltage[index]=Voltage;
-		SmartDashboard::PutNumber(VoltageName.c_str(),Voltage);
 		m_Encoders[index].UpdateEncoderVoltage(Voltage);
 		m_Encoders[index].TimeChange();
+		#endif
 		break;
 	case Swerve_Robot::eSwivel_FL:
 	case Swerve_Robot::eSwivel_FR:
 	case Swerve_Robot::eSwivel_RL:
 	case Swerve_Robot::eSwivel_RR:
+		CheckDisableSafety(index,SafetyLock);
+		#ifdef Robot_TesterCode
 		{
 			size_t i=index-4;
 			m_PotentiometerVoltage[i]=Voltage;
-			m_Potentiometers[i].UpdatePotentiometerVoltage(Voltage);
+			m_Potentiometers[i].UpdatePotentiometerVoltage(SafetyLock?0.0:Voltage);
 			m_Potentiometers[i].TimeChange();  //have this velocity immediately take effect
-			SmartDashboard::PutNumber(VoltageName.c_str(),Voltage);
 		}
+		#endif
 		break;
 	}
-	#if 0
-	//VoltageScalar=m_RobotProps.GetRotaryProps(index).GetRotaryProps().VoltageScalar;
-	//Voltage*=VoltageScalar;
-	std::string SmartLabel=csz_Swerve_Robot_SpeedControllerDevices_Enum[index];
+	VoltageScalar=m_SwerveRobotProps.GetRotaryProps(index).GetRotaryProps().VoltageScalar;
+	Voltage*=VoltageScalar;
+	std::string SmartLabel=(index<8)?csz_Swerve_Robot_SpeedControllerDevices_Enum[index]:"OutOfRange";
 	SmartLabel[0]-=32; //Make first letter uppercase
 	SmartLabel+="_Voltage";
 	SmartDashboard::PutNumber(SmartLabel.c_str(),Voltage);
-	#endif
+	if (SafetyLock)
+		Voltage=0.0;
+	//Victor_UpdateVoltage(index,Voltage);
 }
 
 double Swerve_Robot_Control::RPS_To_LinearVelocity(double RPS)
