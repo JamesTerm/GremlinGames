@@ -590,6 +590,12 @@ Swerve_Robot_Control::Swerve_Robot_Control(bool UseSafety) : m_DisplayVoltage(tr
 		m_PotentiometerVoltage[i]=0;
 	}
 }
+Swerve_Robot_Control::~Swerve_Robot_Control()
+{
+	Encoder_Stop(Swerve_Robot::eWheel_FL),Encoder_Stop(Swerve_Robot::eWheel_FR);  //TODO Move for autonomous mode only
+	Encoder_Stop(Swerve_Robot::eWheel_RL),Encoder_Stop(Swerve_Robot::eWheel_RR);
+}
+
 void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const Swerve_Robot_Properties *robot_props=dynamic_cast<const Swerve_Robot_Properties *>(props);
@@ -620,6 +626,15 @@ void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
 	if (!RunOnce)
 	{
 		RunOnce=true;
+
+		const double EncoderPulseRate=(1.0/360.0);
+		for (size_t i=Swerve_Robot::eWheel_FL;i<Swerve_Robot::eSwivel_FL;i++)
+		{
+			Encoder_SetReverseDirection(i,m_SwerveRobotProps.GetSwerveRobotProps().EncoderReversed_Wheel[i]);
+			Encoder_SetDistancePerPulse(i,EncoderPulseRate);
+			Encoder_Start(i);
+		}
+
 		#ifdef Robot_TesterCode
 		SmartDashboard::PutBoolean("SafetyLock_Drive",false);
 		#else
@@ -649,6 +664,7 @@ void Swerve_Robot_Control::Reset_Encoders()
 		Reset_Rotary(i);
 }
 
+#if 0
 void Swerve_Robot_Control::DisplayVoltage()
 {
 	if (m_DisplayVoltage)
@@ -661,15 +677,18 @@ void Swerve_Robot_Control::DisplayVoltage()
 			m_PotentiometerVoltage[Swerve_Robot::eWheel_RL],m_PotentiometerVoltage[Swerve_Robot::eWheel_RR]);
 	}
 }
+#endif
 
 void Swerve_Robot_Control::Swerve_Drive_Control_TimeChange(double dTime_s)
 {
+	#ifdef Robot_TesterCode
 	for (size_t i=0;i<4;i++)
 	{
 		m_Encoders[i].SetTimeDelta(dTime_s);
 		m_Potentiometers[i].SetTimeDelta(dTime_s);
 	}
-	DisplayVoltage();
+	#endif
+	//DisplayVoltage();
 }
 
 void Swerve_Robot_Control::Reset_Rotary(size_t index)
@@ -680,13 +699,19 @@ void Swerve_Robot_Control::Reset_Rotary(size_t index)
 		case Swerve_Robot::eWheel_FR:
 		case Swerve_Robot::eWheel_RL:
 		case Swerve_Robot::eWheel_RR:
+			m_KalFilter_Encoder[index].Reset();
+			Encoder_SetReverseDirection(index,m_SwerveRobotProps.GetSwerveRobotProps().EncoderReversed_Wheel[index]);
+			#ifdef Robot_TesterCode
 			m_Encoders[index].ResetPos();
+			#endif
 			break;
 		case Swerve_Robot::eSwivel_FL:
 		case Swerve_Robot::eSwivel_FR:
 		case Swerve_Robot::eSwivel_RL:
 		case Swerve_Robot::eSwivel_RR:
+			#ifdef Robot_TesterCode
 			m_Potentiometers[index-4].ResetPos();
+			#endif
 			break;
 	}
 }
@@ -701,8 +726,20 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case Swerve_Robot::eWheel_FR:
 		case Swerve_Robot::eWheel_RL:
 		case Swerve_Robot::eWheel_RR:
-			result=m_Encoders[index].GetEncoderVelocity();
 			{
+				//double EncRate=Encoder_GetRate2(m_dTime_s);
+				double EncRate=Encoder_GetRate(index);
+				EncRate=m_KalFilter_Encoder[index](EncRate);
+				EncRate=m_Averager_Encoder[index].GetAverage(EncRate);
+				EncRate=IsZero(EncRate)?0.0:EncRate;
+
+				const double EncVelocity=RPS_To_LinearVelocity(EncRate);
+				//Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", EncVelocity,RightVelocity);
+				#ifdef Robot_TesterCode
+				result=m_Encoders[index].GetEncoderVelocity();
+				#else
+				result= EncVelocity;
+				#endif
 				const char * const Prefix=csz_Swerve_Robot_SpeedControllerDevices_Enum[index];
 				string ContructedName;
 				ContructedName=Prefix,ContructedName+="_Encoder";
@@ -715,7 +752,43 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case Swerve_Robot::eSwivel_RR:
 			result=NormalizeRotation2(m_Potentiometers[index-4].GetPotentiometerCurrentPosition());
 			{
-				#ifdef Robot_TesterCode
+				#ifndef Robot_TesterCode
+				double raw_value=Pot_GetRawValue(index);
+				double PotentiometerRaw_To_Arm;
+
+				const double HiRange=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotMaxValue;
+				const double LowRange=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotMinValue;
+				//If this is true, the value is inverted with the negative operator
+				const bool FlipRange=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().IsFlipped;
+
+				PotentiometerRaw_To_Arm = raw_value-LowRange;//zeros the potentiometer
+				PotentiometerRaw_To_Arm = PotentiometerRaw_To_Arm/(HiRange-LowRange);//scales values from 0 to 1 with +- .001
+
+				//Clip Range
+				//I imagine .001 corrections will not be harmful for when in use.
+				if (PotentiometerRaw_To_Arm < 0) PotentiometerRaw_To_Arm = 0;//corrects .001 or less causing a negative value
+				if (PotentiometerRaw_To_Arm > 1 || PotentiometerRaw_To_Arm > .999) PotentiometerRaw_To_Arm = 1;//corrects .001 or lass causing value greater than 1
+
+				if (FlipRange)
+					PotentiometerRaw_To_Arm=1.0-PotentiometerRaw_To_Arm;
+
+				const char * const Prefix=csz_Swerve_Robot_SpeedControllerDevices_Enum[index];
+				string ContructedName;
+				ContructedName=Prefix,ContructedName+="_Raw";
+				SmartDashboard::PutNumber(ContructedName.c_str(),raw_value);
+				ContructedName=Prefix,ContructedName+="Pot_Raw";
+				SmartDashboard::PutNumber(ContructedName.c_str(),PotentiometerRaw_To_Arm);
+
+				//Now to compute the result... we start with the normalized value and give it the appropriate offset and scale
+				//the offset is delegated in script in the final scale units, and the scale is the total range in radians
+				result=PotentiometerRaw_To_Arm;
+				//get scale
+				const Ship_1D_Props &shipprops=m_SwerveRobotProps.GetRotaryProps(index).GetShip_1D_Props();
+				result*=shipprops.MaxRange-shipprops.MinRange;  //compute the total distance in radians
+				result*=m_SwerveRobotProps.GetRotaryProps(index).GetRotaryProps().EncoderToRS_Ratio;
+				//get offset... Note: scale comes first since the offset is of that scale
+				result+=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotentiometerOffset;
+				#else
 				//Now to normalize it
 				const Ship_1D_Props &shipprops=m_SwerveRobotProps.GetRotaryProps(index).GetShip_1D_Props();
 				const double NormalizedResult= (result - shipprops.MinRange)  / (shipprops.MaxRange - shipprops.MinRange);
@@ -787,7 +860,7 @@ void Swerve_Robot_Control::UpdateRotaryVoltage(size_t index,double Voltage)
 	SmartDashboard::PutNumber(SmartLabel.c_str(),Voltage);
 	if (SafetyLock)
 		Voltage=0.0;
-	//Victor_UpdateVoltage(index,Voltage);
+	Victor_UpdateVoltage(index,Voltage);
 }
 
 double Swerve_Robot_Control::RPS_To_LinearVelocity(double RPS)
