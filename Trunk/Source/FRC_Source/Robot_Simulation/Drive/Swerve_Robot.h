@@ -268,8 +268,10 @@ class DRIVE_API Swerve_Robot_Control : public RobotControlCommon, public Swerve_
 		#endif
 		Swerve_Robot_Properties m_SwerveRobotProps; //cached in the Initialize from specific robot
 		bool m_DisplayVoltage;
-private:
-	KalmanFilter m_KalFilter_Encoder[4];
-	Averager<double,4> m_Averager_Encoder[4];
+	private:
+		__inline double Pot_GetRawValue(size_t index);
+
+		KalmanFilter m_KalFilter[8];
+		Averager<double,4> m_Averager[8];
 
 };

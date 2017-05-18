@@ -600,32 +600,13 @@ void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
 {
 	const Swerve_Robot_Properties *robot_props=dynamic_cast<const Swerve_Robot_Properties *>(props);
 
-	//For now robot_props can be NULL since the swerve robot is borrowing it
-	if (robot_props)
-	{
-		m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
-
-		//This will copy all the props
-		m_SwerveRobotProps=*robot_props;
-		//We'll try to construct the props to match our properties
-		//Note: for max accel it needs to be powerful enough to handle curve equations
-		//Ship_1D_Properties props("SwerveEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
-		for (size_t i=0;i<4;i++)
-		{
-			Rotary_Properties drive=robot_props->GetRotaryProps(i);
-			#ifdef Robot_TesterCode
-			drive.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
-			m_Encoders[i].Initialize(&drive);
-			m_Encoders[i].SetReverseDirection(robot_props->GetSwerveRobotProps().EncoderReversed_Wheel[i]);
-			m_Potentiometers[i].Initialize(&robot_props->GetRotaryProps(i));
-			//potentiometers have this solved within their class
-			#endif
-		}
-	}
 	static bool RunOnce=false;
 	if (!RunOnce)
 	{
 		RunOnce=true;
+
+		//This one one must also be called for the lists that are specific to the robot
+		RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
 
 		const double EncoderPulseRate=(1.0/360.0);
 		for (size_t i=Swerve_Robot::eWheel_FL;i<Swerve_Robot::eSwivel_FL;i++)
@@ -653,6 +634,29 @@ void Swerve_Robot_Control::Initialize(const Entity_Properties *props)
 			const bool DisableDefault=true;
 			#endif
 			SmartDashboard::PutBoolean(ContructedName.c_str(),DisableDefault);
+		}
+	}
+
+	//For now robot_props can be NULL since the swerve robot is borrowing it
+	if (robot_props)
+	{
+		m_RobotMaxSpeed=robot_props->GetEngagedMaxSpeed();
+
+		//This will copy all the props
+		m_SwerveRobotProps=*robot_props;
+		//We'll try to construct the props to match our properties
+		//Note: for max accel it needs to be powerful enough to handle curve equations
+		//Ship_1D_Properties props("SwerveEncoder",2.0,0.0,m_RobotMaxSpeed,1.0,1.0,robot_props->GetMaxAccelForward() * 3.0,robot_props->GetMaxAccelReverse() * 3.0);
+		for (size_t i=0;i<4;i++)
+		{
+			Rotary_Properties drive=robot_props->GetRotaryProps(i);
+			#ifdef Robot_TesterCode
+			drive.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
+			m_Encoders[i].Initialize(&drive);
+			m_Encoders[i].SetReverseDirection(robot_props->GetSwerveRobotProps().EncoderReversed_Wheel[i]);
+			m_Potentiometers[i].Initialize(&robot_props->GetRotaryProps(i));
+			//potentiometers have this solved within their class
+			#endif
 		}
 	}
 }
@@ -699,7 +703,7 @@ void Swerve_Robot_Control::Reset_Rotary(size_t index)
 		case Swerve_Robot::eWheel_FR:
 		case Swerve_Robot::eWheel_RL:
 		case Swerve_Robot::eWheel_RR:
-			m_KalFilter_Encoder[index].Reset();
+			m_KalFilter[index].Reset();
 			Encoder_SetReverseDirection(index,m_SwerveRobotProps.GetSwerveRobotProps().EncoderReversed_Wheel[index]);
 			#ifdef Robot_TesterCode
 			m_Encoders[index].ResetPos();
@@ -709,11 +713,22 @@ void Swerve_Robot_Control::Reset_Rotary(size_t index)
 		case Swerve_Robot::eSwivel_FR:
 		case Swerve_Robot::eSwivel_RL:
 		case Swerve_Robot::eSwivel_RR:
+			m_KalFilter[index].Reset();
 			#ifdef Robot_TesterCode
 			m_Potentiometers[index-4].ResetPos();
 			#endif
 			break;
 	}
+}
+
+__inline double Swerve_Robot_Control::Pot_GetRawValue(size_t index)
+{
+	//double raw_value = (double)m_Potentiometer.GetAverageValue();
+	double raw_value=(double)Analog_GetAverageValue(index);
+	raw_value = m_KalFilter[index](raw_value);  //apply the Kalman filter
+	raw_value=m_Averager[index].GetAverage(raw_value); //and Ricks x element averager
+	//Note: we keep the raw value in its native form... just averaging at most for less noise
+	return raw_value;
 }
 
 double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
@@ -729,8 +744,8 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			{
 				//double EncRate=Encoder_GetRate2(m_dTime_s);
 				double EncRate=Encoder_GetRate(index);
-				EncRate=m_KalFilter_Encoder[index](EncRate);
-				EncRate=m_Averager_Encoder[index].GetAverage(EncRate);
+				EncRate=m_KalFilter[index](EncRate);
+				EncRate=m_Averager[index].GetAverage(EncRate);
 				EncRate=IsZero(EncRate)?0.0:EncRate;
 
 				const double EncVelocity=RPS_To_LinearVelocity(EncRate);
