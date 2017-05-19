@@ -212,8 +212,10 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		const double IntendedDirection=m_VehicleDrive->GetIntendedVelocitiesFromIndex(i+4);
 		double SwivelDirection=IntendedDirection;  //this is either the intended direction or the reverse of it
 		const Ship_1D &Swivel=m_DrivingModule[i]->GetSwivel();
+
 		//This is normalized implicitly
-		const double LastSwivelDirection=Swivel.GetPos_m();
+		//const double LastSwivelDirection=Swivel.GetPos_m();
+		const double LastSwivelDirection=encoders.Velocity.AsArray[i+4];
 		double DistanceToIntendedSwivel=fabs(NormalizeRotation2(LastSwivelDirection-SwivelDirection));
 
 		if ((DistanceToIntendedSwivel>PI_2) || 
@@ -251,6 +253,14 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		//To minimize error only apply the Y component amount to the velocity
 		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
 		double VelocityToUse=cos(DistanceToIntendedSwivel)*IntendedSpeed;
+		#if 0
+		if (i==0)
+		{
+			SmartDashboard::PutNumber("TestPredicted",RAD_2_DEG(LastSwivelDirection));
+			SmartDashboard::PutNumber("TestActual",RAD_2_DEG(encoders.Velocity.AsArray[i+4]));
+			SmartDashboard::PutNumber("TestVTU",VelocityToUse);
+		}
+		#endif
 
 		#ifdef __DebugLUA__
 		if (m_SwerveProperties.GetRotaryProps(i).GetRotaryProps().PID_Console_Dump && (m_RobotControl->GetRotaryCurrentPorV(i)!=0.0))
