@@ -497,6 +497,8 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 		m_Boom(eBoom,this,robot_control,m_Arm),m_Bucket(eBucket,this,robot_control,m_Boom),m_Clasp(eClasp,this,robot_control,m_Bucket),
 		m_ArmXpos(eArm_Xpos,this,robot_control),m_ArmYpos(eArm_Ypos,this,robot_control),m_BucketAngle(eBucket_Angle,this,robot_control),
 		m_ClaspAngle(eClasp_Angle,this,robot_control),
+		m_CenterLeftWheel(csz_Curivator_Robot_SpeedControllerDevices_Enum[eWheel_CL],robot_control,eWheel_CL),
+		m_CenterRightWheel(csz_Curivator_Robot_SpeedControllerDevices_Enum[eWheel_CR],robot_control,eWheel_CR),
 		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0),m_FreezeArm(false),m_LockPosition(false)
 {
 	mp_Arm[eTurret]=&m_Turret;
@@ -526,12 +528,16 @@ void Curivator_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Prope
 
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
 		mp_Arm[i]->Initialize(em,RobotProps?&RobotProps->GetRotaryProps(i):NULL);
+	m_CenterLeftWheel.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eWheel_CL):NULL);
+	m_CenterRightWheel.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eWheel_CR):NULL);
 }
 void Curivator_Robot::ResetPos()
 {
 	__super::ResetPos();
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
 		mp_Arm[i]->ResetPos();
+	m_CenterLeftWheel.ResetPos();
+	m_CenterRightWheel.ResetPos();
 }
 
 namespace VisionConversion
@@ -602,6 +608,15 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	//For the simulated code this must be first so the simulators can have the correct times
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
+
+	//Inject the velocities from the swerve drive wheels to the center wheels... the velocity between the front and back wheels are always the same so we can pick either with 
+	//no extra math to interpret what they are
+	{
+		m_CenterLeftWheel.SetRequestedVelocity(GetIntendedDriveVelocity(0));
+		m_CenterLeftWheel.AsEntity1D().TimeChange(dTime_s);
+		m_CenterRightWheel.SetRequestedVelocity(GetIntendedDriveVelocity(0));
+		m_CenterRightWheel.AsEntity1D().TimeChange(dTime_s);		
+	}
 
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
 		mp_Arm[i]->AsEntity1D().TimeChange(dTime_s);
@@ -1139,6 +1154,18 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			m_RotaryProps[Curivator_Robot::eClasp_Angle].LoadFromScript(script);
 			script.Pop();
 		}
+		err = script.GetFieldTable("wheel_cl");
+		if (!err)
+		{
+			m_RotaryProps[Curivator_Robot::eWheel_CL].LoadFromScript(script);
+			script.Pop();
+		}
+		err = script.GetFieldTable("wheel_cr");
+		if (!err)
+		{
+			m_RotaryProps[Curivator_Robot::eWheel_CR].LoadFromScript(script);
+			script.Pop();
+		}
 
 		SCRIPT_TEST_BOOL_YES(props.EnableArmAutoPosition,"enable_arm_auto_position");
 
@@ -1577,18 +1604,27 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 	case Curivator_Robot::eBoom:
 	case Curivator_Robot::eBucket:
 	case Curivator_Robot::eClasp:
-		#ifdef __EnableRobotArmDisable__
-		std::string SmartLabel=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
-		SmartLabel[0]-=32; //Make first letter uppercase
-		//This section is extra control of each system while 3D positioning is operational... enable for diagnostics
-		std::string VoltageArmSafety=SmartLabel+"Disable";
-		const bool bVoltageArmDisable=SmartDashboard::GetBoolean(VoltageArmSafety.c_str());
-		if (bVoltageArmDisable)
-			SafetyLock=true;
-		#endif
+		{
+			#ifdef __EnableRobotArmDisable__
+			std::string SmartLabel=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
+			SmartLabel[0]-=32; //Make first letter uppercase
+			//This section is extra control of each system while 3D positioning is operational... enable for diagnostics
+			std::string VoltageArmSafety=SmartLabel+"Disable";
+			const bool bVoltageArmDisable=SmartDashboard::GetBoolean(VoltageArmSafety.c_str());
+			if (bVoltageArmDisable)
+				SafetyLock=true;
+			#endif
+			#ifdef Robot_TesterCode
+			m_Potentiometer[index].UpdatePotentiometerVoltage(SafetyLock?0.0:Voltage);
+			m_Potentiometer[index].TimeChange();  //have this velocity immediately take effect
+			#endif
+		}
+		break;
+	case Curivator_Robot::eWheel_CL:
+	case Curivator_Robot::eWheel_CR:
 		#ifdef Robot_TesterCode
-		m_Potentiometer[index].UpdatePotentiometerVoltage(SafetyLock?0.0:Voltage);
-		m_Potentiometer[index].TimeChange();  //have this velocity immediately take effect
+		m_Encoders[index-Curivator_Robot::eWheel_CL].UpdateEncoderVoltage(Voltage);
+		m_Encoders[index-Curivator_Robot::eWheel_CL].TimeChange();
 		#endif
 		break;
 	}
@@ -1598,6 +1634,8 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 		Voltage*=VoltageScalar;
 		std::string SmartLabel=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
 		SmartLabel[0]-=32; //Make first letter uppercase
+		if ((index == Curivator_Robot::eWheel_CL)||(index == Curivator_Robot::eWheel_CR))
+			SmartLabel+="_";
 		SmartLabel+="Voltage";
 		SmartDashboard::PutNumber(SmartLabel.c_str(),Voltage);
 		if (SafetyLock)
@@ -1653,6 +1691,8 @@ void Curivator_Robot_Control::Reset_Rotary(size_t index)
 	case Curivator_Robot::eBoom:
 	case Curivator_Robot::eBucket:
 	case Curivator_Robot::eClasp:
+	case Curivator_Robot::eWheel_CL:
+	case Curivator_Robot::eWheel_CR:
 		m_KalFilter[index].Reset();
 		break;
 	}
@@ -1666,6 +1706,12 @@ void Curivator_Robot_Control::Reset_Rotary(size_t index)
 	case Curivator_Robot::eBucket:
 	case Curivator_Robot::eClasp:
 		m_Potentiometer[index].ResetPos();
+		break;
+	case Curivator_Robot::eWheel_CL:
+	case Curivator_Robot::eWheel_CR:
+		Encoder_SetReverseDirection(index,false);  //these should all be the same
+		m_Encoders[index-Curivator_Robot::eWheel_CL].ResetPos();
+		break;
 	}
 	#endif
 }
@@ -1696,6 +1742,11 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 		{
 			Rotary_Properties writeable_arm_props=robot_props->GetRotaryProps(index);
 			m_Potentiometer[index].Initialize(&writeable_arm_props);
+		}
+		for (size_t index=0;index<2;index++)
+		{
+			m_Encoders[index].Initialize(&robot_props->GetRotaryProps(Curivator_Robot::eWheel_FL+index));
+			m_Encoders[index].SetReverseDirection(false);
 		}
 		#endif
 	}
@@ -1758,6 +1809,8 @@ void Curivator_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	#ifdef Robot_TesterCode
 	for (size_t index=0;index<5;index++)
 		m_Potentiometer[index].SetTimeDelta(dTime_s);
+	for (size_t index=0;index<2;index++)
+		m_Encoders[index].SetTimeDelta(dTime_s);
 	#endif
 
 	//Testing the accelerometer
@@ -1870,6 +1923,29 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			#endif
 		}
 		break;
+		case Curivator_Robot::eWheel_CL:
+		case Curivator_Robot::eWheel_CR:
+			{
+				//double EncRate=Encoder_GetRate2(m_dTime_s);
+				double EncRate=Encoder_GetRate(index);
+				EncRate=m_KalFilter[index](EncRate);
+				EncRate=m_Averager[index].GetAverage(EncRate);
+				EncRate=IsZero(EncRate)?0.0:EncRate;
+
+				const double EncVelocity=m_DriveRobotControl.RPS_To_LinearVelocity(EncRate);
+				//Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", EncVelocity,RightVelocity);
+				#ifdef Robot_TesterCode
+				result=m_Encoders[index-Curivator_Robot::eWheel_CL].GetEncoderVelocity();
+				#else
+				result= EncVelocity;
+				#endif
+				const char * const Prefix=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
+				string ContructedName;
+				ContructedName=Prefix,ContructedName+="_Encoder";
+				SmartDashboard::PutNumber(ContructedName.c_str(),result);
+			}
+
+			break;
 		default:
 			assert (index > Curivator_Robot::eClasp);
 			//Note: the arm position indexes remain open so no work to be done here for them
