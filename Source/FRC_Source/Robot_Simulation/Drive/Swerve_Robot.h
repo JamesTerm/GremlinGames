@@ -84,12 +84,6 @@ const char * const csz_Swerve_Robot_SpeedControllerDevices_Enum[] =
 	"swivel_fl","swivel_fr","swivel_rl","swivel_rr"
 };
 
-const char * const csz_Swerve_Robot_Inputs_Enum[] =
-{
-	"wheel_fl_enc","wheel_fr_enc","wheel_rl_enc","wheel_rr_enc",
-	"swivel_fl_pot","swivel_fr_pot","swivel_rl_pot","swivel_rr_pot"
-};
-
 class Swerve_Robot_UI;
 
 ///This is a specific robot that is a robot tank and is composed of an arm, it provides addition methods to control the arm, and applies updates to
@@ -162,6 +156,9 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 		virtual void BindAdditionalEventControls(bool Bind) 
 			{m_TankSteering.BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 			}
+
+		double GetIntendedSwivelDirection(size_t index) const {return m_DrivingModule[index]->GetIntendedSwivelDirection();}
+		double GetIntendedDriveVelocity(size_t index) const {return m_DrivingModule[index]->GetIntendedDriveVelocity();}
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 		virtual double GetWheelTurningDiameter() const {return m_WheelDimensions.length();}
@@ -193,7 +190,9 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 				virtual void Initialize(GG_Framework::Base::EventMap& em,const DrivingModule_Props *props=NULL);
 				virtual void TimeChange(double dTime_s);
 				void SetIntendedSwivelDirection(double direction) {m_IntendedSwivelDirection=direction;}
+				double GetIntendedSwivelDirection() const {return m_IntendedSwivelDirection;}
 				void SetIntendedDriveVelocity(double Velocity) {m_IntendedDriveVelocity=Velocity;}
+				double GetIntendedDriveVelocity() const {return m_IntendedDriveVelocity;}
 				//I have no problem exposing read-only access to these :)
 				const Rotary_Position_Control &GetSwivel() const {return m_Swivel;}
 				const Rotary_Velocity_Control &GetDrive() const {return m_Drive;}
@@ -256,6 +255,7 @@ class DRIVE_API Swerve_Robot_Control : public RobotControlCommon, public Swerve_
 		virtual void Initialize(const Entity_Properties *props);
 		virtual void Reset_Encoders();
 
+	public:  //allow this conversion public in case a robot needs to add more wheels with encoders
 		double RPS_To_LinearVelocity(double RPS);
 		//virtual void DisplayVoltage();  //allow to override
 	protected:

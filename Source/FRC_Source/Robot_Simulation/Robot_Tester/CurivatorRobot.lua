@@ -740,6 +740,54 @@ MainRobot = {
 			starting_position=13.19097419,  --mathematically ideal for middle of LA... good to test code, but not necessarily for actual use
 			use_aggressive_stop = 'n',
 		},
+		wheel_cl =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=200, i=0, d=25},
+			pid_down={p=200, i=0, d=25},
+			voltage_multiply=1.0,			--May be reversed
+			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=8.91*Feet2Meters,	
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
+			max_accel_reverse=Drive_MaxAccel,
+			using_range=0,	--Warning Only use range if we have a potentiometer!
+			inv_max_accel = 1/15.0,  --solved empirically
+			use_aggressive_stop = 'yes'
+		},
+		wheel_cr =
+		{
+			is_closed=1,
+			show_pid_dump='n',
+			ds_display_row=-1,
+			use_pid_up_only='y',
+			pid_up={p=200, i=0, d=25},
+			pid_down={p=200, i=0, d=25},
+			voltage_multiply=1.0,			--May be reversed
+			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
+			curve_voltage=
+			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
+			encoder_to_wheel_ratio=1.0,
+			--Arm_SetPotentiometerSafety=true,	
+			max_speed=8.91*Feet2Meters,	--100 rpm... with a 12:36 reduction in radians
+			accel=10.0,						--We may indeed have a two button solution (match with max accel)
+			brake=10.0,
+			max_accel_forward=Drive_MaxAccel,			--These are in radians, just go with what feels right
+			max_accel_reverse=Drive_MaxAccel,
+			using_range=0,	--Warning Only use range if we have a potentiometer!
+			inv_max_accel = 1/15.0,  --solved empirically
+			use_aggressive_stop = 'yes'
+		},
 	},
 
 	controls =
