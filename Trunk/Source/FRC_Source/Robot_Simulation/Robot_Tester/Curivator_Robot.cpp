@@ -528,6 +528,16 @@ void Curivator_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Prope
 
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
 		mp_Arm[i]->Initialize(em,RobotProps?&RobotProps->GetRotaryProps(i):NULL);
+	#ifdef Robot_TesterCode
+	if (RobotProps)
+	{
+		for (size_t i=0;i<2;i++)
+		{
+			Rotary_Properties drive=RobotProps->GetRotaryProps(i+eWheel_CL);
+			drive.EncoderSimulationProps()=RobotProps->GetEncoderSimulationProps();
+		}
+	}
+	#endif
 	m_CenterLeftWheel.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eWheel_CL):NULL);
 	m_CenterRightWheel.Initialize(em,RobotProps?&RobotProps->GetRotaryProps(eWheel_CR):NULL);
 }
@@ -609,13 +619,16 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	m_RobotControl->Robot_Control_TimeChange(dTime_s);
 	__super::TimeChange(dTime_s);
 
-	//Inject the velocities from the swerve drive wheels to the center wheels... the velocity between the front and back wheels are always the same so we can pick either with 
-	//no extra math to interpret what they are
+	//Inject the velocities from the swerve drive wheels to the center wheels.
 	{
-		m_CenterLeftWheel.SetRequestedVelocity(GetIntendedDriveVelocity(0));
+		//The velocity between the front and back wheels are typically the same but can be different during time when wheel angles are not 
+		//tangent to their set point (should be minimal), so we'll simply average between the velocities for best rate.
+		const double IntendedVelocityLeft=(GetIntendedDriveVelocity(Swerve_Robot::eWheel_FL)+GetIntendedDriveVelocity(Swerve_Robot::eWheel_RL))/2.0;
+		const double IntendedVelocityRight=(GetIntendedDriveVelocity(Swerve_Robot::eWheel_FR)+GetIntendedDriveVelocity(Swerve_Robot::eWheel_RR))/2.0;
+		m_CenterLeftWheel.SetRequestedVelocity(IntendedVelocityLeft);
+		m_CenterRightWheel.SetRequestedVelocity(IntendedVelocityRight);
 		m_CenterLeftWheel.AsEntity1D().TimeChange(dTime_s);
-		m_CenterRightWheel.SetRequestedVelocity(GetIntendedDriveVelocity(0));
-		m_CenterRightWheel.AsEntity1D().TimeChange(dTime_s);		
+		m_CenterRightWheel.AsEntity1D().TimeChange(dTime_s);
 	}
 
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
@@ -1745,8 +1758,9 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 		}
 		for (size_t index=0;index<2;index++)
 		{
-			m_Encoders[index].Initialize(&robot_props->GetRotaryProps(Curivator_Robot::eWheel_FL+index));
-			m_Encoders[index].SetReverseDirection(false);
+			Rotary_Properties drive=robot_props->GetRotaryProps(index+Curivator_Robot::eWheel_CL);
+			drive.EncoderSimulationProps()=robot_props->GetEncoderSimulationProps();
+			m_Encoders[index].Initialize(&drive);
 		}
 		#endif
 	}
