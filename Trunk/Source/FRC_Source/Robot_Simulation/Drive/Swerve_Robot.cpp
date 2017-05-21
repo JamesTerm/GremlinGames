@@ -1,16 +1,20 @@
 #include "stdafx.h"
 #include "Drive.h"
 
+#ifdef Robot_TesterCode
 using namespace Robot_Tester;
 using namespace GG_Framework::Base;
 using namespace osg;
 using namespace std;
 
-namespace Scripting=GG_Framework::Logic::Scripting;
-//namespace Scripting=Framework::Scripting;
-
+const double Pi2=M_PI*2.0;
 const double Pi=M_PI;
-const double Pi2=Pi*2.0;
+#else
+using namespace Framework::Base;
+using namespace std;
+#endif
+
+
 
   /***********************************************************************************************************************************/
  /*													Swerve_Robot::DrivingModule														*/
@@ -24,7 +28,7 @@ Swerve_Robot::DrivingModule::DrivingModule(const char EntityName[],Swerve_Drive_
 {
 }
 
-void Swerve_Robot::DrivingModule::Initialize(GG_Framework::Base::EventMap& em,const DrivingModule_Props *props)
+void Swerve_Robot::DrivingModule::Initialize(Entity2D_Kind::EventMap& em,const DrivingModule_Props *props)
 {
 	m_Swivel.Initialize(em,props->Swivel_Props);
 	m_Drive.Initialize(em,props->Drive_Props);
@@ -51,6 +55,7 @@ void Swerve_Robot::DrivingModule::TimeChange(double dTime_s)
 Swerve_Robot::Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t EnumOffset,bool IsAutonomous) : 
 	Ship_Tester(EntityName), m_RobotControl(robot_control), m_IsAutonomous(IsAutonomous), m_VehicleDrive(NULL),
 	m_UsingEncoders(IsAutonomous), //,m_VoltageOverride(false),m_UseDeadZoneSkip(true)
+	m_EncoderAngularVelocity(0.0),
 	m_Heading(0.0), m_HeadingUpdateTimer(0.0),m_TankSteering(this),
 	m_RotaryEnumOffset(EnumOffset)
 {
@@ -79,7 +84,7 @@ Swerve_Robot::~Swerve_Robot()
 	DestroyDrive();
 }
 
-void Swerve_Robot::Initialize(Entity2D::EventMap& em, const Entity_Properties *props)
+void Swerve_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	m_VehicleDrive=CreateDrive();
 	__super::Initialize(em,props);
@@ -594,14 +599,17 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
  /*														Swerve_Robot_Control														*/
 /***********************************************************************************************************************************/
 
-Swerve_Robot_Control::Swerve_Robot_Control(bool UseSafety) : m_DisplayVoltage(true)
+Swerve_Robot_Control::Swerve_Robot_Control(bool UseSafety) : m_RobotMaxSpeed(0.0),m_DisplayVoltage(true)
 {
+	#ifdef Robot_TesterCode
 	for (size_t i=0;i<4;i++)
 	{
 		m_EncoderVoltage[i]=0;
 		m_PotentiometerVoltage[i]=0;
 	}
+	#endif
 }
+
 Swerve_Robot_Control::~Swerve_Robot_Control()
 {
 	Encoder_Stop(Swerve_Robot::eWheel_FL),Encoder_Stop(Swerve_Robot::eWheel_FR);  //TODO Move for autonomous mode only
@@ -777,16 +785,15 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 		case Swerve_Robot::eSwivel_FR:
 		case Swerve_Robot::eSwivel_RL:
 		case Swerve_Robot::eSwivel_RR:
-			result=NormalizeRotation2(m_Potentiometers[index-4].GetPotentiometerCurrentPosition());
 			{
 				#ifndef Robot_TesterCode
 				double raw_value=Pot_GetRawValue(index);
 				double PotentiometerRaw_To_Arm;
 
-				const double HiRange=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotMaxValue;
-				const double LowRange=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotMinValue;
+				const double HiRange=m_SwerveRobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotMaxValue;
+				const double LowRange=m_SwerveRobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotMinValue;
 				//If this is true, the value is inverted with the negative operator
-				const bool FlipRange=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().IsFlipped;
+				const bool FlipRange=m_SwerveRobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().IsFlipped;
 
 				PotentiometerRaw_To_Arm = raw_value-LowRange;//zeros the potentiometer
 				PotentiometerRaw_To_Arm = PotentiometerRaw_To_Arm/(HiRange-LowRange);//scales values from 0 to 1 with +- .001
@@ -814,8 +821,9 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				result*=shipprops.MaxRange-shipprops.MinRange;  //compute the total distance in radians
 				result*=m_SwerveRobotProps.GetRotaryProps(index).GetRotaryProps().EncoderToRS_Ratio;
 				//get offset... Note: scale comes first since the offset is of that scale
-				result+=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotentiometerOffset;
+				result+=m_SwerveRobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotentiometerOffset;
 				#else
+				result=NormalizeRotation2(m_Potentiometers[index-4].GetPotentiometerCurrentPosition());
 				//Now to normalize it
 				const Ship_1D_Props &shipprops=m_SwerveRobotProps.GetRotaryProps(index).GetShip_1D_Props();
 				const double NormalizedResult= (result - shipprops.MinRange)  / (shipprops.MaxRange - shipprops.MinRange);

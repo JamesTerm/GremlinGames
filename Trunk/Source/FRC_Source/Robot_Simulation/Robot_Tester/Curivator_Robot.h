@@ -325,7 +325,7 @@ class Curivator_Robot : public Swerve_Robot
 		virtual void UpdateController(double &AuxVelocity,Vec2D &LinearAcceleration,double &AngularAcceleration,bool &LockShipHeadingToOrientation,double dTime_s);
 	private:
 		#ifndef Robot_TesterCode
-		typedef  Tank_Robot __super;
+		typedef  Swerve_Robot __super;
 		#endif
 		Curivator_Control_Interface * const m_RobotControl;
 		Robot_Arm m_Turret;
@@ -376,7 +376,8 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 		//This is called per enabled session to enable (on not) things dynamically (e.g. compressor)
 		void ResetPos();
 		#ifndef Robot_TesterCode
-		void SetSafety(bool UseSafety) {m_DriveRobotControl.SetSafety(UseSafety);}
+		//Note: Swerve drive is not using drive
+		//void SetSafety(bool UseSafety) {m_DriveRobotControl.SetSafety(UseSafety);}
 		#endif
 
 		Curivator_Control_Interface &AsControlInterface() {return *this;}

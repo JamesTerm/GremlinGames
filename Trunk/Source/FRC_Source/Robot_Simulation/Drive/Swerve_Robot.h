@@ -15,9 +15,6 @@ class Swerve_Drive_Control_Interface : public Rotary_Control_Interface,
 
 struct Swerve_Robot_Props
 {
-	//typedef Framework::Base::Vec2d Vec2D;
-	typedef osg::Vec2d Vec2D;
-
 	//Currently supporting 4 terms in polynomial equation
 	//Here is the curve fitting terms where 0th element is C, 1 = Cx^1, 2 = Cx^2, 3 = Cx^3 and so on...
 	double Polynomial_Wheel[5];
@@ -45,14 +42,16 @@ struct Swerve_Robot_Props
 	bool EncoderReversed_Wheel[4];
 };
 
+#ifndef Robot_TesterCode
+#define DRIVE_API
+typedef Ship_Properties UI_Ship_Properties;
+#endif
+
 class DRIVE_API Swerve_Robot_Properties : public UI_Ship_Properties
 {
 	public:
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
-
 		Swerve_Robot_Properties();
-		virtual void LoadFromScript(GG_Framework::Logic::Scripting::Script& script);
+		virtual void LoadFromScript(Scripting::Script& script);
 
 		//where the index matches the enumeration of each rotary system
 		const Rotary_Pot_Properties &GetRotaryProps(size_t index) const {return m_RotaryProps[index];}
@@ -74,6 +73,9 @@ class DRIVE_API Swerve_Robot_Properties : public UI_Ship_Properties
 		Rotary_Pot_Properties m_RotaryProps[8];  //see Swerve_Robot_SpeedControllerDevices for assignments
 		#ifdef Robot_TesterCode
 		EncoderSimulation_Properties m_EncoderSimulation;
+		#endif
+		#ifndef Robot_TesterCode
+		typedef UI_Ship_Properties __super;
 		#endif
 };
 
@@ -110,12 +112,10 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 		{	return Enum_GetValue<Swerve_Robot_SpeedControllerDevices> (value,csz_Swerve_Robot_SpeedControllerDevices_Enum,_countof(csz_Swerve_Robot_SpeedControllerDevices_Enum));
 		}
 
-		//typedef Framework::Base::Vec2d Vec2D;
-		typedef osg::Vec2d Vec2D;
 		Swerve_Robot(const char EntityName[],Swerve_Drive_Control_Interface *robot_control,size_t EnumOffset=0,bool IsAutonomous=false);
 		~Swerve_Robot();
 		IEvent::HandlerList ehl;
-		virtual void Initialize(Entity2D::EventMap& em, const Entity_Properties *props=NULL);
+		virtual void Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props=NULL);
 		virtual void ResetPos();
 		/// \param ResetPos typically true for autonomous and false for dynamic use
 		void SetUseEncoders(bool UseEncoders,bool ResetPosition=true);
@@ -169,8 +169,9 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 		Swerve_Drive_Control_Interface * const m_RobotControl;
 		bool m_IsAutonomous;
 	private:
-		//typedef Ship_Tester __super;
-
+		#ifndef Robot_TesterCode
+		typedef Ship_Tester __super;
+		#endif
 		Swerve_Drive * m_VehicleDrive;
 		
 		//The driving module consists of a swivel motor and the driving motor for a wheel.  It manages / converts the intended direction and speed to 
@@ -187,7 +188,7 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 					const  Rotary_Properties *Swivel_Props;
 					const  Rotary_Properties *Drive_Props;
 				};
-				virtual void Initialize(GG_Framework::Base::EventMap& em,const DrivingModule_Props *props=NULL);
+				virtual void Initialize(Entity2D_Kind::EventMap& em,const DrivingModule_Props *props=NULL);
 				virtual void TimeChange(double dTime_s);
 				void SetIntendedSwivelDirection(double direction) {m_IntendedSwivelDirection=direction;}
 				double GetIntendedSwivelDirection() const {return m_IntendedSwivelDirection;}
