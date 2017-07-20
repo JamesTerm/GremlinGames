@@ -259,6 +259,7 @@ class DRIVE_API Swerve_Robot_Control : public RobotControlCommon, public Swerve_
 		{	return Swerve_Robot::GetSpeedControllerDevices_Enum(name);
 		}
 		virtual size_t RobotControlCommon_Get_DigitalInput_EnumValue(const char *name) const  	{	return (size_t)-1;	}
+
 		virtual size_t RobotControlCommon_Get_AnalogInput_EnumValue(const char *name) const  
 		{	return Swerve_Robot::GetAnalogInputs_Enum(name);
 		}
@@ -291,6 +292,7 @@ class DRIVE_API Swerve_Robot_Control : public RobotControlCommon, public Swerve_
 	private:
 		__inline double Pot_GetRawValue(size_t index);
 
+		PolynomialEquation_forth m_PotPoly[8];
 		KalmanFilter m_KalFilter[8];
 		Averager<double,4> m_Averager[8];
 
