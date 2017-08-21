@@ -223,23 +223,20 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		const double LastSwivelDirection=encoders.Velocity.AsArray[i+4];
 		double DistanceToIntendedSwivel=fabs(NormalizeRotation2(LastSwivelDirection-SwivelDirection));
 
+		//If we are using a range... anything above 180 will need to be flipped favorably
 		if ((DistanceToIntendedSwivel>PI_2) || 
 			(Swivel.GetUsingRange() &&
-			 ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()))) 
+			 ((SwivelDirection>DEG_2_RAD(180)) || (SwivelDirection<DEG_2_RAD(-180)))) 
 			)
-		{
 			SwivelDirection=NormalizeRotation2(SwivelDirection+Pi);
-			if (Swivel.GetUsingRange())
-			{
-				double TestIntendedFlipped=NormalizeRotation2(IntendedDirection+Pi);
-				//If we flipped because of a huge delta check that the reverse position is in range... and flip it back if it exceed the range
-				if ((SwivelDirection>Swivel.GetMaxRange()) || (SwivelDirection<Swivel.GetMinRange()) ||
-					(TestIntendedFlipped>Swivel.GetMaxRange()) || (TestIntendedFlipped<Swivel.GetMinRange()))
-				{
-					SwivelDirection+=Pi;
-					NormalizeRotation(SwivelDirection);
-				}
-			}
+
+		//if we are using range... clip to the max range available
+		if (Swivel.GetUsingRange())
+		{
+			if (SwivelDirection>Swivel.GetMaxRange())
+				SwivelDirection=Swivel.GetMaxRange();
+			if (SwivelDirection<Swivel.GetMinRange())
+				SwivelDirection=Swivel.GetMinRange();
 		}
 
 		//Note the velocity is checked once before the time change here, and once after for the current
