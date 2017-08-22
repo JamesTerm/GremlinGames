@@ -245,6 +245,11 @@ void Swerve_Drive::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &
 	_.sRL = sqrt((A*A)+(D*D)); _.aRL = atan2(A,D);
 	_.sRR = sqrt((A*A)+(C*C)); _.aRR = atan2(A,C);
 
+	//SmartDashboard::PutNumber("aFL",RAD_2_DEG(_.aFL));
+	//SmartDashboard::PutNumber("aFR",RAD_2_DEG(_.aFR));
+	//SmartDashboard::PutNumber("aRL",RAD_2_DEG(_.aRL));
+	//SmartDashboard::PutNumber("aRR",RAD_2_DEG(_.aRR));
+
 	//the angle velocities can be sensitive so if the RCW is zero then we should have a zero tolerance test
 	if (RCW==0.0)
 	{
