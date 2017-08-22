@@ -221,23 +221,35 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		//This is normalized implicitly
 		//const double LastSwivelDirection=Swivel.GetPos_m();
 		const double LastSwivelDirection=encoders.Velocity.AsArray[i+4];
-		double DistanceToIntendedSwivel=fabs(NormalizeRotation2(LastSwivelDirection-SwivelDirection));
 
-		//If we are using a range... anything above 180 will need to be flipped favorably
-		if ((DistanceToIntendedSwivel>PI_2) || 
-			(Swivel.GetUsingRange() &&
-			 ((SwivelDirection>DEG_2_RAD(180)) || (SwivelDirection<DEG_2_RAD(-180)))) 
-			)
-			SwivelDirection=NormalizeRotation2(SwivelDirection+Pi);
+		double DirectionMultiplier=1.0; //changes to -1 when reversed
+		//Anything above 180 will need to be flipped favorably to the least traveled angle
+		if (fabs(SwivelDirection)>PI_2)
+		{
+			const double TestOtherDirection=NormalizeRotation_HalfPi(SwivelDirection);
+			if (fabs(TestOtherDirection)<fabs(SwivelDirection))
+			{
+				SwivelDirection=TestOtherDirection;
+				DirectionMultiplier=-1;
+			}
+		}
 
 		//if we are using range... clip to the max range available
 		if (Swivel.GetUsingRange())
 		{
 			if (SwivelDirection>Swivel.GetMaxRange())
 				SwivelDirection=Swivel.GetMaxRange();
-			if (SwivelDirection<Swivel.GetMinRange())
+			else if (SwivelDirection<Swivel.GetMinRange())
 				SwivelDirection=Swivel.GetMinRange();
 		}
+
+		string sm_name="a2_";
+		const char * const sm_name_suffix[]={"FL","FR","RL","RR"};
+		sm_name+=sm_name_suffix[i];
+		SmartDashboard::PutNumber(sm_name.c_str(),RAD_2_DEG(SwivelDirection));
+
+		//recompute as SwivelDirection may be reduced
+		const double DistanceToIntendedSwivel=fabs(NormalizeRotation2(LastSwivelDirection-SwivelDirection));
 
 		//Note the velocity is checked once before the time change here, and once after for the current
 		//Only apply swivel adjustments if we have significant movement (this matters in targeting tests)
@@ -250,7 +262,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 
 		m_DrivingModule[i]->SetIntendedSwivelDirection(SwivelDirection);
 
-		const double IntendedSpeed=m_VehicleDrive->GetIntendedVelocitiesFromIndex(i);
+		const double IntendedSpeed=m_VehicleDrive->GetIntendedVelocitiesFromIndex(i)*DirectionMultiplier;
 
 		//To minimize error only apply the Y component amount to the velocity
 		//The less the difference between the current and actual swivel direction the greater the full amount can be applied
