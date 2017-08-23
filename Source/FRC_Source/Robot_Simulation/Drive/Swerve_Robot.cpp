@@ -333,7 +333,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		m_EncoderAngularVelocity=AngularVelocity;
 		if (!m_SwerveRobotProps.IsOpen_Wheel)
 		{
-			Vec2d Velocity=GetLinearVelocity_ToDisplay();
+			//Vec2d Velocity=GetLinearVelocity_ToDisplay();
 			SmartDashboard::PutNumber("Velocity",Meters2Feet(LocalVelocity[1]));
 			SmartDashboard::PutNumber("Rotation Velocity",AngularVelocity);
 		}
@@ -841,7 +841,7 @@ double Swerve_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				SmartDashboard::PutNumber(ContructedName.c_str(),raw_value);
 				ContructedName=Prefix,ContructedName+="_Pot_Raw";
 				SmartDashboard::PutNumber(ContructedName.c_str(),PotentiometerRaw_To_Arm);
-				const double Tolerance=m_SwerveRobotProps.GetRotaryProps(index).GetRotaryProps().PrecisionTolerance;
+				const double Tolerance=m_SwerveRobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotLimitTolerance;
 				//Potentiometer safety, if we lose wire connection it will be out of range in which case we turn on the safety (we'll see it turned on)
 				if (raw_value>(HiRange+Tolerance) || raw_value<(LowRange-Tolerance))
 				{
