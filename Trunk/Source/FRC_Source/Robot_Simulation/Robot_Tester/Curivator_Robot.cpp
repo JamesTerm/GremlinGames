@@ -1836,7 +1836,12 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 			ContructedName=Prefix;
 			ContructedName[0]-=32; //Make first letter uppercase
 			ContructedName+="Disable";
-			SmartDashboard::PutBoolean(ContructedName.c_str(),false);
+			#ifdef Robot_TesterCode
+			const bool DisableDefault=false;
+			#else
+			const bool DisableDefault=true;
+			#endif
+			SmartDashboard::PutBoolean(ContructedName.c_str(),DisableDefault);
 		}
 		#endif
 	}
