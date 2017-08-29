@@ -175,6 +175,7 @@ MainRobot = {
 		--strafe_to_scale=4/20,  --In autonomous we need the max to match the max forward and reverse
 		--This is obtainer from encoder RPM's of 1069.2 and Wheel RPM's 427.68 (both high and low have same ratio)
 		encoder_to_wheel_ratio=1.0,			--example if encoder spins at 1069.2 multiply by this to get 427.68 (for the wheel rpm)
+		encoder_pulses_per_revolution=560,
 		voltage_multiply=1.0,				--May be reversed using -1.0
 		curve_voltage_wheel=
 		{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
@@ -754,6 +755,7 @@ MainRobot = {
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
 			encoder_to_wheel_ratio=1.0,
+			encoder_pulses_per_revolution=560,
 			--Arm_SetPotentiometerSafety=true,	
 			max_speed=8.91*Feet2Meters,	
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
@@ -778,6 +780,8 @@ MainRobot = {
 			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
 			encoder_to_wheel_ratio=1.0,
+			encoder_pulses_per_revolution=560,
+			encoder_reversed_wheel='y',
 			--Arm_SetPotentiometerSafety=true,	
 			max_speed=8.91*Feet2Meters,	--100 rpm... with a 12:36 reduction in radians
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
