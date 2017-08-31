@@ -180,6 +180,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Curivator_Goals.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Curivator_Robot.cpp"
 				>
 			</File>
