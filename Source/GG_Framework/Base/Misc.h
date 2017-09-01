@@ -249,6 +249,12 @@ __inline T Enum_GetValue(const char *value,const char * const Table[],size_t NoI
 	x=true;\
 }
 
+#define SCRIPT_TEST_BOOL_YES_NoDefault(x,y)  			err = script.GetField(y,&sTest,NULL,NULL);\
+	if (!err)\
+{\
+	if ((sTest.c_str()[0]=='y')||(sTest.c_str()[0]=='Y')||(sTest.c_str()[0]=='1'))\
+	x=true;\
+}
 
 
 #define SCRIPT_TEST_BOOL_NO(x,y)  			err = script.GetField(y,&sTest,NULL,NULL);\
@@ -258,6 +264,18 @@ __inline T Enum_GetValue(const char *value,const char * const Table[],size_t NoI
 	if ((sTest.c_str()[0]=='n')||(sTest.c_str()[0]=='N')||(sTest.c_str()[0]=='0'))\
 	x=false;\
 }
+
+
+#define SCRIPT_INIT_DOUBLE(x,y) err=script.GetField(y, NULL, NULL, &fValue); \
+	if (!err) x=fValue;
+
+#define SCRIPT_INIT_DOUBLE_NoDefault(x,y) err=script.GetField(y, NULL, NULL, &fValue); \
+	if (!err) x=fValue; \
+	else if (!NoDefaults) x=0.0;
+
+#define SCRIPT_INIT_DOUBLE2_NoDefault(x,y,z) err=script.GetField(y, NULL, NULL, &fValue); \
+	if (!err) x=fValue; \
+	else if (!NoDefaults) x=z;
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
