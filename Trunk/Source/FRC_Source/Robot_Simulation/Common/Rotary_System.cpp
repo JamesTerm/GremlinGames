@@ -999,7 +999,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script, bool NoDefault
 			script.Pop();
 		}
 
-		SCRIPT_INIT_DOUBLE_NoDefault(m_RotaryProps.PrecisionTolerance,"tolerance");
+		SCRIPT_INIT_DOUBLE(m_RotaryProps.PrecisionTolerance,"tolerance");
 
 		err=script.GetField("tolerance_count", NULL, NULL, &fValue);
 		if (!err)
@@ -1059,7 +1059,7 @@ void Rotary_Properties::LoadFromScript(Scripting::Script& script, bool NoDefault
 			if (!err) m_RotaryProps.MaxLimitRange=fValue;
 		}
 
-		SCRIPT_INIT_DOUBLE_NoDefault(m_RotaryProps.InverseMaxAccel,"inv_max_accel");
+		SCRIPT_INIT_DOUBLE(m_RotaryProps.InverseMaxAccel,"inv_max_accel");
 		if (!NoDefaults)
 		{
 			m_RotaryProps.InverseMaxDecel=m_RotaryProps.InverseMaxAccel;	//set up deceleration to be the same value by default
@@ -1112,7 +1112,7 @@ void Rotary_Pot_Properties::LoadFromScript(Scripting::Script& script, bool NoDef
 	err=script.GetField("pot_max_limit", NULL, NULL, &fValue);
 	if (!err) m_RotaryPotProps.PotMaxValue=fValue;
 	SCRIPT_INIT_DOUBLE_NoDefault(m_RotaryPotProps.PotLimitTolerance,"pot_limit_tolerance");
-	SCRIPT_INIT_DOUBLE_NoDefault(m_RotaryPotProps.PotentiometerOffset,"pot_offset");
+	SCRIPT_INIT_DOUBLE(m_RotaryPotProps.PotentiometerOffset,"pot_offset");
 	std::string sTest;
 	SCRIPT_TEST_BOOL_YES_NoDefault(m_RotaryPotProps.IsFlipped,"pot_range_flipped");
 	m_RotaryPotProps.PotPolyTerms.LoadFromScript(script,"curve_pot");
