@@ -111,9 +111,9 @@ void Servo_Properties::LoadFromScript(Scripting::Script& script, bool NoDefaults
 	{
 
 		double fValue;
-		SCRIPT_INIT_DOUBLE_NoDefault(m_ServoProps.ServoScalar,		 "servo_ratio");
-		SCRIPT_INIT_DOUBLE_NoDefault(m_ServoProps.ServoOffset,		 "servo_offset");
-		SCRIPT_INIT_DOUBLE_NoDefault(m_ServoProps.PrecisionTolerance,"tolerance");
+		SCRIPT_INIT_DOUBLE(m_ServoProps.ServoScalar,		 "servo_ratio");
+		SCRIPT_INIT_DOUBLE(m_ServoProps.ServoOffset,		 "servo_offset");
+		SCRIPT_INIT_DOUBLE(m_ServoProps.PrecisionTolerance,"tolerance");
 
 		err=script.GetField("ds_display_row", NULL, NULL, &fValue);
 		if (!err)

@@ -114,19 +114,20 @@ void Ship_1D_Properties::LoadFromScript(Scripting::Script& script, bool NoDefaul
 
 	{
 		double fValue;
-		SCRIPT_INIT_DOUBLE_NoDefault(m_Ship_1D_Props.MAX_SPEED,"max_speed");
+		SCRIPT_INIT_DOUBLE(m_Ship_1D_Props.MAX_SPEED,"max_speed");
 		if (!NoDefaults)
 		{
 			m_Ship_1D_Props.MaxSpeed_Forward=m_Ship_1D_Props.MAX_SPEED;
 			m_Ship_1D_Props.MaxSpeed_Reverse=-m_Ship_1D_Props.MAX_SPEED;
 		}
-		SCRIPT_INIT_DOUBLE_NoDefault(m_Ship_1D_Props.MaxSpeed_Forward,"max_speed_forward");
-		SCRIPT_INIT_DOUBLE_NoDefault(m_Ship_1D_Props.MaxSpeed_Reverse,"max_speed_reverse");
 
-		SCRIPT_INIT_DOUBLE_NoDefault(	m_Ship_1D_Props.ACCEL,			"accel");
-		SCRIPT_INIT_DOUBLE_NoDefault(	m_Ship_1D_Props.BRAKE,			"brake");
-		SCRIPT_INIT_DOUBLE_NoDefault(	m_Ship_1D_Props.MaxAccelForward,"max_accel_forward");
-		SCRIPT_INIT_DOUBLE_NoDefault(	m_Ship_1D_Props.MaxAccelReverse,"max_accel_reverse");
+		SCRIPT_INIT_DOUBLE(m_Ship_1D_Props.MaxSpeed_Forward,"max_speed_forward");
+		SCRIPT_INIT_DOUBLE(m_Ship_1D_Props.MaxSpeed_Reverse,"max_speed_reverse");
+
+		SCRIPT_INIT_DOUBLE(	m_Ship_1D_Props.ACCEL,			"accel");
+		SCRIPT_INIT_DOUBLE(	m_Ship_1D_Props.BRAKE,			"brake");
+		SCRIPT_INIT_DOUBLE(	m_Ship_1D_Props.MaxAccelForward,"max_accel_forward");
+		SCRIPT_INIT_DOUBLE(	m_Ship_1D_Props.MaxAccelReverse,"max_accel_reverse");
 		double range;
 		err=script.GetField("min_range_deg", NULL, NULL, &range);
 		if (!err) m_Ship_1D_Props.MinRange=DEG_2_RAD(range);
