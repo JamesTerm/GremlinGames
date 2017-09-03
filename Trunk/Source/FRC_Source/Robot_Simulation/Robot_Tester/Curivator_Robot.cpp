@@ -1174,7 +1174,7 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 				double fTest;
 				err = script.GetField("auton_test", NULL, NULL,&fTest);
 				if (!err)
-					auton.AutonTest=(Curivator_Robot_Props::Autonomous_Properties::AutonType)((int)fTest);
+					auton.AutonTest=(size_t)((int)fTest);
 
 				//err = script.GetField("side_move_rad", NULL, NULL,&fTest);
 				//if (!err)
