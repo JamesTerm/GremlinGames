@@ -31,6 +31,15 @@ using namespace std;
 #endif
 
 
+enum AutonType
+{
+	eDoNothing,
+	eJustMoveForward,
+	eTestArm,
+	eArmGrabSequence,
+	eNoAutonTypes
+};
+
 
   /***********************************************************************************************************************************/
  /*															Curivator_Goals															*/
@@ -353,21 +362,21 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Autonomous_Properties &auton=m_Robot.GetAutonProps();
 			//auton.ShowAutonParameters();  //Grab again now in case user has tweaked values
 
-			Autonomous_Properties::AutonType AutonTest = auton.AutonTest;
+			AutonType AutonTest = (AutonType)auton.AutonTest;
 			printf("Testing=%d \n",AutonTest);
 			switch(AutonTest)
 			{
-			case Autonomous_Properties::eJustMoveForward:
+			case eJustMoveForward:
 				m_Primer.AddGoal(new MoveForward(this));
 				break;
-			case Autonomous_Properties::eTestArm:
+			case eTestArm:
 				m_Primer.AddGoal(TestArmMove(this));
 				break;
-			case Autonomous_Properties::eArmGrabSequence:
+			case eArmGrabSequence:
 				m_Primer.AddGoal(TestArmMove2(this));
 				break;
-			case Autonomous_Properties::eDoNothing:
-			case Autonomous_Properties::eNoAutonTypes: //grrr windriver and warning 1250
+			case eDoNothing:
+			case eNoAutonTypes: //grrr windriver and warning 1250
 				break;
 			}
 			m_Primer.AddGoal(new goal_clock(this));
