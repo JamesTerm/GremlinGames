@@ -35,6 +35,7 @@ enum AutonType
 {
 	eDoNothing,
 	eJustMoveForward,
+	eJustRotate,
 	eTestArm,
 	eArmGrabSequence,
 	eNoAutonTypes
@@ -111,6 +112,12 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Goal_Ship_MoveToPosition *goal_drive=NULL;
 			goal_drive=new Goal_Ship_MoveToRelativePosition(Robot->GetController(),wp,true,LockOrientation,PrecisionTolerance);
 			return goal_drive;
+		}
+
+		static Goal * Rotate(Curivator_Goals_Impl *Parent,double Degrees)
+		{
+			Curivator_Robot *Robot=&Parent->m_Robot;
+			return new Goal_Ship_RotateToRelativePosition(Robot->GetController(),DEG_2_RAD(Degrees));
 		}
 
 		static Goal * Move_ArmXPosition(Curivator_Goals_Impl *Parent,double length_in)
@@ -224,8 +231,56 @@ class Curivator_Goals_Impl : public AtomicGoal
 			MoveForward(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
 			{
-				AddSubgoal(new Goal_Wait(0.500));  //Testing
-				AddSubgoal(Move_Straight(m_Parent,1.0));
+				double DistanceFeet=1.0; //should be a safe default
+				const char * const RotateSmartVar="TestMove";
+				#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+				try
+				{
+					DistanceFeet=SmartDashboard::GetNumber(RotateSmartVar);
+				}
+				catch (...)
+				{
+					//I may need to prime the pump here
+					SmartDashboard::PutNumber(RotateSmartVar,DistanceFeet);
+				}
+				#else
+				//Just set it for cRIO
+				SmartDashboard::PutNumber(RotateSmartVar,DistanceFeet);
+				#endif
+
+				AddSubgoal(new Goal_Wait(0.500));
+				AddSubgoal(Move_Straight(m_Parent,DistanceFeet));
+				AddSubgoal(new Goal_Wait(0.500));  //allow time for mass to settle
+				m_Status=eActive;
+			}
+		};
+
+		class RotateWithWait : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			RotateWithWait(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			virtual void Activate()
+			{
+				double RotateDegrees=45.0; //should be a safe default
+				const char * const RotateSmartVar="TestRotate";
+				#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+				try
+				{
+					RotateDegrees=SmartDashboard::GetNumber(RotateSmartVar);
+				}
+				catch (...)
+				{
+					//I may need to prime the pump here
+					SmartDashboard::PutNumber(RotateSmartVar,RotateDegrees);
+				}
+				#else
+				//Just set it for cRIO
+				SmartDashboard::PutNumber(RotateSmartVar,RotateDegrees);
+				#endif
+
+				AddSubgoal(new Goal_Wait(0.500));
+				AddSubgoal(Rotate(m_Parent,RotateDegrees));
+				AddSubgoal(new Goal_Wait(0.500));  //allow time for mass to settle
 				m_Status=eActive;
 			}
 		};
@@ -368,6 +423,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 			{
 			case eJustMoveForward:
 				m_Primer.AddGoal(new MoveForward(this));
+				break;
+			case eJustRotate:
+				m_Primer.AddGoal(new RotateWithWait(this));
 				break;
 			case eTestArm:
 				m_Primer.AddGoal(TestArmMove(this));
