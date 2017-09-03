@@ -511,6 +511,7 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			err = script.GetFieldTable("swivel_common");
 			if (!err)
 			{
+				m_CommonRotary.Init(); //reset the props for proper defaults
 				tally++;
 				m_CommonRotary.LoadFromScript(script);
 				script.Pop();
