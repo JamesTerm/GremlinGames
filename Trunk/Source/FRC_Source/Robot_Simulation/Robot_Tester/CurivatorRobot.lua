@@ -34,8 +34,9 @@ gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) *
 AutonTest_DoNothing=0
 AutonTest_JustMoveStraight=1
 AutonTest_JustRotate=2
-AutonTest_TestArm=3
-AutonTest_GrabSequence=4
+AutonTest_MoveRotateSequence=3
+AutonTest_TestArm=4
+AutonTest_GrabSequence=5
 
 MainRobot = {
 	version = 1.0;
@@ -311,7 +312,7 @@ MainRobot = {
 			side_move_rad=10,
 			arm_height_in=12,
 			support_hotspot='n',
-			auton_test=AutonTest_JustMoveStraight,
+			auton_test=AutonTest_MoveRotateSequence,
 			--auton_test=AutonTest_TestArm,
 			show_auton_variables='y'
 		},

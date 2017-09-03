@@ -36,6 +36,7 @@ enum AutonType
 	eDoNothing,
 	eJustMoveForward,
 	eJustRotate,
+	eSimpleMoveRotateSequence,
 	eTestArm,
 	eArmGrabSequence,
 	eNoAutonTypes
@@ -225,10 +226,15 @@ class Curivator_Goals_Impl : public AtomicGoal
 			}
 		};
 
+		//Drive Tests----------------------------------------------------------------------
 		class MoveForward : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
-			MoveForward(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			MoveForward(Curivator_Goals_Impl *Parent, bool AutoActivate=false)	: Generic_CompositeGoal(AutoActivate),SetUpProps(Parent) 
+			{	
+				if(!AutoActivate) 
+					m_Status=eActive;	
+			}
 			virtual void Activate()
 			{
 				double DistanceFeet=1.0; //should be a safe default
@@ -258,7 +264,11 @@ class Curivator_Goals_Impl : public AtomicGoal
 		class RotateWithWait : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
-			RotateWithWait(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent) {	m_Status=eActive;	}
+			RotateWithWait(Curivator_Goals_Impl *Parent, bool AutoActivate=false)	: Generic_CompositeGoal(AutoActivate),SetUpProps(Parent)
+			{	
+				if(!AutoActivate) 
+					m_Status=eActive;	
+			}
 			virtual void Activate()
 			{
 				double RotateDegrees=45.0; //should be a safe default
@@ -285,6 +295,38 @@ class Curivator_Goals_Impl : public AtomicGoal
 			}
 		};
 
+		class TestMoveRotateSequence : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			TestMoveRotateSequence(Curivator_Goals_Impl *Parent)	: m_pParent(Parent),SetUpProps(Parent) {	m_Status=eActive;	}
+			virtual void Activate()
+			{
+				#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+				size_t NoIterations=4;
+				try
+				{
+					NoIterations=SmartDashboard::GetNumber("TestMoveRotateIter");
+				}
+				catch (...)
+				{
+					//set up some good defaults for a small box
+					SmartDashboard::PutNumber("TestRotate",90.0);
+					SmartDashboard::PutNumber("TestMove",1.0);
+					SmartDashboard::PutNumber("TestMoveRotateIter",4.0);
+				}
+				#endif
+				for (size_t i=0;i<NoIterations;i++)
+				{
+					AddSubgoal(new MoveForward(m_pParent,true));
+					AddSubgoal(new RotateWithWait(m_pParent,true));
+				}
+				m_Status=eActive;
+			}
+		private:
+			Curivator_Goals_Impl *m_pParent;
+		};
+
+		//Arm Tests----------------------------------------------------------------------
 		class SetArmWaypoint : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
@@ -426,6 +468,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eJustRotate:
 				m_Primer.AddGoal(new RotateWithWait(this));
+				break;
+			case eSimpleMoveRotateSequence:
+				m_Primer.AddGoal(new TestMoveRotateSequence(this));
 				break;
 			case eTestArm:
 				m_Primer.AddGoal(TestArmMove(this));
