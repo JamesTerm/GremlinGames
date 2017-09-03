@@ -336,8 +336,6 @@ MainRobot = {
 			max_accel_forward=5,			--just go with what feels right
 			max_accel_reverse=5,
 			using_range=1,					--Warning Only use range if we have a potentiometer!
-			predict_up=.200,
-			predict_down=.200,
 			use_aggressive_stop = 'yes',
 		},
 
@@ -361,6 +359,8 @@ MainRobot = {
 			pot_min_limit=232,
 			pot_max_limit=890,
 			pot_range_flipped='n',
+			predict_up=.200,
+			predict_down=.200,
 			--These min/max are in inch units
 			max_range= 10,
 			min_range=1,
@@ -377,7 +377,8 @@ MainRobot = {
 			pot_range_flipped='n',
 			max_accel_forward=25,			--just go with what feels right
 			max_accel_reverse=25,
-
+			predict_up=.200,
+			predict_down=.200,
 			--These min/max are in inch units
 			max_range= 10,
 			min_range=1,
