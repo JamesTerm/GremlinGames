@@ -1132,6 +1132,7 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			err = script.GetFieldTable("arm_pos_common");
 			if (!err)
 			{
+				m_CommonRotary.Init(); //reset the props for proper defaults
 				tally++;
 				m_CommonRotary.LoadFromScript(script);
 				script.Pop();
@@ -1158,7 +1159,7 @@ void Curivator_Robot_Properties::LoadFromScript(Scripting::Script& script)
 			err = script.GetFieldTable(csz_Curivator_Robot_SpeedControllerDevices_Enum[i]);
 			if (!err)
 			{
-				m_RotaryProps[i].LoadFromScript(script);
+				m_RotaryProps[i].LoadFromScript(script,UsingCommon);
 				script.Pop();
 			}
 		}
