@@ -217,32 +217,27 @@ MainRobot = {
 		wheel_fl =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 			voltage_multiply=-1.0,			--reversed
 			encoder_to_wheel_ratio=-1.0,  --simulation can't use encoder_reversed_wheel
 		},
 		wheel_fr =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 		},
 		wheel_rl =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 			voltage_multiply=-1.0,			--reversed
 			encoder_to_wheel_ratio=-1.0,
 		},
 		wheel_rr =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 		},
 		
 		swivel_common =
 		{
 			is_closed=0,
-			show_pid_dump='n',
 			ds_display_row=-1,
 			use_pid_up_only='y',
 			pid_up={p=100, i=0, d=25},
@@ -266,7 +261,6 @@ MainRobot = {
 		swivel_fl =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 			--center around 450
 			pot_min_limit=200,  --45 forward   0
 			pot_max_limit=762,  -- 45 counter clockwise  962
@@ -276,7 +270,6 @@ MainRobot = {
 		swivel_fr =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 			--center around 450
 			pot_min_limit=200,  --45 forward   0
 			pot_max_limit=762,  -- 45 counter clockwise  962
@@ -286,7 +279,6 @@ MainRobot = {
 		swivel_rl =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 			--center around 450
 			pot_min_limit=200,  --45 forward   0
 			pot_max_limit=762,  -- 45 counter clockwise  962
@@ -296,7 +288,6 @@ MainRobot = {
 		swivel_rr =
 		{
 			is_closed=1,
-			show_pid_dump='n',
 			--center around 450
 			pot_min_limit=200,  --45 forward   0
 			pot_max_limit=762,  -- 45 counter clockwise  962
@@ -324,38 +315,8 @@ MainRobot = {
 			show_auton_variables='y'
 		},
 
-		turret =
-		{
-			is_closed=1,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up={p=100, i=0, d=25},
-			pid_down={p=100, i=0, d=25},
-			tolerance=0.3,
-			tolerance_count=1,
-			voltage_multiply=1.0,			--May be reversed
-			--this may be 184: 84 * 36 : 20... using 180 as the ring is 3.8571428571428571428571428571429
-			encoder_to_wheel_ratio=1.0,
-			--Arm_SetPotentiometerSafety=true,	
-			max_speed=0.7,	--100 rpm... with a 15x reduction in radians
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
-			brake=10.0,
-			max_accel_forward=3,			--These are in radians, just go with what feels right
-			max_accel_reverse=3,
-			using_range=1,	--Warning Only use range if we have a potentiometer!
-
-			max_range_deg= 180,
-			min_range_deg=-180,
-			starting_position=0,
-			--pot_offset=-46.12 * Deg2Rad, --should not need this
-			use_aggressive_stop = 'yes',
-			--inv_max_accel_up = 0.3,
-			--inv_max_decel_up = 0.3,
-			--inv_max_accel_down = 0.3,
-			--inv_max_decel_down = 0.3,
-		},
-		arm =
+		
+		arm_common =
 		{
 			is_closed=1,
 			show_pid_dump='n',
@@ -369,11 +330,6 @@ MainRobot = {
 			tolerance_count=1,
 			voltage_multiply=1.0,			--May be reversed
 			encoder_to_wheel_ratio=1.0,
-			pot_min_limit=232,
-			pot_max_limit=890,
-			pot_range_flipped='n',
-			
-			--max_speed=13.3,	
 			max_speed=6.0,
 			accel=10.0,						--We may indeed have a two button solution (match with max accel)
 			brake=10.0,
@@ -382,6 +338,29 @@ MainRobot = {
 			using_range=1,					--Warning Only use range if we have a potentiometer!
 			predict_up=.200,
 			predict_down=.200,
+			use_aggressive_stop = 'yes',
+		},
+
+		turret =
+		{
+			max_speed=0.7,	--100 rpm... with a 15x reduction in radians
+			max_accel_forward=3,			--These are in radians, just go with what feels right
+			max_accel_reverse=3,
+			using_range=1,	--Warning Only use range if we have a potentiometer!
+
+			max_range_deg= 180,
+			min_range_deg=-180,
+			starting_position=0,
+			--inv_max_accel_up = 0.3,
+			--inv_max_decel_up = 0.3,
+			--inv_max_accel_down = 0.3,
+			--inv_max_decel_down = 0.3,
+		},
+		arm =
+		{
+			pot_min_limit=232,
+			pot_max_limit=890,
+			pot_range_flipped='n',
 			--These min/max are in inch units
 			max_range= 10,
 			min_range=1,
@@ -389,40 +368,16 @@ MainRobot = {
 			starting_position=6,
 			forward_deadzone=0.23,
 			reverse_deadzone=0.23,
-			use_aggressive_stop = 'yes',
 		},
 		boom =
 		{
-			is_closed=1,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up=
-			{p=100, i=0, d=25},
-			pid_down=
-			{p=100, i=0, d=25},
 			tolerance=0.15,
-			tolerance_count=1,
-			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=1.0,
 			pot_min_limit=200,
 			pot_max_limit=834,
 			pot_range_flipped='n',
-			
-			--max_speed=13.3,	
-			max_speed=6.0,
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
-			brake=10.0,
 			max_accel_forward=25,			--just go with what feels right
 			max_accel_reverse=25,
-			inv_max_accel_up = 0.0,
-			inv_max_decel_up = 0.0,
-			inv_max_accel_down = 0.0,
-			inv_max_decel_down = 0.0,
 
-			using_range=1,					--Warning Only use range if we have a potentiometer!
-			predict_up=.200,
-			predict_down=.200,
 			--These min/max are in inch units
 			max_range= 10,
 			min_range=1,
@@ -430,52 +385,25 @@ MainRobot = {
 			starting_position=6,
 			forward_deadzone=0.37,
 			reverse_deadzone=0.37,
-			use_aggressive_stop = 'yes',
 		},
 		bucket =
 		{
-			is_closed=1,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up=
-			{p=100, i=0, d=25},
-			pid_down=
-			{p=100, i=0, d=25},
 			tolerance=0.0125,
-			tolerance_count=1,
-			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=1.0,
 			pot_min_limit=290,
 			pot_max_limit=888,
 			pot_range_flipped='y',
 			--will need to compute proper was 0.64 but seems too slow
 			max_speed=3,	
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
-			brake=10.0,
 			max_accel_forward=500,			--just go with what feels right
 			max_accel_reverse=500,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 12,
 			min_range=0.0,
 			starting_position=6,
-			use_aggressive_stop = 'yes',
 		},
 		clasp =
 		{
-			is_closed=1,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up=
-			{p=100, i=0, d=25},
-			pid_down=
-			{p=100, i=0, d=25},
 			tolerance=0.0125,
-			tolerance_count=1,
-			voltage_multiply=1.0,			--May be reversed
-			encoder_to_wheel_ratio=1.0,
 			pot_min_limit=440,
 			pot_max_limit=760,
 			pot_range_flipped='y',
@@ -483,18 +411,14 @@ MainRobot = {
 			max_speed=3,
 			max_speed_forward=1.5,
 			max_speed_reverse=-1.5,	
-			accel=10.0,						--We may indeed have a two button solution (match with max accel)
-			brake=10.0,
 			max_accel_forward=500,			--just go with what feels right
 			max_accel_reverse=500,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 7,
 			min_range=0,
 			starting_position=3.5,
-			use_aggressive_stop = 'yes',
 		},
-		arm_xpos =
+		arm_pos_common =
 		{
 			--is_closed=0,
 			show_pid_dump='n',
@@ -508,46 +432,36 @@ MainRobot = {
 			tolerance_count=20,
 			voltage_multiply=1.0,
 			encoder_to_wheel_ratio=1.0,
-			pot_min_limit=12.79,  --inches from big arm's pivot point on base mount
-			pot_max_limit=55.29,
-			pot_range_flipped='n',
-			
 			max_speed=6.0,	--inches per second
 			accel=10.0,
 			brake=10.0,
-			max_accel_forward=10000,			--just go with what feels right
+			max_accel_forward=10000,			--just go with what feels right <--god mode
 			max_accel_reverse=10000,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
+			using_range=0,					--some use range
+			use_aggressive_stop = 'n',
+		},
+
+		arm_xpos =
+		{
+			pot_min_limit=12.79,  --inches from big arm's pivot point on base mount
+			pot_max_limit=55.29,
+			pot_range_flipped='n',
+			using_range=0,	
 			--These min/max are in inch units
 			max_range= 55.29,
 			min_range=12.79,
 			starting_position=32.801521314123598,  --mathematically ideal for middle of LA... good to test code, but not necessarily for actual use
-			use_aggressive_stop = 'n',
 		},
 		arm_ypos =
 		{
-			--is_closed=0,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
 			pid_up=
 			{p=0, i=0, d=0},
 			pid_down=
 			{p=0, i=0, d=0},
-			tolerance=0.6,
-			tolerance_count=20,
-			voltage_multiply=1.0,
-			encoder_to_wheel_ratio=1.0,
 			pot_min_limit=-20.0,  --inches from big arm's pivot point on base mount
 			pot_max_limit=40.0,
 			pot_range_flipped='n',
-			
-			max_speed=6.0,	--inches per second
-			accel=10.0,
-			brake=10.0,
-			max_accel_forward=10000,			--god mode
-			max_accel_reverse=10000,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=1,					--not sure why this is using a range
 			--These min/max are in inch units
 			max_range= 40.0,
 			min_range=-20.0,
@@ -556,18 +470,6 @@ MainRobot = {
 		},
 		bucket_angle =
 		{
-			--is_closed=0,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up=
-			{p=100, i=0, d=25},
-			pid_down=
-			{p=100, i=0, d=25},
-			tolerance=0.6,
-			tolerance_count=20,
-			voltage_multiply=1.0,
-			encoder_to_wheel_ratio=1.0,
 			--0 holding, 90 gripping, 180 dropping
 			pot_min_limit=0.0,  --Degrees from horizontal (from outward side)  can go a bit less but not practical
 			pot_max_limit=180.0,  --can actually go to 196
@@ -576,29 +478,13 @@ MainRobot = {
 			max_speed=36.66,	--degrees per second  (matches 0.64 in radians)
 			accel=50.0,
 			brake=50.0,
-			max_accel_forward=10000,			--just go with what feels right
-			max_accel_reverse=10000,
-			using_range=0,					--Warning Only use range if we have a potentiometer!
 			--These min/max are in inch units
 			max_range= 180.0,
 			min_range=0.0,
 			starting_position=78.070524788111342,  --mathematically ideal for middle of LA... good to test code, but not necessarily for actual use
-			use_aggressive_stop = 'n',
 		},
 		clasp_angle =
 		{
-			--is_closed=1,
-			show_pid_dump='n',
-			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up=
-			{p=100, i=0, d=25},
-			pid_down=
-			{p=100, i=0, d=25},
-			tolerance=0.6,
-			tolerance_count=20,
-			voltage_multiply=1.0,
-			encoder_to_wheel_ratio=1.0,
 			--0 holding, 90 gripping, 180 dropping
 			pot_min_limit=-7.0,  --Degrees goes inside slightly when negative
 			pot_max_limit=100.0,  --can actually go to 106 or more
@@ -607,14 +493,11 @@ MainRobot = {
 			max_speed=36.66,	--degrees per second  (matches 0.64 in radians)
 			accel=5.0,
 			brake=5.0,
-			max_accel_forward=10000,			--just go with what feels right
-			max_accel_reverse=10000,
-			using_range=1,					--Warning Only use range if we have a potentiometer!
+			using_range=1,					--also using range
 			--These min/max are in inch units
 			max_range= 100.0,
 			min_range=-7.0,
 			starting_position=13.19097419,  --mathematically ideal for middle of LA... good to test code, but not necessarily for actual use
-			use_aggressive_stop = 'n',
 		},
 		wheel_cl =
 		{
