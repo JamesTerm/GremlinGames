@@ -109,7 +109,7 @@ void Curivator_Robot::Robot_Arm::TimeChange(double dTime_s)
 void Curivator_Robot::Robot_Arm::SetIntendedPosition_Plus(double Position)
 {
 	const bool Disable_Setpoints=SmartDashboard::GetBoolean("Disable_Setpoints");
-	if (Disable_Setpoints)
+	if (Disable_Setpoints || m_pParent->m_controller->GetUIController()->GetAutoPilot())
 		return;
 	//if (GetPotUsage()!=Rotary_Position_Control::eNoPot)
 	{
