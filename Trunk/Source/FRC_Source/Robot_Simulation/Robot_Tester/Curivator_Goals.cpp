@@ -37,6 +37,7 @@ enum AutonType
 	eJustMoveForward,
 	eJustRotate,
 	eSimpleMoveRotateSequence,
+	eTestBoxWayPoints,
 	eTestArm,
 	eArmGrabSequence,
 	eNoAutonTypes
@@ -326,6 +327,49 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Curivator_Goals_Impl *m_pParent;
 		};
 
+		static Goal * GiveRobotSquareWayPointGoal(Curivator_Goals_Impl *Parent)
+		{
+			Curivator_Robot *Robot=&Parent->m_Robot;
+			const char * const LengthSetting="TestDistance_ft";
+			#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+			double Length_m=Feet2Meters(1);
+			try
+			{
+				Length_m=Feet2Meters(SmartDashboard::GetNumber(LengthSetting));
+			}
+			catch (...)
+			{
+				//set up some good defaults for a small box
+				SmartDashboard::PutNumber(LengthSetting,Meters2Feet(Length_m));
+			}
+			#endif
+
+			std::list <WayPoint> points;
+			struct Locations
+			{
+				double x,y;
+			} test[]=
+			{
+				{Length_m,Length_m},
+				{Length_m,-Length_m},
+				{-Length_m,-Length_m},
+				{-Length_m,Length_m},
+				{0,0}
+			};
+			for (size_t i=0;i<_countof(test);i++)
+			{
+				WayPoint wp;
+				wp.Position[0]=test[i].x;
+				wp.Position[1]=test[i].y;
+				wp.Power=0.5;
+				points.push_back(wp);
+			}
+			//Now to setup the goal
+			Goal_Ship_FollowPath *goal=new Goal_Ship_FollowPath(Robot->GetController(),points,false,true);
+			return goal;
+		}
+
+
 		//Arm Tests----------------------------------------------------------------------
 		class SetArmWaypoint : public Generic_CompositeGoal, public SetUpProps
 		{
@@ -471,6 +515,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eSimpleMoveRotateSequence:
 				m_Primer.AddGoal(new TestMoveRotateSequence(this));
+				break;
+			case eTestBoxWayPoints:
+				m_Primer.AddGoal(GiveRobotSquareWayPointGoal(this));
 				break;
 			case eTestArm:
 				m_Primer.AddGoal(TestArmMove(this));

@@ -35,8 +35,9 @@ AutonTest_DoNothing=0
 AutonTest_JustMoveStraight=1
 AutonTest_JustRotate=2
 AutonTest_MoveRotateSequence=3
-AutonTest_TestArm=4
-AutonTest_GrabSequence=5
+AutonTest_BoxWayPoints=4
+AutonTest_TestArm=5
+AutonTest_GrabSequence=6
 
 MainRobot = {
 	version = 1.0;
@@ -312,7 +313,7 @@ MainRobot = {
 			side_move_rad=10,
 			arm_height_in=12,
 			support_hotspot='n',
-			auton_test=AutonTest_MoveRotateSequence,
+			auton_test=AutonTest_BoxWayPoints,
 			--auton_test=AutonTest_TestArm,
 			show_auton_variables='y'
 		},
