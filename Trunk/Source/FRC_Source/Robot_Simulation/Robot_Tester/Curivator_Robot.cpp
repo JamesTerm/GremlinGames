@@ -1633,7 +1633,45 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//Note: the arm position indexes remain open so no work to be done here for them
 			#ifndef __UsingTankDrive__
 			if (index>=Curivator_Robot::eDriveOffset)
+			{
+				//encoder hack:  TODO fix this once the encoders are fixed
+				#if 1
+				size_t DriveIndex=index-Curivator_Robot::eDriveOffset;
+				bool IsWheelFL=false;
+				switch (DriveIndex)
+				{
+				case Swerve_Robot::eWheel_FL:
+					IsWheelFL=true;
+					//fall through
+				case Swerve_Robot::eWheel_RR:
+					{
+						const size_t IndexToUse=IsWheelFL ? Curivator_Robot::eWheel_CL : Curivator_Robot::eWheel_CR;
+						double EncRate=Encoder_GetRate(IndexToUse);
+						EncRate=m_KalFilter[IndexToUse](EncRate);
+						EncRate=m_Averager[IndexToUse].GetAverage(EncRate);
+						EncRate=IsZero(EncRate)?0.0:EncRate;
+
+						const double EncVelocity=m_DriveRobotControl.RPS_To_LinearVelocity(EncRate);
+						//Dout(m_TankRobotProps.Feedback_DiplayRow,"l=%.1f r=%.1f", EncVelocity,RightVelocity);
+						#ifdef Robot_TesterCode
+						result=m_Encoders[IsWheelFL?0:1].GetEncoderVelocity();
+						#else
+						result= EncVelocity;
+						#endif
+						const char * const Prefix=csz_Swerve_Robot_SpeedControllerDevices_Enum[DriveIndex];
+						string ContructedName;
+						ContructedName=Prefix,ContructedName+="_Encoder";
+						SmartDashboard::PutNumber(ContructedName.c_str(),result);
+
+					}
+					break;
+				default:
+					result=m_pDriveRobotControl->GetRotaryCurrentPorV(DriveIndex);
+				}
+				#else
 				result=m_pDriveRobotControl->GetRotaryCurrentPorV(index-Curivator_Robot::eDriveOffset);
+				#endif
+			}
 			#endif
 	}
 	return result;
