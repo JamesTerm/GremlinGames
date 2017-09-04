@@ -504,6 +504,20 @@ class Curivator_Goals_Impl : public AtomicGoal
 			//auton.ShowAutonParameters();  //Grab again now in case user has tweaked values
 
 			AutonType AutonTest = (AutonType)auton.AutonTest;
+			const char * const AutonTestSelection="AutonTest";
+			#if defined Robot_TesterCode || !defined __USE_LEGACY_WPI_LIBRARIES__
+			double Length_m=Feet2Meters(1);
+			try
+			{
+				AutonTest=(AutonType)((size_t)SmartDashboard::GetNumber(AutonTestSelection));
+			}
+			catch (...)
+			{
+				//set up some good defaults for a small box
+				SmartDashboard::PutNumber(AutonTestSelection,(double)auton.AutonTest);
+			}
+			#endif
+
 			printf("Testing=%d \n",AutonTest);
 			switch(AutonTest)
 			{
