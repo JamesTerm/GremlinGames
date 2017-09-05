@@ -53,6 +53,37 @@ const double CurivatorGoal_StartingPosition[4]={13.0,4.0,60.0,5.0};
 const double CurivatorGoal_HoverPosition[4]={39.0,0.0,90.0,45.0};
 const double CurivatorGoal_PickupPosition[4]={39.0,-20.0,90.0,45.0};
 
+__inline double Auton_Smart_GetSingleValue(const char *SmartName,double default_value)
+{
+	double result=default_value;
+	//Can't use try catch on cRIO since Thunder RIO has issue with using catch(...)
+	//RoboRio uses SetDefault*() to accomplish same effect
+	//Simulation can use try catch method, but we could modify smart dashboard to allow using the new method
+	#if defined Robot_TesterCode
+	try
+	{
+		result=SmartDashboard::GetNumber(SmartName);
+	}
+	catch (...)
+	{
+		//set up some good defaults for a small box
+		SmartDashboard::PutNumber(SmartName,default_value);
+	}
+	#else
+	#if !defined __USE_LEGACY_WPI_LIBRARIES_
+	SmartDashboard::SetDefaultNumber(SmartName,default_value);
+	result=SmartDashboard::GetNumber(SmartName);
+	#else
+	//for cRIO checked in using zero in lua (default) to prompt the variable and then change to -1 to use it
+	if (!SmartDashboard::GetBoolean("TestVariables_set"))
+		SmartDashboard::PutNumber(SmartName,default_value);
+	else
+		result=SmartDashboard::GetNumber(AutonTestSelection);
+	#endif
+	#endif
+	return result;
+}
+
 class Curivator_Goals_Impl : public AtomicGoal
 {
 	private:
@@ -250,22 +281,8 @@ class Curivator_Goals_Impl : public AtomicGoal
 			}
 			virtual void Activate()
 			{
-				double DistanceFeet=1.0; //should be a safe default
-				const char * const RotateSmartVar="TestMove";
-				#if defined Robot_TesterCode
-				try
-				{
-					DistanceFeet=SmartDashboard::GetNumber(RotateSmartVar);
-				}
-				catch (...)
-				{
-					//I may need to prime the pump here
-					SmartDashboard::PutNumber(RotateSmartVar,DistanceFeet);
-				}
-				#else
-				//Just set it for cRIO
-				SmartDashboard::PutNumber(RotateSmartVar,DistanceFeet);
-				#endif
+				const char * const MoveSmartVar="TestMove";
+				double DistanceFeet=Auton_Smart_GetSingleValue(MoveSmartVar,1.0); //should be a safe default
 
 				AddSubgoal(new Goal_Wait(0.500));
 				AddSubgoal(Move_Straight(m_Parent,DistanceFeet));
@@ -284,22 +301,8 @@ class Curivator_Goals_Impl : public AtomicGoal
 			}
 			virtual void Activate()
 			{
-				double RotateDegrees=45.0; //should be a safe default
 				const char * const RotateSmartVar="TestRotate";
-				#if defined Robot_TesterCode
-				try
-				{
-					RotateDegrees=SmartDashboard::GetNumber(RotateSmartVar);
-				}
-				catch (...)
-				{
-					//I may need to prime the pump here
-					SmartDashboard::PutNumber(RotateSmartVar,RotateDegrees);
-				}
-				#else
-				//Just set it for cRIO
-				SmartDashboard::PutNumber(RotateSmartVar,RotateDegrees);
-				#endif
+				const double RotateDegrees=Auton_Smart_GetSingleValue(RotateSmartVar,45.0); //should be a safe default
 
 				AddSubgoal(new Goal_Wait(0.500));
 				AddSubgoal(Rotate(m_Parent,RotateDegrees));
@@ -343,18 +346,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 		{
 			Curivator_Robot *Robot=&Parent->m_Robot;
 			const char * const LengthSetting="TestDistance_ft";
-			double Length_m=Feet2Meters(1);
-			#if defined Robot_TesterCode
-			try
-			{
-				Length_m=Feet2Meters(SmartDashboard::GetNumber(LengthSetting));
-			}
-			catch (...)
-			{
-				//set up some good defaults for a small box
-				SmartDashboard::PutNumber(LengthSetting,Meters2Feet(Length_m));
-			}
-			#endif
+			const double Length_m=Feet2Meters(Auton_Smart_GetSingleValue(LengthSetting,Feet2Meters(1)));
 
 			std::list <WayPoint> points;
 			struct Locations
@@ -464,28 +456,8 @@ class Curivator_Goals_Impl : public AtomicGoal
 		}
 		static Goal * TestTurretMove(Curivator_Goals_Impl *Parent)
 		{
-			double clasp_Angle_deg=0.0;
 			const char * const SmartName="Test_TurretAngle";
-
-			//Remember can't do this on cRIO since Thunder RIO has issue with using catch(...)
-			#if defined Robot_TesterCode
-			{
-				try
-				{
-					clasp_Angle_deg=SmartDashboard::GetNumber(SmartName);
-				}
-				catch (...)
-				{
-					//I may need to prime the pump here
-					SmartDashboard::PutNumber(SmartName,clasp_Angle_deg);
-				}
-			}
-			#else
-			if (!SmartDashboard::GetBoolean("TestVariables_set"))
-				SmartDashboard::PutNumber(SmartName,clasp_Angle_deg);
-			else
-				clasp_Angle_deg=SmartDashboard::GetNumber(SmartName);
-			#endif
+			const double clasp_Angle_deg=Auton_Smart_GetSingleValue(SmartName,0.0);
 			return new SetTurretWaypoint(Parent,clasp_Angle_deg);
 		}
 
