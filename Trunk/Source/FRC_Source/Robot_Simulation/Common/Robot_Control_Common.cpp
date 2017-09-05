@@ -204,7 +204,7 @@ template <class T>
 __inline void Initialize_1C_LUT(const Control_Assignment_Properties::Controls_1C &control_props,std::vector<T *> &constrols,
 								RobotControlCommon::Controls_LUT &control_LUT,RobotControlCommon *instance,size_t (RobotControlCommon::*delegate)(const char *name) const)
 {
-	typedef Control_Assignment_Properties::Controls_1C Controls_1C;
+	//typedef Control_Assignment_Properties::Controls_1C Controls_1C;
 	typedef Control_Assignment_Properties::Control_Element_1C Control_Element_1C;
 	for (size_t i=0;i<control_props.size();i++)
 	{
@@ -218,6 +218,8 @@ __inline void Initialize_1C_LUT(const Control_Assignment_Properties::Controls_1C
 		#ifdef Robot_TesterCode
 		T *NewElement=new T(element.Module,element.Channel,element.name.c_str());  //adding name for UI
 		#else
+		//quick debug when things are not working
+		printf("new %s as %d\n",element.name.c_str(),element.Channel);
 		#ifdef __USE_LEGACY_WPI_LIBRARIES__
 		T *NewElement=new T(element.Module,element.Channel);
 		#else
@@ -242,7 +244,7 @@ template <class T>
 __inline void Initialize_2C_LUT(const Control_Assignment_Properties::Controls_2C &control_props,std::vector<T *> &constrols,
 								RobotControlCommon::Controls_LUT &control_LUT,RobotControlCommon *instance,size_t (RobotControlCommon::*delegate)(const char *name) const)
 {
-	typedef Control_Assignment_Properties::Controls_2C Controls_2C;
+	//typedef Control_Assignment_Properties::Controls_2C Controls_2C;
 	typedef Control_Assignment_Properties::Control_Element_2C Control_Element_2C;
 	for (size_t i=0;i<control_props.size();i++)
 	{
@@ -256,6 +258,8 @@ __inline void Initialize_2C_LUT(const Control_Assignment_Properties::Controls_2C
 		#ifdef Robot_TesterCode
 		T *NewElement=new T(element.Module,element.ForwardChannel,element.ReverseChannel,element.name.c_str());
 		#else
+		//quick debug when things are not working
+		printf("new %s as %d, %d\n",element.name.c_str(),element.ForwardChannel,element.ReverseChannel);
 		T *NewElement=new T(element.Module,element.ForwardChannel,element.ReverseChannel);
 		#endif
 		const size_t LUT_index=constrols.size(); //get size before we add it in
@@ -274,12 +278,14 @@ __inline void Initialize_2C_LUT(const Control_Assignment_Properties::Controls_2C
 void RobotControlCommon::RobotControlCommon_Initialize(const Control_Assignment_Properties &props)
 {
 	m_Props=props;
+	#ifdef Robot_TesterCode
 	typedef Control_Assignment_Properties::Controls_1C Controls_1C;
 	typedef Control_Assignment_Properties::Control_Element_1C Control_Element_1C;
 	typedef Control_Assignment_Properties::Controls_2C Controls_2C;
 	typedef Control_Assignment_Properties::Control_Element_2C Control_Element_2C;
+	#endif
 	//create control elements and their LUT's
-	//Note: Victors,Servos, and Relays share the PWM slots; therefore they share the same enumeration, and can be used interchangably in high level code
+	//Note: Victors,Servos, and Relays share the PWM slots; therefore they share the same enumeration, and can be used interchangeably in high level code
 	//victors
 	Initialize_1C_LUT<Victor>(props.GetVictors(),m_Victors,m_VictorLUT,this,&RobotControlCommon::RobotControlCommon_Get_Victor_EnumValue);
 	//servos
