@@ -357,11 +357,20 @@ void Curivator_Robot::Bucket::TimeChange(double dTime_s)
 	const double globalTipHeight=GetBucketTipHeight();
 	const double globalRoundEndHeight=GetBucketRoundEndHeight();
 	const double globalBucketAngle_deg=RAD_2_DEG(GetBucketAngle());
-	SmartDashboard::PutNumber("BucketDistance",globalBucketDistance);
+	m_pParent->m_RobotControl->Update3DPositioningPosition(globalBucketDistance,min(globalTipHeight,globalRoundEndHeight),globalBucketAngle_deg);
+	if (m_pParent->m_ArmXpos.GetRotary_Properties().LoopState==Rotary_Props::eNone)
+		SmartDashboard::PutNumber("BucketDistance",globalBucketDistance);
 	//SmartDashboard::PutNumber("BucketTipHeight",globalTipHeight);
 	//SmartDashboard::PutNumber("BucketRoundEndHeight",globalRoundEndHeight);
-	SmartDashboard::PutNumber("BucketHeight",min(globalTipHeight,globalRoundEndHeight));
-	SmartDashboard::PutNumber("BucketAngle",globalBucketAngle_deg);
+	if (m_pParent->m_ArmYpos.GetRotary_Properties().LoopState==Rotary_Props::eNone)
+		SmartDashboard::PutNumber("BucketHeight",min(globalTipHeight,globalRoundEndHeight));
+	if (m_pParent->m_BucketAngle.GetRotary_Properties().LoopState==Rotary_Props::eNone)
+		SmartDashboard::PutNumber("BucketAngle",globalBucketAngle_deg);
+}
+void Curivator_Robot::Bucket::ResetPos()
+{
+	__super::ResetPos();
+	m_pParent->m_RobotControl->Update3DPositioningPosition(18.0,0.0,80.0);  //provide good defaults
 }
 
 double Curivator_Robot::Bucket::GetBucketLength() const
@@ -1627,6 +1636,18 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 				SmartDashboard::PutNumber(ContructedName.c_str(),result);
 			}
 
+			break;
+		case Curivator_Robot::eArm_Xpos:
+			result=m_3DPos_BucketDistance;
+			SmartDashboard::PutNumber("BucketDistance",result);
+			break;
+		case Curivator_Robot::eArm_Ypos:
+			result=m_3DPos_BucketHeight;
+			SmartDashboard::PutNumber("BucketHeight",result);
+			break;
+		case Curivator_Robot::eBucket_Angle:
+			result=m_3DPos_BucketAngle;
+			SmartDashboard::PutNumber("BucketAngle",result);
 			break;
 		default:
 			assert (index > Curivator_Robot::eClasp);

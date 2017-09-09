@@ -447,6 +447,7 @@ MainRobot = {
 
 		arm_xpos =
 		{
+			--is_closed=0,
 			pot_min_limit=12.79,  --inches from big arm's pivot point on base mount
 			pot_max_limit=55.29,
 			pot_range_flipped='n',
@@ -458,6 +459,7 @@ MainRobot = {
 		},
 		arm_ypos =
 		{
+			--is_closed=0,
 			pid_up=
 			{p=0, i=0, d=0},
 			pid_down=
@@ -474,6 +476,7 @@ MainRobot = {
 		},
 		bucket_angle =
 		{
+			--is_closed=0,
 			--0 holding, 90 gripping, 180 dropping
 			pot_min_limit=0.0,  --Degrees from horizontal (from outward side)  can go a bit less but not practical
 			pot_max_limit=180.0,  --can actually go to 196
