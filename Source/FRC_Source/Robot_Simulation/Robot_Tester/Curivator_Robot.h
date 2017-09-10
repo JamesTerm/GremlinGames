@@ -357,6 +357,7 @@ class Curivator_Robot : public Swerve_Robot
 		#ifdef Robot_TesterCode
 		void TestAutonomous();
 		void GoalComplete();
+		void GoalFailed();
 		#endif
 };
 

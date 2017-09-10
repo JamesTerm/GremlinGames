@@ -714,6 +714,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"].Subscribe(ehl,*this,&Curivator_Robot::GoalComplete);
+		em->Event_Map["Failed"].Subscribe(ehl,*this,&Curivator_Robot::GoalFailed);
 		#endif
 		em->EventOnOff_Map["StopAuton"].Subscribe(ehl,*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Subscribe(ehl,*this, &Curivator_Robot::FreezeArm);
@@ -724,6 +725,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"]  .Remove(*this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"]  .Remove(*this, &Curivator_Robot::GoalComplete);
+		em->Event_Map["Failed"]  .Remove(*this, &Curivator_Robot::GoalFailed);
 		#endif
 		em->EventOnOff_Map["StopAuton"].Remove(*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Remove(*this, &Curivator_Robot::FreezeArm);
@@ -912,6 +914,12 @@ void Curivator_Robot::TestAutonomous()
 void Curivator_Robot::GoalComplete()
 {
 	printf("Goals completed!\n");
+	m_controller->GetUIController_RW()->SetAutoPilot(false);
+}
+void Curivator_Robot::GoalFailed()
+{
+	printf("Goals failed!\n");
+	//TODO see about having some way to dump a log or stack trace of where the failure occurred 
 	m_controller->GetUIController_RW()->SetAutoPilot(false);
 }
 #endif
