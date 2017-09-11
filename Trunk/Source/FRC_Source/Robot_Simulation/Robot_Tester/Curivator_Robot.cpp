@@ -738,6 +738,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 	#ifdef Robot_TesterCode
 	m_RobotControl->BindAdditionalEventControls(Bind,GetEventMap(),ehl);
 	#endif
+	m_RobotControl->SetControlledEventMap(GetEventMap());
 	__super::BindAdditionalEventControls(Bind);
 }
 
@@ -919,6 +920,9 @@ void Curivator_Robot::GoalComplete()
 void Curivator_Robot::GoalFailed()
 {
 	printf("Goals failed!\n");
+	//ensure everthing is disabled!
+	SmartDashboard::PutBoolean("SafetyLock_Arm",true);
+	SmartDashboard::PutBoolean("SafetyLock_Drive",true);
 	//TODO see about having some way to dump a log or stack trace of where the failure occurred 
 	m_controller->GetUIController_RW()->SetAutoPilot(false);
 }
@@ -1329,7 +1333,7 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 //}
 
 Curivator_Robot_Control::Curivator_Robot_Control(bool UseSafety) : m_DriveRobotControl(UseSafety),m_pDriveRobotControl(&m_DriveRobotControl),
-		m_Compressor(NULL),m_RoboRIO_Accelerometer(NULL)
+		m_Compressor(NULL),m_RoboRIO_Accelerometer(NULL),m_EventMap(NULL)
 {
 }
 
@@ -1609,6 +1613,16 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//get offset... Note: scale comes first since the offset is of that scale
 			result+=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotentiometerOffset;
 			#else
+			//Example test of range failure
+			//bool SafetyLock=SmartDashboard::GetBoolean("SafetyLock_Arm") || SmartDashboard::GetBoolean("SafetyLock_Drive");
+			//if (!SafetyLock)
+			//{
+			//	int test=0;
+			//	if (test==1)
+			//	{
+			//		m_EventMap->Event_Map["Failed"].Fire();
+			//	}
+			//}
 			result=(m_Potentiometer[index].GetPotentiometerCurrentPosition()) + 0.0;
 			//Now to normalize it
 			const Ship_1D_Props &shipprops=m_RobotProps.GetRotaryProps(index).GetShip_1D_Props();
