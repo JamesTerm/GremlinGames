@@ -919,12 +919,16 @@ void Curivator_Robot::GoalComplete()
 }
 void Curivator_Robot::GoalFailed()
 {
-	printf("Goals failed!\n");
-	//ensure everthing is disabled!
-	SmartDashboard::PutBoolean("SafetyLock_Arm",true);
-	SmartDashboard::PutBoolean("SafetyLock_Drive",true);
-	//TODO see about having some way to dump a log or stack trace of where the failure occurred 
-	m_controller->GetUIController_RW()->SetAutoPilot(false);
+	//Only take control of failed events if we don't have control of robot, as this may get triggered during teleop otherwise
+	if (m_controller->GetUIController()->GetAutoPilot())
+	{
+		printf("Goals failed!\n");
+		//ensure everthing is disabled!
+		SmartDashboard::PutBoolean("SafetyLock_Arm",true);
+		SmartDashboard::PutBoolean("SafetyLock_Drive",true);
+		//TODO see about having some way to dump a log or stack trace of where the failure occurred 
+		m_controller->GetUIController_RW()->SetAutoPilot(false);
+	}
 }
 #endif
 
