@@ -1583,8 +1583,8 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 
 			//Clip Range
 			//I imagine .001 corrections will not be harmful for when in use.
-			if (PotentiometerRaw_To_Arm < 0) PotentiometerRaw_To_Arm = 0;//corrects .001 or less causing a negative value
-			if (PotentiometerRaw_To_Arm > 1 || PotentiometerRaw_To_Arm > .999) PotentiometerRaw_To_Arm = 1;//corrects .001 or lass causing value greater than 1
+			//if (PotentiometerRaw_To_Arm < 0) PotentiometerRaw_To_Arm = 0;//corrects .001 or less causing a negative value
+			//if (PotentiometerRaw_To_Arm > 1 || PotentiometerRaw_To_Arm > .999) PotentiometerRaw_To_Arm = 1;//corrects .001 or lass causing value greater than 1
 
 			//TODO see if we need a ratio multiply here... otherwise range is from 0-1 for full motion
 
@@ -1597,13 +1597,17 @@ double Curivator_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			SmartDashboard::PutNumber(ContructedName.c_str(),raw_value);
 			ContructedName=Prefix,ContructedName+="Pot_Raw";
 			SmartDashboard::PutNumber(ContructedName.c_str(),PotentiometerRaw_To_Arm);
+			const double Tolerance=m_RobotProps.GetRotaryProps(index).GetRotary_Pot_Properties().PotLimitTolerance;
 			//Potentiometer safety, if we lose wire connection it will be out of range in which case we turn on the safety (we'll see it turned on)
-			if (raw_value>HiRange || raw_value<LowRange)
+			if (raw_value>HiRange+Tolerance || raw_value<LowRange-Tolerance)
 			{
 				std::string SmartLabel=csz_Curivator_Robot_SpeedControllerDevices_Enum[index];
 				SmartLabel[0]-=32; //Make first letter uppercase
 				ContructedName=SmartLabel+"Disable";
 				SmartDashboard::PutBoolean(ContructedName.c_str(),true);
+				const bool mainSafetyLock=SmartDashboard::GetBoolean("SafetyLock_Arm") || SmartDashboard::GetBoolean("SafetyLock_Drive");
+				if (!mainSafetyLock)
+						m_EventMap->Event_Map["Failed"].Fire();
 			}
 
 			//Now to compute the result... we start with the normalized value and give it the appropriate offset and scale
