@@ -42,6 +42,7 @@ enum AutonType
 	eArmGrabSequence,
 	eTestTurret,
 	eArmAndTurretTest,
+	eArmClawGrab,
 	eNoAutonTypes
 };
 
@@ -564,6 +565,24 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
 			return new ArmTurretGrabSequence(Parent,length_in,height_in,turret_start_in,turret_grab_in);
 		}
+
+		class ClawGrabSequence : public Generic_CompositeGoal, public SetUpProps
+		{
+		public:
+			ClawGrabSequence(Curivator_Goals_Impl *Parent) : 
+			  SetUpProps(Parent)
+			  {		Activate();  //we can set it up ahead of time
+			  }
+			  virtual void Activate()
+			  {
+				  if (m_Status==eActive) return;  //allow for multiple calls
+				  AddSubgoal(new Goal_Wait(5.0));  //want to see the behavior of the voltage
+				  AddSubgoal(new SetArmWaypoint(m_Parent,20.0,1.0,CurivatorGoal_PickupPosition[2],-0.0)); //close clasp
+				  AddSubgoal(new SetArmWaypoint(m_Parent,20.0,1.0,CurivatorGoal_PickupPosition[2],CurivatorGoal_PickupPosition[3]));
+				  m_Status=eActive;
+			  }
+		};
+
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -634,6 +653,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eArmAndTurretTest:
 				m_Primer.AddGoal(TestArmAndTurret(this));
+				break;
+			case eArmClawGrab:
+				m_Primer.AddGoal(new ClawGrabSequence(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250

@@ -29,13 +29,14 @@ class COMMON_API Potentiometer_Tester2 : public Ship_1D
 		//This is broken up so that the real interface does not have to pass time
 		void SetTimeDelta(double dTime_s) {m_Time_s=dTime_s;}
 		void TimeChange();
-		void SetBypass(bool bypass) {m_Bypass=bypass;}
+		void SetSimulateOpposingForce(bool Simulate) {m_SimulateOpposingForce=Simulate;}
 	protected:
 	private:
+		void SimulateOpposingForce(double Voltage);
 		double m_Time_s;
 		Ship_1D_Properties m_PotentiometerProps;
 		GG_Framework::Base::EventMap m_DummyMap;
-		bool m_Bypass;  //used for stress test
+		bool m_SimulateOpposingForce;  //used for stress test
 };
 
 class COMMON_API Encoder_Simulator : public Ship_1D
