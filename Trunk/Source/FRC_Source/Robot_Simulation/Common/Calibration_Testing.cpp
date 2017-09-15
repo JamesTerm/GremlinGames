@@ -138,7 +138,7 @@ Potentiometer_Tester2::Potentiometer_Tester2() : m_PotentiometerProps(
 	),Ship_1D("Potentiometer2")
 
 {
-	m_Bypass=false;
+	m_SimulateOpposingForce=false;
 }
 
 void Potentiometer_Tester2::Initialize(const Ship_1D_Properties *props)
@@ -148,13 +148,38 @@ void Potentiometer_Tester2::Initialize(const Ship_1D_Properties *props)
 	__super::Initialize(m_DummyMap,&m_PotentiometerProps);
 }
 
+void Potentiometer_Tester2::SimulateOpposingForce(double Voltage)
+{
+	const double OuterDistance=3.5;
+	const double CoreDistance=4.0;
+
+	const double Pos=GetPos_m();
+	const double Velocity=m_Physics.GetVelocity();
+	double ForceScalar=0.0;
+	if ((Pos>OuterDistance)&&(Velocity>=0.0))
+	{
+		//determine how much force is being applied
+		const double Force=m_Physics.GetForceFromVelocity(Velocity+Velocity,m_Time_s);
+		if (Pos<CoreDistance)
+		{
+			//dampen force depending on the current distance
+			const double scale=1.0/(CoreDistance-OuterDistance);
+			ForceScalar=(Pos-OuterDistance)*scale;
+		}
+		else
+			ForceScalar=1.0;
+		m_Physics.ApplyFractionalForce(-Force*ForceScalar,m_Time_s);
+	}
+	SetRequestedVelocity(Voltage*(1.0-ForceScalar)*m_PotentiometerProps.GetMaxSpeed());
+}
+
 void Potentiometer_Tester2::UpdatePotentiometerVoltage(double Voltage)
 {
 	//Voltage=GetTweakedVoltage(Voltage);
-	if (!m_Bypass)
+	if (!m_SimulateOpposingForce)
 		SetRequestedVelocity(Voltage*m_PotentiometerProps.GetMaxSpeed());
 	else
-		SetRequestedVelocity(0.0);
+		SimulateOpposingForce(Voltage);
 }
 
 double Potentiometer_Tester2::GetPotentiometerCurrentPosition()
