@@ -427,7 +427,8 @@ MainRobot = {
 			voltage_stall_safety_off_time=0.200,
 			voltage_stall_safety_on_time=0.05,
 			voltage_stall_safety_on_burst_level=0.75,
-			voltage_stall_safety_burst_timeout=10
+			voltage_stall_safety_burst_timeout=10,
+			voltage_stall_safety_stall_count=40
 		},
 		arm_pos_common =
 		{
