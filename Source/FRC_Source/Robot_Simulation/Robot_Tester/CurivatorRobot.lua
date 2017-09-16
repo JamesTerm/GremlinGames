@@ -344,6 +344,7 @@ MainRobot = {
 
 		turret =
 		{
+			tolerance=2 * Deg2Rad,
 			max_speed=0.7,	--100 rpm... with a 15x reduction in radians
 			max_accel_forward=3,			--These are in radians, just go with what feels right
 			max_accel_reverse=3,
