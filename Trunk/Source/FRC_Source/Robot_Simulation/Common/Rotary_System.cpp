@@ -275,7 +275,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 					m_ErrorOffset=m_PIDControllerDown(GetPos_m(),PredictedPosition,dTime_s);
 				}
 
-				if ((IsZero(Displacement,1e-2))&&(m_Physics.GetVelocity()>0.0))
+				if (UsingMoterStallSafety && (IsZero(Displacement,1e-2))&&(m_Physics.GetVelocity()>0.0))
 				{
 					//to measure motor stall... we evaluate the voltage
 					const double MaxSpeed=m_Ship_1D_Props.MAX_SPEED;
@@ -321,7 +321,7 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 								{
 									BurstIntensity=1.0;
 									//This shouldn't happen often... probably shouldn't matter much... but keep this for diagnostic testing
-									printf("test burst begin... overlap=%.2f vs delta slice=%.2f\n",overlap,dTime_s);
+									printf("test burst begin[%d]... overlap=%.2f vs delta slice=%.2f\n",m_InstanceIndex,overlap,dTime_s);
 								}
 							}
 							m_CurrentBurstTime=0.0;  //reset timer
@@ -340,7 +340,8 @@ void Rotary_Position_Control::TimeChange(double dTime_s)
 							{
 								BurstIntensity=0.0;
 								//This shouldn't happen often... probably shouldn't matter much... but keep this for diagnostic testing
-								printf("test burst end... overlap=%.2f vs delta slice=%.2f\n",overlap,dTime_s);
+								if (!UsingMoterStallSafety)
+									printf("test burst end[%d]... overlap=%.2f vs delta slice=%.2f\n",m_InstanceIndex,overlap,dTime_s);
 							}
 							m_CurrentBurstTime=0.0;  //reset timer
 						}
