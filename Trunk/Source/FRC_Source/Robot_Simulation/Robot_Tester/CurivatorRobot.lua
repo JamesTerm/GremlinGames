@@ -407,6 +407,7 @@ MainRobot = {
 		},
 		clasp =
 		{
+			--show_pid_dump='y',
 			tolerance=0.0125,
 			pot_min_limit=440,
 			pot_max_limit=760,
@@ -421,6 +422,12 @@ MainRobot = {
 			max_range= 7,
 			min_range=0,
 			starting_position=3.5,
+			
+			voltage_stall_safety_error_threshold=0.40,
+			voltage_stall_safety_off_time=0.200,
+			voltage_stall_safety_on_time=0.05,
+			voltage_stall_safety_on_burst_level=0.75,
+			voltage_stall_safety_burst_timeout=10
 		},
 		arm_pos_common =
 		{
