@@ -150,7 +150,7 @@ void Potentiometer_Tester2::Initialize(const Ship_1D_Properties *props)
 
 void Potentiometer_Tester2::SimulateOpposingForce(double Voltage)
 {
-	const double OuterDistance=3.5;
+	const double OuterDistance=3.8;
 	const double CoreDistance=4.0;
 
 	const double Pos=GetPos_m();
