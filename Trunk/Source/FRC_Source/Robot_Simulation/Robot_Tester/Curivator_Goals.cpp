@@ -50,9 +50,16 @@ enum AutonType
   /***********************************************************************************************************************************/
  /*															Curivator_Goals															*/
 /***********************************************************************************************************************************/
+
+#ifdef Robot_TesterCode
 const double CurivatorGoal_StartingPosition[4]={13.0,4.0,60.0,5.0};
 const double CurivatorGoal_HoverPosition[4]={39.0,0.0,90.0,45.0};
 const double CurivatorGoal_PickupPosition[4]={39.0,-20.0,90.0,45.0};
+#else
+const double CurivatorGoal_StartingPosition[4]={18.0,4.0,70.0,5.0};
+const double CurivatorGoal_HoverPosition[4]={25.0,0.0,90.0,45.0};
+const double CurivatorGoal_PickupPosition[4]={25.0,-5.0,90.0,45.0};
+#endif
 
 __inline double Auton_Smart_GetSingleValue(const char *SmartName,double default_value)
 {
@@ -506,9 +513,17 @@ class Curivator_Goals_Impl : public AtomicGoal
 			virtual void Activate()
 			{
 				if (m_Status==eActive) return;  //allow for multiple calls
+				#ifdef Robot_TesterCode
 				AddSubgoal(new SetArmWaypoint(m_Parent,CurivatorGoal_StartingPosition[0],CurivatorGoal_StartingPosition[1],50.0,-7.0));
+				#else
+				AddSubgoal(new SetArmWaypoint(m_Parent,CurivatorGoal_StartingPosition[0],CurivatorGoal_StartingPosition[1],65.0,5.0));
+				#endif
 				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,m_height_in,40.0,-7.0,1.0,1.0,0.5)); //rotate bucket (slowly)
+				#ifdef Robot_TesterCode
 				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,m_height_in,CurivatorGoal_PickupPosition[2],-7.0)); //close clasp
+				#else
+				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,m_height_in,CurivatorGoal_PickupPosition[2],5.0)); //close clasp
+				#endif
 				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,m_height_in,CurivatorGoal_PickupPosition[2],CurivatorGoal_PickupPosition[3]));  //pickup position
 				AddSubgoal(new SetArmWaypoint(m_Parent,m_length_in,CurivatorGoal_HoverPosition[1],CurivatorGoal_HoverPosition[2],CurivatorGoal_HoverPosition[3]));
 				//TODO move this to another goal once we start working with the turret
@@ -522,8 +537,13 @@ class Curivator_Goals_Impl : public AtomicGoal
 
 		static Goal * TestArmMove2(Curivator_Goals_Impl *Parent)
 		{
+			#ifdef Robot_TesterCode
 			double length_in=38.0;
 			double height_in=-20.0;
+			#else
+			double length_in=25.0;
+			double height_in=-7.0;
+			#endif
 			const char * const SmartNames[]={"testarm_length","testarm_height"};
 			double * const SmartVariables[]={&length_in,&height_in};
 			Auton_Smart_GetMultiValue(2,SmartNames,SmartVariables);
@@ -557,7 +577,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 		static Goal * TestArmAndTurret(Curivator_Goals_Impl * Parent)
 		{
 			double turret_start_in=0;
-			double turret_grab_in=-70.0;
+			double turret_grab_in=-90.0;
 			double length_in=25.0;
 			double height_in=-7.0;
 			const char * const SmartNames[]={"testTurret_Start","testTurret_Grab","testarm_length","testarm_height"};
@@ -577,8 +597,8 @@ class Curivator_Goals_Impl : public AtomicGoal
 			  {
 				  if (m_Status==eActive) return;  //allow for multiple calls
 				  AddSubgoal(new Goal_Wait(5.0));  //want to see the behavior of the voltage
-				  AddSubgoal(new SetArmWaypoint(m_Parent,20.0,1.0,CurivatorGoal_PickupPosition[2],-0.0)); //close clasp
-				  AddSubgoal(new SetArmWaypoint(m_Parent,20.0,1.0,CurivatorGoal_PickupPosition[2],CurivatorGoal_PickupPosition[3]));
+				  AddSubgoal(new SetArmWaypoint(m_Parent,19.14,-1.60,86.457,10.0)); //close clasp
+				  AddSubgoal(new SetArmWaypoint(m_Parent,19.14,-1.60,86.457,30.0));
 				  m_Status=eActive;
 			  }
 		};
