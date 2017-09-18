@@ -308,7 +308,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 			std::string m_EventName;
 			bool m_IsOn;
 		public:
-			RobotQuickNotify(Curivator_Goals_Impl *Parent,char *EventName, bool On)	: SetUpProps(Parent),m_EventName(EventName),m_IsOn(On) 
+			RobotQuickNotify(Curivator_Goals_Impl *Parent,const char *EventName, bool On)	: SetUpProps(Parent),m_EventName(EventName),m_IsOn(On)
 				{	m_Status=eInactive;	
 				}
 			virtual void Activate() {m_Status=eActive;}
@@ -381,7 +381,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 		class TestMoveRotateSequence : public Generic_CompositeGoal, public SetUpProps
 		{
 		public:
-			TestMoveRotateSequence(Curivator_Goals_Impl *Parent)	: m_pParent(Parent),SetUpProps(Parent) {	m_Status=eActive;	}
+			TestMoveRotateSequence(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent),m_pParent(Parent) {	m_Status=eActive;	}
 			virtual void Activate()
 			{
 				double dNoIterations=4.0;
