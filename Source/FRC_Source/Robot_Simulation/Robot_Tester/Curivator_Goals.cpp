@@ -219,9 +219,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Curivator_Robot *Robot=&Parent->m_Robot;
 			Curivator_Robot::Robot_Arm &Arm=Robot->GetTurret();
 			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eTurret).GetRotaryProps().PrecisionTolerance;
-			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			Goal_Rotary_MoveToPosition *goal_arm=NULL;
 			const double position=Angle_Deg;
-			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,DEG_2_RAD(position),PrecisionTolerance);
+			goal_arm=new Goal_Rotary_MoveToPosition(Arm,DEG_2_RAD(position),PrecisionTolerance);
 			return goal_arm;
 		}
 		static Goal * Move_ArmXPosition(Curivator_Goals_Impl *Parent,double length_in)
@@ -229,9 +229,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Curivator_Robot *Robot=&Parent->m_Robot;
 			Curivator_Robot::Robot_Arm &Arm=Robot->GetArmXpos();
 			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eArm_Ypos).GetRotaryProps().PrecisionTolerance;
-			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			Goal_Rotary_MoveToPosition *goal_arm=NULL;
 			const double position=length_in;
-			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance);
+			goal_arm=new Goal_Rotary_MoveToPosition(Arm,position,PrecisionTolerance);
 			return goal_arm;
 		}
 		static Goal * Move_ArmYPosition(Curivator_Goals_Impl *Parent,double height_in)
@@ -239,9 +239,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Curivator_Robot *Robot=&Parent->m_Robot;
 			Curivator_Robot::Robot_Arm &Arm=Robot->GetArmYpos();
 			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eArm_Xpos).GetRotaryProps().PrecisionTolerance;
-			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			Goal_Rotary_MoveToPosition *goal_arm=NULL;
 			const double position=height_in;
-			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance);
+			goal_arm=new Goal_Rotary_MoveToPosition(Arm,position,PrecisionTolerance);
 			return goal_arm;
 		}
 
@@ -250,9 +250,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Curivator_Robot *Robot=&Parent->m_Robot;
 			Curivator_Robot::Robot_Arm &Arm=Robot->GetBucketAngle();
 			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eBucket_Angle).GetRotaryProps().PrecisionTolerance;
-			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			Goal_Rotary_MoveToPosition *goal_arm=NULL;
 			const double position=Angle_Deg;
-			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance,SpeedRatio,SpeedRatio);
+			goal_arm=new Goal_Rotary_MoveToPosition(Arm,position,PrecisionTolerance,SpeedRatio,SpeedRatio);
 			return goal_arm;
 		}
 
@@ -261,9 +261,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Curivator_Robot *Robot=&Parent->m_Robot;
 			Curivator_Robot::Robot_Arm &Arm=Robot->GetClaspAngle();
 			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eClasp_Angle).GetRotaryProps().PrecisionTolerance;
-			Goal_Ship1D_MoveToPosition *goal_arm=NULL;
+			Goal_Rotary_MoveToPosition *goal_arm=NULL;
 			const double position=Angle_Deg;
-			goal_arm=new Goal_Ship1D_MoveToPosition(Arm,position,PrecisionTolerance);
+			goal_arm=new Goal_Rotary_MoveToPosition(Arm,position,PrecisionTolerance);
 			return goal_arm;
 		}
 
