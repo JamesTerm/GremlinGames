@@ -22,7 +22,7 @@ WheelBase_Width_In=WheelBase_Width_Curivator_In
 WheelTurningDiameter_In= ( (WheelBase_Width_In * WheelBase_Width_In) + (WheelBase_Length_In * WheelBase_Length_In) ) ^ 0.5
 DriveGearSpeed_Curivator = (255.15 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9
 LowGearSpeed_Rabbit  = (346.6368 / 60.0) * Pi * g_wheel_diameter_in * Inches2Meters  * 0.9 
-DriveGearSpeed = LowGearSpeed_Rabbit
+DriveGearSpeed = DriveGearSpeed_Curivator
 Drive_MaxAccel=5
 --Swerve wheels means no skid
 skid_rabbit=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
@@ -344,6 +344,8 @@ MainRobot = {
 
 		turret =
 		{
+			is_closed=0,
+			using_range=0,
 			tolerance=2 * Deg2Rad,
 			max_speed=0.7,	--100 rpm... with a 15x reduction in radians
 			max_accel_forward=3,			--These are in radians, just go with what feels right
@@ -577,15 +579,15 @@ MainRobot = {
 		{
 			control = "airflo",
 			axis_count = 4,
-			--Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Analog_Turn = {type="joystick_culver", key_x=5, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			--Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
-			Joystick_FieldCentric_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
-			Joystick_FieldCentric_YAxis = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			Analog_Turn = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Analog_Turn = {type="joystick_culver", key_x=5, key_y=2, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			Joystick_SetCurrentSpeed_2 = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
+			--Joystick_FieldCentric_XAxis = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.3, curve_intensity=1.0},
+			--Joystick_FieldCentric_YAxis = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=0.0},
 			--FieldCentric_Enable = {type="joystick_button", key=4, on_off=false},
 			--Robot_SetDriverOverride = {type="joystick_button", key=5, on_off=true},
 			--scaled down to 0.5 to allow fine tuning and a good top acceleration speed (may change with the lua script tweaks)
-			--Turret_SetCurrentVelocity = {type="joystick_analog", key=5, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
+			--Turret_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=false, multiplier=0.75, filter=0.3, curve_intensity=3.0},
 			--PitchRamp_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=2.0},
 			POV_Turn =  {type="joystick_analog", key=8, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Turn_180 = {type="joystick_button", key=7, on_off=false},
@@ -599,7 +601,7 @@ MainRobot = {
 			TestAuton={type="keyboard", key='g', on_off=false},
 			--Slide={type="keyboard", key='g', on_off=false},
 			
-			--turret_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
+			turret_SetCurrentVelocity = {type="joystick_analog", key=1, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			--arm_SetCurrentVelocity = {type="joystick_analog", key=2, is_flipped=true, multiplier=1.0, filter=0.1, curve_intensity=3.0},
 			bucket_angle_Advance={type="keyboard", key='i', on_off=true},
 			bucket_angle_Retract={type="keyboard", key='u', on_off=true},
@@ -677,10 +679,10 @@ MainRobot = {
 		Joystick_5 =
 		{	
 			control = "ch throttle quadrant",
-			arm_xpos_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			arm_ypos_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			bucket_angle_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
-			clasp_angle_SetIntendedPosition = {type="joystick_analog", key=3, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--arm_xpos_SetIntendedPosition = {type="joystick_analog", key=0, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--arm_ypos_SetIntendedPosition = {type="joystick_analog", key=1, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--bucket_angle_SetIntendedPosition = {type="joystick_analog", key=2, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
+			--clasp_angle_SetIntendedPosition = {type="joystick_analog", key=3, is_flipped=false, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 			--Robot_SetDefensiveKeyValue = {type="joystick_analog", key=4, is_flipped=true, multiplier=1.0, filter=0.0, curve_intensity=0.0},
 
 			--intermediate closed loop test point of each position control
