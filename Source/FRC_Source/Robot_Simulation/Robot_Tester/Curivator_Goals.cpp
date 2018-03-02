@@ -221,14 +221,17 @@ class Curivator_Goals_Impl : public AtomicGoal
 			return new Goal_Ship_RotateToRelativePosition(Robot->GetController(),DEG_2_RAD(Degrees));
 		}
 
-		static Goal * Move_TurretPosition(Curivator_Goals_Impl *Parent,double Angle_Deg)
+		static Goal * Move_TurretPosition(Curivator_Goals_Impl *Parent,double Angle_Deg, bool RelativePosition=false)
 		{
 			Curivator_Robot *Robot=&Parent->m_Robot;
 			Curivator_Robot::Robot_Arm &Arm=Robot->GetTurret();
 			const double PrecisionTolerance=Robot->GetRobotProps().GetRotaryProps(Curivator_Robot::eTurret).GetRotaryProps().PrecisionTolerance;
 			Goal_Rotary_MoveToPosition *goal_arm=NULL;
 			const double position=Angle_Deg;
-			goal_arm=new Goal_Rotary_MoveToPosition(Arm,DEG_2_RAD(position),PrecisionTolerance);
+			if (!RelativePosition)
+				goal_arm=new Goal_Rotary_MoveToPosition(Arm,DEG_2_RAD(position),PrecisionTolerance);
+			else
+				goal_arm=new Goal_Rotary_MoveToRelativePosition(Arm,DEG_2_RAD(position),PrecisionTolerance);
 			return goal_arm;
 		}
 		static Goal * Move_ArmXPosition(Curivator_Goals_Impl *Parent,double length_in)
