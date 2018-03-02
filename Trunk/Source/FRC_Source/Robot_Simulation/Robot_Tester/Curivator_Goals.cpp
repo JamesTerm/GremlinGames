@@ -43,6 +43,7 @@ enum AutonType
 	eTestTurret,
 	eArmAndTurretTest,
 	eArmClawGrab,
+	eAdjustTurretYaw,
 	eTurretTracking,
 	eNoAutonTypes
 };
@@ -61,6 +62,37 @@ const double CurivatorGoal_StartingPosition[4]={18.0,4.0,70.0,5.0};
 const double CurivatorGoal_HoverPosition[4]={25.0,0.0,90.0,45.0};
 const double CurivatorGoal_PickupPosition[4]={25.0,-5.0,90.0,45.0};
 #endif
+
+__inline bool Auton_Smart_GetSingleValue_Bool(const char *SmartName,bool default_value)
+{
+	bool result=default_value;
+	//Can't use try catch on cRIO since Thunder RIO has issue with using catch(...)
+	//RoboRio uses SetDefault*() to accomplish same effect
+	//Simulation can use try catch method, but we could modify smart dashboard to allow using the new method
+	#if defined Robot_TesterCode
+	try
+	{
+		result=SmartDashboard::GetBoolean(SmartName);
+	}
+	catch (...)
+	{
+		//set up some good defaults for a small box
+		SmartDashboard::PutBoolean(SmartName,default_value);
+	}
+	#else
+	#if !defined __USE_LEGACY_WPI_LIBRARIES__
+	SmartDashboard::SetDefaultBoolean(SmartName,default_value);
+	result=SmartDashboard::GetBoolean(SmartName);
+	#else
+	//for cRIO checked in using zero in lua (default) to prompt the variable and then change to -1 to use it
+	if (!SmartDashboard::GetBoolean("TestVariables_set"))
+		SmartDashboard::PutBoolean(SmartName,default_value);
+	else
+		result=SmartDashboard::GetBoolean(SmartName);
+	#endif
+	#endif
+	return result;
+}
 
 __inline double Auton_Smart_GetSingleValue(const char *SmartName,double default_value)
 {
@@ -608,10 +640,10 @@ class Curivator_Goals_Impl : public AtomicGoal
 		};
 
 		//--Vision Tracking
-		class TurretTracking : public AtomicGoal, public SetUpProps
+		class AdjustTurretYaw : public AtomicGoal, public SetUpProps
 		{
 		public:
-			TurretTracking(Curivator_Goals_Impl *Parent) : SetUpProps(Parent)
+			AdjustTurretYaw(Curivator_Goals_Impl *Parent) : SetUpProps(Parent)
 			{
 				Activate();  //no need to delay activation
 				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
@@ -639,8 +671,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 					if (m_LatencyCounter>TrackLatency)
 					{
 						Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
-						m_Position=Arm.GetActualPos()+(YawAngle*YawScaleFactor);  //set out new position
-						if (fabs(YawAngle)>YawTolerance*YawScaleFactor)
+						const double YawAngleRad=DEG_2_RAD(YawAngle);
+						m_Position=Arm.GetActualPos()+(YawAngleRad*YawScaleFactor);  //set out new position
+						if (fabs(YawAngleRad)>YawTolerance*YawScaleFactor)
 							Arm.SetIntendedPosition(m_Position);
 						m_LatencyCounter=0.0;
 					}
@@ -657,6 +690,51 @@ class Curivator_Goals_Impl : public AtomicGoal
 			double m_Position; //keep track of last position between each latency count
 		};
 
+		//This extends AdjustTurretYaw by feed/translates the camera vectors into yaw angle, 
+		//separating these goals allows for remote teleop of the turret
+		class TurretTracking : public AdjustTurretYaw
+		{
+			public:
+				TurretTracking(Curivator_Goals_Impl *Parent) : AdjustTurretYaw(Parent), 
+					m_X_PriorityAverager(10,0.30),m_Z_PriorityAverager(10,0.30)
+				{
+				}
+				virtual Goal_Status Process(double dTime_s)
+				{
+					const char * const SmartVar="EnableTurret";
+					bool EnableTurret=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
+
+					if (m_Status==eActive)
+					{
+						//Now to manage the actual vector feed
+						double ZRawPositon=SmartDashboard::GetNumber("Z Position");
+						//Sanity check... if the distance is negative it must be invalid
+						if (ZRawPositon<0)
+						{
+							double RawPositon=SmartDashboard::GetNumber("X Position");
+							RawPositon=m_X_PriorityAverager(RawPositon);
+							RawPositon=m_X_KalmanFilter(RawPositon);
+							RawPositon=m_X_Averager.GetAverage(RawPositon);
+							SmartDashboard::PutNumber("X_RawPosition",RawPositon);  //Observe *no* false positives
+
+							ZRawPositon*=-1;  //invert from Zed
+							ZRawPositon=m_Z_PriorityAverager(ZRawPositon);
+							ZRawPositon=m_Z_KalmanFilter(ZRawPositon);
+							ZRawPositon=m_Z_Averager.GetAverage(ZRawPositon);
+							const double YawAngle=atan(RawPositon/ZRawPositon);  //opposite/adjacent
+							SmartDashboard::PutNumber("YawAngle",RAD_2_DEG(YawAngle));
+						}
+					}
+					if (EnableTurret)
+						__super::Process(dTime_s);
+					return m_Status;
+				}
+			private:
+				//filter out noise! 
+				KalmanFilter m_X_KalmanFilter,m_Z_KalmanFilter;
+				Averager<double,5> m_X_Averager,m_Z_Averager;
+				Priority_Averager m_X_PriorityAverager,m_Z_PriorityAverager;
+		};
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -730,6 +808,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eArmClawGrab:
 				m_Primer.AddGoal(new ClawGrabSequence(this));
+				break;
+			case eAdjustTurretYaw:
+				m_Primer.AddGoal(new AdjustTurretYaw(this));
 				break;
 			case eTurretTracking:
 				m_Primer.AddGoal(new TurretTracking(this));
