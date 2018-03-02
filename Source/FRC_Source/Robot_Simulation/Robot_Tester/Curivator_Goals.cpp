@@ -43,6 +43,7 @@ enum AutonType
 	eTestTurret,
 	eArmAndTurretTest,
 	eArmClawGrab,
+	eTurretTracking,
 	eNoAutonTypes
 };
 
@@ -606,6 +607,56 @@ class Curivator_Goals_Impl : public AtomicGoal
 			  }
 		};
 
+		//--Vision Tracking
+		class TurretTracking : public AtomicGoal, public SetUpProps
+		{
+		public:
+			TurretTracking(Curivator_Goals_Impl *Parent) : SetUpProps(Parent)
+			{
+				Activate();  //no need to delay activation
+				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
+			}
+			virtual void Activate()
+			{
+				Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+				m_Position=Arm.GetActualPos(); //start out on the actual position
+				m_LatencyCounter=0.0;
+				m_Status=eActive;
+			}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				if (m_Status==eActive)
+				{
+					double YawAngle=0.0;
+					double TrackLatency=0.5;  //default high seconds
+					double YawScaleFactor=0.5;  //ability to tune adjustment intensity... default half to under estimate avoid oscillation
+					double YawTolerance=0.4; //degrees tolerance before taking action
+					const char * const SmartNames[]={"YawAngle","TrackLatency","YawScaleFactor","YawTolerance"};
+					double * const SmartVariables[]={&YawAngle,&TrackLatency,&YawScaleFactor,&YawTolerance};
+					Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
+
+					m_LatencyCounter+=dTime_s;
+					if (m_LatencyCounter>TrackLatency)
+					{
+						Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+						m_Position=Arm.GetActualPos()+(YawAngle*YawScaleFactor);  //set out new position
+						if (fabs(YawAngle)>YawTolerance*YawScaleFactor)
+							Arm.SetIntendedPosition(m_Position);
+						m_LatencyCounter=0.0;
+					}
+				}
+				return m_Status;   //Just pass through m_Status
+			}
+			virtual void Terminate() 
+			{
+				m_Status=eInactive;  //this goal never really completes
+				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+			}
+		private:
+			double m_LatencyCounter;
+			double m_Position; //keep track of last position between each latency count
+		};
+
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -679,6 +730,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eArmClawGrab:
 				m_Primer.AddGoal(new ClawGrabSequence(this));
+				break;
+			case eTurretTracking:
+				m_Primer.AddGoal(new TurretTracking(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250
