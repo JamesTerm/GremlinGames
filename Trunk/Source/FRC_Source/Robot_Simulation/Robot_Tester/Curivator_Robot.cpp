@@ -523,6 +523,7 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 	//ensure the variables are initialized before calling get
 	SmartDashboard::PutNumber("X Position",0.0);
 	SmartDashboard::PutNumber("Y Position",0.0);
+	SmartDashboard::PutNumber("Z Position",0.0);
 	SmartDashboard::PutBoolean("Main_Is_Targeting",false);
 	//Note: The processing vision is setup to use these same variables for both tracking processes (i.e. front and rear camera) we should only need to be tracking one of them at a time
 	//We may want to add a prefix window to identify which window they are coming from, but this may not be necessary.
