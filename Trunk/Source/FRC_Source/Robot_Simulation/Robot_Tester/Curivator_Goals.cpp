@@ -48,6 +48,56 @@ enum AutonType
 	eNoAutonTypes
 };
 
+//doesn't work
+#if 0
+//TODO Move into Misc
+class Priority_Averager_Least
+{
+private:
+	// Priority queue using operator < for ordering
+	std::priority_queue<double, vector<double>,std::less<double>> m_queue;
+	const size_t m_SampleSize;
+	const double m_PurgePercent;
+
+	double m_CurrentBadApple_Percentage;
+	size_t m_Iteration_Counter;
+	void flush()
+	{
+		while (!m_queue.empty())
+			m_queue.pop();
+	}
+public:
+	Priority_Averager_Least(size_t SampleSize, double PurgePercent) : m_SampleSize(SampleSize),m_PurgePercent(PurgePercent),
+		m_CurrentBadApple_Percentage(0.0),m_Iteration_Counter(0)
+	{
+	}
+	double operator()(double newItem)
+	{
+		m_queue.push(newItem);
+		double ret=m_queue.top();
+		if (m_queue.size()>m_SampleSize)
+			m_queue.pop();
+		//Now to manage when to purge the bad apples
+		m_Iteration_Counter++;
+		if ((m_Iteration_Counter % m_SampleSize)==0)
+		{
+			m_CurrentBadApple_Percentage+=m_PurgePercent;
+			//printf(" p=%.2f ",m_CurrentBadApple_Percentage);
+			if (m_CurrentBadApple_Percentage >= 1.0)
+			{
+				//Time to purge all the bad apples
+				flush();
+				m_queue.push(ret);  //put one good apple back in to start the cycle over
+				m_CurrentBadApple_Percentage-=1.0;
+				//printf(" p=%.2f ",m_CurrentBadApple_Percentage);
+			}
+		}
+		return ret;
+	}
+};
+
+#endif
+
 
   /***********************************************************************************************************************************/
  /*															Curivator_Goals															*/
@@ -712,15 +762,18 @@ class Curivator_Goals_Impl : public AtomicGoal
 						if (ZRawPositon<0)
 						{
 							double RawPositon=SmartDashboard::GetNumber("X Position");
-							RawPositon=m_X_PriorityAverager(RawPositon);
+							const double restore_sign=RawPositon>0?-1.0:1.0;
+							RawPositon=m_X_PriorityAverager(fabs(RawPositon)*-1.0); //put in as negative to get least sorted
+							RawPositon*=restore_sign;
 							RawPositon=m_X_KalmanFilter(RawPositon);
 							RawPositon=m_X_Averager.GetAverage(RawPositon);
 							SmartDashboard::PutNumber("X_RawPosition",RawPositon);  //Observe *no* false positives
-
-							ZRawPositon*=-1;  //invert from Zed
+							//leave negative going in... this will give me the least value
 							ZRawPositon=m_Z_PriorityAverager(ZRawPositon);
+							ZRawPositon*=-1;  //invert from Zed
 							ZRawPositon=m_Z_KalmanFilter(ZRawPositon);
 							ZRawPositon=m_Z_Averager.GetAverage(ZRawPositon);
+							SmartDashboard::PutNumber("Z_RawPosition",ZRawPositon);  //Observe *no* false positives
 							const double YawAngle=atan(RawPositon/ZRawPositon);  //opposite/adjacent
 							SmartDashboard::PutNumber("YawAngle",RAD_2_DEG(YawAngle));
 						}
