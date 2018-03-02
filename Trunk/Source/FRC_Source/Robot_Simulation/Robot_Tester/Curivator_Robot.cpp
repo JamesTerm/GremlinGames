@@ -508,7 +508,8 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 		m_ClaspAngle(eClasp_Angle,this,robot_control),
 		m_CenterLeftWheel(csz_Curivator_Robot_SpeedControllerDevices_Enum[eWheel_CL],robot_control,eWheel_CL),
 		m_CenterRightWheel(csz_Curivator_Robot_SpeedControllerDevices_Enum[eWheel_CR],robot_control,eWheel_CR),
-		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0),m_FreezeArm(false),m_LockPosition(false)
+		m_YawErrorCorrection(1.0),m_PowerErrorCorrection(1.0),m_AutonPresetIndex(0),
+		m_FreezeArm(false),m_LockPosition(false),m_SmartDashboard_AutonTest_Valve(false)
 {
 	mp_Arm[eTurret]=&m_Turret;
 	mp_Arm[eArm]=&m_Arm;
@@ -622,6 +623,20 @@ namespace VisionConversion
 
 void Curivator_Robot::TimeChange(double dTime_s)
 {
+	//monitor the AutonTest CheckBox
+	if (m_SmartDashboard_AutonTest_Valve)
+	{
+		//check if it's turned off now
+		if (!SmartDashboard::GetBoolean("Test_Auton"))
+			StopAuton(false);   //I do not care about the freeze arm (we have other checkboxes now)
+	}
+	else
+	{
+		//check if it is now on
+		if (SmartDashboard::GetBoolean("Test_Auton"))
+			TestAutonomous();
+	}
+
 	//const Curivator_Robot_Props &robot_props=m_RobotProps.GetCurivatorRobotProps();
 
 	//For the simulated code this must be first so the simulators can have the correct times
@@ -885,6 +900,8 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 #ifdef Robot_TesterCode
 void Curivator_Robot::TestAutonomous()
 {
+	m_SmartDashboard_AutonTest_Valve=true;
+	SmartDashboard::PutBoolean("Test_Auton",true);
 	//keep around to test geometry
 	#if 0
 	double BigArm_ShaftLength;
@@ -940,6 +957,8 @@ double Curivator_Robot::GetBucketAngleContinuity()
 
 void Curivator_Robot::StopAuton(bool isOn)
 {
+	m_SmartDashboard_AutonTest_Valve=false;
+	SmartDashboard::PutBoolean("Test_Auton",false);
 	FreezeArm(isOn);
 	m_controller->GetUIController_RW()->SetAutoPilot(false);
 	LockPosition(false);
@@ -1434,6 +1453,7 @@ void Curivator_Robot_Control::Initialize(const Entity_Properties *props)
 		#else
 		SmartDashboard::PutBoolean("SafetyLock_Arm",true);
 		#endif
+		SmartDashboard::PutBoolean("Test_Auton",false);
 		//This one one must also be called for the lists that are specific to the robot
 		RobotControlCommon_Initialize(robot_props->Get_ControlAssignmentProps());
 		//This may return NULL for systems that do not support it
