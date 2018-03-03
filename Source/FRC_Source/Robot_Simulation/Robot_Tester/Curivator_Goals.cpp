@@ -44,6 +44,7 @@ enum AutonType
 	eArmAndTurretTest,
 	eArmClawGrab,
 	eTurretTracking,
+	eDriveTracking,
 	eNoAutonTypes
 };
 
@@ -726,7 +727,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 		};
 
 		//--Vision Tracking
-		//This class is a helper class to be aggregated into a goal
+		//This class is a helper class to be aggregated into a goal; it feed/translates the camera vectors into yaw angle, and filters the coordinates
 		class VisionTracking
 		{
 		public:
@@ -744,13 +745,13 @@ class Curivator_Goals_Impl : public AtomicGoal
 					RawPositon=m_X_PriorityAverager(RawPositon);
 					RawPositon=m_X_KalmanFilter(RawPositon);
 					RawPositon=m_X_Averager.GetAverage(RawPositon);
-					SmartDashboard::PutNumber("X_RawPosition",RawPositon);  //Observe *no* false positives
+					SmartDashboard::PutNumber("X_Pos_Average",RawPositon);  //Observe *no* false positives
 					//leave negative going in... this will give me the least value
 					ZRawPositon=m_Z_PriorityAverager(ZRawPositon);
 					ZRawPositon*=-1;  //invert from Zed
 					ZRawPositon=m_Z_KalmanFilter(ZRawPositon);
 					ZRawPositon=m_Z_Averager.GetAverage(ZRawPositon);
-					SmartDashboard::PutNumber("Z_RawPosition",ZRawPositon);  //Observe *no* false positives
+					SmartDashboard::PutNumber("Z_Pos_Average",ZRawPositon);  //Observe *no* false positives
 					const double YawAngle=atan(RawPositon/ZRawPositon);  //opposite/adjacent
 					SmartDashboard::PutNumber("YawAngle",RAD_2_DEG(YawAngle));
 				}
@@ -843,8 +844,88 @@ class Curivator_Goals_Impl : public AtomicGoal
 			bool m_IsTargeting;  //Have a valve for targeting
 		};
 
-		//This extends AdjustTurretYaw by feed/translates the camera vectors into yaw angle, 
-		//separating these goals allows for remote teleop of the turret
+		class DriveTracking : public AtomicGoal, public SetUpProps
+		{
+		public:
+			DriveTracking(Curivator_Goals_Impl *Parent) : SetUpProps(Parent)
+			{
+				Activate();  //no need to delay activation
+			}
+			virtual void Activate()
+			{
+				Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+				m_Position=Arm.GetActualPos(); //start out on the actual position
+				m_LatencyCounter=0.0;
+				m_Status=eActive;
+				m_IsTargeting=false;
+				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+			}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				if (m_Status==eActive)
+				{
+					{
+						const char * const SmartVar="EnableVision";
+						bool EnableVision=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
+						if (m_IsTargeting)
+						{
+							if (!EnableVision)
+							{
+								SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+								m_IsTargeting=false;
+							}
+						}
+						else
+						{
+							if (EnableVision)
+							{
+								SmartDashboard::PutBoolean("Main_Is_Targeting",true);
+								m_IsTargeting=true;
+							}
+						}
+						if (EnableVision)
+							m_Vision.Process(dTime_s);
+					}
+					const char * const SmartVar="EnableDriveYaw";
+					bool EnableDriveYaw=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
+					if (EnableDriveYaw)
+					{
+						double YawAngle=0.0;
+						double TrackLatency=0.5;  //default high seconds
+						double YawScaleFactor=0.5;  //ability to tune adjustment intensity... default half to under estimate avoid oscillation
+						double YawTolerance=0.4; //degrees tolerance before taking action
+						const char * const SmartNames[]={"YawAngle","TrackLatency","YawScaleFactor","YawTolerance"};
+						double * const SmartVariables[]={&YawAngle,&TrackLatency,&YawScaleFactor,&YawTolerance};
+						Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
+
+						m_LatencyCounter+=dTime_s;
+						if (m_LatencyCounter>TrackLatency)
+						{
+							Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+							const double YawAngleRad=DEG_2_RAD(YawAngle);
+							m_Position=m_Robot.GetAtt_r() +(YawAngleRad*YawScaleFactor);  //set out new position
+							//Note: we needn't normalize here as that happens implicitly 
+							//printf("rotation=%.2f\n",RAD_2_DEG(m_Position));
+							if (fabs(YawAngle)>YawTolerance*YawScaleFactor)
+								m_Robot.GetController()->SetIntendedOrientation(m_Position);
+							m_LatencyCounter=0.0;
+						}
+					}
+				}
+				return m_Status;   //Just pass through m_Status
+			}
+			virtual void Terminate() 
+			{
+				m_Status=eInactive;  //this goal never really completes
+				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+			}
+		private:
+			VisionTracking m_Vision;
+			double m_LatencyCounter;
+			double m_Position; //keep track of last position between each latency count
+			bool m_IsTargeting;  //Have a valve for targeting
+		};
+
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -921,6 +1002,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eTurretTracking:
 				m_Primer.AddGoal(new TurretTracking(this));
+				break;
+			case eDriveTracking:
+				m_Primer.AddGoal(new DriveTracking(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250
