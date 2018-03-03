@@ -181,6 +181,42 @@ __inline bool Auton_Smart_GetSingleValue_Bool(const char *SmartName,bool default
 	return result;
 }
 
+__inline void Auton_Smart_GetMultiValue_Bool(size_t NoItems,const char * const SmartNames[],bool * const SmartVariables[])
+{
+	//Remember can't do this on cRIO since Thunder RIO has issue with using catch(...)
+#if defined Robot_TesterCode
+	for (size_t i=0;i<NoItems;i++)
+	{
+		try
+		{
+			*(SmartVariables[i])=SmartDashboard::GetBoolean(SmartNames[i]);
+		}
+		catch (...)
+		{
+			//I may need to prime the pump here
+			SmartDashboard::PutBoolean(SmartNames[i],*(SmartVariables[i]));
+		}
+	}
+#else
+#if !defined __USE_LEGACY_WPI_LIBRARIES__
+	for (size_t i=0;i<NoItems;i++)
+	{
+		SmartDashboard::SetDefaultNumber(SmartNames[i],*(SmartVariables[i]));
+		*(SmartVariables[i])=SmartDashboard::GetBoolean(SmartNames[i]);
+	}
+#else
+	for (size_t i=0;i<NoItems;i++)
+	{
+		if (SmartDashboard::GetBoolean("TestVariables_set"))
+			*(SmartVariables[i])=SmartDashboard::GetBoolean(SmartNames[i]);
+		else
+			SmartDashboard::PutBoolean(SmartNames[i],*(SmartVariables[i]));
+	}
+#endif
+#endif
+}
+
+
 __inline double Auton_Smart_GetSingleValue(const char *SmartName,double default_value)
 {
 	double result=default_value;
@@ -754,6 +790,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 					SmartDashboard::PutNumber("Z_Pos_Average",ZRawPositon);  //Observe *no* false positives
 					const double YawAngle=atan(RawPositon/ZRawPositon);  //opposite/adjacent
 					SmartDashboard::PutNumber("YawAngle",RAD_2_DEG(YawAngle));
+					SmartDashboard::PutNumber("DriveDistance",ZRawPositon); //follow suit with yaw, so we can test it separately
 				}
 			}
 		private:
@@ -864,44 +901,49 @@ class Curivator_Goals_Impl : public AtomicGoal
 			{
 				if (m_Status==eActive)
 				{
+					bool EnableVision=false;
+					bool EnableDriveYaw=false;
+					bool EnableDrive=false;
 					{
-						const char * const SmartVar="EnableVision";
-						bool EnableVision=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
-						if (m_IsTargeting)
-						{
-							if (!EnableVision)
-							{
-								SmartDashboard::PutBoolean("Main_Is_Targeting",false);
-								m_IsTargeting=false;
-							}
-						}
-						else
-						{
-							if (EnableVision)
-							{
-								SmartDashboard::PutBoolean("Main_Is_Targeting",true);
-								m_IsTargeting=true;
-							}
-						}
-						if (EnableVision)
-							m_Vision.Process(dTime_s);
+						const char * const SmartNames[]={"EnableVision","EnableDriveYaw","EnableDrive"};
+						bool * const SmartVariables[]={&EnableVision,&EnableDriveYaw,&EnableDrive};
+						Auton_Smart_GetMultiValue_Bool(3,SmartNames,SmartVariables);
 					}
-					const char * const SmartVar="EnableDriveYaw";
-					bool EnableDriveYaw=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
-					if (EnableDriveYaw)
+					if (m_IsTargeting)
 					{
-						double YawAngle=0.0;
-						double TrackLatency=0.5;  //default high seconds
-						double YawScaleFactor=0.5;  //ability to tune adjustment intensity... default half to under estimate avoid oscillation
-						double YawTolerance=0.4; //degrees tolerance before taking action
+						if (!EnableVision)
+						{
+							SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+							m_IsTargeting=false;
+						}
+					}
+					else
+					{
+						if (EnableVision)
+						{
+							SmartDashboard::PutBoolean("Main_Is_Targeting",true);
+							m_IsTargeting=true;
+						}
+					}
+					if (EnableVision)
+						m_Vision.Process(dTime_s);
+
+					double YawAngle=0.0;
+					double TrackLatency=0.5;  //default high seconds
+					double YawScaleFactor=0.5;  //ability to tune adjustment intensity... default half to under estimate avoid oscillation
+					double YawTolerance=0.4; //degrees tolerance before taking action, also threshold before advancing drive
+					{
 						const char * const SmartNames[]={"YawAngle","TrackLatency","YawScaleFactor","YawTolerance"};
 						double * const SmartVariables[]={&YawAngle,&TrackLatency,&YawScaleFactor,&YawTolerance};
 						Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
-
+					}
+					bool LatencyIntervalTriggered=false; //share the latency check with the drive
+					if (EnableDriveYaw)
+					{
 						m_LatencyCounter+=dTime_s;
 						if (m_LatencyCounter>TrackLatency)
 						{
-							Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+							LatencyIntervalTriggered=true;
 							const double YawAngleRad=DEG_2_RAD(YawAngle);
 							m_Position=m_Robot.GetAtt_r() +(YawAngleRad*YawScaleFactor);  //set out new position
 							//Note: we needn't normalize here as that happens implicitly 
@@ -911,11 +953,65 @@ class Curivator_Goals_Impl : public AtomicGoal
 							m_LatencyCounter=0.0;
 						}
 					}
+					if (EnableDrive)
+					{
+						double DriveDistance=1.0;  //start with same value as the z offset
+						double DriveScaleFactor=0.25;  //ability to tune adjustment intensity... default to 1/4 under estimate avoid oscillation
+						double DriveTolerance=0.4; //degrees tolerance before taking action, also threshold before advancing drive
+						double Z_Offset=DriveDistance;  //used to tune how close we wish to be away from our target
+						{
+							const char * const SmartNames[]={"DriveDistance","DriveScaleFactor","DriveTolerance","Z_Offset"};
+							double * const SmartVariables[]={&DriveDistance,&DriveScaleFactor,&DriveTolerance,&Z_Offset};
+							Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
+						}
+
+						//Much like driving to a way point where it waits until yaw alignment, but it may be more rigid as it doesn't turn to it
+						//however, this may be fine for shorter distance tracking
+						if ((YawAngle<YawTolerance)||(!EnableDriveYaw))
+						{
+							if (!EnableDriveYaw)
+							{
+								m_LatencyCounter+=dTime_s;
+								LatencyIntervalTriggered=(m_LatencyCounter>TrackLatency);
+							}
+							if (LatencyIntervalTriggered)
+							{
+
+								m_LatencyCounter=0; //may be redundant if drive yaw is active
+								const double distance_m=(DriveDistance-Z_Offset)*DriveScaleFactor;
+								if (fabs(distance_m)>DriveTolerance*DriveScaleFactor)
+								{
+									//expand out the functionality to drive forward or reverse using Goal_Ship_MoveToRelativePosition
+									WayPoint wp;
+									const Vec2d Local_GoalTarget(0.0,distance_m); //where postive if forward and negative is reverse
+									wp.Power=1.0;
+									//set up all the other fields
+									const Vec2d &pos=m_Robot.GetPos_m();
+									const Vec2d Global_GoalTarget=LocalToGlobal(m_Robot.GetAtt_r(),Local_GoalTarget);
+									wp.Position=Global_GoalTarget+pos;
+									//set the trajectory point
+									double lookDir_radians= atan2(Local_GoalTarget[0],Local_GoalTarget[1]);
+									const Vec2d LocalTrajectoryOffset(sin(lookDir_radians),cos(lookDir_radians));
+									const Vec2d  GlobalTrajectoryOffset=LocalToGlobal(m_Robot.GetAtt_r(),LocalTrajectoryOffset);
+									const Vec2d TrajectoryPoint(wp.Position+GlobalTrajectoryOffset);
+									Vec2d Temp(0,0);
+									m_Robot.GetController()->DriveToLocation(TrajectoryPoint , wp.Position, wp.Power, dTime_s,&Temp,true);
+								}
+								else
+								{
+									//we're good for now
+									m_Robot.GetController()->SetShipVelocity(0.0);
+								}
+							}
+						}
+					}
 				}
 				return m_Status;   //Just pass through m_Status
 			}
 			virtual void Terminate() 
 			{
+				//stop it
+				m_Robot.GetController()->SetShipVelocity(0.0);
 				m_Status=eInactive;  //this goal never really completes
 				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
 			}
