@@ -52,8 +52,8 @@ enum AutonType
 //TODO Move into Misc
 //The way this works is that we keep track of the sign of each entry and all numbers that go it are negative
 //This way the priority makes the sort in reverse and the top number ends up being the floor number
-//There is probably a better way to solve this problem, but given the stress of this application it is effective as
-//false positives should usually be greater values
+//Since we have both number sets on the same side of zero the result of the sign is also averaged using a blend average
+//where the smoothing value is the reciprocal of the sample size 
 class Priority_Averager_floor
 {
 private:
@@ -74,6 +74,8 @@ private:
 				sign=true;  //for zero we want this to be true as well
 			}
 		}
+		//This method is not needed, but kept here to illustrate how to obtain the numbers original value
+		#if 0
 		double GetNumber()
 		{
 			if (sign)
@@ -81,6 +83,7 @@ private:
 			else
 				return Number*-1.0;
 		}
+		#endif
 		double Number;
 		bool sign;
 		bool operator >  (const NumberSign& rhs) const { return Number>rhs.Number; }
@@ -98,15 +101,19 @@ private:
 		while (!m_queue.empty())
 			m_queue.pop();
 	}
+	Blend_Averager<double > m_SignInfluence;  //have some weight on which sign to use
 public:
 	Priority_Averager_floor(size_t SampleSize, double PurgePercent) : m_SampleSize(SampleSize),m_PurgePercent(PurgePercent),
-		m_CurrentBadApple_Percentage(0.0),m_Iteration_Counter(0)
+		m_CurrentBadApple_Percentage(0.0),m_Iteration_Counter(0),m_SignInfluence(1.0/(double)SampleSize)
 	{
 	}
 	double operator()(double newItem)
 	{
 		m_queue.push(NumberSign(newItem));
-		double ret=m_queue.top().GetNumber();
+		//This is a bit convoluted... 
+		//The sign influence does a blend average of the sign of the new entry and depending on this result will impact the final sign of our answer
+		const double sign_influence=(m_SignInfluence((newItem>0)? 1.0: -1.0) > 0)? -1.0 : 1.0;
+		double ret=m_queue.top().Number	* sign_influence;
 		if (m_queue.size()>m_SampleSize)
 			m_queue.pop();
 		//Now to manage when to purge the bad apples
