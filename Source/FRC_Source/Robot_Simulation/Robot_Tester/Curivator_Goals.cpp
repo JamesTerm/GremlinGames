@@ -43,7 +43,6 @@ enum AutonType
 	eTestTurret,
 	eArmAndTurretTest,
 	eArmClawGrab,
-	eAdjustTurretYaw,
 	eTurretTracking,
 	eNoAutonTypes
 };
@@ -727,13 +726,49 @@ class Curivator_Goals_Impl : public AtomicGoal
 		};
 
 		//--Vision Tracking
-		class AdjustTurretYaw : public AtomicGoal, public SetUpProps
+		//This class is a helper class to be aggregated into a goal
+		class VisionTracking
 		{
 		public:
-			AdjustTurretYaw(Curivator_Goals_Impl *Parent) : SetUpProps(Parent)
+			VisionTracking() : m_X_PriorityAverager(10,0.30),m_Z_PriorityAverager(10,0.30)
+			{
+			}
+			void Process(double dTime_s)
+			{
+				//Now to manage the actual vector feed
+				double ZRawPositon=SmartDashboard::GetNumber("Z Position");
+				//Sanity check... if the distance is negative it must be invalid
+				if (ZRawPositon<0)
+				{
+					double RawPositon=SmartDashboard::GetNumber("X Position");
+					RawPositon=m_X_PriorityAverager(RawPositon);
+					RawPositon=m_X_KalmanFilter(RawPositon);
+					RawPositon=m_X_Averager.GetAverage(RawPositon);
+					SmartDashboard::PutNumber("X_RawPosition",RawPositon);  //Observe *no* false positives
+					//leave negative going in... this will give me the least value
+					ZRawPositon=m_Z_PriorityAverager(ZRawPositon);
+					ZRawPositon*=-1;  //invert from Zed
+					ZRawPositon=m_Z_KalmanFilter(ZRawPositon);
+					ZRawPositon=m_Z_Averager.GetAverage(ZRawPositon);
+					SmartDashboard::PutNumber("Z_RawPosition",ZRawPositon);  //Observe *no* false positives
+					const double YawAngle=atan(RawPositon/ZRawPositon);  //opposite/adjacent
+					SmartDashboard::PutNumber("YawAngle",RAD_2_DEG(YawAngle));
+				}
+			}
+		private:
+			//filter out noise! 
+			KalmanFilter m_X_KalmanFilter,m_Z_KalmanFilter;
+			Averager<double,5> m_X_Averager,m_Z_Averager;
+			Priority_Averager_floor m_X_PriorityAverager;
+			Priority_Averager m_Z_PriorityAverager;
+		};
+
+		class TurretTracking : public AtomicGoal, public SetUpProps
+		{
+		public:
+			TurretTracking(Curivator_Goals_Impl *Parent) : SetUpProps(Parent)
 			{
 				Activate();  //no need to delay activation
-				SmartDashboard::PutBoolean("Main_Is_Targeting",true);
 			}
 			virtual void Activate()
 			{
@@ -741,28 +776,57 @@ class Curivator_Goals_Impl : public AtomicGoal
 				m_Position=Arm.GetActualPos(); //start out on the actual position
 				m_LatencyCounter=0.0;
 				m_Status=eActive;
+				m_IsTargeting=false;
+				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
 			}
 			virtual Goal_Status Process(double dTime_s)
 			{
 				if (m_Status==eActive)
 				{
-					double YawAngle=0.0;
-					double TrackLatency=0.5;  //default high seconds
-					double YawScaleFactor=0.5;  //ability to tune adjustment intensity... default half to under estimate avoid oscillation
-					double YawTolerance=0.4; //degrees tolerance before taking action
-					const char * const SmartNames[]={"YawAngle","TrackLatency","YawScaleFactor","YawTolerance"};
-					double * const SmartVariables[]={&YawAngle,&TrackLatency,&YawScaleFactor,&YawTolerance};
-					Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
-
-					m_LatencyCounter+=dTime_s;
-					if (m_LatencyCounter>TrackLatency)
 					{
-						Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
-						const double YawAngleRad=DEG_2_RAD(YawAngle);
-						m_Position=Arm.GetActualPos()+(YawAngleRad*YawScaleFactor);  //set out new position
-						if (fabs(YawAngleRad)>YawTolerance*YawScaleFactor)
-							Arm.SetIntendedPosition(m_Position);
-						m_LatencyCounter=0.0;
+						const char * const SmartVar="EnableVision";
+						bool EnableVision=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
+						if (m_IsTargeting)
+						{
+							if (!EnableVision)
+							{
+								SmartDashboard::PutBoolean("Main_Is_Targeting",false);
+								m_IsTargeting=false;
+							}
+						}
+						else
+						{
+							if (EnableVision)
+							{
+								SmartDashboard::PutBoolean("Main_Is_Targeting",true);
+								m_IsTargeting=true;
+							}
+						}
+						if (EnableVision)
+							m_Vision.Process(dTime_s);
+					}
+					const char * const SmartVar="EnableTurret";
+					bool EnableTurret=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
+					if (EnableTurret)
+					{
+						double YawAngle=0.0;
+						double TrackLatency=0.5;  //default high seconds
+						double YawScaleFactor=0.5;  //ability to tune adjustment intensity... default half to under estimate avoid oscillation
+						double YawTolerance=0.4; //degrees tolerance before taking action
+						const char * const SmartNames[]={"YawAngle","TrackLatency","YawScaleFactor","YawTolerance"};
+						double * const SmartVariables[]={&YawAngle,&TrackLatency,&YawScaleFactor,&YawTolerance};
+						Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
+
+						m_LatencyCounter+=dTime_s;
+						if (m_LatencyCounter>TrackLatency)
+						{
+							Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+							const double YawAngleRad=DEG_2_RAD(YawAngle);
+							m_Position=Arm.GetActualPos()+(YawAngleRad*YawScaleFactor);  //set out new position
+							if (fabs(YawAngle)>YawTolerance*YawScaleFactor)
+								Arm.SetIntendedPosition(m_Position);
+							m_LatencyCounter=0.0;
+						}
 					}
 				}
 				return m_Status;   //Just pass through m_Status
@@ -773,57 +837,14 @@ class Curivator_Goals_Impl : public AtomicGoal
 				SmartDashboard::PutBoolean("Main_Is_Targeting",false);
 			}
 		private:
+			VisionTracking m_Vision;
 			double m_LatencyCounter;
 			double m_Position; //keep track of last position between each latency count
+			bool m_IsTargeting;  //Have a valve for targeting
 		};
 
 		//This extends AdjustTurretYaw by feed/translates the camera vectors into yaw angle, 
 		//separating these goals allows for remote teleop of the turret
-		class TurretTracking : public AdjustTurretYaw
-		{
-			public:
-				TurretTracking(Curivator_Goals_Impl *Parent) : AdjustTurretYaw(Parent), 
-					m_X_PriorityAverager(10,0.30),m_Z_PriorityAverager(10,0.30)
-				{
-				}
-				virtual Goal_Status Process(double dTime_s)
-				{
-					const char * const SmartVar="EnableTurret";
-					bool EnableTurret=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
-
-					if (m_Status==eActive)
-					{
-						//Now to manage the actual vector feed
-						double ZRawPositon=SmartDashboard::GetNumber("Z Position");
-						//Sanity check... if the distance is negative it must be invalid
-						if (ZRawPositon<0)
-						{
-							double RawPositon=SmartDashboard::GetNumber("X Position");
-							RawPositon=m_X_PriorityAverager(RawPositon);
-							RawPositon=m_X_KalmanFilter(RawPositon);
-							RawPositon=m_X_Averager.GetAverage(RawPositon);
-							SmartDashboard::PutNumber("X_RawPosition",RawPositon);  //Observe *no* false positives
-							//leave negative going in... this will give me the least value
-							ZRawPositon=m_Z_PriorityAverager(ZRawPositon);
-							ZRawPositon*=-1;  //invert from Zed
-							ZRawPositon=m_Z_KalmanFilter(ZRawPositon);
-							ZRawPositon=m_Z_Averager.GetAverage(ZRawPositon);
-							SmartDashboard::PutNumber("Z_RawPosition",ZRawPositon);  //Observe *no* false positives
-							const double YawAngle=atan(RawPositon/ZRawPositon);  //opposite/adjacent
-							SmartDashboard::PutNumber("YawAngle",RAD_2_DEG(YawAngle));
-						}
-					}
-					if (EnableTurret)
-						__super::Process(dTime_s);
-					return m_Status;
-				}
-			private:
-				//filter out noise! 
-				KalmanFilter m_X_KalmanFilter,m_Z_KalmanFilter;
-				Averager<double,5> m_X_Averager,m_Z_Averager;
-				Priority_Averager_floor m_X_PriorityAverager;
-				Priority_Averager m_Z_PriorityAverager;
-		};
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
 			m_Primer(false)  //who ever is done first on this will complete the goals (i.e. if time runs out)
@@ -897,9 +918,6 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eArmClawGrab:
 				m_Primer.AddGoal(new ClawGrabSequence(this));
-				break;
-			case eAdjustTurretYaw:
-				m_Primer.AddGoal(new AdjustTurretYaw(this));
 				break;
 			case eTurretTracking:
 				m_Primer.AddGoal(new TurretTracking(this));
