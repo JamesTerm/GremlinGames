@@ -48,14 +48,46 @@ enum AutonType
 	eNoAutonTypes
 };
 
-//doesn't work
-#if 0
+
 //TODO Move into Misc
-class Priority_Averager_Least
+//The way this works is that we keep track of the sign of each entry and all numbers that go it are negative
+//This way the priority makes the sort in reverse and the top number ends up being the floor number
+//There is probably a better way to solve this problem, but given the stress of this application it is effective as
+//false positives should usually be greater values
+class Priority_Averager_floor
 {
 private:
 	// Priority queue using operator < for ordering
-	std::priority_queue<double, vector<double>,std::less<double>> m_queue;
+	//std::priority_queue<double, vector<double>,std::less<double>> m_queue;
+	struct NumberSign
+	{
+		NumberSign(double number)
+		{
+			if (number>0)
+			{
+				Number=number*-1.0;
+				sign=false;
+			}
+			else
+			{
+				Number=number;
+				sign=true;  //for zero we want this to be true as well
+			}
+		}
+		double GetNumber()
+		{
+			if (sign)
+				return Number;
+			else
+				return Number*-1.0;
+		}
+		double Number;
+		bool sign;
+		bool operator >  (const NumberSign& rhs) const { return Number>rhs.Number; }
+		bool operator <  (const NumberSign& rhs) const { return Number<rhs.Number; }
+		bool operator == (const NumberSign& rhs) const { return ((Number==rhs.Number)&&(sign==rhs.sign)); }
+	};
+	std::priority_queue<NumberSign> m_queue;
 	const size_t m_SampleSize;
 	const double m_PurgePercent;
 
@@ -67,14 +99,14 @@ private:
 			m_queue.pop();
 	}
 public:
-	Priority_Averager_Least(size_t SampleSize, double PurgePercent) : m_SampleSize(SampleSize),m_PurgePercent(PurgePercent),
+	Priority_Averager_floor(size_t SampleSize, double PurgePercent) : m_SampleSize(SampleSize),m_PurgePercent(PurgePercent),
 		m_CurrentBadApple_Percentage(0.0),m_Iteration_Counter(0)
 	{
 	}
 	double operator()(double newItem)
 	{
-		m_queue.push(newItem);
-		double ret=m_queue.top();
+		m_queue.push(NumberSign(newItem));
+		double ret=m_queue.top().GetNumber();
 		if (m_queue.size()>m_SampleSize)
 			m_queue.pop();
 		//Now to manage when to purge the bad apples
@@ -87,7 +119,7 @@ public:
 			{
 				//Time to purge all the bad apples
 				flush();
-				m_queue.push(ret);  //put one good apple back in to start the cycle over
+				m_queue.push(NumberSign(ret));  //put one good apple back in to start the cycle over
 				m_CurrentBadApple_Percentage-=1.0;
 				//printf(" p=%.2f ",m_CurrentBadApple_Percentage);
 			}
@@ -95,8 +127,6 @@ public:
 		return ret;
 	}
 };
-
-#endif
 
 
   /***********************************************************************************************************************************/
@@ -762,9 +792,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 						if (ZRawPositon<0)
 						{
 							double RawPositon=SmartDashboard::GetNumber("X Position");
-							const double restore_sign=RawPositon>0?-1.0:1.0;
-							RawPositon=m_X_PriorityAverager(fabs(RawPositon)*-1.0); //put in as negative to get least sorted
-							RawPositon*=restore_sign;
+							RawPositon=m_X_PriorityAverager(RawPositon);
 							RawPositon=m_X_KalmanFilter(RawPositon);
 							RawPositon=m_X_Averager.GetAverage(RawPositon);
 							SmartDashboard::PutNumber("X_RawPosition",RawPositon);  //Observe *no* false positives
@@ -786,7 +814,8 @@ class Curivator_Goals_Impl : public AtomicGoal
 				//filter out noise! 
 				KalmanFilter m_X_KalmanFilter,m_Z_KalmanFilter;
 				Averager<double,5> m_X_Averager,m_Z_Averager;
-				Priority_Averager m_X_PriorityAverager,m_Z_PriorityAverager;
+				Priority_Averager_floor m_X_PriorityAverager;
+				Priority_Averager m_Z_PriorityAverager;
 		};
 	public:
 		Curivator_Goals_Impl(Curivator_Robot &robot) : m_Robot(robot), m_Timer(0.0), 
