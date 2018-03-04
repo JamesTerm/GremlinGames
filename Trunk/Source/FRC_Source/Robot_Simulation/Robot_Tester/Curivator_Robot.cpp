@@ -727,22 +727,18 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 	Entity2D_Kind::EventMap *em=GetEventMap(); 
 	if (Bind)
 	{
-		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"].Subscribe(ehl, *this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"].Subscribe(ehl,*this,&Curivator_Robot::GoalComplete);
 		em->Event_Map["Failed"].Subscribe(ehl,*this,&Curivator_Robot::GoalFailed);
-		#endif
 		em->EventOnOff_Map["StopAuton"].Subscribe(ehl,*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Subscribe(ehl,*this, &Curivator_Robot::FreezeArm);
 		em->EventOnOff_Map["Robot_LockPosition"].Subscribe(ehl,*this, &Curivator_Robot::LockPosition);
 	}
 	else
 	{
-		#ifdef Robot_TesterCode
 		em->Event_Map["TestAuton"]  .Remove(*this, &Curivator_Robot::TestAutonomous);
 		em->Event_Map["Complete"]  .Remove(*this, &Curivator_Robot::GoalComplete);
 		em->Event_Map["Failed"]  .Remove(*this, &Curivator_Robot::GoalFailed);
-		#endif
 		em->EventOnOff_Map["StopAuton"].Remove(*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Remove(*this, &Curivator_Robot::FreezeArm);
 		em->EventOnOff_Map["Robot_LockPosition"].Remove(*this, &Curivator_Robot::LockPosition);
@@ -898,7 +894,6 @@ void Curivator_Robot::ComputeArmPosition(double GlobalHeight,double GlobalDistan
 	ClaspShaftLength=EnforceShaftLimits(Clasp_LA_Length-Clasp_LAC_houseingLength,0.75,6.0);
 }
 
-#ifdef Robot_TesterCode
 void Curivator_Robot::TestAutonomous()
 {
 	m_SmartDashboard_AutonTest_Valve=true;
@@ -948,7 +943,6 @@ void Curivator_Robot::GoalFailed()
 		m_controller->GetUIController_RW()->SetAutoPilot(false);
 	}
 }
-#endif
 
 double Curivator_Robot::GetBucketAngleContinuity()
 {
