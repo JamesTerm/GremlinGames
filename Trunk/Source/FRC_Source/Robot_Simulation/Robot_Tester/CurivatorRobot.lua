@@ -522,9 +522,7 @@ MainRobot = {
 			is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up={p=200, i=0, d=25},
-			pid_down={p=200, i=0, d=25},
+			pid={p=200, i=0, d=25},
 			voltage_multiply=1.0,			--May be reversed
 			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
 			curve_voltage=
@@ -547,9 +545,7 @@ MainRobot = {
 			is_closed=1,
 			show_pid_dump='n',
 			ds_display_row=-1,
-			use_pid_up_only='y',
-			pid_up={p=200, i=0, d=25},
-			pid_down={p=200, i=0, d=25},
+			pid={p=200, i=0, d=25},
 			voltage_multiply=1.0,			--May be reversed
 			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
 			curve_voltage=
