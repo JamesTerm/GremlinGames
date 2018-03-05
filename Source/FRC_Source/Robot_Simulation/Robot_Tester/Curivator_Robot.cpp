@@ -529,6 +529,11 @@ Curivator_Robot::Curivator_Robot(const char EntityName[],Curivator_Control_Inter
 	//We may want to add a prefix window to identify which window they are coming from, but this may not be necessary.
 }
 
+Curivator_Robot::~Curivator_Robot()
+{
+	//Ensure goals are cleared (This stress is more for simulation, but should be done for proper exit)
+	ClearGoal();
+}
 void Curivator_Robot::Initialize(Entity2D_Kind::EventMap& em, const Entity_Properties *props)
 {
 	__super::Initialize(em,props);
