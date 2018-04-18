@@ -605,6 +605,25 @@ class Curivator_Goals_Impl : public AtomicGoal
 				  m_clasp_Angle_deg(clasp_Angle_deg),m_clasp_Angle_deg_speed(clasp_Angle_deg_speed)
 			  {		Activate();  //we can set it up ahead of time
 			  }
+			  SetArmWaypoint(Curivator_Goals_Impl *Parent) : SetUpProps(Parent)
+			  {
+				  //activate is deferred when constructed this way
+				  m_Status=eInactive;
+			  }
+
+			 void SetUp (double length_in,double height_in,double bucket_Angle_deg,double clasp_Angle_deg,
+				  double length_in_speed=1.0,double height_in_speed=1.0,double bucket_Angle_deg_speed=1.0,double clasp_Angle_deg_speed=1.0) 
+			 {
+				 m_length_in=length_in;
+				 m_length_in_speed=length_in_speed;
+				 m_height_in=height_in;
+				 m_height_in_speed=height_in_speed;
+				 m_bucket_Angle_deg=bucket_Angle_deg;
+				 m_bucket_Angle_deg_speed=bucket_Angle_deg_speed;
+				 m_clasp_Angle_deg=clasp_Angle_deg;
+				 m_clasp_Angle_deg_speed=clasp_Angle_deg_speed;
+			 }
+
 			virtual void Activate()
 			{
 				if (m_Status==eActive) return;  //allow for multiple calls
@@ -617,14 +636,17 @@ class Curivator_Goals_Impl : public AtomicGoal
 				AddSubgoal(new RobotArmHoldStill(m_Parent));
 				AddSubgoal(Move_ArmAndBucket(m_Parent,m_length_in,m_height_in,m_bucket_Angle_deg,m_clasp_Angle_deg,
 					m_length_in_speed,m_height_in_speed,m_bucket_Angle_deg_speed,m_clasp_Angle_deg_speed));
+				//pre-emptave ensure the freeze-arm and lock position are cleared
+				AddSubgoal(new RobotArmHoldStill(m_Parent));
 				#endif
 				m_Status=eActive;
 			}
+
 		private:
-			const double m_length_in,m_length_in_speed;
-			const double m_height_in,m_height_in_speed;
-			const double m_bucket_Angle_deg,m_bucket_Angle_deg_speed;
-			const double m_clasp_Angle_deg,m_clasp_Angle_deg_speed;
+			double m_length_in,m_length_in_speed;
+			double m_height_in,m_height_in_speed;
+			double m_bucket_Angle_deg,m_bucket_Angle_deg_speed;
+			double m_clasp_Angle_deg,m_clasp_Angle_deg_speed;
 		};
 		class SetTurretWaypoint : public Generic_CompositeGoal, public SetUpProps
 		{
@@ -644,6 +666,8 @@ class Curivator_Goals_Impl : public AtomicGoal
 		private:
 			const double m_Turret_Angle_deg;
 		};
+		
+		#if 0
 		static Goal * TestArmMove(Curivator_Goals_Impl *Parent)
 		{
 			double length_in=25.0;
@@ -655,6 +679,45 @@ class Curivator_Goals_Impl : public AtomicGoal
 			Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
 			return new SetArmWaypoint(Parent,length_in,height_in,bucket_Angle_deg,clasp_Angle_deg);
 		}
+		#endif
+
+		class ArmMoveToPosition : public SetArmWaypoint
+		{
+		public:
+			ArmMoveToPosition(Curivator_Goals_Impl *Parent) : SetArmWaypoint(Parent) 
+			{
+				double length_in=25.0;
+				double height_in=-7.0;
+				double bucket_Angle_deg=78.0;
+				double clasp_Angle_deg=13.0;
+				const char * const SmartNames[]={"testarm_length","testarm_height","testarm_bucket","testarm_clasp"};
+				double * const SmartVariables[]={&length_in,&height_in,&bucket_Angle_deg,&clasp_Angle_deg};
+				Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
+				SetUp(length_in,height_in,bucket_Angle_deg,clasp_Angle_deg);
+				//all is good... activate
+				Activate();
+			}
+
+			void StopAuton(bool IsOn)
+			{
+				//if stopping abruptly call the freeze
+				//m_EventMap.EventOnOff_Map["Robot_LockPosition"].Fire(true);
+				//m_EventMap.EventOnOff_Map["Robot_FreezeArm"].Fire(true);
+			}
+
+			virtual void Activate()
+			{
+				//if (m_Status==eInactive)
+				//	m_EventMap.EventOnOff_Map["StopAuton"].Subscribe(m_Robot.ehl,*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
+				__super::Activate();
+			}
+			virtual void Terminate() 
+			{
+				__super::Terminate();
+				//m_Robot.GetEventMap()->EventOnOff_Map["StopAuton"].Remove(*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
+			}
+		};
+
 		static Goal * TestTurretMove(Curivator_Goals_Impl *Parent)
 		{
 			const char * const SmartName="Test_TurretAngle";
@@ -1122,7 +1185,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 				m_Primer.AddGoal(GiveRobotSquareWayPointGoal(this));
 				break;
 			case eTestArm:
-				m_Primer.AddGoal(TestArmMove(this));
+				m_Primer.AddGoal(new ArmMoveToPosition(this));
 				break;
 			case eArmGrabSequence:
 				m_Primer.AddGoal(TestArmMove2(this));
