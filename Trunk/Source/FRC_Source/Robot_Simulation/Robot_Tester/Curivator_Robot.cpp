@@ -634,7 +634,11 @@ void Curivator_Robot::TimeChange(double dTime_s)
 	{
 		//check if it's turned off now
 		if (!SmartDashboard::GetBoolean("Test_Auton"))
-			StopAuton(false);   //I do not care about the freeze arm (we have other checkboxes now)
+		{
+			//Fire as event so that other people can listen to this event
+			//I do not care about the freeze arm (we have other checkboxes now)
+			GetEventMap()->EventOnOff_Map["StopAuton"].Fire(false);
+		}
 	}
 	else
 	{
@@ -941,7 +945,7 @@ void Curivator_Robot::GoalFailed()
 	if (m_controller->GetUIController()->GetAutoPilot())
 	{
 		printf("Goals failed!\n");
-		//ensure everthing is disabled!
+		//ensure everything is disabled!
 		SmartDashboard::PutBoolean("SafetyLock_Arm",true);
 		SmartDashboard::PutBoolean("SafetyLock_Drive",true);
 		//TODO see about having some way to dump a log or stack trace of where the failure occurred 
