@@ -636,8 +636,6 @@ class Curivator_Goals_Impl : public AtomicGoal
 				AddSubgoal(new RobotArmHoldStill(m_Parent));
 				AddSubgoal(Move_ArmAndBucket(m_Parent,m_length_in,m_height_in,m_bucket_Angle_deg,m_clasp_Angle_deg,
 					m_length_in_speed,m_height_in_speed,m_bucket_Angle_deg_speed,m_clasp_Angle_deg_speed));
-				//pre-emptave ensure the freeze-arm and lock position are cleared
-				AddSubgoal(new RobotArmHoldStill(m_Parent));
 				#endif
 				m_Status=eActive;
 			}
@@ -695,7 +693,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 				double height_in=-7.0;
 				double bucket_Angle_deg=78.0;
 				double clasp_Angle_deg=13.0;
-				const char * const SmartNames[]={"testarm_length","testarm_height","testarm_bucket","testarm_clasp"};
+				const char * const SmartNames[]={"target_arm_xpos","target_arm_ypos","target_bucket_angle","target_clasp_angle"};
 				double * const SmartVariables[]={&length_in,&height_in,&bucket_Angle_deg,&clasp_Angle_deg};
 				Auton_Smart_GetMultiValue(4,SmartNames,SmartVariables);
 				SetUp(length_in,height_in,bucket_Angle_deg,clasp_Angle_deg);
@@ -716,8 +714,32 @@ class Curivator_Goals_Impl : public AtomicGoal
 					m_EventMap.Event_Map["StopAutonAbort"].Subscribe(m_Robot.ehl,*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
 				__super::Activate();
 			}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				if (m_Status==eActive)
+				{
+					const char * const SmartVar="EnableTurret";
+					bool EnableTurret=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
+					if (EnableTurret)
+					{
+						const char * const SmartVar_YawAngle="YawAngle";
+						double YawAngle=Auton_Smart_GetSingleValue(SmartVar_YawAngle,0.0);
+						Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+						const double YawAngleRad=DEG_2_RAD(YawAngle);
+						const double Position=Arm.GetActualPos()+YawAngleRad;  //set out new position
+						Arm.SetIntendedPosition(Position);
+					}
+					__super::Process(dTime_s);
+					if (EnableTurret)
+						m_Status=eActive;  //override the status of the subgoals as long as the enable turret is checked
+				}
+				return m_Status;   //Just pass through m_Status
+			}
 			virtual void Terminate() 
 			{
+				//pacify the set point on the turret
+				Curivator_Robot::Robot_Arm &Arm=m_Robot.GetTurret();
+				Arm.SetIntendedPosition(Arm.GetActualPos());
 				m_EventMap.Event_Map["StopAutonAbort"].Remove(*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
 				__super::Terminate();
 			}
