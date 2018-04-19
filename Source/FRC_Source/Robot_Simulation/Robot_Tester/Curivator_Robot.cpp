@@ -636,7 +636,8 @@ void Curivator_Robot::TimeChange(double dTime_s)
 		if (!SmartDashboard::GetBoolean("Test_Auton"))
 		{
 			//Fire as event so that other people can listen to this event
-			//I do not care about the freeze arm (we have other checkboxes now)
+			//I do not care about the freeze arm 
+			//We have other check boxes now, and each goal can control how it wants to work without needing to modify robot code
 			GetEventMap()->EventOnOff_Map["StopAuton"].Fire(false);
 		}
 	}
@@ -965,7 +966,7 @@ void Curivator_Robot::StopAuton(bool isOn)
 	SmartDashboard::PutBoolean("Test_Auton",false);
 	FreezeArm(isOn);
 	m_controller->GetUIController_RW()->SetAutoPilot(false);
-	GetEventMap()->EventOnOff_Map["StopAutonAbort"].Fire(false);
+	GetEventMap()->Event_Map["StopAutonAbort"].Fire();
 	ClearGoal();
 	LockPosition(false);
 }
