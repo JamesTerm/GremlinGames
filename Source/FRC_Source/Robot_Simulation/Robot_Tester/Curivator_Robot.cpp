@@ -965,6 +965,7 @@ void Curivator_Robot::StopAuton(bool isOn)
 	SmartDashboard::PutBoolean("Test_Auton",false);
 	FreezeArm(isOn);
 	m_controller->GetUIController_RW()->SetAutoPilot(false);
+	GetEventMap()->EventOnOff_Map["StopAutonAbort"].Fire(false);
 	ClearGoal();
 	LockPosition(false);
 }
