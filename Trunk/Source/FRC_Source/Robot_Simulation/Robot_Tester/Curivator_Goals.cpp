@@ -683,6 +683,11 @@ class Curivator_Goals_Impl : public AtomicGoal
 
 		class ArmMoveToPosition : public SetArmWaypoint
 		{
+		private:
+			#ifndef Robot_TesterCode
+			typedef SetArmWaypoint __super;
+			#endif
+
 		public:
 			ArmMoveToPosition(Curivator_Goals_Impl *Parent) : SetArmWaypoint(Parent) 
 			{
@@ -701,20 +706,20 @@ class Curivator_Goals_Impl : public AtomicGoal
 			void StopAuton(bool IsOn)
 			{
 				//if stopping abruptly call the freeze
-				//m_EventMap.EventOnOff_Map["Robot_LockPosition"].Fire(true);
-				//m_EventMap.EventOnOff_Map["Robot_FreezeArm"].Fire(true);
+				m_EventMap.EventOnOff_Map["Robot_LockPosition"].Fire(true);
+				m_EventMap.EventOnOff_Map["Robot_FreezeArm"].Fire(true);
 			}
 
 			virtual void Activate()
 			{
-				//if (m_Status==eInactive)
-				//	m_EventMap.EventOnOff_Map["StopAuton"].Subscribe(m_Robot.ehl,*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
+				if (m_Status==eInactive)
+					m_EventMap.EventOnOff_Map["StopAutonAbort"].Subscribe(m_Robot.ehl,*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
 				__super::Activate();
 			}
 			virtual void Terminate() 
 			{
+				m_EventMap.EventOnOff_Map["StopAutonAbort"].Remove(*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
 				__super::Terminate();
-				//m_Robot.GetEventMap()->EventOnOff_Map["StopAuton"].Remove(*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
 			}
 		};
 
