@@ -366,11 +366,9 @@ class Curivator_Robot : public Swerve_Robot
 		bool m_SmartDashboard_FreezeArm_Valve; //Value for Freeze Arm CheckBox
 		//bool m_SmartDashboard_LockArmPosition_Valve; //Value for LockPosition CheckBox
 
-		#ifdef Robot_TesterCode
 		void TestAutonomous();
 		void GoalComplete();
 		void GoalFailed();
-		#endif
 };
 
 namespace Curivator_Goals
