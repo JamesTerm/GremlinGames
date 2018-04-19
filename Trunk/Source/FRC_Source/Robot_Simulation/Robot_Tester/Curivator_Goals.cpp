@@ -703,7 +703,7 @@ class Curivator_Goals_Impl : public AtomicGoal
 				Activate();
 			}
 
-			void StopAuton(bool IsOn)
+			void StopAuton()
 			{
 				//if stopping abruptly call the freeze
 				m_EventMap.EventOnOff_Map["Robot_LockPosition"].Fire(true);
@@ -713,12 +713,12 @@ class Curivator_Goals_Impl : public AtomicGoal
 			virtual void Activate()
 			{
 				if (m_Status==eInactive)
-					m_EventMap.EventOnOff_Map["StopAutonAbort"].Subscribe(m_Robot.ehl,*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
+					m_EventMap.Event_Map["StopAutonAbort"].Subscribe(m_Robot.ehl,*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
 				__super::Activate();
 			}
 			virtual void Terminate() 
 			{
-				m_EventMap.EventOnOff_Map["StopAutonAbort"].Remove(*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
+				m_EventMap.Event_Map["StopAutonAbort"].Remove(*this, &Curivator_Goals_Impl::ArmMoveToPosition::StopAuton);
 				__super::Terminate();
 			}
 		};
