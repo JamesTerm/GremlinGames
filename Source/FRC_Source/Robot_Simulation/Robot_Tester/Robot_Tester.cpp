@@ -598,8 +598,8 @@ public:
 
 const double Kilograms2Pounds=2.204622622;
 const double Pounds2Kilograms=0.453592;
-const double NewtonsToPounds=4.44822161526;
-const double PoundsToNewtons=0.22480894309973575244048822067636;
+const double NewtonsToPounds=0.22480894309973575244048822067636;
+const double PoundsToNewtons=4.44822161526;
 class DriveTrainCalcTest
 {
 private:
@@ -636,14 +636,16 @@ public:
 		printf("MaxWheel=%.2f\n",MaxWheel);
 		const double WheelStallTorque=motor.Stall_Torque_NM/props.GearReduction  * props.DriveTrainEffciency;
 		printf("WheelStallTorque=%.2f\n",WheelStallTorque);
-		const double MaxTraction=props.PayloadMass*Kilograms2Pounds*props.COF_Efficiency;
-		const double MaxDriveForce=WheelStallTorque/(props.DriveWheelRadius*NewtonsToPounds)*2.0;
-		printf("MaxPushingForce= min(mt=%.2f mdf=%.2f) = %.2f\n",MaxTraction,MaxDriveForce,std::min(MaxTraction,MaxDriveForce));
-		const double DriveLoadPerSide=MaxTraction/2;
-		const double DriveLoadPounds=DriveLoadPerSide*NewtonsToPounds;  //not sure why this is here
-		const double k17=DriveLoadPounds*props.DriveWheelRadius;  //todo find out this function
-		const double l17=k17/props.DriveTrainEffciency;
-		printf("MotorTorqueLoad=%.2f\n",(l17/props.GearReduction)/props.NoMotors);
+		const double MaxTractionPounds=props.PayloadMass*Kilograms2Pounds*props.COF_Efficiency;
+		//const double MaxDriveForce=WheelStallTorque/(props.DriveWheelRadius*PoundsToNewtons)*2.0;  //Original form
+		//torque=force * distance arraged to force=torque/distance and multiplied by number of gearboxes then converted to pounds
+		const double MaxDriveForce=(WheelStallTorque/props.DriveWheelRadius)*2.0*NewtonsToPounds;
+		printf("MaxPushingForce= min(mt=%.2f mdf=%.2f) = %.2f\n",MaxTractionPounds,MaxDriveForce,std::min(MaxTractionPounds,MaxDriveForce));
+		const double DriveLoadPerSide=MaxTractionPounds/2;
+		const double DriveLoadNewtons=DriveLoadPerSide*PoundsToNewtons;
+		const double DriveLoadNM=DriveLoadNewtons*props.DriveWheelRadius;
+		const double DriveLoad_Total=DriveLoadNM/props.DriveTrainEffciency;
+		printf("MotorTorqueLoad=%.2f\n",(DriveLoad_Total/props.GearReduction)/props.NoMotors);
 	}
 };
 
