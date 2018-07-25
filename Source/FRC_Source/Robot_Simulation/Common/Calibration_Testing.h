@@ -68,10 +68,13 @@ struct EncoderSimulation_Props
 {
 	double Wheel_Mass;  //This is a total mass of all the wheels and gears for one side
 	double COF_Efficiency;
-	double GearReduction;  //In reciprocal form of spread sheet
+	double GearReduction;  //In reciprocal form of spread sheet   driving gear / driven gear
 	double TorqueAppliedOnWheelRadius; //in meters
 	double DriveWheelRadius; //in meters
 	double NoMotors;  //Used to get total torque
+	double PayloadMass;  //The robot weight in kg
+	double SpeedLossConstant;
+	double DriveTrainEffciency;
 
 	struct Motor_Specs
 	{
@@ -97,7 +100,7 @@ class COMMON_API EncoderSimulation_Properties
 };
 
 
-class Drive_Train_Characteristics
+class COMMON_API Drive_Train_Characteristics
 {
 	public:
 		Drive_Train_Characteristics();

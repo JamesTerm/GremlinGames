@@ -595,6 +595,58 @@ public:
 
 };
 
+
+const double Kilograms2Pounds=2.204622622;
+const double Pounds2Kilograms=0.453592;
+const double NewtonsToPounds=4.44822161526;
+const double PoundsToNewtons=0.22480894309973575244048822067636;
+class DriveTrainCalcTest
+{
+private:
+	Drive_Train_Characteristics m_dtc;
+public:
+	DriveTrainCalcTest()
+	{
+		EncoderSimulation_Props props;
+		props.motor.Free_Current_Amp=0.4;
+		props.motor.Stall_Current_Amp=84;
+		props.motor.Stall_Torque_NM=34;
+		props.motor.FreeSpeed_RPM=263.88;
+		props.Wheel_Mass=1.8;
+		props.COF_Efficiency=0.9;
+		props.GearReduction=1.0;
+		props.TorqueAppliedOnWheelRadius=1.0;  //not needed for this test
+		props.DriveWheelRadius=Inches2Meters(4.0);  //in meters  (note: consider changing to diameter)
+		props.NoMotors=1.0;
+		props.PayloadMass=200.0 * Pounds2Kilograms;  //in kilograms
+		props.SpeedLossConstant=0.81;
+		props.DriveTrainEffciency=0.9;
+		m_dtc.UpdateProps(props);
+	}
+	void Display()
+	{
+		const EncoderSimulation_Props &props=m_dtc.GetDriveTrainProps();
+		const EncoderSimulation_Props::Motor_Specs &motor=props.motor;
+		printf("fs=%.2f st=%.2f sca=%.2f fca=%.2f\n",motor.FreeSpeed_RPM,motor.Stall_Torque_NM,motor.Stall_Current_Amp,motor.Free_Current_Amp);
+		printf("gb=2 nm=%.2f dwd=%.2f CoF=%.2f trw=%.2f ",props.NoMotors,props.DriveWheelRadius*39.3700787*2,props.COF_Efficiency,props.PayloadMass*2.20462);
+		printf("wd=1.0 slc=%.2f dte=%.2f\n",props.SpeedLossConstant,props.DriveTrainEffciency);
+		const double MaxWheel=motor.FreeSpeed_RPM*props.GearReduction*props.SpeedLossConstant;
+		const double WheelCircumference=props.DriveWheelRadius*2*PI;   //or better yet pi * d
+		printf("MaxSpeed=%.2f\n",Meters2Feet(MaxWheel*WheelCircumference)/60.0);
+		printf("MaxWheel=%.2f\n",MaxWheel);
+		const double WheelStallTorque=motor.Stall_Torque_NM/props.GearReduction  * props.DriveTrainEffciency;
+		printf("WheelStallTorque=%.2f\n",WheelStallTorque);
+		const double MaxTraction=props.PayloadMass*Kilograms2Pounds*props.COF_Efficiency;
+		const double MaxDriveForce=WheelStallTorque/(props.DriveWheelRadius*NewtonsToPounds)*2.0;
+		printf("MaxPushingForce= min(mt=%.2f mdf=%.2f) = %.2f\n",MaxTraction,MaxDriveForce,std::min(MaxTraction,MaxDriveForce));
+		const double DriveLoadPerSide=MaxTraction/2;
+		const double DriveLoadPounds=DriveLoadPerSide*NewtonsToPounds;  //not sure why this is here
+		const double k17=DriveLoadPounds*props.DriveWheelRadius;  //todo find out this function
+		const double l17=k17/props.DriveTrainEffciency;
+		printf("MotorTorqueLoad=%.2f\n",(l17/props.GearReduction)/props.NoMotors);
+	}
+};
+
 void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command, const char * const Args[])
 {
 	const char * const str_1=Args[0];
@@ -697,7 +749,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		eTestFollowGod,
 		eTestLUAShip,
 		eActorUpdateTest,
-		eTextTest
+		eTextTest,
+		eTestDriveTrainCalc
 	};
 	const char * const TestName[]=
 	{
@@ -723,7 +776,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		"FollowGod",
 		"GodShip",
 		"ActorUpdateTest",
-		"TextTest"
+		"TextTest",
+		"TestDriveCalc"
 	};
 
 	//if the first character is not a number then translate the string
@@ -1007,7 +1061,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			break;
 		}
 	case eCurivator:
-	case eCurrent:
+	//case eCurrent:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
@@ -1148,6 +1202,13 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			while(!test.GetIsSetup()&&TimeOut++<100)
 				ThreadSleep(200);
 			UI_thread->GetUI()->SetCallbackInterface(NULL);
+		}
+		break;
+	case eTestDriveTrainCalc:
+	case eCurrent:
+		{
+			DriveTrainCalcTest test;
+			test.Display();
 		}
 		break;
 	}
