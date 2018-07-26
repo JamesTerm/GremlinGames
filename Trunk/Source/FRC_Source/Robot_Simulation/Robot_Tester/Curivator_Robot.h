@@ -460,7 +460,7 @@ class Curivator_Robot_Control : public RobotControlCommon, public Curivator_Cont
 		Averager<double,5> m_Averager[12];
 		#ifdef Robot_TesterCode
 		Potentiometer_Tester2 m_Potentiometer[10]; //simulate a real potentiometer for calibration testing
-		Encoder_Simulator2 m_Encoders[2];  //for the center wheels
+		Encoder_Simulator3 m_Encoders[2];  //for the center wheels
 		#endif
 };
 
