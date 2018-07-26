@@ -293,7 +293,7 @@ class DRIVE_API Swerve_Robot_Control : public RobotControlCommon, public Swerve_
 		double m_RobotMaxSpeed;  //cache this to covert velocity to motor setting
 		#ifdef Robot_TesterCode
 		Potentiometer_Tester2 m_Potentiometers[4]; //simulate a real potentiometer for calibration testing
-		Encoder_Simulator2 m_Encoders[4];
+		Encoder_Simulator3 m_Encoders[4];
 		//cache voltage values for display
 		double m_EncoderVoltage[4],m_PotentiometerVoltage[4];
 		#endif

@@ -510,13 +510,13 @@ Drive_Train_Characteristics::Drive_Train_Characteristics()
 	EncoderSimulation_Properties default_props;
 	m_Props=default_props.GetEncoderSimulationProps();
 }
-__inline double Drive_Train_Characteristics::GetWheelStallTorque(double Torque)
+__inline double Drive_Train_Characteristics::GetWheelTorque(double Torque)
 {
-	return Torque * m_Props.GearReduction * m_Props.COF_Efficiency;
+	return Torque / m_Props.GearReduction * m_Props.DriveTrainEfficiency;
 }
 __inline double Drive_Train_Characteristics::GetTorqueAtWheel(double Torque)
 {
-	return (GetWheelStallTorque(Torque) / m_Props.DriveWheelRadius);
+	return (GetWheelTorque(Torque) / m_Props.DriveWheelRadius);
 }
 __inline double Drive_Train_Characteristics::GetWheelRPS(double LinearVelocity)
 {
@@ -556,20 +556,20 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage
 	const EncoderSimulation_Props::Motor_Specs &motor=m_Props.motor;
 	const double Amps=fabs(Voltage*motor.Stall_Current_Amp);
 	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
-	const double WheelTorque=GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
+	const double WheelTorque=GetWheelTorque(MotorTorque * m_Props.NoMotors);
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
 }
 
 __inline double Drive_Train_Characteristics::INV_GetTorqueFromVelocity(double AngularVelocity)
 {
 	const double MotorTorque=INV_GetVel_To_Torque_nm(GetMotorRPS_Angular(AngularVelocity));
-	return GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
+	return GetWheelTorque(MotorTorque * m_Props.NoMotors);
 }
 
 __inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double AngularVelocity)
 {
 	const double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS_Angular(AngularVelocity));
-	return GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
+	return GetWheelTorque(MotorTorque * m_Props.NoMotors);
 }
 
 
@@ -681,6 +681,57 @@ void Encoder_Simulator2::ResetPos()
 
 Encoder_Simulator3::Encoder_Simulator3(const char EntityName[]) :Encoder_Simulator2(EntityName)
 {
+}
+
+void Encoder_Simulator3::Initialize(const Ship_1D_Properties *props)
+{
+	__super::Initialize(props);
+	//now to setup the payload physics
+	m_PayloadPhysics.SetMass(m_DriveTrain.GetDriveTrainProps().PayloadMass);
+	//TODO see if this is needed
+	//m_PayloadPhysics.SetFriction(0.8,0.2);
+}
+
+void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
+{
+	double Direction=Voltage<0 ? -1.0 : 1.0;
+	Voltage=fabs(Voltage); //make positive
+	//Apply the victor curve
+	//Apply the polynomial equation to the voltage to linearize the curve
+	{
+		const double *c=Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		Voltage *= Direction;
+	}
+	//This is line is somewhat subtle... basically if the voltage is in the same direction as the velocity we use the linear distribution of the curve, when they are in
+	//opposite directions zero gives the stall torque where we need max current to switch directions (same amount as if there is no motion)
+	const double VelocityToUse=m_Physics.GetVelocity()*Voltage > 0 ? m_Physics.GetVelocity() : 0.0;
+	const double TorqueToApply=m_DriveTrain.GetTorqueFromVelocity(VelocityToUse);
+	//Note: Even though TorqueToApply has direction, if it gets saturated to 0 it loses it... ultimately the voltage parameter is sacred to the correct direction
+	//in all cases so we'll convert TorqueToApply to magnitude
+	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s);
+
+	//TODO check for case when current drive force is greater than the traction
+	//Compute the pushing force of the mass and apply it just the same
+	//m_PayloadPhysics.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(TorqueToApply))*Voltage,m_Time_s);
+
+}
+
+double Encoder_Simulator3::GetEncoderVelocity() const
+{
+	return __super::GetEncoderVelocity();
+}
+
+void Encoder_Simulator3::TimeChange()
+{
+	double PositionDisplacement;
+	m_Physics.TimeChangeUpdate(m_Time_s,PositionDisplacement);
+	m_Position+= PositionDisplacement * m_EncoderScalar * m_ReverseMultiply;
+	m_PayloadPhysics.TimeChangeUpdate(m_Time_s,PositionDisplacement);
+	
 }
 
 

@@ -110,7 +110,9 @@ class COMMON_API Drive_Train_Characteristics
 		__inline double INV_GetVel_To_Torque_nm(double Vel_rps);  //depreciated
 		__inline double GetVel_To_Torque_nm(double Vel_rps);
 
-		__inline double GetWheelStallTorque(double Torque);
+		__inline double GetWheelTorque(double Torque);
+		__inline double GetWheelStallTorque()	{return m_Props.motor.Stall_Torque_NM / m_Props.GearReduction * m_Props.DriveTrainEfficiency;}
+
 		__inline double GetTorqueAtWheel(double Torque);
 		__inline double GetWheelRPS(double LinearVelocity);
 		__inline double GetMotorRPS(double LinearVelocity);
@@ -121,6 +123,12 @@ class COMMON_API Drive_Train_Characteristics
 		__inline double GetTorqueFromVoltage(double Voltage);
 		__inline double INV_GetTorqueFromVelocity(double AngularVelocity);  //depreciated
 		__inline double GetTorqueFromVelocity(double AngularVelocity);
+
+		__inline double GetMaxTraction() {return m_Props.PayloadMass*m_Props.COF_Efficiency;}
+		__inline double GetMaxDriveForce() {return GetWheelStallTorque()/m_Props.DriveWheelRadius*2.0;}
+		__inline double GetCurrentDriveForce(double WheelTorque) {return WheelTorque/m_Props.DriveWheelRadius*2.0;}
+		__inline double GetMaxPushingForce() {	return std::min(GetMaxTraction()*9.80665,GetMaxDriveForce());}
+
 		const EncoderSimulation_Props &GetDriveTrainProps() const {return m_Props;}
 		void SetGearReduction(double NewGearing) {m_Props.GearReduction=NewGearing;}
 	private:
@@ -134,7 +142,7 @@ class COMMON_API Encoder_Simulator2
 		virtual void Initialize(const Ship_1D_Properties *props=NULL);
 
 		virtual void UpdateEncoderVoltage(double Voltage);
-		double GetEncoderVelocity() const;
+		virtual double GetEncoderVelocity() const;
 		double GetDistance() const;
 
 		//This is broken up so that the real interface does not have to pass time
@@ -149,7 +157,7 @@ class COMMON_API Encoder_Simulator2
 		PhysicsEntity_1D m_Physics;
 		Drive_Train_Characteristics m_DriveTrain;
 		double m_Time_s;
-	private:
+
 		double m_Position;  //also keep track of position to simulate distance use case (i.e. used as a potentiometer)
 		double m_EncoderScalar; //used for position updates
 		double m_ReverseMultiply; //used to implement set reverse direction
@@ -159,7 +167,13 @@ class COMMON_API Encoder_Simulator3 : public Encoder_Simulator2
 {
 public:
 	Encoder_Simulator3(const char *EntityName="EncSimulator");
-
+	virtual void Initialize(const Ship_1D_Properties *props=NULL);
+	virtual void UpdateEncoderVoltage(double Voltage);
+	virtual double GetEncoderVelocity() const;
+	virtual void TimeChange();
+protected:
+	//We are pulling a heavy mass this will present more load on the wheel, we can simulate a bench test vs. an actual run by factoring this in
+	PhysicsEntity_1D m_PayloadPhysics;
 };
 
 class COMMON_API Potentiometer_Tester3 : public Encoder_Simulator2

@@ -634,13 +634,17 @@ public:
 		const double WheelCircumference=props.DriveWheelRadius*2*PI;   //or better yet pi * d
 		printf("MaxSpeed=%.2f\n",Meters2Feet(MaxWheel*WheelCircumference)/60.0);
 		printf("MaxWheel=%.2f\n",MaxWheel);
-		const double WheelStallTorque=motor.Stall_Torque_NM/props.GearReduction  * props.DriveTrainEfficiency;
+		//const double WheelStallTorque=motor.Stall_Torque_NM/props.GearReduction  * props.DriveTrainEfficiency;
+		const double WheelStallTorque=m_dtc.GetWheelStallTorque();
 		printf("WheelStallTorque=%.2f\n",WheelStallTorque);
-		const double MaxTractionPounds=props.PayloadMass*Kilograms2Pounds*props.COF_Efficiency;
+		//const double MaxTractionPounds=props.PayloadMass*Kilograms2Pounds*props.COF_Efficiency;
+		const double MaxTractionPounds=m_dtc.GetMaxTraction()*Kilograms2Pounds;
 		//const double MaxDriveForce=WheelStallTorque/(props.DriveWheelRadius*PoundsToNewtons)*2.0;  //Original form
 		//torque=force * distance arraged to force=torque/distance and multiplied by number of gearboxes then converted to pounds
-		const double MaxDriveForce=(WheelStallTorque/props.DriveWheelRadius)*2.0*NewtonsToPounds;
-		printf("MaxPushingForce= min(mt=%.2f mdf=%.2f) = %.2f\n",MaxTractionPounds,MaxDriveForce,std::min(MaxTractionPounds,MaxDriveForce));
+		//const double MaxDriveForce=(WheelStallTorque/props.DriveWheelRadius)*2.0*NewtonsToPounds;
+		const double MaxDriveForce=m_dtc.GetMaxDriveForce()*NewtonsToPounds;
+		//printf("MaxPushingForce= min(mt=%.2f mdf=%.2f) = %.2f\n",MaxTractionPounds,MaxDriveForce,std::min(MaxTractionPounds,MaxDriveForce));
+		printf("MaxPushingForce= min(mt=%.2f mdf=%.2f) = %.2f\n",MaxTractionPounds,MaxDriveForce,m_dtc.GetMaxPushingForce()*NewtonsToPounds);
 		const double DriveLoadPerSide=MaxTractionPounds/2;
 		const double DriveLoadNewtons=DriveLoadPerSide*PoundsToNewtons;
 		const double DriveLoadNM=DriveLoadNewtons*props.DriveWheelRadius;
