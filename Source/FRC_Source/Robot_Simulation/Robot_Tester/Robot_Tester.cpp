@@ -620,7 +620,7 @@ public:
 		props.NoMotors=1.0;
 		props.PayloadMass=200.0 * Pounds2Kilograms;  //in kilograms
 		props.SpeedLossConstant=0.81;
-		props.DriveTrainEffciency=0.9;
+		props.DriveTrainEfficiency=0.9;
 		m_dtc.UpdateProps(props);
 	}
 	void Display()
@@ -629,12 +629,12 @@ public:
 		const EncoderSimulation_Props::Motor_Specs &motor=props.motor;
 		printf("fs=%.2f st=%.2f sca=%.2f fca=%.2f\n",motor.FreeSpeed_RPM,motor.Stall_Torque_NM,motor.Stall_Current_Amp,motor.Free_Current_Amp);
 		printf("gb=2 nm=%.2f dwd=%.2f CoF=%.2f trw=%.2f ",props.NoMotors,props.DriveWheelRadius*39.3700787*2,props.COF_Efficiency,props.PayloadMass*2.20462);
-		printf("wd=1.0 slc=%.2f dte=%.2f\n",props.SpeedLossConstant,props.DriveTrainEffciency);
+		printf("wd=1.0 slc=%.2f dte=%.2f\n",props.SpeedLossConstant,props.DriveTrainEfficiency);
 		const double MaxWheel=motor.FreeSpeed_RPM*props.GearReduction*props.SpeedLossConstant;
 		const double WheelCircumference=props.DriveWheelRadius*2*PI;   //or better yet pi * d
 		printf("MaxSpeed=%.2f\n",Meters2Feet(MaxWheel*WheelCircumference)/60.0);
 		printf("MaxWheel=%.2f\n",MaxWheel);
-		const double WheelStallTorque=motor.Stall_Torque_NM/props.GearReduction  * props.DriveTrainEffciency;
+		const double WheelStallTorque=motor.Stall_Torque_NM/props.GearReduction  * props.DriveTrainEfficiency;
 		printf("WheelStallTorque=%.2f\n",WheelStallTorque);
 		const double MaxTractionPounds=props.PayloadMass*Kilograms2Pounds*props.COF_Efficiency;
 		//const double MaxDriveForce=WheelStallTorque/(props.DriveWheelRadius*PoundsToNewtons)*2.0;  //Original form
@@ -644,7 +644,7 @@ public:
 		const double DriveLoadPerSide=MaxTractionPounds/2;
 		const double DriveLoadNewtons=DriveLoadPerSide*PoundsToNewtons;
 		const double DriveLoadNM=DriveLoadNewtons*props.DriveWheelRadius;
-		const double DriveLoad_Total=DriveLoadNM/props.DriveTrainEffciency;
+		const double DriveLoad_Total=DriveLoadNM/props.DriveTrainEfficiency;
 		printf("MotorTorqueLoad=%.2f\n",(DriveLoad_Total/props.GearReduction)/props.NoMotors);
 	}
 };
@@ -1063,7 +1063,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			break;
 		}
 	case eCurivator:
-	//case eCurrent:
+	case eCurrent:
 		{
 			#ifdef _DEBUG
 			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
@@ -1207,7 +1207,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 		}
 		break;
 	case eTestDriveTrainCalc:
-	case eCurrent:
+	//case eCurrent:
 		{
 			DriveTrainCalcTest test;
 			test.Display();

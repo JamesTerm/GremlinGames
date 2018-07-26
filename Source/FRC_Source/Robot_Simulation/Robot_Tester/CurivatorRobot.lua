@@ -184,15 +184,18 @@ MainRobot = {
 		motor_specs =
 		{
 			wheel_mass=1.5,
-			cof_efficiency=1.0,
-			gear_reduction=6300.0/255.15,
+			cof_efficiency=0.9,
+			gear_reduction=1.0,
 			torque_on_wheel_radius=Inches2Meters * 1,
 			drive_wheel_radius=Inches2Meters * 4,
-			number_of_motors=6,
+			number_of_motors=1,
+			payload_mass=200 * Pounds2Kilograms,
+			speed_loss_constant=0.81,
+			drive_train_effciency=0.9,
 			
-			free_speed_rpm=6300.0,
-			stall_torque=1.39,
-			stall_current_amp=11.5,
+			free_speed_rpm=263.88,
+			stall_torque=34,
+			stall_current_amp=84,
 			free_current_amp=0.4
 		},
 		wheel_common =

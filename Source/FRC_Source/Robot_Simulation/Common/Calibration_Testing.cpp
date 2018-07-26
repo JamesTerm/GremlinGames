@@ -231,7 +231,7 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 	//where stall torque is ST / GearReduction * DriveTrain efficiency
 	//This is all computed in the drive train
 	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
-	const double TorqueAbsorbed=m_DriveTrain.GetTorqueFromVelocity(m_Physics.GetVelocity());
+	const double TorqueAbsorbed=m_DriveTrain.INV_GetTorqueFromVelocity(m_Physics.GetVelocity());
 	TorqueToApply-=TorqueAbsorbed;
 	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
 	//If we have enough voltage and enough velocity the locking pin is not engaged... gravity can apply extra torque
@@ -422,6 +422,10 @@ EncoderSimulation_Properties::EncoderSimulation_Properties()
 	props.TorqueAppliedOnWheelRadius=0.0508;
 	props.DriveWheelRadius=0.0762;
 	props.NoMotors=1.0;
+	props.PayloadMass=200.0 * 0.453592;  //in kilograms
+	props.SpeedLossConstant=0.81;
+	props.DriveTrainEfficiency=0.9;
+
 
 	props.motor.FreeSpeed_RPM=5310;
 	props.motor.Stall_Torque_NM=343.4 * c_OunceInchToNewton;
@@ -449,6 +453,12 @@ void EncoderSimulation_Properties::LoadFromScript(GG_Framework::Logic::Scripting
 	if (!err) props.DriveWheelRadius=test;
 	err = script.GetField("number_of_motors", NULL, NULL, &test);
 	if (!err) props.NoMotors=test;
+	err = script.GetField("payload_mass", NULL, NULL, &test);
+	if (!err) props.PayloadMass=test;
+	err = script.GetField("speed_loss_constant", NULL, NULL, &test);
+	if (!err) props.SpeedLossConstant=test;
+	err = script.GetField("drive_train_efficiency", NULL, NULL, &test);
+	if (!err) props.DriveTrainEfficiency=test;
 
 	err = script.GetField("free_speed_rpm", NULL, NULL, &test);
 	if (!err) props.motor.FreeSpeed_RPM=test;
@@ -477,18 +487,21 @@ __inline double Drive_Train_Characteristics::GetAmp_To_Torque_nm(double Amps)
 	const double c_Amp_To_Torque_nm=(1.0/(_.Stall_Current_Amp-_.Free_Current_Amp)) * _.Stall_Torque_NM;
 	return max ((Amps-_.Free_Current_Amp) * c_Amp_To_Torque_nm,0.0);
 }
-__inline double Drive_Train_Characteristics::GetVel_To_Torque_nm(double Vel_rps)
+
+__inline double Drive_Train_Characteristics::INV_GetVel_To_Torque_nm(double Vel_rps)
 {
 	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
 	const double c_Vel_To_Torque_nm=(1.0/(_.FreeSpeed_RPM/60.0)) * _.Stall_Torque_NM;
 	return (Vel_rps * c_Vel_To_Torque_nm);
 }
-__inline double Drive_Train_Characteristics::GetTorque_To_Vel_nm(double Vel_rps)
+
+__inline double Drive_Train_Characteristics::GetVel_To_Torque_nm(double Vel_rps)
 {
 	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
-	const double c_Vel_To_Torque_nm=(1.0/(_.FreeSpeed_RPM/60.0)) * _.Stall_Torque_NM;
-	const double c_Torque_to_Vel_nm=1.0 / c_Vel_To_Torque_nm;
-	return (Vel_rps * c_Torque_to_Vel_nm);
+	const double FreeSpeed_RPS=(_.FreeSpeed_RPM/60.0);
+	const double x=fabs(Vel_rps)/FreeSpeed_RPS;  //working with normalized positive number for inversion
+	const double Torque_nm ((1.0-x) * _.Stall_Torque_NM);
+	return (Vel_rps>=0)? Torque_nm : -Torque_nm;
 }
 //gear reduction (5310/60.0) / (427.68 / 60.0) = 12.415824915824915824915824915825
 //TODO compute gear reduction from max speed and pass into props here
@@ -526,7 +539,7 @@ __inline double Drive_Train_Characteristics::GetMotorRPS_Angular(double AngularV
 __inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double LinearVelocity)
 {
 	const double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS(LinearVelocity));
-	return GetTorqueAtWheel(MotorTorque * 2.0);
+	return GetTorqueAtWheel(MotorTorque);
 }
 
 __inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Voltage)
@@ -545,6 +558,12 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage
 	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
 	const double WheelTorque=GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
+}
+
+__inline double Drive_Train_Characteristics::INV_GetTorqueFromVelocity(double AngularVelocity)
+{
+	const double MotorTorque=INV_GetVel_To_Torque_nm(GetMotorRPS_Angular(AngularVelocity));
+	return GetWheelStallTorque(MotorTorque * m_Props.NoMotors);
 }
 
 __inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double AngularVelocity)
@@ -609,7 +628,7 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 	m_Physics.ApplyFractionalForce(ForceToApply,m_Time_s);
 	#else
 	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
-	const double TorqueAbsorbed=m_DriveTrain.GetTorqueFromVelocity(m_Physics.GetVelocity());
+	const double TorqueAbsorbed=m_DriveTrain.INV_GetTorqueFromVelocity(m_Physics.GetVelocity());
 	TorqueToApply-=TorqueAbsorbed;
 	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
 	#endif
@@ -655,6 +674,15 @@ void Encoder_Simulator2::ResetPos()
 	m_Physics.ResetVectors();
 	m_Position=0;
 }
+  /***************************************************************************************************************/
+ /*												Encoder_Simulator3												*/
+/***************************************************************************************************************/
+
+
+Encoder_Simulator3::Encoder_Simulator3(const char EntityName[]) :Encoder_Simulator2(EntityName)
+{
+}
+
 
   /***************************************************************************************************************/
  /*													Encoder_Tester												*/

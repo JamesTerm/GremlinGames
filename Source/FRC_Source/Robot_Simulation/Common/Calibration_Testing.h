@@ -74,7 +74,7 @@ struct EncoderSimulation_Props
 	double NoMotors;  //Used to get total torque
 	double PayloadMass;  //The robot weight in kg
 	double SpeedLossConstant;
-	double DriveTrainEffciency;
+	double DriveTrainEfficiency;
 
 	struct Motor_Specs
 	{
@@ -107,8 +107,8 @@ class COMMON_API Drive_Train_Characteristics
 		void UpdateProps(const EncoderSimulation_Props &props) {m_Props=props;}
 
 		__inline double GetAmp_To_Torque_nm(double Amps);
+		__inline double INV_GetVel_To_Torque_nm(double Vel_rps);  //depreciated
 		__inline double GetVel_To_Torque_nm(double Vel_rps);
-		__inline double GetTorque_To_Vel_nm(double Vel_rps);
 
 		__inline double GetWheelStallTorque(double Torque);
 		__inline double GetTorqueAtWheel(double Torque);
@@ -119,6 +119,7 @@ class COMMON_API Drive_Train_Characteristics
 		__inline double GetTorqueFromLinearVelocity(double LinearVelocity);
 		__inline double GetWheelTorqueFromVoltage(double Voltage);
 		__inline double GetTorqueFromVoltage(double Voltage);
+		__inline double INV_GetTorqueFromVelocity(double AngularVelocity);  //depreciated
 		__inline double GetTorqueFromVelocity(double AngularVelocity);
 		const EncoderSimulation_Props &GetDriveTrainProps() const {return m_Props;}
 		void SetGearReduction(double NewGearing) {m_Props.GearReduction=NewGearing;}
@@ -132,7 +133,7 @@ class COMMON_API Encoder_Simulator2
 		Encoder_Simulator2(const char *EntityName="EncSimulator");
 		virtual void Initialize(const Ship_1D_Properties *props=NULL);
 
-		void UpdateEncoderVoltage(double Voltage);
+		virtual void UpdateEncoderVoltage(double Voltage);
 		double GetEncoderVelocity() const;
 		double GetDistance() const;
 
@@ -152,6 +153,13 @@ class COMMON_API Encoder_Simulator2
 		double m_Position;  //also keep track of position to simulate distance use case (i.e. used as a potentiometer)
 		double m_EncoderScalar; //used for position updates
 		double m_ReverseMultiply; //used to implement set reverse direction
+};
+
+class COMMON_API Encoder_Simulator3 : public Encoder_Simulator2
+{
+public:
+	Encoder_Simulator3(const char *EntityName="EncSimulator");
+
 };
 
 class COMMON_API Potentiometer_Tester3 : public Encoder_Simulator2
