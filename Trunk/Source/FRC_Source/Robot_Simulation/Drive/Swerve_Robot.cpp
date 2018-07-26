@@ -671,6 +671,10 @@ void Swerve_Robot_Properties::LoadFromScript(Scripting::Script& script)
 Swerve_Robot_Control::Swerve_Robot_Control(bool UseSafety) : m_RobotMaxSpeed(0.0),m_DisplayVoltage(true)
 {
 	#ifdef Robot_TesterCode
+	m_Encoders[0].SetEncoderKind(Encoder_Simulator3::eRW_Left);
+	m_Encoders[1].SetEncoderKind(Encoder_Simulator3::eRW_Right);
+	m_Encoders[2].SetEncoderKind(Encoder_Simulator3::eReadOnlyLeft);
+	m_Encoders[3].SetEncoderKind(Encoder_Simulator3::eReadOnlyRight);
 	for (size_t i=0;i<4;i++)
 	{
 		m_EncoderVoltage[i]=0;

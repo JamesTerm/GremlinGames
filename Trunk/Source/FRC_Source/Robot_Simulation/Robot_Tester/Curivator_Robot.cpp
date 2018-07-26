@@ -1409,6 +1409,8 @@ void Curivator_Robot_Control::UpdateVoltage(size_t index,double Voltage)
 Curivator_Robot_Control::Curivator_Robot_Control(bool UseSafety) : m_DriveRobotControl(UseSafety),m_pDriveRobotControl(&m_DriveRobotControl),
 		m_Compressor(NULL),m_RoboRIO_Accelerometer(NULL),m_EventMap(NULL)
 {
+	m_Encoders[0].SetEncoderKind(Encoder_Simulator3::eReadOnlyLeft);
+	m_Encoders[1].SetEncoderKind(Encoder_Simulator3::eReadOnlyRight);
 }
 
 Curivator_Robot_Control::~Curivator_Robot_Control()

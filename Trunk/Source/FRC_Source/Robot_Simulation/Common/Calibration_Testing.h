@@ -166,14 +166,29 @@ class COMMON_API Encoder_Simulator2
 class COMMON_API Encoder_Simulator3 : public Encoder_Simulator2
 {
 public:
+	//The payload mass is shared among multiple instances per motor, so each instance will need to identify the kind it is
+	//multiple instance can read, but only one write per side.  Use ignore and the payload computations will be bypassed
+	enum EncoderKind
+	{
+		eIgnorePayload,  //an easy way to make it on the bench
+		eReadOnlyLeft,
+		eReadOnlyRight,
+		eRW_Left,
+		eRW_Right
+	};
 	Encoder_Simulator3(const char *EntityName="EncSimulator");
+	//has to be late binding for arrays
+	void SetEncoderKind(EncoderKind kind);
 	virtual void Initialize(const Ship_1D_Properties *props=NULL);
 	virtual void UpdateEncoderVoltage(double Voltage);
 	virtual double GetEncoderVelocity() const;
 	virtual void TimeChange();
+	virtual void ResetPos();
 protected:
 	//We are pulling a heavy mass this will present more load on the wheel, we can simulate a bench test vs. an actual run by factoring this in
-	PhysicsEntity_1D m_PayloadPhysics;
+	static PhysicsEntity_1D s_PayloadPhysics_Left;
+	static PhysicsEntity_1D s_PayloadPhysics_Right;
+	size_t m_EncoderKind;
 };
 
 class COMMON_API Potentiometer_Tester3 : public Encoder_Simulator2

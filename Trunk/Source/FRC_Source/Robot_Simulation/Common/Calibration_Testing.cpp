@@ -677,17 +677,28 @@ void Encoder_Simulator2::ResetPos()
   /***************************************************************************************************************/
  /*												Encoder_Simulator3												*/
 /***************************************************************************************************************/
+PhysicsEntity_1D Encoder_Simulator3::s_PayloadPhysics_Left;
+PhysicsEntity_1D Encoder_Simulator3::s_PayloadPhysics_Right;
 
-
-Encoder_Simulator3::Encoder_Simulator3(const char EntityName[]) :Encoder_Simulator2(EntityName)
+Encoder_Simulator3::Encoder_Simulator3(const char EntityName[]) :
+	Encoder_Simulator2(EntityName),m_EncoderKind(eIgnorePayload)
 {
+}
+
+void Encoder_Simulator3::SetEncoderKind(EncoderKind kind) 
+{
+	//Comment this out to do bench testing
+	m_EncoderKind=kind;
 }
 
 void Encoder_Simulator3::Initialize(const Ship_1D_Properties *props)
 {
 	__super::Initialize(props);
-	//now to setup the payload physics
-	m_PayloadPhysics.SetMass(m_DriveTrain.GetDriveTrainProps().PayloadMass);
+	//now to setup the payload physics   Note: each side pulls half the weight
+	if (m_EncoderKind==eRW_Left)
+		s_PayloadPhysics_Left.SetMass(m_DriveTrain.GetDriveTrainProps().PayloadMass/2.0);
+	else if (m_EncoderKind==eRW_Right)
+		s_PayloadPhysics_Right.SetMass(m_DriveTrain.GetDriveTrainProps().PayloadMass/2.0);
 	//TODO see if this is needed
 	//m_PayloadPhysics.SetFriction(0.8,0.2);
 }
@@ -710,19 +721,43 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 	//opposite directions zero gives the stall torque where we need max current to switch directions (same amount as if there is no motion)
 	const double VelocityToUse=m_Physics.GetVelocity()*Voltage > 0 ? m_Physics.GetVelocity() : 0.0;
 	const double TorqueToApply=m_DriveTrain.GetTorqueFromVelocity(VelocityToUse);
+
 	//Note: Even though TorqueToApply has direction, if it gets saturated to 0 it loses it... ultimately the voltage parameter is sacred to the correct direction
 	//in all cases so we'll convert TorqueToApply to magnitude
 	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s);
 
 	//TODO check for case when current drive force is greater than the traction
 	//Compute the pushing force of the mass and apply it just the same
-	//m_PayloadPhysics.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(TorqueToApply))*Voltage,m_Time_s);
-
+	if (m_EncoderKind==eRW_Left)
+		s_PayloadPhysics_Left.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(TorqueToApply))*Voltage,m_Time_s);
+	else if (m_EncoderKind==eRW_Right)
+		s_PayloadPhysics_Right.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(TorqueToApply))*Voltage,m_Time_s);
 }
 
 double Encoder_Simulator3::GetEncoderVelocity() const
 {
-	return __super::GetEncoderVelocity();
+	return m_Physics.GetVelocity() *  m_DriveTrain.GetDriveTrainProps().DriveWheelRadius * m_ReverseMultiply;
+}
+
+//local function to avoid redundant code
+static void TimeChange_UpdatePhysics(PhysicsEntity_1D &PayloadPhysics,PhysicsEntity_1D &WheelPhysics,double Time_s,bool UpdatePayload)
+{
+	double PositionDisplacement;
+	//TODO add speed loss force
+	if (UpdatePayload)
+		PayloadPhysics.TimeChangeUpdate(Time_s,PositionDisplacement);
+
+	#if 0
+	//Now to add force normal against the wheel this is the difference between the payload and the wheel velocity
+	//When the mass is lagging behind it add adverse force against the motor... and if the mass is ahead it will
+	//relieve the motor and make it coast in the same direction
+	const double acceleration = PayloadPhysics.GetVelocity()-WheelPhysics.GetVelocity();
+	//now to factor in the mass
+	const double PayloadForce = PayloadPhysics.GetMass()/2.0 * acceleration;
+	if (PayloadForce!=0.0)
+		int x=1;
+	WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s);
+	#endif
 }
 
 void Encoder_Simulator3::TimeChange()
@@ -730,10 +765,28 @@ void Encoder_Simulator3::TimeChange()
 	double PositionDisplacement;
 	m_Physics.TimeChangeUpdate(m_Time_s,PositionDisplacement);
 	m_Position+= PositionDisplacement * m_EncoderScalar * m_ReverseMultiply;
-	m_PayloadPhysics.TimeChangeUpdate(m_Time_s,PositionDisplacement);
-	
+	if ((m_EncoderKind==eRW_Left)||(m_EncoderKind==eReadOnlyLeft))
+	{
+		TimeChange_UpdatePhysics(s_PayloadPhysics_Left,m_Physics,m_Time_s,m_EncoderKind==eRW_Left);
+		if (m_EncoderKind==eRW_Left)
+			SmartDashboard::PutNumber("PayloadLeft",Meters2Feet(s_PayloadPhysics_Left.GetVelocity()));
+	}
+	else if ((m_EncoderKind==eRW_Right)||(m_EncoderKind==eReadOnlyRight))
+	{
+		TimeChange_UpdatePhysics(s_PayloadPhysics_Right,m_Physics,m_Time_s,m_EncoderKind==eRW_Right);
+		if (m_EncoderKind==eReadOnlyRight)
+			SmartDashboard::PutNumber("PayloadRight",Meters2Feet(s_PayloadPhysics_Right.GetVelocity()));
+	}
 }
 
+void Encoder_Simulator3::ResetPos()
+{
+	__super::ResetPos();
+	if (m_EncoderKind==eRW_Left)
+		s_PayloadPhysics_Left.ResetVectors();
+	if (m_EncoderKind==eRW_Right)
+		s_PayloadPhysics_Right.ResetVectors();
+}
 
   /***************************************************************************************************************/
  /*													Encoder_Tester												*/
