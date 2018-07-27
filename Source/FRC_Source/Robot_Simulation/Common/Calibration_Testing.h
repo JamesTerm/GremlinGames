@@ -106,28 +106,29 @@ class COMMON_API Drive_Train_Characteristics
 		Drive_Train_Characteristics();
 		void UpdateProps(const EncoderSimulation_Props &props) {m_Props=props;}
 
-		__inline double GetAmp_To_Torque_nm(double Amps);
-		__inline double INV_GetVel_To_Torque_nm(double Vel_rps);  //depreciated
-		__inline double GetVel_To_Torque_nm(double Vel_rps);
+		__inline double GetAmp_To_Torque_nm(double Amps) const;
+		__inline double INV_GetVel_To_Torque_nm(double Vel_rps) const;  //depreciated
+		__inline double GetVel_To_Torque_nm(double motor_Vel_rps) const;
 
-		__inline double GetWheelTorque(double Torque);
-		__inline double GetWheelStallTorque()	{return m_Props.motor.Stall_Torque_NM / m_Props.GearReduction * m_Props.DriveTrainEfficiency;}
+		__inline double GetWheelTorque(double Torque) const;
+		__inline double GetWheelStallTorque() const {return m_Props.motor.Stall_Torque_NM / m_Props.GearReduction * m_Props.DriveTrainEfficiency;}
 
-		__inline double GetTorqueAtWheel(double Torque);
-		__inline double GetWheelRPS(double LinearVelocity);
-		__inline double GetMotorRPS(double LinearVelocity);
-		__inline double GetWheelRPS_Angular(double AngularVelocity);
-		__inline double GetMotorRPS_Angular(double AngularVelocity);
-		__inline double GetTorqueFromLinearVelocity(double LinearVelocity);
-		__inline double GetWheelTorqueFromVoltage(double Voltage);
-		__inline double GetTorqueFromVoltage(double Voltage);
-		__inline double INV_GetTorqueFromVelocity(double AngularVelocity);  //depreciated
-		__inline double GetTorqueFromVelocity(double AngularVelocity);
+		__inline double GetTorqueAtWheel(double Torque) const;
+		__inline double GetWheelRPS(double LinearVelocity) const;
+		__inline double GetLinearVelocity(double wheel_RPS) const;
+		__inline double GetMotorRPS(double LinearVelocity) const;
+		__inline double GetWheelRPS_Angular(double wheel_AngularVelocity) const;
+		__inline double GetMotorRPS_Angular(double wheel_AngularVelocity) const;
+		__inline double GetTorqueFromLinearVelocity(double LinearVelocity) const;
+		__inline double GetWheelTorqueFromVoltage(double Voltage) const;
+		__inline double GetTorqueFromVoltage(double Voltage) const;
+		__inline double INV_GetTorqueFromVelocity(double AngularVelocity) const;  //depreciated
+		__inline double GetTorqueFromVelocity(double wheel_AngularVelocity) const;
 
-		__inline double GetMaxTraction() {return m_Props.PayloadMass*m_Props.COF_Efficiency;}
-		__inline double GetMaxDriveForce() {return GetWheelStallTorque()/m_Props.DriveWheelRadius*2.0;}
-		__inline double GetCurrentDriveForce(double WheelTorque) {return WheelTorque/m_Props.DriveWheelRadius*2.0;}
-		__inline double GetMaxPushingForce() {	return std::min(GetMaxTraction()*9.80665,GetMaxDriveForce());}
+		__inline double GetMaxTraction() const {return m_Props.PayloadMass*m_Props.COF_Efficiency;}
+		__inline double GetMaxDriveForce() const {return GetWheelStallTorque()/m_Props.DriveWheelRadius*2.0;}
+		__inline double GetCurrentDriveForce(double WheelTorque) const {return WheelTorque/m_Props.DriveWheelRadius*2.0;}
+		__inline double GetMaxPushingForce() const {	return std::min(GetMaxTraction()*9.80665,GetMaxDriveForce());}
 
 		const EncoderSimulation_Props &GetDriveTrainProps() const {return m_Props;}
 		void SetGearReduction(double NewGearing) {m_Props.GearReduction=NewGearing;}
@@ -154,6 +155,7 @@ class COMMON_API Encoder_Simulator2
 		virtual void ResetPos();
 		void SetGearReduction(double NewGearing) {m_DriveTrain.SetGearReduction(NewGearing);}
 	protected:
+		//The wheel physics records the velocity of the wheel in radians
 		PhysicsEntity_1D m_Physics;
 		Drive_Train_Characteristics m_DriveTrain;
 		double m_Time_s;
