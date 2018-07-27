@@ -499,7 +499,8 @@ __inline double Drive_Train_Characteristics::GetVel_To_Torque_nm(double motor_Ve
 {
 	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
 	const double FreeSpeed_RPS=(_.FreeSpeed_RPM/60.0);
-	const double x=fabs(motor_Vel_rps)/FreeSpeed_RPS;  //working with normalized positive number for inversion
+	//ensure we don't exceed the max velocity
+	const double x=min(fabs(motor_Vel_rps)/FreeSpeed_RPS,1.0);  //working with normalized positive number for inversion
 	const double Torque_nm ((1.0-x) * _.Stall_Torque_NM);
 	return (motor_Vel_rps>=0)? Torque_nm : -Torque_nm;
 }
@@ -535,6 +536,12 @@ __inline double Drive_Train_Characteristics::GetWheelRPS_Angular(double wheel_An
 {
 	return wheel_AngularVelocity / (M_PI * 2.0);			
 }
+
+__inline double Drive_Train_Characteristics::GetWheelAngular_RPS(double wheel_RPS) const
+{
+	return wheel_RPS * (M_PI * 2.0);			
+}
+
 __inline double Drive_Train_Characteristics::GetMotorRPS_Angular(double wheel_AngularVelocity) const
 {
 	return GetWheelRPS_Angular(wheel_AngularVelocity) /  m_Props.GearReduction;
@@ -709,6 +716,7 @@ void Encoder_Simulator3::Initialize(const Ship_1D_Properties *props)
 
 void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 {
+	m_Voltage=Voltage;
 	double Direction=Voltage<0 ? -1.0 : 1.0;
 	Voltage=fabs(Voltage); //make positive
 	//Apply the victor curve
@@ -724,8 +732,10 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 	//This is line is somewhat subtle... basically if the voltage is in the same direction as the velocity we use the linear distribution of the curve, when they are in
 	//opposite directions zero gives the stall torque where we need max current to switch directions (same amount as if there is no motion)
 	const double VelocityToUse=m_Physics.GetVelocity()*Voltage > 0 ? m_Physics.GetVelocity() : 0.0;
-	const double TorqueToApply=m_DriveTrain.GetTorqueFromVelocity(VelocityToUse);
-
+	double TorqueToApply=m_DriveTrain.GetTorqueFromVelocity(VelocityToUse);
+	//Avoid ridiculous division and zero it out... besides a motor can't really turn the wheel in the dead zone range, but I'm not going to factor that in yet
+	if  ((TorqueToApply!=0.0)&&(fabs(TorqueToApply)<m_Physics.GetMass()*2))
+		TorqueToApply=0.0;
 	//Note: Even though TorqueToApply has direction, if it gets saturated to 0 it loses it... ultimately the voltage parameter is sacred to the correct direction
 	//in all cases so we'll convert TorqueToApply to magnitude
 	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s);
@@ -745,22 +755,33 @@ double Encoder_Simulator3::GetEncoderVelocity() const
 }
 
 //local function to avoid redundant code
-static void TimeChange_UpdatePhysics(PhysicsEntity_1D &PayloadPhysics,PhysicsEntity_1D &WheelPhysics,double Time_s,bool UpdatePayload)
+static void TimeChange_UpdatePhysics(double Voltage,
+									 Drive_Train_Characteristics dtc,PhysicsEntity_1D &PayloadPhysics,PhysicsEntity_1D &WheelPhysics,double Time_s,bool UpdatePayload)
 {
 	double PositionDisplacement;
 	//TODO add speed loss force
 	if (UpdatePayload)
+	{
+		//apply a constant speed loss using new velocity - old velocity
+		if (Voltage==0.0)
+		{
+			const double MaxStop=fabs(PayloadPhysics.GetVelocity()/Time_s);
+			const double SpeedLoss=min(5.0,MaxStop);
+			const double acceleration=PayloadPhysics.GetVelocity()>0.0?-SpeedLoss:SpeedLoss;
+			//now to factor in the mass
+			const double SpeedLossForce = PayloadPhysics.GetMass() * acceleration;
+			PayloadPhysics.ApplyFractionalTorque(SpeedLossForce,Time_s);
+		}
 		PayloadPhysics.TimeChangeUpdate(Time_s,PositionDisplacement);
+	}
 
-	#if 0
+	#if 1
 	//Now to add force normal against the wheel this is the difference between the payload and the wheel velocity
 	//When the mass is lagging behind it add adverse force against the motor... and if the mass is ahead it will
 	//relieve the motor and make it coast in the same direction
-	const double acceleration = PayloadPhysics.GetVelocity()-WheelPhysics.GetVelocity();
+	const double acceleration = dtc.GetWheelAngular_RPS(dtc.GetWheelRPS(PayloadPhysics.GetVelocity()))-WheelPhysics.GetVelocity();
 	//now to factor in the mass
-	const double PayloadForce = PayloadPhysics.GetMass()/2.0 * acceleration;
-	if (PayloadForce!=0.0)
-		int x=1;
+	const double PayloadForce = WheelPhysics.GetMass() * acceleration;
 	WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s);
 	#endif
 }
@@ -770,15 +791,28 @@ void Encoder_Simulator3::TimeChange()
 	double PositionDisplacement;
 	m_Physics.TimeChangeUpdate(m_Time_s,PositionDisplacement);
 	m_Position+= PositionDisplacement * m_EncoderScalar * m_ReverseMultiply;
+
+	//first apply a constant speed loss using new velocity - old velocity
+	if (m_Voltage==0.0)
+	{
+		double acceleration = m_DriveTrain.GetDriveTrainProps().SpeedLossConstant*m_Physics.GetVelocity()-m_Physics.GetVelocity();
+		//Avoid ridiculous division and zero it out
+		if (acceleration!=0.0 && fabs(acceleration)<1.0)
+			acceleration=-m_Physics.GetVelocity();
+		//now to factor in the mass
+		const double SpeedLossForce = m_Physics.GetMass() * acceleration;
+		m_Physics.ApplyFractionalTorque(SpeedLossForce,m_Time_s);
+	}
+
 	if ((m_EncoderKind==eRW_Left)||(m_EncoderKind==eReadOnlyLeft))
 	{
-		TimeChange_UpdatePhysics(s_PayloadPhysics_Left,m_Physics,m_Time_s,m_EncoderKind==eRW_Left);
+		TimeChange_UpdatePhysics(m_Voltage,m_DriveTrain,s_PayloadPhysics_Left,m_Physics,m_Time_s,m_EncoderKind==eRW_Left);
 		if (m_EncoderKind==eRW_Left)
 			SmartDashboard::PutNumber("PayloadLeft",Meters2Feet(s_PayloadPhysics_Left.GetVelocity()));
 	}
 	else if ((m_EncoderKind==eRW_Right)||(m_EncoderKind==eReadOnlyRight))
 	{
-		TimeChange_UpdatePhysics(s_PayloadPhysics_Right,m_Physics,m_Time_s,m_EncoderKind==eRW_Right);
+		TimeChange_UpdatePhysics(m_Voltage,m_DriveTrain,s_PayloadPhysics_Right,m_Physics,m_Time_s,m_EncoderKind==eRW_Right);
 		if (m_EncoderKind==eReadOnlyRight)
 			SmartDashboard::PutNumber("PayloadRight",Meters2Feet(s_PayloadPhysics_Right.GetVelocity()));
 	}

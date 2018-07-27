@@ -118,6 +118,7 @@ class COMMON_API Drive_Train_Characteristics
 		__inline double GetLinearVelocity(double wheel_RPS) const;
 		__inline double GetMotorRPS(double LinearVelocity) const;
 		__inline double GetWheelRPS_Angular(double wheel_AngularVelocity) const;
+		__inline double GetWheelAngular_RPS(double wheel_RPS) const;
 		__inline double GetMotorRPS_Angular(double wheel_AngularVelocity) const;
 		__inline double GetTorqueFromLinearVelocity(double LinearVelocity) const;
 		__inline double GetWheelTorqueFromVoltage(double Voltage) const;
@@ -187,6 +188,7 @@ public:
 	virtual void TimeChange();
 	virtual void ResetPos();
 protected:
+	double m_Voltage; //cache voltage for speed loss assistance
 	//We are pulling a heavy mass this will present more load on the wheel, we can simulate a bench test vs. an actual run by factoring this in
 	static PhysicsEntity_1D s_PayloadPhysics_Left;
 	static PhysicsEntity_1D s_PayloadPhysics_Right;
