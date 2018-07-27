@@ -481,27 +481,27 @@ const double c_CIM_Vel_To_Torque_oz=(1.0/(5310/60.0)) * 343.4;
 const double c_CIM_Vel_To_Torque_nm=c_CIM_Vel_To_Torque_oz*c_OunceInchToNewton; 
 const double c_CIM_Torque_to_Vel_nm=1.0 / c_CIM_Vel_To_Torque_nm;
 
-__inline double Drive_Train_Characteristics::GetAmp_To_Torque_nm(double Amps)
+__inline double Drive_Train_Characteristics::GetAmp_To_Torque_nm(double Amps) const 
 {
 	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
 	const double c_Amp_To_Torque_nm=(1.0/(_.Stall_Current_Amp-_.Free_Current_Amp)) * _.Stall_Torque_NM;
 	return max ((Amps-_.Free_Current_Amp) * c_Amp_To_Torque_nm,0.0);
 }
 
-__inline double Drive_Train_Characteristics::INV_GetVel_To_Torque_nm(double Vel_rps)
+__inline double Drive_Train_Characteristics::INV_GetVel_To_Torque_nm(double Vel_rps) const 
 {
 	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
 	const double c_Vel_To_Torque_nm=(1.0/(_.FreeSpeed_RPM/60.0)) * _.Stall_Torque_NM;
 	return (Vel_rps * c_Vel_To_Torque_nm);
 }
 
-__inline double Drive_Train_Characteristics::GetVel_To_Torque_nm(double Vel_rps)
+__inline double Drive_Train_Characteristics::GetVel_To_Torque_nm(double motor_Vel_rps) const
 {
 	const EncoderSimulation_Props::Motor_Specs &_=m_Props.motor;
 	const double FreeSpeed_RPS=(_.FreeSpeed_RPM/60.0);
-	const double x=fabs(Vel_rps)/FreeSpeed_RPS;  //working with normalized positive number for inversion
+	const double x=fabs(motor_Vel_rps)/FreeSpeed_RPS;  //working with normalized positive number for inversion
 	const double Torque_nm ((1.0-x) * _.Stall_Torque_NM);
-	return (Vel_rps>=0)? Torque_nm : -Torque_nm;
+	return (motor_Vel_rps>=0)? Torque_nm : -Torque_nm;
 }
 //gear reduction (5310/60.0) / (427.68 / 60.0) = 12.415824915824915824915824915825
 //TODO compute gear reduction from max speed and pass into props here
@@ -510,39 +510,43 @@ Drive_Train_Characteristics::Drive_Train_Characteristics()
 	EncoderSimulation_Properties default_props;
 	m_Props=default_props.GetEncoderSimulationProps();
 }
-__inline double Drive_Train_Characteristics::GetWheelTorque(double Torque)
+__inline double Drive_Train_Characteristics::GetWheelTorque(double Torque) const
 {
 	return Torque / m_Props.GearReduction * m_Props.DriveTrainEfficiency;
 }
-__inline double Drive_Train_Characteristics::GetTorqueAtWheel(double Torque)
+__inline double Drive_Train_Characteristics::GetTorqueAtWheel(double Torque) const
 {
 	return (GetWheelTorque(Torque) / m_Props.DriveWheelRadius);
 }
-__inline double Drive_Train_Characteristics::GetWheelRPS(double LinearVelocity)
+__inline double Drive_Train_Characteristics::GetWheelRPS(double LinearVelocity) const
 {
 	return LinearVelocity / (M_PI * 2.0 * m_Props.DriveWheelRadius);			
 }
-__inline double Drive_Train_Characteristics::GetMotorRPS(double LinearVelocity)
+__inline double Drive_Train_Characteristics::GetLinearVelocity(double wheel_RPS) const
 {
-	return GetWheelRPS(LinearVelocity) *  m_Props.GearReduction;
+	return wheel_RPS * (M_PI * 2.0 * m_Props.DriveWheelRadius);
+}
+__inline double Drive_Train_Characteristics::GetMotorRPS(double LinearVelocity) const 
+{
+	return GetWheelRPS(LinearVelocity) /  m_Props.GearReduction;
 }
 
-__inline double Drive_Train_Characteristics::GetWheelRPS_Angular(double AngularVelocity)
+__inline double Drive_Train_Characteristics::GetWheelRPS_Angular(double wheel_AngularVelocity) const
 {
-	return AngularVelocity / (M_PI * 2.0);			
+	return wheel_AngularVelocity / (M_PI * 2.0);			
 }
-__inline double Drive_Train_Characteristics::GetMotorRPS_Angular(double AngularVelocity)
+__inline double Drive_Train_Characteristics::GetMotorRPS_Angular(double wheel_AngularVelocity) const
 {
-	return GetWheelRPS_Angular(AngularVelocity) *  m_Props.GearReduction;
+	return GetWheelRPS_Angular(wheel_AngularVelocity) /  m_Props.GearReduction;
 }
 
-__inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double LinearVelocity)
+__inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double LinearVelocity) const
 {
 	const double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS(LinearVelocity));
 	return GetTorqueAtWheel(MotorTorque);
 }
 
-__inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Voltage)
+__inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Voltage) const
 {
 	const EncoderSimulation_Props::Motor_Specs &motor=m_Props.motor;
 	const double Amps=fabs(Voltage*motor.Stall_Current_Amp);
@@ -551,7 +555,7 @@ __inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Vo
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
 }
 
-__inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage)
+__inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage) const
 {
 	const EncoderSimulation_Props::Motor_Specs &motor=m_Props.motor;
 	const double Amps=fabs(Voltage*motor.Stall_Current_Amp);
@@ -560,16 +564,16 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
 }
 
-__inline double Drive_Train_Characteristics::INV_GetTorqueFromVelocity(double AngularVelocity)
+__inline double Drive_Train_Characteristics::INV_GetTorqueFromVelocity(double AngularVelocity) const
 {
 	const double MotorTorque=INV_GetVel_To_Torque_nm(GetMotorRPS_Angular(AngularVelocity));
 	return GetWheelTorque(MotorTorque * m_Props.NoMotors);
 }
 
-__inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double AngularVelocity)
+__inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double wheel_AngularVelocity) const
 {
-	const double MotorTorque=GetVel_To_Torque_nm(GetMotorRPS_Angular(AngularVelocity));
-	return GetWheelTorque(MotorTorque * m_Props.NoMotors);
+	const double MotorTorque_nm=GetVel_To_Torque_nm(GetMotorRPS_Angular(wheel_AngularVelocity));
+	return GetWheelTorque(MotorTorque_nm * m_Props.NoMotors);
 }
 
 
@@ -736,7 +740,8 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 
 double Encoder_Simulator3::GetEncoderVelocity() const
 {
-	return m_Physics.GetVelocity() *  m_DriveTrain.GetDriveTrainProps().DriveWheelRadius * m_ReverseMultiply;
+	//we return linear velocity (which is native to the ship)
+	return  m_DriveTrain.GetLinearVelocity(m_DriveTrain.GetWheelRPS_Angular(m_Physics.GetVelocity())) * m_ReverseMultiply;
 }
 
 //local function to avoid redundant code
