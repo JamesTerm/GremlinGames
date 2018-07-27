@@ -738,7 +738,7 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 		TorqueToApply=0.0;
 	//Note: Even though TorqueToApply has direction, if it gets saturated to 0 it loses it... ultimately the voltage parameter is sacred to the correct direction
 	//in all cases so we'll convert TorqueToApply to magnitude
-	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s);
+	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s, m_DriveTrain.GetDriveTrainProps().TorqueAppliedOnWheelRadius);
 
 	//TODO check for case when current drive force is greater than the traction
 	//Compute the pushing force of the mass and apply it just the same
