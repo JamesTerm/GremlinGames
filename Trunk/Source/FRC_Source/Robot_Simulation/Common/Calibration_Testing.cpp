@@ -782,9 +782,28 @@ static void TimeChange_UpdatePhysics(double Voltage,
 	//When the mass is lagging behind it add adverse force against the motor... and if the mass is ahead it will
 	//relieve the motor and make it coast in the same direction
 	const double acceleration = dtc.GetWheelAngular_RPS(dtc.GetWheelRPS(PayloadPhysics.GetVelocity()))-WheelPhysics.GetVelocity();
-	//now to factor in the mass
-	const double PayloadForce = WheelPhysics.GetMass() * acceleration;
-	WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s);
+	if (PayloadPhysics.GetVelocity()!=0.0)
+	{
+		#if 0
+		if (UpdatePayload)
+			SmartDashboard::PutNumber("Test",acceleration);
+		if (fabs(acceleration)>50)
+			int x=8;
+		#endif
+		//make sure wheel and payload are going in the same direction... 
+		if (PayloadPhysics.GetVelocity()*WheelPhysics.GetVelocity() >= 0.0)
+		{
+			//now to factor in the mass
+			const double PayloadForce = WheelPhysics.GetMass() * acceleration;
+			WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s,0.5);
+		}
+		//else
+		//	printf("skid %.2f\n",acceleration);
+		//if not... we have skidding (unless its some error of applying the force normal) for now let it continue its discourse by simply not applying the payload force
+		//this will make it easy to observe cases when skids can happen, but eventually we should compute the kinetic friction to apply
+	}
+	else
+		WheelPhysics.SetVelocity(0.0);
 	#endif
 }
 
