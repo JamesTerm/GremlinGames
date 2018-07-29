@@ -237,6 +237,7 @@ void DisplayHelp()
 		"RampEngine <1=ramp>\n"
 		"Zoom <scale factor>"
 		"Test <#>\n"
+		"Time [y|Y|1] SetUseSyntheticTimeDeltas else false\n"
 		"Help (displays this)\n"
 		"\nType \"Quit\" at anytime to exit this application\n"
 		);
@@ -1070,7 +1071,7 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	case eCurrent:
 		{
 			#ifdef _DEBUG
-			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
+			UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			#endif
 			g_WorldScaleFactor=100.0;
 			_command.LoadRobot("CurivatorRobot.lua","CurivatorRobot",Commands::eCurivator);
@@ -1415,6 +1416,13 @@ void CommandLineInterface(bool useUserPrefs=true)
 				g_dTest=value;
 				double value2=atof(str_2);
 				g_dTest2=value2;
+			}
+			else if (!_strnicmp( input_line, "time", 4))
+			{
+				if ((str_1[0]=='y')||(str_1[0]=='Y')||(str_1[0]=='1'))
+					UI_thread->GetUI()->SetUseSyntheticTimeDeltas(true);
+				else
+					UI_thread->GetUI()->SetUseSyntheticTimeDeltas(false);
 			}
 			else if (!_strnicmp( input_line, "Help", 4))
 				DisplayHelp();
