@@ -126,6 +126,12 @@ void Swerve_Robot::UpdateDriveProps(const Rotary_Props &DriveProps,const Ship_1D
 	m_DrivingModule[index]->Drive().UpdateRotaryProps(DriveProps);
 }
 
+void Swerve_Robot::SetEncoderSafety(bool DisableFeedback, bool JustOpenLoop)
+{
+	for (size_t i=0;i<4;i++)
+		m_DrivingModule[i]->Drive().SetEncoderSafety(DisableFeedback,JustOpenLoop);
+}
+
 void Swerve_Robot::ResetPos()
 {
 	m_Heading=0.0;

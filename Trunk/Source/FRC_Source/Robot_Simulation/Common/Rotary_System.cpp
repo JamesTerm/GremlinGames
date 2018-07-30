@@ -625,7 +625,7 @@ void Rotary_Position_Control::SetPotentiometerSafety(bool DisableFeedback)
 			case Rotary_Props::eNone:
 				m_PotentiometerState=eNoPot;
 				//This should not happen but added for completeness
-				printf("Rotary_Velocity_Control::SetEncoderSafety %s set to no potentiometer\n",GetName().c_str());
+				printf("Rotary_Position_Control::SetPotentiometerSafety %s set to no potentiometer\n",GetName().c_str());
 				break;
 			case Rotary_Props::eOpen:
 				m_PotentiometerState=ePassive;
@@ -902,55 +902,60 @@ void Rotary_Velocity_Control::ResetPos()
 	m_RequestedVelocity_Difference=0.0;
 }
 
-void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback)
+void Rotary_Velocity_Control::SetEncoderSafety(bool DisableFeedback, bool JustOpenLoop)
 {
-	//printf("\r%f       ",Value);
-	if (DisableFeedback)
+	if (!JustOpenLoop)
 	{
-		if (m_EncoderState!=eNoEncoder)
+		//printf("\r%f       ",Value);
+		if (DisableFeedback)
 		{
-			//first disable it
-			m_EncoderState=eNoEncoder;
-			//Now to reset stuff
-			printf("Disabling encoder for %s\n",GetName().c_str());
-			//m_PIDController.Reset();
-			ResetPos();
-			//This is no longer necessary
-			//m_MaxSpeed=m_MaxSpeedReference;
-			m_EncoderVelocity=0.0;
-			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
-			m_ErrorOffset=0;
-			m_Ship_1D_Props.UsingRange=false;
+			if (m_EncoderState!=eNoEncoder)
+			{
+				//first disable it
+				m_EncoderState=eNoEncoder;
+				//Now to reset stuff
+				printf("Disabling encoder for %s\n",GetName().c_str());
+				//m_PIDController.Reset();
+				ResetPos();
+				//This is no longer necessary
+				//m_MaxSpeed=m_MaxSpeedReference;
+				m_EncoderVelocity=0.0;
+				m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
+				m_ErrorOffset=0;
+				m_Ship_1D_Props.UsingRange=false;
+			}
+		}
+		else
+		{
+			if (m_EncoderState==eNoEncoder)
+			{
+				switch (m_Rotary_Props.LoopState)
+				{
+				case Rotary_Props::eNone:
+					m_EncoderState=eNoEncoder;
+					//This should not happen but added for completeness
+					printf("Rotary_Velocity_Control::SetEncoderSafety %s set to no encoder\n",GetName().c_str());
+					break;
+				case Rotary_Props::eOpen:
+					m_EncoderState=ePassive;
+					break;
+				case Rotary_Props::eClosed:
+					m_EncoderState=eActive;
+					break;
+				default:
+					assert(false);
+				}
+				//setup the initial value with the potentiometers value
+				printf("Enabling encoder for %s\n",GetName().c_str());
+				ResetPos();
+				m_Ship_1D_Props.UsingRange=GetUsingRange_Props();
+				m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
+				m_ErrorOffset=0;
+			}
 		}
 	}
 	else
-	{
-		if (m_EncoderState==eNoEncoder)
-		{
-			switch (m_Rotary_Props.LoopState)
-			{
-			case Rotary_Props::eNone:
-				m_EncoderState=eNoEncoder;
-				//This should not happen but added for completeness
-				printf("Rotary_Velocity_Control::SetEncoderSafety %s set to no encoder\n",GetName().c_str());
-				break;
-			case Rotary_Props::eOpen:
-				m_EncoderState=ePassive;
-				break;
-			case Rotary_Props::eClosed:
-				m_EncoderState=eActive;
-				break;
-			default:
-				assert(false);
-			}
-			//setup the initial value with the potentiometers value
-			printf("Enabling encoder for %s\n",GetName().c_str());
-			ResetPos();
-			m_Ship_1D_Props.UsingRange=GetUsingRange_Props();
-			m_CalibratedScaler=m_Ship_1D_Props.MAX_SPEED;
-			m_ErrorOffset=0;
-		}
-	}
+		m_EncoderState=DisableFeedback?ePassive:eActive;
 }
 
   /***********************************************************************************************************************************/

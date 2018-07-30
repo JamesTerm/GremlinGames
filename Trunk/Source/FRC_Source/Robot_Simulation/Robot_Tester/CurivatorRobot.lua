@@ -29,6 +29,7 @@ skid_rabbit=math.cos(math.atan2(WheelBase_Length_In,WheelBase_Width_In))
 skid_curivator=1
 skid=skid_curivator
 gMaxTorqueYaw = (2 * Drive_MaxAccel * Meters2Inches / WheelTurningDiameter_In) * skid
+EncoderLoop=1
 
 -- Here are some auton tests
 AutonTest_DoNothing=0
@@ -38,6 +39,26 @@ AutonTest_MoveRotateSequence=3
 AutonTest_BoxWayPoints=4
 AutonTest_TestArm=5
 AutonTest_GrabSequence=6
+
+--This is how we set up motors on JVN to mix different motors into one average for all
+--This is also a lesser stress in that the gear ratio is 1
+averaged_motors =
+{
+	wheel_mass=1.5,
+	cof_efficiency=0.9,
+	gear_reduction=1.0,
+	torque_on_wheel_radius=Inches2Meters * 1.8,
+	drive_wheel_radius=Inches2Meters * 4,
+	number_of_motors=1,
+	payload_mass=200 * Pounds2Kilograms,
+	speed_loss_constant=0.81,
+	drive_train_effciency=0.9,
+	
+	free_speed_rpm=263.88,
+	stall_torque=34,
+	stall_current_amp=84,
+	free_current_amp=0.4
+}
 
 MainRobot = {
 	version = 1.0;
@@ -103,7 +124,7 @@ MainRobot = {
 	
 	Dimensions =
 	{ Length=0.9525, Width=0.6477 }, --These are 37.5 x 25.5 inches (This is not used except for UI ignore)
-	
+
 	tank_drive =
 	{
 		is_closed=0,
@@ -181,26 +202,10 @@ MainRobot = {
 		{t4=0, t3=0, t2=0, t1=0, c=1},
 		reverse_steering='no',
 		inv_max_accel = 1/15.0,  --solved empirically
-		motor_specs =
-		{
-			wheel_mass=1.5,
-			cof_efficiency=0.9,
-			gear_reduction=1.0,
-			torque_on_wheel_radius=Inches2Meters * 1.8,
-			drive_wheel_radius=Inches2Meters * 4,
-			number_of_motors=1,
-			payload_mass=200 * Pounds2Kilograms,
-			speed_loss_constant=0.81,
-			drive_train_effciency=0.9,
-			
-			free_speed_rpm=263.88,
-			stall_torque=34,
-			stall_current_amp=84,
-			free_current_amp=0.4
-		},
+		motor_specs = averaged_motors,
 		wheel_common =
 		{
-			is_closed=0,
+			is_closed=EncoderLoop,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			pid={p=200, i=0, d=25},
@@ -222,23 +227,23 @@ MainRobot = {
 
 		wheel_fl =
 		{
-			is_closed=1,
+			--is_closed=1,
 			voltage_multiply=-1.0,			--reversed
 			encoder_to_wheel_ratio=-1.0,  --simulation can't use encoder_reversed_wheel
 		},
 		wheel_fr =
 		{
-			is_closed=1,
+			--is_closed=1,
 		},
 		wheel_rl =
 		{
-			is_closed=1,
+			--is_closed=1,
 			voltage_multiply=-1.0,			--reversed
 			encoder_to_wheel_ratio=-1.0,
 		},
 		wheel_rr =
 		{
-			is_closed=1,
+			--is_closed=1,
 		},
 		
 		swivel_common =
@@ -522,7 +527,7 @@ MainRobot = {
 		},
 		wheel_cl =
 		{
-			is_closed=1,
+			is_closed=EncoderLoop,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			pid={p=200, i=0, d=25},
@@ -545,7 +550,7 @@ MainRobot = {
 		},
 		wheel_cr =
 		{
-			is_closed=1,
+			is_closed=EncoderLoop,
 			show_pid_dump='n',
 			ds_display_row=-1,
 			pid={p=200, i=0, d=25},

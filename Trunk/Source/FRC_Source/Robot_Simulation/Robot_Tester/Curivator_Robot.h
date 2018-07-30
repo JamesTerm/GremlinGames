@@ -159,6 +159,7 @@ class Curivator_Robot : public Swerve_Robot
 		void FreezeArm(bool isOn);
 		void LockPosition(bool isOn);
 		void StopAuton(bool isOn);  //just like freeze arm but puts things back in teleop
+		void SetEncoderLoop(bool isClosed);  //set all encoders open or closed
 		//simple computation between the target angle against the actual angle measured
 		double GetBucketAngleContinuity();
 
