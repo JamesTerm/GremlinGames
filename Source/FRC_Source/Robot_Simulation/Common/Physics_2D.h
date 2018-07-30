@@ -57,6 +57,7 @@ class COMMON_API PhysicsEntity_2D
 		double GetAngularVelocity() const;
 
 		//This will give the acceleration delta given the torque which is: torque / AngularInertiaCoefficient * Mass
+		//Note: It is torque if the radial arm distance is already factored in (Fr) and leaving RadialArmDistance as 1.0; otherwise it is force
 		inline double GetAngularAccelerationDelta(double torque,double RadialArmDistance=1.0);
 
 		///These will auto sum for each call made, the forces last for one second during each timer update, so you have to call them repeatedly to 
@@ -70,6 +71,7 @@ class COMMON_API PhysicsEntity_2D
 		///should be <= 1/framerate.  Ideally these should be used for high precision movements like moving a ship, where the FrameDuration is
 		///typically the TimeDelta value
 		void ApplyFractionalForce( const Vec2D &force,double FrameDuration);
+		//Note: It is torque if the radial arm distance is already factored in (Fr) and leaving RadialArmDistance as 1.0; otherwise it is force
 		void ApplyFractionalTorque( double torque,double FrameDuration,double RadialArmDistance=1.0);
 
 		///This one is ideal to use for collision detection.  It will basically evaluate the point and determine the amount of force and torque to
