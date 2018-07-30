@@ -527,6 +527,10 @@ __inline double Drive_Train_Characteristics::GetLinearVelocity(double wheel_RPS)
 {
 	return wheel_RPS * (M_PI * 2.0 * m_Props.DriveWheelRadius);
 }
+__inline double Drive_Train_Characteristics::GetLinearVelocity_WheelAngular(double wheel_AngularVelocity) const
+{
+	return wheel_AngularVelocity * m_Props.DriveWheelRadius;
+}
 __inline double Drive_Train_Characteristics::GetMotorRPS(double LinearVelocity) const 
 {
 	return GetWheelRPS(LinearVelocity) /  m_Props.GearReduction;
@@ -541,7 +545,10 @@ __inline double Drive_Train_Characteristics::GetWheelAngular_RPS(double wheel_RP
 {
 	return wheel_RPS * (M_PI * 2.0);			
 }
-
+__inline double Drive_Train_Characteristics::GetWheelAngular_LinearVelocity(double LinearVelocity) const
+{
+	return LinearVelocity / m_Props.DriveWheelRadius;
+}
 __inline double Drive_Train_Characteristics::GetMotorRPS_Angular(double wheel_AngularVelocity) const
 {
 	return GetWheelRPS_Angular(wheel_AngularVelocity) /  m_Props.GearReduction;
@@ -781,12 +788,13 @@ static void TimeChange_UpdatePhysics(double Voltage,
 	//Now to add force normal against the wheel this is the difference between the payload and the wheel velocity
 	//When the mass is lagging behind it add adverse force against the motor... and if the mass is ahead it will
 	//relieve the motor and make it coast in the same direction
-	const double acceleration = dtc.GetWheelAngular_RPS(dtc.GetWheelRPS(PayloadPhysics.GetVelocity()))-WheelPhysics.GetVelocity();
+	//const double acceleration = dtc.GetWheelAngular_RPS(dtc.GetWheelRPS(PayloadPhysics.GetVelocity()))-WheelPhysics.GetVelocity();
+	const double acceleration = dtc.GetWheelAngular_LinearVelocity(PayloadPhysics.GetVelocity())-WheelPhysics.GetVelocity();
 	if (PayloadPhysics.GetVelocity()!=0.0)
 	{
 		#if 0
 		if (UpdatePayload)
-			SmartDashboard::PutNumber("Test",acceleration);
+			SmartDashboard::PutNumber("Test",dtc.GetWheelAngular_LinearVelocity(PayloadPhysics.GetVelocity()));
 		if (fabs(acceleration)>50)
 			int x=8;
 		#endif
@@ -837,6 +845,7 @@ void Encoder_Simulator3::TimeChange()
 		{
 			SmartDashboard::PutNumber("PayloadLeft",Meters2Feet(s_PayloadPhysics_Left.GetVelocity()));
 			SmartDashboard::PutNumber("WheelLeft",Meters2Feet(GetEncoderVelocity()));
+			//SmartDashboard::PutNumber("WheelLeft",m_Physics.GetVelocity());
 		}
 	}
 	else if ((m_EncoderKind==eRW_Right)||(m_EncoderKind==eReadOnlyRight))
