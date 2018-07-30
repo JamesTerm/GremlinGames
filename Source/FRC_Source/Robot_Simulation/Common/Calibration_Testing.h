@@ -69,7 +69,7 @@ struct EncoderSimulation_Props
 	double Wheel_Mass;  //This is a total mass of all the wheels and gears for one side
 	double COF_Efficiency;
 	double GearReduction;  //In reciprocal form of spread sheet   driving gear / driven gear
-	double TorqueAppliedOnWheelRadius; //in meters
+	double ForceAppliedOnWheelRadius; //in newtons
 	double DriveWheelRadius; //in meters
 	double NoMotors;  //Used to get total torque
 	double PayloadMass;  //The robot weight in kg
