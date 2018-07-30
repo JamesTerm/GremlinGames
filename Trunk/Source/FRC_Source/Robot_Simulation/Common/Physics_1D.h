@@ -60,6 +60,8 @@ class COMMON_API PhysicsEntity_1D
 		///should be <= 1/framerate.  Ideally these should be used for high precision movements like moving a ship, where the FrameDuration is
 		///typically the TimeDelta value
 		void ApplyFractionalForce( double force,double FrameDuration);
+		//Note:  (For  GetAngularAccelerationDelta and ApplyFractionalTorque)
+			//It is torque if the radial arm distance is already factored in (Fr) and leaving RadialArmDistance as 1.0; otherwise it is force
 		//This will give the acceleration delta given the torque which is: torque / AngularInertiaCoefficient * Mass
 		inline double GetAngularAccelerationDelta(double torque,double RadialArmDistance=1.0);
 		void ApplyFractionalTorque( double torque,double FrameDuration,double RadialArmDistance=1.0);
