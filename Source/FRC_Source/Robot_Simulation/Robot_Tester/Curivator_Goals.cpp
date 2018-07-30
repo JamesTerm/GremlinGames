@@ -45,6 +45,7 @@ enum AutonType
 	eArmClawGrab,
 	eTurretTracking,
 	eDriveTracking,
+	eUpdateEncoderLoop,
 	eNoAutonTypes
 };
 
@@ -348,8 +349,6 @@ class Curivator_Goals_Impl : public AtomicGoal
 
 
 		MultitaskGoal m_Primer;
-		bool m_IsHot;
-		bool m_HasSecondShotFired;
 
 		static Goal * Move_Straight(Curivator_Goals_Impl *Parent,double length_ft)
 		{
@@ -475,6 +474,28 @@ class Curivator_Goals_Impl : public AtomicGoal
 			{
 				ActivateIfInactive();
 				m_EventMap.EventOnOff_Map[m_EventName.c_str()].Fire(m_IsOn);
+				m_Status=eCompleted;
+				return m_Status;
+			}
+		};
+
+		//Give ability to quickly change all drive wheel encoder loops to open or closed
+		class RobotChangeDriveEncoderLoop : public AtomicGoal, public SetUpProps
+		{
+		public:
+			RobotChangeDriveEncoderLoop(Curivator_Goals_Impl *Parent)	: SetUpProps(Parent)
+			{	m_Status=eInactive;	
+			}
+			virtual void Activate() 
+			{
+				m_Status=eActive;
+			}
+			virtual Goal_Status Process(double dTime_s)
+			{
+				ActivateIfInactive();
+				const char * const SmartVar="EncodersLoop_IsClosed";
+				const bool IsClosed=Auton_Smart_GetSingleValue_Bool(SmartVar,false);
+				m_EventMap.EventOnOff_Map["Robot_EncodersLoop"].Fire(IsClosed);
 				m_Status=eCompleted;
 				return m_Status;
 			}
@@ -1231,6 +1252,9 @@ class Curivator_Goals_Impl : public AtomicGoal
 				break;
 			case eDriveTracking:
 				m_Primer.AddGoal(new DriveTracking(this));
+				break;
+			case eUpdateEncoderLoop:
+				m_Primer.AddGoal(new RobotChangeDriveEncoderLoop(this));
 				break;
 			case eDoNothing:
 			case eNoAutonTypes: //grrr windriver and warning 1250

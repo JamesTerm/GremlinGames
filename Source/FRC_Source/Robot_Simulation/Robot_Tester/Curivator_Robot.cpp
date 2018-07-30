@@ -775,6 +775,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["StopAuton"].Subscribe(ehl,*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Subscribe(ehl,*this, &Curivator_Robot::FreezeArm);
 		em->EventOnOff_Map["Robot_LockPosition"].Subscribe(ehl,*this, &Curivator_Robot::LockPosition);
+		em->EventOnOff_Map["Robot_EncodersLoop"].Subscribe(ehl,*this, &Curivator_Robot::SetEncoderLoop);
 	}
 	else
 	{
@@ -784,6 +785,7 @@ void Curivator_Robot::BindAdditionalEventControls(bool Bind)
 		em->EventOnOff_Map["StopAuton"].Remove(*this, &Curivator_Robot::StopAuton);
 		em->EventOnOff_Map["Robot_FreezeArm"].Remove(*this, &Curivator_Robot::FreezeArm);
 		em->EventOnOff_Map["Robot_LockPosition"].Remove(*this, &Curivator_Robot::LockPosition);
+		em->EventOnOff_Map["Robot_EncodersLoop"].Remove(*this, &Curivator_Robot::SetEncoderLoop);
 	}
 
 	for (size_t i=0;i<Curivator_Robot_NoRobotArm;i++)
@@ -1013,6 +1015,16 @@ void Curivator_Robot::StopAuton(bool isOn)
 	GetEventMap()->Event_Map["StopAutonAbort"].Fire();
 	ClearGoal();
 	LockPosition(false);
+}
+
+void Curivator_Robot::SetEncoderLoop(bool isClosed)
+{
+	printf("Encoders loop=%d\n",isClosed);
+	//Now to make it happen
+	m_CenterLeftWheel.SetEncoderSafety(!isClosed,true);
+	m_CenterRightWheel.SetEncoderSafety(!isClosed,true);
+	//pass on this to the swerve drive
+	SetEncoderSafety(!isClosed,true);
 }
 
   /***********************************************************************************************************************************/

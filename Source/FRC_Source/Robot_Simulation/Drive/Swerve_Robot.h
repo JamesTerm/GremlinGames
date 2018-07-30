@@ -186,6 +186,7 @@ class DRIVE_API Swerve_Robot : public Ship_Tester,
 
 		double GetIntendedSwivelDirection(size_t index) const {return m_DrivingModule[index]->GetIntendedSwivelDirection();}
 		double GetIntendedDriveVelocity(size_t index) const {return m_DrivingModule[index]->GetIntendedDriveVelocity();}
+		void SetEncoderSafety(bool DisableFeedback, bool JustOpenLoop=false);
 	protected:  //from Vehicle_Drive_Common_Interface
 		virtual const Vec2D &GetWheelDimensions() const {return m_WheelDimensions;}
 		virtual double GetWheelTurningDiameter() const {return m_WheelDimensions.length();}

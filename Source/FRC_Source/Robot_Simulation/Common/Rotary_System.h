@@ -218,7 +218,10 @@ class COMMON_API Rotary_Velocity_Control : public Rotary_System
 		void SetMatchVelocity(double MatchVel) {m_MatchVelocity=MatchVel;}
 		//Give ability to change properties
 		void UpdateRotaryProps(const Rotary_Props &RotaryProps);
-		virtual void SetEncoderSafety(bool DisableFeedback);
+		//In the past, DisableFeedback was implemented only where no activity was performed, but the need for this has depreciated
+		//Keeping this functionality can be less severe and useful for just controlling the state of the loop
+		// 1 1 = open passive, 0 1 = closed, 0 0 = no encoder, 1 0 = closed (restores that only works from no encoder state)
+		void SetEncoderSafety(bool DisableFeedback, bool JustOpenLoop=false);
 		EncoderUsage GetEncoderUsage() const {return m_EncoderState;}
 		//Give client code ability to change rotary system to break or coast
 		void SetAggresiveStop(bool UseAggresiveStop) {m_Rotary_Props.UseAggressiveStop=UseAggresiveStop;} 
