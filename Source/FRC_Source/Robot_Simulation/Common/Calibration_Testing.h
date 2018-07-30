@@ -116,9 +116,11 @@ class COMMON_API Drive_Train_Characteristics
 		__inline double GetTorqueAtWheel(double Torque) const;
 		__inline double GetWheelRPS(double LinearVelocity) const;
 		__inline double GetLinearVelocity(double wheel_RPS) const;
+		__inline double GetLinearVelocity_WheelAngular(double wheel_AngularVelocity) const;
 		__inline double GetMotorRPS(double LinearVelocity) const;
 		__inline double GetWheelRPS_Angular(double wheel_AngularVelocity) const;
 		__inline double GetWheelAngular_RPS(double wheel_RPS) const;
+		__inline double GetWheelAngular_LinearVelocity(double LinearVelocity) const;  //accurate as long as there is no skid
 		__inline double GetMotorRPS_Angular(double wheel_AngularVelocity) const;
 		__inline double GetTorqueFromLinearVelocity(double LinearVelocity) const;
 		__inline double GetWheelTorqueFromVoltage(double Voltage) const;
