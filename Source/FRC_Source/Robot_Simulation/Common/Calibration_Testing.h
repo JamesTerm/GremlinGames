@@ -63,13 +63,15 @@ class COMMON_API Encoder_Simulator : public Ship_1D
 		bool m_GetEncoderFirstCall;  //allows GetEncoderVelocity to know when a new set of calls occur within a time slice
 };
 
-
+//TorqueAccelerationDampener - formerly known as ForceAppliedOnWheelRadius has become the solution to account for empirical testing of torque acceleration 
+//measured in the motor, unfortunately I haven't yet found a way to compute for this, but this is quite effective as its factoring happens in the best
+//place (same place as it was before)
 struct EncoderSimulation_Props
 {
 	double Wheel_Mass;  //This is a total mass of all the wheels and gears for one side
 	double COF_Efficiency;
 	double GearReduction;  //In reciprocal form of spread sheet   driving gear / driven gear
-	double ForceAppliedOnWheelRadius; //in newtons
+	double TorqueAccelerationDampener; //ratio 1.0 no change
 	double DriveWheelRadius; //in meters
 	double NoMotors;  //Used to get total torque
 	double PayloadMass;  //The robot weight in kg

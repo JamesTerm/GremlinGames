@@ -616,7 +616,7 @@ public:
 		props.Wheel_Mass=1.8;
 		props.COF_Efficiency=0.9;
 		props.GearReduction=1.0;
-		props.ForceAppliedOnWheelRadius=1.0;  //not needed for this test
+		props.TorqueAccelerationDampener=1.0;  //not needed for this test
 		props.DriveWheelRadius=Inches2Meters(4.0);  //in meters  (note: consider changing to diameter)
 		props.NoMotors=1.0;
 		props.PayloadMass=200.0 * Pounds2Kilograms;  //in kilograms
