@@ -233,7 +233,7 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
 	const double TorqueAbsorbed=m_DriveTrain.INV_GetTorqueFromVelocity(m_Physics.GetVelocity());
 	TorqueToApply-=TorqueAbsorbed;
-	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().ForceAppliedOnWheelRadius);
+	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
 	//If we have enough voltage and enough velocity the locking pin is not engaged... gravity can apply extra torque
 	//if ((fabs(Voltage)>0.04)&&(fabs(m_Physics.GetVelocity())>0.05))
 	if (fabs(Voltage)>0.04)
@@ -252,7 +252,7 @@ void Potentiometer_Tester3::UpdatePotentiometerVoltage(double Voltage)
 		//The pin can protect it against going the wrong direction... if they are opposite... saturate the max opposing direction
 		if (((Torque * TorqueToApply)<0.0) && (fabs(TorqueWithAngle)>fabs(TorqueToApply)))
 			TorqueWithAngle=-TorqueToApply;
-		m_Physics.ApplyFractionalTorque(TorqueWithAngle,m_Time_s,m_DriveTrain.GetDriveTrainProps().ForceAppliedOnWheelRadius);
+		m_Physics.ApplyFractionalTorque(TorqueWithAngle,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
 	}
 }
 
@@ -419,7 +419,7 @@ EncoderSimulation_Properties::EncoderSimulation_Properties()
 	props.Wheel_Mass=1.5;
 	props.COF_Efficiency=1.0;
 	props.GearReduction=12.4158;
-	props.ForceAppliedOnWheelRadius=0.0508;
+	props.TorqueAccelerationDampener=0.0508;
 	props.DriveWheelRadius=0.0762;
 	props.NoMotors=1.0;
 	props.PayloadMass=200.0 * 0.453592;  //in kilograms
@@ -448,7 +448,7 @@ void EncoderSimulation_Properties::LoadFromScript(GG_Framework::Logic::Scripting
 	err = script.GetField("gear_reduction", NULL, NULL, &test);
 	if (!err) props.GearReduction=test;
 	err = script.GetField("torque_on_wheel_radius", NULL, NULL, &test);
-	if (!err) props.ForceAppliedOnWheelRadius=test;
+	if (!err) props.TorqueAccelerationDampener=test;
 	err = script.GetField("drive_wheel_radius", NULL, NULL, &test);
 	if (!err) props.DriveWheelRadius=test;
 	err = script.GetField("number_of_motors", NULL, NULL, &test);
@@ -648,7 +648,7 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
 	const double TorqueAbsorbed=m_DriveTrain.INV_GetTorqueFromVelocity(m_Physics.GetVelocity());
 	TorqueToApply-=TorqueAbsorbed;
-	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().ForceAppliedOnWheelRadius);
+	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
 	#endif
 }
 
@@ -746,7 +746,7 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 		TorqueToApply=0.0;
 	//Note: Even though TorqueToApply has direction, if it gets saturated to 0 it loses it... ultimately the voltage parameter is sacred to the correct direction
 	//in all cases so we'll convert TorqueToApply to magnitude
-	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s, m_DriveTrain.GetDriveTrainProps().ForceAppliedOnWheelRadius);
+	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s, m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
 
 	//TODO check for case when current drive force is greater than the traction
 	//Compute the pushing force of the mass and apply it just the same
