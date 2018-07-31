@@ -652,6 +652,69 @@ public:
 		const double DriveLoad_Total=DriveLoadNM/props.DriveTrainEfficiency;
 		printf("MotorTorqueLoad=%.2f\n",(DriveLoad_Total/props.GearReduction)/props.NoMotors);
 	}
+	__inline double I_disk(double mass,double r, double gr) const
+	{
+		return 0.5 * mass * r * r * gr;
+	}
+	__inline double I_disk_volume(double density,double length, double diameter) const
+	{
+		return (PI / 32.0) * density * length * (diameter*diameter*diameter*diameter);
+	}
+	double ComputeTotalInertia() const
+	{
+		struct MassElement
+		{
+			const char *Name;
+			double msss;
+			double radius;
+			double gear_ratio;
+		};
+		MassElement elements[]=
+		{
+			{"motor",0.48,1.41/2.0,1.0},
+			{"pulley12",0.0072,0.1792/2.0,1.0},
+			{"pulley36",0.0577,1.035/2.0,1.0},
+			{"sun_4_1",0.0252,0.5/2.0,1.0},
+			{"planeta_spin_4_1",0.0138,0.5/2.0,1.0},
+			{"planetb_spin_4_1",0.0138,0.5/2.0,1.0},
+			{"planetc_spin_4_1",0.0138,0.5/2.0,1.0},
+			{"planetd_spin_4_1",0.0138,0.5/2.0,1.0},
+			{"planeta_orb_4_1",0.0138,0.46,2.0},  //using 2 to define point mass
+			{"planetb_orb_4_1",0.0138,0.46,2.0},
+			{"planetc_orb_4_1",0.0138,0.46,2.0},
+			{"planetd_orb_4_1",0.0138,0.46,2.0},
+			{"planetCarrier",0.0566,1.366/2.0,1.0},
+			{"sun_3_1",0.0435,0.6299/2.0,1.0},
+			{"planeta_spin_3_1",0.0138,0.5/2.0,1.0},
+			{"planetb_spin_3_1",0.0138,0.5/2.0,1.0},
+			{"planetc_spin_3_1",0.0138,0.5/2.0,1.0},
+			{"planetd_spin_3_1",0.0138,0.5/2.0,1.0},
+			{"planeta_orb_3_1",0.0138,0.46,2.0},  //using 2 to define point mass
+			{"planetb_orb_3_1",0.0138,0.46,2.0},
+			{"planetc_orb_3_1",0.0138,0.46,2.0},
+			{"planetd_orb_3_1",0.0138,0.46,2.0},
+			{"planetCarrier",0.0566,1.366/2.0,1.0},
+			{"vp180_shaftOutput",0.06,0.5/2.0,1.0},
+			{"sprocket_15t",0.05,1.6/2.0,1.0},
+			{"chain_a",0.3732/2.0,0.9,1.0},
+			{"chain_b",0.3732/2.0,3.61/2.0,1.0},
+			{"Wheel",3.0,4.0,1.0}  //I really cheated on this one
+		};
+		size_t noElements=_countof(elements);
+		double total=0;
+		for (size_t i=0;i<noElements;i++)
+		{
+			MassElement element=elements[i];
+			const double mass=element.msss * Pounds2Kilograms;
+			const double r=Inches2Meters(element.radius);
+			const double gr=element.gear_ratio;
+			const double elementInertia=I_disk(mass,r,gr);
+			printf("%s = %f\n",element.Name,elementInertia);
+			total+=elementInertia;
+		}
+		printf("total = %f\n",total);
+		return total;
+	}
 };
 
 void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command, const char * const Args[])
@@ -1215,7 +1278,8 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 	//case eCurrent:
 		{
 			DriveTrainCalcTest test;
-			test.Display();
+			//test.Display();
+			test.ComputeTotalInertia();
 		}
 		break;
 	}
