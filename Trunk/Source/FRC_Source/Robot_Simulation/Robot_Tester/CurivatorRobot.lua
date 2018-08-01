@@ -209,9 +209,9 @@ MainRobot = {
 			show_pid_dump='n',
 			ds_display_row=-1,
 			pid={p=200, i=0, d=25},
-			--Note: this is only used in simulation as 884 victors were phased out, but encoder simulators still use it
-			curve_voltage=
-			{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
+			--Note: removed in Encoder Simulator v3
+			--curve_voltage=
+			--{t4=3.1199, t3=-4.4664, t2=2.2378, t1=0.1222, c=0},
 			encoder_pulses_per_revolution=560/4,
 			encoder_to_wheel_ratio=1.0,
 			encoder_reversed_wheel=0,
@@ -227,7 +227,8 @@ MainRobot = {
 
 		wheel_fl =
 		{
-			--is_closed=1,
+			--show_pid_dump='y',
+			--is_closed=0,
 			voltage_multiply=-1.0,			--reversed
 			encoder_to_wheel_ratio=-1.0,  --simulation can't use encoder_reversed_wheel
 		},
