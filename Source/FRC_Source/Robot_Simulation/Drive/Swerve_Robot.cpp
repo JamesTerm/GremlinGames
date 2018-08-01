@@ -298,7 +298,7 @@ void Swerve_Robot::InterpolateThrusterChanges(Vec2D &LocalForce,double &Torque,d
 		const double IntendedDirection=m_VehicleDrive->GetIntendedVelocitiesFromIndex(i+4);
 		m_DrivingModule[i]->SetIntendedSwivelDirection(aSwivelDirection[i]);
 		#ifdef __DebugLUA__
-		if (m_SwerveProperties.GetRotaryProps(i).GetRotaryProps().PID_Console_Dump && (m_RobotControl->GetRotaryCurrentPorV(i)!=0.0))
+		if (m_SwerveProperties.GetRotaryProps(i).GetRotaryProps().PID_Console_Dump && (m_RobotControl->GetRotaryCurrentPorV(i+m_RotaryEnumOffset)!=0.0))
 		{
 			double PosY=GetPos_m()[1];
 			printf("y=%.2f ",PosY);
