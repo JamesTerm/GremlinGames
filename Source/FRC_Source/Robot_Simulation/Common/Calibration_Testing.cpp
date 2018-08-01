@@ -725,7 +725,9 @@ void Encoder_Simulator3::Initialize(const Ship_1D_Properties *props)
 void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 {
 	m_Voltage=Voltage;
-	double Direction=Voltage<0 ? -1.0 : 1.0;
+	//depreciated
+	#if 0
+	const double Direction=Voltage<0 ? -1.0 : 1.0;
 	Voltage=fabs(Voltage); //make positive
 	//Apply the victor curve
 	//Apply the polynomial equation to the voltage to linearize the curve
@@ -737,6 +739,7 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
 		Voltage *= Direction;
 	}
+	#endif
 	//This is line is somewhat subtle... basically if the voltage is in the same direction as the velocity we use the linear distribution of the curve, when they are in
 	//opposite directions zero gives the stall torque where we need max current to switch directions (same amount as if there is no motion)
 	const double VelocityToUse=m_Physics.GetVelocity()*Voltage > 0 ? m_Physics.GetVelocity() : 0.0;
@@ -803,7 +806,7 @@ static void TimeChange_UpdatePhysics(double Voltage,
 		{
 			//now to factor in the mass
 			const double PayloadForce = WheelPhysics.GetMass() * acceleration;
-			WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s,0.5);
+			WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s,0.25);
 		}
 		//else
 		//	printf("skid %.2f\n",acceleration);
@@ -820,14 +823,15 @@ void Encoder_Simulator3::TimeChange()
 	//For best results if we locked to the payload we needn't apply a speed loss constant here
 	#ifndef __USE_PAYLOAD_MASS__
 	//first apply a constant speed loss using new velocity - old velocity
-	if (m_Voltage==0.0)
+	//if (fabs(m_Voltage)<0.65)
 	{
-		if ((fabs(m_Physics.GetVelocity())>2.0*M_PI))
+		if ((fabs(m_Physics.GetVelocity())>0.01))
 		{
 			const double acceleration = m_DriveTrain.GetDriveTrainProps().SpeedLossConstant*m_Physics.GetVelocity()-m_Physics.GetVelocity();
 			//now to factor in the mass
 			const double SpeedLossForce = m_Physics.GetMass() * acceleration;
-			m_Physics.ApplyFractionalTorque(SpeedLossForce,m_Time_s);
+			const double VoltageMagnitue=fabs(m_Voltage);
+			m_Physics.ApplyFractionalTorque(SpeedLossForce,m_Time_s,VoltageMagnitue>0.5?(1.0-VoltageMagnitue)*0.5:0.25);
 		}
 		else
 			m_Physics.SetVelocity(0.0);
