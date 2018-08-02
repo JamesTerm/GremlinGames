@@ -697,9 +697,11 @@ void Encoder_Simulator2::ResetPos()
 /***************************************************************************************************************/
 PhysicsEntity_1D Encoder_Simulator3::s_PayloadPhysics_Left;
 PhysicsEntity_1D Encoder_Simulator3::s_PayloadPhysics_Right;
+double Encoder_Simulator3::s_PreviousPayloadVelocity_Left=0.0;
+double Encoder_Simulator3::s_PreviousPayloadVelocity_Right=0.0;
 
 Encoder_Simulator3::Encoder_Simulator3(const char EntityName[]) :
-	Encoder_Simulator2(EntityName),m_EncoderKind(eIgnorePayload)
+	Encoder_Simulator2(EntityName),m_EncoderKind(eIgnorePayload),m_PreviousWheelVelocity(0.0)
 {
 }
 
@@ -751,12 +753,30 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 	//in all cases so we'll convert TorqueToApply to magnitude
 	m_Physics.ApplyFractionalTorque(fabs(TorqueToApply) * Voltage,m_Time_s, m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
 
+	//Apply the appropriate change in linear velocity to the payload.  Note:  This is not necessarily torque because of the TorqueAccelerationDampener... the torque
+	//acts as voltage acts to a circuit... it gives the potential but the current doesn't reflect this right away... its the current, or in our case the velocity
+	//change of he wheel itself that determines how much force to apply.
+	const double Wheel_Acceleration=(m_Physics.GetVelocity()-m_PreviousWheelVelocity)/m_Time_s;
+	//Now to reconstruct the torque Ia, where I = cm R^2 /torquedampner
+	const double Wheel_Torque=Wheel_Acceleration*m_Physics.GetMomentofInertia(m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
+	//Grrr I have to blend this... mostly because of the feedback from the payload... I'll see if there is some way to avoid needing to do this
+	const double smoothing_value=0.75;
+	const double BlendTorqueToApply=(Wheel_Torque*smoothing_value)+(TorqueToApply*(1.0-smoothing_value));
 	//TODO check for case when current drive force is greater than the traction
 	//Compute the pushing force of the mass and apply it just the same
 	if (m_EncoderKind==eRW_Left)
-		s_PayloadPhysics_Left.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(TorqueToApply))*Voltage,m_Time_s);
+	{
+		//Testing
+		#if 0
+		SmartDashboard::PutNumber("Wheel_Torque_Left",Wheel_Torque);
+		SmartDashboard::PutNumber("Motor_Torque_Left",TorqueToApply);
+		#endif
+		s_PayloadPhysics_Left.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(BlendTorqueToApply))*Voltage,m_Time_s);
+	}
 	else if (m_EncoderKind==eRW_Right)
-		s_PayloadPhysics_Right.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(TorqueToApply))*Voltage,m_Time_s);
+		s_PayloadPhysics_Right.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(BlendTorqueToApply))*Voltage,m_Time_s);
+	//keep this close to where its being used... prior to velocity being changed by other forces
+	m_PreviousWheelVelocity=m_Physics.GetVelocity();
 }
 
 double Encoder_Simulator3::GetEncoderVelocity() const
@@ -770,6 +790,9 @@ double Encoder_Simulator3::GetEncoderVelocity() const
 static void TimeChange_UpdatePhysics(double Voltage,
 									 Drive_Train_Characteristics dtc,PhysicsEntity_1D &PayloadPhysics,PhysicsEntity_1D &WheelPhysics,double Time_s,bool UpdatePayload)
 {
+	const double PayloadVelocity=PayloadPhysics.GetVelocity();
+	const double WheelVelocity=WheelPhysics.GetVelocity();
+
 	double PositionDisplacement;
 	//TODO add speed loss force
 	if (UpdatePayload)
@@ -777,9 +800,9 @@ static void TimeChange_UpdatePhysics(double Voltage,
 		//apply a constant speed loss using new velocity - old velocity
 		if (Voltage==0.0)
 		{
-			const double MaxStop=fabs(PayloadPhysics.GetVelocity()/Time_s);
+			const double MaxStop=fabs(PayloadVelocity/Time_s);
 			const double SpeedLoss=min(5.0,MaxStop);
-			const double acceleration=PayloadPhysics.GetVelocity()>0.0?-SpeedLoss:SpeedLoss;
+			const double acceleration=PayloadVelocity>0.0?-SpeedLoss:SpeedLoss;
 			//now to factor in the mass
 			const double SpeedLossForce = PayloadPhysics.GetMass() * acceleration;
 			PayloadPhysics.ApplyFractionalTorque(SpeedLossForce,Time_s);
@@ -791,18 +814,18 @@ static void TimeChange_UpdatePhysics(double Voltage,
 	//Now to add force normal against the wheel this is the difference between the payload and the wheel velocity
 	//When the mass is lagging behind it add adverse force against the motor... and if the mass is ahead it will
 	//relieve the motor and make it coast in the same direction
-	//const double acceleration = dtc.GetWheelAngular_RPS(dtc.GetWheelRPS(PayloadPhysics.GetVelocity()))-WheelPhysics.GetVelocity();
-	const double acceleration = dtc.GetWheelAngular_LinearVelocity(PayloadPhysics.GetVelocity())-WheelPhysics.GetVelocity();
-	if (PayloadPhysics.GetVelocity()!=0.0)
+	//const double acceleration = dtc.GetWheelAngular_RPS(dtc.GetWheelRPS(PayloadVelocity))-WheelVelocity;
+	const double acceleration = dtc.GetWheelAngular_LinearVelocity(PayloadVelocity)-WheelVelocity;
+	if (PayloadVelocity!=0.0)
 	{
 		#if 0
 		if (UpdatePayload)
-			SmartDashboard::PutNumber("Test",dtc.GetWheelAngular_LinearVelocity(PayloadPhysics.GetVelocity()));
+			SmartDashboard::PutNumber("Test",dtc.GetWheelAngular_LinearVelocity(PayloadVelocity));
 		if (fabs(acceleration)>50)
 			int x=8;
 		#endif
 		//make sure wheel and payload are going in the same direction... 
-		if (PayloadPhysics.GetVelocity()*WheelPhysics.GetVelocity() >= 0.0)
+		if (PayloadVelocity*WheelVelocity >= 0.0)
 		{
 			//now to factor in the mass
 			const double PayloadForce = WheelPhysics.GetMass() * acceleration;
@@ -847,9 +870,9 @@ void Encoder_Simulator3::TimeChange()
 		TimeChange_UpdatePhysics(m_Voltage,m_DriveTrain,s_PayloadPhysics_Left,m_Physics,m_Time_s,m_EncoderKind==eRW_Left);
 		if (m_EncoderKind==eRW_Left)
 		{
-			SmartDashboard::PutNumber("PayloadLeft",Meters2Feet(s_PayloadPhysics_Left.GetVelocity()));
+			s_PreviousPayloadVelocity_Left=s_PayloadPhysics_Left.GetVelocity();
+			SmartDashboard::PutNumber("PayloadLeft",Meters2Feet(s_PreviousPayloadVelocity_Left));
 			SmartDashboard::PutNumber("WheelLeft",Meters2Feet(GetEncoderVelocity()));
-			//SmartDashboard::PutNumber("WheelLeft",m_Physics.GetVelocity());
 		}
 	}
 	else if ((m_EncoderKind==eRW_Right)||(m_EncoderKind==eReadOnlyRight))
@@ -857,7 +880,8 @@ void Encoder_Simulator3::TimeChange()
 		TimeChange_UpdatePhysics(m_Voltage,m_DriveTrain,s_PayloadPhysics_Right,m_Physics,m_Time_s,m_EncoderKind==eRW_Right);
 		if (m_EncoderKind==eReadOnlyRight)
 		{
-			SmartDashboard::PutNumber("PayloadRight",Meters2Feet(s_PayloadPhysics_Right.GetVelocity()));
+			s_PreviousPayloadVelocity_Right=s_PayloadPhysics_Right.GetVelocity();
+			SmartDashboard::PutNumber("PayloadRight",Meters2Feet(s_PreviousPayloadVelocity_Right));
 			SmartDashboard::PutNumber("WheelRight",Meters2Feet(GetEncoderVelocity()));
 		}
 	}
