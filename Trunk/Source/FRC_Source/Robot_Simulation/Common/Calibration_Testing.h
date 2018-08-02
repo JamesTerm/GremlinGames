@@ -196,6 +196,10 @@ protected:
 	//We are pulling a heavy mass this will present more load on the wheel, we can simulate a bench test vs. an actual run by factoring this in
 	static PhysicsEntity_1D s_PayloadPhysics_Left;
 	static PhysicsEntity_1D s_PayloadPhysics_Right;
+	//Cache last state to determine if we are accelerating or decelerating
+	static double s_PreviousPayloadVelocity_Left;
+	static double s_PreviousPayloadVelocity_Right;  
+	double m_PreviousWheelVelocity;
 	size_t m_EncoderKind;
 };
 

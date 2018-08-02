@@ -90,24 +90,28 @@ void PhysicsEntity_1D::ApplyFractionalForce( double force,double FrameDuration)
 	//	DebugOutput("Acc%f Vel%f\n",AccelerationDelta[1],m_Velocity[1]);
 }
 
+
+__inline double PhysicsEntity_1D::GetMomentofInertia(double RadialArmDistance)
+{
+	//Doing it this way keeps the value of torque down to a reasonable level
+	double RadiusRatio(m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass/RadialArmDistance);
+	assert(RadiusRatio!=0);  //no-one should be using a zero sized radius!
+	double ret=(m_AngularInertiaCoefficient*m_EntityMass*RadiusRatio);
+	return ret;
+}
+
 inline double PhysicsEntity_1D::GetAngularAccelerationDelta(double torque,double RadialArmDistance)
 {
 	// We want a cross product here, and divide by the mass and angular inertia
 	//return (RadialArmDistance*torque) / (m_EntityMass*m_AngularInertiaCoefficient);
 
 	//We are solving for angular acceleration so a=t / I
-
 	// t=Ia 
-	//I=sum(m*r^2) or sum(AngularCoef*m*r^2)
-
 	double AngularAcceleration=0;
 	//Avoid division by zero... no radial arm distance no acceleration!
 	if (RadialArmDistance!=0)
 	{
-		//Doing it this way keeps the value of torque down to a reasonable level
-		double RadiusRatio(m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass/RadialArmDistance);
-		assert(RadiusRatio!=0);  //no-one should be using a zero sized radius!
-		AngularAcceleration=(torque/(m_AngularInertiaCoefficient*m_EntityMass*RadiusRatio));
+		AngularAcceleration=(torque/GetMomentofInertia(RadialArmDistance));
 		//This is another way to view it
 		//AngularAcceleration=((RadialArmDistance*torque)/(m_AngularInertiaCoefficient*m_EntityMass*m_RadiusOfConcentratedMass*m_RadiusOfConcentratedMass));
 	}
