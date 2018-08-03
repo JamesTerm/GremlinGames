@@ -775,8 +775,6 @@ void Encoder_Simulator3::UpdateEncoderVoltage(double Voltage)
 	}
 	else if (m_EncoderKind==eRW_Right)
 		s_PayloadPhysics_Right.ApplyFractionalForce(fabs(m_DriveTrain.GetCurrentDriveForce(BlendTorqueToApply))*Voltage,m_Time_s);
-	//keep this close to where its being used... prior to velocity being changed by other forces
-	m_PreviousWheelVelocity=m_Physics.GetVelocity();
 }
 
 double Encoder_Simulator3::GetEncoderVelocity() const
@@ -828,8 +826,8 @@ static void TimeChange_UpdatePhysics(double Voltage,
 		if (PayloadVelocity*WheelVelocity >= 0.0)
 		{
 			//now to factor in the mass
-			const double PayloadForce = WheelPhysics.GetMass() * acceleration;
-			WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s,0.25);
+			const double PayloadForce = WheelPhysics.GetMomentofInertia(dtc.GetDriveTrainProps().TorqueAccelerationDampener) * acceleration;
+			WheelPhysics.ApplyFractionalTorque(PayloadForce,Time_s);
 		}
 		//else
 		//	printf("skid %.2f\n",acceleration);
@@ -865,6 +863,8 @@ void Encoder_Simulator3::TimeChange()
 	m_Physics.TimeChangeUpdate(m_Time_s,PositionDisplacement);
 	m_Position+= PositionDisplacement * m_EncoderScalar * m_ReverseMultiply;
 
+	//cache velocities
+	m_PreviousWheelVelocity=m_Physics.GetVelocity();
 	if ((m_EncoderKind==eRW_Left)||(m_EncoderKind==eReadOnlyLeft))
 	{
 		TimeChange_UpdatePhysics(m_Voltage,m_DriveTrain,s_PayloadPhysics_Left,m_Physics,m_Time_s,m_EncoderKind==eRW_Left);
