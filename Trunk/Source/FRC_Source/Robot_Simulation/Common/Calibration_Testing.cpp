@@ -515,6 +515,12 @@ __inline double Drive_Train_Characteristics::GetWheelTorque(double Torque) const
 {
 	return Torque / m_Props.GearReduction * m_Props.DriveTrainEfficiency;
 }
+
+__inline double Drive_Train_Characteristics::INV_GetWheelTorque(double Torque) const
+{
+	return Torque * m_Props.GearReduction * m_Props.COF_Efficiency;
+}
+
 __inline double Drive_Train_Characteristics::GetTorqueAtWheel(double Torque) const
 {
 	return (GetWheelTorque(Torque) / m_Props.DriveWheelRadius);
@@ -569,6 +575,15 @@ __inline double Drive_Train_Characteristics::GetWheelTorqueFromVoltage(double Vo
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
 }
 
+__inline double Drive_Train_Characteristics::GetTorqueFromVoltage_V1(double Voltage) const
+{
+	const EncoderSimulation_Props::Motor_Specs &motor=m_Props.motor;
+	const double Amps=fabs(Voltage*motor.Stall_Current_Amp);
+	const double MotorTorque=GetAmp_To_Torque_nm(Amps);
+	const double WheelTorque=INV_GetWheelTorque(MotorTorque * m_Props.NoMotors);
+	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
+}
+
 __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage) const
 {
 	const EncoderSimulation_Props::Motor_Specs &motor=m_Props.motor;
@@ -578,10 +593,10 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage
 	return (Voltage>0)? WheelTorque : -WheelTorque;  //restore sign
 }
 
-__inline double Drive_Train_Characteristics::INV_GetTorqueFromVelocity(double AngularVelocity) const
+__inline double Drive_Train_Characteristics::INV_GetTorqueFromVelocity(double wheel_AngularVelocity) const
 {
-	const double MotorTorque=INV_GetVel_To_Torque_nm(GetMotorRPS_Angular(AngularVelocity));
-	return GetWheelTorque(MotorTorque * m_Props.NoMotors);
+	const double MotorTorque_nm=INV_GetVel_To_Torque_nm(GetMotorRPS_Angular(wheel_AngularVelocity));
+	return INV_GetWheelTorque(MotorTorque_nm * m_Props.NoMotors);
 }
 
 __inline double Drive_Train_Characteristics::GetTorqueFromVelocity(double wheel_AngularVelocity) const
@@ -622,18 +637,18 @@ void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 
 void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 {
-	double Direction=Voltage<0 ? -1.0 : 1.0;
-	Voltage=fabs(Voltage); //make positive
-	//Apply the victor curve
-	//Apply the polynomial equation to the voltage to linearize the curve
-	{
-		const double *c=Polynomial;
-		double x2=Voltage*Voltage;
-		double x3=Voltage*x2;
-		double x4=x2*x2;
-		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-		Voltage *= Direction;
-	}
+	//double Direction=Voltage<0 ? -1.0 : 1.0;
+	//Voltage=fabs(Voltage); //make positive
+	//Apply the victor curve depreciated
+	////Apply the polynomial equation to the voltage to linearize the curve
+	//{
+	//	const double *c=Polynomial;
+	//	double x2=Voltage*Voltage;
+	//	double x3=Voltage*x2;
+	//	double x4=x2*x2;
+	//	Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+	//	Voltage *= Direction;
+	//}
 	//From this point it is a percentage (hopefully linear distribution after applying the curve) of the max force to apply... This can be
 	//computed from stall torque ratings of motor with various gear reductions and so forth
 	//on JVN's spread sheet torque at wheel is (WST / DWR) * 2  (for nm)  (Wheel stall torque / Drive Wheel Radius * 2 sides)
@@ -645,10 +660,11 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 	ForceToApply-=ForceAbsorbed;
 	m_Physics.ApplyFractionalForce(ForceToApply,m_Time_s);
 	#else
-	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage(Voltage);
+	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage_V1(Voltage);
 	const double TorqueAbsorbed=m_DriveTrain.INV_GetTorqueFromVelocity(m_Physics.GetVelocity());
 	TorqueToApply-=TorqueAbsorbed;
-	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
+	//m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
+	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s);
 	#endif
 }
 

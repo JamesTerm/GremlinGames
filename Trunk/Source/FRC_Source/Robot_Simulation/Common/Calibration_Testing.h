@@ -111,8 +111,10 @@ class COMMON_API Drive_Train_Characteristics
 		__inline double GetAmp_To_Torque_nm(double Amps) const;
 		__inline double INV_GetVel_To_Torque_nm(double Vel_rps) const;  //depreciated
 		__inline double GetVel_To_Torque_nm(double motor_Vel_rps) const;
+		__inline double GetTorque_To_Vel_nm_V1(double motor_Vel_rps) const;  //depreciated
 
 		__inline double GetWheelTorque(double Torque) const;
+		__inline double INV_GetWheelTorque(double Torque) const; //depreciated
 		__inline double GetWheelStallTorque() const {return m_Props.motor.Stall_Torque_NM / m_Props.GearReduction * m_Props.DriveTrainEfficiency;}
 
 		__inline double GetTorqueAtWheel(double Torque) const;
@@ -126,8 +128,9 @@ class COMMON_API Drive_Train_Characteristics
 		__inline double GetMotorRPS_Angular(double wheel_AngularVelocity) const;
 		__inline double GetTorqueFromLinearVelocity(double LinearVelocity) const;
 		__inline double GetWheelTorqueFromVoltage(double Voltage) const;
+		__inline double GetTorqueFromVoltage_V1(double Voltage) const; //depreciated
 		__inline double GetTorqueFromVoltage(double Voltage) const;
-		__inline double INV_GetTorqueFromVelocity(double AngularVelocity) const;  //depreciated
+		__inline double INV_GetTorqueFromVelocity(double wheel_AngularVelocity) const;  //depreciated
 		__inline double GetTorqueFromVelocity(double wheel_AngularVelocity) const;
 
 		__inline double GetMaxTraction() const {return m_Props.PayloadMass*m_Props.COF_Efficiency;}
