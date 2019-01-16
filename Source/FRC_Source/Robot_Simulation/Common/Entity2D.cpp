@@ -115,12 +115,20 @@ void Entity2D::TimeChange(double dTime_s)
 	//This is using an atomic double buffering mechanism... should be thread safe
 	PosAtt *writePtr=(PosAtt *)m_PosAtt_Write.get();
 	PosAtt *readPtr=(PosAtt *)m_PosAtt_Read.get();
+	#ifndef __SetRobotRemote__
 	writePtr->m_pos_m=readPtr->m_pos_m+PositionDisplacement;
+	#else
+	writePtr->m_pos_m=Vec2D(Feet2Meters(SmartDashboard::GetNumber("X_ft ")),Feet2Meters(SmartDashboard::GetNumber("Y_ft ")));
+	#endif
 
 	double Rotation=readPtr->m_att_r+RotationDisplacement;
 	NormalizeRotation(Rotation);
+	#ifndef __SetRobotRemote__
 	writePtr->m_att_r=Rotation;
 	m_att_r=Rotation;
+	#else
+	writePtr->m_att_r=m_att_r=DEG_2_RAD(SmartDashboard::GetNumber("Heading"));
+	#endif
 	UpdatePosAtt();
 }
 

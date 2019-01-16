@@ -1,5 +1,7 @@
 #pragma once
 
+//#define __SetRobotRemote__
+
 //project dependencies
 #include "../../../GG_Framework/UI/GG_Framework.UI.h"
 #include "../../../GG_Framework/Logic/Scripting/GG_Framework.Logic.Scripting.h"

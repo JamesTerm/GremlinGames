@@ -1500,8 +1500,15 @@ void CommandLineInterface(bool useUserPrefs=true)
 	UI_thread=NULL;
 }
 
+
+#include "../Common/Common.h"
+
 int main(int argc, char** argv)
 {
+	#ifdef __SetRobotRemote__
+	SmartDashboard::SetIPAddress("localhost");
+	SmartDashboard::SetClientMode();
+	#endif
 	SmartDashboard::init();
 	DisplayHelp();
 	bool useUserPrefs=false;

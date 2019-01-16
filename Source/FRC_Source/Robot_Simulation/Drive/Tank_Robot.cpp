@@ -490,8 +490,10 @@ void Tank_Robot::UpdateVelocities(PhysicsEntity_2D &PhysicsToUse,const Vec2d &Lo
 		printf("v=%.2f v=%.2f ",LeftVoltage,RightVoltage);
 	#endif
 
+	#ifndef __SetRobotRemote__
 	SmartDashboard::PutNumber("LeftVoltage",LeftVoltage);
 	SmartDashboard::PutNumber("RightVoltage",RightVoltage);
+	#endif
 
 	m_RobotControl->UpdateLeftRightVoltage(LeftVoltage,RightVoltage);
 }
