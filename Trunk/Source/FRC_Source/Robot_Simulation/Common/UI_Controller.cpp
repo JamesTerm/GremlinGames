@@ -948,9 +948,11 @@ void UI_Controller::UpdateUI(double dTime_s)
 		#if 1
 		Vec2d pos=m_ship->GetPos_m();
 		DOUT(1,"x=%.2f y=%.2f r=%.2f",Meters2Feet(pos[0]),Meters2Feet(pos[1]),RAD_2_DEG(m_ship->GetAtt_r()));
+		#ifndef __SetRobotRemote__
 		SmartDashboard::PutNumber("X_ft ",Meters2Feet(pos[0]));
 		SmartDashboard::PutNumber("Y_ft ",Meters2Feet(pos[1]));
 		SmartDashboard::PutNumber("Heading",RAD_2_DEG(m_ship->GetAtt_r()));
+		#endif
 		#ifdef Robot_TesterCode
 		Vec2d Velocity=m_ship->GetLinearVelocity_ToDisplay();
 		DOUT(3,"Vel[0]=%.2f Vel[1]=%.2f Rot=%.2f mode=%s",Meters2Feet(Velocity[0]),Meters2Feet(Velocity[1]),m_ship->GetAngularVelocity_ToDisplay(),m_ship->GetAlterTrajectory()?"Sim":"Slide");
@@ -960,7 +962,9 @@ void UI_Controller::UpdateUI(double dTime_s)
 		SmartDashboard::PutNumber("Velocity",Meters2Feet(Velocity[1]));
 		SmartDashboard::PutNumber("Rotation Velocity",m_ship->GetAngularVelocity_ToDisplay());
 		#endif
+		#ifndef __SetRobotRemote__
 		SmartDashboard::PutBoolean("IsSlide",!m_ship->GetAlterTrajectory());
+		#endif
 		#endif
 		#if 0
 		Vec2d pos=m_ship->GetPos_m();

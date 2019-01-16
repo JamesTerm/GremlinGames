@@ -618,8 +618,10 @@ void HikingViking_Robot_Control::Robot_Control_TimeChange(double dTime_s)
 	DOUT2("l=%f r=%f a=%f r=%f D%dC%dR%d\n",m_TankRobotControl.GetLeftVoltage(),m_TankRobotControl.GetRightVoltage(),m_ArmVoltage,m_RollerVoltage,
 		m_Deployment,m_Claw,m_Rist
 		);
+	#ifndef __SetRobotRemote__
 	SmartDashboard::PutNumber("ArmVoltage",m_ArmVoltage);
 	SmartDashboard::PutNumber("RollerVoltage",m_RollerVoltage);
+	#endif
 }
 
 //const double c_Arm_DeadZone=0.150;  //was 0.085 for out off
@@ -644,10 +646,12 @@ double HikingViking_Robot_Control::GetRotaryCurrentPorV(size_t index)
 			//no conversion needed in simulation
 			result=(m_Potentiometer.GetPotentiometerCurrentPosition()) + 0.0;
 
+			#ifndef __SetRobotRemote__
 			//result = m_KalFilter_Arm(result);  //apply the Kalman filter
 			SmartDashboard::PutNumber("ArmAngle",RAD_2_DEG(result*c_GearToArmRatio));
 			const double height= (sin(result*c_GearToArmRatio)*props.ArmLength)+props.GearHeightOffset;
 			SmartDashboard::PutNumber("Height",height*3.2808399);
+			#endif
 		}
 		break;
 	}
