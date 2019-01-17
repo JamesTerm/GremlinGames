@@ -559,6 +559,10 @@ __inline double Drive_Train_Characteristics::GetMotorRPS_Angular(double wheel_An
 {
 	return GetWheelRPS_Angular(wheel_AngularVelocity) /  m_Props.GearReduction;
 }
+__inline double Drive_Train_Characteristics::INV_GetMotorRPS_Angular(double wheel_AngularVelocity) const
+{
+	return GetWheelRPS_Angular(wheel_AngularVelocity) *  m_Props.GearReduction;
+}
 
 __inline double Drive_Train_Characteristics::GetTorqueFromLinearVelocity(double LinearVelocity) const
 {
@@ -595,7 +599,7 @@ __inline double Drive_Train_Characteristics::GetTorqueFromVoltage(double Voltage
 
 __inline double Drive_Train_Characteristics::INV_GetTorqueFromVelocity(double wheel_AngularVelocity) const
 {
-	const double MotorTorque_nm=INV_GetVel_To_Torque_nm(GetMotorRPS_Angular(wheel_AngularVelocity));
+	const double MotorTorque_nm=INV_GetVel_To_Torque_nm(INV_GetMotorRPS_Angular(wheel_AngularVelocity));
 	return INV_GetWheelTorque(MotorTorque_nm * m_Props.NoMotors);
 }
 
@@ -637,18 +641,17 @@ void Encoder_Simulator2::Initialize(const Ship_1D_Properties *props)
 
 void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 {
-	//double Direction=Voltage<0 ? -1.0 : 1.0;
-	//Voltage=fabs(Voltage); //make positive
-	//Apply the victor curve depreciated
-	////Apply the polynomial equation to the voltage to linearize the curve
-	//{
-	//	const double *c=Polynomial;
-	//	double x2=Voltage*Voltage;
-	//	double x3=Voltage*x2;
-	//	double x4=x2*x2;
-	//	Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
-	//	Voltage *= Direction;
-	//}
+	double Direction=Voltage<0 ? -1.0 : 1.0;
+	Voltage=fabs(Voltage); //make positive
+	//Apply the polynomial equation to the voltage to linearize the curve
+	{
+		const double *c=Polynomial;
+		double x2=Voltage*Voltage;
+		double x3=Voltage*x2;
+		double x4=x2*x2;
+		Voltage = (c[4]*x4) + (c[3]*x3) + (c[2]*x2) + (c[1]*Voltage) + c[0]; 
+		Voltage *= Direction;
+	}
 	//From this point it is a percentage (hopefully linear distribution after applying the curve) of the max force to apply... This can be
 	//computed from stall torque ratings of motor with various gear reductions and so forth
 	//on JVN's spread sheet torque at wheel is (WST / DWR) * 2  (for nm)  (Wheel stall torque / Drive Wheel Radius * 2 sides)
@@ -663,8 +666,7 @@ void Encoder_Simulator2::UpdateEncoderVoltage(double Voltage)
 	double TorqueToApply=m_DriveTrain.GetTorqueFromVoltage_V1(Voltage);
 	const double TorqueAbsorbed=m_DriveTrain.INV_GetTorqueFromVelocity(m_Physics.GetVelocity());
 	TorqueToApply-=TorqueAbsorbed;
-	//m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
-	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s);
+	m_Physics.ApplyFractionalTorque(TorqueToApply,m_Time_s,m_DriveTrain.GetDriveTrainProps().TorqueAccelerationDampener);
 	#endif
 }
 

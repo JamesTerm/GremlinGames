@@ -53,7 +53,7 @@ TestShip = {
 	
 	swerve_drive =
 	{
-		is_closed=1,
+		is_closed=0,
 		is_closed_swivel=0,
 		
 		show_pid_dump_wheel=

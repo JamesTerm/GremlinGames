@@ -4,6 +4,9 @@ Inches2Meters=0.0254
 Feet2Meters=0.3048
 Meters2Feet=3.2808399
 Meters2Inches=39.3700787
+OunceInchToNewton=0.00706155183333
+Pounds2Kilograms=0.453592
+Deg2Rad=(1/180) * Pi
 
 wheel_diameter_in=6   --This will determine the correct distance try to make accurate too
 WheelBase_Width_In=19.5	  --The wheel base will determine the turn rate, must be as accurate as possible!
@@ -34,24 +37,19 @@ TestShip = {
 	
 	swerve_drive =
 	{
-		is_closed=1,
+		is_closed=0,
 		is_closed_swivel=0,
 		
-		show_pid_dump_wheel=
-		{fl=0, fr=0, rl=0, rr=0},
-		show_pid_dump_swivel=
-		{fl=0, fr=0, rl=0, rr=0},
-		
+		show_pid_dump_wheel={fl=0, fr=0, rl=0, rr=0},
+		show_pid_dump_swivel={fl=0, fr=0, rl=0, rr=0},
 		ds_display_row=-1,
-		wheel_base_dimensions =
-		{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},	--where length is in 5 inches in, and width is 3 on each side (can only go 390 degrees a second)
+		--where length is in 5 inches in, and width is 3 on each side (can only go 390 degrees a second)		
+		wheel_base_dimensions =	{length_in=WheelBase_Length_In, width_in=WheelBase_Width_In},	
 		
 		--This encoders/PID will only be used in autonomous if we decide to go steal balls
 		wheel_diameter_in = 6,
-		wheel_pid=
-		{p=200, i=0, d=50},
-		swivel_pid=
-		{p=100, i=0, d=50},
+		wheel_pid={p=200, i=0, d=50},
+		swivel_pid={p=100, i=0, d=50},
 		latency=0.0,
 		heading_latency=0.0,
 		drive_to_scale=0.50,				--For 4 to 10 50% gives a 5 inch tolerance
