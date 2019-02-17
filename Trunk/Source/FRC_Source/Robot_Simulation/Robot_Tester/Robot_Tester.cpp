@@ -8,6 +8,7 @@ namespace Robot_Tester
 	#include "Viewer.h"
 }
 #include "Robots.h"
+#include "../Common/Common.h"
 
 void cls(void *hConsole=NULL);
 extern double g_WorldScaleFactor;
@@ -882,7 +883,9 @@ void Test(GUIThread *UI_thread,UI_Controller_GameClient &game,Commands &_command
 			g_WorldScaleFactor=100.0;
 			_command.LoadRobot("TestTankRobot.lua","TestRobot",Commands::eTank);
 			Entity2D *TestEntity=_command.AddRobot("TankRobot","TestRobot",str_3,str_4,str_5);
+			#ifndef __SetRobotRemote__
 			game.SetControlledEntity(TestEntity,UI_thread->GetUseUserPrefs());
+			#endif
 		}
 		break;
 	case eSwerveRobot:
@@ -1499,9 +1502,6 @@ void CommandLineInterface(bool useUserPrefs=true)
 	delete UI_thread;
 	UI_thread=NULL;
 }
-
-
-#include "../Common/Common.h"
 
 int main(int argc, char** argv)
 {
